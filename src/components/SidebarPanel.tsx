@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
 } from "react";
@@ -318,8 +319,10 @@ function SidebarPanel({
   }, [collapsedFolderNodeIds, localCollapsedImageFolderNodeIds, onSetCollapsedFolderNodeIds]);
   const manageDragCleanupRef = useRef<(() => void) | null>(null);
   const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
+  const overflowMeasureRafIdRef = useRef<number | null>(null);
   const suppressAutoExpandAncestorFoldersRef = useRef(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
   const suppressManageClickRef = useRef(false);
   const manageDragStateRef = useRef<{
@@ -346,55 +349,50 @@ function SidebarPanel({
     sidebarAlignRafIdRef.current = null;
   }, []);
 
+  const clearOverflowMeasureRaf = useCallback(() => {
+    if (overflowMeasureRafIdRef.current === null) {
+      return;
+    }
+    cancelAnimationFrame(overflowMeasureRafIdRef.current);
+    overflowMeasureRafIdRef.current = null;
+  }, []);
+
   useEffect(
     () => () => {
       detachManageDragListeners();
       clearSidebarAlignRaf();
+      clearOverflowMeasureRaf();
     },
-    [clearSidebarAlignRaf, detachManageDragListeners],
+    [clearOverflowMeasureRaf, clearSidebarAlignRaf, detachManageDragListeners],
   );
 
-  const refreshOverflowState = useCallback((nodeId: string | null) => {
-    if (!nodeId) {
-      return;
-    }
-    const element = labelTextElementByNodeIdRef.current.get(nodeId);
-    if (!element) {
-      return;
-    }
-    const overflowing = element.scrollWidth - element.clientWidth > 1;
-    setOverflowingNodeIds((previous) => {
-      const next = new Set(previous);
-      if (overflowing) {
-        next.add(nodeId);
-      } else {
-        next.delete(nodeId);
+  const refreshVisibleOverflowStates = useCallback(() => {
+    const next = new Set<string>();
+    for (const [nodeId, element] of labelTextElementByNodeIdRef.current.entries()) {
+      if (!element.isConnected) {
+        continue;
       }
+      const primaryTextElement = element.querySelector<HTMLElement>(
+        ".sidebar-label-text",
+      );
+      const textScrollWidth = primaryTextElement?.scrollWidth ?? element.scrollWidth;
+      if (textScrollWidth - element.clientWidth > 1) {
+        next.add(nodeId);
+      }
+    }
+
+    setOverflowingNodeIds((previous) => {
       return isSameNodeIdSet(previous, next) ? previous : next;
     });
   }, []);
 
-  useEffect(() => {
-    if (manageStyleEnabled) {
-      return;
-    }
-
-    if (!selectedSidebarNodeId) {
-      return;
-    }
-    requestAnimationFrame(() => {
-      refreshOverflowState(selectedSidebarNodeId);
+  const scheduleOverflowMeasure = useCallback(() => {
+    clearOverflowMeasureRaf();
+    overflowMeasureRafIdRef.current = requestAnimationFrame(() => {
+      overflowMeasureRafIdRef.current = null;
+      refreshVisibleOverflowStates();
     });
-  }, [manageStyleEnabled, refreshOverflowState, selectedSidebarNodeId, sidebarFontSize]);
-
-  useEffect(() => {
-    if (!hoveredNodeId) {
-      return;
-    }
-    requestAnimationFrame(() => {
-      refreshOverflowState(hoveredNodeId);
-    });
-  }, [hoveredNodeId, refreshOverflowState, sidebarFontSize]);
+  }, [clearOverflowMeasureRaf, refreshVisibleOverflowStates]);
 
   useEffect(() => {
     if (sidebarFocus !== 'sidebar') {
@@ -1171,13 +1169,36 @@ function SidebarPanel({
 
     const resizeObserver = new ResizeObserver(() => {
       refreshViewport();
+      scheduleOverflowMeasure();
     });
     resizeObserver.observe(container);
 
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [scheduleOverflowMeasure]);
+
+  useEffect(() => {
+    scheduleOverflowMeasure();
+  }, [rowsForRender, scheduleOverflowMeasure, sidebarFontSize, sidebarIndentStep]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      scheduleOverflowMeasure();
+    };
+    window.addEventListener("resize", handleWindowResize);
+
+    const fonts = typeof document !== "undefined" ? document.fonts : undefined;
+    const handleFontLoadingDone = () => {
+      scheduleOverflowMeasure();
+    };
+    fonts?.addEventListener?.("loadingdone", handleFontLoadingDone);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+      fonts?.removeEventListener?.("loadingdone", handleFontLoadingDone);
+    };
+  }, [scheduleOverflowMeasure]);
 
   const alignSidebarNodeIntoView = useCallback((targetNodeId: string): boolean => {
     const container = sidebarTreeRef.current;
@@ -1277,6 +1298,15 @@ function SidebarPanel({
     const isFocusedNode = selectedSidebarNodeId === node.id;
     const isHoverActive = hoveredNodeId === node.id;
     const isPressedActive = isFocusedNode || isHoverActive;
+    const marqueeActive =
+      (focusedNodeId === node.id
+        || (sidebarFocus === "sidebar" && isFocusedNode))
+      && overflowingNodeIds.has(node.id);
+    const marqueeStyle = marqueeActive
+      ? ({
+          "--mpx-sidebar-label-marquee-duration": `${Math.max(8, Math.min(30, Math.round(node.label.length * 0.24)))}s`,
+        } as CSSProperties)
+      : undefined;
     const loadState =
       mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
     const hasOwnImages =
@@ -1332,6 +1362,12 @@ function SidebarPanel({
             onMouseLeave={() => {
               setHoveredNodeId((previous) => (previous === node.id ? null : previous));
             }}
+            onFocus={() => {
+              setFocusedNodeId(node.id);
+            }}
+            onBlur={() => {
+              setFocusedNodeId((previous) => (previous === node.id ? null : previous));
+            }}
             onPointerDown={(event) => {
               if (!manageStyleEnabled) {
                 return;
@@ -1355,7 +1391,6 @@ function SidebarPanel({
                   suppressManageClickRef.current = false;
                   return;
                 }
-                onSelectNode(node.id);
                 onToggleManageNode?.(node.id, event.shiftKey);
                 return;
               }
@@ -1409,13 +1444,21 @@ function SidebarPanel({
               ref={(element) => {
                 if (element) {
                   labelTextElementByNodeIdRef.current.set(node.id, element);
+                  scheduleOverflowMeasure();
                   return;
                 }
                 labelTextElementByNodeIdRef.current.delete(node.id);
+                scheduleOverflowMeasure();
               }}
-              className={`sidebar-label-text ${isPressedActive && overflowingNodeIds.has(node.id) ? "is-marquee" : ""}`}
+              className={`sidebar-label-marquee ${marqueeActive ? "is-overflow" : ""}`}
+              style={marqueeStyle}
             >
-              {node.label}
+              <span className="sidebar-label-text">{node.label}</span>
+              {marqueeActive ? (
+                <span aria-hidden="true" className="sidebar-label-text">
+                  {node.label}
+                </span>
+              ) : null}
             </span>
           </button>
 

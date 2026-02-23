@@ -866,4 +866,137 @@ describe("SidebarPanel image collapse interactions", () => {
 
     expect(screen.getByRole("button", { name: "上一个含图父级" })).toBeDisabled();
   });
+
+  it("超长路径在获得焦点时启用跑马灯，失焦后恢复静态省略", async () => {
+    const longLabel =
+      "X:/Very/Long/Path/That/Should/Overflow/When/Focused/And/Scroll/Left";
+    const longPathNodes: SidebarNode[] = [
+      {
+        id: "folder:long-path",
+        label: longLabel,
+        kind: "folder",
+        pathKey: "long-path",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 1,
+        descendantPackageCount: 1,
+        descendantImageCount: 1,
+        children: [
+          {
+            id: "package:long-path/item",
+            label: "item",
+            kind: "package",
+            packageId: "pkg-long",
+            imageSourceId: "pkg-long",
+            pathKey: "long-path/item",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+    ];
+
+    const scrollWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "scrollWidth", "get")
+      .mockImplementation(function mockScrollWidth(this: HTMLElement) {
+        if (this.classList.contains("sidebar-label-text")) {
+          return 320;
+        }
+        return 88;
+      });
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockReturnValue(88);
+
+    try {
+      renderImageSidebar(longPathNodes);
+
+      const labelButton = screen.getByRole("button", { name: longLabel });
+      fireEvent.focus(labelButton);
+
+      await waitFor(() => {
+        expect(
+          labelButton.querySelector(".sidebar-label-marquee.is-overflow"),
+        ).not.toBeNull();
+      });
+
+      fireEvent.blur(labelButton);
+
+      await waitFor(() => {
+        expect(
+          labelButton.querySelector(".sidebar-label-marquee.is-overflow"),
+        ).toBeNull();
+      });
+    } finally {
+      scrollWidthSpy.mockRestore();
+      clientWidthSpy.mockRestore();
+    }
+  });
+
+  it("超长路径在侧栏逻辑焦点且节点选中时也会触发跑马灯", async () => {
+    const longLabel =
+      "X:/Very/Long/Path/That/Should/Overflow/When/Sidebar/Is/Focused";
+    const longPathNodes: SidebarNode[] = [
+      {
+        id: "folder:long-path-2",
+        label: longLabel,
+        kind: "folder",
+        pathKey: "long-path-2",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 1,
+        descendantPackageCount: 1,
+        descendantImageCount: 1,
+        children: [
+          {
+            id: "package:long-path-2/item",
+            label: "item",
+            kind: "package",
+            packageId: "pkg-long-2",
+            imageSourceId: "pkg-long-2",
+            pathKey: "long-path-2/item",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+    ];
+
+    const scrollWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "scrollWidth", "get")
+      .mockImplementation(function mockScrollWidth(this: HTMLElement) {
+        if (this.classList.contains("sidebar-label-text")) {
+          return 320;
+        }
+        return 88;
+      });
+    const clientWidthSpy = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockReturnValue(88);
+
+    try {
+      renderImageSidebar(longPathNodes, {
+        selectedSidebarNodeId: "folder:long-path-2",
+      });
+
+      const labelButton = screen.getByRole("button", { name: longLabel });
+
+      await waitFor(() => {
+        expect(
+          labelButton.querySelector(".sidebar-label-marquee.is-overflow"),
+        ).not.toBeNull();
+      });
+    } finally {
+      scrollWidthSpy.mockRestore();
+      clientWidthSpy.mockRestore();
+    }
+  });
 });
