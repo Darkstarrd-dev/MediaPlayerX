@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import {
   normalizePathForCompare,
 } from './mediaPathUtils'
+import {
+  resolveImageConvertScopeNodeIds,
+  resolveScopedImageConvertNavigationNodeId,
+} from './workspaceImageManageUtils'
 import { useAppTopLayerState } from './useAppTopLayerState'
 import type { ImageConvertAdjustProfile } from './useAppSessionState'
 import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
@@ -281,6 +285,10 @@ export function useAppTopLayerBindings({
     themeParameterPanelOpen,
     setThemeParameterPanelOpen,
     fullscreenEntryDisplay,
+    selectedPackageId,
+    selectedSidebarNodeId,
+    setSelectedPackageId,
+    setSelectedSidebarNodeId,
     imageConvertScale,
     setImageConvertScale,
     imageConvertLongestEdgePx,
@@ -348,6 +356,9 @@ export function useAppTopLayerBindings({
     focusedImage,
     moveImage,
     goPackage,
+    sidebarCheckedNodeIds,
+    activeSelectionScope,
+    sidebarNodeById,
     applySidebarRatio,
     applyMetadataRatio,
     videoByIdEffective,
@@ -459,6 +470,43 @@ export function useAppTopLayerBindings({
     imageConvertPreviewQuality,
     imageConvertPreviewScale,
   ])
+
+  const goPackageForFullscreen = (step: number) => {
+    if (mode !== 'image' || !imageConvertPreviewMode) {
+      goPackage(step)
+      return
+    }
+
+    const scopeNodeIds = resolveImageConvertScopeNodeIds({
+      mode,
+      manageMode,
+      activeSelectionScope,
+      sidebarCheckedNodeIds,
+      selectedSidebarNodeId,
+      sidebarNodeById,
+    })
+    if (scopeNodeIds.length === 0) {
+      goPackage(step)
+      return
+    }
+
+    const nextNodeId = resolveScopedImageConvertNavigationNodeId({
+      scopeNodeIds,
+      selectedSidebarNodeId,
+      selectedPackageId,
+      sidebarNodeById,
+      step,
+    })
+    if (!nextNodeId || nextNodeId === selectedSidebarNodeId) {
+      return
+    }
+
+    const nextNode = sidebarNodeById.get(nextNodeId)
+    setSelectedSidebarNodeId(nextNodeId)
+    if (nextNode?.imageSourceId) {
+      setSelectedPackageId(nextNode.imageSourceId)
+    }
+  }
 
   return useAppTopLayerState({
     appSettings,
@@ -596,7 +644,7 @@ export function useAppTopLayerBindings({
     setFullscreenVideoFocus,
     setFullscreenSplit,
     moveImage,
-    goPackage,
+    goPackage: goPackageForFullscreen,
     applySidebarRatio,
     applyMetadataRatio,
     focusedVideoEffectiveId: focusedVideoEffective?.id ?? null,

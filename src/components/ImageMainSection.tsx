@@ -616,6 +616,30 @@ function ImageMainSection({
     imageConvertTaskStatus === "pending" ||
     imageConvertTaskStatus === "running";
   const convertInteractionLocked = pendingManageAction || imageConvertExecuting;
+  const toggleImageConvertPanel = useCallback(() => {
+    if (!canManageImageConvert || convertInteractionLocked) {
+      return;
+    }
+    setImageConvertPanelOpen((value) => !value);
+  }, [canManageImageConvert, convertInteractionLocked]);
+
+  useEffect(() => {
+    const onToggleByShortcut = () => {
+      toggleImageConvertPanel();
+    };
+    const onOpenByShortcut = () => {
+      setImageConvertPanelOpen(true);
+    };
+    window.addEventListener("mpx:image-convert-toggle-panel", onToggleByShortcut);
+    window.addEventListener("mpx:image-convert-open-panel", onOpenByShortcut);
+    return () => {
+      window.removeEventListener(
+        "mpx:image-convert-toggle-panel",
+        onToggleByShortcut,
+      );
+      window.removeEventListener("mpx:image-convert-open-panel", onOpenByShortcut);
+    };
+  }, [toggleImageConvertPanel]);
 
   const activePackageImageProgress = (() => {
     if (!activePackage || activePackage.images.length === 0) {
@@ -1007,7 +1031,7 @@ function ImageMainSection({
                 aria-label="RS"
                 title="RS"
                 disabled={!canManageImageConvert || convertInteractionLocked}
-                onClick={() => setImageConvertPanelOpen((value) => !value)}
+                onClick={toggleImageConvertPanel}
               >
                 <span aria-hidden="true">RS</span>
               </button>

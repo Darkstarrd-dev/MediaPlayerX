@@ -6,6 +6,95 @@ interface SidebarImageNodeLike {
 
 interface SidebarNodeLike {
   imageNodeType?: string;
+  imageSourceId?: string;
+}
+
+interface ResolveImageConvertScopeNodeIdsParams {
+  mode: string;
+  manageMode: boolean;
+  activeSelectionScope: string | null;
+  sidebarCheckedNodeIds: string[];
+  selectedSidebarNodeId: string | null;
+  sidebarNodeById: Map<string, SidebarNodeLike>;
+}
+
+interface ResolveScopedImageConvertNavigationNodeIdParams {
+  scopeNodeIds: string[];
+  selectedSidebarNodeId: string | null;
+  selectedPackageId: string;
+  sidebarNodeById: Map<string, SidebarNodeLike>;
+  step: number;
+}
+
+export function isConvertibleImageSidebarNode(
+  node: SidebarNodeLike | undefined,
+): boolean {
+  return (
+    Boolean(node) &&
+    (node?.imageNodeType === "package" || node?.imageNodeType === "directory")
+  );
+}
+
+export function resolveImageConvertScopeNodeIds({
+  mode,
+  manageMode,
+  activeSelectionScope,
+  sidebarCheckedNodeIds,
+  selectedSidebarNodeId,
+  sidebarNodeById,
+}: ResolveImageConvertScopeNodeIdsParams): string[] {
+  if (mode !== "image") {
+    return [];
+  }
+
+  if (manageMode) {
+    if (activeSelectionScope !== "sidebar" || sidebarCheckedNodeIds.length === 0) {
+      return [];
+    }
+    const convertibleNodeIds = sidebarCheckedNodeIds.filter((nodeId) =>
+      isConvertibleImageSidebarNode(sidebarNodeById.get(nodeId)),
+    );
+    return convertibleNodeIds.length === sidebarCheckedNodeIds.length
+      ? convertibleNodeIds
+      : [];
+  }
+
+  if (!selectedSidebarNodeId) {
+    return [];
+  }
+
+  const selectedNode = sidebarNodeById.get(selectedSidebarNodeId);
+  if (!isConvertibleImageSidebarNode(selectedNode)) {
+    return [];
+  }
+  return [selectedSidebarNodeId];
+}
+
+export function resolveScopedImageConvertNavigationNodeId({
+  scopeNodeIds,
+  selectedSidebarNodeId,
+  selectedPackageId,
+  sidebarNodeById,
+  step,
+}: ResolveScopedImageConvertNavigationNodeIdParams): string | null {
+  if (scopeNodeIds.length === 0 || step === 0) {
+    return null;
+  }
+
+  const fallbackIndexByPackageId = scopeNodeIds.findIndex((nodeId) => {
+    const node = sidebarNodeById.get(nodeId);
+    return node?.imageSourceId === selectedPackageId;
+  });
+  const fallbackIndex = fallbackIndexByPackageId >= 0 ? fallbackIndexByPackageId : 0;
+  const selectedIndex = selectedSidebarNodeId
+    ? scopeNodeIds.indexOf(selectedSidebarNodeId)
+    : -1;
+  const currentIndex = selectedIndex >= 0 ? selectedIndex : fallbackIndex;
+  const nextIndex = Math.max(
+    0,
+    Math.min(scopeNodeIds.length - 1, currentIndex + step),
+  );
+  return scopeNodeIds[nextIndex] ?? null;
 }
 
 export function buildImageSidebarWheelContext(
@@ -53,11 +142,7 @@ export function resolveImageConvertManageState({
     mode === "image"
       ? sidebarCheckedNodeIds.filter((nodeId) => {
           const node = sidebarNodeById.get(nodeId);
-          return (
-            Boolean(node) &&
-            (node?.imageNodeType === "package" ||
-              node?.imageNodeType === "directory")
-          );
+          return isConvertibleImageSidebarNode(node);
         })
       : [];
 

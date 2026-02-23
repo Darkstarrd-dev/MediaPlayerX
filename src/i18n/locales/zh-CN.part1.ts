@@ -58,6 +58,8 @@ export const zhCnCatalogPart1 = {
     "视频模式下将当前焦点视频移出播放列表。",
   "ui.help.image.keyboard.manageOrganize":
     "文件管理模式下打开整理弹窗（移动/分组，需已选中节点）。",
+  "ui.help.image.keyboard.imageConvertShortcut":
+    "图片模式下触发 RS：文件管理模式等同 RS 按钮；非文件管理模式对当前 Sidebar 焦点节点触发。",
   "ui.help.image.keyboard.helpOverlayToggle":
     "非全屏下切换按钮说明覆盖层（? 打开/关闭，Esc 关闭）。",
   "ui.help.fullscreen.sectionTitle": "全屏模式交互说明",

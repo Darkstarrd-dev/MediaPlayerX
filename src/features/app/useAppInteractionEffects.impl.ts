@@ -6,6 +6,10 @@ import { usePersistedAppSettings } from "./usePersistedAppSettings";
 import { usePersistedSessionCursor } from "./usePersistedSessionCursor";
 import { usePreferenceMetricsBuffer } from "./usePreferenceMetricsBuffer";
 import { useAppInteractionLayer } from "./useAppInteractionLayer";
+import {
+  resolveImageConvertScopeNodeIds,
+  resolveScopedImageConvertNavigationNodeId,
+} from "./workspaceImageManageUtils";
 import { clamp } from "../../utils/ui";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
@@ -99,6 +103,8 @@ export function useAppInteractionEffects({
     setSelectedSidebarNodeId,
     setSelectedAudioId,
     setFullscreenEntryDisplay,
+    imageConvertPreviewMode,
+    setManageMode,
     manageMode,
     metadataManageMode,
     adReviewPanelOpen,
@@ -145,6 +151,10 @@ export function useAppInteractionEffects({
     vectorResultPackageNodeIdMap,
     flatSidebarNodes,
     sidebarNodeById,
+    sidebarCheckedNodeIds,
+    activeSelectionScope,
+    clearSidebarSelections,
+    checkSidebarNode,
     imageSourceNodeIdMap,
     videoNodeIdMap,
     videosForSidebar,
@@ -271,7 +281,42 @@ export function useAppInteractionEffects({
     moveImage,
     moveImageVertical,
     jumpImageBoundary,
-    goPackage,
+    goPackage: (step) => {
+      if (mode !== "image" || !imageConvertPreviewMode) {
+        goPackage(step);
+        return;
+      }
+
+      const scopeNodeIds = resolveImageConvertScopeNodeIds({
+        mode,
+        manageMode,
+        activeSelectionScope,
+        sidebarCheckedNodeIds,
+        selectedSidebarNodeId,
+        sidebarNodeById,
+      });
+      if (scopeNodeIds.length === 0) {
+        goPackage(step);
+        return;
+      }
+
+      const nextNodeId = resolveScopedImageConvertNavigationNodeId({
+        scopeNodeIds,
+        selectedSidebarNodeId,
+        selectedPackageId,
+        sidebarNodeById,
+        step,
+      });
+      if (!nextNodeId || nextNodeId === selectedSidebarNodeId) {
+        return;
+      }
+
+      const nextNode = sidebarNodeById.get(nextNodeId);
+      setSelectedSidebarNodeId(nextNodeId);
+      if (nextNode?.imageSourceId) {
+        setSelectedPackageId(nextNode.imageSourceId);
+      }
+    },
     requestFullscreenAlign,
     autoPlayEnabled,
     applyAutoplayIntervalByIndex,
@@ -282,6 +327,39 @@ export function useAppInteractionEffects({
         return;
       }
       requestManageOrganize();
+    },
+    onTriggerImageConvertShortcut: () => {
+      if (mode !== "image" || fullscreenActive) {
+        return;
+      }
+
+      const scopeNodeIds = resolveImageConvertScopeNodeIds({
+        mode,
+        manageMode,
+        activeSelectionScope,
+        sidebarCheckedNodeIds,
+        selectedSidebarNodeId,
+        sidebarNodeById,
+      });
+      if (scopeNodeIds.length === 0) {
+        return;
+      }
+
+      if (manageMode) {
+        window.dispatchEvent(new CustomEvent("mpx:image-convert-toggle-panel"));
+        return;
+      }
+
+      const targetNodeId = scopeNodeIds[0];
+      const targetNode = sidebarNodeById.get(targetNodeId);
+      setSelectedSidebarNodeId(targetNodeId);
+      if (targetNode?.imageSourceId) {
+        setSelectedPackageId(targetNode.imageSourceId);
+      }
+      clearSidebarSelections();
+      checkSidebarNode(targetNodeId);
+      setManageMode(true);
+      window.dispatchEvent(new CustomEvent("mpx:image-convert-open-panel"));
     },
     addFocusedVideoToPlaylist: () => {
       if (mode !== "video" || !selectedVideoId) {

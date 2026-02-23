@@ -34,6 +34,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onSetPackageGrade: vi.fn(),
     onSetVideoGrade: vi.fn(),
     onRequestManageOrganize: vi.fn(),
+    onTriggerImageConvertShortcut: vi.fn(),
     onAddFocusedVideoToPlaylist: vi.fn(),
     onRemoveFocusedVideoFromPlaylist: vi.fn(),
     onToggleVideoPlaying: vi.fn(),
@@ -92,7 +93,22 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     hook.unmount()
     params.fullscreenActive = true
+    params.fullscreenDisplay = 'image-only'
     renderHook(() => useShortcutEngine(params))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
+  })
+
+  it('fullscreen image-only in video mode maps autoplay shortcut to autoplay toggle', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'image-only'
+    renderHook(() => useShortcutEngine(params))
+
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
     })
@@ -115,6 +131,32 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
     expect(params.onAddFocusedVideoToPlaylist).not.toHaveBeenCalled()
+  })
+
+  it('outside fullscreen, image mode maps KeyS to image-convert shortcut trigger', () => {
+    const params = createBaseParams()
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onTriggerImageConvertShortcut).toHaveBeenCalledTimes(1)
+    expect(params.onToggleFullscreenSwapSides).not.toHaveBeenCalled()
+  })
+
+  it('in fullscreen dual mode, KeyS keeps swap-sides behavior', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleFullscreenSwapSides).toHaveBeenCalledTimes(1)
+    expect(params.onTriggerImageConvertShortcut).not.toHaveBeenCalled()
   })
 
   it('digit rating shortcuts apply package grade in non-fullscreen image mode', () => {

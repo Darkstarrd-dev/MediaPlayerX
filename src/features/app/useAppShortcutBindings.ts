@@ -37,6 +37,7 @@ interface UseAppShortcutBindingsParams {
   applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
   applyVideoGrade: ShortcutEngineParams['onSetVideoGrade']
   requestManageOrganize: ShortcutEngineParams['onRequestManageOrganize']
+  onTriggerImageConvertShortcut: ShortcutEngineParams['onTriggerImageConvertShortcut']
   addFocusedVideoToPlaylist: ShortcutEngineParams['onAddFocusedVideoToPlaylist']
   removeFocusedVideoFromPlaylist: ShortcutEngineParams['onRemoveFocusedVideoFromPlaylist']
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
@@ -85,6 +86,7 @@ export function useAppShortcutBindings({
   applyPackageGrade,
   applyVideoGrade,
   requestManageOrganize,
+  onTriggerImageConvertShortcut,
   addFocusedVideoToPlaylist,
   removeFocusedVideoFromPlaylist,
   setVideoPlaying,
@@ -163,6 +165,7 @@ export function useAppShortcutBindings({
     onSetPackageGrade: applyPackageGrade,
     onSetVideoGrade: applyVideoGrade,
     onRequestManageOrganize: requestManageOrganize,
+    onTriggerImageConvertShortcut,
     onAddFocusedVideoToPlaylist: addFocusedVideoToPlaylist,
     onRemoveFocusedVideoFromPlaylist: removeFocusedVideoFromPlaylist,
     onToggleVideoPlaying: () => {

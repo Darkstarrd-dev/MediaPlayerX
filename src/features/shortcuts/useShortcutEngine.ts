@@ -46,6 +46,7 @@ interface UseShortcutEngineParams {
   onSetPackageGrade: (grade: number | null) => void;
   onSetVideoGrade: (grade: number | null) => void;
   onRequestManageOrganize: () => void;
+  onTriggerImageConvertShortcut: () => void;
   onAddFocusedVideoToPlaylist: () => void;
   onRemoveFocusedVideoFromPlaylist: () => void;
   onToggleVideoPlaying: () => void;
@@ -91,6 +92,7 @@ export function useShortcutEngine({
   onSetPackageGrade,
   onSetVideoGrade,
   onRequestManageOrganize,
+  onTriggerImageConvertShortcut,
   onAddFocusedVideoToPlaylist,
   onRemoveFocusedVideoFromPlaylist,
   onToggleVideoPlaying,
@@ -165,7 +167,7 @@ export function useShortcutEngine({
         case "autoplayToggle":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onToggleAutoplay();
@@ -174,7 +176,7 @@ export function useShortcutEngine({
         case "autoplayInterval1":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onApplyAutoplayIntervalByIndex(0);
@@ -183,7 +185,7 @@ export function useShortcutEngine({
         case "autoplayInterval2":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onApplyAutoplayIntervalByIndex(1);
@@ -192,7 +194,7 @@ export function useShortcutEngine({
         case "autoplayInterval3":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onApplyAutoplayIntervalByIndex(2);
@@ -201,7 +203,7 @@ export function useShortcutEngine({
         case "autoplayInterval4":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onApplyAutoplayIntervalByIndex(3);
@@ -210,7 +212,7 @@ export function useShortcutEngine({
         case "autoplayInterval5":
           if (
             fullscreenActive &&
-            (mode === "image" ||
+            (fullscreenDisplay === "image-only" ||
               (fullscreenDisplay === "dual" && imageFocusActive))
           ) {
             onApplyAutoplayIntervalByIndex(4);
@@ -526,6 +528,20 @@ export function useShortcutEngine({
       }
 
       if (
+        !fullscreenActive &&
+        mode === "image" &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        event.code === "KeyS"
+      ) {
+        event.preventDefault();
+        onTriggerImageConvertShortcut();
+        return;
+      }
+
+      if (
         fullscreenActive &&
         fullscreenDisplay === "dual" &&
         !event.ctrlKey &&
@@ -675,6 +691,7 @@ export function useShortcutEngine({
     onToggleFullscreenDualDisplay,
     onToggleFullscreenPaneFocus,
     onToggleFullscreenSwapSides,
+    onTriggerImageConvertShortcut,
     onGoPackage,
     onAlignFocus,
     onImageCtrlWheelNavigateSidebar,

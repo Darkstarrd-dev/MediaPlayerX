@@ -64,6 +64,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "In video mode, remove current focused video from playlist.",
   "ui.help.image.keyboard.manageOrganize":
     "In file-manage mode, open organize dialog (move/group, requires selected nodes).",
+  "ui.help.image.keyboard.imageConvertShortcut":
+    "In image mode, trigger RS: in file-manage mode it is the same as RS button; outside file-manage mode it targets current focused sidebar node.",
   "ui.help.image.keyboard.helpOverlayToggle":
     "Outside fullscreen, toggle button-help overlay (? toggle, Esc close).",
   "ui.help.fullscreen.sectionTitle": "Fullscreen interaction guide",

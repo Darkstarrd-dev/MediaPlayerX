@@ -109,6 +109,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.image.keyboard.manageOrganize'),
       },
       {
+        key: 'image-rs-shortcut',
+        shortcut: 'S',
+        action: t('ui.help.image.keyboard.imageConvertShortcut'),
+      },
+      {
         key: 'help-overlay-toggle',
         shortcut: '? / Esc',
         action: t('ui.help.image.keyboard.helpOverlayToggle'),
