@@ -422,13 +422,22 @@
 }
 
 .main-footer {
+  --mpx-panel-footer-height: calc(var(--mpx-control-height) + 14px);
+  --mpx-panel-footer-min-height: var(--mpx-panel-footer-height);
+  --mpx-panel-footer-padding-top: 7px;
+  --mpx-panel-footer-padding-inline: 0;
+  --mpx-panel-footer-padding-bottom: 0;
   border-top: 1px solid
     var(
       --mpx-slot-fg-main-footer-border,
       var(--mpx-main-border-color, var(--mpx-border-1))
     );
-  padding-top: 7px;
-  min-height: calc(var(--mpx-control-height) + 7px);
+  padding: var(--mpx-panel-footer-padding-top)
+    var(--mpx-panel-footer-padding-inline)
+    var(--mpx-panel-footer-padding-bottom);
+  box-sizing: border-box;
+  height: var(--mpx-panel-footer-height);
+  min-height: var(--mpx-panel-footer-min-height);
   color: var(--mpx-slot-fg-main-footer-text, var(--mpx-text-2));
   display: flex;
   align-items: center;

@@ -1014,47 +1014,47 @@ function MetadataPanel({
             />
           </div>
           ) : (
-          <div data-slot="fg-meta-main-music-editor">
-            <MetadataMusicEditor
-              focusedAudio={focusedAudio}
-              audioPlaylistIds={audioPlaylistIds}
-              selectedAudioId={selectedAudioId}
-              audioById={audioById}
-              musicBookletAlbumRootPath={musicBookletAlbumRootPath}
-              musicBookletCandidates={musicBookletCandidates}
-              musicCoverBindingValue={musicCoverBindingValue}
-              musicBookletBindingValue={musicBookletBindingValue}
-              canOpenMusicCover={canOpenMusicCover}
-              canOpenMusicBooklet={canOpenMusicBooklet}
-              metadataPending={metadataPending}
-              editable={editable}
-              audioAlbumDraft={audioAlbumDraft}
-              audioAuthorDraft={audioAuthorDraft}
-              audioTrackTitleDraft={audioTrackTitleDraft}
-              audioSeriesIdDraft={audioSeriesIdDraft}
-              onAudioAlbumDraftChange={setAudioAlbumDraft}
-              onAudioAuthorDraftChange={setAudioAuthorDraft}
-              onAudioTrackTitleDraftChange={setAudioTrackTitleDraft}
-              onAudioSeriesIdDraftChange={setAudioSeriesIdDraft}
-              onSubmitAudioAlbum={persistAudioAlbum}
-              onSubmitAudioAuthor={persistAudioAuthor}
-              onSubmitAudioTrackTitle={persistAudioTrackTitle}
-              onSubmitAudioSeriesId={persistAudioSeriesId}
-              onSearchByWorkTitle={onSearchByWorkTitle}
-              onSearchByCircle={onSearchByCircle}
-              onSearchByAuthor={onSearchByAuthor}
-              onSelectAudio={onSelectAudio}
-              onSelectAudioAndPlay={onSelectAudioAndPlay}
-              onMusicCoverBindingChange={onMusicCoverBindingChange}
-              onMusicBookletBindingChange={onMusicBookletBindingChange}
-              onOpenMusicCover={onOpenMusicCover}
-              onOpenMusicBooklet={onOpenMusicBooklet}
-              onResetMusicBookletBinding={onResetMusicBookletBinding}
-            />
-          </div>
+            <div data-slot="fg-meta-main-music-editor">
+              <MetadataMusicEditor
+                focusedAudio={focusedAudio}
+                audioPlaylistIds={audioPlaylistIds}
+                selectedAudioId={selectedAudioId}
+                audioById={audioById}
+                musicBookletAlbumRootPath={musicBookletAlbumRootPath}
+                musicBookletCandidates={musicBookletCandidates}
+                musicCoverBindingValue={musicCoverBindingValue}
+                musicBookletBindingValue={musicBookletBindingValue}
+                canOpenMusicCover={canOpenMusicCover}
+                canOpenMusicBooklet={canOpenMusicBooklet}
+                metadataPending={metadataPending}
+                editable={editable}
+                audioAlbumDraft={audioAlbumDraft}
+                audioAuthorDraft={audioAuthorDraft}
+                audioTrackTitleDraft={audioTrackTitleDraft}
+                audioSeriesIdDraft={audioSeriesIdDraft}
+                onAudioAlbumDraftChange={setAudioAlbumDraft}
+                onAudioAuthorDraftChange={setAudioAuthorDraft}
+                onAudioTrackTitleDraftChange={setAudioTrackTitleDraft}
+                onAudioSeriesIdDraftChange={setAudioSeriesIdDraft}
+                onSubmitAudioAlbum={persistAudioAlbum}
+                onSubmitAudioAuthor={persistAudioAuthor}
+                onSubmitAudioTrackTitle={persistAudioTrackTitle}
+                onSubmitAudioSeriesId={persistAudioSeriesId}
+                onSearchByWorkTitle={onSearchByWorkTitle}
+                onSearchByCircle={onSearchByCircle}
+                onSearchByAuthor={onSearchByAuthor}
+                onSelectAudio={onSelectAudio}
+                onSelectAudioAndPlay={onSelectAudioAndPlay}
+                onMusicCoverBindingChange={onMusicCoverBindingChange}
+                onMusicBookletBindingChange={onMusicBookletBindingChange}
+                onOpenMusicCover={onOpenMusicCover}
+                onOpenMusicBooklet={onOpenMusicBooklet}
+                onResetMusicBookletBinding={onResetMusicBookletBinding}
+              />
+            </div>
           )}
-          <div hidden data-slot="fg-meta-footer" />
         </div>
+        <div aria-hidden="true" data-slot="fg-meta-footer" />
       </aside>
       <FeatureTagPickerModal
         open={featureTagPickerOpen}

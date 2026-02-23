@@ -1094,9 +1094,13 @@ function SidebarPanel({
     return rows;
   }, [activeTreeNodes, collapsedImageFolderNodeIds, mode]);
 
-  const estimatedRowHeight = useMemo(
-    () => Math.max(24, Math.round(sidebarFontSize + sidebarVerticalGap + 14)),
-    [sidebarFontSize, sidebarVerticalGap],
+  const estimatedRowContentHeight = useMemo(
+    () => Math.max(24, Math.round(sidebarFontSize + 14)),
+    [sidebarFontSize],
+  );
+  const estimatedRowBlockHeight = useMemo(
+    () => Math.max(1, estimatedRowContentHeight + sidebarVerticalGap),
+    [estimatedRowContentHeight, sidebarVerticalGap],
   );
   const virtualizeThreshold = 220;
   const shouldVirtualize =
@@ -1114,30 +1118,41 @@ function SidebarPanel({
     }
 
     const overscanRows = 10;
+    const rowGap = Math.max(0, sidebarVerticalGap);
     const safeScrollTop = Math.max(0, sidebarScrollTop);
     const startIndex = Math.max(
       0,
-      Math.floor(safeScrollTop / estimatedRowHeight) - overscanRows,
+      Math.floor(safeScrollTop / estimatedRowBlockHeight) - overscanRows,
     );
     const visibleCount =
-      Math.ceil(sidebarViewportHeight / estimatedRowHeight) + overscanRows * 2;
+      Math.ceil((sidebarViewportHeight + rowGap) / estimatedRowBlockHeight)
+      + overscanRows * 2;
     const endIndex = Math.min(
       visibleSidebarRows.length,
       startIndex + Math.max(1, visibleCount),
     );
+    const topSpacerHeight =
+      startIndex > 0
+        ? startIndex * estimatedRowContentHeight + (startIndex - 1) * rowGap
+        : 0;
+    const trailingCount = Math.max(0, visibleSidebarRows.length - endIndex);
+    const bottomSpacerHeight =
+      trailingCount > 0
+        ? trailingCount * estimatedRowContentHeight
+          + (trailingCount - 1) * rowGap
+        : 0;
 
     return {
       startIndex,
       endIndex,
-      topSpacerHeight: startIndex * estimatedRowHeight,
-      bottomSpacerHeight: Math.max(
-        0,
-        (visibleSidebarRows.length - endIndex) * estimatedRowHeight,
-      ),
+      topSpacerHeight,
+      bottomSpacerHeight,
     };
   }, [
-    estimatedRowHeight,
+    estimatedRowBlockHeight,
+    estimatedRowContentHeight,
     shouldVirtualize,
+    sidebarVerticalGap,
     sidebarScrollTop,
     sidebarViewportHeight,
     visibleSidebarRows.length,
@@ -1231,7 +1246,7 @@ function SidebarPanel({
       return true;
     }
 
-    const estimatedAlignRowHeight = Math.max(34, estimatedRowHeight);
+    const estimatedAlignRowHeight = Math.max(34, estimatedRowBlockHeight);
     const rowTop = targetIndex * estimatedAlignRowHeight;
     const rowBottom = rowTop + estimatedAlignRowHeight;
     const viewTop = container.scrollTop;
@@ -1244,7 +1259,7 @@ function SidebarPanel({
     }
 
     return false;
-  }, [estimatedRowHeight, visibleSidebarRows]);
+  }, [estimatedRowBlockHeight, visibleSidebarRows]);
 
   const alignSidebarNodeIntoViewWithRetry = useCallback((targetNodeId: string) => {
     clearSidebarAlignRaf();
@@ -1646,40 +1661,41 @@ function SidebarPanel({
         </div>
       </div>
 
-      <div
-        ref={sidebarTreeRef}
-        className="sidebar-tree"
-        data-slot="fg-sidebar-main"
-        onScroll={(event) => {
-          setSidebarScrollTop(event.currentTarget.scrollTop);
-        }}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: `${sidebarVerticalGap}px`,
-        }}
-      >
-        {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
-          <div
-            aria-hidden="true"
-            style={{
-              height: `${virtualRange.topSpacerHeight}px`,
-              pointerEvents: "none",
-            }}
-          />
-        ) : null}
-        {rowsForRender.map(renderRow)}
-        {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
-          <div
-            aria-hidden="true"
-            style={{
-              height: `${virtualRange.bottomSpacerHeight}px`,
-              pointerEvents: "none",
-            }}
-          />
-        ) : null}
+      <div className="sidebar-main-shell" data-slot="fg-sidebar-main">
+        <div
+          ref={sidebarTreeRef}
+          className="sidebar-tree"
+          onScroll={(event) => {
+            setSidebarScrollTop(event.currentTarget.scrollTop);
+          }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: `${sidebarVerticalGap}px`,
+          }}
+        >
+          {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
+            <div
+              aria-hidden="true"
+              style={{
+                height: `${virtualRange.topSpacerHeight}px`,
+                pointerEvents: "none",
+              }}
+            />
+          ) : null}
+          {rowsForRender.map(renderRow)}
+          {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
+            <div
+              aria-hidden="true"
+              style={{
+                height: `${virtualRange.bottomSpacerHeight}px`,
+                pointerEvents: "none",
+              }}
+            />
+          ) : null}
+        </div>
       </div>
-      <div hidden data-slot="fg-sidebar-footer" />
+      <div aria-hidden="true" data-slot="fg-sidebar-footer" />
     </aside>
   );
 }
