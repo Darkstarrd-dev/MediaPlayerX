@@ -800,6 +800,58 @@ describe('ImageMainSection layout', () => {
     expect(settledButtons.every((button) => !button.disabled)).toBe(true)
   })
 
+  it('广告审核待复核模式点击缩略图时同步焦点到元数据目标图', async () => {
+    const onSelectImage = vi.fn()
+    const adReviewTask: NonNullable<ImageMainSectionProps['adReviewTask']> = {
+      task_id: 'task-review',
+      status: 'review',
+      progress: 1,
+      total_count: 1,
+      reviewed_count: 1,
+      suspected_count: 1,
+      failed_count: 0,
+      known_hash_hits: 0,
+      llm_calls: 1,
+      scope_image_ids: ['img-1'],
+      image_source_by_id: {
+        'img-1': 'llm',
+      },
+      message: null,
+      error_detail: null,
+      candidates: [
+        {
+          image_id: 'img-1',
+          package_id: packageWithImages.id,
+          package_name: packageWithImages.packageName,
+          display_name: packageWithImages.displayName,
+          ordinal: 1,
+          file_name: 'pkg-2-1.jpg',
+          reason: 'suspected-ad',
+          source: 'llm',
+          hash: 'mock-hash-1',
+        },
+      ],
+      created_at_ms: 1,
+      updated_at_ms: 1,
+    }
+
+    render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          adReviewResultsMode: true,
+          adReviewTask,
+          onSelectImage,
+        })}
+      />,
+    )
+
+    const firstCard = document.querySelector('.thumb-card-main') as HTMLButtonElement | null
+    expect(firstCard).not.toBeNull()
+    fireEvent.mouseDown(firstCard as HTMLButtonElement, { button: 0 })
+
+    expect(onSelectImage).toHaveBeenCalledWith(packageWithImages.id, 0, 0)
+  })
+
   it('缩略图容器滚轮触发翻页，Ctrl+滚轮切换 sidebar 节点', () => {
     const refsInPage = [{ packageId: packageWithImages.id, imageIndex: 0 }]
     const onThumbnailWheelTurnPage = vi.fn()
@@ -919,6 +971,17 @@ describe('ImageMainSection RS execution', () => {
       expect(onStartImageConvertTask).toHaveBeenCalledWith({
         node_ids: [],
         scale_factor: 1,
+        adjust: {
+          mode: 'basic',
+          brightness: 0,
+          contrast: 0,
+          level_input_black: 0,
+          level_input_white: 255,
+          level_gamma: 1,
+          curve_shadow: 0,
+          curve_midtone: 0,
+          curve_highlight: 0,
+        },
         target_format: 'webp',
         quality: 80,
         concurrency: 4,
@@ -971,6 +1034,17 @@ describe('ImageMainSection RS execution', () => {
         node_ids: [],
         scale_factor: 1,
         longest_edge_px: 1600,
+        adjust: {
+          mode: 'basic',
+          brightness: 0,
+          contrast: 0,
+          level_input_black: 0,
+          level_input_white: 255,
+          level_gamma: 1,
+          curve_shadow: 0,
+          curve_midtone: 0,
+          curve_highlight: 0,
+        },
         target_format: 'webp',
         quality: 80,
         concurrency: 4,

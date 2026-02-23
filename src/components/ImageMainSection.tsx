@@ -55,10 +55,32 @@ function ImageMainSection({
   canThumbnailScaleUp = true,
   imageConvertScale = 1,
   imageConvertLongestEdgePx = null,
+  imageConvertAdjustProfile = {
+    mode: "basic",
+    brightness: 0,
+    contrast: 0,
+    level_input_black: 0,
+    level_input_white: 255,
+    level_gamma: 1,
+    curve_shadow: 0,
+    curve_midtone: 0,
+    curve_highlight: 0,
+  },
   imageConvertFormat = "webp",
   imageConvertQuality = 80,
   imageConvertPreviewMode = false,
   imageConvertPreviewScale = 1,
+  imageConvertPreviewAdjustProfile = {
+    mode: "basic",
+    brightness: 0,
+    contrast: 0,
+    level_input_black: 0,
+    level_input_white: 255,
+    level_gamma: 1,
+    curve_shadow: 0,
+    curve_midtone: 0,
+    curve_highlight: 0,
+  },
   imageConvertPreviewFormat = "webp",
   imageConvertPreviewQuality = 80,
   loading,
@@ -554,7 +576,8 @@ function ImageMainSection({
       onReplaceCheckedImages,
       onToggleImageChecked,
       onSelectImage,
-      focusOnFirstToggle: !adReviewResultsMode,
+      focusOnFirstToggle:
+        !adReviewResultsMode || adReviewTask?.status === "review",
     });
 
   const manageSummary =
@@ -827,15 +850,18 @@ function ImageMainSection({
     setImageConvertTaskStatus("pending");
     setImageConvertTaskProgress(0);
     setImageConvertTaskMessage(null);
-    const startResponse = (await onStartImageConvertTask({
-      node_ids: [],
-      scale_factor: imageConvertScale,
-      ...(imageConvertLongestEdgePx != null
-        ? { longest_edge_px: imageConvertLongestEdgePx }
-        : {}),
-      target_format: imageConvertFormat,
-      quality: imageConvertQuality,
-      concurrency: imageConvertConcurrency,
+                          const startResponse = (await onStartImageConvertTask({
+                            node_ids: [],
+                            scale_factor: imageConvertScale,
+                            ...(imageConvertLongestEdgePx != null
+                              ? { longest_edge_px: imageConvertLongestEdgePx }
+                              : {}),
+                            adjust: imageConvertPreviewMode
+                              ? imageConvertPreviewAdjustProfile
+                              : imageConvertAdjustProfile,
+                            target_format: imageConvertFormat,
+                            quality: imageConvertQuality,
+                            concurrency: imageConvertConcurrency,
     })) as unknown;
     const nextTaskId = resolveTaskIdFromStartResponse(startResponse);
     if (!nextTaskId) {
