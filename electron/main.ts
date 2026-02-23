@@ -58,7 +58,7 @@ function buildContentSecurityPolicy(isPackaged: boolean): string {
     `img-src 'self' data: blob: ${MEDIA_PROTOCOL_SCHEME}:`,
     `media-src 'self' data: blob: ${MEDIA_PROTOCOL_SCHEME}:`,
     "font-src 'self' data:",
-    "connect-src 'self' http: https: ws: wss:",
+    `connect-src 'self' http: https: ws: wss: ${MEDIA_PROTOCOL_SCHEME}:`,
     "worker-src 'self' blob:",
     "form-action 'self'",
   ].join("; ");
