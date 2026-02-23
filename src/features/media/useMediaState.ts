@@ -98,10 +98,12 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
   const goPlaylist = useCallback(
     (delta: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => {
       const fallbackSidebarQueueIds = videos.map((video) => video.id)
-      const queueIds =
-        videoQueueSource === 'playlist' && playlistIds.length > 0
+      const hasSidebarOverride = Array.isArray(sidebarQueueIds) && sidebarQueueIds.length > 0
+      const queueIds = hasSidebarOverride
+        ? sidebarQueueIds
+        : videoQueueSource === 'playlist' && playlistIds.length > 0
           ? playlistIds
-          : (sidebarQueueIds && sidebarQueueIds.length > 0 ? sidebarQueueIds : fallbackSidebarQueueIds)
+          : fallbackSidebarQueueIds
       if (queueIds.length === 0) {
         return
       }

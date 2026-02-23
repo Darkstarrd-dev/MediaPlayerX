@@ -104,7 +104,12 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
         }
       : params.goToFromSearchMode,
     onSelectNode: (nodeId: string) => {
-      if (params.mode === "image" && params.vectorResultsActive) {
+      if (
+        params.mode === "image" &&
+        params.vectorResultsActive &&
+        !params.manageMode &&
+        !params.metadataManageMode
+      ) {
         return;
       }
 
@@ -112,7 +117,9 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       params.updateSettings({ sidebarFocus: "sidebar" });
     },
     onSelectPackage: params.setSelectedPackageId,
-    onSelectVideo: params.selectVideoFromBrowser,
+    onSelectVideo: (videoId: string) => {
+      params.selectVideoFromBrowser(videoId, { queueSource: 'sidebar' });
+    },
     onSelectVideoAndPlay: (videoId: string) => {
       params.selectVideoFromBrowser(videoId, { play: true, queueSource: 'sidebar' });
     },

@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
@@ -13,6 +14,7 @@ import { MetadataRatingGroup } from "./MetadataRatingGroup";
 
 interface MetadataVideoEditorProps {
   metadataTab: "info" | "playlist";
+  videoQueueSource: "sidebar" | "playlist";
   focusedVideo: VideoItem | null;
   metadataPending: boolean;
   editable: boolean;
@@ -103,6 +105,7 @@ function normalizeSearchValue(value: string): string {
 
 export function MetadataVideoEditor({
   metadataTab,
+  videoQueueSource,
   focusedVideo,
   metadataPending,
   editable,
@@ -179,6 +182,7 @@ export function MetadataVideoEditor({
           hour12: false,
         })
       : "-";
+  const playlistItemButtonByIdRef = useRef(new Map<string, HTMLButtonElement>());
 
   const savedPlaylistEntries = useMemo(
     () =>
@@ -228,6 +232,17 @@ export function MetadataVideoEditor({
       return savedPlaylistEntries[0]?.[0] ?? "";
     });
   }, [savedPlaylistEntries, savedVideoPlaylists]);
+
+  useEffect(() => {
+    if (metadataTab !== "playlist" || videoQueueSource !== "playlist") {
+      return;
+    }
+    const activeButton = playlistItemButtonByIdRef.current.get(selectedVideoId);
+    if (!activeButton) {
+      return;
+    }
+    activeButton.focus({ preventScroll: true });
+  }, [metadataTab, selectedVideoId, videoQueueSource]);
 
   const resolvedWorkTitle = useMemo(
     () =>
@@ -736,6 +751,13 @@ export function MetadataVideoEditor({
               >
                 <button
                   type="button"
+                  ref={(element) => {
+                    if (element) {
+                      playlistItemButtonByIdRef.current.set(videoId, element);
+                      return;
+                    }
+                    playlistItemButtonByIdRef.current.delete(videoId);
+                  }}
                   onClick={() => onSelectVideo(videoId)}
                   onDoubleClick={() => onSelectVideoAndPlay(videoId)}
                 >

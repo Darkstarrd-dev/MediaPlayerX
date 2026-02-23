@@ -343,7 +343,7 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
-    if (!vectorResultsActive || mode !== "image" || !focusedRef) {
+    if (manageMode || !vectorResultsActive || mode !== "image" || !focusedRef) {
       return;
     }
 
@@ -357,6 +357,7 @@ export function useAppEffects({
     setSelectedSidebarNodeId(sidebarNodeId);
   }, [
     focusedRef,
+    manageMode,
     mode,
     selectedSidebarNodeId,
     setSelectedSidebarNodeId,
@@ -388,6 +389,7 @@ export function useAppEffects({
     const adReviewFocusActive =
       adReviewPanelOpen && Boolean(adReviewFocusTaskId);
     if (
+      manageMode ||
       mode !== "image" ||
       vectorResultsActive ||
       sidebarFocus === "sidebar" ||
@@ -408,6 +410,7 @@ export function useAppEffects({
     adReviewFocusTaskId,
     adReviewPanelOpen,
     imageSourceNodeIdMap,
+    manageMode,
     mode,
     selectedPackageId,
     selectedSidebarNodeId,
@@ -419,7 +422,7 @@ export function useAppEffects({
   useEffect(() => {
     const adReviewFocusActive =
       adReviewPanelOpen && Boolean(adReviewFocusTaskId);
-    if (mode !== "image" || adReviewFocusActive) {
+    if (manageMode || mode !== "image" || adReviewFocusActive) {
       return;
     }
 
@@ -460,6 +463,7 @@ export function useAppEffects({
     focusedRef,
     imageSourceNodeIdMap,
     mode,
+    manageMode,
     selectedPackageId,
     selectedSidebarNodeId,
     setSelectedSidebarNodeId,
@@ -709,11 +713,10 @@ export function useAppEffects({
 
   useEffect(() => {
     const canAutoplayImages =
-      mode === "image" ||
+      (mode === "image" && !fullscreenActive) ||
       (fullscreenActive &&
-        fullscreenDisplay === "dual" &&
-        !fullscreenVideoFocus &&
-        imageFocusActive);
+        (fullscreenDisplay === "image-only" ||
+          (fullscreenDisplay === "dual" && !fullscreenVideoFocus)));
     if (!canAutoplayImages || !autoPlayEnabled) {
       return;
     }
@@ -729,7 +732,6 @@ export function useAppEffects({
     fullscreenActive,
     fullscreenDisplay,
     fullscreenVideoFocus,
-    imageFocusActive,
     mode,
     moveImage,
   ]);

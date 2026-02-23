@@ -65,6 +65,8 @@ interface BuildFullscreenLayerPropsParams {
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
   goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
   playlistIds: string[]
+  videoQueueSource: 'sidebar' | 'playlist'
+  rootScopedVideoIds: string[]
   selectedVideoId: string
   videoById: Map<string, VideoItem>
   selectVideoFromBrowser: (videoId: string) => void
@@ -91,6 +93,9 @@ interface BuildFullscreenLayerPropsParams {
 }
 
 export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParams): FullscreenLayerProps {
+  const resolveSidebarQueueOverride = () =>
+    params.videoQueueSource === 'sidebar' ? params.rootScopedVideoIds : undefined
+
   return {
     mode: params.mode,
     fullscreenActive: params.fullscreenActive,
@@ -161,15 +166,15 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
     onCancelImageConvertPreview: params.onCancelImageConvertPreview,
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
-    onPrevVideo: () => params.goPlaylist(-1),
-    onNextVideo: () => params.goPlaylist(1),
+    onPrevVideo: () => params.goPlaylist(-1, resolveSidebarQueueOverride()),
+    onNextVideo: () => params.goPlaylist(1, resolveSidebarQueueOverride()),
     onVideoEnded: () => {
       if (params.videoLoopMode === 'single') {
         params.setVideoTime(0)
         params.setVideoPlaying(true)
         return
       }
-      params.goPlaylist(1, undefined, { preserveRate: true })
+      params.goPlaylist(1, resolveSidebarQueueOverride(), { preserveRate: true })
     },
     onToggleSubtitle: () => {
       params.setSubtitleVisible((value) => !value)

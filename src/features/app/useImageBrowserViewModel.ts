@@ -83,7 +83,7 @@ export function useImageBrowserViewModel({
   fullscreenVideoFocus,
 }: UseImageBrowserViewModelParams): UseImageBrowserViewModelResult {
   const canNavigateImageInCurrentContext =
-    mode === 'image' || (fullscreenActive && fullscreenDisplay === 'dual' && !fullscreenVideoFocus && imageFocusActive)
+    mode === 'image' || (fullscreenActive && (fullscreenDisplay === 'image-only' || (fullscreenDisplay === 'dual' && !fullscreenVideoFocus)))
 
   const activePackage = packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null
 

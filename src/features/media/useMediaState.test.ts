@@ -82,4 +82,25 @@ describe('useMediaState video speed behavior', () => {
     expect(result.current.selectedVideoId).toBe(videos[0].id)
     expect(result.current.videoRate).toBe(2)
   })
+
+  it('goPlaylist 在提供 sidebar 队列时优先使用该队列', () => {
+    const videos = [createVideo('video-a'), createVideo('video-b'), createVideo('video-c')]
+    const { result } = renderHook(() =>
+      useMediaState({
+        initialVideoId: videos[0].id,
+        initialPlaylistIds: [videos[0].id],
+        videos,
+      }),
+    )
+
+    act(() => {
+      result.current.selectVideoFromBrowser(videos[0].id, { queueSource: 'playlist' })
+    })
+
+    act(() => {
+      result.current.goPlaylist(1, [videos[0].id, videos[1].id])
+    })
+
+    expect(result.current.selectedVideoId).toBe(videos[1].id)
+  })
 })

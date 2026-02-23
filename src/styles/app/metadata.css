@@ -909,6 +909,17 @@
   text-overflow: ellipsis;
 }
 
+.playlist-item > button:first-child:focus {
+  outline: 2px solid color-mix(in srgb, var(--mpx-border-focus) 76%, transparent);
+  outline-offset: 1px;
+  border-color: var(--mpx-border-focus);
+}
+
+.playlist-item:has(> button:first-child:focus) {
+  border-color: var(--mpx-border-focus);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--mpx-border-focus) 42%, transparent);
+}
+
 .playlist-item-remove {
   width: var(--mpx-control-height);
   min-width: var(--mpx-control-height);

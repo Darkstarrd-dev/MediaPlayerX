@@ -176,7 +176,8 @@ export interface UseAppWorkspacePropsParams {
   focusedVideoCoverImageSrc: string | null
   focusedVideoEffective: VideoItem | null
   setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number, sidebarQueueIds?: string[]) => void
+  goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
+  videoQueueSource: 'sidebar' | 'playlist'
   setVideoTime: Dispatch<SetStateAction<number>>
   setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
   setVideoMuted: Dispatch<SetStateAction<boolean>>

@@ -145,6 +145,7 @@ function createBaseProps(
     canOpenMusicBooklet: false,
     metadataTab: "info",
     playlistIds: [],
+    videoQueueSource: "sidebar",
     savedVideoPlaylists: {},
     selectedVideoId: "",
     dragVideoId: null,
@@ -415,5 +416,49 @@ describe("MetadataPanel video playlist controls", () => {
 
     expect(screen.getByLabelText("已保存播放列表")).toBeDisabled();
     expect(screen.getByLabelText("删除播放列表")).toBeDisabled();
+  });
+
+  it("播放列表来源时，当前播放项会自动获得焦点并随选中项切换", () => {
+    const videoA = createVideo("video-a");
+    const videoB = createVideo("video-b");
+    const { rerender } = render(
+      <MetadataPanel
+        {...createBaseProps({
+          mode: "video",
+          metadataTab: "playlist",
+          videoQueueSource: "playlist",
+          focusedVideo: videoA,
+          playlistIds: [videoA.id, videoB.id],
+          selectedVideoId: videoA.id,
+          videoById: new Map([
+            [videoA.id, videoA],
+            [videoB.id, videoB],
+          ]),
+        })}
+      />,
+    );
+
+    const firstButton = screen.getByRole("button", { name: videoA.fileName });
+    expect(document.activeElement).toBe(firstButton);
+
+    rerender(
+      <MetadataPanel
+        {...createBaseProps({
+          mode: "video",
+          metadataTab: "playlist",
+          videoQueueSource: "playlist",
+          focusedVideo: videoB,
+          playlistIds: [videoA.id, videoB.id],
+          selectedVideoId: videoB.id,
+          videoById: new Map([
+            [videoA.id, videoA],
+            [videoB.id, videoB],
+          ]),
+        })}
+      />,
+    );
+
+    const secondButton = screen.getByRole("button", { name: videoB.fileName });
+    expect(document.activeElement).toBe(secondButton);
   });
 });

@@ -99,6 +99,7 @@ interface BuildMetadataPanelPropsParams {
   canOpenMusicBooklet: boolean;
   metadataTab: MetadataPanelProps["metadataTab"];
   playlistIds: string[];
+  videoQueueSource: MetadataPanelProps["videoQueueSource"];
   savedVideoPlaylists: AppSettings["videoSavedPlaylists"];
   selectedVideoId: string;
   dragVideoId: string | null;
@@ -223,6 +224,7 @@ export function buildMetadataPanelProps(
     canOpenMusicBooklet: params.canOpenMusicBooklet,
     metadataTab: params.metadataTab,
     playlistIds: params.playlistIds,
+    videoQueueSource: params.videoQueueSource,
     savedVideoPlaylists: params.savedVideoPlaylists,
     selectedVideoId: params.selectedVideoId,
     dragVideoId: params.dragVideoId,

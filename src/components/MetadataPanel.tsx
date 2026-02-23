@@ -116,6 +116,7 @@ export interface MetadataPanelProps {
   canOpenMusicBooklet: boolean;
   metadataTab: "info" | "playlist";
   playlistIds: string[];
+  videoQueueSource: "sidebar" | "playlist";
   savedVideoPlaylists: Record<string, string[]>;
   selectedVideoId: string;
   dragVideoId: string | null;
@@ -258,6 +259,7 @@ function MetadataPanel({
   canOpenMusicBooklet,
   metadataTab,
   playlistIds,
+  videoQueueSource,
   savedVideoPlaylists,
   selectedVideoId,
   dragVideoId,
@@ -959,6 +961,7 @@ function MetadataPanel({
           <div data-slot="fg-meta-main-video-editor">
             <MetadataVideoEditor
               metadataTab={metadataTab}
+              videoQueueSource={videoQueueSource}
               focusedVideo={focusedVideo}
               metadataPending={metadataPending}
               editable={editable}

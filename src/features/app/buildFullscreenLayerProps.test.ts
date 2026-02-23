@@ -45,6 +45,8 @@ function createParams() {
     setVideoPlaying: vi.fn(),
     goPlaylist: vi.fn(),
     playlistIds: [],
+    videoQueueSource: 'sidebar' as const,
+    rootScopedVideoIds: ['video-a', 'video-b'],
     selectedVideoId: '',
     videoById: new Map(),
     selectVideoFromBrowser: vi.fn(),
@@ -114,8 +116,35 @@ describe('buildFullscreenLayerProps', () => {
 
     props.onVideoEnded()
 
-    expect(params.goPlaylist).toHaveBeenCalledWith(1, undefined, { preserveRate: true })
+    expect(params.goPlaylist).toHaveBeenCalledWith(1, params.rootScopedVideoIds, { preserveRate: true })
     expect(params.setVideoTime).not.toHaveBeenCalled()
     expect(params.setVideoPlaying).not.toHaveBeenCalled()
+  })
+
+  it('全屏上/下个视频按钮使用作用域视频队列', () => {
+    const params = createParams()
+    const props = buildFullscreenLayerProps(params)
+
+    props.onPrevVideo()
+    props.onNextVideo()
+
+    expect(params.goPlaylist).toHaveBeenNthCalledWith(1, -1, params.rootScopedVideoIds)
+    expect(params.goPlaylist).toHaveBeenNthCalledWith(2, 1, params.rootScopedVideoIds)
+  })
+
+  it('播放来源是播放列表时，全屏上/下个视频与ended不覆盖为sidebar队列', () => {
+    const params = {
+      ...createParams(),
+      videoQueueSource: 'playlist' as const,
+    }
+    const props = buildFullscreenLayerProps(params)
+
+    props.onPrevVideo()
+    props.onNextVideo()
+    props.onVideoEnded()
+
+    expect(params.goPlaylist).toHaveBeenNthCalledWith(1, -1, undefined)
+    expect(params.goPlaylist).toHaveBeenNthCalledWith(2, 1, undefined)
+    expect(params.goPlaylist).toHaveBeenNthCalledWith(3, 1, undefined, { preserveRate: true })
   })
 })

@@ -144,6 +144,8 @@ interface UseAppTopLayerStateParams {
   setVideoPlaying: Dispatch<SetStateAction<boolean>>;
   goPlaylist: (step: number) => void;
   playlistIds: string[];
+  videoQueueSource: "sidebar" | "playlist";
+  rootScopedVideoIds: string[];
   selectedVideoId: string;
   videoById: Map<string, VideoItem>;
   selectVideoFromBrowser: (videoId: string) => void;
@@ -277,6 +279,8 @@ export function useAppTopLayerState({
   setVideoPlaying,
   goPlaylist,
   playlistIds,
+  videoQueueSource,
+  rootScopedVideoIds,
   selectedVideoId,
   videoById,
   selectVideoFromBrowser,
@@ -524,6 +528,8 @@ export function useAppTopLayerState({
     setVideoPlaying,
     goPlaylist,
     playlistIds,
+    videoQueueSource,
+    rootScopedVideoIds,
     selectedVideoId,
     videoById,
     selectVideoFromBrowser,

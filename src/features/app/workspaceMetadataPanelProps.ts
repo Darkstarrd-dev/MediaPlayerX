@@ -77,6 +77,7 @@ interface BuildWorkspaceMetadataPanelPropsParams {
   jumpMusicToBooklet: () => void;
   setPlaylistIds: any;
   setDragVideoId: any;
+  videoQueueSource: "sidebar" | "playlist";
 }
 
 export function buildWorkspaceMetadataPanelProps({
@@ -146,6 +147,7 @@ export function buildWorkspaceMetadataPanelProps({
   jumpMusicToBooklet,
   setPlaylistIds,
   setDragVideoId,
+  videoQueueSource,
 }: BuildWorkspaceMetadataPanelPropsParams) {
   const applyMetadataFeatureSearch = (patch: {
     workTitle?: string;
@@ -294,6 +296,7 @@ export function buildWorkspaceMetadataPanelProps({
     canOpenMusicBooklet: Boolean(openMusicBookletSourceId),
     metadataTab,
     playlistIds,
+    videoQueueSource,
     savedVideoPlaylists: appSettings.videoSavedPlaylists,
     selectedVideoId,
     dragVideoId,

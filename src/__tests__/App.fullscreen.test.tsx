@@ -467,6 +467,58 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     expect(autoplayButton).not.toBeDisabled();
   });
 
+  it("从video模式切到image-only时，autoplay可启用并自动翻页", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
+    });
+    expect(document.querySelector(".fullscreen-image")).not.toBeNull();
+    expect(document.querySelector(".fullscreen-video")).toBeNull();
+
+    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
+    expect(fullscreenLayer).not.toBeNull();
+    fireEvent.mouseMove(fullscreenLayer as Element, {
+      clientY: window.innerHeight - 4,
+    });
+    await flushUiUpdates();
+
+    const autoplayButton = screen.getByRole("button", { name: /自动播放|autoplay/i });
+    expect(autoplayButton).not.toBeDisabled();
+
+    const readImageSrc = () =>
+      (document.querySelector(".fullscreen-media-image-element") as HTMLImageElement | null)
+        ?.getAttribute("src") ?? null;
+
+    const beforeSrc = readImageSrc();
+    expect(beforeSrc).not.toBeNull();
+
+    await click(autoplayButton);
+    expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
+
+    await waitFor(
+      () => {
+        const afterSrc = readImageSrc();
+        expect(afterSrc).not.toBeNull();
+        expect(afterSrc).not.toBe(beforeSrc);
+      },
+      { timeout: 3600 },
+    );
+  });
+
   it("从video模式进入dual后，image pane焦点下可用滚轮翻页", async () => {
     render(<App />);
 
@@ -496,6 +548,75 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       const afterSrc = readImageSrc();
       expect(afterSrc).not.toBeNull();
       expect(afterSrc).not.toBe(beforeSrc);
+    });
+  });
+
+  it("video模式全屏下，Ctrl+上下可切换播放对象（video-only 与 dual）", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const readVideoSrc = () =>
+      (document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null)
+        ?.getAttribute("src") ?? null;
+
+    const firstSrc = readVideoSrc();
+    expect(firstSrc).not.toBeNull();
+
+    await keyDown(window, {
+      key: "ArrowDown",
+      code: "ArrowDown",
+      ctrlKey: true,
+    });
+    await waitFor(() => {
+      const secondSrc = readVideoSrc();
+      expect(secondSrc).not.toBeNull();
+      expect(secondSrc).not.toBe(firstSrc);
+    });
+
+    await keyDown(window, { key: "d", code: "KeyD" });
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const beforeDualNextSrc = readVideoSrc();
+    expect(beforeDualNextSrc).not.toBeNull();
+
+    await keyDown(window, {
+      key: "ArrowDown",
+      code: "ArrowDown",
+      ctrlKey: true,
+    });
+    await waitFor(() => {
+      const afterDualNextSrc = readVideoSrc();
+      expect(afterDualNextSrc).not.toBeNull();
+      expect(afterDualNextSrc).not.toBe(beforeDualNextSrc);
+    });
+  });
+
+  it("video模式全屏列表循环下，播放结束会自动切到下一个对象", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+
+    const readVideoSrc = () =>
+      (document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null)
+        ?.getAttribute("src") ?? null;
+
+    const beforeEndedSrc = readVideoSrc();
+    expect(beforeEndedSrc).not.toBeNull();
+
+    const video = document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null;
+    expect(video).not.toBeNull();
+    fireEvent.ended(video as HTMLVideoElement);
+    await flushUiUpdates();
+
+    await waitFor(() => {
+      const afterEndedSrc = readVideoSrc();
+      expect(afterEndedSrc).not.toBeNull();
+      expect(afterEndedSrc).not.toBe(beforeEndedSrc);
     });
   });
 

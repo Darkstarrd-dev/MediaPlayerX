@@ -405,7 +405,7 @@ export function useAppInteractionLayer({
     if (
       fullscreenActive &&
       mode === "video" &&
-      fullscreenDisplay === "dual" &&
+      fullscreenDisplay !== "video-only" &&
       (!focusedImage || !imageFocusActive)
     ) {
       ensureImageFocusFromSidebar({

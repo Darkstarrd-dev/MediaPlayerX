@@ -183,6 +183,7 @@ export function useAppWorkspaceProps({
   focusedVideoEffective,
   setVideoPlaying,
   goPlaylist,
+  videoQueueSource,
   setVideoTime,
   setVideoDurationById,
   setVideoMuted,
@@ -1105,7 +1106,12 @@ export function useAppWorkspaceProps({
     canJumpToMusic: Boolean(jumpTargetAudioFromVideo),
     onJumpToManga: jumpToManga,
     onJumpToMusic: jumpVideoToMusic,
-    goPlaylist: (step) => goPlaylist(step, sidebarVideoQueueIds),
+    goPlaylist: (step, queueOverride, options) => {
+      const effectiveQueueOverride =
+        queueOverride ??
+        (videoQueueSource === "sidebar" ? sidebarVideoQueueIds : undefined);
+      goPlaylist(step, effectiveQueueOverride, options);
+    },
     setVideoTime,
     setVideoDurationById,
     setVideoMuted,
@@ -1256,6 +1262,7 @@ export function useAppWorkspaceProps({
     jumpMusicToBooklet,
     setPlaylistIds,
     setDragVideoId,
+    videoQueueSource,
   });
 
   const mainFooter = buildMainFooter({

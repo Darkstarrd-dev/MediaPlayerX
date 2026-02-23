@@ -381,7 +381,12 @@ export function useAppInteractionEffects({
     },
     setVideoPlaying,
     goPlaylist: (step) => {
-      goPlaylist(step, Array.from(rootScopedVideoIds));
+      const sidebarQueueIds = Array.from(rootScopedVideoIds);
+      if (videoQueueSource === "sidebar") {
+        goPlaylist(step, sidebarQueueIds);
+        return;
+      }
+      goPlaylist(step);
     },
     seekVideoBy: (deltaSeconds) => {
       setVideoTime((value) => {
