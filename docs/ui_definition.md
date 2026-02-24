@@ -28,35 +28,36 @@
 
 | 稳定路径 | 当前实现锚点 | 唯一标识（拟定） | 出现条件 | 说明 | 其他 |
 |---|---|---|---|---|---|
-| `fg.header.logo` | `.logo-wrap > .logo-btn` | `data-slot="fg-header-logo"` | always | Logo 区块 | 导入菜单触发源 |
+| `fg.header.logo` | `.logo-wrap > .logo-btn` | `data-slot="fg-header-logo"` | always | 独立 Logo 组 | 导入菜单 hover 触发；点击打开任务面板 |
 | `fg.header.logo.importMenu.panel` | `.import-menu` | `data-slot="fg-header-logo-import-menu-panel"` | `importMenuOpen` | Logo 导入菜单 | 锚点在 logo 下拉 |
-| `fg.header.g1` | `.header-group-primary` | `data-slot="fg-header-g1"` | always | 第 1 组 | task/palette/settings |
-| `fg.header.g1.task.button` | `.task-status-btn` | `data-slot="fg-header-g1-task-button"` | always | 任务状态按钮 | 打开 `fg.sysinfo` 主入口 |
-| `fg.header.g1.task.state.idle` | `.task-status-btn.is-idle` | `data-slot="fg-header-g1-task-state-idle"` | `taskStatusBusy=false` | 空闲态 | 使用 idle token |
-| `fg.header.g1.task.state.busy` | `.task-status-btn.is-busy` | `data-slot="fg-header-g1-task-state-busy"` | `importBusy || adReviewRunning || adReviewDeleting` | 忙碌态 | loading/reviewing/deleting 统一 busy |
-| `fg.header.g1.task.state.open` | `.task-status-btn.is-open` | `data-slot="fg-header-g1-task-state-open"` | `importTaskPanelOpen` | 面板展开态 | 焦点环 |
+| `fg.header.logo.state.idle` | `.logo-btn.is-task-idle` | `data-slot-state="fg-header-logo-state-idle"` | `taskStatusBusy=false` | Logo 空闲态 | 文案 `MediaPlayerX` |
+| `fg.header.logo.state.busy` | `.logo-btn.is-task-busy` | `data-slot-state="fg-header-logo-state-busy"` | `importBusy || adReviewRunning || adReviewDeleting` | Logo 忙碌态 | 文案 `Processing...` |
+| `fg.header.logo.state.open` | `.logo-btn.is-task-open` | `data-slot-state="fg-header-logo-state-open"` | `importTaskPanelOpen` | Logo 面板展开态 | 焦点环 |
+| `fg.header.g1` | `.header-group-primary` | `data-slot="fg-header-g1"` | always | 第 1 组 | panel toggles + palette + settings（紧随 logo） |
+| `fg.header.g1.toggle.sidebar` | `.panel-toggle-btn` (L) | `data-slot="fg-header-g1-toggle-sidebar"` | `showPanelToggleControls` | 侧边栏开关按钮 | L 按钮 |
+| `fg.header.g1.toggle.metadata` | `.panel-toggle-btn` (R) | `data-slot="fg-header-g1-toggle-metadata"` | `showPanelToggleControls` | 元数据面板开关按钮 | R 按钮 |
 | `fg.header.g1.task.importTask.panel` | `.import-task-panel` | `data-slot="fg-header-g1-task-import-task-panel"` | `importTaskPanelOpen` | 导入任务面板 | 渲染在 `fg.sysinfo` 容器 |
 | `fg.header.g1.task.importTask.error.panel` | `.import-task-panel > p`（错误行） | `data-slot="fg-header-g1-task-import-task-error-panel"` | `taskError != null` | 任务面板错误区 | clear 按钮 |
-| `fg.header.g1.palette` | `.header-settings-btn.header-icon-only-btn` | `data-slot="fg-header-g1-palette"` | always | 昼夜切换按钮 | 无 popover |
-| `fg.header.g1.settings` | `.header-settings-btn` | `data-slot="fg-header-g1-settings"` | always | 设置按钮 | 触发设置面板 |
+| `fg.header.g1.palette` | `.window-control-btn` (palette) | `data-slot="fg-header-g1-palette"` | always | 昼夜切换按钮 | 无 popover |
+| `fg.header.g1.settings` | `.window-control-btn` (settings) | `data-slot="fg-header-g1-settings"` | always | 设置按钮 | 触发设置面板 |
 | `fg.header.g1.settings.root.panel` | `.settings-mask > .settings-panel` | `data-slot="fg-header-g1-settings-root-panel"` | `settingsOpen` | 设置面板 | 全屏遮罩+居中主面板 |
 | `fg.header.g1.settings.shortcutEdit.panel` | `.settings-floating-mask`（快捷键编辑） | `data-slot="fg-header-g1-settings-shortcut-edit-panel"` | `bindingTarget != null` | 设置子面板（编辑） | 浮层叠加在设置面板上 |
 | `fg.header.g1.settings.shortcutCapture.panel` | `.settings-floating-mask`（快捷键捕获） | `data-slot="fg-header-g1-settings-shortcut-capture-panel"` | `capturingTarget != null` | 设置子面板（捕获） | 浮层叠加 |
-| `fg.header.g2` | `.header-group-modes` | `data-slot="fg-header-g2"` | always | 第 2 组 | 模式切换 |
+| `fg.header.g2` | `.header-group-modes` | `data-slot="fg-header-g2"` | always | 第 2 组 | 模式切换（header 中心线居中） |
 | `fg.header.g2.mode.image` | `.mode-switch button` (image) | `data-slot="fg-header-g2-mode-image"` | always | Image 模式按钮 | active 样式切换 |
 | `fg.header.g2.mode.video` | `.mode-switch button` (video) | `data-slot="fg-header-g2-mode-video"` | always | Video 模式按钮 | active 样式切换 |
 | `fg.header.g2.mode.music` | `.mode-switch button` (music) | `data-slot="fg-header-g2-mode-music"` | always | Music 模式按钮 | active 样式切换 |
 | `fg.header.g2.musicQuick` | `.music-quick-actions` | `data-slot="fg-header-g2-music-quick"` | `mode != music && showMusicQuickActions` | 音乐快捷控件 | play/stop |
-| `fg.header.g4` | `.header-group-window` | `data-slot="fg-header-g4"` | always | 第 4 组 | 窗口控制 |
-| `fg.header.g4.themeParameter` | `.window-control-btn--theme-parameter` | `data-slot="fg-header-g4-theme-parameter"` | `themeParameterButtonVisible` | 主题参数按钮 | 打开 ThemeParameter 面板 |
-| `fg.header.g4.popoverDebugPin` | `.window-control-btn`（O/C） | `data-slot="fg-header-g4-popover-debug-pin"` | always | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
-| `fg.header.g4.themeParameter.root.panel` | `.settings-mask > .settings-panel.theme-parameter-panel` | `data-slot="fg-header-g4-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板 | 全屏遮罩+居中主面板 |
-| `fg.header.g4.help` | `.window-control-btn` (help) | `data-slot="fg-header-g4-help"` | always | 帮助按钮 | 打开 Help 面板 |
-| `fg.header.g4.help.root.panel` | `.settings-mask > .settings-panel`（HelpPanel） | `data-slot="fg-header-g4-help-root-panel"` | `helpOpen` | Help 面板 | 全屏遮罩+居中主面板 |
-| `fg.header.g4.help.root.buttonOverlay.ovl` | `.help-overlay` | `data-slot="fg-header-g4-help-root-button-overlay-ovl"` | `helpOverlayActive` | 按钮说明覆盖层 | 打开 Help 后由面板内动作触发 |
-| `fg.header.g4.window.min` | `window-control-btn` (minimize) | `data-slot="fg-header-g4-window-min"` | desktop | 最小化 | 无面板 |
-| `fg.header.g4.window.maxrestore` | `window-control-btn` (maximize/restore) | `data-slot="fg-header-g4-window-maxrestore"` | desktop | 最大化/还原 | 无面板 |
-| `fg.header.g4.window.close` | `.window-control-btn--close` | `data-slot="fg-header-g4-window-close"` | desktop | 关闭窗口 | 无面板 |
+| `fg.header.g3` | `.header-group-window` | `data-slot="fg-header-g3"` | always | 第 3 组 | 主题/调试/帮助/窗口控制 |
+| `fg.header.g3.themeParameter` | `.window-control-btn--theme-parameter` | `data-slot="fg-header-g3-theme-parameter"` | `themeParameterButtonVisible` | 主题参数按钮 | 打开 ThemeParameter 面板 |
+| `fg.header.g3.popoverDebugPin` | `.window-control-btn`（O/C） | `data-slot="fg-header-g3-popover-debug-pin"` | always | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
+| `fg.header.g3.themeParameter.root.panel` | `.settings-mask > .settings-panel.theme-parameter-panel` | `data-slot="fg-header-g3-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板 | 全屏遮罩+居中主面板 |
+| `fg.header.g3.help` | `.window-control-btn` (help) | `data-slot="fg-header-g3-help"` | always | 帮助按钮 | 打开 Help 面板 |
+| `fg.header.g3.help.root.panel` | `.settings-mask > .settings-panel`（HelpPanel） | `data-slot="fg-header-g3-help-root-panel"` | `helpOpen` | Help 面板 | 全屏遮罩+居中主面板 |
+| `fg.header.g3.help.root.buttonOverlay.ovl` | `.help-overlay` | `data-slot="fg-header-g3-help-root-button-overlay-ovl"` | `helpOverlayActive` | 按钮说明覆盖层 | 打开 Help 后由面板内动作触发 |
+| `fg.header.g3.window.min` | `window-control-btn` (minimize) | `data-slot="fg-header-g3-window-min"` | desktop | 最小化 | 无面板 |
+| `fg.header.g3.window.maxrestore` | `window-control-btn` (maximize/restore) | `data-slot="fg-header-g3-window-maxrestore"` | desktop | 最大化/还原 | 无面板 |
+| `fg.header.g3.window.close` | `.window-control-btn--close` | `data-slot="fg-header-g3-window-close"` | desktop | 关闭窗口 | 无面板 |
 
 ## 3. Foreground / SysInfo（不常驻）
 

@@ -331,10 +331,10 @@ function AppHeader(props: AppHeaderProps) {
   const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({ key: 'headerPopoverDebugPinned', t })
   const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
   const taskStateSlot = importTaskPanelOpen
-    ? 'fg-header-g1-task-state-open'
+    ? 'fg-header-logo-state-open'
     : taskStatusBusy
-      ? 'fg-header-g1-task-state-busy'
-      : 'fg-header-g1-task-state-idle'
+      ? 'fg-header-logo-state-busy'
+      : 'fg-header-logo-state-idle'
   const dualCollapsed = sidebarCollapsed && metadataCollapsed
 
   return (
@@ -353,7 +353,7 @@ function AppHeader(props: AppHeaderProps) {
       }}
     >
       <div className="header-left">
-        <div className="header-group header-group-primary" data-slot="fg-header-g1">
+        <div className="header-logo-group">
           <div
             className="logo-wrap"
             onMouseEnter={() => {
@@ -363,8 +363,16 @@ function AppHeader(props: AppHeaderProps) {
             }}
             onMouseLeave={onCloseImportMenu}
           >
-            <button className="logo-btn" data-slot="fg-header-logo" type="button">
-              MediaPlayerX
+            <button
+              aria-label={taskStatusLabel}
+              className={`logo-btn ${taskStatusBusy ? 'is-task-busy' : 'is-task-idle'} ${importTaskPanelOpen ? 'is-task-open' : ''}`}
+              data-slot="fg-header-logo"
+              data-slot-state={taskStateSlot}
+              title={taskStatusLabel}
+              type="button"
+              onClick={onToggleImportTaskPanel}
+            >
+              {taskStatusBusy ? 'Processing...' : 'MediaPlayerX'}
             </button>
             {importMenuOpen ? (
               <div className="import-menu" data-slot="fg-header-logo-import-menu-panel">
@@ -389,79 +397,57 @@ function AppHeader(props: AppHeaderProps) {
               </div>
             ) : null}
           </div>
+        </div>
+
+        <div className="header-group header-group-primary" data-slot="fg-header-g1">
+          {showPanelToggleControls ? (
+            <div className="panel-toggle-wrap" data-slot="fg-header-g1-panel-toggles">
+              <button
+                className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? 'is-collapsed' : ''}`}
+                data-slot="fg-header-g1-toggle-sidebar"
+                type="button"
+                aria-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                title={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                onClick={() => {
+                  onToggleSidebarPanel?.()
+                }}
+              >
+                <span className="window-control-btn-text">L</span>
+              </button>
+              <button
+                className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? 'is-collapsed' : ''}`}
+                data-slot="fg-header-g1-toggle-metadata"
+                type="button"
+                aria-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                title={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                onClick={() => {
+                  onToggleMetadataPanel?.()
+                }}
+              >
+                <span className="window-control-btn-text">R</span>
+              </button>
+            </div>
+          ) : null}
 
           <button
-            aria-label={taskStatusLabel}
-            className={`task-status-btn ${taskStatusBusy ? 'is-busy' : 'is-idle'} ${importTaskPanelOpen ? 'is-open' : ''}`}
-            data-slot="fg-header-g1-task-button"
-            data-slot-state={taskStateSlot}
-            title={taskStatusLabel}
+            aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+            aria-pressed={paletteMode === 'night'}
+            className="window-control-btn"
+            data-slot="fg-header-g1-palette"
+            title={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
             type="button"
-            onClick={onToggleImportTaskPanel}
+            onClick={onTogglePaletteMode}
           >
-              <span className="header-btn-content">
-              <span className="header-btn-icon" data-slot={taskStateSlot}>
-                <HeaderActionIcon name={taskStatusBusy ? 'statusBusy' : 'statusIdle'} />
-              </span>
-              <span className="header-btn-label">{taskStatusLabel}</span>
-            </span>
-          </button>
-          <span hidden={!(!taskStatusBusy && !importTaskPanelOpen)} data-slot="fg-header-g1-task-state-idle" />
-          <span hidden={!(taskStatusBusy && !importTaskPanelOpen)} data-slot="fg-header-g1-task-state-busy" />
-          <span hidden={!importTaskPanelOpen} data-slot="fg-header-g1-task-state-open" />
-
-            <button
-              aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
-              aria-pressed={paletteMode === 'night'}
-              className="header-settings-btn header-icon-only-btn"
-              data-slot="fg-header-g1-palette"
-              title={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
-              type="button"
-              onClick={onTogglePaletteMode}
-            >
             <HeaderActionIcon name={paletteMode === 'day' ? 'day' : 'night'} />
           </button>
 
-          <button {...settingsButtonA11y} className="header-settings-btn" data-slot="fg-header-g1-settings" type="button" onClick={onOpenSettings}>
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="settings" />
-              </span>
-              <span className="header-btn-label">{t('ui.header.settings')}</span>
-            </span>
+          <button {...settingsButtonA11y} className="window-control-btn" data-slot="fg-header-g1-settings" type="button" onClick={onOpenSettings}>
+            <HeaderActionIcon name="settings" />
           </button>
         </div>
 
         <div className="header-group header-group-modes" data-slot="fg-header-g2">
-          <div className={`mode-switch-wrap ${showPanelToggleControls ? 'has-panel-toggles' : ''}`}>
-            {showPanelToggleControls ? (
-              <div className="panel-toggle-wrap" data-slot="fg-header-g2-panel-toggles">
-                <button
-                  className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? 'is-collapsed' : ''}`}
-                  data-slot="fg-header-g2-toggle-sidebar"
-                  type="button"
-                  aria-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
-                  title={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
-                  onClick={() => {
-                    onToggleSidebarPanel?.()
-                  }}
-                >
-                  <span className="window-control-btn-text">L</span>
-                </button>
-                <button
-                  className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? 'is-collapsed' : ''}`}
-                  data-slot="fg-header-g2-toggle-metadata"
-                  type="button"
-                  aria-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
-                  title={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
-                  onClick={() => {
-                    onToggleMetadataPanel?.()
-                  }}
-                >
-                  <span className="window-control-btn-text">R</span>
-                </button>
-              </div>
-            ) : null}
+          <div className="mode-switch-wrap">
             <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
               <button
                 {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
@@ -535,9 +521,9 @@ function AppHeader(props: AppHeaderProps) {
       </div>
 
       <div className="header-right">
-        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g4" role="group">
+        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g3" role="group">
           {themeParameterButtonVisible ? (
-            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" data-slot="fg-header-g4-theme-parameter" type="button" onClick={onOpenThemeParameter}>
+            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" data-slot="fg-header-g3-theme-parameter" type="button" onClick={onOpenThemeParameter}>
               <span className="window-control-btn-text">T</span>
             </button>
           ) : null}
@@ -545,19 +531,19 @@ function AppHeader(props: AppHeaderProps) {
             {...popoverDebugPinnedButtonA11y}
             aria-pressed={popoverDebugPinned}
             className="window-control-btn window-control-btn--theme-parameter"
-            data-slot="fg-header-g4-popover-debug-pin"
+            data-slot="fg-header-g3-popover-debug-pin"
             type="button"
             onClick={onTogglePopoverDebugPinned}
           >
             <span className="window-control-btn-text">{popoverDebugPinned ? 'O' : 'C'}</span>
           </button>
-          <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g4-help" type="button" onClick={onOpenHelp}>
+          <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g3-help" type="button" onClick={onOpenHelp}>
             <HeaderActionIcon name="help" />
           </button>
           <button
             aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             className="window-control-btn"
-            data-slot="fg-header-g4-window-min"
+            data-slot="fg-header-g3-window-min"
             title={t(a11yRegistry.headerWindowMinimize.labelKey)}
             type="button"
             onClick={() => {
@@ -569,7 +555,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             aria-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             className="window-control-btn"
-            data-slot="fg-header-g4-window-maxrestore"
+            data-slot="fg-header-g3-window-maxrestore"
             title={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             type="button"
             onClick={() => {
@@ -581,7 +567,7 @@ function AppHeader(props: AppHeaderProps) {
           <button
             aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
             className="window-control-btn window-control-btn--close"
-            data-slot="fg-header-g4-window-close"
+            data-slot="fg-header-g3-window-close"
             title={t(a11yRegistry.headerWindowClose.labelKey)}
             type="button"
             onClick={() => {

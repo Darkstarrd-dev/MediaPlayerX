@@ -54,7 +54,7 @@ describe('AppHeader accessibility labels', () => {
     })
   })
 
-  it('keeps stable toolbar button labels in normal mode', () => {
+  it('keeps stable header button labels in normal mode', () => {
     act(() => {
       useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
     })
@@ -65,32 +65,26 @@ describe('AppHeader accessibility labels', () => {
       </I18nProvider>,
     )
 
-    const searchButton = container.querySelector('button[data-a11y-id="header.search"]')
-    const manageButton = container.querySelector('button[data-a11y-id="header.manage"]')
-    const metadataToggleButton = container.querySelector('button[data-a11y-id="header.metadataToggle"]')
     const helpButton = container.querySelector('button[data-a11y-id="header.help"]')
+    const settingsButton = container.querySelector('button[data-a11y-id="header.settings"]')
 
-    expect(searchButton).toBeInTheDocument()
-    expect(manageButton).toBeInTheDocument()
-    expect(metadataToggleButton).toBeInTheDocument()
+    expect(settingsButton).toBeInTheDocument()
     expect(helpButton?.getAttribute('title')).toBe('打开帮助')
-    expect(screen.getByRole('button', { name: '检索' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '文件管理' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '切换到元数据模式' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '切换到深色主题' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
   })
 
-  it('switches metadata mode toggle label when metadata mode is active', () => {
+  it('uses task label on logo button for accessibility', () => {
     act(() => {
       useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
     })
 
-    const { container } = render(
+    render(
       <I18nProvider browserLocale="en-US">
-        <AppHeader {...createProps({ metadataManageMode: true })} />
+        <AppHeader {...createProps({ taskStatusLabel: '处理中', taskStatusBusy: true })} />
       </I18nProvider>,
     )
 
-    expect(container.querySelector('button[data-a11y-id="header.metadataToggle"]')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '切换到图像模式' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '处理中' })).toBeInTheDocument()
   })
 })
