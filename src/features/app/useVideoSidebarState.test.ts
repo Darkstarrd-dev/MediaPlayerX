@@ -120,4 +120,51 @@ describe('useVideoSidebarState', () => {
     expect(root?.children.map((node) => node.label)).toEqual(['root.mp4', 'D:/Gallery/cool'])
     expect(root?.children[1]?.children.map((node) => node.label)).toEqual(['child.mp4'])
   })
+
+  it('会移除不含直属视频的过程路径节点', () => {
+    const videos = [
+      makeVideo({
+        id: 'video-a',
+        fileName: 'a.mp4',
+        workTitle: 'a',
+        treePath: ['Z:', 'Video', 'CEO NEET', 'a.mp4'],
+      }),
+      makeVideo({
+        id: 'video-b',
+        fileName: 'b.mp4',
+        workTitle: 'b',
+        treePath: ['Z:', 'Video', 'Rinhee', 'b.mp4'],
+      }),
+    ]
+
+    const { result } = renderHook(() => useVideoSidebarState({ videos, videoRootNodeId: null }))
+
+    expect(result.current.videoTreeForSidebar.map((node) => node.pathKey)).toEqual([
+      'Z:/Video/CEO NEET',
+      'Z:/Video/Rinhee',
+    ])
+  })
+
+  it('父节点存在直属视频时保留该父节点', () => {
+    const videos = [
+      makeVideo({
+        id: 'video-root',
+        fileName: 'root.mp4',
+        workTitle: 'root',
+        treePath: ['D:', 'mix', 'root.mp4'],
+      }),
+      makeVideo({
+        id: 'video-sub',
+        fileName: 'sub.mp4',
+        workTitle: 'sub',
+        treePath: ['D:', 'mix', 'sub', 'sub.mp4'],
+      }),
+    ]
+
+    const { result } = renderHook(() => useVideoSidebarState({ videos, videoRootNodeId: null }))
+
+    const root = result.current.videoTreeForSidebar[0]
+    expect(root?.pathKey).toBe('D:/mix')
+    expect(root?.children.map((node) => node.label)).toEqual(['root.mp4', 'D:/mix/sub'])
+  })
 })

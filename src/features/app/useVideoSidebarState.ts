@@ -47,6 +47,28 @@ function isVideoMediaNode(node: SidebarNode): boolean {
   return node.kind === 'video'
 }
 
+function pruneProceduralVideoPathNodes(nodes: SidebarNode[]): SidebarNode[] {
+  const next: SidebarNode[] = []
+
+  for (const node of nodes) {
+    const normalizedChildren = pruneProceduralVideoPathNodes(node.children)
+    const nextNode: SidebarNode = {
+      ...node,
+      children: normalizedChildren,
+    }
+
+    const hasDirectVideoChild = nextNode.children.some((child) => isVideoMediaNode(child))
+    if (isVideoPointerFolderNode(nextNode) && !hasDirectVideoChild) {
+      next.push(...nextNode.children)
+      continue
+    }
+
+    next.push(nextNode)
+  }
+
+  return next
+}
+
 export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSidebarStateParams): UseVideoSidebarStateResult {
   const videoTreeRaw = useMemo(
     () =>
@@ -81,11 +103,14 @@ export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSideba
       })),
       'video',
     )
+
+    const compactedTree = compactSidebarTree(rawTree, {
+      shouldCompressFolderNode: isCompressibleVideoFolderNode,
+      includeRoot: true,
+    })
+
     return normalizePointerSidebarTree(
-      compactSidebarTree(rawTree, {
-        shouldCompressFolderNode: isCompressibleVideoFolderNode,
-        includeRoot: true,
-      }),
+      pruneProceduralVideoPathNodes(compactedTree),
       {
         isPointerFolderNode: isVideoPointerFolderNode,
         isMediaNode: isVideoMediaNode,
