@@ -14,12 +14,38 @@ function makeRootNode(pathKey: string): SidebarNode {
   }
 }
 
+function makePackageNode(pathKey: string, sourceId: string): SidebarNode {
+  return {
+    id: `package:${pathKey}`,
+    label: pathKey.split('/').pop() ?? pathKey,
+    kind: 'package',
+    pathKey,
+    imageNodeType: 'package',
+    packageId: sourceId,
+    imageSourceId: sourceId,
+    directImageCount: 1,
+    children: [],
+  }
+}
+
 describe('useImageSidebarBaseState', () => {
   it('moves CD Booklet root to the end', () => {
-    const imageTreeRaw = [
-      makeRootNode('CD Booklet'),
-      makeRootNode('D:'),
-      makeRootNode('X:'),
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        ...makeRootNode('CD Booklet'),
+        imageNodeType: 'folder',
+        children: [makePackageNode('CD Booklet/pkg-cd', 'pkg-cd')],
+      },
+      {
+        ...makeRootNode('D:'),
+        imageNodeType: 'folder',
+        children: [makePackageNode('D:/pkg-d', 'pkg-d')],
+      },
+      {
+        ...makeRootNode('X:'),
+        imageNodeType: 'folder',
+        children: [makePackageNode('X:/pkg-x', 'pkg-x')],
+      },
     ]
 
     const { result } = renderHook(() =>
@@ -282,5 +308,206 @@ describe('useImageSidebarBaseState', () => {
       '2.zip',
       'D:/Gallery/cool/cooler',
     ])
+  })
+
+  it('设置指针根目录时不重复渲染根节点', () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: 'folder:Z:/#Sorted',
+        label: 'Z:/#Sorted',
+        kind: 'folder',
+        pathKey: 'Z:/#Sorted',
+        imageNodeType: 'folder',
+        directImageCount: 0,
+        children: [
+          {
+            id: 'folder:Z:/#Sorted/B',
+            label: 'B',
+            kind: 'folder',
+            pathKey: 'Z:/#Sorted/B',
+            imageNodeType: 'directory',
+            imageSourceId: 'dir-b',
+            directImageCount: 3,
+            children: [
+              {
+                id: 'package:Z:/#Sorted/B/1.zip',
+                label: '1.zip',
+                kind: 'package',
+                pathKey: 'Z:/#Sorted/B/1.zip',
+                imageNodeType: 'package',
+                packageId: 'pkg-b-1',
+                imageSourceId: 'pkg-b-1',
+                directImageCount: 1,
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 'folder:Z:/#Sorted/C',
+            label: 'C',
+            kind: 'folder',
+            pathKey: 'Z:/#Sorted/C',
+            imageNodeType: 'directory',
+            imageSourceId: 'dir-c',
+            directImageCount: 4,
+            children: [
+              {
+                id: 'package:Z:/#Sorted/C/1.zip',
+                label: '1.zip',
+                kind: 'package',
+                pathKey: 'Z:/#Sorted/C/1.zip',
+                imageNodeType: 'package',
+                packageId: 'pkg-c-1',
+                imageSourceId: 'pkg-c-1',
+                directImageCount: 1,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const imageRootNode = imageTreeRaw[0]
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode,
+      }),
+    )
+
+    expect(result.current.imageTreeForSidebarNormal.map((node) => node.pathKey)).toEqual([
+      'Z:/#Sorted/B',
+      'Z:/#Sorted/C',
+    ])
+  })
+
+  it('设置媒体根目录时保留根节点', () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: 'folder:Z:/#Sorted/MediaRoot',
+        label: 'MediaRoot',
+        kind: 'folder',
+        pathKey: 'Z:/#Sorted/MediaRoot',
+        imageNodeType: 'directory',
+        imageSourceId: 'dir-root',
+        directImageCount: 2,
+        children: [
+          {
+            id: 'package:Z:/#Sorted/MediaRoot/1.zip',
+            label: '1.zip',
+            kind: 'package',
+            pathKey: 'Z:/#Sorted/MediaRoot/1.zip',
+            imageNodeType: 'package',
+            packageId: 'pkg-root-1',
+            imageSourceId: 'pkg-root-1',
+            directImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+    ]
+
+    const imageRootNode = imageTreeRaw[0]
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode,
+      }),
+    )
+
+    expect(result.current.imageTreeForSidebarNormal.map((node) => node.pathKey)).toEqual([
+      'Z:/#Sorted/MediaRoot',
+    ])
+  })
+
+  it('过程性路径节点会被移除并提升有效节点', () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: 'folder:Z:/#Sorted',
+        label: 'Z:/#Sorted',
+        kind: 'folder',
+        pathKey: 'Z:/#Sorted',
+        imageNodeType: 'folder',
+        directImageCount: 0,
+        children: [
+          {
+            id: 'folder:Z:/#Sorted/Transit',
+            label: 'Transit',
+            kind: 'folder',
+            pathKey: 'Z:/#Sorted/Transit',
+            imageNodeType: 'folder',
+            directImageCount: 0,
+            children: [
+              {
+                id: 'folder:Z:/#Sorted/Transit/Media',
+                label: 'Media',
+                kind: 'folder',
+                pathKey: 'Z:/#Sorted/Transit/Media',
+                imageNodeType: 'folder',
+                directImageCount: 0,
+                children: [
+                  makePackageNode('Z:/#Sorted/Transit/Media/1.zip', 'pkg-1'),
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode: null,
+      }),
+    )
+
+    expect(result.current.imageTreeForSidebarNormal.map((node) => node.pathKey)).toEqual([
+      'Z:/#Sorted/Transit/Media',
+    ])
+  })
+
+  it('媒体目录节点不再向下展开并复用父级映射', () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: 'folder:Z:/Gallery',
+        label: 'Z:/Gallery',
+        kind: 'folder',
+        pathKey: 'Z:/Gallery',
+        imageNodeType: 'folder',
+        directImageCount: 0,
+        children: [
+          {
+            id: 'folder:Z:/Gallery/DirSet',
+            label: 'DirSet',
+            kind: 'folder',
+            pathKey: 'Z:/Gallery/DirSet',
+            imageNodeType: 'directory',
+            imageSourceId: 'dir-set',
+            directImageCount: 40,
+            children: [
+              makePackageNode('Z:/Gallery/DirSet/A/1.zip', 'pkg-a-1'),
+              makePackageNode('Z:/Gallery/DirSet/B/2.zip', 'pkg-b-2'),
+            ],
+          },
+        ],
+      },
+    ]
+
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode: null,
+      }),
+    )
+
+    const root = result.current.imageTreeForSidebarNormal[0]
+    const dirNode = root?.children[0]
+    expect(dirNode?.pathKey).toBe('Z:/Gallery/DirSet')
+    expect(dirNode?.children).toEqual([])
+    expect(result.current.normalImageSourceNodeIdMap.get('dir-set')).toBe('folder:Z:/Gallery/DirSet')
+    expect(result.current.normalImageSourceNodeIdMap.get('pkg-a-1')).toBe('folder:Z:/Gallery/DirSet')
+    expect(result.current.normalImageSourceNodeIdMap.get('pkg-b-2')).toBe('folder:Z:/Gallery/DirSet')
   })
 })

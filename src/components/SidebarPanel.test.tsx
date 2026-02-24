@@ -411,6 +411,148 @@ const IMAGE_TREE_POINTER_COLLAPSE_FIXTURE: SidebarNode[] = [
   },
 ];
 
+const IMAGE_TREE_DIRECTORY_WITH_COVER_CHILDREN_FIXTURE: SidebarNode[] = [
+  {
+    id: "folder:A",
+    label: "A",
+    kind: "folder",
+    pathKey: "A",
+    imageNodeType: "folder",
+    directImageCount: 0,
+    descendantNodeCount: 11,
+    descendantPackageCount: 7,
+    descendantImageCount: 14,
+    children: [
+      {
+        id: "folder:A/B",
+        label: "B",
+        kind: "folder",
+        pathKey: "A/B",
+        imageNodeType: "directory",
+        imageSourceId: "dir-b",
+        directImageCount: 3,
+        descendantNodeCount: 4,
+        descendantPackageCount: 3,
+        descendantImageCount: 6,
+        children: [
+          {
+            id: "package:A/B/1.zip",
+            label: "1.zip",
+            kind: "package",
+            packageId: "pkg-b-1",
+            imageSourceId: "pkg-b-1",
+            pathKey: "A/B/1.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "package:A/B/2.zip",
+            label: "2.zip",
+            kind: "package",
+            packageId: "pkg-b-2",
+            imageSourceId: "pkg-b-2",
+            pathKey: "A/B/2.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "package:A/B/3.zip",
+            label: "3.zip",
+            kind: "package",
+            packageId: "pkg-b-3",
+            imageSourceId: "pkg-b-3",
+            pathKey: "A/B/3.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+      {
+        id: "folder:A/C",
+        label: "C",
+        kind: "folder",
+        pathKey: "A/C",
+        imageNodeType: "directory",
+        imageSourceId: "dir-c",
+        directImageCount: 4,
+        descendantNodeCount: 5,
+        descendantPackageCount: 4,
+        descendantImageCount: 8,
+        children: [
+          {
+            id: "package:A/C/1.zip",
+            label: "1.zip",
+            kind: "package",
+            packageId: "pkg-c-1",
+            imageSourceId: "pkg-c-1",
+            pathKey: "A/C/1.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "package:A/C/2.zip",
+            label: "2.zip",
+            kind: "package",
+            packageId: "pkg-c-2",
+            imageSourceId: "pkg-c-2",
+            pathKey: "A/C/2.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "package:A/C/3.zip",
+            label: "3.zip",
+            kind: "package",
+            packageId: "pkg-c-3",
+            imageSourceId: "pkg-c-3",
+            pathKey: "A/C/3.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "package:A/C/4.zip",
+            label: "4.zip",
+            kind: "package",
+            packageId: "pkg-c-4",
+            imageSourceId: "pkg-c-4",
+            pathKey: "A/C/4.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 function renderMusicSidebar(
   overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
 ) {
@@ -830,6 +972,17 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(screen.getByRole("button", { name: "3.zip" })).toBeInTheDocument();
   });
 
+  it("含图目录会计入父级直属媒体并随折叠隐藏", () => {
+    renderImageSidebar(IMAGE_TREE_DIRECTORY_WITH_COVER_CHILDREN_FIXTURE);
+
+    expect(screen.getByLabelText("节点 2")).toBeInTheDocument();
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "A" }));
+
+    expect(screen.queryByRole("button", { name: "B" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "C" })).toBeNull();
+  });
+
   it("自身包含图片的目录节点双击不触发折叠", () => {
     renderImageSidebar(IMAGE_TREE_DIRECTORY_FIXTURE);
 
@@ -1087,6 +1240,7 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(screen.getByRole("button", { name: "X盘" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "图库A" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "图库B" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "CoverRoot" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
     expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
   });

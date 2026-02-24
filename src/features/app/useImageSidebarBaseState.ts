@@ -29,15 +29,7 @@ function isImagePointerFolderNode(node: SidebarNode): boolean {
 }
 
 function isImageMediaNode(node: SidebarNode): boolean {
-  if (node.kind === 'package') {
-    return true
-  }
-
-  if (node.kind !== 'folder') {
-    return false
-  }
-
-  return node.imageNodeType === 'directory' && Boolean(node.imageSourceId)
+  return node.kind === 'package' || node.imageNodeType === 'package' || node.imageNodeType === 'directory'
 }
 
 function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
@@ -73,6 +65,75 @@ interface UseImageSidebarBaseStateResult {
   normalImageSourceNodeIdMap: Map<string, string>
 }
 
+function resolveRootScopedImageNodes(imageRootNode: SidebarNode): SidebarNode[] {
+  if (isImagePointerFolderNode(imageRootNode)) {
+    return imageRootNode.children
+  }
+  return [imageRootNode]
+}
+
+function pruneProceduralImagePathNodes(nodes: SidebarNode[]): SidebarNode[] {
+  const next: SidebarNode[] = []
+
+  for (const node of nodes) {
+    const normalizedChildren = pruneProceduralImagePathNodes(node.children)
+    const nextNode: SidebarNode = {
+      ...node,
+      children: normalizedChildren,
+    }
+
+    const hasDirectMediaChild = nextNode.children.some((child) => isImageMediaNode(child))
+    if (isImagePointerFolderNode(nextNode) && !hasDirectMediaChild) {
+      next.push(...nextNode.children)
+      continue
+    }
+
+    next.push(nextNode)
+  }
+
+  return next
+}
+
+function collapseImageMediaNodeChildren(nodes: SidebarNode[]): SidebarNode[] {
+  return nodes.map((node) => {
+    const normalizedChildren = collapseImageMediaNodeChildren(node.children)
+    if (isImageMediaNode(node)) {
+      return {
+        ...node,
+        children: [],
+      }
+    }
+
+    return {
+      ...node,
+      children: normalizedChildren,
+    }
+  })
+}
+
+function buildImageSourceNodeIdMap(nodes: SidebarNode[]): Map<string, string> {
+  const map = new Map<string, string>()
+
+  const walk = (node: SidebarNode, mediaOwnerNodeId: string | null) => {
+    const nodeIsMedia = isImageMediaNode(node)
+    const ownerNodeId = mediaOwnerNodeId ?? (nodeIsMedia ? node.id : null)
+
+    if (node.imageSourceId) {
+      map.set(node.imageSourceId, ownerNodeId ?? node.id)
+    }
+
+    for (const child of node.children) {
+      walk(child, ownerNodeId)
+    }
+  }
+
+  for (const node of nodes) {
+    walk(node, null)
+  }
+
+  return map
+}
+
 export function useImageSidebarBaseState({
   imageTreeRaw,
   imageRootNode,
@@ -83,36 +144,28 @@ export function useImageSidebarBaseState({
     [uiLocale],
   )
 
-  const imageTreeForSidebarNormal = useMemo(() => {
+  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap } = useMemo(() => {
     const normalizeTree = (nodes: SidebarNode[]) =>
       normalizePointerSidebarTree(nodes, {
         isPointerFolderNode: isImagePointerFolderNode,
         isMediaNode: isImageMediaNode,
       })
 
-    if (!imageRootNode) {
-      return normalizeTree(
-        reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw), activeLocale),
-      )
-    }
-    return normalizeTree(compactImageSidebarTree([imageRootNode]))
-  }, [activeLocale, imageRootNode, imageTreeRaw])
+    const rootScopedNodes = imageRootNode
+      ? resolveRootScopedImageNodes(imageRootNode)
+      : reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw), activeLocale)
 
-  const normalImageSourceNodeIdMap = useMemo(() => {
-    const map = new Map<string, string>()
-    const walk = (nodes: SidebarNode[]) => {
-      for (const node of nodes) {
-        if (node.imageSourceId) {
-          map.set(node.imageSourceId, node.id)
-        }
-        if (node.children.length > 0) {
-          walk(node.children)
-        }
-      }
+    const compactedNodes = imageRootNode
+      ? compactImageSidebarTree(rootScopedNodes)
+      : rootScopedNodes
+
+    const prunedNodes = pruneProceduralImagePathNodes(compactedNodes)
+    const normalizedNodes = normalizeTree(prunedNodes)
+    return {
+      imageTreeForSidebarNormal: collapseImageMediaNodeChildren(normalizedNodes),
+      normalImageSourceNodeIdMap: buildImageSourceNodeIdMap(normalizedNodes),
     }
-    walk(imageTreeForSidebarNormal)
-    return map
-  }, [imageTreeForSidebarNormal])
+  }, [activeLocale, imageRootNode, imageTreeRaw])
 
   return {
     imageTreeForSidebarNormal,
