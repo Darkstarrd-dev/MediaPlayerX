@@ -759,6 +759,8 @@ describe("SidebarPanel music interactions", () => {
       selectedAudioId: "audio-1",
     });
 
+    expect(screen.queryByLabelText("夹 3")).toBeNull();
+
     fireEvent.doubleClick(screen.getByRole("button", { name: "X盘/Music" }));
 
     expect(screen.queryByRole("button", { name: "Album A" })).toBeNull();
@@ -804,6 +806,8 @@ describe("SidebarPanel image collapse interactions", () => {
   it("折叠指针节点时仅隐藏直属媒体，保留下级指针与其内容", () => {
     renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
 
+    expect(screen.getByLabelText("节点 3")).toBeInTheDocument();
+    expect(screen.queryByLabelText("节点 8")).toBeNull();
     expect(screen.getByRole("button", { name: "1.zip" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "2.zip" })).toBeInTheDocument();
 

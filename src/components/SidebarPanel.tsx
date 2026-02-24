@@ -1424,21 +1424,21 @@ function SidebarPanel({
     const imageFolderCollapsed =
       imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
     const visibleImageCount = node.directImageCount ?? 0;
-    const descendantNodeCount =
-      node.descendantNodeCount ?? node.children.length;
+    const directMediaChildCount = node.children.filter((child) =>
+      isMediaNodeForMode(mode, child),
+    ).length;
     const directAudioCount = node.directAudioCount ?? 0;
-    const descendantAudioFolderCount = node.descendantAudioFolderCount ?? 0;
     const musicCountIsTrack = directAudioCount > 0;
     const musicCountValue = musicCountIsTrack
       ? directAudioCount
-      : descendantAudioFolderCount;
+      : directMediaChildCount;
     const musicCountLabel = musicCountIsTrack
       ? t("a11y.sidebar.musicTrackCount", { count: musicCountValue })
       : t("a11y.sidebar.musicFolderCount", { count: musicCountValue });
     const musicCountClassName = `sidebar-count ${musicCountIsTrack ? "sidebar-count-images" : "sidebar-count-packages"}`;
     const imageCountLabel = hasOwnImages
       ? t("a11y.sidebar.imageCount", { count: visibleImageCount })
-      : t("a11y.sidebar.nodeCount", { count: descendantNodeCount });
+      : t("a11y.sidebar.nodeCount", { count: directMediaChildCount });
     const showProcessingCountPlaceholder =
       mode === "image" && hasOwnImages && Boolean(loadState);
 
@@ -1592,7 +1592,7 @@ function SidebarPanel({
                   ? "..."
                   : hasOwnImages
                     ? visibleImageCount
-                    : descendantNodeCount}
+                    : directMediaChildCount}
               </span>
             </span>
           ) : null}
