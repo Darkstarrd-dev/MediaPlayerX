@@ -12,6 +12,7 @@ interface BuildSidebarPanelPropsParams {
   sidebarCountFontSize: number;
   sidebarIndentStep: number;
   sidebarVerticalGap: number;
+  sidebarLabelDisplayMode?: AppSettings["sidebarLabelDisplayMode"];
   currentRootLabel: string | null;
   searchResultsMode: boolean;
   searchResultsLabel: string;
@@ -61,6 +62,7 @@ interface BuildSidebarPanelPropsParams {
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
   const adReviewResultsMode = params.adReviewResultsMode ?? false;
   const sidebarResultMode = params.searchResultsMode || adReviewResultsMode;
+  const sidebarLabelDisplayMode = params.sidebarLabelDisplayMode ?? "full";
 
   return {
     mode: params.mode,
@@ -71,6 +73,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     sidebarCountFontSize: params.sidebarCountFontSize,
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
+    sidebarLabelDisplayMode,
     currentRootLabel: params.searchResultsMode
       ? params.searchResultsLabel
       : params.currentRootLabel,
@@ -126,6 +129,12 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
+    onToggleSidebarLabelDisplayMode: () => {
+      params.updateSettings({
+        sidebarLabelDisplayMode:
+          sidebarLabelDisplayMode === "full" ? "leaf" : "full",
+      });
+    },
     titleCollapseEnabled: params.titleCollapseEnabled ?? true,
     collapsedFolderNodeIds: params.collapsedFolderNodeIds,
     onSetCollapsedFolderNodeIds: params.setCollapsedFolderNodeIds,

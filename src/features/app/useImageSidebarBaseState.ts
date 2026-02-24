@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import { resolveActiveLocale } from '../../i18n/locale'
 import { useUiStore } from '../../store/useUiStore'
 import type { SidebarNode } from '../../types'
+import { compactSidebarTree } from '../sidebar/compactSidebarTree'
+import { normalizePointerSidebarTree } from '../sidebar/normalizePointerSidebarTree'
 
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
 
@@ -22,38 +24,37 @@ function isCompressibleImageFolderNode(node: SidebarNode): boolean {
   return (node.directImageCount ?? 0) === 0
 }
 
-function compactImageSidebarNode(node: SidebarNode, isRoot: boolean): SidebarNode {
-  let cursor = node
-  const mergedLabels = [node.label]
+function isImagePointerFolderNode(node: SidebarNode): boolean {
+  return isCompressibleImageFolderNode(node)
+}
 
-  if (!isRoot) {
-    while (isCompressibleImageFolderNode(cursor) && cursor.children.length === 1) {
-      const child = cursor.children[0]
-      if (!isCompressibleImageFolderNode(child)) {
-        break
-      }
-      mergedLabels.push(child.label)
-      cursor = child
-    }
+function isImageMediaNode(node: SidebarNode): boolean {
+  if (node.kind === 'package') {
+    return true
   }
 
-  return {
-    ...cursor,
-    label: mergedLabels.length > 1 ? mergedLabels.join('/') : cursor.label,
-    children: cursor.children.map((child) => compactImageSidebarNode(child, false)),
+  if (node.kind !== 'folder') {
+    return false
   }
+
+  return node.imageNodeType === 'directory' && Boolean(node.imageSourceId)
 }
 
 function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
-  return nodes.map((node) => compactImageSidebarNode(node, true))
+  return compactSidebarTree(nodes, {
+    shouldCompressFolderNode: isCompressibleImageFolderNode,
+    includeRoot: true,
+  })
 }
 
 function reorderImageRootNodes(nodes: SidebarNode[], locale: string): SidebarNode[] {
   const localeCollator = new Intl.Collator(locale, { sensitivity: 'base' })
   const next = [...nodes]
   next.sort((left, right) => {
-    const leftBooklet = localeCollator.compare(left.pathKey, MUSIC_BOOKLET_ROOT_LABEL) === 0
-    const rightBooklet = localeCollator.compare(right.pathKey, MUSIC_BOOKLET_ROOT_LABEL) === 0
+    const leftRootSegment = left.pathKey.split('/')[0] ?? left.pathKey
+    const rightRootSegment = right.pathKey.split('/')[0] ?? right.pathKey
+    const leftBooklet = localeCollator.compare(leftRootSegment, MUSIC_BOOKLET_ROOT_LABEL) === 0
+    const rightBooklet = localeCollator.compare(rightRootSegment, MUSIC_BOOKLET_ROOT_LABEL) === 0
     if (leftBooklet === rightBooklet) {
       return 0
     }
@@ -83,10 +84,18 @@ export function useImageSidebarBaseState({
   )
 
   const imageTreeForSidebarNormal = useMemo(() => {
+    const normalizeTree = (nodes: SidebarNode[]) =>
+      normalizePointerSidebarTree(nodes, {
+        isPointerFolderNode: isImagePointerFolderNode,
+        isMediaNode: isImageMediaNode,
+      })
+
     if (!imageRootNode) {
-      return reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw), activeLocale)
+      return normalizeTree(
+        reorderImageRootNodes(compactImageSidebarTree(imageTreeRaw), activeLocale),
+      )
     }
-    return compactImageSidebarTree([imageRootNode])
+    return normalizeTree(compactImageSidebarTree([imageRootNode]))
   }, [activeLocale, imageRootNode, imageTreeRaw])
 
   const normalImageSourceNodeIdMap = useMemo(() => {

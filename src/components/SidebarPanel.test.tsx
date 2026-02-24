@@ -272,6 +272,145 @@ const IMAGE_TREE_MULTI_DRIVE_FIXTURE: SidebarNode[] = [
   },
 ];
 
+const IMAGE_TREE_POINTER_COLLAPSE_FIXTURE: SidebarNode[] = [
+  {
+    id: "folder:D:/Gallery",
+    label: "D:/Gallery",
+    kind: "folder",
+    pathKey: "D:/Gallery",
+    imageNodeType: "folder",
+    directImageCount: 0,
+    descendantNodeCount: 8,
+    descendantPackageCount: 6,
+    descendantImageCount: 6,
+    children: [
+      {
+        id: "package:D:/Gallery/1.zip",
+        label: "1.zip",
+        kind: "package",
+        packageId: "pkg-1",
+        imageSourceId: "pkg-1",
+        pathKey: "D:/Gallery/1.zip",
+        imageNodeType: "package",
+        directImageCount: 1,
+        descendantNodeCount: 1,
+        descendantPackageCount: 1,
+        descendantImageCount: 1,
+        children: [],
+      },
+      {
+        id: "package:D:/Gallery/A.zip",
+        label: "A.zip",
+        kind: "package",
+        packageId: "pkg-a",
+        imageSourceId: "pkg-a",
+        pathKey: "D:/Gallery/A.zip",
+        imageNodeType: "package",
+        directImageCount: 1,
+        descendantNodeCount: 1,
+        descendantPackageCount: 1,
+        descendantImageCount: 1,
+        children: [],
+      },
+      {
+        id: "package:D:/Gallery/Octosoup.zip",
+        label: "Octosoup.zip",
+        kind: "package",
+        packageId: "pkg-octo",
+        imageSourceId: "pkg-octo",
+        pathKey: "D:/Gallery/Octosoup.zip",
+        imageNodeType: "package",
+        directImageCount: 1,
+        descendantNodeCount: 1,
+        descendantPackageCount: 1,
+        descendantImageCount: 1,
+        children: [],
+      },
+      {
+        id: "folder:D:/Gallery/cool",
+        label: "D:/Gallery/cool",
+        kind: "folder",
+        pathKey: "D:/Gallery/cool",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        descendantNodeCount: 4,
+        descendantPackageCount: 3,
+        descendantImageCount: 3,
+        children: [
+          {
+            id: "package:D:/Gallery/cool/2.zip",
+            label: "2.zip",
+            kind: "package",
+            packageId: "pkg-2",
+            imageSourceId: "pkg-2",
+            pathKey: "D:/Gallery/cool/2.zip",
+            imageNodeType: "package",
+            directImageCount: 1,
+            descendantNodeCount: 1,
+            descendantPackageCount: 1,
+            descendantImageCount: 1,
+            children: [],
+          },
+          {
+            id: "folder:D:/Gallery/cool/cooler",
+            label: "D:/Gallery/cool/cooler",
+            kind: "folder",
+            pathKey: "D:/Gallery/cool/cooler",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            descendantNodeCount: 3,
+            descendantPackageCount: 2,
+            descendantImageCount: 2,
+            children: [
+              {
+                id: "package:D:/Gallery/cool/cooler/3.zip",
+                label: "3.zip",
+                kind: "package",
+                packageId: "pkg-3",
+                imageSourceId: "pkg-3",
+                pathKey: "D:/Gallery/cool/cooler/3.zip",
+                imageNodeType: "package",
+                directImageCount: 1,
+                descendantNodeCount: 1,
+                descendantPackageCount: 1,
+                descendantImageCount: 1,
+                children: [],
+              },
+              {
+                id: "folder:D:/Gallery/cool/cooler/coolest",
+                label: "D:/Gallery/cool/cooler/coolest",
+                kind: "folder",
+                pathKey: "D:/Gallery/cool/cooler/coolest",
+                imageNodeType: "folder",
+                directImageCount: 0,
+                descendantNodeCount: 2,
+                descendantPackageCount: 1,
+                descendantImageCount: 1,
+                children: [
+                  {
+                    id: "package:D:/Gallery/cool/cooler/coolest/4.zip",
+                    label: "4.zip",
+                    kind: "package",
+                    packageId: "pkg-4",
+                    imageSourceId: "pkg-4",
+                    pathKey: "D:/Gallery/cool/cooler/coolest/4.zip",
+                    imageNodeType: "package",
+                    directImageCount: 1,
+                    descendantNodeCount: 1,
+                    descendantPackageCount: 1,
+                    descendantImageCount: 1,
+                    children: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 function renderMusicSidebar(
   overrides: Partial<ComponentProps<typeof SidebarPanel>> = {},
 ) {
@@ -566,6 +705,66 @@ describe("SidebarPanel music interactions", () => {
     fireEvent.doubleClick(screen.getByRole("button", { name: "X盘" }));
     expect(screen.getByRole("button", { name: "Album A" })).toBeInTheDocument();
   });
+
+  it("音乐模式折叠指针仅隐藏直属专辑，保留下级指针", () => {
+    const pointerTree: SidebarNode[] = [
+      {
+        id: "folder:X盘/Music",
+        label: "X盘/Music",
+        kind: "folder",
+        pathKey: "X盘/Music",
+        directAudioCount: 0,
+        descendantAudioFolderCount: 3,
+        descendantNodeCount: 4,
+        children: [
+          {
+            id: "folder:X盘/Music/Album A",
+            label: "Album A",
+            kind: "folder",
+            pathKey: "X盘/Music/Album A",
+            directAudioCount: 2,
+            descendantAudioFolderCount: 1,
+            descendantNodeCount: 1,
+            audioId: "audio-1",
+            children: [],
+          },
+          {
+            id: "folder:X盘/Music/Sub",
+            label: "X盘/Music/Sub",
+            kind: "folder",
+            pathKey: "X盘/Music/Sub",
+            directAudioCount: 0,
+            descendantAudioFolderCount: 1,
+            descendantNodeCount: 2,
+            children: [
+              {
+                id: "folder:X盘/Music/Sub/Album B",
+                label: "Album B",
+                kind: "folder",
+                pathKey: "X盘/Music/Sub/Album B",
+                directAudioCount: 1,
+                descendantAudioFolderCount: 1,
+                descendantNodeCount: 1,
+                audioId: "audio-2",
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    renderMusicSidebar({
+      audioTreeNodes: pointerTree,
+      selectedAudioId: "audio-1",
+    });
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "X盘/Music" }));
+
+    expect(screen.queryByRole("button", { name: "Album A" })).toBeNull();
+    expect(screen.getByRole("button", { name: "X盘/Music/Sub" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Album B" })).toBeInTheDocument();
+  });
 });
 
 describe("SidebarPanel image collapse interactions", () => {
@@ -600,6 +799,31 @@ describe("SidebarPanel image collapse interactions", () => {
 
     fireEvent.doubleClick(screen.getByRole("button", { name: "图库" }));
     expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
+  });
+
+  it("折叠指针节点时仅隐藏直属媒体，保留下级指针与其内容", () => {
+    renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
+
+    expect(screen.getByRole("button", { name: "1.zip" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2.zip" })).toBeInTheDocument();
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "D:/Gallery" }));
+
+    expect(screen.queryByRole("button", { name: "1.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "A.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Octosoup.zip" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2.zip" })).toBeInTheDocument();
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "D:/Gallery/cool" }));
+
+    expect(screen.queryByRole("button", { name: "2.zip" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "3.zip" })).toBeInTheDocument();
   });
 
   it("自身包含图片的目录节点双击不触发折叠", () => {
@@ -642,6 +866,51 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(
       screen.getByRole("button", { name: "clip.mp4" }),
     ).toBeInTheDocument();
+  });
+
+  it("视频模式折叠指针仅隐藏直属视频，保留下级指针", () => {
+    const videoTree: SidebarNode[] = [
+      {
+        id: "folder:Videos",
+        label: "Videos",
+        kind: "folder",
+        pathKey: "Videos",
+        children: [
+          {
+            id: "video:Videos/clip.mp4",
+            label: "clip.mp4",
+            kind: "video",
+            videoId: "video-1",
+            pathKey: "Videos/clip.mp4",
+            children: [],
+          },
+          {
+            id: "folder:Videos/Sub",
+            label: "Videos/Sub",
+            kind: "folder",
+            pathKey: "Videos/Sub",
+            children: [
+              {
+                id: "video:Videos/Sub/sub.mp4",
+                label: "sub.mp4",
+                kind: "video",
+                videoId: "video-2",
+                pathKey: "Videos/Sub/sub.mp4",
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    renderVideoSidebar(videoTree);
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "Videos" }));
+
+    expect(screen.queryByRole("button", { name: "clip.mp4" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Videos/Sub" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "sub.mp4" })).toBeInTheDocument();
   });
 
   it("管理模式下双击可折叠目录", () => {
@@ -818,6 +1087,27 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
   });
 
+  it("一键折叠在指针模式下仅保留指针节点", () => {
+    renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
+
+    fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
+
+    expect(screen.getByRole("button", { name: "D:/Gallery" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool/cooler/coolest" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "1.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "2.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "3.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "4.zip" })).toBeNull();
+  });
+
   it("多盘符场景下折叠会对所有目标父级节点生效", () => {
     renderImageSidebar(IMAGE_TREE_MULTI_DRIVE_FIXTURE);
 
@@ -859,12 +1149,37 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/CoverRoot");
   });
 
-  it("图片模式在首个含图父级节点时禁用上一个按钮", () => {
-    renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
+  it("图片模式可跳转到上一个目标父级节点", () => {
+    const { onSelectNode } = renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
       selectedSidebarNodeId: "folder:X盘/图库A",
     });
 
-    expect(screen.getByRole("button", { name: "上一个含图父级" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "上一个含图父级" }));
+
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘");
+  });
+
+  it("侧栏标签支持完整路径与末段名切换", () => {
+    renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
+
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "F" }));
+
+    expect(screen.getByRole("button", { name: "L" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "cooler" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "D:/Gallery/cool/cooler" }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "L" }));
+
+    expect(screen.getByRole("button", { name: "F" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
+    ).toBeInTheDocument();
   });
 
   it("超长路径在获得焦点时启用跑马灯，失焦后恢复静态省略", async () => {

@@ -31,6 +31,7 @@ export const musicVisualizerCompositionModeSchema = z.enum([
 ]);
 export const paletteModeSchema = z.enum(["day", "night"]);
 export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
+export const sidebarLabelDisplayModeSchema = z.enum(["full", "leaf"]);
 export const subtitleAccelerationSchema = z.enum(["auto", "cpu", "directml"]);
 export const subtitleLanguageSchema = z.enum([
   "auto",
@@ -132,6 +133,7 @@ export const appSettingsSchema = z.object({
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
+  sidebarLabelDisplayMode: sidebarLabelDisplayModeSchema,
   uiLocale: uiLocaleSchema,
   themeId: z.string().min(1),
   styleId: z.string().min(1).default("flush"),

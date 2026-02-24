@@ -3,6 +3,8 @@ import { useMemo } from 'react'
 import { buildSidebarTree, findNodeById } from '../../mockData'
 import type { SidebarNode, VideoItem } from '../../types'
 import { collectLeafIds } from '../../utils/mediaHelpers'
+import { compactSidebarTree } from '../sidebar/compactSidebarTree'
+import { normalizePointerSidebarTree } from '../sidebar/normalizePointerSidebarTree'
 
 interface UseVideoSidebarStateParams {
   videos: VideoItem[]
@@ -27,6 +29,22 @@ function shouldUseWorkTitleLabel(fileName: string, workTitle: string): boolean {
     return false
   }
   return normalizeNodeLabelCompare(fileName) !== normalizedWorkTitle
+}
+
+function isCompressibleVideoFolderNode(node: SidebarNode): boolean {
+  if (node.kind !== 'folder') {
+    return false
+  }
+
+  return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId
+}
+
+function isVideoPointerFolderNode(node: SidebarNode): boolean {
+  return isCompressibleVideoFolderNode(node)
+}
+
+function isVideoMediaNode(node: SidebarNode): boolean {
+  return node.kind === 'video'
 }
 
 export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSidebarStateParams): UseVideoSidebarStateResult {
@@ -55,13 +73,23 @@ export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSideba
   const videosForSidebar = useMemo(() => videos.filter((video) => rootScopedVideoIds.has(video.id)), [rootScopedVideoIds, videos])
 
   const videoTreeForSidebar = useMemo(() => {
-    return buildSidebarTree(
+    const rawTree = buildSidebarTree(
       videosForSidebar.map((video) => ({
         id: video.id,
         treePath: video.treePath,
         leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle) ? video.workTitle : undefined,
       })),
       'video',
+    )
+    return normalizePointerSidebarTree(
+      compactSidebarTree(rawTree, {
+        shouldCompressFolderNode: isCompressibleVideoFolderNode,
+        includeRoot: true,
+      }),
+      {
+        isPointerFolderNode: isVideoPointerFolderNode,
+        isMediaNode: isVideoMediaNode,
+      },
     )
   }, [videosForSidebar])
 

@@ -198,6 +198,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     typeof next.paletteNightId === "string" ? next.paletteNightId.trim() : "";
   const rawUiLocale =
     typeof next.uiLocale === "string" ? next.uiLocale.trim() : "";
+  const rawSidebarLabelDisplayMode =
+    typeof next.sidebarLabelDisplayMode === "string"
+      ? next.sidebarLabelDisplayMode.trim()
+      : "";
 
   next.styleId = rawStyleId || "flush";
   next.paletteId = rawPaletteId || rawThemeId || "parchment";
@@ -216,6 +220,14 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.uiLocale = rawUiLocale;
   } else if ("uiLocale" in next) {
     delete next.uiLocale;
+  }
+  if (
+    rawSidebarLabelDisplayMode === "full"
+    || rawSidebarLabelDisplayMode === "leaf"
+  ) {
+    next.sidebarLabelDisplayMode = rawSidebarLabelDisplayMode;
+  } else if ("sidebarLabelDisplayMode" in next) {
+    delete next.sidebarLabelDisplayMode;
   }
   next.themeId = next.paletteId;
 

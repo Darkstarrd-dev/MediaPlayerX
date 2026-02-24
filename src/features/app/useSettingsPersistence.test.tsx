@@ -124,6 +124,64 @@ describe("useSettingsPersistence", () => {
     expect(hydrationPatch).not.toHaveProperty("uiLocale");
   });
 
+  it("hydrates sidebarLabelDisplayMode when value is supported", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        sidebarLabelDisplayMode: "leaf",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sidebarLabelDisplayMode: "leaf",
+        }),
+      );
+    });
+  });
+
+  it("drops invalid sidebarLabelDisplayMode during hydration", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        sidebarLabelDisplayMode: "bad",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalled();
+    });
+
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch).not.toHaveProperty("sidebarLabelDisplayMode");
+  });
+
   it("sanitizes fullscreen resampling settings on hydration", async () => {
     const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({

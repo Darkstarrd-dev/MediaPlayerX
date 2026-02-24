@@ -64,8 +64,9 @@ describe('useAudioSidebarState', () => {
 
     const albumNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘/音乐/专辑A')
     const childNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘/音乐/专辑A/子目录')
-    const driveNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘')
+    const driveNode = findNodeById(result.current.audioTreeForSidebar, 'folder:X盘/音乐')
 
+    expect(result.current.audioTreeForSidebar[0]?.label).toBe('X盘/音乐')
     expect(albumNode?.kind).toBe('folder')
     expect(albumNode?.descendantNodeCount).toBe(2)
     expect(albumNode?.directAudioCount).toBe(2)

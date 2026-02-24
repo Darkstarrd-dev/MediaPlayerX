@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { buildSidebarTree, findNodeById } from '../../mockData'
 import type { AudioItem, SidebarNode } from '../../types'
+import { compactSidebarTree } from '../sidebar/compactSidebarTree'
 
 interface UseAudioSidebarStateParams {
   audios: AudioItem[]
@@ -14,6 +15,18 @@ interface UseAudioSidebarStateResult {
   rootScopedAudioIds: Set<string>
   audiosForSidebar: AudioItem[]
   audioTreeForSidebar: SidebarNode[]
+}
+
+function isCompressibleAudioFolderNode(node: SidebarNode): boolean {
+  if (node.kind !== 'folder') {
+    return false
+  }
+
+  if (node.imageSourceId || node.packageId || node.videoId) {
+    return false
+  }
+
+  return (node.directAudioCount ?? 0) === 0
 }
 
 function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
@@ -94,7 +107,13 @@ export function useAudioSidebarState({ audios, musicRootNodeId }: UseAudioSideba
 
   const audiosForSidebar = useMemo(() => audios.filter((audio) => rootScopedAudioIds.has(audio.id)), [audios, rootScopedAudioIds])
 
-  const audioTreeForSidebar = useMemo(() => buildAudioFolderTree(audiosForSidebar), [audiosForSidebar])
+  const audioTreeForSidebar = useMemo(() => {
+    const rawTree = buildAudioFolderTree(audiosForSidebar)
+    return compactSidebarTree(rawTree, {
+      shouldCompressFolderNode: isCompressibleAudioFolderNode,
+      includeRoot: true,
+    })
+  }, [audiosForSidebar])
 
   return {
     audioTreeRaw,

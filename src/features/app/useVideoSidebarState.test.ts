@@ -71,4 +71,53 @@ describe('useVideoSidebarState', () => {
     expect(workTitleNode?.label).toBe('城市先导片')
     expect(sameNameNode?.label).toBe('scene_forest.mp4')
   })
+
+  it('侧栏会压缩单链父路径并直接挂载视频节点', () => {
+    const videos = [
+      makeVideo({
+        id: 'video-a',
+        fileName: 'teaser_city.mp4',
+        workTitle: '城市先导片',
+        treePath: ['X盘', '视频', '项目A', 'teaser_city.mp4'],
+      }),
+      makeVideo({
+        id: 'video-b',
+        fileName: 'scene_forest.mp4',
+        workTitle: 'scene_forest',
+        treePath: ['X盘', '视频', '项目A', 'scene_forest.mp4'],
+      }),
+    ]
+
+    const { result } = renderHook(() => useVideoSidebarState({ videos, videoRootNodeId: null }))
+
+    const root = result.current.videoTreeForSidebar[0]
+    expect(root?.id).toBe('folder:X盘/视频/项目A')
+    expect(root?.label).toBe('X盘/视频/项目A')
+    expect(root?.children).toHaveLength(2)
+    expect(root?.children.map((node) => node.kind)).toEqual(['video', 'video'])
+  })
+
+  it('在同一路径下优先展示直属视频并使用完整路径目录标签', () => {
+    const videos = [
+      makeVideo({
+        id: 'video-root',
+        fileName: 'root.mp4',
+        workTitle: 'root',
+        treePath: ['D:', 'Gallery', 'root.mp4'],
+      }),
+      makeVideo({
+        id: 'video-child',
+        fileName: 'child.mp4',
+        workTitle: 'child',
+        treePath: ['D:', 'Gallery', 'cool', 'child.mp4'],
+      }),
+    ]
+
+    const { result } = renderHook(() => useVideoSidebarState({ videos, videoRootNodeId: null }))
+
+    const root = result.current.videoTreeForSidebar[0]
+    expect(root?.label).toBe('D:/Gallery')
+    expect(root?.children.map((node) => node.label)).toEqual(['root.mp4', 'D:/Gallery/cool'])
+    expect(root?.children[1]?.children.map((node) => node.label)).toEqual(['child.mp4'])
+  })
 })

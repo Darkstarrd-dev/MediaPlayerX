@@ -28,6 +28,7 @@ describe('buildSidebarPanelProps', () => {
       sidebarCountFontSize: 12,
       sidebarIndentStep: 16,
       sidebarVerticalGap: 4,
+      sidebarLabelDisplayMode: 'leaf',
       currentRootLabel: '当前根',
       searchResultsMode: true,
       searchResultsLabel: '检索结果',
@@ -68,10 +69,14 @@ describe('buildSidebarPanelProps', () => {
 
     expect(props.currentRootLabel).toBe('检索结果')
     expect(props.canGoToFromSearchMode).toBe(false)
+    expect(props.sidebarLabelDisplayMode).toBe('leaf')
 
     props.onSelectNode('folder:ignored')
     expect(setSelectedSidebarNodeId).not.toHaveBeenCalled()
     expect(updateSettings).not.toHaveBeenCalled()
+
+    props.onToggleSidebarLabelDisplayMode()
+    expect(updateSettings).toHaveBeenCalledWith({ sidebarLabelDisplayMode: 'full' })
   })
 
   it('可按模式重置 root，并支持播放列表 toggle 增删', () => {

@@ -308,6 +308,7 @@ export function useAppWorkspaceProps({
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
+    sidebarLabelDisplayMode: appSettings.sidebarLabelDisplayMode,
     currentRootLabel: adReviewResultsMode
       ? t("ui.sidebar.adReviewResultsRoot")
       : currentRootLabel,

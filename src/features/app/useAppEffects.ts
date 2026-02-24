@@ -595,6 +595,13 @@ export function useAppEffects({
       return;
     }
 
+    const currentNode = selectedSidebarNodeId
+      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+      : null;
+    if (currentNode && currentNode.kind === "folder") {
+      return;
+    }
+
     const nextAudioNodeId = audioNodeIdMap.get(selectedAudioId) ?? null;
     if (!nextAudioNodeId) {
       return;
@@ -609,6 +616,7 @@ export function useAppEffects({
     selectedAudioId,
     selectedSidebarNodeId,
     setSelectedSidebarNodeId,
+    sidebarNodeById,
   ]);
 
   useEffect(() => {
@@ -620,7 +628,8 @@ export function useAppEffects({
       ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
       : null;
     const selectedNodeMatchesMusicMode =
-      selectedNode !== null && selectedNode.kind === "audio";
+      selectedNode !== null &&
+      (selectedNode.kind === "folder" || selectedNode.kind === "audio");
 
     if (selectedNodeMatchesMusicMode) {
       return;

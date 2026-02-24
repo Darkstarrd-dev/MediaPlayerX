@@ -13,6 +13,8 @@ import { MainUiIcon } from "./MainUiIcon";
 import { useI18n } from "../i18n/useI18n";
 import type { BrowserMode, SidebarNode } from "../types";
 
+type SidebarLabelDisplayMode = "full" | "leaf";
+
 function resolveFirstAudioId(node: SidebarNode): string | null {
   if (node.audioId) {
     return node.audioId;
@@ -33,13 +35,95 @@ function canFolderCollapse(
   node: SidebarNode,
   imageNodeType: SidebarNode["imageNodeType"],
 ): boolean {
+  if (node.kind !== "folder" || node.children.length === 0) {
+    return false;
+  }
+
+  if (!isPointerFolderNode(mode, node, imageNodeType)) {
+    return false;
+  }
+
+  return hasDirectMediaChild(mode, node);
+}
+
+function resolveImageNodeType(node: SidebarNode): SidebarNode["imageNodeType"] {
+  return node.imageNodeType ?? (node.kind === "folder" ? "folder" : "package");
+}
+
+function isImageMediaNode(node: SidebarNode): boolean {
+  const imageNodeType = resolveImageNodeType(node);
+  return (
+    node.kind === "package"
+    || imageNodeType === "package"
+    || imageNodeType === "directory"
+  );
+}
+
+function isVideoMediaNode(node: SidebarNode): boolean {
+  return node.kind === "video" || Boolean(node.videoId);
+}
+
+function isMusicMediaNode(node: SidebarNode): boolean {
+  if (node.kind === "audio") {
+    return true;
+  }
   if (node.kind !== "folder") {
     return false;
   }
-  if (mode === "image" && imageNodeType !== "folder") {
+  return (node.directAudioCount ?? 0) > 0;
+}
+
+function isMediaNodeForMode(mode: BrowserMode, node: SidebarNode): boolean {
+  if (mode === "image") {
+    return isImageMediaNode(node);
+  }
+  if (mode === "video") {
+    return isVideoMediaNode(node);
+  }
+  return isMusicMediaNode(node);
+}
+
+function hasDirectMediaChild(mode: BrowserMode, node: SidebarNode): boolean {
+  if (node.kind !== "folder") {
     return false;
   }
-  return node.children.length > 0;
+  return node.children.some((child) => isMediaNodeForMode(mode, child));
+}
+
+function isPointerFolderNode(
+  mode: BrowserMode,
+  node: SidebarNode,
+  imageNodeType: SidebarNode["imageNodeType"],
+): boolean {
+  if (node.kind !== "folder") {
+    return false;
+  }
+
+  if (mode === "image") {
+    if (imageNodeType !== "folder") {
+      return false;
+    }
+    return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId;
+  }
+
+  if (mode === "video") {
+    return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId;
+  }
+
+  return (node.directAudioCount ?? 0) === 0;
+}
+
+function resolveSidebarDisplayLabel(
+  node: SidebarNode,
+  labelDisplayMode: SidebarLabelDisplayMode,
+): string {
+  if (labelDisplayMode === "full" || node.kind !== "folder") {
+    return node.label;
+  }
+
+  const segments = node.pathKey.split("/");
+  const leaf = segments[segments.length - 1]?.trim();
+  return leaf && leaf.length > 0 ? leaf : node.label;
 }
 
 function resolveAncestorNodeIds(
@@ -91,73 +175,55 @@ function resolveNodeOrderIndexById(nodes: SidebarNode[]): Map<string, number> {
 
 function resolveImagePackageParentNodeIds(nodes: SidebarNode[]): string[] {
   const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[], depth: number) => {
+  const walk = (items: SidebarNode[]) => {
     for (const node of items) {
-      const canBeParentTarget = node.kind === "folder" && depth > 0;
-      const hasDirectImageSourceChild = node.children.some((child) => {
-        const childImageNodeType =
-          child.imageNodeType ?? (child.kind === "folder" ? "folder" : "package");
-        return (
-          child.kind === "package"
-          || childImageNodeType === "package"
-          || childImageNodeType === "directory"
-        );
-      });
-      if (canBeParentTarget && hasDirectImageSourceChild) {
+      if (node.kind === "folder" && hasDirectMediaChild("image", node)) {
         orderedNodeIds.push(node.id);
       }
 
       if (node.children.length > 0) {
-        walk(node.children, depth + 1);
+        walk(node.children);
       }
     }
   };
 
-  walk(nodes, 0);
+  walk(nodes);
   return orderedNodeIds;
 }
 
 function resolveVideoParentNodeIds(nodes: SidebarNode[]): string[] {
   const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[], depth: number) => {
+  const walk = (items: SidebarNode[]) => {
     for (const node of items) {
-      const canBeParentTarget = node.kind === "folder" && depth > 0;
-      const hasDirectVideoChild = node.children.some(
-        (child) => child.kind === "video" || Boolean(child.videoId),
-      );
-      if (canBeParentTarget && hasDirectVideoChild) {
+      if (node.kind === "folder" && hasDirectMediaChild("video", node)) {
         orderedNodeIds.push(node.id);
       }
 
       if (node.children.length > 0) {
-        walk(node.children, depth + 1);
+        walk(node.children);
       }
     }
   };
 
-  walk(nodes, 0);
+  walk(nodes);
   return orderedNodeIds;
 }
 
 function resolveAudioParentNodeIds(nodes: SidebarNode[]): string[] {
   const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[], depth: number) => {
+  const walk = (items: SidebarNode[]) => {
     for (const node of items) {
-      const canBeParentTarget = node.kind === "folder" && depth > 0;
-      const hasDirectAudioChild = node.children.some(
-        (child) => child.kind === "audio" || Boolean(child.audioId),
-      );
-      if (canBeParentTarget && hasDirectAudioChild) {
+      if (node.kind === "folder" && hasDirectMediaChild("music", node)) {
         orderedNodeIds.push(node.id);
       }
 
       if (node.children.length > 0) {
-        walk(node.children, depth + 1);
+        walk(node.children);
       }
     }
   };
 
-  walk(nodes, 0);
+  walk(nodes);
   return orderedNodeIds;
 }
 
@@ -194,14 +260,24 @@ function flattenVisibleSidebarRows(
       continue;
     }
 
-    const imageNodeType =
-      node.imageNodeType ?? (node.kind === "folder" ? "folder" : "package");
+    const imageNodeType = resolveImageNodeType(node);
     const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType);
     const imageFolderCollapsed =
-      (imageFolderCollapsible || (mode === "image" && node.kind === "folder")) &&
-      collapsedImageFolderNodeIds.has(node.id);
+      imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
 
     if (imageFolderCollapsed) {
+      for (const child of node.children) {
+        if (isMediaNodeForMode(mode, child)) {
+          continue;
+        }
+        flattenVisibleSidebarRows(
+          [child],
+          depth + 1,
+          mode,
+          collapsedImageFolderNodeIds,
+          rows,
+        );
+      }
       continue;
     }
 
@@ -261,6 +337,8 @@ interface SidebarPanelProps {
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
+  sidebarLabelDisplayMode?: SidebarLabelDisplayMode;
+  onToggleSidebarLabelDisplayMode?: () => void;
   titleCollapseEnabled?: boolean;
 }
 
@@ -304,6 +382,8 @@ function SidebarPanel({
   onToggleManageNode,
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
+  sidebarLabelDisplayMode,
+  onToggleSidebarLabelDisplayMode,
   titleCollapseEnabled = true,
 }: SidebarPanelProps) {
   const { t } = useI18n();
@@ -325,6 +405,10 @@ function SidebarPanel({
   const suppressAutoExpandAncestorFoldersRef = useRef(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const [localSidebarLabelDisplayMode, setLocalSidebarLabelDisplayMode] =
+    useState<SidebarLabelDisplayMode>("full");
+  const effectiveSidebarLabelDisplayMode =
+    sidebarLabelDisplayMode ?? localSidebarLabelDisplayMode;
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
   const suppressManageClickRef = useRef(false);
   const manageDragStateRef = useRef<{
@@ -473,11 +557,6 @@ function SidebarPanel({
   const imagePackageParentNodeIds = useMemo(
     () => (mode === "image" ? resolveImagePackageParentNodeIds(imageTreeNodes) : []),
     [imageTreeNodes, mode],
-  );
-
-  const imagePackageParentNodeIdSet = useMemo(
-    () => new Set(imagePackageParentNodeIds),
-    [imagePackageParentNodeIds],
   );
 
   const imageNodeOrderIndexById = useMemo(
@@ -928,6 +1007,18 @@ function SidebarPanel({
       return;
     }
 
+    const visibleRows: VisibleSidebarRow[] = [];
+    flattenVisibleSidebarRows(
+      activeTreeNodes,
+      0,
+      mode,
+      collapsedImageFolderNodeIds,
+      visibleRows,
+    );
+    if (visibleRows.some((row) => row.node.id === selectedSidebarNodeId)) {
+      return;
+    }
+
     const ancestorNodeIds = resolveAncestorNodeIds(
       activeTreeNodes,
       selectedSidebarNodeId,
@@ -941,9 +1032,6 @@ function SidebarPanel({
       let changed = false;
 
       for (const ancestorNodeId of ancestorNodeIds) {
-        if (allImagePackageParentsCollapsed && imagePackageParentNodeIdSet.has(ancestorNodeId)) {
-          continue;
-        }
         if (next.delete(ancestorNodeId)) {
           changed = true;
         }
@@ -953,8 +1041,8 @@ function SidebarPanel({
     });
   }, [
     activeTreeNodes,
-    allImagePackageParentsCollapsed,
-    imagePackageParentNodeIdSet,
+    collapsedImageFolderNodeIds,
+    mode,
     selectedSidebarNodeId,
     updateCollapsedImageFolderNodeIds,
   ]);
@@ -1310,8 +1398,8 @@ function SidebarPanel({
 
   const renderRow = ({ node }: VisibleSidebarRow): ReactElement => {
     const isFolder = node.kind === "folder";
-    const imageNodeType =
-      node.imageNodeType ?? (isFolder ? "folder" : "package");
+    const imageNodeType = resolveImageNodeType(node);
+    const displayLabel = resolveSidebarDisplayLabel(node, effectiveSidebarLabelDisplayMode);
     const isFocusedNode = selectedSidebarNodeId === node.id;
     const isHoverActive = hoveredNodeId === node.id;
     const isPressedActive = isFocusedNode || isHoverActive;
@@ -1321,7 +1409,7 @@ function SidebarPanel({
       && overflowingNodeIds.has(node.id);
     const marqueeStyle = marqueeActive
       ? ({
-          "--mpx-sidebar-label-marquee-duration": `${Math.max(8, Math.min(30, Math.round(node.label.length * 0.24)))}s`,
+          "--mpx-sidebar-label-marquee-duration": `${Math.max(8, Math.min(30, Math.round(displayLabel.length * 0.24)))}s`,
         } as CSSProperties)
       : undefined;
     const loadState =
@@ -1334,8 +1422,7 @@ function SidebarPanel({
       imageNodeType,
     );
     const imageFolderCollapsed =
-      (imageFolderCollapsible || (mode === "image" && node.kind === "folder"))
-      && collapsedImageFolderNodeIds.has(node.id);
+      imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
     const visibleImageCount = node.directImageCount ?? 0;
     const descendantNodeCount =
       node.descendantNodeCount ?? node.children.length;
@@ -1399,7 +1486,9 @@ function SidebarPanel({
                 ? imageFolderCollapsed
                   ? t("tip.sidebar.expandSubfolder")
                   : t("tip.sidebar.collapseSubfolder")
-                : undefined
+                : effectiveSidebarLabelDisplayMode === "leaf" && isFolder
+                  ? node.pathKey
+                  : undefined
             }
             onClick={(event) => {
               if (manageStyleEnabled) {
@@ -1469,10 +1558,10 @@ function SidebarPanel({
               className={`sidebar-label-marquee ${marqueeActive ? "is-overflow" : ""}`}
               style={marqueeStyle}
             >
-              <span className="sidebar-label-text">{node.label}</span>
+              <span className="sidebar-label-text">{displayLabel}</span>
               {marqueeActive ? (
                 <span aria-hidden="true" className="sidebar-label-text">
-                  {node.label}
+                  {displayLabel}
                 </span>
               ) : null}
             </span>
@@ -1575,6 +1664,26 @@ function SidebarPanel({
                 <MainUiIcon name="unselectAll" />
               </button>
             ) : null
+          ) : null}
+
+          {showRootToggle ? (
+            <button
+              className={`sidebar-head-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-toolbar-label-mode-toggle"
+              type="button"
+              title={effectiveSidebarLabelDisplayMode === "full" ? "切换到末段名" : "切换到完整路径"}
+              onClick={() => {
+                if (onToggleSidebarLabelDisplayMode) {
+                  onToggleSidebarLabelDisplayMode();
+                  return;
+                }
+                setLocalSidebarLabelDisplayMode((previous) =>
+                  previous === "full" ? "leaf" : "full",
+                );
+              }}
+            >
+              {effectiveSidebarLabelDisplayMode === "full" ? "F" : "L"}
+            </button>
           ) : null}
 
           {showRootToggle ? (
