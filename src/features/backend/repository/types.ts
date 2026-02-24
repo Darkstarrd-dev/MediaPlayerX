@@ -122,6 +122,8 @@ import type {
   ReadAppStateResponseDto,
   WriteAppStateRequestDto,
   WriteAppStateResponseDto,
+  UpdatePerformanceConfigRequestDto,
+  UpdatePerformanceConfigResponseDto,
 } from '../../../contracts/backend'
 
 export interface RepositoryRequestOptions {
@@ -364,6 +366,10 @@ export interface MediaRepository {
   ): Promise<ReadSubtitlePersistenceWindowResponseDto>
   readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
+  updatePerformanceConfig?(
+    request: UpdatePerformanceConfigRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<UpdatePerformanceConfigResponseDto>
   onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
 }
 

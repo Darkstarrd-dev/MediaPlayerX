@@ -31,9 +31,12 @@ interface BuildSettingsPanelPropsParams {
   mediaPreloadMemoryBudgetMb: number;
   thumbnailGap: number;
   thumbnailQuality: number;
+  thumbnailAdaptiveResolution: boolean;
   thumbnailWidth: number;
   thumbnailGenerationConcurrency: number;
   thumbnailResolveConcurrency: number;
+  thumbnailQueueSize: number;
+  cpuTokenLimit: number;
   thumbnailWarmupRadius: number;
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
@@ -149,9 +152,12 @@ export function buildSettingsPanelProps(
     mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
+    thumbnailAdaptiveResolution: params.thumbnailAdaptiveResolution,
     thumbnailWidth: params.thumbnailWidth,
     thumbnailGenerationConcurrency: params.thumbnailGenerationConcurrency,
     thumbnailResolveConcurrency: params.thumbnailResolveConcurrency,
+    thumbnailQueueSize: params.thumbnailQueueSize,
+    cpuTokenLimit: params.cpuTokenLimit,
     thumbnailWarmupRadius: params.thumbnailWarmupRadius,
     thumbnailWarmupConcurrency: params.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: params.fullscreenPrefetchRadius,
@@ -330,6 +336,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({
         thumbnailQuality: 40,
       }),
+    onThumbnailAdaptiveResolutionChange: (value) =>
+      params.updateSettings({ thumbnailAdaptiveResolution: value }),
     onThumbnailWidthChange: (value) =>
       params.updateSettings({ thumbnailWidth: value }),
     onResetThumbnailWidth: () =>
@@ -347,6 +355,18 @@ export function buildSettingsPanelProps(
     onResetThumbnailResolveConcurrency: () =>
       params.updateSettings({
         thumbnailResolveConcurrency: 8,
+      }),
+    onThumbnailQueueSizeChange: (value) =>
+      params.updateSettings({ thumbnailQueueSize: value }),
+    onResetThumbnailQueueSize: () =>
+      params.updateSettings({
+        thumbnailQueueSize: 64,
+      }),
+    onCpuTokenLimitChange: (value) =>
+      params.updateSettings({ cpuTokenLimit: value }),
+    onResetCpuTokenLimit: () =>
+      params.updateSettings({
+        cpuTokenLimit: 2,
       }),
     onThumbnailWarmupRadiusChange: (value) =>
       params.updateSettings({ thumbnailWarmupRadius: value }),

@@ -339,6 +339,7 @@ export const resolveMediaResourceRequestSchema = z.object({
       max_edge: z.number().int().min(64).max(2048).optional(),
       quality: z.number().int().min(1).max(100).optional(),
       generation_concurrency: z.number().int().min(1).max(16).optional(),
+      queue_size: z.number().int().min(16).max(256).optional(),
     })
     .optional(),
   fullscreen_resize: z
@@ -354,6 +355,14 @@ export const resolveMediaResourceResponseSchema = z.object({
   resource_url: z.string().min(1),
   mime_type: z.string().min(1),
   expires_at_ms: z.number().int().positive(),
+});
+
+export const updatePerformanceConfigRequestSchema = z.object({
+  cpu_token_limit: z.number().int().min(1).max(16),
+});
+
+export const updatePerformanceConfigResponseSchema = z.object({
+  applied: z.boolean(),
 });
 
 export const writePackageGradeRequestSchema = z.object({

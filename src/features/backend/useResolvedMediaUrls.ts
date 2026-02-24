@@ -18,6 +18,7 @@ const CACHE_REFRESH_LEEWAY_MS = 15_000
 const DEFAULT_MAX_CONCURRENT = 8
 const FAILURE_RETRY_BASE_MS = 3_000
 const FAILURE_RETRY_MAX_MS = 20_000
+const RESOLVE_DISPATCH_DEBOUNCE_MS = 60
 
 const CACHE_INVALIDATION_IGNORED_LIBRARY_CHANGE_REASONS = new Set([
   'import-task-updated',
@@ -446,11 +447,21 @@ export function useResolvedMediaUrls({
       })
     }
 
-    void runTasksWithConcurrency(tasks, maxConcurrent, abortController.signal)
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    if (tasks.length > 0) {
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null
+        void runTasksWithConcurrency(tasks, maxConcurrent, abortController.signal)
+      }, RESOLVE_DISPATCH_DEBOUNCE_MS)
+    }
 
     return () => {
       active = false
       abortController.abort()
+
+      if (debounceTimer !== null) {
+        clearTimeout(debounceTimer)
+      }
 
       if (flushHandleRef.current !== null) {
         const handle = flushHandleRef.current

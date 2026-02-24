@@ -145,6 +145,7 @@ export interface UseAppWorkspacePropsParams {
   replaceImageCheckedIds: (ids: string[], append?: boolean) => void
   goPrevPage: () => void
   goNextPage: () => void
+  goPageByDelta: (delta: number) => void
   focusedVideoDurationSec: number
   focusedAudio: AudioItem | null
   videoTime: number

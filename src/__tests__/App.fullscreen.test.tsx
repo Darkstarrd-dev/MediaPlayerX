@@ -432,7 +432,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
 
     // 切换到video模式
     await click(screen.getByRole("button", { name: "视频模式" }));
-    
+
     // 进入全屏（video-only）
     await keyDown(window, { key: "f", code: "KeyF" });
     expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
@@ -444,17 +444,25 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     });
 
     // 验证image pane存在且已加载图片
-    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
     expect(imagePane).not.toBeNull();
-    expect(document.querySelector(".fullscreen-media-image-element")).not.toBeNull();
+    expect(
+      document.querySelector(".fullscreen-media-image-element"),
+    ).not.toBeNull();
 
     // 切换焦点到image pane
     fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
     await flushUiUpdates();
-    expect((imagePane as HTMLElement).classList.contains("is-pane-focus")).toBe(true);
+    expect((imagePane as HTMLElement).classList.contains("is-pane-focus")).toBe(
+      true,
+    );
 
     // 显示footer
-    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
+    const fullscreenLayer = document.querySelector(
+      ".fullscreen-layer",
+    ) as HTMLElement | null;
     expect(fullscreenLayer).not.toBeNull();
     fireEvent.mouseMove(fullscreenLayer as Element, {
       clientY: window.innerHeight - 4,
@@ -462,62 +470,82 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     await flushUiUpdates();
 
     // 验证autoplay按钮存在且可用
-    const autoplayButton = screen.queryByRole("button", { name: /自动播放|autoplay/i });
+    const autoplayButton = screen.queryByRole("button", {
+      name: /自动播放|autoplay/i,
+    });
     expect(autoplayButton).not.toBeNull();
     expect(autoplayButton).not.toBeDisabled();
   });
 
-  it("从video模式切到image-only时，autoplay可启用并自动翻页", async () => {
-    render(<App />);
+  it(
+    "从video模式切到image-only时，autoplay可启用并自动翻页",
+    async () => {
+      render(<App />);
 
-    await click(screen.getByRole("button", { name: "视频模式" }));
-    await keyDown(window, { key: "f", code: "KeyF" });
-    await keyDown(window, { key: "d", code: "KeyD" });
-    await waitFor(() => {
-      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
-    });
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await keyDown(window, { key: "d", code: "KeyD" });
+      await waitFor(() => {
+        expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+      });
 
-    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
-    expect(imagePane).not.toBeNull();
-    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
-    await flushUiUpdates();
+      const imagePane = document.querySelector(
+        ".fullscreen-image",
+      ) as HTMLElement | null;
+      expect(imagePane).not.toBeNull();
+      fireEvent.mouseMove(imagePane as HTMLElement, {
+        clientX: 24,
+        clientY: 24,
+      });
+      await flushUiUpdates();
 
-    await keyDown(window, { key: "d", code: "KeyD" });
-    await waitFor(() => {
-      expect(screen.queryByLabelText("调整全屏分屏比例")).not.toBeInTheDocument();
-    });
-    expect(document.querySelector(".fullscreen-image")).not.toBeNull();
-    expect(document.querySelector(".fullscreen-video")).toBeNull();
+      await keyDown(window, { key: "d", code: "KeyD" });
+      await waitFor(() => {
+        expect(
+          screen.queryByLabelText("调整全屏分屏比例"),
+        ).not.toBeInTheDocument();
+      });
+      expect(document.querySelector(".fullscreen-image")).not.toBeNull();
+      expect(document.querySelector(".fullscreen-video")).toBeNull();
 
-    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
-    expect(fullscreenLayer).not.toBeNull();
-    fireEvent.mouseMove(fullscreenLayer as Element, {
-      clientY: window.innerHeight - 4,
-    });
-    await flushUiUpdates();
+      const fullscreenLayer = document.querySelector(
+        ".fullscreen-layer",
+      ) as HTMLElement | null;
+      expect(fullscreenLayer).not.toBeNull();
+      fireEvent.mouseMove(fullscreenLayer as Element, {
+        clientY: window.innerHeight - 4,
+      });
+      await flushUiUpdates();
 
-    const autoplayButton = screen.getByRole("button", { name: /自动播放|autoplay/i });
-    expect(autoplayButton).not.toBeDisabled();
+      const autoplayButton = screen.getByRole("button", {
+        name: /自动播放|autoplay/i,
+      });
+      expect(autoplayButton).not.toBeDisabled();
 
-    const readImageSrc = () =>
-      (document.querySelector(".fullscreen-media-image-element") as HTMLImageElement | null)
-        ?.getAttribute("src") ?? null;
+      const readImageSrc = () =>
+        (
+          document.querySelector(
+            ".fullscreen-media-image-element",
+          ) as HTMLImageElement | null
+        )?.getAttribute("src") ?? null;
 
-    const beforeSrc = readImageSrc();
-    expect(beforeSrc).not.toBeNull();
+      const beforeSrc = readImageSrc();
+      expect(beforeSrc).not.toBeNull();
 
-    await click(autoplayButton);
-    expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
+      await click(autoplayButton);
+      expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
 
-    await waitFor(
-      () => {
-        const afterSrc = readImageSrc();
-        expect(afterSrc).not.toBeNull();
-        expect(afterSrc).not.toBe(beforeSrc);
-      },
-      { timeout: 3600 },
-    );
-  });
+      await waitFor(
+        () => {
+          const afterSrc = readImageSrc();
+          expect(afterSrc).not.toBeNull();
+          expect(afterSrc).not.toBe(beforeSrc);
+        },
+        { timeout: 3600 },
+      );
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("从video模式进入dual后，image pane焦点下可用滚轮翻页", async () => {
     render(<App />);
@@ -529,14 +557,19 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
     });
 
-    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
     expect(imagePane).not.toBeNull();
     fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
     await flushUiUpdates();
 
     const readImageSrc = () =>
-      (document.querySelector(".fullscreen-media-image-element") as HTMLImageElement | null)
-        ?.getAttribute("src") ?? null;
+      (
+        document.querySelector(
+          ".fullscreen-media-image-element",
+        ) as HTMLImageElement | null
+      )?.getAttribute("src") ?? null;
 
     const beforeSrc = readImageSrc();
     expect(beforeSrc).not.toBeNull();
@@ -558,8 +591,11 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     await keyDown(window, { key: "f", code: "KeyF" });
 
     const readVideoSrc = () =>
-      (document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null)
-        ?.getAttribute("src") ?? null;
+      (
+        document.querySelector(
+          ".fullscreen-media-video-element",
+        ) as HTMLVideoElement | null
+      )?.getAttribute("src") ?? null;
 
     const firstSrc = readVideoSrc();
     expect(firstSrc).not.toBeNull();
@@ -602,13 +638,18 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     await keyDown(window, { key: "f", code: "KeyF" });
 
     const readVideoSrc = () =>
-      (document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null)
-        ?.getAttribute("src") ?? null;
+      (
+        document.querySelector(
+          ".fullscreen-media-video-element",
+        ) as HTMLVideoElement | null
+      )?.getAttribute("src") ?? null;
 
     const beforeEndedSrc = readVideoSrc();
     expect(beforeEndedSrc).not.toBeNull();
 
-    const video = document.querySelector(".fullscreen-media-video-element") as HTMLVideoElement | null;
+    const video = document.querySelector(
+      ".fullscreen-media-video-element",
+    ) as HTMLVideoElement | null;
     expect(video).not.toBeNull();
     fireEvent.ended(video as HTMLVideoElement);
     await flushUiUpdates();
@@ -631,19 +672,25 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
     });
 
-    const imagePane = document.querySelector(".fullscreen-image") as HTMLElement | null;
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
     expect(imagePane).not.toBeNull();
     fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
     await flushUiUpdates();
 
-    const fullscreenLayer = document.querySelector(".fullscreen-layer") as HTMLElement | null;
+    const fullscreenLayer = document.querySelector(
+      ".fullscreen-layer",
+    ) as HTMLElement | null;
     expect(fullscreenLayer).not.toBeNull();
     fireEvent.mouseMove(fullscreenLayer as Element, {
       clientY: window.innerHeight - 4,
     });
     await flushUiUpdates();
 
-    const autoplayButton = screen.getByRole("button", { name: /自动播放|autoplay/i });
+    const autoplayButton = screen.getByRole("button", {
+      name: /自动播放|autoplay/i,
+    });
     expect(autoplayButton).toHaveAttribute("aria-pressed", "false");
 
     await keyDown(window, { key: "p", code: "KeyP" });

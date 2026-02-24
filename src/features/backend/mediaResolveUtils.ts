@@ -16,6 +16,7 @@ export interface MediaResolveTarget {
   thumbnailMaxEdge?: number
   thumbnailQuality?: number
   thumbnailGenerationConcurrency?: number
+  thumbnailQueueSize?: number
   fullscreenTargetWidth?: number
   fullscreenTargetHeight?: number
   fullscreenKernel?: 'lanczos3' | 'mitchell' | 'nearest' | 'cubic'
@@ -71,6 +72,9 @@ export function buildResolveRequest(target: MediaResolveTarget): ResolveMediaRes
         max_edge: Math.max(64, Math.min(2048, Math.round(target.thumbnailMaxEdge ?? 320))),
         quality: Math.max(THUMBNAIL_MIN_QUALITY, Math.min(THUMBNAIL_MAX_QUALITY, Math.round(target.thumbnailQuality ?? 82))),
         generation_concurrency: Math.max(1, Math.min(16, Math.round(target.thumbnailGenerationConcurrency ?? 4))),
+        queue_size: target.thumbnailQueueSize != null
+          ? Math.max(16, Math.min(256, Math.round(target.thumbnailQueueSize)))
+          : undefined,
       },
     }
   }

@@ -8,7 +8,11 @@ class TokenSemaphore {
 
   private inUse = 0
 
-  constructor(private readonly capacity: number) {}
+  private capacity: number
+
+  constructor(capacity: number) {
+    this.capacity = capacity
+  }
 
   async acquire(): Promise<() => void> {
     if (this.inUse < this.capacity) {
@@ -43,6 +47,18 @@ class TokenSemaphore {
     while (this.queue.length > 0) {
       const request = this.queue.shift()
       request?.reject(new Error('resource_governor_disposed'))
+    }
+  }
+
+  resize(newCapacity: number): void {
+    this.capacity = newCapacity
+    // 容量增大时，唤醒排队中的请求
+    while (this.queue.length > 0 && this.inUse < this.capacity) {
+      const next = this.queue.shift()
+      if (next) {
+        this.inUse += 1
+        next.resolve(this.createRelease())
+      }
     }
   }
 }
@@ -90,5 +106,10 @@ export class TaskResourceGovernor {
   dispose(): void {
     this.cpuSemaphore.clear()
     this.gpuSemaphore.clear()
+  }
+
+  resizeCpuSemaphore(limit: number): void {
+    const normalized = normalizeTokenLimit(limit)
+    this.cpuSemaphore.resize(normalized)
   }
 }

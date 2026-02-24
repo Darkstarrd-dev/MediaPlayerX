@@ -136,6 +136,8 @@ import {
   writeAppStateResponseSchema,
   openExternalUrlRequestSchema,
   openExternalUrlResponseSchema,
+  updatePerformanceConfigRequestSchema,
+  updatePerformanceConfigResponseSchema,
 } from "../src/contracts/backend";
 import { BACKEND_CHANNELS } from "./channels";
 import {
@@ -1014,5 +1016,15 @@ export function registerBackendIpcHandlers(): void {
     BACKEND_CHANNELS.clearDatabase,
     clearDatabaseResponseSchema,
     () => ensureService().clearDatabase(),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.updatePerformanceConfig,
+    updatePerformanceConfigRequestSchema,
+    updatePerformanceConfigResponseSchema,
+    (request) => {
+      taskResourceGovernor.resizeCpuSemaphore(request.cpu_token_limit);
+      return { applied: true };
+    },
   );
 }

@@ -41,6 +41,12 @@ export type ResolveMediaResourceRequestDto = Infer<
 export type ResolveMediaResourceResponseDto = Infer<
   typeof Backend.resolveMediaResourceResponseSchema
 >;
+export type UpdatePerformanceConfigRequestDto = Infer<
+  typeof Backend.updatePerformanceConfigRequestSchema
+>;
+export type UpdatePerformanceConfigResponseDto = Infer<
+  typeof Backend.updatePerformanceConfigResponseSchema
+>;
 export type WritePackageGradeRequestDto = Infer<
   typeof Backend.writePackageGradeRequestSchema
 >;

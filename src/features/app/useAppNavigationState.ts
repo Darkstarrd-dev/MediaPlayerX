@@ -325,7 +325,8 @@ export function useAppNavigationState({
     // 若出现显著空隙则允许突破冷却，避免遗漏用户触发的结构变化。
     if (
       performance.now() - lastSnapTimeRef.current < GAP_SNAP_COOLDOWN_MS &&
-      Math.abs(rightGap) < Math.max(GAP_SNAP_MIN_PX * 2, thumbnailLayout.cellWidth * 0.4)
+      Math.abs(rightGap) <
+        Math.max(GAP_SNAP_MIN_PX * 2, thumbnailLayout.cellWidth * 0.4)
     ) {
       return;
     }
@@ -339,9 +340,7 @@ export function useAppNavigationState({
       thumbnailLayout.cellWidth - thumbnailLayout.mediaHeight,
     );
     const resolveMainDeltaByGap = (gap: number) =>
-      gap <= halfCell
-        ? -gap
-        : cellSpan - gap + GAP_SNAP_EXPAND_BUFFER_PX;
+      gap <= halfCell ? -gap : cellSpan - gap + GAP_SNAP_EXPAND_BUFFER_PX;
     const markSnapApplied = (actualMainDelta: number) => {
       if (Math.abs(actualMainDelta) < GAP_SNAP_MIN_PX) {
         return false;
@@ -411,8 +410,7 @@ export function useAppNavigationState({
 
     // 默认仅调整右侧 metadata 分割条；仅在右侧折叠时回退到左侧 sidebar。
     if (!metadataCollapsed) {
-      const bodyWidth =
-        workspaceBodyRef.current?.getBoundingClientRect().width;
+      const bodyWidth = workspaceBodyRef.current?.getBoundingClientRect().width;
       if (bodyWidth && bodyWidth > 1) {
         const metadataMinRatioByWidth = METADATA_PANEL_MIN_WIDTH_PX / bodyWidth;
         const metadataMinRatio = Math.min(
@@ -443,7 +441,7 @@ export function useAppNavigationState({
         const shrinkWouldDropColumns =
           shrinkLayout.columns < thumbnailLayout.columns;
 
-        let desiredMainDelta = resolveMetadataMainDelta({
+        const desiredMainDelta = resolveMetadataMainDelta({
           proposedMainDelta: mainDelta,
           rightGap,
           cellSpan,
@@ -484,7 +482,10 @@ export function useAppNavigationState({
             0,
             cellSpan - rightGap + GAP_SNAP_EXPAND_BUFFER_PX,
           );
-          const expandDelta = Math.min(expandTargetDelta, maxExpandableMainDelta);
+          const expandDelta = Math.min(
+            expandTargetDelta,
+            maxExpandableMainDelta,
+          );
           if (expandDelta + GAP_SNAP_MIN_PX >= minExpandNeeded) {
             candidate = toRatioCandidate(expandDelta);
           }
@@ -607,7 +608,10 @@ export function useAppNavigationState({
     // 折叠/展开属于强交互，需立即解除锁定并重新吸附。
     lastSnapTimeRef.current = 0;
     snapTargetWidthRef.current = 0;
-    if (!(sidebarCollapsed && metadataCollapsed) && layoutConvergedInsetPx !== 0) {
+    if (
+      !(sidebarCollapsed && metadataCollapsed) &&
+      layoutConvergedInsetPx !== 0
+    ) {
       setLayoutConvergedInsetPx(0);
     }
     queueGapSnap(GAP_SNAP_SETTLE_MS);
@@ -646,8 +650,7 @@ export function useAppNavigationState({
     const prev = previousGridSizeRef.current;
     const widthChanged = Math.abs(prev.width - gridSize.width) >= 1;
     const heightChanged = Math.abs(prev.height - gridSize.height) >= 1;
-    if (!widthChanged && !heightChanged)
-      return;
+    if (!widthChanged && !heightChanged) return;
     previousGridSizeRef.current = gridSize;
     if (!canGapSnap || horizontalResizing) return;
 
@@ -658,7 +661,9 @@ export function useAppNavigationState({
     }
 
     if (snapTargetWidthRef.current > 0) {
-      const driftFromTarget = Math.abs(gridSize.width - snapTargetWidthRef.current);
+      const driftFromTarget = Math.abs(
+        gridSize.width - snapTargetWidthRef.current,
+      );
       const settleThreshold = Math.max(
         GAP_SNAP_MIN_PX * 2,
         Math.min(thumbnailLayout.cellWidth * 0.18, 24),
@@ -770,6 +775,7 @@ export function useAppNavigationState({
     goPackage,
     goPrevPage,
     goNextPage,
+    goPageByDelta,
   } = useImageBrowserViewModel({
     mode,
     selectedPackageId,
@@ -886,5 +892,6 @@ export function useAppNavigationState({
     goPackage,
     goPrevPage,
     goNextPage,
+    goPageByDelta,
   };
 }

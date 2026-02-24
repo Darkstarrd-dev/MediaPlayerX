@@ -46,9 +46,12 @@ export interface RenderSettingsMainSectionParams {
   thumbnailGap: number;
   thumbnailGapScale: number;
   thumbnailQuality: number;
+  thumbnailAdaptiveResolution: boolean;
   thumbnailWidthInputValue: string;
   thumbnailGenerationConcurrencyInput: string;
   thumbnailResolveConcurrencyInput: string;
+  thumbnailQueueSizeInput: string;
+  cpuTokenLimitInput: string;
   thumbnailWarmupRadius: number;
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
@@ -191,6 +194,7 @@ export interface RenderSettingsMainSectionParams {
   onThumbnailGapChange: (value: number) => void;
   onThumbnailQualityChange: (value: number) => void;
   onResetThumbnailQuality: () => void;
+  onThumbnailAdaptiveResolutionChange: (value: boolean) => void;
   onThumbnailWidthInputChange: (value: string) => void;
   onThumbnailWidthInputBlur: () => void;
   onThumbnailWidthInputKeyDown: (
@@ -209,6 +213,18 @@ export interface RenderSettingsMainSectionParams {
     event: ReactKeyboardEvent<HTMLInputElement>,
   ) => void;
   onResetThumbnailResolveConcurrency: () => void;
+  onThumbnailQueueSizeInputChange: (value: string) => void;
+  onThumbnailQueueSizeInputBlur: () => void;
+  onThumbnailQueueSizeInputKeyDown: (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+  ) => void;
+  onResetThumbnailQueueSize: () => void;
+  onCpuTokenLimitInputChange: (value: string) => void;
+  onCpuTokenLimitInputBlur: () => void;
+  onCpuTokenLimitInputKeyDown: (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+  ) => void;
+  onResetCpuTokenLimit: () => void;
   onThumbnailWarmupRadiusChange: (value: number) => void;
   onThumbnailWarmupConcurrencyChange: (value: number) => void;
   onFullscreenPrefetchRadiusChange: (value: number) => void;

@@ -151,6 +151,7 @@ export function useAppWorkspaceProps({
   replaceImageCheckedIds,
   goPrevPage,
   goNextPage,
+  goPageByDelta,
   focusedVideoDurationSec,
   focusedAudio,
   videoTime,
@@ -607,6 +608,36 @@ export function useAppWorkspaceProps({
     ? nodeBrowseTotalPages
     : imageTotalPagesForMain;
 
+  // 滚轮预览：绝对目标页模式，避免 settle → 真实页传播期间的回跳闪烁
+  const [wheelTargetPage, setWheelTargetPage] = useState<number | null>(null);
+  const onPagePreviewDelta = (accumulatedDelta: number) => {
+    if (accumulatedDelta === 0) return; // settle 信号 — 不清除目标，由 effect 接管
+    setWheelTargetPage(
+      Math.max(
+        0,
+        Math.min(
+          imageTotalPagesForFooter - 1,
+          normalizedPageIndexForFooter + accumulatedDelta,
+        ),
+      ),
+    );
+  };
+  // 真实页码追赶到目标后清除冻结
+  useEffect(() => {
+    if (wheelTargetPage === null) return;
+    if (normalizedPageIndexForFooter === wheelTargetPage) {
+      setWheelTargetPage(null);
+    }
+  }, [normalizedPageIndexForFooter, wheelTargetPage]);
+  // 安全超时：防止真实页码因快照等机制永远无法精确匹配目标
+  useEffect(() => {
+    if (wheelTargetPage === null) return;
+    const timer = setTimeout(() => setWheelTargetPage(null), 2000);
+    return () => clearTimeout(timer);
+  }, [wheelTargetPage]);
+  const normalizedPageIndexForFooterWithPreview =
+    wheelTargetPage ?? normalizedPageIndexForFooter;
+
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
     hideUncheckedNonChecked: false,
@@ -965,13 +996,21 @@ export function useAppWorkspaceProps({
         setSelectedPackageId(imageSourceId);
       }
     },
-    onThumbnailWheelTurnPage: (direction) => {
-      if (direction === "next") {
-        onNextPageForMain();
+    onThumbnailWheelTurnPage: (delta) => {
+      if (nodeBrowseMode) {
+        setNodeBrowsePage((value) => value + delta);
         return;
       }
-      onPrevPageForMain();
+      if (adReviewResultsMode) {
+        setAdReviewPageIndex((value) => {
+          const maxPage = Math.max(0, imageTotalPagesForMain - 1);
+          return Math.max(0, Math.min(maxPage, value + delta));
+        });
+        return;
+      }
+      goPageByDelta(delta);
     },
+    onThumbnailWheelDeltaPreview: onPagePreviewDelta,
     onThumbnailWheelSwitchSidebarNode: (direction) => {
       if (imageSidebarNodeIdsForWheel.length === 0) {
         return;
@@ -1286,7 +1325,7 @@ export function useAppWorkspaceProps({
       ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null)
       : null,
     nodeBrowseMode,
-    normalizedPageIndex: normalizedPageIndexForFooter,
+    normalizedPageIndex: normalizedPageIndexForFooterWithPreview,
     imageTotalPages: imageTotalPagesForFooter,
     onPrevPage: onPrevPageForMain,
     onNextPage: onNextPageForMain,

@@ -98,17 +98,19 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       expect(screen.queryByLabelText("实际渲染长边分辨率")).toBeNull();
       expect(screen.queryByLabelText("渲染帧率上限")).toBeNull();
       expect(screen.queryByLabelText("Tone Mapping")).toBeNull();
+
+      const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/);
+      const fontSizeBefore = settingsPanel?.style.fontSize;
+      fireEvent.change(settingsFontSlider, { target: { value: "1.2" } });
+      expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore);
+
+      await click(screen.getByRole("button", { name: "调试" }));
       expect(
         screen.getByRole("button", { name: /显示 Electron 外框与菜单/ }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: /显示界面参数按钮/ }),
       ).toBeInTheDocument();
-
-      const settingsFontSlider = screen.getByLabelText(/设置面板字体系数/);
-      const fontSizeBefore = settingsPanel?.style.fontSize;
-      fireEvent.change(settingsFontSlider, { target: { value: "1.2" } });
-      expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore);
 
       await click(screen.getByRole("button", { name: "AI模型设置" }));
       expect(screen.getByLabelText("视觉模型端口")).toBeInTheDocument();
@@ -188,6 +190,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       render(<App />);
 
       await click(screen.getByRole("button", { name: "设置" }));
+      await click(screen.getByRole("button", { name: "调试" }));
       await click(screen.getByRole("button", { name: /显示界面参数按钮/ }));
       await keyDown(window, { key: "Escape", code: "Escape" });
 

@@ -78,6 +78,7 @@ import {
   cancelImageConvertTaskResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
+  updatePerformanceConfigResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -201,6 +202,8 @@ import {
   type ReadAppStateResponseDto,
   type WriteAppStateRequestDto,
   type WriteAppStateResponseDto,
+  type UpdatePerformanceConfigRequestDto,
+  type UpdatePerformanceConfigResponseDto,
 } from '../../../contracts/backend'
 import type { MediaRepository, RepositoryRequestOptions } from './types'
 import { requireBackend, requireBackendMethod } from './backendChannel'
@@ -879,5 +882,15 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.clearDatabase(), options)
     return clearDatabaseResponseSchema.parse(response)
+  }
+
+  async updatePerformanceConfig(
+    request: UpdatePerformanceConfigRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<UpdatePerformanceConfigResponseDto> {
+    const updatePerformanceConfig = requireBackendMethod('updatePerformanceConfig')
+
+    const response = await withAbort(updatePerformanceConfig(request), options)
+    return updatePerformanceConfigResponseSchema.parse(response)
   }
 }

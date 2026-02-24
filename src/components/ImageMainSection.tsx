@@ -36,6 +36,7 @@ import { useNameListDimsLoader } from "./useNameListDimsLoader";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
 const EMPTY_IMAGE_ID_SET = new Set<string>();
+const WHEEL_SETTLE_MS = 100;
 
 type ImageConvertTaskStatus =
   | "pending"
@@ -191,6 +192,7 @@ function ImageMainSection({
   nodeBrowsePageSize = Number.MAX_SAFE_INTEGER,
   onSelectNodeBrowseItem,
   onThumbnailWheelTurnPage,
+  onThumbnailWheelDeltaPreview,
   onThumbnailWheelSwitchSidebarNode,
 }: ImageMainSectionProps) {
   const {
@@ -244,6 +246,8 @@ function ImageMainSection({
   const scalePopoverHideTimerRef = useRef<number | null>(null);
   const adReviewStrategyPopoverHideTimerRef = useRef<number | null>(null);
   const adReviewProgressPopoverHideTimerRef = useRef<number | null>(null);
+  const wheelAccumulatorRef = useRef(0);
+  const wheelFlushTimerRef = useRef<number | null>(null);
 
   const scaleLevel = Math.max(
     1,
@@ -352,6 +356,10 @@ function ImageMainSection({
       clearScalePopoverHideTimer();
       clearAdReviewStrategyPopoverHideTimer();
       clearAdReviewProgressPopoverHideTimer();
+      if (wheelFlushTimerRef.current != null) {
+        window.clearTimeout(wheelFlushTimerRef.current);
+        wheelFlushTimerRef.current = null;
+      }
     },
     [],
   );
@@ -464,16 +472,31 @@ function ImageMainSection({
         return;
       }
 
-      setPendingThumbnailSession(thumbnailGridSession);
+      // 未全部就绪 — 由增量同步 effect 渐进补全，不设 pending
       return;
     }
 
-    setPendingThumbnailSession((previous) => {
-      if (previous?.key === thumbnailGridSession.key) {
-        return previous;
+    // 新 session：已有缩略图时渐进显示，初始挂载时等待全部就绪
+    if (bufferedThumbnailSessionKey !== null) {
+      const partialUrls: Record<string, string> = {};
+      for (const imageId of thumbnailGridSession.imageIds) {
+        const url = imageUrlById[imageId];
+        if (url) {
+          partialUrls[imageId] = url;
+        }
       }
-      return thumbnailGridSession;
-    });
+      setBufferedRefsInPage(thumbnailGridSession.refs);
+      setBufferedThumbnailSessionKey(thumbnailGridSession.key);
+      setBufferedImageUrlById(partialUrls);
+      setPendingThumbnailSession(null);
+    } else {
+      setPendingThumbnailSession((previous) => {
+        if (previous?.key === thumbnailGridSession.key) {
+          return previous;
+        }
+        return thumbnailGridSession;
+      });
+    }
   }, [
     bufferedThumbnailSessionKey,
     imageUrlById,
@@ -529,6 +552,39 @@ function ImageMainSection({
       cancelled = true;
     };
   }, [imageUrlById, pendingThumbnailSession]);
+
+  // 渐进式缩略图同步：当 session 已切换且无 pending 时，增量更新已就绪的 URL
+  useEffect(() => {
+    if (showNamesOnly || nodeBrowseMode || !thumbnailGridSession) {
+      return;
+    }
+    if (bufferedThumbnailSessionKey !== thumbnailGridSession.key) {
+      return;
+    }
+    if (pendingThumbnailSession !== null) {
+      return;
+    }
+
+    setBufferedImageUrlById((previous) => {
+      let changed = false;
+      const next = { ...previous };
+      for (const imageId of thumbnailGridSession.imageIds) {
+        const url = imageUrlById[imageId];
+        if (url && next[imageId] !== url) {
+          next[imageId] = url;
+          changed = true;
+        }
+      }
+      return changed ? next : previous;
+    });
+  }, [
+    bufferedThumbnailSessionKey,
+    imageUrlById,
+    nodeBrowseMode,
+    pendingThumbnailSession,
+    showNamesOnly,
+    thumbnailGridSession,
+  ]);
 
   const thumbnailBufferPending =
     !showNamesOnly && !nodeBrowseMode && pendingThumbnailSession !== null;
@@ -944,7 +1000,20 @@ function ImageMainSection({
       return;
     }
 
-    onThumbnailWheelTurnPage?.(direction);
+    wheelAccumulatorRef.current += Math.sign(event.deltaY);
+    onThumbnailWheelDeltaPreview?.(wheelAccumulatorRef.current);
+    if (wheelFlushTimerRef.current != null) {
+      window.clearTimeout(wheelFlushTimerRef.current);
+    }
+    wheelFlushTimerRef.current = window.setTimeout(() => {
+      wheelFlushTimerRef.current = null;
+      const delta = wheelAccumulatorRef.current;
+      wheelAccumulatorRef.current = 0;
+      onThumbnailWheelDeltaPreview?.(0);
+      if (delta !== 0) {
+        onThumbnailWheelTurnPage?.(delta);
+      }
+    }, WHEEL_SETTLE_MS);
   };
 
   return (

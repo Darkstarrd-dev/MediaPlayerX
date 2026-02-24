@@ -129,6 +129,8 @@ import {
   writeAppStateResponseSchema,
   openExternalUrlRequestSchema,
   openExternalUrlResponseSchema,
+  updatePerformanceConfigRequestSchema,
+  updatePerformanceConfigResponseSchema,
 } from '../src/contracts/backend'
 import { APP_WINDOW_CHANNELS, BACKEND_CHANNELS, BENCH_CHANNELS } from './channels'
 
@@ -473,6 +475,11 @@ const backendApi = {
   clearDatabase: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.clearDatabase)
     return clearDatabaseResponseSchema.parse(response)
+  },
+  updatePerformanceConfig: async (request: unknown) => {
+    const parsed = updatePerformanceConfigRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.updatePerformanceConfig, parsed)
+    return updatePerformanceConfigResponseSchema.parse(response)
   },
   onLibraryChanged: (listener: (payload: unknown) => void) => {
     const handler = (_event: unknown, payload: unknown) => {

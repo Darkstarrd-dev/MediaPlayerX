@@ -45,9 +45,12 @@ export function renderSettingsMainSection({
   thumbnailGap,
   thumbnailGapScale,
   thumbnailQuality,
+  thumbnailAdaptiveResolution,
   thumbnailWidthInputValue,
   thumbnailGenerationConcurrencyInput,
   thumbnailResolveConcurrencyInput,
+  thumbnailQueueSizeInput,
+  cpuTokenLimitInput,
   thumbnailWarmupRadius,
   thumbnailWarmupConcurrency,
   fullscreenPrefetchRadius,
@@ -142,6 +145,7 @@ export function renderSettingsMainSection({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onResetThumbnailQuality,
+  onThumbnailAdaptiveResolutionChange,
   onThumbnailWidthInputChange,
   onThumbnailWidthInputBlur,
   onThumbnailWidthInputKeyDown,
@@ -154,6 +158,14 @@ export function renderSettingsMainSection({
   onThumbnailResolveConcurrencyInputBlur,
   onThumbnailResolveConcurrencyInputKeyDown,
   onResetThumbnailResolveConcurrency,
+  onThumbnailQueueSizeInputChange,
+  onThumbnailQueueSizeInputBlur,
+  onThumbnailQueueSizeInputKeyDown,
+  onResetThumbnailQueueSize,
+  onCpuTokenLimitInputChange,
+  onCpuTokenLimitInputBlur,
+  onCpuTokenLimitInputKeyDown,
+  onResetCpuTokenLimit,
   onThumbnailWarmupRadiusChange,
   onThumbnailWarmupConcurrencyChange,
   onFullscreenPrefetchRadiusChange,
@@ -370,6 +382,19 @@ export function renderSettingsMainSection({
                 onThumbnailGapChange(
                   toAbsolutePx("thumbnailGap", Number(event.target.value)),
                 )
+              }
+            />
+          </label>
+          <label
+            className="settings-toggle-row"
+            title={settingsTip("thumbnailAdaptiveResolution")}
+          >
+            <span>{t("ui.settings.thumbnailAdaptiveResolution")}</span>
+            <input
+              type="checkbox"
+              checked={thumbnailAdaptiveResolution}
+              onChange={(event) =>
+                onThumbnailAdaptiveResolutionChange(event.target.checked)
               }
             />
           </label>
@@ -911,6 +936,66 @@ export function renderSettingsMainSection({
               </label>
             </>
           ) : null}
+        </section>
+
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>{t("ui.settings.thumbnailPipelineSection")}</span>
+          </header>
+          <div className="settings-compact-row">
+            <label title={settingsTip("thumbnailQueueSize")}>
+              {t("ui.settings.thumbnailQueueSize")}
+            </label>
+            <div className="settings-compact-input-group">
+              <input
+                className="settings-number-input"
+                type="text"
+                inputMode="numeric"
+                value={thumbnailQueueSizeInput}
+                onChange={(event) =>
+                  onThumbnailQueueSizeInputChange(event.target.value)
+                }
+                onBlur={onThumbnailQueueSizeInputBlur}
+                onKeyDown={onThumbnailQueueSizeInputKeyDown}
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                title={t("tip.common.restoreDefault")}
+                onClick={onResetThumbnailQueueSize}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
+          <div className="settings-compact-row">
+            <label title={settingsTip("cpuTokenLimit")}>
+              {t("ui.settings.cpuTokenLimit")}
+            </label>
+            <div className="settings-compact-input-group">
+              <input
+                className="settings-number-input"
+                type="text"
+                inputMode="numeric"
+                value={cpuTokenLimitInput}
+                onChange={(event) =>
+                  onCpuTokenLimitInputChange(event.target.value)
+                }
+                onBlur={onCpuTokenLimitInputBlur}
+                onKeyDown={onCpuTokenLimitInputKeyDown}
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                title={t("tip.common.restoreDefault")}
+                onClick={onResetCpuTokenLimit}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
         </section>
       </div>
     );

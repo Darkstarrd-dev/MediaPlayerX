@@ -486,6 +486,37 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (
+    "thumbnailAdaptiveResolution" in next &&
+    typeof next.thumbnailAdaptiveResolution !== "boolean"
+  ) {
+    delete next.thumbnailAdaptiveResolution;
+  }
+
+  if (
+    typeof next.thumbnailQueueSize === "number" &&
+    Number.isFinite(next.thumbnailQueueSize)
+  ) {
+    next.thumbnailQueueSize = Math.max(
+      16,
+      Math.min(256, Math.floor(next.thumbnailQueueSize)),
+    );
+  } else if ("thumbnailQueueSize" in next) {
+    delete next.thumbnailQueueSize;
+  }
+
+  if (
+    typeof next.cpuTokenLimit === "number" &&
+    Number.isFinite(next.cpuTokenLimit)
+  ) {
+    next.cpuTokenLimit = Math.max(
+      1,
+      Math.min(16, Math.floor(next.cpuTokenLimit)),
+    );
+  } else if ("cpuTokenLimit" in next) {
+    delete next.cpuTokenLimit;
+  }
+
+  if (
     typeof next.thumbnailGenerationConcurrency === "number" &&
     Number.isFinite(next.thumbnailGenerationConcurrency)
   ) {
@@ -912,4 +943,19 @@ export function useSettingsPersistence({
       window.removeEventListener("beforeunload", flushPending);
     };
   }, [benchEnabled, persistSettingsJson]);
+
+  // cpuTokenLimit 变更时通知后端动态调整信号量
+  useEffect(() => {
+    if (benchEnabled || !isHydratedRef.current) {
+      return;
+    }
+
+    if (repository.updatePerformanceConfig) {
+      repository
+        .updatePerformanceConfig({ cpu_token_limit: settings.cpuTokenLimit })
+        .catch(() => {
+          // 忽略 IPC 调用失败（如后端未就绪）
+        });
+    }
+  }, [benchEnabled, repository, settings.cpuTokenLimit]);
 }

@@ -596,7 +596,7 @@ describe('ImageMainSection layout', () => {
     })
   })
 
-  it('切换批次未就绪时保留旧缩略图并锁定交互，待就绪后平替', async () => {
+  it('切换批次时渐进显示已就绪缩略图，剩余 URL 到达后增量补全', async () => {
     const refsBatchA = [
       { packageId: packageWithMoreImages.id, imageIndex: 0 },
       { packageId: packageWithMoreImages.id, imageIndex: 1 },
@@ -676,6 +676,7 @@ describe('ImageMainSection layout', () => {
     const initialImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
     expect(initialImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
 
+    // 切换到批次 B，仅 img-3 URL 就绪 — 渐进显示：img-3 立即可见
     rerender(
       <ImageMainSection
         vectorMode={false}
@@ -741,15 +742,14 @@ describe('ImageMainSection layout', () => {
       />,
     )
 
-    expect(document.querySelectorAll('.thumb-card.is-skeleton').length).toBe(0)
-    const preservedImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
-    expect(preservedImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-1', 'mock://thumb-2'])
-    const pendingButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
-    expect(pendingButtons.every((button) => button.disabled)).toBe(true)
+    // 渐进模式下，img-3 已就绪即显示，网格已切换到新批次
+    await waitFor(() => {
+      const partialImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
+      const partialSrcs = partialImages.map((element) => element.getAttribute('src'))
+      expect(partialSrcs).toContain('mock://thumb-3')
+    })
 
-    fireEvent.click(pendingButtons[0] as HTMLButtonElement)
-    expect(onSelectImage).toHaveBeenCalledTimes(0)
-
+    // img-4 URL 到达后增量补全
     rerender(
       <ImageMainSection
         vectorMode={false}
@@ -819,8 +819,6 @@ describe('ImageMainSection layout', () => {
     await waitFor(() => {
       const swappedImages = Array.from(document.querySelectorAll('.thumb-media-image')) as HTMLImageElement[]
       expect(swappedImages.map((element) => element.getAttribute('src'))).toEqual(['mock://thumb-3', 'mock://thumb-4'])
-      const settledButtons = Array.from(document.querySelectorAll('.thumb-card-main')) as HTMLButtonElement[]
-      expect(settledButtons.every((button) => !button.disabled)).toBe(true)
     })
   })
 
@@ -966,6 +964,7 @@ describe('ImageMainSection layout', () => {
   })
 
   it('缩略图容器滚轮触发翻页，Ctrl+滚轮切换 sidebar 节点', () => {
+    vi.useFakeTimers()
     const refsInPage = [{ packageId: packageWithImages.id, imageIndex: 0 }]
     const onThumbnailWheelTurnPage = vi.fn()
     const onThumbnailWheelSwitchSidebarNode = vi.fn()
@@ -1039,14 +1038,105 @@ describe('ImageMainSection layout', () => {
     expect(grid).not.toBeNull()
 
     fireEvent.wheel(grid, { deltaY: 120 })
-    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith('next')
+    vi.advanceTimersByTime(100)
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith(1)
     expect(onThumbnailWheelSwitchSidebarNode).not.toHaveBeenCalled()
 
     fireEvent.wheel(grid, { deltaY: -120, ctrlKey: true })
     expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
+
+    vi.useRealTimers()
+  })
+
+  it('多次快速滚轮聚合为单次 delta', () => {
+    vi.useFakeTimers()
+    const refsInPage = [{ packageId: packageWithImages.id, imageIndex: 0 }]
+    const onThumbnailWheelTurnPage = vi.fn()
+
+    render(
+      <ImageMainSection
+        vectorMode={false}
+        showNamesOnly={false}
+        metadataManageMode={false}
+        loading={false}
+        placeholderCount={1}
+        enableLoadingSkeleton={false}
+        activePackage={packageWithImages}
+        focusedRef={null}
+        focusedImageExists={false}
+        visibleImageRefs={refsInPage}
+        refsInPage={refsInPage}
+        pageStart={0}
+        actualCellWidth={120}
+        actualMediaHeight={108}
+        thumbnailColumns={2}
+        thumbnailGap={8}
+        vectorCandidates={[]}
+        packageById={new Map([[packageWithImages.id, packageWithImages]])}
+        imageUrlById={{ 'img-1': 'mock://thumb-1' }}
+        gridRef={createRef<HTMLDivElement>()}
+        onGridElementChange={vi.fn()}
+        onToggleShowNamesOnly={vi.fn()}
+        onEnterFullscreen={vi.fn()}
+        canJumpToAnimation={false}
+        onJumpToAnimation={vi.fn()}
+        onSelectImage={vi.fn()}
+        metadataPending={false}
+        metadataTargetPackageLabel={packageWithImages.displayName}
+        metadataFetchDefaultText={packageWithImages.packageName}
+        metadataProxyServer={''}
+        metadataEhentaiCookies={''}
+        onMetadataSyncName={vi.fn()}
+        onMetadataSaveParsed={async () => undefined}
+        manageMode={false}
+        sidebarSelectedCount={0}
+        imageSelectedCount={0}
+        activeSelectionScope={null}
+        pendingManageAction={false}
+        manageOperationHint={null}
+        canManageDelete={false}
+        canManageMoveNodes={false}
+        canManageHide={false}
+        canManageUnhide={false}
+        adReviewFeatureEnabled={false}
+        adReviewPanelOpen={false}
+        checkedImageIds={new Set()}
+        adReviewScopeImageIds={new Set()}
+        adReviewLlmReviewedImageIds={new Set()}
+        adReviewNonLlmReviewedImageIds={new Set()}
+        onToggleImageChecked={vi.fn()}
+        onReplaceCheckedImages={vi.fn()}
+        onManageDelete={vi.fn()}
+        onManageGroup={vi.fn()}
+        onManageMove={vi.fn()}
+        onManageHide={vi.fn()}
+        onManageUnhide={vi.fn()}
+        onToggleAdReviewPanel={vi.fn()}
+        onClearManageSelection={vi.fn()}
+        onThumbnailWheelTurnPage={onThumbnailWheelTurnPage}
+      />,
+    )
+
+    const grid = document.querySelector('.image-grid') as HTMLDivElement
+    expect(grid).not.toBeNull()
+
+    // 连续 5 次向下滚轮
+    for (let i = 0; i < 5; i++) {
+      fireEvent.wheel(grid, { deltaY: 120 })
+    }
+
+    // 尚未触发（settle 窗口未到）
+    expect(onThumbnailWheelTurnPage).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(100)
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledTimes(1)
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith(5)
+
+    vi.useRealTimers()
   })
 
   it('节点浏览网格滚轮同样触发翻页与 sidebar 切换', () => {
+    vi.useFakeTimers()
     const onThumbnailWheelTurnPage = vi.fn()
     const onThumbnailWheelSwitchSidebarNode = vi.fn()
 
@@ -1133,11 +1223,14 @@ describe('ImageMainSection layout', () => {
     expect(nodeGrid).not.toBeNull()
 
     fireEvent.wheel(nodeGrid, { deltaY: 120 })
-    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith('next')
+    vi.advanceTimersByTime(100)
+    expect(onThumbnailWheelTurnPage).toHaveBeenCalledWith(1)
     expect(onThumbnailWheelSwitchSidebarNode).not.toHaveBeenCalled()
 
     fireEvent.wheel(nodeGrid, { deltaY: -120, ctrlKey: true })
     expect(onThumbnailWheelSwitchSidebarNode).toHaveBeenCalledWith('prev')
+
+    vi.useRealTimers()
   })
 })
 

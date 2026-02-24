@@ -149,6 +149,7 @@ export interface ImageMainSectionProps {
   nodeBrowsePageStart?: number;
   nodeBrowsePageSize?: number;
   onSelectNodeBrowseItem?: (nodeId: string, imageSourceId?: string) => void;
-  onThumbnailWheelTurnPage?: (direction: "next" | "prev") => void;
+  onThumbnailWheelTurnPage?: (delta: number) => void;
+  onThumbnailWheelDeltaPreview?: (accumulatedDelta: number) => void;
   onThumbnailWheelSwitchSidebarNode?: (direction: "next" | "prev") => void;
 }

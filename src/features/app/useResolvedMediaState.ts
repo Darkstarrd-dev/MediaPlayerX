@@ -29,7 +29,9 @@ interface UseResolvedMediaStateParams {
   actualMediaHeight: number
   thumbnailQuality: number
   thumbnailWidth: number
+  thumbnailAdaptiveResolution: boolean
   thumbnailGenerationConcurrency: number
+  thumbnailQueueSize: number
   packageById: ReadonlyMap<string, ImagePackage>
   focusedImage: ImageItem | null
   metadataImage: ImageItem | null
@@ -76,7 +78,9 @@ export function useResolvedMediaState({
   actualMediaHeight,
   thumbnailQuality,
   thumbnailWidth,
+  thumbnailAdaptiveResolution,
   thumbnailGenerationConcurrency,
+  thumbnailQueueSize,
   packageById,
   focusedImage,
   metadataImage,
@@ -106,7 +110,11 @@ export function useResolvedMediaState({
     const priorityTargets: MediaResolveTarget[] = []
     const normalTargets: MediaResolveTarget[] = []
     const normalizedThumbnailWidth = Math.max(128, Math.round(thumbnailWidth))
-    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight, normalizedThumbnailWidth)))
+    const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio ?? 1) : 1
+    const displayEdge = Math.max(actualCellWidth, actualMediaHeight)
+    const thumbnailMaxEdge = thumbnailAdaptiveResolution
+      ? Math.max(96, Math.ceil(dpr * displayEdge))
+      : Math.max(96, Math.ceil(Math.max(displayEdge, normalizedThumbnailWidth)))
 
     const pushTarget = (target: MediaResolveTarget, priority = false) => {
       if (targetById.has(target.targetId)) {
@@ -138,6 +146,7 @@ export function useResolvedMediaState({
         thumbnailMaxEdge,
         thumbnailQuality,
         thumbnailGenerationConcurrency,
+        thumbnailQueueSize,
       })
       return true
     }
@@ -339,7 +348,9 @@ export function useResolvedMediaState({
     actualCellWidth,
     actualMediaHeight,
     thumbnailQuality,
+    thumbnailAdaptiveResolution,
     thumbnailGenerationConcurrency,
+    thumbnailQueueSize,
     thumbnailWidth,
     focusedImage,
     focusedAudio,
@@ -385,7 +396,11 @@ export function useResolvedMediaState({
 
     const targetById = new Map<string, MediaResolveTarget>()
     const normalizedThumbnailWidth = Math.max(128, Math.round(thumbnailWidth))
-    const thumbnailMaxEdge = Math.max(96, Math.ceil(Math.max(actualCellWidth, actualMediaHeight, normalizedThumbnailWidth)))
+    const dprCover = typeof window !== 'undefined' ? (window.devicePixelRatio ?? 1) : 1
+    const displayEdgeCover = Math.max(actualCellWidth, actualMediaHeight)
+    const thumbnailMaxEdge = thumbnailAdaptiveResolution
+      ? Math.max(96, Math.ceil(dprCover * displayEdgeCover))
+      : Math.max(96, Math.ceil(Math.max(displayEdgeCover, normalizedThumbnailWidth)))
 
     for (const candidate of nodeBrowseCoverThumbnailLocators) {
       const targetId = `node-cover-thumb:${candidate.imageId}`
@@ -400,6 +415,7 @@ export function useResolvedMediaState({
         thumbnailMaxEdge,
         thumbnailQuality,
         thumbnailGenerationConcurrency,
+        thumbnailQueueSize,
       })
     }
 
@@ -409,7 +425,9 @@ export function useResolvedMediaState({
     actualMediaHeight,
     benchSettings.enabled,
     nodeBrowseCoverThumbnailLocators,
+    thumbnailAdaptiveResolution,
     thumbnailGenerationConcurrency,
+    thumbnailQueueSize,
     thumbnailQuality,
     thumbnailWidth,
   ])

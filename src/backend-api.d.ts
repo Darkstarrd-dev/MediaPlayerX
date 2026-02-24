@@ -125,6 +125,8 @@ import type {
   ReadAppStateResponseDto,
   WriteAppStateRequestDto,
   WriteAppStateResponseDto,
+  UpdatePerformanceConfigRequestDto,
+  UpdatePerformanceConfigResponseDto,
   OpenExternalUrlRequestDto,
   OpenExternalUrlResponseDto,
 } from './contracts/backend'
@@ -243,6 +245,9 @@ interface MediaPlayerBackendApi {
   ) => Promise<SetRuntimeStoragePathsResponseDto>
   readArchiveLoadStatus?: () => Promise<ReadArchiveLoadStatusResponseDto>
   clearDatabase: () => Promise<ClearDatabaseResponseDto>
+  updatePerformanceConfig?: (
+    request: UpdatePerformanceConfigRequestDto,
+  ) => Promise<UpdatePerformanceConfigResponseDto>
   onLibraryChanged?: (
     listener: (payload: { reason: string; updated_at_ms: number }) => void,
   ) => () => void

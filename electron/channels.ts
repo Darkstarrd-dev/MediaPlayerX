@@ -5,6 +5,7 @@ export const BACKEND_CHANNELS = {
   readImagePage: 'backend:readImagePage',
   readImageMetadata: 'backend:readImageMetadata',
   resolveMediaResource: 'backend:resolveMediaResource',
+  updatePerformanceConfig: 'backend:updatePerformanceConfig',
   writePackageGrade: 'backend:writePackageGrade',
   setImageHidden: 'backend:setImageHidden',
   deleteImageItems: 'backend:deleteImageItems',

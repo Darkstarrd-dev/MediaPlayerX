@@ -52,6 +52,7 @@ interface UseImageBrowserViewModelResult {
   setPackageGrade: (grade: number | null) => void
   goPrevPage: () => void
   goNextPage: () => void
+  goPageByDelta: (delta: number) => void
 }
 
 export function useImageBrowserViewModel({
@@ -400,6 +401,22 @@ export function useImageBrowserViewModel({
     }))
   }, [imageTotalPages, selectedPackageId, setPageByPackage, setVectorPage, showNamesOnly, vectorResultsActive])
 
+  const goPageByDelta = useCallback((delta: number) => {
+    if (showNamesOnly || delta === 0) {
+      return
+    }
+
+    if (vectorResultsActive) {
+      setVectorPage((value) => clamp(value + delta, 0, imageTotalPages - 1))
+      return
+    }
+
+    setPageByPackage((previous) => ({
+      ...previous,
+      [selectedPackageId]: clamp((previous[selectedPackageId] ?? 0) + delta, 0, imageTotalPages - 1),
+    }))
+  }, [imageTotalPages, selectedPackageId, setPageByPackage, setVectorPage, showNamesOnly, vectorResultsActive])
+
   return {
     activePackage,
     focusedRef,
@@ -420,5 +437,6 @@ export function useImageBrowserViewModel({
     setPackageGrade,
     goPrevPage,
     goNextPage,
+    goPageByDelta,
   }
 }

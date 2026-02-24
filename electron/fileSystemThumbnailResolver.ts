@@ -17,12 +17,20 @@ const THUMBNAIL_RENDER_WORKER_TIMEOUT_MS = 30_000
 
 // 限制全局并发缩略图生成任务数，防止 Sharp 峰值内存/线程池过载
 const DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION = 4
+const DEFAULT_MAX_THUMBNAIL_QUEUE_SIZE = 64
 let maxConcurrentThumbnailGeneration = DEFAULT_MAX_CONCURRENT_THUMBNAIL_GENERATION
+let maxThumbnailQueueSize = DEFAULT_MAX_THUMBNAIL_QUEUE_SIZE
 let thumbnailRenderWorkerScriptPath: string | null = null
 
 // 全局任务队列与去重池
 const pendingThumbnailTasks = new Map<string, Promise<MediaLocatorDto | null>>()
-const processingQueue: Array<() => void> = []
+
+interface QueuedThumbnailTask {
+  execute: () => void
+  reject: (error: Error) => void
+}
+
+const processingQueue: QueuedThumbnailTask[] = []
 let activeProcessingCount = 0
 
 function runWithConcurrencyLimit<T>(task: () => Promise<T>): Promise<T> {
@@ -38,7 +46,7 @@ function runWithConcurrencyLimit<T>(task: () => Promise<T>): Promise<T> {
         activeProcessingCount -= 1
         const next = processingQueue.shift()
         if (next) {
-          next()
+          next.execute()
         }
       }
     }
@@ -46,7 +54,14 @@ function runWithConcurrencyLimit<T>(task: () => Promise<T>): Promise<T> {
     if (activeProcessingCount < maxConcurrentThumbnailGeneration) {
       void execute()
     } else {
-      processingQueue.push(execute)
+      // 队列溢出保护：超出限制时丢弃最老的任务
+      if (processingQueue.length >= maxThumbnailQueueSize) {
+        const evicted = processingQueue.shift()
+        if (evicted) {
+          evicted.reject(new Error('thumbnail queue overflow'))
+        }
+      }
+      processingQueue.push({ execute, reject })
     }
   })
 }
@@ -62,6 +77,19 @@ function applyRequestedGenerationConcurrency(rawValue: number | undefined): void
   }
 
   maxConcurrentThumbnailGeneration = normalized
+}
+
+function applyRequestedQueueSize(rawValue: number | undefined): void {
+  if (!Number.isFinite(rawValue)) {
+    return
+  }
+
+  const normalized = Math.max(16, Math.min(256, Math.round(rawValue)))
+  if (normalized === maxThumbnailQueueSize) {
+    return
+  }
+
+  maxThumbnailQueueSize = normalized
 }
 
 interface ThumbnailRenderOptions {
@@ -295,6 +323,7 @@ export async function maybeResolveThumbnailLocator({
   archiveNormalizeRecheckMs,
 }: ResolveThumbnailLocatorParams): Promise<MediaLocatorDto | null> {
   applyRequestedGenerationConcurrency(request.thumbnail?.generation_concurrency)
+  applyRequestedQueueSize(request.thumbnail?.queue_size)
 
   const options = resolveThumbnailOptionsFromRequest(request)
   if (!options) {

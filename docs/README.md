@@ -24,6 +24,7 @@
 - 风险台账：`dependency-risk-register.md`
 - 性能实施计划：`thumb_acceleration_implementation_plan.md`
 - 全屏重采样 SSOT 草案：`fullscreen_resampling_ssot_draft.md`
+- 高优化需求项目表：`high-optimization-demand-table.md`
 
 ## SSOT 同步提醒
 

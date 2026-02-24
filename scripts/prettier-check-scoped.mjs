@@ -27,6 +27,18 @@ function runGit(args) {
   return execFileSync("git", args, { encoding: "utf8" }).trim();
 }
 
+function hasRevision(revision) {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "--quiet", revision], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function splitLines(value) {
   return value
     .split(/\r?\n/u)
@@ -84,6 +96,9 @@ function collectCiChangedFiles() {
       return [];
     }
     return readDiffFiles([`${remoteRef}...HEAD`]);
+  }
+  if (!hasRevision("HEAD~1")) {
+    return [];
   }
   return readDiffFiles(["HEAD~1...HEAD"]);
 }

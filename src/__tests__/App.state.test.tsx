@@ -87,15 +87,18 @@ describe("MediaPlayer 虚拟 UI", () => {
       render(<App />);
       await flushUiUpdates();
 
-      const rootFolderButton = screen.getByRole("button", { name: "X盘" });
-      expect(screen.getByRole("button", { name: "收藏" })).toBeInTheDocument();
+      const rootFolderButton = screen.getByRole("button", {
+        name: /X盘\/收藏/,
+      });
+      expect(screen.getByRole("button", { name: /收藏/ })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "画廊A" })).toBeInTheDocument();
 
       await click(rootFolderButton);
       fireEvent.doubleClick(rootFolderButton);
       await flushUiUpdates();
 
       await waitFor(() => {
-        expect(screen.queryByRole("button", { name: "收藏" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "画廊A" })).toBeNull();
       });
 
       fireEvent.doubleClick(rootFolderButton);
@@ -103,7 +106,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: "收藏" }),
+          screen.getByRole("button", { name: "画廊A" }),
         ).toBeInTheDocument();
       });
     },
@@ -886,7 +889,8 @@ describe("MediaPlayer 虚拟 UI", () => {
       render(<App />);
 
       const readMainFocusedOrdinal = () => {
-        const title = document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        const title =
+          document.querySelector(".main-toolbar-title")?.textContent ?? "";
         const matched = title.match(/\((\d+)\/(\d+)\)/);
         return Number(matched?.[1] ?? 0);
       };
@@ -904,7 +908,9 @@ describe("MediaPlayer 虚拟 UI", () => {
         expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
       });
 
-      const fullscreenLayer = document.querySelector(".fullscreen-layer") as Element;
+      const fullscreenLayer = document.querySelector(
+        ".fullscreen-layer",
+      ) as Element;
       fireEvent.mouseMove(fullscreenLayer, {
         clientY: window.innerHeight - 4,
       });

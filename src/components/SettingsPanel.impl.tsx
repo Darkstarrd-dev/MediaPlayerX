@@ -62,6 +62,10 @@ const THUMBNAIL_GENERATION_CONCURRENCY_MIN = 1;
 const THUMBNAIL_GENERATION_CONCURRENCY_MAX = 16;
 const THUMBNAIL_RESOLVE_CONCURRENCY_MIN = 1;
 const THUMBNAIL_RESOLVE_CONCURRENCY_MAX = 32;
+const THUMBNAIL_QUEUE_SIZE_MIN = 16;
+const THUMBNAIL_QUEUE_SIZE_MAX = 256;
+const CPU_TOKEN_LIMIT_MIN = 1;
+const CPU_TOKEN_LIMIT_MAX = 16;
 const PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
 const PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT = 8;
 
@@ -210,9 +214,12 @@ function SettingsPanel({
   mediaPreloadMemoryBudgetMb,
   thumbnailGap,
   thumbnailQuality,
+  thumbnailAdaptiveResolution,
   thumbnailWidth,
   thumbnailGenerationConcurrency,
   thumbnailResolveConcurrency,
+  thumbnailQueueSize,
+  cpuTokenLimit,
   thumbnailWarmupRadius,
   thumbnailWarmupConcurrency,
   fullscreenPrefetchRadius,
@@ -304,12 +311,17 @@ function SettingsPanel({
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onResetThumbnailQuality,
+  onThumbnailAdaptiveResolutionChange,
   onThumbnailWidthChange,
   onResetThumbnailWidth,
   onThumbnailGenerationConcurrencyChange,
   onThumbnailResolveConcurrencyChange,
   onResetThumbnailGenerationConcurrency,
   onResetThumbnailResolveConcurrency,
+  onThumbnailQueueSizeChange,
+  onResetThumbnailQueueSize,
+  onCpuTokenLimitChange,
+  onResetCpuTokenLimit,
   onThumbnailWarmupRadiusChange,
   onThumbnailWarmupConcurrencyChange,
   onFullscreenPrefetchRadiusChange,
@@ -385,6 +397,12 @@ function SettingsPanel({
     thumbnailResolveConcurrencyInput,
     setThumbnailResolveConcurrencyInput,
   ] = useState(() => String(thumbnailResolveConcurrency));
+  const [thumbnailQueueSizeInput, setThumbnailQueueSizeInput] = useState(() =>
+    String(thumbnailQueueSize),
+  );
+  const [cpuTokenLimitInput, setCpuTokenLimitInput] = useState(() =>
+    String(cpuTokenLimit),
+  );
   const captureDialogRef = useRef<HTMLDivElement>(null);
   const settingsPanelRef = useRef<HTMLElement>(null);
   const panelDragStateRef = useRef<PanelDragState | null>(null);
@@ -456,6 +474,8 @@ function SettingsPanel({
         String(thumbnailGenerationConcurrency),
       );
       setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency));
+      setThumbnailQueueSizeInput(String(thumbnailQueueSize));
+      setCpuTokenLimitInput(String(cpuTokenLimit));
       panelDragStateRef.current = null;
       setSettingsPanelOffset({ x: 0, y: 0 });
       setSettingsPanelDragging(false);
@@ -466,7 +486,9 @@ function SettingsPanel({
     }
   }, [
     settingsOpen,
+    cpuTokenLimit,
     thumbnailGenerationConcurrency,
+    thumbnailQueueSize,
     thumbnailResolveConcurrency,
     thumbnailWidth,
   ]);
@@ -484,6 +506,14 @@ function SettingsPanel({
   useEffect(() => {
     setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency));
   }, [thumbnailResolveConcurrency]);
+
+  useEffect(() => {
+    setThumbnailQueueSizeInput(String(thumbnailQueueSize));
+  }, [thumbnailQueueSize]);
+
+  useEffect(() => {
+    setCpuTokenLimitInput(String(cpuTokenLimit));
+  }, [cpuTokenLimit]);
 
   useEffect(() => {
     const normalized = resolveSettingsSection(activeSectionRaw);
@@ -801,6 +831,107 @@ function SettingsPanel({
     }
   };
 
+  const commitThumbnailQueueSizeInput = () => {
+    const parsed = Number(thumbnailQueueSizeInput);
+    if (!Number.isFinite(parsed)) {
+      setThumbnailQueueSizeInput(String(thumbnailQueueSize));
+      return;
+    }
+
+    const normalized = Math.max(
+      THUMBNAIL_QUEUE_SIZE_MIN,
+      Math.min(THUMBNAIL_QUEUE_SIZE_MAX, Math.round(parsed)),
+    );
+    setThumbnailQueueSizeInput(String(normalized));
+    onThumbnailQueueSizeChange(normalized);
+  };
+
+  const handleThumbnailQueueSizeInputChange = (value: string) => {
+    if (value.length === 0) {
+      setThumbnailQueueSizeInput(value);
+      return;
+    }
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    setThumbnailQueueSizeInput(value);
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    if (
+      parsed < THUMBNAIL_QUEUE_SIZE_MIN ||
+      parsed > THUMBNAIL_QUEUE_SIZE_MAX
+    ) {
+      return;
+    }
+    onThumbnailQueueSizeChange(parsed);
+  };
+
+  const handleThumbnailQueueSizeInputKeyDown = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Enter") {
+      commitThumbnailQueueSizeInput();
+      event.currentTarget.blur();
+      return;
+    }
+    if (event.key === "Escape") {
+      setThumbnailQueueSizeInput(String(thumbnailQueueSize));
+      event.currentTarget.blur();
+    }
+  };
+
+  const commitCpuTokenLimitInput = () => {
+    const parsed = Number(cpuTokenLimitInput);
+    if (!Number.isFinite(parsed)) {
+      setCpuTokenLimitInput(String(cpuTokenLimit));
+      return;
+    }
+
+    const normalized = Math.max(
+      CPU_TOKEN_LIMIT_MIN,
+      Math.min(CPU_TOKEN_LIMIT_MAX, Math.round(parsed)),
+    );
+    setCpuTokenLimitInput(String(normalized));
+    onCpuTokenLimitChange(normalized);
+  };
+
+  const handleCpuTokenLimitInputChange = (value: string) => {
+    if (value.length === 0) {
+      setCpuTokenLimitInput(value);
+      return;
+    }
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
+    setCpuTokenLimitInput(value);
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    if (parsed < CPU_TOKEN_LIMIT_MIN || parsed > CPU_TOKEN_LIMIT_MAX) {
+      return;
+    }
+    onCpuTokenLimitChange(parsed);
+  };
+
+  const handleCpuTokenLimitInputKeyDown = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Enter") {
+      commitCpuTokenLimitInput();
+      event.currentTarget.blur();
+      return;
+    }
+    if (event.key === "Escape") {
+      setCpuTokenLimitInput(String(cpuTokenLimit));
+      event.currentTarget.blur();
+    }
+  };
+
   const stopSettingsPanelDragging = () => {
     panelDragStateRef.current = null;
     setSettingsPanelDragging(false);
@@ -922,9 +1053,12 @@ function SettingsPanel({
     thumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
+    thumbnailAdaptiveResolution,
     thumbnailWidthInputValue,
     thumbnailGenerationConcurrencyInput,
     thumbnailResolveConcurrencyInput,
+    thumbnailQueueSizeInput,
+    cpuTokenLimitInput,
     thumbnailWarmupRadius,
     thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius,
@@ -1021,6 +1155,7 @@ function SettingsPanel({
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onResetThumbnailQuality,
+    onThumbnailAdaptiveResolutionChange,
     onThumbnailWidthInputChange: handleThumbnailWidthInputChange,
     onThumbnailWidthInputBlur: commitThumbnailWidthInput,
     onThumbnailWidthInputKeyDown: handleThumbnailWidthInputKeyDown,
@@ -1039,6 +1174,14 @@ function SettingsPanel({
     onThumbnailResolveConcurrencyInputKeyDown:
       handleThumbnailResolveConcurrencyInputKeyDown,
     onResetThumbnailResolveConcurrency,
+    onThumbnailQueueSizeInputChange: handleThumbnailQueueSizeInputChange,
+    onThumbnailQueueSizeInputBlur: commitThumbnailQueueSizeInput,
+    onThumbnailQueueSizeInputKeyDown: handleThumbnailQueueSizeInputKeyDown,
+    onResetThumbnailQueueSize,
+    onCpuTokenLimitInputChange: handleCpuTokenLimitInputChange,
+    onCpuTokenLimitInputBlur: commitCpuTokenLimitInput,
+    onCpuTokenLimitInputKeyDown: handleCpuTokenLimitInputKeyDown,
+    onResetCpuTokenLimit,
     onThumbnailWarmupRadiusChange,
     onThumbnailWarmupConcurrencyChange,
     onFullscreenPrefetchRadiusChange,
