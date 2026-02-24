@@ -5,6 +5,46 @@ import {
   resolveStyleId,
 } from "../theme/themeRegistry";
 
+/** 性能预设：一次性批量覆写，不持久化预设名 */
+export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
+  normal: {
+    thumbnailAdaptiveResolution: true,
+    thumbnailQueueSize: 64,
+    cpuTokenLimit: 2,
+    thumbnailGenerationConcurrency: 4,
+    thumbnailResolveConcurrency: 8,
+    thumbnailQuality: 40,
+    thumbnailWarmupRadius: 1,
+    thumbnailWarmupConcurrency: 2,
+    fullscreenPrefetchRadius: 6,
+    fullscreenDecodeCacheSize: 10,
+  },
+  performance: {
+    thumbnailAdaptiveResolution: true,
+    thumbnailQueueSize: 128,
+    cpuTokenLimit: 4,
+    thumbnailGenerationConcurrency: 8,
+    thumbnailResolveConcurrency: 12,
+    thumbnailQuality: 35,
+    thumbnailWarmupRadius: 1,
+    thumbnailWarmupConcurrency: 2,
+    fullscreenPrefetchRadius: 8,
+    fullscreenDecodeCacheSize: 12,
+  },
+  ultra: {
+    thumbnailAdaptiveResolution: true,
+    thumbnailQueueSize: 256,
+    cpuTokenLimit: 8,
+    thumbnailGenerationConcurrency: 12,
+    thumbnailResolveConcurrency: 16,
+    thumbnailQuality: 35,
+    thumbnailWarmupRadius: 2,
+    thumbnailWarmupConcurrency: 2,
+    fullscreenPrefetchRadius: 10,
+    fullscreenDecodeCacheSize: 16,
+  },
+};
+
 interface BuildSettingsPanelPropsParams {
   settingsOpen: boolean;
   uiLocale: AppSettings["uiLocale"];
@@ -496,5 +536,11 @@ export function buildSettingsPanelProps(
     onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,
     onOpenAdReviewDeleteOverlayDebug: params.openAdReviewDeleteOverlayDebug,
+    onPerformancePresetChange: (preset: string) => {
+      const values = PERFORMANCE_PRESETS[preset];
+      if (values) {
+        params.updateSettings(values);
+      }
+    },
   };
 }

@@ -221,6 +221,7 @@ export function renderSettingsMainSection({
   onRefreshRuntimeInfo,
   onRefreshPreferenceDebug,
   onOpenAdReviewDeleteOverlayDebug,
+  onPerformancePresetChange,
 }: RenderSettingsMainSectionParams): JSX.Element {
   const settingsTip = (key: string): string => t(`ui.settings.tooltip.${key}`);
 
@@ -942,6 +943,36 @@ export function renderSettingsMainSection({
           <header className="settings-group-head">
             <span>{t("ui.settings.thumbnailPipelineSection")}</span>
           </header>
+          <label
+            htmlFor="settings-performance-preset-select"
+            title={t("ui.settings.tooltip.performancePreset")}
+          >
+            {t("ui.settings.performancePreset")}
+            <select
+              id="settings-performance-preset-select"
+              value=""
+              onChange={(event) => {
+                const value = event.target.value;
+                if (value) {
+                  onPerformancePresetChange(value);
+                }
+                event.target.value = "";
+              }}
+            >
+              <option value="" disabled>
+                {t("ui.settings.performancePresetPlaceholder")}
+              </option>
+              <option value="normal">
+                {t("ui.settings.performancePresetNormal")}
+              </option>
+              <option value="performance">
+                {t("ui.settings.performancePresetPerformance")}
+              </option>
+              <option value="ultra">
+                {t("ui.settings.performancePresetUltra")}
+              </option>
+            </select>
+          </label>
           <div className="settings-compact-row">
             <label title={settingsTip("thumbnailQueueSize")}>
               {t("ui.settings.thumbnailQueueSize")}

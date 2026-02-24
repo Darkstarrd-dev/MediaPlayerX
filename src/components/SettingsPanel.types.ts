@@ -246,4 +246,5 @@ export interface SettingsPanelProps {
   onPickThumbnailCacheDirectoryPath: () => void;
   onRefreshRuntimeInfo: () => void;
   onOpenAdReviewDeleteOverlayDebug: () => void;
+  onPerformancePresetChange: (preset: string) => void;
 }

@@ -36,3 +36,7 @@ testdata/
 *.njsproj
 *.sln
 *.sw?
+
+# Generated reports
+report/html/index.html
+report/html/jscpd-report.json

@@ -79,6 +79,42 @@ MEDIA_PLAYERX_SPLASH_MIN_DURATION_MS=2000 npm run dev:desktop
 npm run test
 ```
 
+## 性能调参
+
+设置面板 → Performance 分页提供缩略图管线与加载性能相关参数，可根据硬件配置手动调整或使用一键预设。
+
+### 参数说明
+
+| 参数 | 范围 | 默认值 | 说明 |
+|------|------|--------|------|
+| `thumbnailAdaptiveResolution` | `true/false` | `true` | 缩略图自适应分辨率，根据视口动态选择最优尺寸 |
+| `thumbnailQueueSize` | 16–256 | `64` | 缩略图生成任务队列容量，队列满时丢弃最旧任务 |
+| `cpuTokenLimit` | 1–16 | `2` | 全局 CPU 密集任务并发令牌数 |
+| `thumbnailGenerationConcurrency` | 1–16 | `6` | 缩略图生成并发数 |
+| `thumbnailResolveConcurrency` | 1–32 | `8` | 缩略图 URL 解析并发数 |
+| `thumbnailQuality` | 1–100 | `40` | 缩略图 JPEG 质量 |
+| `thumbnailWarmupRadius` | 0–3 | `1` | 相邻页预热范围（0 = 关闭） |
+| `thumbnailWarmupConcurrency` | 1–4 | `2` | 预热批量级别 |
+| `fullscreenPrefetchRadius` | 2–12 | `6` | 全屏模式预取深度 |
+| `fullscreenDecodeCacheSize` | 4–16 | `10` | 全屏解码缓存数 |
+
+### 预设推荐值
+
+缩略图管线组顶部提供三档预设下拉菜单，选择后一次性覆写全部参数：
+
+| 参数 | Normal (4核/8G) | Performance (8核/16G) | Ultra (16核/32G) |
+|------|:---:|:---:|:---:|
+| `thumbnailAdaptiveResolution` | `true` | `true` | `true` |
+| `thumbnailQueueSize` | 64 | 128 | 256 |
+| `cpuTokenLimit` | 2 | 4 | 8 |
+| `thumbnailGenerationConcurrency` | 4 | 8 | 12 |
+| `thumbnailResolveConcurrency` | 8 | 12 | 16 |
+| `thumbnailQuality` | 40 | 35 | 35 |
+| `thumbnailWarmupRadius` | 1 | 1 | 2 |
+| `thumbnailWarmupConcurrency` | 2 | 2 | 2 |
+| `fullscreenPrefetchRadius` | 6 | 8 | 10 |
+| `fullscreenDecodeCacheSize` | 10 | 12 | 16 |
+
 ## 文档入口
 
 - `docs/README.md`

@@ -374,6 +374,7 @@ function SettingsPanel({
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
   onOpenAdReviewDeleteOverlayDebug,
+  onPerformancePresetChange,
 }: SettingsPanelProps) {
   const { t } = useI18n();
   const [activeSectionRaw, setActiveSection] =
@@ -1237,6 +1238,7 @@ function SettingsPanel({
     onRefreshRuntimeInfo,
     onRefreshPreferenceDebug: handleRefreshPreferenceDebug,
     onOpenAdReviewDeleteOverlayDebug,
+    onPerformancePresetChange,
   });
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : "";

@@ -300,4 +300,5 @@ export interface RenderSettingsMainSectionParams {
   onRefreshRuntimeInfo: () => void;
   onRefreshPreferenceDebug: () => void;
   onOpenAdReviewDeleteOverlayDebug: () => void;
+  onPerformancePresetChange: (preset: string) => void;
 }
