@@ -178,6 +178,8 @@ export function useAppViewComposition({
     sidebarFocus,
   } = appSettings;
 
+  const layoutConvergedInsetPx = readNavigationState.layoutConvergedInsetPx;
+
   const {
     selectedPackageId,
     selectedSidebarNodeId,
@@ -750,6 +752,7 @@ export function useAppViewComposition({
     sidebarRatio,
     metadataCollapsed,
     metadataRatio,
+    layoutConvergedInsetPx,
     layoutLocked,
     appBodyRef,
     workspaceRef,

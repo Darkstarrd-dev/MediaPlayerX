@@ -66,6 +66,7 @@ interface UseAppTopLayerStateParams {
   metadataCollapsed: boolean;
   onToggleSidebarPanel: () => void;
   onToggleMetadataPanel: () => void;
+  layoutConvergedInsetPx: number;
   importTasks: ImportTaskDto[];
   dismissedImportTaskIds: Record<string, true>;
   setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>;
@@ -215,6 +216,7 @@ export function useAppTopLayerState({
   metadataCollapsed,
   onToggleSidebarPanel,
   onToggleMetadataPanel,
+  layoutConvergedInsetPx,
   importTasks,
   dismissedImportTaskIds,
   setDismissedImportTaskIds,
@@ -726,6 +728,7 @@ export function useAppTopLayerState({
     metadataCollapsed,
     onToggleSidebarPanel,
     onToggleMetadataPanel,
+    layoutConvergedInsetPx,
     onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
   });
 

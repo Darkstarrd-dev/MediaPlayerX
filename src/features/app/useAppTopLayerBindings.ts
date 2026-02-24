@@ -370,6 +370,7 @@ export function useAppTopLayerBindings({
     videoByIdEffective,
     collapseSidebar,
     sidebarCollapsed,
+    layoutConvergedInsetPx,
     onExpandSidebar,
   } = readNavigationState
 
@@ -548,6 +549,7 @@ export function useAppTopLayerBindings({
     onToggleMetadataManageMode: toggleMetadataManageMode,
     sidebarCollapsed,
     metadataCollapsed: appSettings.metadataCollapsed,
+    layoutConvergedInsetPx,
     onToggleSidebarPanel: () => {
       if (sidebarCollapsed) {
         onExpandSidebar()

@@ -44,6 +44,7 @@ interface BuildAppHeaderPropsParams {
   metadataCollapsed?: boolean
   onToggleSidebarPanel?: () => void
   onToggleMetadataPanel?: () => void
+  layoutConvergedInsetPx?: number
 }
 
 export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeaderProps {
@@ -143,5 +144,6 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     showPanelToggleControls: luxuryWhiteActive,
     onToggleSidebarPanel: params.onToggleSidebarPanel,
     onToggleMetadataPanel: params.onToggleMetadataPanel,
+    layoutConvergedInsetPx: params.layoutConvergedInsetPx ?? 0,
   }
 }

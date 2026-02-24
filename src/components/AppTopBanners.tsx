@@ -16,6 +16,8 @@ interface AppTopBannersProps {
   }>
   onDismissRuntimeWarning: () => void
   importTaskPanelProps: ImportTaskPanelProps
+  dualCollapsed?: boolean
+  layoutConvergedInsetPx?: number
 }
 
 function AppTopBanners({
@@ -25,6 +27,8 @@ function AppTopBanners({
   runtimeCapabilityWarnings,
   onDismissRuntimeWarning,
   importTaskPanelProps,
+  dualCollapsed = false,
+  layoutConvergedInsetPx = 0,
 }: AppTopBannersProps) {
   const hasSysinfo =
     importTaskPanelProps.open || backendErrorRows.length > 0 || runtimeWarningVisible
@@ -34,7 +38,21 @@ function AppTopBanners({
   }
 
   return (
-    <section className="fg-sysinfo" data-slot="fg-sysinfo-root" role="region" aria-label="system info">
+    <section
+      className="fg-sysinfo"
+      data-slot="fg-sysinfo-root"
+      role="region"
+      aria-label="system info"
+      style={
+        dualCollapsed
+          ? {
+              width: '100%',
+              maxWidth: `calc(100% - ${layoutConvergedInsetPx}px - (var(--mpx-slot-bg-app-workspace-padding, var(--mpx-layout-padding)) * 2))`,
+              marginInline: 'auto',
+            }
+          : undefined
+      }
+    >
       <BackendErrorBanner rows={backendErrorRows} repositoryMode={repositoryMode} />
 
       <RuntimeWarningBanner

@@ -138,4 +138,22 @@ describe('AppHeader music quick actions', () => {
     fireEvent.click(screen.getByRole('button', { name: '调试固定悬浮层' }))
     expect(onTogglePopoverDebugPinned).toHaveBeenCalledTimes(1)
   })
+
+  it('双侧折叠收敛时对 header 应用居中宽度约束', () => {
+    const { container } = render(
+      <AppHeader
+        {...createHeaderProps({
+          sidebarCollapsed: true,
+          metadataCollapsed: true,
+          layoutConvergedInsetPx: 96,
+        })}
+      />,
+    )
+
+    const header = container.querySelector('.app-header') as HTMLElement | null
+    expect(header).not.toBeNull()
+    expect(header?.style.width).toBe('100%')
+    expect(header?.style.maxWidth).toBe('calc(100% - 96px - (var(--mpx-slot-bg-app-workspace-padding, var(--mpx-layout-padding)) * 2))')
+    expect(header?.style.marginInline).toBe('auto')
+  })
 })

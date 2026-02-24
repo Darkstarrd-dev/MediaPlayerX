@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
@@ -17,6 +17,8 @@ import {
   type GridSnapAnchor,
 } from "../layout/thumbnailHorizontalSnap";
 import { useImageBrowserViewModel } from "./useImageBrowserViewModel";
+import { clamp } from "../../utils/ui";
+import { resolveMetadataMainDelta } from "../layout/thumbnailGapPolicy";
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03;
 const GAP_SNAP_MIN_PX = 4;
@@ -29,6 +31,10 @@ const GAP_SNAP_EXPAND_BUFFER_PX = 2;
 // snap 执行后的冷却窗口：覆盖 CSS re-layout 多帧 settling，
 // 防止精度偏差导致 snap 方向反转形成不收敛振荡。
 const GAP_SNAP_COOLDOWN_MS = 250;
+const METADATA_RATIO_MIN = 0.2;
+const METADATA_RATIO_MAX = 0.45;
+const METADATA_PANEL_MIN_WIDTH_PX = 180;
+const DUAL_COLLAPSED_INSET_MAX_RATIO = 0.6;
 
 interface UseAppNavigationStateParams {
   appSettings: AppSettingsStoreSnapshot;
@@ -219,7 +225,6 @@ export function useAppNavigationState({
     applyMetadataRatio,
     horizontalResizing,
     horizontalResizeCommitCount,
-    horizontalResizeCommitContext,
     horizontalResizeLiveContext,
     onStartSidebarResize,
     onStartMetadataResize,
@@ -282,87 +287,221 @@ export function useAppNavigationState({
   const previousHorizontalResizingRef = useRef(false);
   const previousGridSizeRef = useRef(gridSize);
   const lastHandledCommitCountRef = useRef(0);
-  const lastResizeSourceRef = useRef<"sidebar" | "metadata">("sidebar");
+  const [layoutConvergedInsetPx, setLayoutConvergedInsetPx] = useState(0);
   const gapSnapTimeoutRef = useRef<number | null>(null);
   const lastSnapTimeRef = useRef(0);
   // snap 后记录期望目标宽度，在宽度未显著偏离目标前拒绝再次 snap，防止振荡
   const snapTargetWidthRef = useRef(0);
   const initialSnapDoneRef = useRef(false);
   const previousAppBodyWidthRef = useRef(appBodyWidth);
+  const previousPanelCollapseStateRef = useRef<{
+    sidebarCollapsed: boolean;
+    metadataCollapsed: boolean;
+  } | null>(null);
 
   // 统一 gap snap 回调：吸附分割条到网格线消除右侧留白
   const applyGapSnap = useCallback(() => {
     if (gridSize.width <= 1 || gridSize.height <= 1) return;
 
-    // 时间窗口冷却：覆盖 snap 引发的多帧 CSS re-layout
-    if (performance.now() - lastSnapTimeRef.current < GAP_SNAP_COOLDOWN_MS)
-      return;
-
     // 反振荡守卫：grid 宽度未显著偏离上次 snap 目标时，
     // 残余空隙为 ratio→pixel 精度误差，接受不再 snap
+    const rightGap = gridSize.width - thumbnailLayout.idealGridWidth;
     if (snapTargetWidthRef.current > 0) {
       const drift = Math.abs(gridSize.width - snapTargetWidthRef.current);
-      const threshold = Math.max(
+      const settleThreshold = Math.max(
         GAP_SNAP_MIN_PX * 2,
-        thumbnailLayout.cellWidth / 3,
+        Math.min(thumbnailLayout.cellWidth * 0.18, 24),
       );
-      if (drift < threshold) return;
-    }
-
-    const rightGap = gridSize.width - thumbnailLayout.idealGridWidth;
-    if (rightGap < GAP_SNAP_MIN_PX || thumbnailLayout.cellWidth <= 0) return;
-
-    const halfCell = thumbnailLayout.cellWidth * 0.5;
-    const cellSpan = thumbnailLayout.cellWidth + thumbnailLayout.gap;
-
-    // 计算 main 区域需要的宽度增量（正=扩展，负=收缩）
-    const mainDelta =
-      rightGap <= halfCell
-        ? -rightGap // 左吸附：收缩 main 消除空隙
-        : cellSpan - rightGap + GAP_SNAP_EXPAND_BUFFER_PX; // 右避让：扩展 main 容纳 +1 列（含精度补偿）
-
-    if (Math.abs(mainDelta) < GAP_SNAP_MIN_PX) return;
-
-    lastSnapTimeRef.current = performance.now();
-    snapTargetWidthRef.current = gridSize.width + mainDelta;
-
-    // 选择要偏移的分割条：优先最近交互侧，带 fallback 链
-    const preferSource = lastResizeSourceRef.current;
-
-    // metadata 分支：检查 clamp [0.2, 0.45] 是否截断，不足时 fallback 到 sidebar
-    if (preferSource === "metadata" && !metadataCollapsed) {
-      const bodyWidth =
-        workspaceBodyRef.current?.getBoundingClientRect().width;
-      if (bodyWidth && bodyWidth > 1) {
-        const targetRatio = metadataRatio - mainDelta / bodyWidth;
-        const clamped = Math.max(0.2, Math.min(0.45, targetRatio));
-        const actualDelta = (metadataRatio - clamped) * bodyWidth;
-        if (Math.abs(actualDelta - mainDelta) < GAP_SNAP_MIN_PX) {
-          // clamp 后差距足够小，直接应用
-          applyMetadataRatio(targetRatio);
-          return;
-        }
-        // clamp 截断了，先应用 metadata 能吸收的部分，剩余交给 sidebar
-        applyMetadataRatio(targetRatio);
-        const remainDelta = mainDelta - actualDelta;
-        if (
-          Math.abs(remainDelta) >= GAP_SNAP_MIN_PX &&
-          !sidebarCollapsed
-        ) {
-          const sbBodyWidth =
-            appBodyRef.current?.getBoundingClientRect().width ?? appBodyWidth;
-          const factor = Math.max(0.05, 1 - clamped);
-          if (sbBodyWidth > 1 && factor > 0) {
-            applySidebarRatio(
-              sidebarRatio - remainDelta / (sbBodyWidth * factor),
-            );
-          }
-        }
+      const gapRecheckThreshold = Math.max(
+        GAP_SNAP_MIN_PX * 2,
+        thumbnailLayout.cellWidth * 0.35,
+      );
+      if (drift < settleThreshold && Math.abs(rightGap) < gapRecheckThreshold) {
         return;
       }
     }
 
-    // sidebar 分支
+    // 时间窗口冷却：覆盖 snap 引发的多帧 CSS re-layout。
+    // 若出现显著空隙则允许突破冷却，避免遗漏用户触发的结构变化。
+    if (
+      performance.now() - lastSnapTimeRef.current < GAP_SNAP_COOLDOWN_MS &&
+      Math.abs(rightGap) < Math.max(GAP_SNAP_MIN_PX * 2, thumbnailLayout.cellWidth * 0.4)
+    ) {
+      return;
+    }
+
+    if (thumbnailLayout.cellWidth <= 0) return;
+
+    const halfCell = thumbnailLayout.cellWidth * 0.5;
+    const cellSpan = thumbnailLayout.cellWidth + thumbnailLayout.gap;
+    const cardChrome = Math.max(
+      0,
+      thumbnailLayout.cellWidth - thumbnailLayout.mediaHeight,
+    );
+    const resolveMainDeltaByGap = (gap: number) =>
+      gap <= halfCell
+        ? -gap
+        : cellSpan - gap + GAP_SNAP_EXPAND_BUFFER_PX;
+    const markSnapApplied = (actualMainDelta: number) => {
+      if (Math.abs(actualMainDelta) < GAP_SNAP_MIN_PX) {
+        return false;
+      }
+      lastSnapTimeRef.current = performance.now();
+      snapTargetWidthRef.current = gridSize.width + actualMainDelta;
+      return true;
+    };
+
+    if (sidebarCollapsed && metadataCollapsed) {
+      if (Math.abs(rightGap) < GAP_SNAP_MIN_PX) {
+        snapTargetWidthRef.current = 0;
+        return;
+      }
+
+      let desiredMainDelta =
+        rightGap > 0 ? resolveMainDeltaByGap(rightGap) : -rightGap;
+      if (desiredMainDelta > 0 && layoutConvergedInsetPx <= GAP_SNAP_MIN_PX) {
+        desiredMainDelta = -Math.max(0, rightGap);
+      }
+
+      const measuredAppWidth =
+        appBodyRef.current?.getBoundingClientRect().width ?? appBodyWidth;
+      const baseWidth =
+        measuredAppWidth > 1 ? measuredAppWidth + layoutConvergedInsetPx : 0;
+      const maxInsetPx = Math.max(
+        0,
+        Math.floor(
+          (baseWidth > 1 ? baseWidth : gridSize.width) *
+            DUAL_COLLAPSED_INSET_MAX_RATIO,
+        ),
+      );
+      const nextInsetPx = clamp(
+        Math.round(layoutConvergedInsetPx - desiredMainDelta),
+        0,
+        maxInsetPx,
+      );
+      const actualMainDelta = layoutConvergedInsetPx - nextInsetPx;
+      if (Math.abs(actualMainDelta) < GAP_SNAP_MIN_PX) {
+        snapTargetWidthRef.current = 0;
+        return;
+      }
+
+      setLayoutConvergedInsetPx((previous) =>
+        previous === nextInsetPx ? previous : nextInsetPx,
+      );
+      markSnapApplied(actualMainDelta);
+      return;
+    }
+
+    if (layoutConvergedInsetPx !== 0) {
+      setLayoutConvergedInsetPx(0);
+    }
+
+    if (rightGap < GAP_SNAP_MIN_PX) {
+      snapTargetWidthRef.current = 0;
+      return;
+    }
+
+    // 计算 main 区域需要的宽度增量（正=扩展，负=收缩）
+    const mainDelta = resolveMainDeltaByGap(rightGap);
+
+    if (Math.abs(mainDelta) < GAP_SNAP_MIN_PX) {
+      snapTargetWidthRef.current = 0;
+      return;
+    }
+
+    // 默认仅调整右侧 metadata 分割条；仅在右侧折叠时回退到左侧 sidebar。
+    if (!metadataCollapsed) {
+      const bodyWidth =
+        workspaceBodyRef.current?.getBoundingClientRect().width;
+      if (bodyWidth && bodyWidth > 1) {
+        const metadataMinRatioByWidth = METADATA_PANEL_MIN_WIDTH_PX / bodyWidth;
+        const metadataMinRatio = Math.min(
+          METADATA_RATIO_MAX,
+          Math.max(METADATA_RATIO_MIN, metadataMinRatioByWidth),
+        );
+        const maxExpandableMainDelta = Math.max(
+          0,
+          (metadataRatio - metadataMinRatio) * bodyWidth,
+        );
+        const maxShrinkMainDelta = Math.max(
+          0,
+          (METADATA_RATIO_MAX - metadataRatio) * bodyWidth,
+        );
+        const shrinkMainDelta = -rightGap;
+        const shrinkGridWidth = Math.max(
+          1,
+          Math.round(gridSize.width + shrinkMainDelta),
+        );
+        const shrinkLayout = computeThumbnailGridLayout({
+          gridWidth: shrinkGridWidth,
+          gridHeight: gridSize.height,
+          thumbnailWidth,
+          thumbnailGap,
+          zoomLevel: thumbnailScale,
+          cardChrome,
+        });
+        const shrinkWouldDropColumns =
+          shrinkLayout.columns < thumbnailLayout.columns;
+
+        let desiredMainDelta = resolveMetadataMainDelta({
+          proposedMainDelta: mainDelta,
+          rightGap,
+          cellSpan,
+          maxExpandableMainDelta,
+          maxShrinkMainDelta,
+          minActionPx: GAP_SNAP_MIN_PX,
+          expandBufferPx: GAP_SNAP_EXPAND_BUFFER_PX,
+          shrinkWouldDropColumns,
+        });
+
+        if (Math.abs(desiredMainDelta) < GAP_SNAP_MIN_PX) {
+          snapTargetWidthRef.current = 0;
+          return;
+        }
+
+        const toRatioCandidate = (targetMainDelta: number) => {
+          const ratioCandidate = metadataRatio - targetMainDelta / bodyWidth;
+          const nextRatio = clamp(
+            ratioCandidate,
+            metadataMinRatio,
+            METADATA_RATIO_MAX,
+          );
+          return {
+            nextRatio,
+            actualMainDelta: (metadataRatio - nextRatio) * bodyWidth,
+          };
+        };
+
+        let candidate = toRatioCandidate(desiredMainDelta);
+
+        // 左吸附被 metadata 上限卡住时，若仍可右避让到下一列，则优先走右避让。
+        if (
+          desiredMainDelta < 0 &&
+          Math.abs(candidate.actualMainDelta) < GAP_SNAP_MIN_PX
+        ) {
+          const minExpandNeeded = Math.max(0, cellSpan - rightGap);
+          const expandTargetDelta = Math.max(
+            0,
+            cellSpan - rightGap + GAP_SNAP_EXPAND_BUFFER_PX,
+          );
+          const expandDelta = Math.min(expandTargetDelta, maxExpandableMainDelta);
+          if (expandDelta + GAP_SNAP_MIN_PX >= minExpandNeeded) {
+            candidate = toRatioCandidate(expandDelta);
+          }
+        }
+
+        if (!markSnapApplied(candidate.actualMainDelta)) {
+          snapTargetWidthRef.current = 0;
+          return;
+        }
+        applyMetadataRatio(candidate.nextRatio);
+        return;
+      }
+      snapTargetWidthRef.current = 0;
+      return;
+    }
+
+    // 右侧折叠时回退到 sidebar 分支
     if (!sidebarCollapsed) {
       const bodyWidth =
         appBodyRef.current?.getBoundingClientRect().width ?? appBodyWidth;
@@ -370,18 +509,21 @@ export function useAppNavigationState({
         ? 1
         : Math.max(0.05, 1 - metadataRatio);
       if (bodyWidth > 1 && workspaceMainFactor > 0) {
-        applySidebarRatio(
-          sidebarRatio - mainDelta / (bodyWidth * workspaceMainFactor),
-        );
-      }
-    } else if (!metadataCollapsed) {
-      // sidebar 折叠时 fallback 到 metadata
-      const bodyWidth =
-        workspaceBodyRef.current?.getBoundingClientRect().width;
-      if (bodyWidth && bodyWidth > 1) {
-        applyMetadataRatio(metadataRatio - mainDelta / bodyWidth);
+        const targetRatio =
+          sidebarRatio - mainDelta / (bodyWidth * workspaceMainFactor);
+        const nextRatio = normalizeSidebarRatio(targetRatio);
+        const actualMainDelta =
+          (sidebarRatio - nextRatio) * bodyWidth * workspaceMainFactor;
+        if (!markSnapApplied(actualMainDelta)) {
+          snapTargetWidthRef.current = 0;
+          return;
+        }
+        applySidebarRatio(nextRatio);
+        return;
       }
     }
+
+    snapTargetWidthRef.current = 0;
   }, [
     appBodyRef,
     appBodyWidth,
@@ -389,13 +531,20 @@ export function useAppNavigationState({
     applySidebarRatio,
     gridSize.height,
     gridSize.width,
+    layoutConvergedInsetPx,
     metadataCollapsed,
     metadataRatio,
+    normalizeSidebarRatio,
     sidebarCollapsed,
     sidebarRatio,
     thumbnailLayout.cellWidth,
     thumbnailLayout.gap,
     thumbnailLayout.idealGridWidth,
+    thumbnailLayout.mediaHeight,
+    thumbnailLayout.columns,
+    thumbnailScale,
+    thumbnailGap,
+    thumbnailWidth,
     workspaceBodyRef,
   ]);
 
@@ -432,8 +581,43 @@ export function useAppNavigationState({
       lastSnapTimeRef.current = 0;
       snapTargetWidthRef.current = 0;
       initialSnapDoneRef.current = false;
+      setLayoutConvergedInsetPx(0);
     }
   }, [canGapSnap]);
+
+  useEffect(() => {
+    const previous = previousPanelCollapseStateRef.current;
+    previousPanelCollapseStateRef.current = {
+      sidebarCollapsed,
+      metadataCollapsed,
+    };
+
+    if (!canGapSnap) {
+      return;
+    }
+
+    if (
+      previous &&
+      previous.sidebarCollapsed === sidebarCollapsed &&
+      previous.metadataCollapsed === metadataCollapsed
+    ) {
+      return;
+    }
+
+    // 折叠/展开属于强交互，需立即解除锁定并重新吸附。
+    lastSnapTimeRef.current = 0;
+    snapTargetWidthRef.current = 0;
+    if (!(sidebarCollapsed && metadataCollapsed) && layoutConvergedInsetPx !== 0) {
+      setLayoutConvergedInsetPx(0);
+    }
+    queueGapSnap(GAP_SNAP_SETTLE_MS);
+  }, [
+    canGapSnap,
+    layoutConvergedInsetPx,
+    metadataCollapsed,
+    queueGapSnap,
+    sidebarCollapsed,
+  ]);
 
   // Effect 0: 初始挂载 / image 模式激活后首次 gap snap
   useEffect(() => {
@@ -460,17 +644,45 @@ export function useAppNavigationState({
   // Effect 2: 容器尺寸变化（非拖拽）后 gap snap
   useEffect(() => {
     const prev = previousGridSizeRef.current;
-    if (
-      Math.abs(prev.width - gridSize.width) < 2 &&
-      Math.abs(prev.height - gridSize.height) < 2
-    )
+    const widthChanged = Math.abs(prev.width - gridSize.width) >= 1;
+    const heightChanged = Math.abs(prev.height - gridSize.height) >= 1;
+    if (!widthChanged && !heightChanged)
       return;
     previousGridSizeRef.current = gridSize;
     if (!canGapSnap || horizontalResizing) return;
-    // snap 引发的容器 settling：不再触发二次 snap，防止反复调整分割条导致振荡
-    if (snapTargetWidthRef.current > 0) return;
+
+    if (heightChanged) {
+      // 例如顶部系统面板展开导致主区高度变化，这类变化不应被冷却窗口拦截。
+      lastSnapTimeRef.current = 0;
+      snapTargetWidthRef.current = 0;
+    }
+
+    if (snapTargetWidthRef.current > 0) {
+      const driftFromTarget = Math.abs(gridSize.width - snapTargetWidthRef.current);
+      const settleThreshold = Math.max(
+        GAP_SNAP_MIN_PX * 2,
+        Math.min(thumbnailLayout.cellWidth * 0.18, 24),
+      );
+      // snap 后自然 settling：跳过；其余视为结构变化，释放锁定重算。
+      if (
+        driftFromTarget < settleThreshold &&
+        !heightChanged &&
+        performance.now() - lastSnapTimeRef.current < GAP_SNAP_SETTLE_MS * 2
+      ) {
+        return;
+      }
+      snapTargetWidthRef.current = 0;
+      lastSnapTimeRef.current = 0;
+    }
+
     queueGapSnap(GAP_SNAP_SETTLE_MS);
-  }, [canGapSnap, gridSize, horizontalResizing, queueGapSnap]);
+  }, [
+    canGapSnap,
+    gridSize,
+    horizontalResizing,
+    queueGapSnap,
+    thumbnailLayout.cellWidth,
+  ]);
 
   // Effect 2b: 窗口宽度变化时清除 snap 锁定并重新 snap
   // appBodyWidth 仅在 Electron/浏览器窗口缩放时变化，不受分割条调整影响
@@ -489,7 +701,6 @@ export function useAppNavigationState({
     if (previousScaleRef.current === thumbnailScale) return;
     previousScaleRef.current = thumbnailScale;
     if (!canGapSnap) return;
-    lastResizeSourceRef.current = "sidebar"; // scale 变更默认调 sidebar
     lastSnapTimeRef.current = 0; // 用户动作：清除冷却
     snapTargetWidthRef.current = 0; // 用户动作：清除目标锁定
     queueGapSnap(GAP_SNAP_MANUAL_MS);
@@ -516,17 +727,6 @@ export function useAppNavigationState({
     thumbnailLayout.columns,
     thumbnailLayout.gap,
   ]);
-
-  // 跟踪最近交互的分割条
-  useEffect(() => {
-    if (!horizontalResizeLiveContext) return;
-    lastResizeSourceRef.current = horizontalResizeLiveContext.source;
-  }, [horizontalResizeLiveContext]);
-
-  useEffect(() => {
-    if (!horizontalResizeCommitContext) return;
-    lastResizeSourceRef.current = horizontalResizeCommitContext.source;
-  }, [horizontalResizeCommitContext]);
 
   const resolveResizeTargetColumns = useCallback((): number | null => {
     if (!horizontalResizing) return null;
@@ -599,6 +799,9 @@ export function useAppNavigationState({
     fullscreenVideoFocus,
   });
 
+  const effectiveLayoutConvergedInsetPx =
+    sidebarCollapsed && metadataCollapsed ? layoutConvergedInsetPx : 0;
+
   return {
     scopedImageSourcesEffective,
     packageByIdEffective,
@@ -645,6 +848,7 @@ export function useAppNavigationState({
     audioPlaylistIds,
     setAudioPlaylistIds,
     collapseSidebar,
+    layoutConvergedInsetPx: effectiveLayoutConvergedInsetPx,
     sidebarCollapsed,
     normalizeSidebarRatio,
     applySidebarRatio,

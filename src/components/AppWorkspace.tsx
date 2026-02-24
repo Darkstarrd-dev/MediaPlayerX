@@ -19,6 +19,7 @@ interface AppWorkspaceProps {
   sidebarRatio: number
   metadataCollapsed: boolean
   metadataRatio: number
+  layoutConvergedInsetPx?: number
   layoutLocked: boolean
   appBodyRef: RefObject<HTMLDivElement | null>
   workspaceRef: RefObject<HTMLElement | null>
@@ -41,6 +42,7 @@ function AppWorkspace({
   sidebarRatio,
   metadataCollapsed,
   metadataRatio,
+  layoutConvergedInsetPx = 0,
   layoutLocked,
   appBodyRef,
   workspaceRef,
@@ -102,7 +104,19 @@ function AppWorkspace({
   )
 
   return (
-    <div className="app-body" data-slot="bg-app-workspace" ref={appBodyRef}>
+    <div
+      className="app-body"
+      data-slot="bg-app-workspace"
+      ref={appBodyRef}
+      style={
+        layoutConvergedInsetPx > 0
+          ? {
+              maxWidth: `calc(100% - ${layoutConvergedInsetPx}px)`,
+              marginInline: 'auto',
+            }
+          : undefined
+      }
+    >
       {sidebarCollapsed ? (
         <button
           {...buildA11yPropsByRegistry({ key: 'commonExpandSidebar', t })}

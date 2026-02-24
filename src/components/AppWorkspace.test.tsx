@@ -91,4 +91,36 @@ describe('AppWorkspace', () => {
     expect(screen.getByTestId('video-main-section')).toBeInTheDocument()
     expect(screen.getByTestId('music-main-section')).toBeInTheDocument()
   })
+
+  it('双侧折叠收敛时对 workspace 容器应用居中宽度约束', () => {
+    const { container } = render(
+      <AppWorkspace
+        mode="image"
+        sidebarCollapsed={true}
+        sidebarFocus="main"
+        sidebarRatio={0.3}
+        metadataCollapsed={true}
+        metadataRatio={0.3}
+        layoutConvergedInsetPx={120}
+        layoutLocked={false}
+        appBodyRef={createRef<HTMLDivElement>()}
+        workspaceRef={createRef<HTMLElement>()}
+        workspaceBodyRef={createRef<HTMLDivElement>()}
+        onExpandSidebar={vi.fn()}
+        onStartSidebarResize={vi.fn()}
+        onStartMetadataResize={vi.fn()}
+        sidebarPanelProps={{} as never}
+        imageMainSectionProps={{} as never}
+        videoMainSectionProps={{} as never}
+        musicMainSectionProps={{} as never}
+        metadataPanelProps={{} as never}
+        mainFooter={<span>footer</span>}
+      />,
+    )
+
+    const appBody = container.querySelector('.app-body') as HTMLDivElement | null
+    expect(appBody).not.toBeNull()
+    expect(appBody?.style.maxWidth).toBe('calc(100% - 120px)')
+    expect(appBody?.style.marginInline).toBe('auto')
+  })
 })

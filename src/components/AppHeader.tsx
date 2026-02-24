@@ -231,6 +231,7 @@ export interface AppHeaderProps {
   showPanelToggleControls?: boolean
   onToggleSidebarPanel?: () => void
   onToggleMetadataPanel?: () => void
+  layoutConvergedInsetPx?: number
 }
 
 function AppHeader(props: AppHeaderProps) {
@@ -267,6 +268,7 @@ function AppHeader(props: AppHeaderProps) {
     showPanelToggleControls = false,
     onToggleSidebarPanel,
     onToggleMetadataPanel,
+    layoutConvergedInsetPx = 0,
   } = props
   const { t } = useI18n()
   const [windowMaximized, setWindowMaximized] = useState(false)
@@ -346,9 +348,23 @@ function AppHeader(props: AppHeaderProps) {
     : taskStatusBusy
       ? 'fg-header-g1-task-state-busy'
       : 'fg-header-g1-task-state-idle'
+  const dualCollapsed = sidebarCollapsed && metadataCollapsed
 
   return (
-    <header className="app-header" data-slot="fg-header-root" style={{ height: `${headerHeight}px` }}>
+    <header
+      className="app-header"
+      data-slot="fg-header-root"
+      style={{
+        height: `${headerHeight}px`,
+        ...(dualCollapsed
+          ? {
+              width: '100%',
+              maxWidth: `calc(100% - ${layoutConvergedInsetPx}px - (var(--mpx-slot-bg-app-workspace-padding, var(--mpx-layout-padding)) * 2))`,
+              marginInline: 'auto',
+            }
+          : {}),
+      }}
+    >
       <div className="header-left">
         <div className="header-group header-group-primary" data-slot="fg-header-g1">
           <div

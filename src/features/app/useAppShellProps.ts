@@ -75,6 +75,7 @@ interface UseAppShellPropsParams {
   sidebarRatio: number
   metadataCollapsed: boolean
   metadataRatio: number
+  layoutConvergedInsetPx: number
   layoutLocked: boolean
   appBodyRef: RefObject<HTMLDivElement | null>
   workspaceRef: RefObject<HTMLElement | null>
@@ -120,6 +121,7 @@ export function useAppShellProps({
   sidebarRatio,
   metadataCollapsed,
   metadataRatio,
+  layoutConvergedInsetPx,
   layoutLocked,
   appBodyRef,
   workspaceRef,
@@ -267,6 +269,8 @@ export function useAppShellProps({
     runtimeCapabilityWarnings: topLayerState.runtimeCapabilityWarnings,
     onDismissRuntimeWarning: topLayerState.runtimeWarningDismiss.dismiss,
     importTaskPanelProps: topLayerState.importTaskPanelProps,
+    dualCollapsed: sidebarCollapsed && metadataCollapsed,
+    layoutConvergedInsetPx,
   }
 
   const appWorkspaceProps = {
@@ -276,6 +280,7 @@ export function useAppShellProps({
     sidebarRatio,
     metadataCollapsed,
     metadataRatio,
+    layoutConvergedInsetPx,
     layoutLocked,
     appBodyRef,
     workspaceRef,
