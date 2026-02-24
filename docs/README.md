@@ -17,6 +17,7 @@
 - Shader 实施手册：`music-visualizer-shader-migration-playbook.md`
 - Theme 规范（SSOT）：`theme-system-v2.md`
 - Theme 迭代入口：`theme-brainstorm-entry.md`
+- 疑难点记录：`Tips.md`
 - UI 稳定路径表：`ui_definition.md`
 - UI 槽位 Token 前缀表：`token_design.md`
 - 当前评估：`project-evaluation-report-v12.md`

@@ -45,6 +45,25 @@
   --mpx-scrollbar-thumb-bg: #b7ab95;
   --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
 
+  --mpx-sidebar-tree-scrollbar-size: var(--mpx-scrollbar-size);
+  --mpx-sidebar-tree-scrollbar-radius: var(--mpx-scrollbar-radius);
+  --mpx-sidebar-tree-scrollbar-track-radius: var(--mpx-sidebar-tree-scrollbar-radius);
+  --mpx-sidebar-tree-scrollbar-thumb-radius: var(--mpx-sidebar-tree-scrollbar-radius);
+  --mpx-sidebar-tree-scrollbar-color-thumb: var(--mpx-scrollbar-thumb-bg);
+  --mpx-sidebar-tree-scrollbar-color-track: var(--mpx-scrollbar-track-bg);
+  --mpx-sidebar-tree-scrollbar-track-bg: var(--mpx-scrollbar-track-bg);
+  --mpx-sidebar-tree-scrollbar-track-border: none;
+  --mpx-sidebar-tree-scrollbar-track-shadow: none;
+  --mpx-sidebar-tree-scrollbar-end-gap: 0px;
+  --mpx-sidebar-tree-scrollbar-thumb-min-height: 24px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-width: 0px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
+  --mpx-sidebar-tree-scrollbar-thumb-bg: var(--mpx-scrollbar-thumb-bg);
+  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: var(--mpx-scrollbar-thumb-hover-bg);
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg);
+  --mpx-sidebar-tree-scrollbar-thumb-shadow: none;
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow);
+
   --mpx-range-track-height: 6px;
   --mpx-range-track-bg: #d6cfc1;
   --mpx-range-thumb-size: 16px;

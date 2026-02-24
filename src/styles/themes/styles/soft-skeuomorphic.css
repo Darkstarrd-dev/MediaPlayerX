@@ -232,6 +232,25 @@
   --mpx-runway-thumb-core-shadow-graphite: inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 3px rgba(0, 0, 0, 0.5),
     0 1px 1px rgba(255, 255, 255, 0.5);
 
+  --mpx-sidebar-tree-scrollbar-size: 10px;
+  --mpx-sidebar-tree-scrollbar-radius: 999px;
+  --mpx-sidebar-tree-scrollbar-track-radius: 10px;
+  --mpx-sidebar-tree-scrollbar-thumb-radius: 999px;
+  --mpx-sidebar-tree-scrollbar-color-thumb: #d1d5db;
+  --mpx-sidebar-tree-scrollbar-color-track: #ecf0f3;
+  --mpx-sidebar-tree-scrollbar-track-bg: #ecf0f3;
+  --mpx-sidebar-tree-scrollbar-track-border: none;
+  --mpx-sidebar-tree-scrollbar-track-shadow: inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff;
+  --mpx-sidebar-tree-scrollbar-end-gap: 0.5%;
+  --mpx-sidebar-tree-scrollbar-thumb-min-height: 26px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-width: 2px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
+  --mpx-sidebar-tree-scrollbar-thumb-bg: linear-gradient(180deg, #fdfbfb 0%, #ebedee 100%);
+  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%);
+  --mpx-sidebar-tree-scrollbar-thumb-shadow: 1px 1px 3px #d1d9e6, -1px -1px 3px #ffffff;
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px #6b7280;
+
   --mpx-metal-light: #f5f2ec;
   --mpx-metal-base: #e6e2da;
   --mpx-metal-dark: #cdc7bb;
@@ -262,7 +281,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell .sidebar-tree {
-  background: transparent;
+  background: #ecf0f3;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer {
@@ -417,38 +436,14 @@
   padding-left: 0;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree {
-  scrollbar-color: #b5853b var(--mpx-runway-groove-bg);
+@supports not selector(::-webkit-scrollbar) {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree {
+    scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb) var(--mpx-sidebar-tree-scrollbar-color-track);
+  }
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell {
   overflow: hidden;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree::-webkit-scrollbar {
-  width: 14px;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree::-webkit-scrollbar-button {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree::-webkit-scrollbar-track {
-  border: 1px solid #bcc4cf;
-  border-radius: 999px;
-  background: var(--mpx-runway-groove-bg);
-  box-shadow: var(--mpx-runway-groove-shadow);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree::-webkit-scrollbar-thumb {
-  min-height: 26px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #cda86d 0%, #b5853b 100%);
-  box-shadow: var(--mpx-runway-fill-shadow-gold);
-  border: 2px solid transparent;
-  background-clip: padding-box;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-label.is-collapsible.is-collapsed {

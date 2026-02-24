@@ -95,6 +95,7 @@ npm run test
 - `docs/ui_definition.md`
 - `docs/token_design.md`
 - `docs/windows-release-signing-runbook.md`
+- `docs/Tips.md`
 - `docs/offline-auto-subtitle-implementation-plan.md`
 - `docs/project-evaluation-report-v12.md`
 - `docs/preference-metrics-spec-v1.md`

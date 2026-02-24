@@ -212,24 +212,67 @@
   position: relative;
   direction: ltr;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
+  scrollbar-width: auto;
+  scrollbar-color: auto;
   -ms-overflow-style: auto;
   overflow-anchor: none;
   background: var(--mpx-slot-fg-sidebar-main-bg, transparent);
 }
 
+@supports not selector(::-webkit-scrollbar) {
+  .sidebar-tree {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
+      var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
+  }
+}
+
 .sidebar-tree::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
+  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
 }
 
 .sidebar-tree::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mpx-border-2) 80%, var(--mpx-text-2) 20%);
+  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
+  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
+    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
+  border-radius: var(--mpx-sidebar-tree-scrollbar-thumb-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg));
+  background-clip: padding-box;
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
+}
+
+.sidebar-tree::-webkit-scrollbar-thumb:hover {
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg));
+  background-clip: padding-box;
+}
+
+.sidebar-tree::-webkit-scrollbar-thumb:active {
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-active-bg, var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg));
+  background-clip: padding-box;
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-active-shadow, var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none));
 }
 
 .sidebar-tree::-webkit-scrollbar-track {
-  background: transparent;
+  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
+  border-radius: var(--mpx-sidebar-tree-scrollbar-track-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
+  background: var(--mpx-sidebar-tree-scrollbar-track-bg, transparent);
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
+}
+
+.sidebar-tree::-webkit-scrollbar-button:single-button:vertical:decrement,
+.sidebar-tree::-webkit-scrollbar-button:single-button:vertical:increment {
+  display: block !important;
+  height: var(--mpx-sidebar-tree-scrollbar-end-gap, 0px) !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.sidebar-tree::-webkit-scrollbar-button:single-button:horizontal:decrement,
+.sidebar-tree::-webkit-scrollbar-button:single-button:horizontal:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .sidebar-row {
