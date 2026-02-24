@@ -413,74 +413,147 @@
 }
 
 .ad-review-delete-overlay {
+  --ad-review-delete-overlay-stage-bg: color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent);
+  --ad-review-delete-overlay-card-bg: rgba(255, 250, 243, 0.9);
+  --ad-review-delete-overlay-card-border: rgba(170, 147, 120, 0.35);
+  --ad-review-delete-overlay-card-shadow: 0 16px 36px rgba(72, 54, 33, 0.16);
+  --ad-review-delete-overlay-text-main: #2c1d11;
+  --ad-review-delete-overlay-text-sub: #6f5740;
+  --ad-review-delete-overlay-text-hint: #73573d;
+  --ad-review-delete-overlay-track-bg: rgba(171, 140, 108, 0.24);
+  --ad-review-delete-overlay-track-start: #c9703a;
+  --ad-review-delete-overlay-track-mid: #cc7e44;
+  --ad-review-delete-overlay-track-end: #d4965f;
+  --ad-review-delete-overlay-loading-duration: 1.4s;
   position: fixed;
   inset: 0;
   z-index: 2601;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent);
+  display: grid;
+  place-items: center;
+  padding: 20px 24px;
+  background: var(--ad-review-delete-overlay-stage-bg);
   backdrop-filter: blur(3px);
 }
 
 [data-slot='fg-main-toolbar-image-delete-progress-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent));
-  color: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-text, inherit);
-  box-shadow: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-shadow, none);
+  --ad-review-delete-overlay-stage-bg: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent));
+  --ad-review-delete-overlay-text-main: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-text, #2c1d11);
+  --ad-review-delete-overlay-card-shadow: var(--mpx-slot-fg-main-toolbar-image-delete-progress-ovl-shadow, 0 16px 36px rgba(72, 54, 33, 0.16));
+}
+
+.ad-review-delete-overlay-stage {
+  position: relative;
+  width: min(560px, calc(100vw - 48px));
+  padding-top: 300px;
+}
+
+.ad-review-delete-overlay-character {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(410px, 68vw);
+  max-width: 410px;
+  transform: translate(-50%, -28px);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 14px 24px rgba(59, 39, 21, 0.18));
+  z-index: 2;
 }
 
 .ad-review-delete-overlay-card {
-  width: min(760px, calc(100vw - 36px));
-  border: 1px solid var(--mpx-border-2);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--mpx-bg-app);
-  box-shadow: var(--mpx-shadow-panel);
-}
-
-.ad-review-delete-overlay-banner {
-  display: block;
   width: 100%;
-  height: min(240px, 30vh);
-  object-fit: cover;
-  border-bottom: 1px solid var(--mpx-border-1);
+  position: relative;
+  z-index: 1;
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  background: var(--ad-review-delete-overlay-card-bg);
+  border: 1px solid var(--ad-review-delete-overlay-card-border);
+  box-shadow: var(--ad-review-delete-overlay-card-shadow);
 }
 
 .ad-review-delete-overlay-content {
   display: grid;
   gap: 8px;
-  padding: 14px 16px 16px;
 }
 
 .ad-review-delete-overlay-content > strong {
-  font-size: 16px;
+  margin: 0;
+  font: 700 21px/1.25 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--ad-review-delete-overlay-text-main);
+  letter-spacing: 0.2px;
 }
 
 .ad-review-delete-overlay-content > p {
   margin: 0;
-  color: var(--mpx-text-2);
+  font: 500 13px/1.4 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--ad-review-delete-overlay-text-sub);
 }
 
 .ad-review-delete-overlay-progress-text {
-  color: var(--mpx-text-1) !important;
+  color: var(--ad-review-delete-overlay-text-hint) !important;
 }
 
 .ad-review-delete-overlay-progress {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--mpx-border-1);
+  margin-top: 6px;
+  border: 1px solid transparent;
   border-radius: 999px;
-  height: 10px;
-  background: var(--mpx-bg-muted);
+  height: 8px;
+  background: var(--ad-review-delete-overlay-track-bg);
 }
 
 .ad-review-delete-overlay-progress-fill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--mpx-status-warning-text), var(--mpx-accent));
+  background: linear-gradient(
+    90deg,
+    var(--ad-review-delete-overlay-track-start) 0%,
+    var(--ad-review-delete-overlay-track-mid) 56%,
+    var(--ad-review-delete-overlay-track-end) 100%
+  );
   transition: width 0.18s ease;
+}
+
+.ad-review-delete-overlay-progress.is-indeterminate .ad-review-delete-overlay-progress-fill {
+  width: 42%;
+  animation: ad-review-delete-overlay-loading var(--ad-review-delete-overlay-loading-duration)
+    ease-in-out infinite;
+}
+
+@media (max-width: 760px) {
+  .ad-review-delete-overlay {
+    padding: 12px;
+  }
+
+  .ad-review-delete-overlay-stage {
+    width: min(100%, 520px);
+  }
+
+  .ad-review-delete-overlay-character {
+    width: min(320px, 82vw);
+    transform: translate(-50%, -125px);
+  }
+
+  .ad-review-delete-overlay-card {
+    padding: 20px 16px 16px;
+  }
+}
+
+@keyframes ad-review-delete-overlay-loading {
+  0% {
+    transform: translateX(-130%);
+  }
+
+  50% {
+    transform: translateX(90%);
+  }
+
+  100% {
+    transform: translateX(220%);
+  }
 }
 
 .manage-selection-marquee {

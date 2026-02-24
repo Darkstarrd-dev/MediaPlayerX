@@ -116,6 +116,7 @@ export function renderSettingsMainSection({
   mediaCapabilitiesLoading,
   mediaCapabilitiesError,
   mediaCapabilities,
+  adReviewDeleteOverlayDebugActive,
   preferenceDebugLoading,
   preferenceDebugError,
   preferenceDebugData,
@@ -207,6 +208,7 @@ export function renderSettingsMainSection({
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
   onRefreshPreferenceDebug,
+  onOpenAdReviewDeleteOverlayDebug,
 }: RenderSettingsMainSectionParams): JSX.Element {
   const settingsTip = (key: string): string => t(`ui.settings.tooltip.${key}`);
 
@@ -488,36 +490,6 @@ export function renderSettingsMainSection({
                 </button>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>{t("ui.settings.debugSection")}</span>
-          </header>
-          <div className="settings-debug-toggle-row">
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${electronNativeChromeEnabled ? "is-on" : ""}`}
-              onClick={() =>
-                onElectronNativeChromeEnabledChange(
-                  !electronNativeChromeEnabled,
-                )
-              }
-            >
-              {`${t("ui.settings.debugNativeChrome")} · ${electronNativeChromeEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${themeParameterButtonVisible ? "is-on" : ""}`}
-              onClick={() =>
-                onThemeParameterButtonVisibleChange(
-                  !themeParameterButtonVisible,
-                )
-              }
-            >
-              {`${t("ui.settings.showThemeParameterButton")} · ${themeParameterButtonVisible ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
           </div>
         </section>
 
@@ -1043,6 +1015,53 @@ export function renderSettingsMainSection({
       onSubtitleCleanupLlmModelChange,
       onSubtitleCleanupLlmPromptChange,
     });
+  }
+
+  if (activeSection === "debug") {
+    return (
+      <div className="settings-block">
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>{t("ui.settings.debugOverlaySection")}</span>
+          </header>
+          <div className="settings-debug-toggle-row">
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${adReviewDeleteOverlayDebugActive ? "is-on" : ""}`}
+              onClick={onOpenAdReviewDeleteOverlayDebug}
+            >
+              {`${t("ui.settings.debugOpenDeleteOverlay")} · ${adReviewDeleteOverlayDebugActive ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+            </button>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header className="settings-group-head">
+            <span>{t("ui.settings.debugSection")}</span>
+          </header>
+          <div className="settings-debug-toggle-row">
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${electronNativeChromeEnabled ? "is-on" : ""}`}
+              onClick={() =>
+                onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)
+              }
+            >
+              {`${t("ui.settings.debugNativeChrome")} · ${electronNativeChromeEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+            </button>
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${themeParameterButtonVisible ? "is-on" : ""}`}
+              onClick={() =>
+                onThemeParameterButtonVisibleChange(!themeParameterButtonVisible)
+              }
+            >
+              {`${t("ui.settings.showThemeParameterButton")} · ${themeParameterButtonVisible ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+            </button>
+          </div>
+        </section>
+      </div>
+    );
   }
 
   if (activeSection === "shortcuts") {

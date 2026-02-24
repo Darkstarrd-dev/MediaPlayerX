@@ -32,6 +32,7 @@ function AdReviewDeleteOverlay({
     normalizedTotal > 0
       ? Math.round((clampedCompleted / normalizedTotal) * 100)
       : 0
+  const hasDeterminateProgress = normalizedTotal > 0
 
   return (
     <div
@@ -41,39 +42,47 @@ function AdReviewDeleteOverlay({
       aria-modal="true"
       aria-label={t('a11y.manage.deleteOverlay')}
     >
-      <section className="ad-review-delete-overlay-card">
+      <section className="ad-review-delete-overlay-stage">
         <img
           src={bannerImage}
           alt=""
-          className="ad-review-delete-overlay-banner"
+          className="ad-review-delete-overlay-character"
           loading="eager"
           decoding="sync"
         />
-        <div className="ad-review-delete-overlay-content">
-          <strong>{t('ui.manage.deleteOverlayTitle')}</strong>
-          <p>{t('ui.manage.deleteOverlayDescription')}</p>
-          <p className="ad-review-delete-overlay-progress-text">
-            {normalizedTotal > 0
-              ? t('ui.manage.deleteOverlayProgress', {
-                  completed: clampedCompleted,
-                  total: normalizedTotal,
-                  percent: progressPercent,
-                })
-              : t('ui.manage.deleteOverlayPreparing')}
-          </p>
-          <div
-            className="ad-review-delete-overlay-progress"
-            role="progressbar"
-            aria-valuemin={0}
-            aria-valuemax={normalizedTotal > 0 ? normalizedTotal : 100}
-            aria-valuenow={normalizedTotal > 0 ? clampedCompleted : progressPercent}
-          >
-            <span
-              className="ad-review-delete-overlay-progress-fill"
-              style={{ width: `${normalizedTotal > 0 ? progressPercent : 22}%` }}
-            />
+        <section className="ad-review-delete-overlay-card">
+          <div className="ad-review-delete-overlay-content">
+            <strong>{t('ui.manage.deleteOverlayTitle')}</strong>
+            <p>{t('ui.manage.deleteOverlayDescription')}</p>
+            <p className="ad-review-delete-overlay-progress-text">
+              {hasDeterminateProgress
+                ? t('ui.manage.deleteOverlayProgress', {
+                    completed: clampedCompleted,
+                    total: normalizedTotal,
+                    percent: progressPercent,
+                  })
+                : t('ui.manage.deleteOverlayPreparing')}
+            </p>
+            <div
+              className={`ad-review-delete-overlay-progress ${hasDeterminateProgress ? '' : 'is-indeterminate'}`}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={normalizedTotal > 0 ? normalizedTotal : 100}
+              aria-valuenow={
+                normalizedTotal > 0 ? clampedCompleted : progressPercent
+              }
+            >
+              <span
+                className="ad-review-delete-overlay-progress-fill"
+                style={
+                  hasDeterminateProgress
+                    ? { width: `${progressPercent}%` }
+                    : undefined
+                }
+              />
+            </div>
           </div>
-        </div>
+        </section>
       </section>
     </div>
   )

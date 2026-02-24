@@ -9,6 +9,7 @@ import type { ShortcutConflict } from "../../shortcuts";
 export type SettingsSection =
   | "layout"
   | "performance"
+  | "debug"
   | "system"
   | "model"
   | "database"
@@ -155,6 +156,7 @@ export interface RenderSettingsMainSectionParams {
   mediaCapabilitiesLoading: boolean;
   mediaCapabilitiesError: string | null;
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[];
+  adReviewDeleteOverlayDebugActive: boolean;
   preferenceDebugLoading: boolean;
   preferenceDebugError: string | null;
   preferenceDebugData: {
@@ -281,4 +283,5 @@ export interface RenderSettingsMainSectionParams {
   onPickThumbnailCacheDirectoryPath: () => void;
   onRefreshRuntimeInfo: () => void;
   onRefreshPreferenceDebug: () => void;
+  onOpenAdReviewDeleteOverlayDebug: () => void;
 }

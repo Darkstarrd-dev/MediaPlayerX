@@ -50,6 +50,7 @@ const SETTINGS_SECTIONS: Array<{ id: SettingsSection; labelKey: string }> = [
   { id: "layout", labelKey: "ui.settings.sectionLayout" },
   { id: "performance", labelKey: "ui.settings.sectionPerformance" },
   { id: "model", labelKey: "ui.settings.sectionModel" },
+  { id: "debug", labelKey: "ui.settings.sectionDebug" },
   { id: "shortcuts", labelKey: "ui.settings.sectionShortcuts" },
   { id: "database", labelKey: "ui.settings.sectionDatabase" },
   { id: "system", labelKey: "ui.settings.sectionSystem" },
@@ -170,6 +171,7 @@ function resolveSettingsSection(raw: unknown): SettingsSection {
   if (
     raw === "layout" ||
     raw === "performance" ||
+    raw === "debug" ||
     raw === "system" ||
     raw === "model" ||
     raw === "database" ||
@@ -275,7 +277,8 @@ function SettingsPanel({
   runtimeInfo,
   mediaCapabilitiesLoading,
   mediaCapabilitiesError,
-    mediaCapabilities,
+  mediaCapabilities,
+  adReviewDeleteOverlayDebugActive,
   onClose,
   onUiLocaleChange,
   onStyleChange,
@@ -358,6 +361,7 @@ function SettingsPanel({
   onPickDatabaseDirectoryPath,
   onPickThumbnailCacheDirectoryPath,
   onRefreshRuntimeInfo,
+  onOpenAdReviewDeleteOverlayDebug,
 }: SettingsPanelProps) {
   const { t } = useI18n();
   const [activeSectionRaw, setActiveSection] =
@@ -990,6 +994,7 @@ function SettingsPanel({
     mediaCapabilitiesLoading,
     mediaCapabilitiesError,
     mediaCapabilities,
+    adReviewDeleteOverlayDebugActive,
     preferenceDebugLoading,
     preferenceDebugError,
     preferenceDebugData,
@@ -1088,6 +1093,7 @@ function SettingsPanel({
     onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
     onRefreshPreferenceDebug: handleRefreshPreferenceDebug,
+    onOpenAdReviewDeleteOverlayDebug,
   });
 
   const currentBinding = bindingTarget ? getBinding(bindingTarget) : "";

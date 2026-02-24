@@ -156,6 +156,9 @@ export function useAppViewComposition({
   displayState,
 }: UseAppViewCompositionParams) {
   const { t } = useI18n();
+  const [adReviewDeleteOverlayDebugActive, setAdReviewDeleteOverlayDebugActive] =
+    useState(false);
+  const adReviewDeleteOverlayDebugTimerRef = useRef<number | null>(null);
   const {
     benchSettings,
     appSettings,
@@ -223,10 +226,31 @@ export function useAppViewComposition({
     workspaceBodyRef,
   } = sessionState;
 
+  const openAdReviewDeleteOverlayDebug = useCallback(() => {
+    setAdReviewDeleteOverlayDebugActive(true);
+    if (adReviewDeleteOverlayDebugTimerRef.current !== null) {
+      window.clearTimeout(adReviewDeleteOverlayDebugTimerRef.current);
+    }
+    adReviewDeleteOverlayDebugTimerRef.current = window.setTimeout(() => {
+      setAdReviewDeleteOverlayDebugActive(false);
+      adReviewDeleteOverlayDebugTimerRef.current = null;
+    }, 2200);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (adReviewDeleteOverlayDebugTimerRef.current !== null) {
+        window.clearTimeout(adReviewDeleteOverlayDebugTimerRef.current);
+      }
+    };
+  }, []);
+
   const topLayerState = useAppTopLayerBindings({
     runtimeSources,
     readNavigationState,
     displayState,
+    adReviewDeleteOverlayDebugActive,
+    onOpenAdReviewDeleteOverlayDebug: openAdReviewDeleteOverlayDebug,
   });
 
   const workspaceState = useAppWorkspaceBindings({
@@ -754,9 +778,19 @@ export function useAppViewComposition({
     },
     dragOverlayActive: importState.dragOverlayActive,
     adReviewDeleteOverlayParams: {
-      active: displayState.manageAdReview.deletePending,
-      completedCount: displayState.manageAdReview.deleteProgress.completed,
-      totalCount: displayState.manageAdReview.deleteProgress.total,
+      active:
+        displayState.manageAdReview.deletePending ||
+        adReviewDeleteOverlayDebugActive,
+      completedCount: displayState.manageAdReview.deletePending
+        ? displayState.manageAdReview.deleteProgress.completed
+        : adReviewDeleteOverlayDebugActive
+          ? 42
+          : 0,
+      totalCount: displayState.manageAdReview.deletePending
+        ? displayState.manageAdReview.deleteProgress.total
+        : adReviewDeleteOverlayDebugActive
+          ? 100
+          : 0,
     },
     manageDeleteDialogParams: {
       open: deleteConfirmOpen,

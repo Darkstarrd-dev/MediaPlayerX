@@ -101,6 +101,7 @@ describe("buildSettingsPanelProps", () => {
       mediaCapabilitiesLoading: false,
       mediaCapabilitiesError: null,
       mediaCapabilities: [],
+      adReviewDeleteOverlayDebugActive: false,
       refreshRuntimeInfo: vi.fn(),
       updateSettings,
       applySidebarRatio: vi.fn(),
@@ -118,6 +119,7 @@ describe("buildSettingsPanelProps", () => {
       startSubtitleModelDownload: vi.fn(),
       cancelSubtitleModelDownload: vi.fn(),
       openSubtitleModelPage: vi.fn(),
+      openAdReviewDeleteOverlayDebug: vi.fn(),
     });
 
     expect(props.thumbnailWidth).toBe(512);

@@ -99,6 +99,7 @@ interface BuildSettingsPanelPropsParams {
   mediaCapabilitiesLoading: boolean;
   mediaCapabilitiesError: string | null;
   mediaCapabilities: SettingsPanelProps["mediaCapabilities"];
+  adReviewDeleteOverlayDebugActive: boolean;
   refreshRuntimeInfo: () => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
   applySidebarRatio: (value: number) => void;
@@ -116,6 +117,7 @@ interface BuildSettingsPanelPropsParams {
   startSubtitleModelDownload: () => void;
   cancelSubtitleModelDownload: () => void;
   openSubtitleModelPage: () => void;
+  openAdReviewDeleteOverlayDebug: () => void;
 }
 
 export function buildSettingsPanelProps(
@@ -216,6 +218,7 @@ export function buildSettingsPanelProps(
     mediaCapabilitiesLoading: params.mediaCapabilitiesLoading,
     mediaCapabilitiesError: params.mediaCapabilitiesError,
     mediaCapabilities: params.mediaCapabilities,
+    adReviewDeleteOverlayDebugActive: params.adReviewDeleteOverlayDebugActive,
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
     onUiLocaleChange: (value) => {
@@ -472,5 +475,6 @@ export function buildSettingsPanelProps(
     onClearDatabase: params.clearDatabaseForDev,
     onPickDatabaseDirectoryPath: params.pickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath: params.pickThumbnailCacheDirectoryPath,
+    onOpenAdReviewDeleteOverlayDebug: params.openAdReviewDeleteOverlayDebug,
   };
 }

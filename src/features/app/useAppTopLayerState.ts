@@ -177,6 +177,8 @@ interface UseAppTopLayerStateParams {
   goPackage: (step: number) => void;
   applySidebarRatio: (value: number) => void;
   applyMetadataRatio: (value: number) => void;
+  adReviewDeleteOverlayDebugActive: boolean;
+  onOpenAdReviewDeleteOverlayDebug: () => void;
   focusedVideoEffectiveId: string | null;
 }
 
@@ -312,6 +314,8 @@ export function useAppTopLayerState({
   goPackage,
   applySidebarRatio,
   applyMetadataRatio,
+  adReviewDeleteOverlayDebugActive,
+  onOpenAdReviewDeleteOverlayDebug,
   focusedVideoEffectiveId,
 }: UseAppTopLayerStateParams) {
   const { t } = useI18n();
@@ -663,6 +667,7 @@ export function useAppTopLayerState({
     mediaCapabilitiesLoading: runtimeInfoDiagnostics.mediaCapabilitiesLoading,
     mediaCapabilitiesError: runtimeInfoDiagnostics.mediaCapabilitiesError,
     mediaCapabilities: runtimeInfoDiagnostics.mediaCapabilities,
+    adReviewDeleteOverlayDebugActive,
     refreshRuntimeInfo: runtimeInfoDiagnostics.retry,
     updateSettings: appSettings.updateSettings,
     applySidebarRatio,
@@ -680,6 +685,7 @@ export function useAppTopLayerState({
     startSubtitleModelDownload,
     cancelSubtitleModelDownload,
     openSubtitleModelPage,
+    openAdReviewDeleteOverlayDebug: onOpenAdReviewDeleteOverlayDebug,
   });
 
   const appHeaderProps = buildAppHeaderProps({

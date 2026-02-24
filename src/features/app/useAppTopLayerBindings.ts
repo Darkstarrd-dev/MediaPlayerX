@@ -242,12 +242,16 @@ interface UseAppTopLayerBindingsParams {
   runtimeSources: AppRuntimeSourcesResult
   readNavigationState: AppReadAndNavigationResult
   displayState: AppDisplayAndEffectsResult
+  adReviewDeleteOverlayDebugActive: boolean
+  onOpenAdReviewDeleteOverlayDebug: () => void
 }
 
 export function useAppTopLayerBindings({
   runtimeSources,
   readNavigationState,
   displayState,
+  adReviewDeleteOverlayDebugActive,
+  onOpenAdReviewDeleteOverlayDebug,
 }: UseAppTopLayerBindingsParams) {
   const [imageConvertPreviewRenderedSrc, setImageConvertPreviewRenderedSrc] = useState<string | null>(null)
   const [imageConvertPreviewError, setImageConvertPreviewError] = useState<string | null>(null)
@@ -666,6 +670,8 @@ export function useAppTopLayerBindings({
     goPackage: goPackageForFullscreen,
     applySidebarRatio,
     applyMetadataRatio,
+    adReviewDeleteOverlayDebugActive,
+    onOpenAdReviewDeleteOverlayDebug,
     focusedVideoEffectiveId: focusedVideoEffective?.id ?? null,
   })
 }

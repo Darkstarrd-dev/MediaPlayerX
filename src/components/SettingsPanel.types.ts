@@ -134,6 +134,7 @@ export interface SettingsPanelProps {
   mediaCapabilitiesLoading: boolean;
   mediaCapabilitiesError: string | null;
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[];
+  adReviewDeleteOverlayDebugActive: boolean;
   onClose: () => void;
   onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
   onStyleChange: (value: string) => void;
@@ -236,4 +237,5 @@ export interface SettingsPanelProps {
   onPickDatabaseDirectoryPath: () => void;
   onPickThumbnailCacheDirectoryPath: () => void;
   onRefreshRuntimeInfo: () => void;
+  onOpenAdReviewDeleteOverlayDebug: () => void;
 }
