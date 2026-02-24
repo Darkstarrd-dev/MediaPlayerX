@@ -109,8 +109,8 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
 
     const titleBeforeCross = readToolbarTitle();
     await keyDown(window, { key: "ArrowRight", code: "ArrowRight" });
-    expect(readFullscreenImageAlt()).toBe("图片 #1");
-    expect(readToolbarTitle()).not.toBe(titleBeforeCross);
+    expect(readFullscreenImageAlt()).toBe("图片 #36");
+    expect(readToolbarTitle()).toBe(titleBeforeCross);
 
     await keyDown(window, { key: "ArrowUp", code: "ArrowUp" });
     expect(readFullscreenImageAlt()).toBe("图片 #1");

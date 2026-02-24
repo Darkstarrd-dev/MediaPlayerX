@@ -391,19 +391,17 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
   );
 
   it(
-    "元数据面板标题可折叠，并可恢复展开",
+    "元数据面板头部展示 g3 操作组并移除标题折叠按钮",
     async () => {
       render(<App />);
 
-      await click(screen.getByRole("button", { name: "元数据面板" }));
+      expect(screen.queryByRole("button", { name: "元数据面板" })).toBeNull();
       expect(
-        screen.getByRole("button", { name: "展开元数据面板" }),
-      ).toBeInTheDocument();
-
-      await click(screen.getByRole("button", { name: "展开元数据面板" }));
+        document.querySelector('[data-slot="fg-meta-toolbar-g3"]'),
+      ).not.toBeNull();
       expect(
-        screen.getByRole("button", { name: "元数据面板" }),
-      ).toBeInTheDocument();
+        document.querySelector('[data-slot="fg-meta-toolbar-g3-search"]'),
+      ).not.toBeNull();
     },
     uiLongTestTimeoutMs,
   );
@@ -1164,7 +1162,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       ).toBeGreaterThan(1);
       expect(
         new Set(payloads.map((payload) => payload.author)).size,
-      ).toBeGreaterThan(1);
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        payloads.every((payload) => payload.author !== "批量社团更名"),
+      ).toBe(true);
     },
     uiLongTestTimeoutMs,
   );

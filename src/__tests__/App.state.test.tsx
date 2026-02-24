@@ -64,9 +64,9 @@ describe("MediaPlayer 虚拟 UI", () => {
     await flushUiUpdates();
 
     expect(
-      screen.getByRole("button", { name: "coastline_album.zip" }),
+      screen.getByRole("button", { name: "forest_pack.zip" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "海岸线合集" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "森林图集" })).toBeNull();
   });
 
   it("Sidebar 目录源节点在无英文/日文标题时显示目录名", async () => {
@@ -118,7 +118,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     await flushUiUpdates();
 
     const sidebarNodeButton = screen.getByRole("button", {
-      name: "coastline_album.zip",
+      name: "forest_pack.zip",
     });
     await click(sidebarNodeButton);
     await keyDown(sidebarNodeButton, { key: "r", code: "KeyR" });
@@ -141,7 +141,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       await flushUiUpdates();
 
       const sidebarNodeButton = screen.getByRole("button", {
-        name: "coastline_album.zip",
+        name: "forest_pack.zip",
       });
       await click(sidebarNodeButton);
       await keyDown(sidebarNodeButton, { key: "Delete", code: "Delete" });
