@@ -1,53 +1,58 @@
 const STARTUP_SPLASH_COPY = {
-  title: 'MediaPlayerX',
-  description: '正在初始化渲染进程与媒体索引',
-  hint: '启动中，请稍候...',
-} as const
+  title: "MediaPlayerX",
+  description: "正在初始化渲染进程与媒体索引",
+  hint: "启动中，请稍候...",
+} as const;
 
 type StartupSplashRenderOptions = {
-  bannerSrc?: string | null
-}
+  bannerSrc?: string | null;
+};
 
-const DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC = '../../src/assets/banner.png'
+const DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC = "../../src/assets/banner.png";
 
 const STARTUP_SPLASH_TOKENS = {
-  windowBackground: '#efe7dc',
-  radialLeft: '#f6e9da',
-  radialRight: '#e2dccf',
-  linearTop: '#f5eee3',
-  linearMid: '#ece3d5',
-  linearBottom: '#e8dece',
-  cardBackground: 'rgba(255, 250, 243, 0.9)',
-  cardBorder: 'rgba(170, 147, 120, 0.35)',
+  windowBackground: "#efe7dc",
+  radialLeft: "#f6e9da",
+  radialRight: "#e2dccf",
+  linearTop: "#f5eee3",
+  linearMid: "#ece3d5",
+  linearBottom: "#e8dece",
+  cardBackground: "rgba(255, 250, 243, 0.9)",
+  cardBorder: "rgba(170, 147, 120, 0.35)",
   cardRadius: 16,
-  cardShadow: '0 16px 36px rgba(72, 54, 33, 0.16)',
-  brandColor: '#2c1d11',
-  descColor: '#6f5740',
-  trackBackground: 'rgba(171, 140, 108, 0.24)',
-  trackStart: '#c9703a',
-  trackMid: '#cc7e44',
-  trackEnd: '#d4965f',
-  hintColor: '#73573d',
-  characterTranslateYPx: -160,
+  cardShadow: "0 16px 36px rgba(72, 54, 33, 0.16)",
+  brandColor: "#2c1d11",
+  descColor: "#6f5740",
+  trackBackground: "rgba(171, 140, 108, 0.24)",
+  trackStart: "#c9703a",
+  trackMid: "#cc7e44",
+  trackEnd: "#d4965f",
+  hintColor: "#73573d",
+  characterTranslateYPx: -28,
   characterTranslateYPxMobile: -125,
   loadingDurationSeconds: 1.4,
-} as const
+} as const;
 
 export const STARTUP_SPLASH_WINDOW_CONFIG = {
-  width: 700,
-  height: 560,
-  backgroundColor: '#00000000',
-} as const
+  width: 800,
+  height: 700,
+  backgroundColor: "#00000000",
+} as const;
 
 function escapeHtmlAttribute(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function renderSplashCardMarkup(bannerSrc: string | null): string {
   const bannerMarkup = bannerSrc
     ? `<img class="character" data-slot="boot-splash-stage-character" src="${escapeHtmlAttribute(bannerSrc)}" alt="" aria-hidden="true" />`
-    : ''
-  const stageClassName = bannerMarkup.length > 0 ? 'card-stage has-character' : 'card-stage'
+    : "";
+  const stageClassName =
+    bannerMarkup.length > 0 ? "card-stage has-character" : "card-stage";
 
   return `<section class="${stageClassName}" data-slot="boot-splash-stage-card-stage">
         ${bannerMarkup}
@@ -57,7 +62,7 @@ function renderSplashCardMarkup(bannerSrc: string | null): string {
         <div class="track" data-slot="boot-splash-card-track" aria-hidden="true"></div>
         <p class="hint">${STARTUP_SPLASH_COPY.hint}</p>
         </section>
-      </section>`
+      </section>`;
 }
 
 function renderCommonStyles(): string {
@@ -112,7 +117,7 @@ function renderCommonStyles(): string {
         width: 100%;
         height: 100%;
         display: grid;
-        place-items: end center;
+        place-items: center;
         padding: 20px 24px;
         background: transparent;
       }
@@ -131,7 +136,7 @@ function renderCommonStyles(): string {
       }
 
       .card-stage.has-character {
-        padding-top: 152px;
+        padding-top: 300px;
       }
 
       .character {
@@ -220,7 +225,7 @@ function renderCommonStyles(): string {
         }
 
         .card-stage.has-character {
-          padding-top: 132px;
+          padding-top: 300px;
         }
 
         .character {
@@ -245,7 +250,7 @@ function renderCommonStyles(): string {
         100% {
           transform: translateX(220%);
         }
-      }`
+      }`;
 }
 
 function renderStartupSplashDocument(bodyContent: string): string {
@@ -263,20 +268,24 @@ function renderStartupSplashDocument(bodyContent: string): string {
   <body>
     ${bodyContent}
   </body>
-</html>`
+</html>`;
 }
 
-export function renderStartupSplashHtml(options: StartupSplashRenderOptions = {}): string {
-  const bannerSrc = options.bannerSrc ?? null
+export function renderStartupSplashHtml(
+  options: StartupSplashRenderOptions = {},
+): string {
+  const bannerSrc = options.bannerSrc ?? null;
   return renderStartupSplashDocument(`<main data-slot="boot-splash-root" aria-label="MediaPlayerX 启动页">
       <section class="splash" data-slot="boot-splash-stage">
         ${renderSplashCardMarkup(bannerSrc)}
       </section>
-    </main>`)
+    </main>`);
 }
 
-export function renderStartupSplashMockHtml(options: StartupSplashRenderOptions = {}): string {
-  const bannerSrc = options.bannerSrc ?? DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC
+export function renderStartupSplashMockHtml(
+  options: StartupSplashRenderOptions = {},
+): string {
+  const bannerSrc = options.bannerSrc ?? DEFAULT_STARTUP_SPLASH_MOCK_BANNER_SRC;
   return renderStartupSplashDocument(`<main class="mock-root">
       <section class="mock-panel" aria-label="启动页调参">
         <h1>Startup Splash Mock</h1>
@@ -610,5 +619,5 @@ export function renderStartupSplashMockHtml(options: StartupSplashRenderOptions 
           })
         }
       })()
-    </script>`)
+    </script>`);
 }

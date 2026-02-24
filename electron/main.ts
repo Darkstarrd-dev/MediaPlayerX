@@ -168,6 +168,7 @@ function createStartupSplashWindow(): BrowserWindow {
   const splashWindow = new BrowserWindow({
     width: STARTUP_SPLASH_WINDOW_CONFIG.width,
     height: STARTUP_SPLASH_WINDOW_CONFIG.height,
+    center: true,
     minWidth: STARTUP_SPLASH_WINDOW_CONFIG.width,
     minHeight: STARTUP_SPLASH_WINDOW_CONFIG.height,
     maxWidth: STARTUP_SPLASH_WINDOW_CONFIG.width,
