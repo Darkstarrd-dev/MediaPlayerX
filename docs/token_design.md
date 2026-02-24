@@ -42,10 +42,6 @@
 | `fg.header.g2.mode.video` | `--mpx-slot-fg-header-g2-mode-video-*` |
 | `fg.header.g2.mode.music` | `--mpx-slot-fg-header-g2-mode-music-*` |
 | `fg.header.g2.musicQuick` | `--mpx-slot-fg-header-g2-music-quick-*` |
-| `fg.header.g3` | `--mpx-slot-fg-header-g3-*` |
-| `fg.header.g3.search` | `--mpx-slot-fg-header-g3-search-*` |
-| `fg.header.g3.manage` | `--mpx-slot-fg-header-g3-manage-*` |
-| `fg.header.g3.metadata` | `--mpx-slot-fg-header-g3-metadata-*` |
 | `fg.header.g4` | `--mpx-slot-fg-header-g4-*` |
 | `fg.header.g4.themeParameter` | `--mpx-slot-fg-header-g4-theme-parameter-*` |
 | `fg.header.g4.popoverDebugPin` | `--mpx-slot-fg-header-g4-popover-debug-pin-*` |
@@ -131,7 +127,10 @@
 | `fg.main.footer.pagination` | `--mpx-slot-fg-main-footer-pagination-*` |
 | `fg.meta.restore` | `--mpx-slot-fg-meta-restore-*` |
 | `fg.meta.toolbar` | `--mpx-slot-fg-meta-toolbar-*` |
-| `fg.meta.toolbar.title` | `--mpx-slot-fg-meta-toolbar-title-*` |
+| `fg.meta.toolbar.g3` | `--mpx-slot-fg-meta-toolbar-g3-*` |
+| `fg.meta.toolbar.g3.search` | `--mpx-slot-fg-meta-toolbar-g3-search-*` |
+| `fg.meta.toolbar.g3.manage` | `--mpx-slot-fg-meta-toolbar-g3-manage-*` |
+| `fg.meta.toolbar.g3.metadata` | `--mpx-slot-fg-meta-toolbar-g3-metadata-*` |
 | `fg.meta.toolbar.toggle` | `--mpx-slot-fg-meta-toolbar-toggle-*` |
 | `fg.meta.main` | `--mpx-slot-fg-meta-main-*` |
 | `fg.meta.main.imageEditor` | `--mpx-slot-fg-meta-main-image-editor-*` |

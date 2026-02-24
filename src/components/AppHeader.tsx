@@ -4,7 +4,7 @@ import {
   dispatchMusicPlaybackControl,
   onMusicPlaybackState,
 } from '../features/media/musicPlaybackBridge'
-import { buildA11yProps, buildA11yPropsByRegistry } from '../i18n/a11y'
+import { buildA11yPropsByRegistry } from '../i18n/a11y'
 import { a11yRegistry } from '../i18n/ariaRegistry'
 import { useI18n } from '../i18n/useI18n'
 import type { BrowserMode } from '../types'
@@ -238,9 +238,6 @@ function AppHeader(props: AppHeaderProps) {
   const {
     headerHeight,
     mode,
-    searchPanelOpen,
-    manageMode,
-    metadataManageMode,
     paletteMode,
     interactionLocked = false,
     importMenuOpen,
@@ -253,9 +250,6 @@ function AppHeader(props: AppHeaderProps) {
     onImportFiles,
     onImportFolders,
     onModeChange,
-    onToggleSearchPanel,
-    onToggleManageMode,
-    onToggleMetadataManageMode,
     onTogglePaletteMode,
     themeParameterButtonVisible,
     popoverDebugPinned,
@@ -336,13 +330,6 @@ function AppHeader(props: AppHeaderProps) {
   const themeParameterButtonA11y = buildA11yPropsByRegistry({ key: 'headerThemeParameter', t })
   const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({ key: 'headerPopoverDebugPinned', t })
   const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
-  const searchButtonA11y = buildA11yPropsByRegistry({ key: 'headerSearch', t })
-  const manageButtonA11y = buildA11yPropsByRegistry({ key: 'headerManage', t })
-  const metadataToggleA11y = buildA11yProps({
-    id: a11yRegistry.headerMetadataToggle.id,
-    labelKey: metadataManageMode ? 'a11y.header.switchToImageMode' : 'a11y.header.switchToMetadataMode',
-    t,
-  })
   const taskStateSlot = importTaskPanelOpen
     ? 'fg-header-g1-task-state-open'
     : taskStatusBusy
@@ -545,55 +532,6 @@ function AppHeader(props: AppHeaderProps) {
           </div>
         </div>
 
-        <div className="header-group header-group-search" data-slot="fg-header-g3">
-          <button
-            {...searchButtonA11y}
-            className={`search-trigger-btn ${searchPanelOpen ? 'is-active' : ''}`}
-            data-slot="fg-header-g3-search"
-            type="button"
-            disabled={interactionLocked}
-            onClick={onToggleSearchPanel}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="search" />
-              </span>
-              <span className="header-btn-label">{t('ui.header.search')}</span>
-            </span>
-          </button>
-
-          <button
-            {...manageButtonA11y}
-            className={`search-trigger-btn ${manageMode ? 'is-active' : ''}`}
-            data-slot="fg-header-g3-manage"
-            type="button"
-            disabled={interactionLocked}
-            onClick={onToggleManageMode}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="edit" />
-              </span>
-              <span className="header-btn-label">{t('ui.header.manage')}</span>
-            </span>
-          </button>
-
-          <button
-            {...metadataToggleA11y}
-            className={`search-trigger-btn ${metadataManageMode ? 'is-active' : ''}`}
-            data-slot="fg-header-g3-metadata"
-            type="button"
-            disabled={interactionLocked}
-            onClick={onToggleMetadataManageMode}
-          >
-            <span className="header-btn-content">
-              <span className="header-btn-icon">
-                <HeaderActionIcon name="metadata" />
-              </span>
-              <span className="header-btn-label">{metadataManageMode ? t('ui.header.imageMode') : t('ui.header.metadataManage')}</span>
-            </span>
-          </button>
-        </div>
       </div>
 
       <div className="header-right">

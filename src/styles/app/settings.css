@@ -32,6 +32,7 @@
 
 .sidebar-head button,
 .toolbar-actions button,
+.metadata-head button,
 .settings-head button,
 .settings-side button,
 .settings-shortcuts-head button,
@@ -41,13 +42,40 @@
 .main-toolbar button,
 .settings-block button,
 .search-trigger-btn {
-  border: var(--mpx-control-border-width) solid var(--mpx-border-2);
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
   border-radius: var(--mpx-control-radius);
-  background: var(--mpx-bg-elevated);
-  color: var(--mpx-text-1);
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  font-weight: var(--mpx-control-font-weight);
   min-height: var(--mpx-control-height);
   padding: 6px var(--mpx-control-padding-x);
   cursor: pointer;
+}
+
+.sidebar-head button:hover,
+.toolbar-actions button:hover,
+.metadata-head button:hover,
+.main-toolbar button:hover,
+.search-trigger-btn:hover {
+  background: var(--mpx-player-btn-hover-bg);
+}
+
+.sidebar-head button:active,
+.toolbar-actions button:active,
+.metadata-head button:active,
+.main-toolbar button:active,
+.search-trigger-btn:active {
+  background: var(--mpx-player-btn-active-bg);
+  border-color: var(--mpx-player-btn-active-border);
+}
+
+.sidebar-head button:disabled,
+.toolbar-actions button:disabled,
+.metadata-head button:disabled,
+.main-toolbar button:disabled,
+.search-trigger-btn:disabled {
+  opacity: 0.56;
+  color: var(--mpx-player-btn-muted-text);
 }
 
 .settings-mask {

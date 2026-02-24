@@ -17,10 +17,10 @@
 }
 
 .metadata-head-icon-btn {
-  border: 1px solid var(--mpx-slot-fg-meta-toolbar-toggle-border, var(--mpx-border-2));
+  border: 1px solid var(--mpx-slot-fg-meta-toolbar-toggle-border, var(--mpx-player-btn-border));
   border-radius: 8px;
-  background: var(--mpx-slot-fg-meta-toolbar-toggle-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-meta-toolbar-toggle-text, var(--mpx-text-1));
+  background: var(--mpx-slot-fg-meta-toolbar-toggle-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-meta-toolbar-toggle-text, var(--mpx-player-btn-text));
   cursor: pointer;
 }
 
@@ -122,15 +122,22 @@
   border-bottom: none;
 }
 
-.metadata-title-btn {
-  border: 0;
-  background: transparent;
-  color: var(--mpx-slot-fg-meta-toolbar-title-text, var(--mpx-text-1));
-  font-weight: 700;
-  font-size: 15px;
-  line-height: 1.2;
+.metadata-toolbar-g3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metadata-toolbar-g3 .search-trigger-btn {
+  min-width: 34px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
   padding: 0;
-  cursor: pointer;
+}
+
+.metadata-toolbar-g3 .header-btn-label {
+  display: none;
 }
 
 .metadata-head-icon-btn.is-image {

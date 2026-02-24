@@ -126,13 +126,15 @@
 }
 
 .sidebar-title-btn {
-  border: 0;
-  background: transparent;
-  color: var(--mpx-slot-fg-sidebar-toolbar-title-text, var(--mpx-text-1));
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border-radius: var(--mpx-control-radius);
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-slot-fg-sidebar-toolbar-title-text, var(--mpx-player-btn-text));
   font-weight: 700;
   font-size: 15px;
   line-height: 1.2;
-  padding: 0;
+  min-height: 34px;
+  padding: 0 10px;
   cursor: pointer;
   text-align: left;
   max-width: 52%;
@@ -146,39 +148,39 @@
 }
 
 [data-slot='fg-sidebar-toolbar-back'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-back-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-back-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-back-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-back-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-back-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-back-text, var(--mpx-player-btn-text));
 }
 
 [data-slot='fg-sidebar-toolbar-clear'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-clear-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-clear-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-clear-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-clear-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-clear-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-clear-text, var(--mpx-player-btn-text));
 }
 
 [data-slot='fg-sidebar-toolbar-root-toggle'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-root-toggle-text, var(--mpx-player-btn-text));
 }
 
 [data-slot='fg-sidebar-toolbar-collapse-all'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-collapse-all-text, var(--mpx-player-btn-text));
 }
 
 [data-slot='fg-sidebar-toolbar-prev-image-parent'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-prev-image-parent-text, var(--mpx-player-btn-text));
 }
 
 [data-slot='fg-sidebar-toolbar-next-image-parent'] {
-  border-color: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-border, var(--mpx-border-2));
-  background: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-sidebar-toolbar-next-image-parent-text, var(--mpx-player-btn-text));
 }
 
 .sidebar-head-icon-btn.is-root-set {
@@ -188,9 +190,7 @@
 }
 
 .sidebar-head .sidebar-title-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
+  padding: 0 10px;
 }
 
 .sidebar-main-shell {

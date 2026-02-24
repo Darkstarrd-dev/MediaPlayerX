@@ -47,10 +47,6 @@
 | `fg.header.g2.mode.video` | `.mode-switch button` (video) | `data-slot="fg-header-g2-mode-video"` | always | Video 模式按钮 | active 样式切换 |
 | `fg.header.g2.mode.music` | `.mode-switch button` (music) | `data-slot="fg-header-g2-mode-music"` | always | Music 模式按钮 | active 样式切换 |
 | `fg.header.g2.musicQuick` | `.music-quick-actions` | `data-slot="fg-header-g2-music-quick"` | `mode != music && showMusicQuickActions` | 音乐快捷控件 | play/stop |
-| `fg.header.g3` | `.header-group-search` | `data-slot="fg-header-g3"` | always | 第 3 组 | search/manage/metadata |
-| `fg.header.g3.search` | `.search-trigger-btn` (search) | `data-slot="fg-header-g3-search"` | always | 搜索开关按钮 | 仅开关态 |
-| `fg.header.g3.manage` | `.search-trigger-btn` (manage) | `data-slot="fg-header-g3-manage"` | always | 管理模式开关 | 仅开关态 |
-| `fg.header.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-header-g3-metadata"` | always | 元数据管理开关 | 仅开关态 |
 | `fg.header.g4` | `.header-group-window` | `data-slot="fg-header-g4"` | always | 第 4 组 | 窗口控制 |
 | `fg.header.g4.themeParameter` | `.window-control-btn--theme-parameter` | `data-slot="fg-header-g4-theme-parameter"` | `themeParameterButtonVisible` | 主题参数按钮 | 打开 ThemeParameter 面板 |
 | `fg.header.g4.popoverDebugPin` | `.window-control-btn`（O/C） | `data-slot="fg-header-g4-popover-debug-pin"` | always | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
@@ -176,7 +172,10 @@
 |---|---|---|---|---|---|
 | `fg.meta.restore` | `.meta-restore` | `data-slot="fg-meta-restore"` | `metadataCollapsed` | Meta 折叠恢复按钮 | |
 | `fg.meta.toolbar` | `.metadata-head` | `data-slot="fg-meta-toolbar"` | `!metadataCollapsed` | Meta toolbar | |
-| `fg.meta.toolbar.title` | `.metadata-title-btn` | `data-slot="fg-meta-toolbar-title"` | always in meta | 标题/折叠触发 | |
+| `fg.meta.toolbar.g3` | `.metadata-toolbar-g3` | `data-slot="fg-meta-toolbar-g3"` | `mode in (image,video,music)` | 搜索/管理/元数据管理组 | 由原 header 第 3 组迁移 |
+| `fg.meta.toolbar.g3.search` | `.search-trigger-btn` (search) | `data-slot="fg-meta-toolbar-g3-search"` | 同上 | 搜索开关按钮 | 仅开关态 |
+| `fg.meta.toolbar.g3.manage` | `.search-trigger-btn` (manage) | `data-slot="fg-meta-toolbar-g3-manage"` | 同上 | 管理模式开关 | 仅开关态 |
+| `fg.meta.toolbar.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-meta-toolbar-g3-metadata"` | 同上 | 元数据管理开关 | 仅开关态 |
 | `fg.meta.toolbar.toggle` | `.metadata-head-icon-btn` | `data-slot="fg-meta-toolbar-toggle"` | `mode=image` | 图像预览/元数据切换 | |
 | `fg.meta.main` | `MetadataImageEditor/MetadataVideoEditor/MetadataMusicEditor` | `data-slot="fg-meta-main"` | `!metadataCollapsed` | Meta 主体编辑区 | 按模式分流 |
 | `fg.meta.main.imageEditor` | `<MetadataImageEditor />` | `data-slot="fg-meta-main-image-editor"` | `mode=image` | 图像元数据编辑 | |

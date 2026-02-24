@@ -292,7 +292,15 @@ export function useAppShellProps({
     imageMainSectionProps: workspaceState.imageMainSectionProps,
     videoMainSectionProps: workspaceState.videoMainSectionProps,
     musicMainSectionProps: workspaceState.musicMainSectionProps,
-    metadataPanelProps: workspaceState.metadataPanelProps,
+    metadataPanelProps: {
+      ...workspaceState.metadataPanelProps,
+      searchPanelOpen: topLayerState.appHeaderProps.searchPanelOpen,
+      onToggleSearchPanel: topLayerState.appHeaderProps.onToggleSearchPanel,
+      onToggleManageMode: topLayerState.appHeaderProps.onToggleManageMode,
+      onToggleMetadataManageMode:
+        topLayerState.appHeaderProps.onToggleMetadataManageMode,
+      interactionLocked: topLayerState.appHeaderProps.interactionLocked,
+    },
     mainFooter: workspaceState.mainFooter,
   }
 
