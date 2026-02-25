@@ -6,6 +6,7 @@ import type {
   ManageReviewModeDto,
   StartImageConvertTaskRequestDto,
 } from "../contracts/backend";
+import type { MetadataFetchTarget } from "../features/metadata/metadataFetchTargets";
 import type { ParsedExternalMetadata } from "../features/metadata/parseExternalMetadata";
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from "../types";
 
@@ -62,12 +63,17 @@ export interface ImageMainSectionProps {
     absoluteIndex: number,
   ) => void;
   metadataPending: boolean;
-  metadataTargetPackageLabel: string;
-  metadataFetchDefaultText: string;
+  metadataTargetPackageLabel?: string;
+  metadataFetchDefaultText?: string;
+  metadataFetchTargets?: MetadataFetchTarget[];
   metadataProxyServer: string;
   metadataEhentaiCookies: string;
   onMetadataSyncName: () => void;
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>;
+  onMetadataSaveParsedByPackageId?: (
+    packageId: string,
+    parsed: ParsedExternalMetadata,
+  ) => Promise<void>;
   manageMode: boolean;
   sidebarSelectedCount: number;
   imageSelectedCount: number;

@@ -7,6 +7,7 @@ import type {
 } from '../../contracts/backend'
 import type { ImageConvertAdjustProfile } from './useAppSessionState'
 import type { AppSettings } from '../../contracts/settings'
+import type { MetadataFetchTarget } from '../metadata/metadataFetchTargets'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
 
@@ -96,10 +97,12 @@ interface BuildImageMainSectionPropsParams {
   metadataPending: boolean
   metadataTargetPackageLabel: string
   metadataFetchDefaultText: string
+  metadataFetchTargets: MetadataFetchTarget[]
   metadataProxyServer: string
   metadataEhentaiCookies: string
   onMetadataSyncName: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
+  onMetadataSaveParsedByPackageId: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
@@ -276,10 +279,12 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataPending: params.metadataPending,
     metadataTargetPackageLabel: params.metadataTargetPackageLabel,
     metadataFetchDefaultText: params.metadataFetchDefaultText,
+    metadataFetchTargets: params.metadataFetchTargets,
     metadataProxyServer: params.metadataProxyServer,
     metadataEhentaiCookies: params.metadataEhentaiCookies,
     onMetadataSyncName: params.onMetadataSyncName,
     onMetadataSaveParsed: params.onMetadataSaveParsed,
+    onMetadataSaveParsedByPackageId: params.onMetadataSaveParsedByPackageId,
     nodeBrowseMode: params.nodeBrowseMode,
     nodeBrowseLabel: params.nodeBrowseLabel,
     nodeBrowseItems: params.nodeBrowseItems,

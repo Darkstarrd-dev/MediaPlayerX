@@ -3,6 +3,8 @@ export const zhCnCatalogPart2 = {
   "ui.metadata.fetchSourceModeAll": "全部",
   "ui.metadata.fetchId": "检索ID",
   "ui.metadata.fetchKeyword": "检索关键字",
+  "ui.metadata.fetchKeywordList": "检索关键字列表",
+  "ui.metadata.fetchRequestIntervalMs": "请求间隔(ms)",
   "ui.metadata.fetchUnsupported": "当前后端不支持元数据检索",
   "ui.metadata.fetchSearchFailed": "检索失败",
   "ui.metadata.fetchNoResultFound": "未检索到结果",

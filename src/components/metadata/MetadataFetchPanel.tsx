@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { MainUiIcon } from '../MainUiIcon'
 import { useI18n } from '../../i18n/useI18n'
 import type { ExternalMetadataResultItemDto, SearchExternalMetadataDebugDto } from '../../contracts/backend'
+import type { MetadataFetchTarget } from '../../features/metadata/metadataFetchTargets'
 import {
   parseExternalMetadataToHitomi,
   type ParsedExternalMetadata,
@@ -10,13 +11,12 @@ import {
 
 interface MetadataFetchPanelProps {
   open: boolean
-  defaultText: string
+  targets: MetadataFetchTarget[]
   proxyServer: string
   ehentaiCookies: string
   metadataPending: boolean
-  targetPackageLabel: string
   onClose: () => void
-  onSaveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>
+  onSaveParsedMetadataToTarget: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
 }
 
 type SourceMode = 'all' | 'nhentai' | 'ehentai'
@@ -57,6 +57,17 @@ interface SourcePreviewCollapseMap {
     raw: boolean
     parsed: boolean
   }
+}
+
+interface TargetRuntimeState {
+  sourceLists: SourceLists
+  selectedIndexBySource: Record<MetadataSource, number>
+  requestPreviewBySource: SourceTextMap
+  responsePreviewBySource: SourceTextMap
+  debugBySource: SourceDebugMap
+  parsedBySource: SourceParsedMap
+  previewCollapseBySource: SourcePreviewCollapseMap
+  error: string | null
 }
 
 const SOURCE_KEYS: MetadataSource[] = ['nhentai', 'ehentai']
@@ -112,6 +123,23 @@ function createInitialPreviewCollapseBySource(): SourcePreviewCollapseMap {
   }
 }
 
+function createTargetRuntimeState(): TargetRuntimeState {
+  return {
+    sourceLists: createEmptySourceLists(),
+    selectedIndexBySource: createInitialSelectedIndexBySource(),
+    requestPreviewBySource: createEmptySourceTextMap(),
+    responsePreviewBySource: createEmptySourceTextMap(),
+    debugBySource: createEmptySourceDebugMap(),
+    parsedBySource: createEmptyParsedBySource(),
+    previewCollapseBySource: createInitialPreviewCollapseBySource(),
+    error: null,
+  }
+}
+
+function createTargetRuntimeStateMap(targets: MetadataFetchTarget[]): Record<string, TargetRuntimeState> {
+  return Object.fromEntries(targets.map((target) => [target.packageId, createTargetRuntimeState()]))
+}
+
 function getSourceDisplayLabel(source: MetadataSource): string {
   return source === 'nhentai' ? 'ui.metadata.fetchSourceNhentai' : 'ui.metadata.fetchSourceEhentai'
 }
@@ -162,52 +190,80 @@ function AutoSizeReadonlyTextarea({ id, label, value }: AutoSizeReadonlyTextarea
 
 function MetadataFetchPanel({
   open,
-  defaultText,
+  targets,
   proxyServer,
   ehentaiCookies,
   metadataPending,
-  targetPackageLabel,
   onClose,
-  onSaveParsedMetadata,
+  onSaveParsedMetadataToTarget,
 }: MetadataFetchPanelProps) {
   const { t } = useI18n()
   const [sourceMode, setSourceMode] = useState<SourceMode>('all')
   const [inputId, setInputId] = useState('')
-  const [inputText, setInputText] = useState(defaultText)
+  const [requestIntervalMs, setRequestIntervalMs] = useState(1200)
+  const [keywordsExpanded, setKeywordsExpanded] = useState(false)
+  const [targetKeywords, setTargetKeywords] = useState<string[]>([])
+  const [activeTargetIndex, setActiveTargetIndex] = useState(0)
+  const [selectedSource, setSelectedSource] = useState<MetadataSource>('nhentai')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [sourceLists, setSourceLists] = useState<SourceLists>(createEmptySourceLists())
-  const [selectedSource, setSelectedSource] = useState<MetadataSource>('nhentai')
-  const [selectedIndexBySource, setSelectedIndexBySource] = useState<Record<MetadataSource, number>>(
-    createInitialSelectedIndexBySource(),
-  )
-  const [requestPreviewBySource, setRequestPreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
-  const [responsePreviewBySource, setResponsePreviewBySource] = useState<SourceTextMap>(createEmptySourceTextMap())
-  const [debugBySource, setDebugBySource] = useState<SourceDebugMap>(createEmptySourceDebugMap())
-  const [parsedBySource, setParsedBySource] = useState<SourceParsedMap>(createEmptyParsedBySource())
-  const [previewCollapseBySource, setPreviewCollapseBySource] = useState<SourcePreviewCollapseMap>(
-    createInitialPreviewCollapseBySource(),
-  )
+  const [runtimeByTarget, setRuntimeByTarget] = useState<Record<string, TargetRuntimeState>>({})
+  const runTokenRef = useRef(0)
 
   const getSourceLabel = (source: MetadataSource): string => t(getSourceDisplayLabel(source))
+  const currentTarget = targets[activeTargetIndex] ?? null
+  const currentRuntime =
+    (currentTarget ? runtimeByTarget[currentTarget.packageId] : null) ?? createTargetRuntimeState()
+
+  const selectedItemBySource: Record<MetadataSource, ExternalMetadataResultItemDto | null> = useMemo(
+    () => ({
+      nhentai:
+        currentRuntime.sourceLists.nhentai[currentRuntime.selectedIndexBySource.nhentai ?? 0] ?? null,
+      ehentai:
+        currentRuntime.sourceLists.ehentai[currentRuntime.selectedIndexBySource.ehentai ?? 0] ?? null,
+    }),
+    [currentRuntime],
+  )
+
+  const resultCount =
+    currentRuntime.sourceLists.nhentai.length + currentRuntime.sourceLists.ehentai.length
+
+  const previewRawBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: selectedItemBySource.nhentai ? JSON.stringify(selectedItemBySource.nhentai.raw, null, 2) : '',
+      ehentai: selectedItemBySource.ehentai ? JSON.stringify(selectedItemBySource.ehentai.raw, null, 2) : '',
+    }),
+    [selectedItemBySource],
+  )
+
+  const previewParsedBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: currentRuntime.parsedBySource.nhentai ? JSON.stringify(currentRuntime.parsedBySource.nhentai, null, 2) : '',
+      ehentai: currentRuntime.parsedBySource.ehentai ? JSON.stringify(currentRuntime.parsedBySource.ehentai, null, 2) : '',
+    }),
+    [currentRuntime.parsedBySource],
+  )
+
+  const previewDebugBySource: SourceTextMap = useMemo(
+    () => ({
+      nhentai: currentRuntime.debugBySource.nhentai ? JSON.stringify(currentRuntime.debugBySource.nhentai, null, 2) : '',
+      ehentai: currentRuntime.debugBySource.ehentai ? JSON.stringify(currentRuntime.debugBySource.ehentai, null, 2) : '',
+    }),
+    [currentRuntime.debugBySource],
+  )
 
   useEffect(() => {
     if (!open) {
       return
     }
-    setInputText(defaultText)
     setInputId('')
-    setSourceLists(createEmptySourceLists())
+    setRequestIntervalMs(1200)
+    setKeywordsExpanded(false)
+    setActiveTargetIndex(0)
     setSelectedSource('nhentai')
-    setSelectedIndexBySource(createInitialSelectedIndexBySource())
-    setRequestPreviewBySource(createEmptySourceTextMap())
-    setResponsePreviewBySource(createEmptySourceTextMap())
-    setDebugBySource(createEmptySourceDebugMap())
-    setParsedBySource(createEmptyParsedBySource())
-    setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
-    setError(null)
-  }, [defaultText, open])
+    setTargetKeywords(targets.map((target) => target.defaultText))
+    setRuntimeByTarget(createTargetRuntimeStateMap(targets))
+  }, [open, targets])
 
   useEffect(() => {
     if (!open) {
@@ -229,147 +285,144 @@ function MetadataFetchPanel({
     }
   }, [onClose, open])
 
-  const selectedItemBySource: Record<MetadataSource, ExternalMetadataResultItemDto | null> = useMemo(
-    () => ({
-      nhentai: sourceLists.nhentai[selectedIndexBySource.nhentai ?? 0] ?? null,
-      ehentai: sourceLists.ehentai[selectedIndexBySource.ehentai ?? 0] ?? null,
-    }),
-    [selectedIndexBySource, sourceLists],
-  )
+  const withTargetRuntime = (packageId: string, updater: (state: TargetRuntimeState) => TargetRuntimeState) => {
+    setRuntimeByTarget((previous) => {
+      const current = previous[packageId] ?? createTargetRuntimeState()
+      return {
+        ...previous,
+        [packageId]: updater(current),
+      }
+    })
+  }
 
-  const resultCount = sourceLists.nhentai.length + sourceLists.ehentai.length
-
-  const previewRawBySource: SourceTextMap = useMemo(
-    () => ({
-      nhentai: selectedItemBySource.nhentai ? JSON.stringify(selectedItemBySource.nhentai.raw, null, 2) : '',
-      ehentai: selectedItemBySource.ehentai ? JSON.stringify(selectedItemBySource.ehentai.raw, null, 2) : '',
-    }),
-    [selectedItemBySource],
-  )
-
-  const previewParsedBySource: SourceTextMap = useMemo(
-    () => ({
-      nhentai: parsedBySource.nhentai ? JSON.stringify(parsedBySource.nhentai, null, 2) : '',
-      ehentai: parsedBySource.ehentai ? JSON.stringify(parsedBySource.ehentai, null, 2) : '',
-    }),
-    [parsedBySource],
-  )
-
-  const previewDebugBySource: SourceTextMap = useMemo(
-    () => ({
-      nhentai: debugBySource.nhentai ? JSON.stringify(debugBySource.nhentai, null, 2) : '',
-      ehentai: debugBySource.ehentai ? JSON.stringify(debugBySource.ehentai, null, 2) : '',
-    }),
-    [debugBySource],
-  )
-
-  const canSearch = inputText.trim().length > 0 || inputId.trim().length > 0
+  const canSearch =
+    inputId.trim().length > 0 || targetKeywords.some((keyword) => keyword.trim().length > 0)
   if (!open) {
     return null
   }
 
   const runSearch = async () => {
-    const requestBase = {
-      input_text: inputText.trim() || undefined,
-      input_id: inputId.trim() || undefined,
-      proxy_server: proxyServer.trim() || undefined,
-    }
-    const ehentaiCookieText = ehentaiCookies.trim()
-    const targetSources: MetadataSource[] = sourceMode === 'all' ? SOURCE_KEYS : [sourceMode]
-    const buildRequestPayload = (source: MetadataSource) => {
-      return {
-        ...requestBase,
-        source,
-        ...(source === 'ehentai' && ehentaiCookieText ? { ehentai_cookies: ehentaiCookieText } : {}),
-      }
-    }
-
     const api = window.mediaPlayerBackend
     const searchExternalMetadata = api?.searchExternalMetadata
-    if (!searchExternalMetadata) {
-      const nextRequestPreviewBySource = createEmptySourceTextMap()
-      const nextResponsePreviewBySource = createEmptySourceTextMap()
+    const ehentaiCookieText = ehentaiCookies.trim()
+    const targetSources: MetadataSource[] = sourceMode === 'all' ? SOURCE_KEYS : [sourceMode]
+    const runToken = runTokenRef.current + 1
+    runTokenRef.current = runToken
 
-      for (const source of targetSources) {
-        nextRequestPreviewBySource[source] = JSON.stringify(buildRequestPayload(source), null, 2)
-        nextResponsePreviewBySource[source] = JSON.stringify(
-          {
-            message: t('ui.metadata.fetchUnsupported'),
-            code: 'backend_unavailable',
-          },
-          null,
-          2,
-        )
-      }
-
-      setRequestPreviewBySource(nextRequestPreviewBySource)
-      setResponsePreviewBySource(nextResponsePreviewBySource)
-      setSourceLists(createEmptySourceLists())
-      setSelectedIndexBySource(createInitialSelectedIndexBySource())
-      setDebugBySource(createEmptySourceDebugMap())
-      setParsedBySource(createEmptyParsedBySource())
-      setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
-      setError(t('ui.metadata.fetchUnsupported'))
+    if (targets.length === 0) {
       return
     }
 
     setLoading(true)
-    setError(null)
-    setDebugBySource(createEmptySourceDebugMap())
-    setParsedBySource(createEmptyParsedBySource())
-    setPreviewCollapseBySource(createInitialPreviewCollapseBySource())
-
     try {
-      const nextSourceLists = createEmptySourceLists()
-      const nextRequestPreviewBySource = createEmptySourceTextMap()
-      const nextResponsePreviewBySource = createEmptySourceTextMap()
-      const nextDebugBySource = createEmptySourceDebugMap()
-      const searchErrors: string[] = []
+      for (const [targetIndex, target] of targets.entries()) {
+        if (runTokenRef.current !== runToken) {
+          return
+        }
+        const keyword = targetKeywords[targetIndex] ?? ''
+        const requestBase = {
+          input_text: keyword.trim() || undefined,
+          input_id: inputId.trim() || undefined,
+          proxy_server: proxyServer.trim() || undefined,
+        }
 
-      await Promise.all(
-        targetSources.map(async (source) => {
-          const requestPayload = buildRequestPayload(source)
-          nextRequestPreviewBySource[source] = JSON.stringify(requestPayload, null, 2)
+        const buildRequestPayload = (source: MetadataSource) => ({
+          ...requestBase,
+          source,
+          ...(source === 'ehentai' && ehentaiCookieText ? { ehentai_cookies: ehentaiCookieText } : {}),
+        })
 
-          try {
-            const response = await searchExternalMetadata(requestPayload)
-            nextSourceLists[source] = response.items.filter((item) => item.source === source)
-            nextResponsePreviewBySource[source] = JSON.stringify(response, null, 2)
-            nextDebugBySource[source] = response.debug ?? null
-          } catch (searchError) {
-            nextResponsePreviewBySource[source] = JSON.stringify(buildErrorPayload(searchError, t('ui.metadata.fetchSearchFailed')), null, 2)
-            searchErrors.push(`${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : t('ui.metadata.fetchSearchFailed')}`)
+        if (!searchExternalMetadata) {
+          const nextRequestPreviewBySource = createEmptySourceTextMap()
+          const nextResponsePreviewBySource = createEmptySourceTextMap()
+          for (const source of targetSources) {
+            nextRequestPreviewBySource[source] = JSON.stringify(buildRequestPayload(source), null, 2)
+            nextResponsePreviewBySource[source] = JSON.stringify(
+              {
+                message: t('ui.metadata.fetchUnsupported'),
+                code: 'backend_unavailable',
+              },
+              null,
+              2,
+            )
           }
-        }),
-      )
 
-      setSourceLists(nextSourceLists)
-      setSelectedIndexBySource(createInitialSelectedIndexBySource())
-      setRequestPreviewBySource(nextRequestPreviewBySource)
-      setResponsePreviewBySource(nextResponsePreviewBySource)
-      setDebugBySource(nextDebugBySource)
+          withTargetRuntime(target.packageId, (state) => ({
+            ...state,
+            sourceLists: createEmptySourceLists(),
+            selectedIndexBySource: createInitialSelectedIndexBySource(),
+            requestPreviewBySource: nextRequestPreviewBySource,
+            responsePreviewBySource: nextResponsePreviewBySource,
+            debugBySource: createEmptySourceDebugMap(),
+            parsedBySource: createEmptyParsedBySource(),
+            previewCollapseBySource: createInitialPreviewCollapseBySource(),
+            error: t('ui.metadata.fetchUnsupported'),
+          }))
+          continue
+        }
 
-      const nextSelectedSource: MetadataSource =
-        nextSourceLists[selectedSource].length > 0
-          ? selectedSource
-          : nextSourceLists.nhentai.length > 0
-            ? 'nhentai'
-            : nextSourceLists.ehentai.length > 0
-              ? 'ehentai'
-              : 'nhentai'
-      setSelectedSource(nextSelectedSource)
+        const nextSourceLists = createEmptySourceLists()
+        const nextRequestPreviewBySource = createEmptySourceTextMap()
+        const nextResponsePreviewBySource = createEmptySourceTextMap()
+        const nextDebugBySource = createEmptySourceDebugMap()
+        const searchErrors: string[] = []
 
-      if (searchErrors.length > 0) {
-        setError(searchErrors.join(' | '))
-      } else if (nextSourceLists.nhentai.length + nextSourceLists.ehentai.length === 0) {
-        setError(t('ui.metadata.fetchNoResultFound'))
+        await Promise.all(
+          targetSources.map(async (source) => {
+            const requestPayload = buildRequestPayload(source)
+            nextRequestPreviewBySource[source] = JSON.stringify(requestPayload, null, 2)
+            try {
+              const response = await searchExternalMetadata(requestPayload)
+              nextSourceLists[source] = response.items.filter((item) => item.source === source)
+              nextResponsePreviewBySource[source] = JSON.stringify(response, null, 2)
+              nextDebugBySource[source] = response.debug ?? null
+            } catch (searchError) {
+              nextResponsePreviewBySource[source] = JSON.stringify(
+                buildErrorPayload(searchError, t('ui.metadata.fetchSearchFailed')),
+                null,
+                2,
+              )
+              searchErrors.push(
+                `${getSourceShortLabel(source)}: ${searchError instanceof Error ? searchError.message : t('ui.metadata.fetchSearchFailed')}`,
+              )
+            }
+          }),
+        )
+
+        withTargetRuntime(target.packageId, (state) => ({
+          ...state,
+          sourceLists: nextSourceLists,
+          selectedIndexBySource: createInitialSelectedIndexBySource(),
+          requestPreviewBySource: nextRequestPreviewBySource,
+          responsePreviewBySource: nextResponsePreviewBySource,
+          debugBySource: nextDebugBySource,
+          parsedBySource: createEmptyParsedBySource(),
+          previewCollapseBySource: createInitialPreviewCollapseBySource(),
+          error:
+            searchErrors.length > 0
+              ? searchErrors.join(' | ')
+              : nextSourceLists.nhentai.length + nextSourceLists.ehentai.length === 0
+                ? t('ui.metadata.fetchNoResultFound')
+                : null,
+        }))
+
+        if (targetIndex < targets.length - 1 && requestIntervalMs > 0) {
+          await new Promise<void>((resolve) => {
+            window.setTimeout(() => resolve(), requestIntervalMs)
+          })
+        }
       }
     } finally {
-      setLoading(false)
+      if (runTokenRef.current === runToken) {
+        setLoading(false)
+      }
     }
   }
 
   const runParse = (source: MetadataSource) => {
+    if (!currentTarget) {
+      return
+    }
     const currentItem = selectedItemBySource[source]
     if (!currentItem) {
       return
@@ -377,42 +430,57 @@ function MetadataFetchPanel({
 
     try {
       const nextParsed = parseExternalMetadataToHitomi(currentItem)
-      setParsedBySource((previous) => ({
-        ...previous,
-        [source]: nextParsed,
-      }))
-      setPreviewCollapseBySource((previous) => ({
-        ...previous,
-        [source]: {
-          debug: true,
-          request: true,
-          response: true,
-          raw: false,
-          parsed: false,
+      withTargetRuntime(currentTarget.packageId, (state) => ({
+        ...state,
+        parsedBySource: {
+          ...state.parsedBySource,
+          [source]: nextParsed,
         },
+        previewCollapseBySource: {
+          ...state.previewCollapseBySource,
+          [source]: {
+            debug: true,
+            request: true,
+            response: true,
+            raw: false,
+            parsed: false,
+          },
+        },
+        error: null,
       }))
-      setError(null)
     } catch (parseError) {
-      setParsedBySource((previous) => ({
-        ...previous,
-        [source]: null,
+      withTargetRuntime(currentTarget.packageId, (state) => ({
+        ...state,
+        parsedBySource: {
+          ...state.parsedBySource,
+          [source]: null,
+        },
+        error: parseError instanceof Error ? parseError.message : t('ui.metadata.fetchParseFailed'),
       }))
-      setError(parseError instanceof Error ? parseError.message : t('ui.metadata.fetchParseFailed'))
     }
   }
 
   const runSave = async (source: MetadataSource) => {
-    const selectedParsed = parsedBySource[source]
+    if (!currentTarget) {
+      return
+    }
+    const selectedParsed = currentRuntime.parsedBySource[source]
     if (!selectedParsed) {
       return
     }
+
     setSaving(true)
-    setError(null)
+    withTargetRuntime(currentTarget.packageId, (state) => ({ ...state, error: null }))
     try {
-      await onSaveParsedMetadata(selectedParsed)
-      onClose()
+      await onSaveParsedMetadataToTarget(currentTarget.packageId, selectedParsed)
+      if (targets.length <= 1) {
+        onClose()
+      }
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : t('ui.metadata.fetchSaveFailed'))
+      withTargetRuntime(currentTarget.packageId, (state) => ({
+        ...state,
+        error: saveError instanceof Error ? saveError.message : t('ui.metadata.fetchSaveFailed'),
+      }))
     } finally {
       setSaving(false)
     }
@@ -430,7 +498,10 @@ function MetadataFetchPanel({
         </header>
 
         <div className="metadata-fetch-shell settings-block">
-          <p className="settings-placeholder">{t('ui.metadata.fetchTargetPackage', { label: targetPackageLabel || '-' })}</p>
+          <p className="settings-placeholder">
+            {t('ui.metadata.fetchTargetPackage', { label: currentTarget?.label || '-' })}
+            {` (${Math.min(activeTargetIndex + 1, Math.max(1, targets.length))}/${Math.max(1, targets.length)})`}
+          </p>
 
           <fieldset className="settings-subsection metadata-fetch-search-section">
             <legend>{t('ui.metadata.fetchSearchParams')}</legend>
@@ -464,19 +535,61 @@ function MetadataFetchPanel({
                 />
               </label>
 
-              <label>
-                {t('ui.metadata.fetchKeyword')}
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(event) => setInputText(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      void runSearch()
-                    }
-                  }}
-                />
-              </label>
+              <div className="metadata-fetch-keyword-editor">
+                {targets.length > 1 ? (
+                  <button
+                    type="button"
+                    className="metadata-fetch-preview-toggle"
+                    onClick={() => setKeywordsExpanded((value) => !value)}
+                  >
+                    <span>{t('ui.metadata.fetchKeywordList')}</span>
+                    <span className="metadata-fetch-preview-state" aria-hidden="true">
+                      <MainUiIcon name={keywordsExpanded ? 'collapse' : 'expand'} />
+                    </span>
+                  </button>
+                ) : null}
+
+                {keywordsExpanded && targets.length > 1
+                  ? targets.map((target, index) => (
+                      <label key={target.packageId}>
+                        {`${target.label}`}
+                        <input
+                          type="text"
+                          value={targetKeywords[index] ?? ''}
+                          onChange={(event) => {
+                            const nextValue = event.target.value
+                            setTargetKeywords((previous) => {
+                              const next = [...previous]
+                              next[index] = nextValue
+                              return next
+                            })
+                          }}
+                        />
+                      </label>
+                    ))
+                  : (
+                      <label>
+                        {t('ui.metadata.fetchKeyword')}
+                        <input
+                          type="text"
+                          value={targetKeywords[activeTargetIndex] ?? ''}
+                          onChange={(event) => {
+                            const nextValue = event.target.value
+                            setTargetKeywords((previous) => {
+                              const next = [...previous]
+                              next[activeTargetIndex] = nextValue
+                              return next
+                            })
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              void runSearch()
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+              </div>
 
               <div className="metadata-fetch-search-action">
                 <button
@@ -489,24 +602,41 @@ function MetadataFetchPanel({
                 >
                   <MainUiIcon name="search" />
                 </button>
+                <label>
+                  {t('ui.metadata.fetchRequestIntervalMs')}
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={requestIntervalMs}
+                    onChange={(event) => {
+                      const parsed = Number(event.target.value)
+                      if (!Number.isFinite(parsed)) {
+                        setRequestIntervalMs(0)
+                        return
+                      }
+                      setRequestIntervalMs(Math.max(0, Math.round(parsed)))
+                    }}
+                  />
+                </label>
               </div>
             </div>
           </fieldset>
 
-          {error ? <p className="settings-danger-text">{error}</p> : null}
+          {currentRuntime.error ? <p className="settings-danger-text">{currentRuntime.error}</p> : null}
 
           <div className="metadata-fetch-results">
             {SOURCE_KEYS.map((source) => {
-              const list = sourceLists[source]
-              const selectedIndex = selectedIndexBySource[source] ?? 0
+              const list = currentRuntime.sourceLists[source]
+              const selectedIndex = currentRuntime.selectedIndexBySource[source] ?? 0
               const isActiveSource = selectedSource === source
-              const debugCollapsed = previewCollapseBySource[source].debug
-              const requestCollapsed = previewCollapseBySource[source].request
-              const responseCollapsed = previewCollapseBySource[source].response
-              const rawCollapsed = previewCollapseBySource[source].raw
-              const parsedCollapsed = previewCollapseBySource[source].parsed
+              const debugCollapsed = currentRuntime.previewCollapseBySource[source].debug
+              const requestCollapsed = currentRuntime.previewCollapseBySource[source].request
+              const responseCollapsed = currentRuntime.previewCollapseBySource[source].response
+              const rawCollapsed = currentRuntime.previewCollapseBySource[source].raw
+              const parsedCollapsed = currentRuntime.previewCollapseBySource[source].parsed
               const canParse = Boolean(selectedItemBySource[source])
-              const canSave = Boolean(parsedBySource[source]) && !saving && !metadataPending
+              const canSave = Boolean(currentRuntime.parsedBySource[source]) && !saving && !metadataPending
 
               return (
                 <section
@@ -520,6 +650,30 @@ function MetadataFetchPanel({
                   </header>
 
                   <div className="settings-floating-actions metadata-fetch-actions metadata-fetch-actions-inline">
+                    <button
+                      className="feature-action-btn main-icon-square-btn"
+                      type="button"
+                      aria-label={t('a11y.common.prevPage')}
+                      data-tooltip-label={t('tip.common.prevPage')}
+                      disabled={targets.length <= 1 || activeTargetIndex <= 0}
+                      onClick={() => {
+                        setActiveTargetIndex((previous) => Math.max(0, previous - 1))
+                      }}
+                    >
+                      <MainUiIcon name="prev" />
+                    </button>
+                    <button
+                      className="feature-action-btn main-icon-square-btn"
+                      type="button"
+                      aria-label={t('a11y.common.nextPage')}
+                      data-tooltip-label={t('tip.common.nextPage')}
+                      disabled={targets.length <= 1 || activeTargetIndex >= targets.length - 1}
+                      onClick={() => {
+                        setActiveTargetIndex((previous) => Math.min(targets.length - 1, previous + 1))
+                      }}
+                    >
+                      <MainUiIcon name="next" />
+                    </button>
                     <button
                       className="feature-action-btn main-icon-square-btn"
                       type="button"
@@ -556,22 +710,28 @@ function MetadataFetchPanel({
                           className={isActiveSource && index === selectedIndex ? 'is-active' : ''}
                           onClick={() => {
                             setSelectedSource(source)
-                            setSelectedIndexBySource((previous) => ({
-                              ...previous,
-                              [source]: index,
-                            }))
-                            setParsedBySource((previous) => ({
-                              ...previous,
-                              [source]: null,
-                            }))
-                            setPreviewCollapseBySource((previous) => ({
-                              ...previous,
-                              [source]: {
-                                debug: false,
-                                request: false,
-                                response: false,
-                                raw: false,
-                                parsed: true,
+                            if (!currentTarget) {
+                              return
+                            }
+                            withTargetRuntime(currentTarget.packageId, (state) => ({
+                              ...state,
+                              selectedIndexBySource: {
+                                ...state.selectedIndexBySource,
+                                [source]: index,
+                              },
+                              parsedBySource: {
+                                ...state.parsedBySource,
+                                [source]: null,
+                              },
+                              previewCollapseBySource: {
+                                ...state.previewCollapseBySource,
+                                [source]: {
+                                  debug: false,
+                                  request: false,
+                                  response: false,
+                                  raw: false,
+                                  parsed: true,
+                                },
                               },
                             }))
                           }}
@@ -590,11 +750,17 @@ function MetadataFetchPanel({
                         type="button"
                         className="metadata-fetch-preview-toggle"
                         onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
-                              parsed: !previous[source].parsed,
+                          if (!currentTarget) {
+                            return
+                          }
+                          withTargetRuntime(currentTarget.packageId, (state) => ({
+                            ...state,
+                            previewCollapseBySource: {
+                              ...state.previewCollapseBySource,
+                              [source]: {
+                                ...state.previewCollapseBySource[source],
+                                parsed: !state.previewCollapseBySource[source].parsed,
+                              },
                             },
                           }))
                         }}
@@ -614,11 +780,17 @@ function MetadataFetchPanel({
                         type="button"
                         className="metadata-fetch-preview-toggle"
                         onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
-                              raw: !previous[source].raw,
+                          if (!currentTarget) {
+                            return
+                          }
+                          withTargetRuntime(currentTarget.packageId, (state) => ({
+                            ...state,
+                            previewCollapseBySource: {
+                              ...state.previewCollapseBySource,
+                              [source]: {
+                                ...state.previewCollapseBySource[source],
+                                raw: !state.previewCollapseBySource[source].raw,
+                              },
                             },
                           }))
                         }}
@@ -638,11 +810,17 @@ function MetadataFetchPanel({
                         type="button"
                         className="metadata-fetch-preview-toggle"
                         onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
-                              debug: !previous[source].debug,
+                          if (!currentTarget) {
+                            return
+                          }
+                          withTargetRuntime(currentTarget.packageId, (state) => ({
+                            ...state,
+                            previewCollapseBySource: {
+                              ...state.previewCollapseBySource,
+                              [source]: {
+                                ...state.previewCollapseBySource[source],
+                                debug: !state.previewCollapseBySource[source].debug,
+                              },
                             },
                           }))
                         }}
@@ -666,11 +844,17 @@ function MetadataFetchPanel({
                         type="button"
                         className="metadata-fetch-preview-toggle"
                         onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
-                              request: !previous[source].request,
+                          if (!currentTarget) {
+                            return
+                          }
+                          withTargetRuntime(currentTarget.packageId, (state) => ({
+                            ...state,
+                            previewCollapseBySource: {
+                              ...state.previewCollapseBySource,
+                              [source]: {
+                                ...state.previewCollapseBySource[source],
+                                request: !state.previewCollapseBySource[source].request,
+                              },
                             },
                           }))
                         }}
@@ -682,10 +866,10 @@ function MetadataFetchPanel({
                       </button>
                       {!requestCollapsed ? (
                         <AutoSizeReadonlyTextarea
-                          id={`${source}-request-body`}
-                           label={t('ui.metadata.fetchPreviewRequestBody')}
-                           value={requestPreviewBySource[source]}
-                        />
+                            id={`${source}-request-body`}
+                            label={t('ui.metadata.fetchPreviewRequestBody')}
+                            value={currentRuntime.requestPreviewBySource[source]}
+                         />
                       ) : null}
                     </section>
 
@@ -694,11 +878,17 @@ function MetadataFetchPanel({
                         type="button"
                         className="metadata-fetch-preview-toggle"
                         onClick={() => {
-                          setPreviewCollapseBySource((previous) => ({
-                            ...previous,
-                            [source]: {
-                              ...previous[source],
-                              response: !previous[source].response,
+                          if (!currentTarget) {
+                            return
+                          }
+                          withTargetRuntime(currentTarget.packageId, (state) => ({
+                            ...state,
+                            previewCollapseBySource: {
+                              ...state.previewCollapseBySource,
+                              [source]: {
+                                ...state.previewCollapseBySource[source],
+                                response: !state.previewCollapseBySource[source].response,
+                              },
                             },
                           }))
                         }}
@@ -710,10 +900,10 @@ function MetadataFetchPanel({
                       </button>
                       {!responseCollapsed ? (
                         <AutoSizeReadonlyTextarea
-                          id={`${source}-response-body`}
-                           label={t('ui.metadata.fetchPreviewResponseBody')}
-                           value={responsePreviewBySource[source]}
-                        />
+                            id={`${source}-response-body`}
+                            label={t('ui.metadata.fetchPreviewResponseBody')}
+                            value={currentRuntime.responsePreviewBySource[source]}
+                         />
                       ) : null}
                     </section>
                   </div>

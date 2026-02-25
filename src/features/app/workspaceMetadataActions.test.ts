@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createSaveParsedMetadata } from './workspaceMetadataActions'
+import { createSaveParsedMetadata, createSaveParsedMetadataByPackageId } from './workspaceMetadataActions'
 import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { MetadataWriteBindingsResult } from './useMetadataWriteBindings'
 import type { ImagePackage } from '../../types'
@@ -118,5 +118,32 @@ describe('createSaveParsedMetadata', () => {
     })
 
     await expect(save(createParsedMetadata())).rejects.toThrow('no-package')
+  })
+
+  it('按 packageId 保存时应写入指定目标', async () => {
+    const metadataWriteBindings = createMetadataWriteBindingsMock()
+    const saveByPackageId = createSaveParsedMetadataByPackageId({
+      mode: 'image',
+      metadataWriteBindings,
+      saveParsedMetadataErrors: {
+        unsupportedMode: 'unsupported-mode',
+        noAvailablePackage: 'no-package',
+      },
+    })
+
+    await saveByPackageId('pkg-2', createParsedMetadata({ title: 'batch title' }))
+
+    expect(metadataWriteBindings.applyPackageMetadataById).toHaveBeenCalledWith(
+      'pkg-2',
+      expect.objectContaining({
+        workTitle: 'batch title',
+      }),
+    )
+    expect(metadataWriteBindings.applyPackageExternalMetadataById).toHaveBeenCalledWith(
+      'pkg-2',
+      expect.objectContaining({
+        title: 'batch title',
+      }),
+    )
   })
 })

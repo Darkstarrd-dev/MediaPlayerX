@@ -38,6 +38,12 @@ export function createSaveParsedMetadata({
   metadataImagePackageEffective,
   saveParsedMetadataErrors,
 }: MetadataActionsParams & SaveParsedMetadataErrors): (parsed: ParsedExternalMetadata) => Promise<void> {
+  const saveByPackageId = createSaveParsedMetadataByPackageId({
+    mode,
+    metadataWriteBindings,
+    saveParsedMetadataErrors,
+  })
+
   return async (parsed: ParsedExternalMetadata) => {
     if (mode !== 'image') {
       throw new Error(saveParsedMetadataErrors.unsupportedMode)
@@ -46,13 +52,39 @@ export function createSaveParsedMetadata({
     if (!packageId) {
       throw new Error(saveParsedMetadataErrors.noAvailablePackage)
     }
-    await metadataWriteBindings.applyPackageMetadataById(packageId, {
+    await saveByPackageId(packageId, parsed)
+  }
+}
+
+interface SaveParsedMetadataByPackageIdParams {
+  mode: BrowserMode
+  metadataWriteBindings: MetadataWriteBindingsResult
+  saveParsedMetadataErrors: {
+    unsupportedMode: string
+    noAvailablePackage: string
+  }
+}
+
+export function createSaveParsedMetadataByPackageId({
+  mode,
+  metadataWriteBindings,
+  saveParsedMetadataErrors,
+}: SaveParsedMetadataByPackageIdParams): (packageId: string, parsed: ParsedExternalMetadata) => Promise<void> {
+  return async (packageId: string, parsed: ParsedExternalMetadata) => {
+    if (mode !== 'image') {
+      throw new Error(saveParsedMetadataErrors.unsupportedMode)
+    }
+    const normalizedPackageId = packageId.trim()
+    if (!normalizedPackageId) {
+      throw new Error(saveParsedMetadataErrors.noAvailablePackage)
+    }
+    await metadataWriteBindings.applyPackageMetadataById(normalizedPackageId, {
       workTitle: parsed.title,
       circle: parsed.group,
       author: parsed.artist,
       tags: flattenExternalTags(parsed.tags),
     })
-    await metadataWriteBindings.applyPackageExternalMetadataById(packageId, {
+    await metadataWriteBindings.applyPackageExternalMetadataById(normalizedPackageId, {
       sourceSite: parsed.source.site,
       sourceUrl: parsed.source.url,
       sourceRemoteId: parsed.source.id,

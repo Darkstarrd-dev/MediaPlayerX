@@ -41,21 +41,26 @@ describe('MetadataFetchPanel', () => {
       searchExternalMetadata,
     } as unknown as typeof window.mediaPlayerBackend
 
-    const onSaveParsedMetadata = vi.fn().mockResolvedValue(undefined)
+    const onSaveParsedMetadataToTarget = vi.fn().mockResolvedValue(undefined)
     const onClose = vi.fn()
 
     const { container } = render(
-      <MetadataFetchPanel
-        open={true}
-        defaultText="tenro aya"
-        proxyServer=""
-        ehentaiCookies=""
-        metadataPending={false}
-        targetPackageLabel="pkg-1"
-        onClose={onClose}
-        onSaveParsedMetadata={onSaveParsedMetadata}
-      />,
-    )
+        <MetadataFetchPanel
+          open={true}
+          targets={[
+            {
+              packageId: 'pkg-1',
+              label: 'pkg-1',
+              defaultText: 'tenro aya',
+            },
+          ]}
+          proxyServer=""
+          ehentaiCookies=""
+          metadataPending={false}
+          onClose={onClose}
+          onSaveParsedMetadataToTarget={onSaveParsedMetadataToTarget}
+        />,
+      )
 
     fireEvent.click(within(container).getByRole('button', { name: '检索' }))
 
@@ -84,13 +89,101 @@ describe('MetadataFetchPanel', () => {
     fireEvent.click(within(nhColumn).getByRole('button', { name: '保存' }))
 
     await waitFor(() => {
-      expect(onSaveParsedMetadata).toHaveBeenCalledWith(
+      expect(onSaveParsedMetadataToTarget).toHaveBeenCalledWith(
+        'pkg-1',
         expect.objectContaining({
           artist: 'Tenro Aya',
           artist_jpn: '天路あや',
           group: '',
           group_jpn: '',
         }),
+      )
+    })
+  })
+
+  it('复数目标支持切换并按目标 packageId 保存', async () => {
+    const searchExternalMetadata = vi.fn(
+      async (request: { source?: 'nhentai' | 'ehentai'; input_text?: string }) => ({
+        items:
+          request.source === 'nhentai'
+            ? [
+                {
+                  source: 'nhentai' as const,
+                  id: request.input_text === 'kw-2' ? '2002' : '1001',
+                  title: request.input_text === 'kw-2' ? '[Artist Two]' : '[Artist One]',
+                  title_original: request.input_text === 'kw-2' ? '[作者二]' : '[作者一]',
+                  cover: null,
+                  url: 'https://nhentai.net/g/1/',
+                  token: '',
+                  tags: [],
+                  pages: 1,
+                  posted: '1695513600',
+                  rating: null,
+                  favorited: 1,
+                  raw: {
+                    title: {
+                      english: request.input_text === 'kw-2' ? '[Artist Two]' : '[Artist One]',
+                      japanese: request.input_text === 'kw-2' ? '[作者二]' : '[作者一]',
+                    },
+                    tags: [],
+                  },
+                },
+              ]
+            : [],
+        debug: null,
+      }),
+    )
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata,
+    } as unknown as typeof window.mediaPlayerBackend
+
+    const onSaveParsedMetadataToTarget = vi.fn().mockResolvedValue(undefined)
+
+    const { container } = render(
+      <MetadataFetchPanel
+        open={true}
+        targets={[
+          { packageId: 'pkg-1', label: 'pkg-1', defaultText: 'kw-1' },
+          { packageId: 'pkg-2', label: 'pkg-2', defaultText: 'kw-2' },
+        ]}
+        proxyServer=""
+        ehentaiCookies=""
+        metadataPending={false}
+        onClose={vi.fn()}
+        onSaveParsedMetadataToTarget={onSaveParsedMetadataToTarget}
+      />,
+    )
+
+    fireEvent.change(within(container).getByLabelText('请求间隔(ms)'), {
+      target: { value: '0' },
+    })
+
+    fireEvent.click(within(container).getByRole('button', { name: '检索' }))
+
+    await waitFor(() => {
+      expect(searchExternalMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({ source: 'nhentai', input_text: 'kw-1' }),
+      )
+      expect(searchExternalMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({ source: 'nhentai', input_text: 'kw-2' }),
+      )
+    })
+
+    const nhColumn = container.querySelector('[data-source="nhentai"]') as HTMLElement | null
+    expect(nhColumn).not.toBeNull()
+    if (!nhColumn) {
+      throw new Error('nhentai column not found')
+    }
+
+    fireEvent.click(within(nhColumn).getByRole('button', { name: '下一页' }))
+    fireEvent.click(within(nhColumn).getByRole('button', { name: '解析' }))
+    fireEvent.click(within(nhColumn).getByRole('button', { name: '保存' }))
+
+    await waitFor(() => {
+      expect(onSaveParsedMetadataToTarget).toHaveBeenCalledWith(
+        'pkg-2',
+        expect.objectContaining({ artist: 'Artist Two' }),
       )
     })
   })

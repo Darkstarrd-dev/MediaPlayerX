@@ -5,6 +5,8 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.metadata.fetchSourceModeAll": "All",
   "ui.metadata.fetchId": "Search ID",
   "ui.metadata.fetchKeyword": "Search keyword",
+  "ui.metadata.fetchKeywordList": "Keyword list",
+  "ui.metadata.fetchRequestIntervalMs": "Request interval (ms)",
   "ui.metadata.fetchUnsupported":
     "Current backend does not support metadata search",
   "ui.metadata.fetchSearchFailed": "Search failed",

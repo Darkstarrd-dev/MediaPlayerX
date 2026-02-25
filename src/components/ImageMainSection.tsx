@@ -33,6 +33,7 @@ import MetadataFetchPanel from "./metadata/MetadataFetchPanel";
 import { useFocusedThumbOriginSync } from "./useFocusedThumbOriginSync";
 import { resolveTaskIdFromStartResponse } from "./imageMainSectionTasks";
 import { useNameListDimsLoader } from "./useNameListDimsLoader";
+import type { MetadataFetchTarget } from "../features/metadata/metadataFetchTargets";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
 const EMPTY_IMAGE_ID_SET = new Set<string>();
@@ -180,12 +181,14 @@ function ImageMainSection({
   onJumpToMusicFromBooklet = () => undefined,
   onSelectImage,
   metadataPending,
-  metadataTargetPackageLabel,
-  metadataFetchDefaultText,
+  metadataTargetPackageLabel = "-",
+  metadataFetchDefaultText = "",
+  metadataFetchTargets = [],
   metadataProxyServer,
   metadataEhentaiCookies,
   onMetadataSyncName,
   onMetadataSaveParsed,
+  onMetadataSaveParsedByPackageId,
   nodeBrowseMode = false,
   nodeBrowseLabel = "",
   nodeBrowseItems = [],
@@ -249,6 +252,45 @@ function ImageMainSection({
   const adReviewProgressPopoverHideTimerRef = useRef<number | null>(null);
   const wheelAccumulatorRef = useRef(0);
   const wheelFlushTimerRef = useRef<number | null>(null);
+
+  const effectiveMetadataFetchTargets = useMemo<MetadataFetchTarget[]>(() => {
+    if (metadataFetchTargets.length > 0) {
+      return metadataFetchTargets;
+    }
+
+    const fallbackPackageId = activePackage?.id?.trim() ?? "";
+    if (!fallbackPackageId) {
+      return [];
+    }
+
+    return [
+      {
+        packageId: fallbackPackageId,
+        label: metadataTargetPackageLabel,
+        defaultText: metadataFetchDefaultText,
+      },
+    ];
+  }, [
+    activePackage?.id,
+    metadataFetchDefaultText,
+    metadataFetchTargets,
+    metadataTargetPackageLabel,
+  ]);
+
+  const handleSaveParsedMetadataByPackageId = useCallback(
+    async (packageId: string, parsed: Parameters<typeof onMetadataSaveParsed>[0]) => {
+      if (onMetadataSaveParsedByPackageId) {
+        await onMetadataSaveParsedByPackageId(packageId, parsed);
+        return;
+      }
+      const effectivePackageId = activePackage?.id?.trim() ?? "";
+      if (!effectivePackageId || effectivePackageId !== packageId) {
+        throw new Error("package_not_found");
+      }
+      await onMetadataSaveParsed(parsed);
+    },
+    [activePackage?.id, onMetadataSaveParsed, onMetadataSaveParsedByPackageId],
+  );
 
   const scaleLevel = Math.max(
     1,
@@ -1358,13 +1400,12 @@ function ImageMainSection({
 
       <MetadataFetchPanel
         open={metadataFetchOpen}
-        defaultText={metadataFetchDefaultText}
+        targets={effectiveMetadataFetchTargets}
         proxyServer={metadataProxyServer}
         ehentaiCookies={metadataEhentaiCookies}
         metadataPending={metadataPending}
-        targetPackageLabel={metadataTargetPackageLabel}
         onClose={() => setMetadataFetchOpen(false)}
-        onSaveParsedMetadata={onMetadataSaveParsed}
+        onSaveParsedMetadataToTarget={handleSaveParsedMetadataByPackageId}
       />
     </>
   );

@@ -30,12 +30,18 @@ import {
 import { resolveAdReviewSidebarContext } from "./workspaceAdReviewSidebarContext";
 import {
   createApplyMetadataSyncName,
+  createSaveParsedMetadataByPackageId,
   createSaveParsedMetadata,
 } from "./workspaceMetadataActions";
 import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
 import { buildWorkspaceMetadataPanelProps } from "./workspaceMetadataPanelProps";
 import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
+import type { MetadataFetchTarget } from "../metadata/metadataFetchTargets";
 import { useI18n } from "../../i18n/useI18n";
+
+function stripArchiveSuffix(value: string): string {
+  return value.replace(/\.(zip|rar|7z|cbz|cbr)$/i, "").trim();
+}
 export function useAppWorkspaceProps({
   appSettings,
   mediaRepository,
@@ -417,6 +423,68 @@ export function useAppWorkspaceProps({
       noAvailablePackage: t("ui.metadata.saveParsedNoPackage"),
     },
   });
+
+  const saveParsedMetadataByPackageId = createSaveParsedMetadataByPackageId({
+    mode,
+    metadataWriteBindings,
+    saveParsedMetadataErrors: {
+      unsupportedMode: t("ui.metadata.saveParsedUnsupportedMode"),
+      noAvailablePackage: t("ui.metadata.saveParsedNoPackage"),
+    },
+  });
+
+  const metadataFetchTargets: MetadataFetchTarget[] = useMemo(() => {
+    if (mode !== "image") {
+      return [];
+    }
+
+    const orderedPackageIds: string[] = [];
+    const seenPackageId = new Set<string>();
+    const appendTarget = (packageId: string | null | undefined) => {
+      const normalized = packageId?.trim() ?? "";
+      if (!normalized || seenPackageId.has(normalized)) {
+        return;
+      }
+      seenPackageId.add(normalized);
+      orderedPackageIds.push(normalized);
+    };
+
+    if (metadataManageMode && sidebarCheckedNodeIds.length > 0) {
+      for (const nodeId of sidebarCheckedNodeIds) {
+        const node = sidebarNodeById.get(nodeId);
+        if (!node) {
+          continue;
+        }
+        appendTarget(node.packageId);
+        appendTarget(node.imageSourceId);
+      }
+    }
+
+    if (orderedPackageIds.length === 0) {
+      appendTarget(metadataImagePackageEffective?.id);
+    }
+
+    return orderedPackageIds
+      .map((packageId) => {
+        const source = packageByIdEffective.get(packageId);
+        if (!source) {
+          return null;
+        }
+        return {
+          packageId,
+          label: source.displayName,
+          defaultText: stripArchiveSuffix(source.packageName),
+        } satisfies MetadataFetchTarget;
+      })
+      .filter((item): item is MetadataFetchTarget => item !== null);
+  }, [
+    metadataImagePackageEffective?.id,
+    metadataManageMode,
+    mode,
+    packageByIdEffective,
+    sidebarCheckedNodeIds,
+    sidebarNodeById,
+  ]);
 
   const metadataManagementPanelProps = buildMetadataManagementPanelProps({
     metadataManageMode,
@@ -810,10 +878,12 @@ export function useAppWorkspaceProps({
     metadataTargetPackageLabel:
       metadataImagePackageEffective?.displayName ?? "-",
     metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
+    metadataFetchTargets,
     metadataProxyServer: appSettings.proxyServer,
     metadataEhentaiCookies: appSettings.ehentaiCookies,
     onMetadataSyncName: applyMetadataSyncName,
     onMetadataSaveParsed: saveParsedMetadata,
+    onMetadataSaveParsedByPackageId: saveParsedMetadataByPackageId,
     onToggleImageChecked: toggleImageChecked,
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
