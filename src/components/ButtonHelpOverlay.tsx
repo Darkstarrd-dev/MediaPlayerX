@@ -8,19 +8,14 @@ interface HelpOverlayItem {
   text: string
   top: number
   left: number
+  placement: 'top' | 'bottom'
 }
 
 interface HelpOverlayCandidate {
   key: string
   text: string
   rect: DOMRect
-}
-
-interface OverlayBox {
-  left: number
-  right: number
-  top: number
-  bottom: number
+  placement: 'top' | 'bottom'
 }
 
 interface ButtonHelpOverlayProps {
@@ -42,8 +37,7 @@ const CONTROL_SELECTORS = [
 ].join(', ')
 
 const DEFAULT_VIEWPORT_PADDING_PX = 8
-const DEFAULT_TOP_RESERVED_PX = 48
-const DEFAULT_TAG_GAP_PX = 8
+const DEFAULT_OFFSET_PX = 10
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value))
@@ -59,9 +53,17 @@ function isVisible(el: HTMLElement): boolean {
 }
 
 function resolveLabel(el: HTMLElement): string {
+  const custom = el.getAttribute('data-tooltip-label')
+  if (custom && custom.trim().length > 0) {
+    return custom.trim()
+  }
   const fromTitle = el.getAttribute('title')
   if (fromTitle && fromTitle.trim().length > 0) {
     return fromTitle.trim()
+  }
+  const detachedTitle = el.getAttribute('data-tooltip-original-title')
+  if (detachedTitle && detachedTitle.trim().length > 0) {
+    return detachedTitle.trim()
   }
   const fromA11y = el.getAttribute('aria-label')
   if (fromA11y && fromA11y.trim().length > 0) {
@@ -81,14 +83,31 @@ function readRootPxVar(name: string, fallback: number): number {
 }
 
 function estimateTagSize(text: string): { width: number; height: number } {
-  const width = Math.min(240, Math.max(92, text.length * 7 + 18))
-  const rows = Math.max(1, Math.ceil((text.length * 7) / Math.max(70, width - 18)))
-  const height = 10 + rows * 16
-  return { width, height }
+  const probe = document.createElement('div')
+  probe.className = 'app-tooltip-bubble app-tooltip-bubble--measure'
+  probe.textContent = text
+  document.body.appendChild(probe)
+  const rect = probe.getBoundingClientRect()
+  probe.remove()
+  return {
+    width: Math.ceil(rect.width),
+    height: Math.ceil(rect.height),
+  }
 }
 
-function boxesOverlap(left: OverlayBox, right: OverlayBox): boolean {
-  return left.left < right.right && left.right > right.left && left.top < right.bottom && left.bottom > right.top
+function resolveOverlayPlacement(el: HTMLElement): 'top' | 'bottom' {
+  const override = el.getAttribute('data-help-overlay-placement')
+  if (override === 'top' || override === 'bottom') {
+    return override
+  }
+
+  const inMusicControls = el.closest('[data-slot="fg-main-content-music-controls"]') !== null
+  const inFloatingMusicControls = el.closest('.music-controls-shell.is-fullscreen-floating') !== null
+  if (inMusicControls && !inFloatingMusicControls) {
+    return 'bottom'
+  }
+
+  return 'top'
 }
 
 function collectOverlayItems(): HelpOverlayItem[] {
@@ -96,12 +115,10 @@ function collectOverlayItems(): HelpOverlayItem[] {
   const itemCandidates: HelpOverlayCandidate[] = []
   const items: HelpOverlayItem[] = []
   const seen = new Set<string>()
-  const placedBoxes: OverlayBox[] = []
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
   const viewportPadding = readRootPxVar('--mpx-tooltip-viewport-padding', DEFAULT_VIEWPORT_PADDING_PX)
-  const topReserved = readRootPxVar('--mpx-help-overlay-top-reserved', DEFAULT_TOP_RESERVED_PX)
-  const tagGap = readRootPxVar('--mpx-help-overlay-tag-gap', DEFAULT_TAG_GAP_PX)
+  const offset = readRootPxVar('--mpx-tooltip-offset', DEFAULT_OFFSET_PX)
 
   for (const el of candidates) {
     if (!isVisible(el)) {
@@ -124,6 +141,7 @@ function collectOverlayItems(): HelpOverlayItem[] {
       key,
       text: label,
       rect: el.getBoundingClientRect(),
+      placement: resolveOverlayPlacement(el),
     })
   }
 
@@ -136,46 +154,32 @@ function collectOverlayItems(): HelpOverlayItem[] {
 
   for (const candidate of itemCandidates) {
     const { width, height } = estimateTagSize(candidate.text)
-    const centerX = clamp(candidate.rect.left + candidate.rect.width / 2, viewportPadding + width / 2, viewportWidth - viewportPadding - width / 2)
-    const topPreferred = candidate.rect.top - height - tagGap
-    const bottomPreferred = candidate.rect.bottom + tagGap
-    const canPlaceTop = topPreferred >= topReserved
-    const topBase = canPlaceTop ? topPreferred : bottomPreferred
+    const centerX = candidate.rect.left + candidate.rect.width / 2
+    const maxTop = Math.max(viewportPadding, viewportHeight - viewportPadding - height)
+    const maxLeft = Math.max(viewportPadding, viewportWidth - width - viewportPadding)
 
-    const minTop = topReserved
-    const maxTop = Math.max(minTop, viewportHeight - viewportPadding - height)
-    let top = clamp(topBase, minTop, maxTop)
+    let placement = candidate.placement
+    let top = placement === 'bottom' ? candidate.rect.bottom + offset : candidate.rect.top - height - offset
 
-    let box: OverlayBox = {
-      left: centerX - width / 2,
-      right: centerX + width / 2,
-      top,
-      bottom: top + height,
+    if (placement === 'top' && top < viewportPadding) {
+      placement = 'bottom'
+      top = candidate.rect.bottom + offset
     }
 
-    let guard = 0
-    while (placedBoxes.some((placed) => boxesOverlap(box, placed)) && guard < 20) {
-      const shiftedDownTop = box.bottom + tagGap
-      if (shiftedDownTop + height <= maxTop) {
-        top = shiftedDownTop
-      } else {
-        top = Math.max(minTop, box.top - (height + tagGap))
+    if (placement === 'bottom' && top + height > viewportHeight - viewportPadding) {
+      const topFallback = candidate.rect.top - height - offset
+      if (topFallback >= viewportPadding) {
+        placement = 'top'
+        top = topFallback
       }
-      box = {
-        left: centerX - width / 2,
-        right: centerX + width / 2,
-        top,
-        bottom: top + height,
-      }
-      guard += 1
     }
 
-    placedBoxes.push(box)
     items.push({
       key: candidate.key,
       text: candidate.text,
-      left: centerX,
-      top: box.top,
+      left: clamp(centerX - width / 2, viewportPadding, maxLeft),
+      top: clamp(top, viewportPadding, maxTop),
+      placement,
     })
   }
 
@@ -211,7 +215,7 @@ function ButtonHelpOverlay({ active }: ButtonHelpOverlayProps) {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['class', 'style', 'title', 'aria-label', 'hidden'],
+      attributeFilter: ['class', 'style', 'title', 'data-tooltip-label', 'data-tooltip-original-title', 'aria-label', 'hidden'],
     })
 
     window.addEventListener('resize', rafRefresh)
@@ -235,7 +239,7 @@ function ButtonHelpOverlay({ active }: ButtonHelpOverlayProps) {
       {items.map((item) => (
         <div
           key={item.key}
-          className="help-overlay-tag"
+          className={`app-tooltip-bubble${item.placement === 'bottom' ? ' is-bottom' : ''}`}
           style={{ top: `${item.top}px`, left: `${item.left}px` }}
         >
           {item.text}

@@ -847,8 +847,8 @@
 
 .music-ctrl-panel {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   bottom: calc(100% + 12px);
   min-width: 34px;
   width: 34px;
@@ -926,6 +926,7 @@
       var(--mpx-player-hud-text)
     )
   );
+  z-index: 30;
 }
 
 .music-ctrl-panel.is-shader {

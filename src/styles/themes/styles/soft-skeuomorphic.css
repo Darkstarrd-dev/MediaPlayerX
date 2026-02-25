@@ -374,6 +374,8 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) {
+  position: relative;
+  z-index: 4;
   padding: 0.5rem 1rem;
   border: 1px solid #b8b2a6;
   background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));

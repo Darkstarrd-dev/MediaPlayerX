@@ -25,13 +25,17 @@ function getTooltipText(target: HTMLElement): string {
     return custom.trim()
   }
 
+  const title = target.getAttribute('title')
+  if (title && title.trim().length > 0) {
+    return title.trim()
+  }
+
   const detachedTitle = target.getAttribute('data-tooltip-original-title')
   if (detachedTitle && detachedTitle.trim().length > 0) {
     return detachedTitle.trim()
   }
 
-  const title = target.getAttribute('title')
-  return title ? title.trim() : ''
+  return ''
 }
 
 function isElementVisible(target: HTMLElement): boolean {
@@ -96,6 +100,10 @@ function measureTooltipSize(text: string): { width: number; height: number } {
   }
 }
 
+function prefersBottomPlacement(target: HTMLElement): boolean {
+  return target.closest('[data-slot="fg-main-content-music-controls"]') !== null
+}
+
 function resolvePosition(target: HTMLElement, bubbleWidth: number, bubbleHeight: number): TooltipState | null {
   const text = getTooltipText(target)
   if (!text) {
@@ -110,9 +118,11 @@ function resolvePosition(target: HTMLElement, bubbleWidth: number, bubbleHeight:
   const viewportHeight = window.innerHeight
   const centerX = rect.left + rect.width / 2
 
-  let placement: TooltipPlacement = 'top'
-  let top = rect.top - bubbleHeight - offset
-  if (top < viewportPadding) {
+  const preferBottom = prefersBottomPlacement(target)
+  let placement: TooltipPlacement = preferBottom ? 'bottom' : 'top'
+  let top = placement === 'bottom' ? rect.bottom + offset : rect.top - bubbleHeight - offset
+
+  if (placement === 'top' && top < viewportPadding) {
     placement = 'bottom'
     top = rect.bottom + offset
   }

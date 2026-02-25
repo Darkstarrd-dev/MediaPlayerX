@@ -1591,7 +1591,7 @@
   line-height: 1.4;
   box-shadow: var(--mpx-tooltip-shadow, var(--mpx-shadow-popover));
   text-align: center;
-  white-space: normal;
+  white-space: pre-line;
 }
 
 .app-tooltip-bubble::after {
