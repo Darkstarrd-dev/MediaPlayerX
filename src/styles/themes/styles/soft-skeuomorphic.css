@@ -1709,3 +1709,85 @@
   min-height: 45px;
   border-radius: 10px;
 }
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range) {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-webkit-slider-runnable-track {
+  height: 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mpx-runway-groove-bg);
+  box-shadow: var(--mpx-runway-groove-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -3px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 25%, #ffffff 0%, #f8f9fa 42%, #d1d5db 100%) padding-box,
+    linear-gradient(90deg, #d6bc86 0%, #c79d4a 50%, #d6bc86 100%) border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.16s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):hover::-webkit-slider-thumb {
+  transform: scale(1.08);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):active::-webkit-slider-thumb {
+  transform: scale(1.04);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px rgba(181, 133, 59, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-track {
+  height: 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mpx-runway-groove-bg);
+  box-shadow: var(--mpx-runway-groove-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--mpx-runway-fill-gold);
+  box-shadow: var(--mpx-runway-fill-shadow-gold);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 25%, #ffffff 0%, #f8f9fa 42%, #d1d5db 100%) padding-box,
+    linear-gradient(90deg, #d6bc86 0%, #c79d4a 50%, #d6bc86 100%) border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.16s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):hover::-moz-range-thumb {
+  transform: scale(1.08);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):active::-moz-range-thumb {
+  transform: scale(1.04);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 2px rgba(181, 133, 59, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
+}
