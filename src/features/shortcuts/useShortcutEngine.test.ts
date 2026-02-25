@@ -14,6 +14,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     sidebarFocus: 'main' as const,
     fullscreenActive: false,
     fullscreenDisplay: 'dual' as const,
+    fullscreenVideoFocus: false,
     imageFocusActive: false,
     manageMode: false,
     videoShortcutActive: false,
@@ -49,6 +50,8 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onCycleVideoFitMode: vi.fn(),
     onImageWheelNavigatePage: vi.fn(),
     onImageCtrlWheelNavigateSidebar: vi.fn(),
+    onCopyFocusedImageToClipboard: vi.fn(() => true),
+    onCopyFocusedVideoFrameToClipboard: vi.fn(() => true),
   }
 }
 
@@ -356,5 +359,100 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     })
 
     expect(params.onToggleFullscreenSwapSides).toHaveBeenCalledTimes(1)
+  })
+
+  it('non-fullscreen image mode + main focus maps Ctrl+C to image clipboard copy', () => {
+    const params = createBaseParams()
+    params.mode = 'image'
+    params.sidebarFocus = 'main'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedImageToClipboard).toHaveBeenCalledTimes(1)
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+  })
+
+  it('non-fullscreen video mode + main focus maps Ctrl+C to video frame copy', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.sidebarFocus = 'main'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedVideoFrameToClipboard).toHaveBeenCalledTimes(1)
+    expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled()
+  })
+
+  it('non-fullscreen + sidebar focus does not trigger Ctrl+C media copy', () => {
+    const params = createBaseParams()
+    params.mode = 'image'
+    params.sidebarFocus = 'sidebar'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled()
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+  })
+
+  it('fullscreen image-only maps Ctrl+C to image clipboard copy', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'image-only'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedImageToClipboard).toHaveBeenCalledTimes(1)
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+  })
+
+  it('fullscreen video-only maps Ctrl+C to video frame copy', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'video-only'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedVideoFrameToClipboard).toHaveBeenCalledTimes(1)
+    expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled()
+  })
+
+  it('fullscreen dual maps Ctrl+C by focused pane', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    params.fullscreenVideoFocus = false
+    const hook = renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedImageToClipboard).toHaveBeenCalledTimes(1)
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+
+    hook.unmount()
+    params.fullscreenVideoFocus = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedVideoFrameToClipboard).toHaveBeenCalledTimes(1)
   })
 })

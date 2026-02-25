@@ -287,6 +287,7 @@ interface MediaPlayerWindowApi {
   close: () => Promise<void>
   setFullscreen: (active: boolean) => Promise<void>
   isMaximized: () => Promise<boolean>
+  writeClipboardPng: (pngBytes: Uint8Array) => Promise<boolean>
   getNativeChromeEnabled: () => Promise<boolean>
   setNativeChromeEnabled: (enabled: boolean) => Promise<boolean>
   onMaximizedStateChange: (listener: (maximized: boolean) => void) => () => void

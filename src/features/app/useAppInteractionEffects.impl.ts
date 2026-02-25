@@ -10,7 +10,9 @@ import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
 } from "./workspaceImageManageUtils";
+import { mapMediaLocatorToDto } from "../backend/mediaLocator";
 import { clamp } from "../../utils/ui";
+import type { FocusedImageRef, ImageItem } from "../../types";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
 import type { RepositoryBootstrapDataResult } from "./useRepositoryBootstrapData";
@@ -20,6 +22,241 @@ import type { FullscreenPlaybackBindingsResult } from "./useFullscreenPlaybackBi
 import type { MetadataWriteBindingsResult } from "./useMetadataWriteBindings";
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03;
+const CLIPBOARD_MEDIA_RESOLVE_TIMEOUT_MS = 8_000;
+
+function canWriteImageToClipboard(): boolean {
+  const windowApi = typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
+  return typeof windowApi?.writeClipboardPng === "function";
+}
+
+async function canvasToPngBytes(
+  canvas: HTMLCanvasElement,
+): Promise<Uint8Array | null> {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        resolve(null);
+        return;
+      }
+
+      void blob
+        .arrayBuffer()
+        .then((arrayBuffer) => resolve(new Uint8Array(arrayBuffer)))
+        .catch(() => resolve(null));
+    }, "image/png");
+  });
+}
+
+async function writePngBytesToClipboard(pngBytes: Uint8Array): Promise<boolean> {
+  if (!canWriteImageToClipboard()) {
+    return false;
+  }
+
+  if (pngBytes.byteLength === 0) {
+    return false;
+  }
+
+  const windowApi = typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
+  if (!windowApi?.writeClipboardPng) {
+    return false;
+  }
+
+  try {
+    return await windowApi.writeClipboardPng(pngBytes);
+  } catch {
+    return false;
+  }
+}
+
+async function copyImageElementToClipboard(
+  imageElement: HTMLImageElement,
+): Promise<boolean> {
+  const width = Math.max(1, imageElement.naturalWidth || imageElement.width || 1);
+  const height = Math.max(
+    1,
+    imageElement.naturalHeight || imageElement.height || 1,
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return false;
+  }
+
+  try {
+    context.drawImage(imageElement, 0, 0, width, height);
+    const pngBytes = await canvasToPngBytes(canvas);
+    if (!pngBytes) {
+      return false;
+    }
+    return writePngBytesToClipboard(pngBytes);
+  } catch {
+    return false;
+  }
+}
+
+async function copyVideoFrameToClipboard(
+  videoElement: HTMLVideoElement,
+): Promise<boolean> {
+  const width = Math.max(1, Math.round(videoElement.videoWidth || 0));
+  const height = Math.max(1, Math.round(videoElement.videoHeight || 0));
+  if (width <= 1 || height <= 1) {
+    return false;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return false;
+  }
+
+  try {
+    context.drawImage(videoElement, 0, 0, width, height);
+    const pngBytes = await canvasToPngBytes(canvas);
+    if (!pngBytes) {
+      return false;
+    }
+    return writePngBytesToClipboard(pngBytes);
+  } catch {
+    return false;
+  }
+}
+
+function resolveFullscreenImageElement(): HTMLImageElement | null {
+  const previewImage = document.querySelector(
+    ".fullscreen-image-compare-layer.is-preview",
+  );
+  if (previewImage instanceof HTMLImageElement) {
+    return previewImage;
+  }
+
+  const fullscreenImage = document.querySelector(".fullscreen-media-image-element");
+  if (fullscreenImage instanceof HTMLImageElement) {
+    return fullscreenImage;
+  }
+
+  const compareBaseImage = document.querySelector(".fullscreen-image-compare-layer");
+  return compareBaseImage instanceof HTMLImageElement ? compareBaseImage : null;
+}
+
+function resolveMainFocusedImageElement(): HTMLImageElement | null {
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement) {
+    const focusedCard = activeElement.closest(".thumb-card-main");
+    if (focusedCard instanceof HTMLElement) {
+      const cardImage = focusedCard.querySelector(".thumb-media-image");
+      if (cardImage instanceof HTMLImageElement) {
+        return cardImage;
+      }
+    }
+  }
+
+  const focusedGridImage = document.querySelector(
+    ".thumb-card.is-focused .thumb-media-image",
+  );
+  return focusedGridImage instanceof HTMLImageElement ? focusedGridImage : null;
+}
+
+function resolveMainFocusedImageRefFromDom(): FocusedImageRef | null {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLElement)) {
+    return null;
+  }
+
+  const cardElement = activeElement.closest(".thumb-card");
+  if (!(cardElement instanceof HTMLElement)) {
+    return null;
+  }
+
+  const packageId = cardElement.dataset.managePackageId;
+  const imageIndexRaw = cardElement.dataset.manageImageIndex;
+  if (!packageId || !imageIndexRaw) {
+    return null;
+  }
+
+  const imageIndex = Number(imageIndexRaw);
+  if (!Number.isInteger(imageIndex) || imageIndex < 0) {
+    return null;
+  }
+
+  return {
+    packageId,
+    imageIndex,
+  };
+}
+
+function resolveImageItemByRef(
+  focusedRef: FocusedImageRef | null,
+  packageById: Map<string, { images: ImageItem[] }>,
+): ImageItem | null {
+  if (!focusedRef) {
+    return null;
+  }
+
+  return packageById.get(focusedRef.packageId)?.images[focusedRef.imageIndex] ?? null;
+}
+
+async function loadImageElementFromUrl(url: string): Promise<HTMLImageElement | null> {
+  if (url.trim().length === 0) {
+    return null;
+  }
+
+  return await new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => {
+      resolve(image);
+    };
+    image.onerror = () => {
+      resolve(null);
+    };
+    image.src = url;
+  });
+}
+
+async function copyOriginalImageToClipboard(
+  imageItem: ImageItem,
+  mediaRepository: RepositoryBootstrapDataResult["mediaRepository"],
+): Promise<boolean> {
+  try {
+    const response = await mediaRepository.resolveMediaResource(
+      {
+        locator: mapMediaLocatorToDto(imageItem.mediaLocator),
+        preferred_variant: "original",
+      },
+      {
+        timeoutMs: CLIPBOARD_MEDIA_RESOLVE_TIMEOUT_MS,
+      },
+    );
+
+    const imageElement = await loadImageElementFromUrl(response.resource_url);
+    if (!imageElement) {
+      return false;
+    }
+
+    return await copyImageElementToClipboard(imageElement);
+  } catch {
+    return false;
+  }
+}
+
+function resolveVideoElement(preferFullscreen: boolean): HTMLVideoElement | null {
+  const selectors = preferFullscreen
+    ? [".fullscreen-media-video-element", ".video-screen-media"]
+    : [".video-screen-media", ".fullscreen-media-video-element"];
+
+  for (const selector of selectors) {
+    const target = document.querySelector(selector);
+    if (target instanceof HTMLVideoElement) {
+      return target;
+    }
+  }
+
+  return null;
+}
 
 interface UseAppInteractionEffectsParams {
   appSettings: AppSettingsStoreSnapshot;
@@ -411,6 +648,48 @@ export function useAppInteractionEffects({
     cycleVideoFitMode,
     onImageWheelNavigatePage: handleImageWheelLikePageNavigation,
     onImageCtrlWheelNavigateSidebar: handleImageCtrlWheelLikeSidebarNavigation,
+    onCopyFocusedImageToClipboard: () => {
+      if (!canWriteImageToClipboard()) {
+        return false;
+      }
+
+      if (!fullscreenActive && mode === "image") {
+        const focusedImageRef = resolveMainFocusedImageRefFromDom() ?? focusedRef;
+        const focusedImage = resolveImageItemByRef(
+          focusedImageRef,
+          packageByIdEffective,
+        );
+        if (!focusedImage) {
+          return false;
+        }
+
+        void copyOriginalImageToClipboard(focusedImage, mediaRepository);
+        return true;
+      }
+
+      const imageElement = fullscreenActive
+        ? resolveFullscreenImageElement()
+        : resolveMainFocusedImageElement();
+      if (!imageElement) {
+        return false;
+      }
+
+      void copyImageElementToClipboard(imageElement);
+      return true;
+    },
+    onCopyFocusedVideoFrameToClipboard: () => {
+      if (!canWriteImageToClipboard()) {
+        return false;
+      }
+
+      const videoElement = resolveVideoElement(fullscreenActive);
+      if (!videoElement) {
+        return false;
+      }
+
+      void copyVideoFrameToClipboard(videoElement);
+      return true;
+    },
     updateSettings,
   });
 

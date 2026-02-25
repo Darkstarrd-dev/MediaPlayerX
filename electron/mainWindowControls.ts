@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, clipboard, ipcMain, nativeImage } from 'electron'
 
 import { APP_WINDOW_CHANNELS } from './channels'
 
@@ -11,6 +11,35 @@ type WindowControlHandlers = {
 }
 
 export function registerWindowControlIpcHandlers(handlers: WindowControlHandlers): void {
+  const normalizeClipboardPngBytes = (value: unknown): Buffer | null => {
+    if (value instanceof Uint8Array) {
+      return Buffer.from(value)
+    }
+
+    if (value instanceof ArrayBuffer) {
+      return Buffer.from(value)
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      return Buffer.from(value.buffer, value.byteOffset, value.byteLength)
+    }
+
+    if (
+      Array.isArray(value) &&
+      value.every(
+        (entry) =>
+          typeof entry === 'number' &&
+          Number.isInteger(entry) &&
+          entry >= 0 &&
+          entry <= 255,
+      )
+    ) {
+      return Buffer.from(value)
+    }
+
+    return null
+  }
+
   ipcMain.handle(APP_WINDOW_CHANNELS.minimize, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize()
   })
@@ -44,6 +73,25 @@ export function registerWindowControlIpcHandlers(handlers: WindowControlHandlers
 
   ipcMain.handle(APP_WINDOW_CHANNELS.isMaximized, (event) => {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
+  })
+
+  ipcMain.handle(APP_WINDOW_CHANNELS.writeClipboardPng, (_event, pngBytes: unknown) => {
+    const normalized = normalizeClipboardPngBytes(pngBytes)
+    if (!normalized || normalized.byteLength === 0) {
+      return false
+    }
+
+    try {
+      const image = nativeImage.createFromBuffer(normalized)
+      if (image.isEmpty()) {
+        return false
+      }
+
+      clipboard.writeImage(image)
+      return true
+    } catch {
+      return false
+    }
   })
 
   ipcMain.handle(APP_WINDOW_CHANNELS.getNativeChromeEnabled, () => {

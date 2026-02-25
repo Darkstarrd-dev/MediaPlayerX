@@ -86,6 +86,7 @@ export const APP_WINDOW_CHANNELS = {
   close: 'appWindow:close',
   setFullscreen: 'appWindow:setFullscreen',
   isMaximized: 'appWindow:isMaximized',
+  writeClipboardPng: 'appWindow:writeClipboardPng',
   maximizedStateChanged: 'appWindow:maximizedStateChanged',
   getNativeChromeEnabled: 'appWindow:getNativeChromeEnabled',
   setNativeChromeEnabled: 'appWindow:setNativeChromeEnabled',

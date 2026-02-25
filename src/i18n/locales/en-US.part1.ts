@@ -42,6 +42,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.image.keyboard.fixedCtrlUpDownShortcut": "Ctrl+Up / Ctrl+Down",
   "ui.help.image.keyboard.ctrlUpDown":
     "Same as Ctrl + mouse wheel (switch sidebar node).",
+  "ui.help.image.keyboard.fixedCtrlCShortcut": "Ctrl+C",
+  "ui.help.image.keyboard.copyFocusedMediaToClipboard":
+    "When main area is focused, copy current media to clipboard (image mode copies current original image, video mode copies current frame).",
   "ui.help.image.keyboard.enterFullscreen": "Enter fullscreen.",
   "ui.help.image.keyboard.toggleFullscreen": "Toggle fullscreen.",
   "ui.help.image.keyboard.focusSwitch":
@@ -99,6 +102,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.fullscreen.keyboard.escapeExit": "Exit fullscreen.",
   "ui.help.fullscreen.keyboard.tabDualFocusSwitch":
     "In dual display, switch focused pane (image/video).",
+  "ui.help.fullscreen.keyboard.fixedCtrlCShortcut": "Ctrl+C",
+  "ui.help.fullscreen.keyboard.copyFocusedMediaToClipboard":
+    "Copy focused media to clipboard (image copies current image, video copies current frame; in dual mode it follows focused pane).",
   "ui.help.fullscreen.keyboard.modeSwitchF1F3":
     "In fullscreen non-dual mode, switch image / video / music modes (disabled in dual display).",
   "ui.help.fullscreen.keyboard.toggleDualDisplay":

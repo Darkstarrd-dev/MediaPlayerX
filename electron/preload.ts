@@ -554,6 +554,9 @@ const windowApi = {
   isMaximized: async () => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isMaximized)
   },
+  writeClipboardPng: async (pngBytes: Uint8Array) => {
+    return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.writeClipboardPng, pngBytes)
+  },
   getNativeChromeEnabled: async () => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.getNativeChromeEnabled)
   },

@@ -37,6 +37,9 @@ export const zhCnCatalogPart1 = {
   "ui.help.image.keyboard.fixedCtrlUpDownShortcut": "Ctrl+Up / Ctrl+Down",
   "ui.help.image.keyboard.ctrlUpDown":
     "等同 Ctrl + 鼠标滚轮（切换 Sidebar 节点）。",
+  "ui.help.image.keyboard.fixedCtrlCShortcut": "Ctrl+C",
+  "ui.help.image.keyboard.copyFocusedMediaToClipboard":
+    "主区焦点下复制当前媒体到剪贴板（图片模式复制当前图片原图，视频模式复制当前帧）。",
   "ui.help.image.keyboard.enterFullscreen": "进入全屏。",
   "ui.help.image.keyboard.toggleFullscreen": "切换全屏。",
   "ui.help.image.keyboard.focusSwitch": "切换 Sidebar / 主区焦点。",
@@ -89,6 +92,9 @@ export const zhCnCatalogPart1 = {
   "ui.help.fullscreen.keyboard.escapeExit": "退出全屏。",
   "ui.help.fullscreen.keyboard.tabDualFocusSwitch":
     "双显示模式下切换焦点窗格（图片/视频）。",
+  "ui.help.fullscreen.keyboard.fixedCtrlCShortcut": "Ctrl+C",
+  "ui.help.fullscreen.keyboard.copyFocusedMediaToClipboard":
+    "复制当前焦点媒体到剪贴板（图片复制当前图像，视频复制当前帧；双显示按焦点窗格决定）。",
   "ui.help.fullscreen.keyboard.modeSwitchF1F3":
     "全屏非双显示下切换图片 / 视频 / 音乐模式（双显示下不切换）。",
   "ui.help.fullscreen.keyboard.toggleDualDisplay":

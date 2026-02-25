@@ -24,6 +24,7 @@ interface UseShortcutEngineParams {
   sidebarFocus: "sidebar" | "main";
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
+  fullscreenVideoFocus: boolean;
   imageFocusActive: boolean;
   manageMode: boolean;
   videoShortcutActive: boolean;
@@ -61,6 +62,8 @@ interface UseShortcutEngineParams {
   onCycleVideoFitMode: () => void;
   onImageWheelNavigatePage: (direction: "next" | "prev") => void;
   onImageCtrlWheelNavigateSidebar: (direction: "next" | "prev") => void;
+  onCopyFocusedImageToClipboard: () => boolean;
+  onCopyFocusedVideoFrameToClipboard: () => boolean;
 }
 
 export function useShortcutEngine({
@@ -72,6 +75,7 @@ export function useShortcutEngine({
   sidebarFocus,
   fullscreenActive,
   fullscreenDisplay,
+  fullscreenVideoFocus,
   imageFocusActive,
   manageMode,
   videoShortcutActive,
@@ -107,6 +111,8 @@ export function useShortcutEngine({
   onCycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
+  onCopyFocusedImageToClipboard,
+  onCopyFocusedVideoFrameToClipboard,
 }: UseShortcutEngineParams): void {
   const lastImageNavAtRef = useRef(0);
   const autoplayShortcutEnabled =
@@ -533,6 +539,39 @@ export function useShortcutEngine({
       }
 
       if (
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        event.code === "KeyC"
+      ) {
+        let handled = false;
+
+        if (fullscreenActive) {
+          if (fullscreenDisplay === "dual") {
+            handled = fullscreenVideoFocus
+              ? onCopyFocusedVideoFrameToClipboard()
+              : onCopyFocusedImageToClipboard();
+          } else if (fullscreenDisplay === "video-only") {
+            handled = onCopyFocusedVideoFrameToClipboard();
+          } else {
+            handled = onCopyFocusedImageToClipboard();
+          }
+        } else if (sidebarFocus === "main") {
+          if (mode === "image") {
+            handled = onCopyFocusedImageToClipboard();
+          } else if (mode === "video") {
+            handled = onCopyFocusedVideoFrameToClipboard();
+          }
+        }
+
+        if (handled) {
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (
         fullscreenActive &&
         fullscreenDisplay === "dual" &&
         autoplayShortcutEnabled &&
@@ -674,11 +713,14 @@ export function useShortcutEngine({
     onAlignFocus,
     onImageCtrlWheelNavigateSidebar,
     onImageWheelNavigatePage,
+    onCopyFocusedImageToClipboard,
+    onCopyFocusedVideoFrameToClipboard,
     settingsOpen,
     shortcuts,
     suspended,
     sidebarFocus,
     fullscreenDisplay,
+    fullscreenVideoFocus,
     vectorMode,
     videoShortcutActive,
   ]);

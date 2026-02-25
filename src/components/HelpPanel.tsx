@@ -52,6 +52,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.image.keyboard.ctrlUpDown'),
       },
       {
+        key: 'image-ctrl-c-copy',
+        shortcut: t('ui.help.image.keyboard.fixedCtrlCShortcut'),
+        action: t('ui.help.image.keyboard.copyFocusedMediaToClipboard'),
+      },
+      {
         key: 'image-enter-fullscreen',
         shortcut: renderShortcutBinding(shortcuts.enterFullscreen, t('ui.help.shortcutNotSet')),
         action: t('ui.help.image.keyboard.enterFullscreen'),
@@ -168,6 +173,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         key: 'fullscreen-tab-dual',
         shortcut: 'Tab',
         action: t('ui.help.fullscreen.keyboard.tabDualFocusSwitch'),
+      },
+      {
+        key: 'fullscreen-ctrl-c-copy',
+        shortcut: t('ui.help.fullscreen.keyboard.fixedCtrlCShortcut'),
+        action: t('ui.help.fullscreen.keyboard.copyFocusedMediaToClipboard'),
       },
       {
         key: 'fullscreen-mode-switch-f1-f3',

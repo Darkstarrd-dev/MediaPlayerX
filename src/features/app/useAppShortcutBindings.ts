@@ -52,6 +52,8 @@ interface UseAppShortcutBindingsParams {
   cycleVideoFitMode: ShortcutEngineParams['onCycleVideoFitMode']
   onImageWheelNavigatePage: ShortcutEngineParams['onImageWheelNavigatePage']
   onImageCtrlWheelNavigateSidebar: ShortcutEngineParams['onImageCtrlWheelNavigateSidebar']
+  onCopyFocusedImageToClipboard: ShortcutEngineParams['onCopyFocusedImageToClipboard']
+  onCopyFocusedVideoFrameToClipboard: ShortcutEngineParams['onCopyFocusedVideoFrameToClipboard']
   updateSettings: AppSettingsStoreSnapshot['updateSettings']
 }
 
@@ -101,6 +103,8 @@ export function useAppShortcutBindings({
   cycleVideoFitMode,
   onImageWheelNavigatePage,
   onImageCtrlWheelNavigateSidebar,
+  onCopyFocusedImageToClipboard,
+  onCopyFocusedVideoFrameToClipboard,
   updateSettings,
 }: UseAppShortcutBindingsParams) {
   useShortcutEngine({
@@ -112,6 +116,7 @@ export function useAppShortcutBindings({
     sidebarFocus,
     fullscreenActive,
     fullscreenDisplay,
+    fullscreenVideoFocus,
     imageFocusActive,
     manageMode,
     videoShortcutActive,
@@ -182,5 +187,7 @@ export function useAppShortcutBindings({
     onCycleVideoFitMode: cycleVideoFitMode,
     onImageWheelNavigatePage,
     onImageCtrlWheelNavigateSidebar,
+    onCopyFocusedImageToClipboard,
+    onCopyFocusedVideoFrameToClipboard,
   })
 }
