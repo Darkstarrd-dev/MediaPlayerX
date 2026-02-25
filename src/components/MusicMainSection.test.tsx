@@ -351,7 +351,7 @@ describe("MusicMainSection", () => {
   });
 
   it("全屏时使用底部浮动控制条并隐藏右上角退出按钮", () => {
-    const { container } = renderMusicMainSection({ fullscreenActive: true });
+    renderMusicMainSection({ fullscreenActive: true });
 
     const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
     expect(
@@ -366,18 +366,32 @@ describe("MusicMainSection", () => {
     ).not.toBeNull();
     expect(screen.getByText(/Z:\/music\/track-1\.mp3/)).toBeInTheDocument();
     expect(
-      container.querySelector(".music-visualizer-exit-fullscreen-btn"),
+      (visualizer as HTMLElement).querySelector(
+        ".music-visualizer-exit-fullscreen-btn",
+      ),
     ).toBeNull();
   });
 
   it("全屏控制条在移出后淡出隐藏，移入后淡入显示", () => {
     vi.useFakeTimers();
-    const { container } = renderMusicMainSection({ fullscreenActive: true });
+    renderMusicMainSection({ fullscreenActive: true });
 
-    const shell = container.querySelector(
+    const shell = document.querySelector(
       ".music-controls-shell.is-fullscreen-floating",
     ) as HTMLElement;
     expect(shell).toBeInTheDocument();
+    expect(shell.hidden).toBe(true);
+    expect(shell.className).not.toContain("is-visible");
+
+    const hotzone = document.querySelector(
+      ".music-controls-fullscreen-hotzone",
+    ) as HTMLElement;
+    fireEvent.mouseEnter(hotzone);
+
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+
     expect(shell.hidden).toBe(false);
     expect(shell.className).toContain("is-visible");
 
@@ -389,9 +403,6 @@ describe("MusicMainSection", () => {
     });
     expect(shell.hidden).toBe(true);
 
-    const hotzone = container.querySelector(
-      ".music-controls-fullscreen-hotzone",
-    ) as HTMLElement;
     fireEvent.mouseEnter(hotzone);
 
     act(() => {
@@ -409,9 +420,9 @@ describe("MusicMainSection", () => {
 
     try {
       setWindowViewport(1280, 720);
-      const { container } = renderMusicMainSection({ fullscreenActive: true });
+      renderMusicMainSection({ fullscreenActive: true });
 
-      const visualizer = container.querySelector(
+      const visualizer = document.querySelector(
         ".music-visualizer.is-fullscreen",
       ) as HTMLElement;
       expect(visualizer).toBeInTheDocument();

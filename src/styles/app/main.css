@@ -627,6 +627,21 @@
   overflow: hidden;
 }
 
+.music-fullscreen-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  background: var(--mpx-slot-bg-fs-mask-bg, var(--mpx-fullscreen-bg));
+  overflow: hidden;
+}
+
+.music-fullscreen-layer .music-visualizer.is-fullscreen {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: transparent;
+}
+
 .music-visualizer.is-fullscreen {
   position: fixed;
   inset: 0;

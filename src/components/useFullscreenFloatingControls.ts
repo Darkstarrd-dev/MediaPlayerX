@@ -16,8 +16,8 @@ export function useFullscreenFloatingControls({
   fullscreenActive,
   onAfterHide,
 }: UseFullscreenFloatingControlsParams): FullscreenFloatingControlsResult {
-  const [controlsMounted, setControlsMounted] = useState(true)
-  const [controlsVisible, setControlsVisible] = useState(true)
+  const [controlsMounted, setControlsMounted] = useState(false)
+  const [controlsVisible, setControlsVisible] = useState(false)
   const hideTimerRef = useRef<number | null>(null)
 
   const clearHideTimer = useCallback(() => {
@@ -31,13 +31,13 @@ export function useFullscreenFloatingControls({
   useEffect(() => {
     if (!fullscreenActive) {
       clearHideTimer()
-      setControlsMounted(true)
-      setControlsVisible(true)
+      setControlsMounted(false)
+      setControlsVisible(false)
       return
     }
 
-    setControlsMounted(true)
-    setControlsVisible(true)
+    setControlsMounted(false)
+    setControlsVisible(false)
   }, [clearHideTimer, fullscreenActive])
 
   useEffect(() => {

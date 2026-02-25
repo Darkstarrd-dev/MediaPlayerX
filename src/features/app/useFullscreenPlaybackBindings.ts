@@ -60,6 +60,15 @@ export function useFullscreenPlaybackBindings({
     previousFullscreenActiveRef.current = fullscreenActive
   }, [autoPlayEnabled, fullscreenActive, updateSettings])
 
+  useEffect(() => {
+    const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+    if (!windowApi?.setFullscreen) {
+      return
+    }
+
+    void windowApi.setFullscreen(fullscreenActive).catch(() => undefined)
+  }, [fullscreenActive])
+
   const setFullscreenActiveWithAutoStop = useCallback(
     (value: boolean | ((previous: boolean) => boolean)) => {
       setFullscreenActive(value)

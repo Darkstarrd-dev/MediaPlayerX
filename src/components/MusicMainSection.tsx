@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 
 import { MainUiIcon } from './MainUiIcon'
 import { MusicControlIcon } from './MusicControlIcon'
@@ -169,7 +170,23 @@ function MusicMainSection({
         visualizerActivateRaf2Ref.current = null
       }
     }
-  }, [active])
+  }, [active, fullscreenActive])
+
+  useEffect(() => {
+    if (!active || !fullscreenActive || typeof document === 'undefined') {
+      return
+    }
+
+    const previousBodyOverflow = document.body.style.overflow
+    const previousHtmlOverflow = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overflow = previousHtmlOverflow
+    }
+  }, [active, fullscreenActive])
 
   const {
     stats: visualizerStats,
@@ -1083,6 +1100,57 @@ function MusicMainSection({
     </div>
   )
 
+  const visualizerPane = (
+    <div
+      className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
+      data-slot="fg-main-content-music-preview"
+      aria-label={t('a11y.music.visualizer')}
+      style={fullscreenControlsWidthStyle}
+    >
+      <canvas
+        key={`${visualizerCanvasVersion}-gpu`}
+        ref={visualizerGpuCanvasRef}
+        className="music-visualizer-canvas"
+        data-slot="fg-main-content-music-preview-canvas-gpu"
+        style={gpuCanvasStyle}
+      />
+      <canvas
+        key={`${visualizerCanvasVersion}-cpu`}
+        ref={visualizerCpuCanvasRef}
+        className="music-visualizer-canvas"
+        data-slot="fg-main-content-music-preview-canvas-cpu"
+        style={cpuCanvasStyle}
+      />
+      {runtimeShowFps && visualizerStats ? (
+        <div className="music-visualizer-hud" role="status">
+          <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
+          <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
+          <span>{`TargetLongEdge ${runtimeRenderLongEdgePx}`}</span>
+          <span>{`FPS Cap ${runtimeFpsCap}`}</span>
+          <span>{`ToneMap ${runtimeToneMapMode}@${runtimeToneMapExposure.toFixed(2)}*${runtimeToneMapStrength.toFixed(2)}`}</span>
+          <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
+          <span>{`Shader ${visualizerStats.shaderId}`}</span>
+          <span>{visualizerStats.rendererLabel}</span>
+        </div>
+      ) : null}
+      {visualizerRuntimeError ? (
+        <div className={`music-visualizer-hud ${runtimeShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
+          <span>{visualizerRuntimeError}</span>
+        </div>
+      ) : null}
+      {fullscreenActive ? (
+        <>
+          <div
+            className="music-controls-fullscreen-hotzone"
+            onMouseEnter={showFullscreenControls}
+            onMouseLeave={hideFullscreenControls}
+          />
+          {musicControlsShell}
+        </>
+      ) : null}
+    </div>
+  )
+
   return (
     <>
       {active ? (
@@ -1166,55 +1234,14 @@ function MusicMainSection({
             )}
           </div>
 
-          <div
-            className={`name-list music-name-list music-visualizer${fullscreenActive ? ' is-fullscreen' : ''}`}
-            data-slot="fg-main-content-music-preview"
-            aria-label={t('a11y.music.visualizer')}
-            data-overlay-close={fullscreenActive ? 'fullscreen' : undefined}
-            style={fullscreenControlsWidthStyle}
-          >
-            <canvas
-              key={`${visualizerCanvasVersion}-gpu`}
-              ref={visualizerGpuCanvasRef}
-              className="music-visualizer-canvas"
-              data-slot="fg-main-content-music-preview-canvas-gpu"
-              style={gpuCanvasStyle}
-            />
-            <canvas
-              key={`${visualizerCanvasVersion}-cpu`}
-              ref={visualizerCpuCanvasRef}
-              className="music-visualizer-canvas"
-              data-slot="fg-main-content-music-preview-canvas-cpu"
-              style={cpuCanvasStyle}
-            />
-            {runtimeShowFps && visualizerStats ? (
-              <div className="music-visualizer-hud" role="status">
-                <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
-                <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
-                <span>{`TargetLongEdge ${runtimeRenderLongEdgePx}`}</span>
-                <span>{`FPS Cap ${runtimeFpsCap}`}</span>
-                <span>{`ToneMap ${runtimeToneMapMode}@${runtimeToneMapExposure.toFixed(2)}*${runtimeToneMapStrength.toFixed(2)}`}</span>
-                <span>{`Backend ${visualizerStats.backend.toUpperCase()}`}</span>
-                <span>{`Shader ${visualizerStats.shaderId}`}</span>
-                <span>{visualizerStats.rendererLabel}</span>
-              </div>
-            ) : null}
-            {visualizerRuntimeError ? (
-              <div className={`music-visualizer-hud ${runtimeShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
-                <span>{visualizerRuntimeError}</span>
-              </div>
-            ) : null}
-            {fullscreenActive ? (
-              <>
-                <div
-                  className="music-controls-fullscreen-hotzone"
-                  onMouseEnter={showFullscreenControls}
-                  onMouseLeave={hideFullscreenControls}
-                />
-                {musicControlsShell}
-              </>
-            ) : null}
-          </div>
+          {fullscreenActive && typeof document !== 'undefined'
+            ? createPortal(
+              <div className="music-fullscreen-layer" data-overlay-close="fullscreen">
+                {visualizerPane}
+              </div>,
+              document.body,
+            )
+            : visualizerPane}
 
           {!fullscreenActive ? musicControlsShell : null}
         </>
