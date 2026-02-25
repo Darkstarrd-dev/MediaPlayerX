@@ -7,6 +7,7 @@ import type { AlignDirection } from './paneMath'
 import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
 import { MainUiIcon } from '../MainUiIcon'
 import { VideoControlIcon } from '../VideoControlIcon'
+import { SkeuoRunway } from '../primitives/SkeuoRunway'
 import type { ImageConvertAdjustProfile } from '../../features/app/useAppSessionState'
 
 const IMAGE_CONVERT_FORMAT_OPTIONS = ['webp', 'jpeg', 'png', 'avif'] as const
@@ -375,6 +376,8 @@ export function FullscreenFooter({
   const showPreviewScalePopover = popoverDebugPinned || openPreviewScalePopover
   const showPreviewFormatPopover = popoverDebugPinned || openPreviewFormatPopover
   const showPreviewQualityPopover = popoverDebugPinned || openPreviewQualityPopover
+  const autoplayRangePercent = Math.max(0, Math.min(100, ((autoPlayDraftValue - 1) / 8) * 100))
+  const zoomRangePercent = Math.max(0, Math.min(100, ((zoomDraftValue - 10) / 190) * 100))
 
   return (
     <footer
@@ -450,21 +453,26 @@ export function FullscreenFooter({
                   <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.autoPlayLevels')}>
                     <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
                     <div className="header-vertical-slider-body">
-                      <input
-                        {...buildA11yPropsByRegistry({ key: 'headerAutoPlaySlider', t })}
-                        className="header-vertical-range header-vertical-range--ascending-up"
-                        max={9}
-                        min={1}
-                        step={0.01}
-                        type="range"
-                        value={autoPlayDraftValue}
-                        onChange={(event) => {
-                          const nextValue = Number(event.target.value)
-                          setAutoPlayDraftValue(nextValue)
-                          const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
-                          onSetAutoplayInterval(roundedLevel)
-                        }}
-                      />
+                      <div className="video-ctrl-volume-axis">
+                        <SkeuoRunway
+                          ariaLabel={t('a11y.header.autoPlaySlider')}
+                          className="is-volume"
+                          fillTone="graphite"
+                          inputClassName="video-ctrl-volume-range"
+                          max={9}
+                          min={1}
+                          rangePercent={autoplayRangePercent}
+                          step={0.01}
+                          thumbTone="graphite"
+                          value={autoPlayDraftValue}
+                          onChange={(event) => {
+                            const nextValue = Number(event.target.value)
+                            setAutoPlayDraftValue(nextValue)
+                            const roundedLevel = Math.max(1, Math.min(9, Math.round(nextValue)))
+                            onSetAutoplayInterval(roundedLevel)
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -645,21 +653,26 @@ export function FullscreenFooter({
               <div className="header-vertical-slider" role="group" aria-label={t('ui.fullscreen.zoomIn')}>
                 <div className="header-vertical-slider-value">{zoomDraftValue}%</div>
                 <div className="header-vertical-slider-body">
-                  <input
-                    aria-label={t('ui.fullscreen.zoomIn')}
-                    className="header-vertical-range header-vertical-range--ascending-up"
-                    max={200}
-                    min={10}
-                    step={1}
-                    type="range"
-                    value={zoomDraftValue}
-                    onChange={(event) => {
-                      const rawValue = Number(event.target.value)
-                      const nextLevel = resolveNearestZoomLevel(rawValue)
-                      setZoomDraftValue(nextLevel)
-                      onSetZoomPercent(nextLevel)
-                    }}
-                  />
+                  <div className="video-ctrl-volume-axis">
+                    <SkeuoRunway
+                      ariaLabel={t('ui.fullscreen.zoomIn')}
+                      className="is-volume"
+                      fillTone="graphite"
+                      inputClassName="video-ctrl-volume-range"
+                      max={200}
+                      min={10}
+                      rangePercent={zoomRangePercent}
+                      step={1}
+                      thumbTone="graphite"
+                      value={zoomDraftValue}
+                      onChange={(event) => {
+                        const rawValue = Number(event.target.value)
+                        const nextLevel = resolveNearestZoomLevel(rawValue)
+                        setZoomDraftValue(nextLevel)
+                        onSetZoomPercent(nextLevel)
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -11,6 +11,7 @@ import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
 
 interface BuildImageMainSectionPropsParams {
+  popoverDebugPinned: boolean
   fullscreenActive: boolean
   vectorResultsActive: boolean
   showNamesOnly: boolean
@@ -154,6 +155,7 @@ interface BuildImageMainSectionPropsParams {
 
 export function buildImageMainSectionProps(params: BuildImageMainSectionPropsParams) {
   return {
+    popoverDebugPinned: params.popoverDebugPinned,
     fullscreenActive: params.fullscreenActive,
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,

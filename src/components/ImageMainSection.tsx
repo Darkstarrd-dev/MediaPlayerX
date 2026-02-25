@@ -46,6 +46,7 @@ type ImageConvertTaskStatus =
   | "failed";
 
 function ImageMainSection({
+  popoverDebugPinned = false,
   fullscreenActive = false,
   vectorMode,
   showNamesOnly,
@@ -330,12 +331,17 @@ function ImageMainSection({
   };
 
   const closeScalePopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return;
+    }
     clearScalePopoverHideTimer();
     scalePopoverHideTimerRef.current = window.setTimeout(() => {
       setOpenScalePopover(false);
       scalePopoverHideTimerRef.current = null;
     }, 140);
   };
+
+  const effectiveOpenScalePopover = popoverDebugPinned || openScalePopover;
 
   const clearAdReviewStrategyPopoverHideTimer = () => {
     if (adReviewStrategyPopoverHideTimerRef.current != null) {
@@ -1243,7 +1249,7 @@ function ImageMainSection({
               </strong>
               <ImageMainScaleControl
                 t={t}
-                openScalePopover={openScalePopover}
+                openScalePopover={effectiveOpenScalePopover}
                 canThumbnailScaleDown={canThumbnailScaleDown}
                 canThumbnailScaleUp={canThumbnailScaleUp}
                 thumbnailScaleLevelCount={thumbnailScaleLevelCount}
@@ -1268,7 +1274,7 @@ function ImageMainSection({
             t={t}
             browseToolbarTitle={browseToolbarTitle}
             showNamesOnly={showNamesOnly}
-            openScalePopover={openScalePopover}
+            openScalePopover={effectiveOpenScalePopover}
             canThumbnailScaleDown={canThumbnailScaleDown}
             canThumbnailScaleUp={canThumbnailScaleUp}
             thumbnailScaleLevelCount={thumbnailScaleLevelCount}

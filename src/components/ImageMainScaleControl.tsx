@@ -1,6 +1,7 @@
 import { buildA11yPropsByRegistry } from "../i18n/a11y";
 import { useRef } from "react";
 import type { useI18n } from "../i18n/useI18n";
+import { SkeuoRunway } from "./primitives/SkeuoRunway";
 
 type TranslateFn = ReturnType<typeof useI18n>["t"];
 
@@ -30,6 +31,22 @@ export function ImageMainScaleControl({
   onScaleChange,
 }: ImageMainScaleControlProps) {
   const lastEmittedScaleRef = useRef<number | null>(null);
+  const roundedScaleLevel = Math.max(
+    1,
+    Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)),
+  );
+  const displayScaleLevel =
+    thumbnailScaleLevelCount - roundedScaleLevel + 1;
+  const scaleRangePercent =
+    thumbnailScaleLevelCount <= 1
+      ? 0
+      : Math.max(
+          0,
+          Math.min(
+            100,
+            ((scaleDraftValue - 1) / (thumbnailScaleLevelCount - 1)) * 100,
+          ),
+        );
 
   return (
     <div
@@ -77,37 +94,34 @@ export function ImageMainScaleControl({
           role="group"
           aria-label={t("a11y.header.scaleLevels")}
         >
-          <div className="header-vertical-slider-value">
-            {Math.max(
-              1,
-              Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)),
-            )}
-          </div>
+          <div className="header-vertical-slider-value">{displayScaleLevel}</div>
           <div className="header-vertical-slider-body">
-            <input
-              {...buildA11yPropsByRegistry({
-                key: "headerScaleSlider",
-                t,
-              })}
-              className="header-vertical-range"
-              max={thumbnailScaleLevelCount}
-              min={1}
-              step={0.01}
-              type="range"
-              value={scaleDraftValue}
-              onChange={(event) => {
-                const nextValue = Number(event.target.value);
-                onScaleDraftChange(nextValue);
-                const roundedLevel = Math.max(
-                  1,
-                  Math.min(thumbnailScaleLevelCount, Math.round(nextValue)),
-                );
-                if (lastEmittedScaleRef.current !== roundedLevel) {
-                  lastEmittedScaleRef.current = roundedLevel;
-                  onScaleChange(roundedLevel);
-                }
-              }}
-            />
+            <div className="video-ctrl-volume-axis">
+              <SkeuoRunway
+                ariaLabel={t("a11y.header.scaleSlider")}
+                className="is-volume"
+                fillTone="graphite"
+                inputClassName="video-ctrl-volume-range"
+                max={thumbnailScaleLevelCount}
+                min={1}
+                rangePercent={scaleRangePercent}
+                step={0.01}
+                thumbTone="graphite"
+                value={scaleDraftValue}
+                onChange={(event) => {
+                  const nextValue = Number(event.target.value);
+                  onScaleDraftChange(nextValue);
+                  const roundedLevel = Math.max(
+                    1,
+                    Math.min(thumbnailScaleLevelCount, Math.round(nextValue)),
+                  );
+                  if (lastEmittedScaleRef.current !== roundedLevel) {
+                    lastEmittedScaleRef.current = roundedLevel;
+                    onScaleChange(roundedLevel);
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -718,6 +718,7 @@ export function useAppWorkspaceProps({
   });
 
   const imageMainSectionProps = buildImageMainSectionProps({
+    popoverDebugPinned: appSettings.popoverDebugPinned,
     fullscreenActive,
     vectorResultsActive,
     showNamesOnly,

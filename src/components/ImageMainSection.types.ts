@@ -10,6 +10,7 @@ import type { ParsedExternalMetadata } from "../features/metadata/parseExternalM
 import type { FocusedImageRef, ImagePackage, VectorCandidate } from "../types";
 
 export interface ImageMainSectionProps {
+  popoverDebugPinned?: boolean;
   fullscreenActive?: boolean;
   vectorMode: boolean;
   showNamesOnly: boolean;
