@@ -21,6 +21,8 @@ export interface SettingsPanelProps {
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
+  headerDebugGroupVisible: boolean;
+  tooltipEnabled: boolean;
   electronNativeChromeEnabled: boolean;
   themeParameterButtonVisible: boolean;
   sidebarFontSize: number;
@@ -150,6 +152,8 @@ export interface SettingsPanelProps {
   onSidebarRatioChange: (value: number) => void;
   onSidebarMinWidthChange: (value: number) => void;
   onLayoutLockedChange: (value: boolean) => void;
+  onHeaderDebugGroupVisibleChange: (value: boolean) => void;
+  onTooltipEnabledChange: (value: boolean) => void;
   onElectronNativeChromeEnabledChange: (value: boolean) => void;
   onThemeParameterButtonVisibleChange: (value: boolean) => void;
   onSidebarFontSizeChange: (value: number) => void;

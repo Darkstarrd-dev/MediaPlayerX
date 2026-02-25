@@ -29,6 +29,8 @@ export interface RenderSettingsMainSectionParams {
   sidebarMinWidthScale: number;
   sidebarFontSize: number;
   sidebarFontSizeScale: number;
+  headerDebugGroupVisible: boolean;
+  tooltipEnabled: boolean;
   electronNativeChromeEnabled: boolean;
   themeParameterButtonVisible: boolean;
   sidebarCountFontSize: number;
@@ -182,6 +184,8 @@ export interface RenderSettingsMainSectionParams {
   onSidebarRatioChange: (value: number) => void;
   onSidebarMinWidthChange: (value: number) => void;
   onSidebarFontSizeChange: (value: number) => void;
+  onHeaderDebugGroupVisibleChange: (value: boolean) => void;
+  onTooltipEnabledChange: (value: boolean) => void;
   onElectronNativeChromeEnabledChange: (value: boolean) => void;
   onThemeParameterButtonVisibleChange: (value: boolean) => void;
   onSidebarCountFontSizeChange: (value: number) => void;

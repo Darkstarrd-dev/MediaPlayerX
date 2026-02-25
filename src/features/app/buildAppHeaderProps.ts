@@ -20,6 +20,9 @@ interface BuildAppHeaderPropsParams {
   paletteMode: AppSettings['paletteMode']
   paletteDayId: string
   paletteNightId: string
+  headerDebugGroupVisible: boolean
+  tooltipEnabled: boolean
+  electronNativeChromeEnabled: boolean
   themeParameterButtonVisible: boolean
   popoverDebugPinned: boolean
   interactionLocked?: boolean
@@ -39,7 +42,9 @@ interface BuildAppHeaderPropsParams {
   setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
   onToggleManageMode: () => void
   onToggleMetadataManageMode: () => void
-  onOpenThemeParameter: () => void
+  onTooltipEnabledChange: (value: boolean) => void
+  onElectronNativeChromeEnabledChange: (value: boolean) => void
+  onThemeParameterButtonVisibleChange: (value: boolean) => void
   sidebarCollapsed?: boolean
   metadataCollapsed?: boolean
   onToggleSidebarPanel?: () => void
@@ -133,10 +138,15 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
         themeId: targetPaletteId,
       })
     },
+    headerDebugGroupVisible: params.headerDebugGroupVisible,
+    tooltipEnabled: params.tooltipEnabled,
+    electronNativeChromeEnabled: params.electronNativeChromeEnabled,
+    onTooltipEnabledChange: params.onTooltipEnabledChange,
+    onElectronNativeChromeEnabledChange: params.onElectronNativeChromeEnabledChange,
     themeParameterButtonVisible: params.themeParameterButtonVisible,
+    onThemeParameterButtonVisibleChange: params.onThemeParameterButtonVisibleChange,
     popoverDebugPinned: params.popoverDebugPinned,
     onTogglePopoverDebugPinned: () => params.updateSettings({ popoverDebugPinned: !params.popoverDebugPinned }),
-    onOpenThemeParameter: params.onOpenThemeParameter,
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),
     onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
     sidebarCollapsed: params.sidebarCollapsed ?? false,

@@ -43,8 +43,11 @@
 | `fg.header.g2.mode.video` | `--mpx-slot-fg-header-g2-mode-video-*` |
 | `fg.header.g2.mode.music` | `--mpx-slot-fg-header-g2-mode-music-*` |
 | `fg.header.g2.musicQuick` | `--mpx-slot-fg-header-g2-music-quick-*` |
+| `fg.header.gDebug` | `--mpx-slot-fg-header-g-debug-*` |
+| `fg.header.gDebug.tooltips` | `--mpx-slot-fg-header-g-debug-tooltips-*` |
+| `fg.header.gDebug.nativeChrome` | `--mpx-slot-fg-header-g-debug-native-chrome-*` |
+| `fg.header.gDebug.themeParameter` | `--mpx-slot-fg-header-g-debug-theme-parameter-*` |
 | `fg.header.g3` | `--mpx-slot-fg-header-g3-*` |
-| `fg.header.g3.themeParameter` | `--mpx-slot-fg-header-g3-theme-parameter-*` |
 | `fg.header.g3.popoverDebugPin` | `--mpx-slot-fg-header-g3-popover-debug-pin-*` |
 | `fg.header.g3.themeParameter.root.panel` | `--mpx-slot-fg-header-g3-theme-parameter-root-panel-*` |
 | `fg.header.g3.help` | `--mpx-slot-fg-header-g3-help-*` |

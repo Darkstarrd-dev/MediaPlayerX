@@ -23,6 +23,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: false,
@@ -41,7 +44,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -72,6 +77,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: false,
@@ -90,7 +98,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -120,6 +130,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: false,
@@ -138,7 +151,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed,
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -167,6 +182,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: true,
@@ -185,7 +203,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     props.onThumbnailScaleUp()
@@ -217,6 +237,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'parchment',
       paletteNightId: 'tokyo-night',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: false,
@@ -235,7 +258,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -260,6 +285,9 @@ describe('buildAppHeaderProps', () => {
       paletteMode: 'day',
       paletteDayId: 'skeuomorphic-light',
       paletteNightId: 'skeuomorphic-dark',
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
+      electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       popoverDebugPinned: false,
       importMenuOpen: false,
@@ -278,7 +306,9 @@ describe('buildAppHeaderProps', () => {
       setSearchPanelCollapsed: vi.fn(),
       onToggleManageMode: vi.fn(),
       onToggleMetadataManageMode: vi.fn(),
-      onOpenThemeParameter: vi.fn(),
+      onTooltipEnabledChange: vi.fn(),
+      onElectronNativeChromeEnabledChange: vi.fn(),
+      onThemeParameterButtonVisibleChange: vi.fn(),
     })
 
     props.onTogglePaletteMode()

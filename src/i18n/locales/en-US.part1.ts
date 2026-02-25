@@ -237,6 +237,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.layoutSection": "Layout parameters",
   "ui.settings.layoutLocked": "Layout lock",
   "ui.settings.debugSection": "Debug settings",
+  "ui.settings.debugHeaderGroup": "Debug",
+  "ui.settings.debugTooltips": "tooltips",
   "ui.settings.debugOverlaySection": "Overlay debug",
   "ui.settings.debugOpenDeleteOverlay": "Open delete progress overlay (2.2s)",
   "ui.settings.debugNativeChrome": "Show Electron chrome/menu",

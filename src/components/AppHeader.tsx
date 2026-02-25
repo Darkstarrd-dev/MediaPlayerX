@@ -220,10 +220,15 @@ export interface AppHeaderProps {
   onAutoPlayEnabledChange: (enabled: boolean) => void
   onAutoPlayIntervalChange: (value: number) => void
   onTogglePaletteMode: () => void
+  headerDebugGroupVisible: boolean
+  tooltipEnabled: boolean
+  onTooltipEnabledChange: (value: boolean) => void
+  electronNativeChromeEnabled: boolean
+  onElectronNativeChromeEnabledChange: (value: boolean) => void
   themeParameterButtonVisible: boolean
+  onThemeParameterButtonVisibleChange: (value: boolean) => void
   popoverDebugPinned: boolean
   onTogglePopoverDebugPinned: () => void
-  onOpenThemeParameter: () => void
   onOpenHelp: () => void
   onOpenSettings: () => void
   sidebarCollapsed?: boolean
@@ -251,10 +256,15 @@ function AppHeader(props: AppHeaderProps) {
     onImportFolders,
     onModeChange,
     onTogglePaletteMode,
+    headerDebugGroupVisible,
+    tooltipEnabled,
+    onTooltipEnabledChange,
+    electronNativeChromeEnabled,
+    onElectronNativeChromeEnabledChange,
     themeParameterButtonVisible,
+    onThemeParameterButtonVisibleChange,
     popoverDebugPinned,
     onTogglePopoverDebugPinned,
-    onOpenThemeParameter,
     onOpenHelp,
     onOpenSettings,
     sidebarCollapsed = false,
@@ -336,6 +346,8 @@ function AppHeader(props: AppHeaderProps) {
       ? 'fg-header-logo-state-busy'
       : 'fg-header-logo-state-idle'
   const dualCollapsed = sidebarCollapsed && metadataCollapsed
+  const tooltipLabel = t('ui.settings.debugTooltips')
+  const nativeChromeLabel = t('ui.settings.debugNativeChrome')
 
   return (
     <header
@@ -521,12 +533,49 @@ function AppHeader(props: AppHeaderProps) {
       </div>
 
       <div className="header-right">
-        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g3" role="group">
-          {themeParameterButtonVisible ? (
-            <button {...themeParameterButtonA11y} className="window-control-btn window-control-btn--theme-parameter" data-slot="fg-header-g3-theme-parameter" type="button" onClick={onOpenThemeParameter}>
-              <span className="window-control-btn-text">T</span>
+        {headerDebugGroupVisible ? (
+          <div aria-label={t('ui.settings.sectionDebug')} className="header-group header-group-debug" data-slot="fg-header-g-debug" role="group">
+            <button
+              aria-label={tooltipLabel}
+              aria-pressed={tooltipEnabled}
+              className="window-control-btn window-control-btn--theme-parameter"
+              data-slot="fg-header-g-debug-tooltips"
+              title={tooltipLabel}
+              type="button"
+              onClick={() => {
+                onTooltipEnabledChange(!tooltipEnabled)
+              }}
+            >
+              <span className="window-control-btn-text">TT {tooltipEnabled ? 'on' : 'off'}</span>
             </button>
-          ) : null}
+            <button
+              aria-label={nativeChromeLabel}
+              aria-pressed={electronNativeChromeEnabled}
+              className="window-control-btn window-control-btn--theme-parameter"
+              data-slot="fg-header-g-debug-native-chrome"
+              title={nativeChromeLabel}
+              type="button"
+              onClick={() => {
+                onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)
+              }}
+            >
+              <span className="window-control-btn-text">N {electronNativeChromeEnabled ? 'on' : 'off'}</span>
+            </button>
+            <button
+              {...themeParameterButtonA11y}
+              aria-pressed={themeParameterButtonVisible}
+              className="window-control-btn window-control-btn--theme-parameter"
+              data-slot="fg-header-g-debug-theme-parameter"
+              type="button"
+              onClick={() => {
+                onThemeParameterButtonVisibleChange(!themeParameterButtonVisible)
+              }}
+            >
+              <span className="window-control-btn-text">T {themeParameterButtonVisible ? 'on' : 'off'}</span>
+            </button>
+          </div>
+        ) : null}
+        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g3" role="group">
           <button
             {...popoverDebugPinnedButtonA11y}
             aria-pressed={popoverDebugPinned}

@@ -59,6 +59,8 @@ interface BuildSettingsPanelPropsParams {
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
+  headerDebugGroupVisible: boolean;
+  tooltipEnabled: boolean;
   electronNativeChromeEnabled: boolean;
   themeParameterButtonVisible: boolean;
   sidebarFontSize: number;
@@ -180,6 +182,8 @@ export function buildSettingsPanelProps(
     sidebarRatio: params.sidebarRatio,
     sidebarMinWidth: params.sidebarMinWidth,
     layoutLocked: params.layoutLocked,
+    headerDebugGroupVisible: params.headerDebugGroupVisible,
+    tooltipEnabled: params.tooltipEnabled,
     electronNativeChromeEnabled: params.electronNativeChromeEnabled,
     themeParameterButtonVisible: params.themeParameterButtonVisible,
     sidebarFontSize: params.sidebarFontSize,
@@ -349,6 +353,10 @@ export function buildSettingsPanelProps(
       params.updateSettings({ sidebarMinWidth: value }),
     onLayoutLockedChange: (value) =>
       params.updateSettings({ layoutLocked: value }),
+    onHeaderDebugGroupVisibleChange: (value) =>
+      params.updateSettings({ headerDebugGroupVisible: value }),
+    onTooltipEnabledChange: (value) =>
+      params.updateSettings({ tooltipEnabled: value }),
     onElectronNativeChromeEnabledChange:
       params.applyElectronNativeChromeEnabled,
     onThemeParameterButtonVisibleChange: (value) =>

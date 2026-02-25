@@ -60,6 +60,10 @@
   min-width: var(--mpx-header-group-search-width, 190px);
 }
 
+.header-group-debug {
+  margin-right: var(--mpx-header-item-gap, 8px);
+}
+
 .header-btn-content {
   display: inline-flex;
   align-items: center;
@@ -730,10 +734,34 @@
   color: var(--mpx-slot-fg-meta-toolbar-g3-metadata-text, var(--mpx-slot-fg-meta-toolbar-g3-search-text, var(--mpx-player-btn-text)));
 }
 
-[data-slot='fg-header-g3-theme-parameter'] {
-  border-color: var(--mpx-slot-fg-header-g3-theme-parameter-border, var(--mpx-player-btn-border));
-  background: var(--mpx-slot-fg-header-g3-theme-parameter-bg, var(--mpx-player-btn-bg));
-  color: var(--mpx-slot-fg-header-g3-theme-parameter-text, var(--mpx-player-btn-text));
+[data-slot='fg-header-g-debug'] {
+  color: var(--mpx-slot-fg-header-g-debug-text, inherit);
+}
+
+[data-slot='fg-header-g-debug-native-chrome'] {
+  border-color: var(--mpx-slot-fg-header-g-debug-native-chrome-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-header-g-debug-native-chrome-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-header-g-debug-native-chrome-text, var(--mpx-player-btn-text));
+}
+
+[data-slot='fg-header-g-debug-tooltips'] {
+  border-color: var(--mpx-slot-fg-header-g-debug-tooltips-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-header-g-debug-tooltips-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-header-g-debug-tooltips-text, var(--mpx-player-btn-text));
+}
+
+[data-slot='fg-header-g-debug-theme-parameter'] {
+  border-color: var(--mpx-slot-fg-header-g-debug-theme-parameter-border, var(--mpx-player-btn-border));
+  background: var(--mpx-slot-fg-header-g-debug-theme-parameter-bg, var(--mpx-player-btn-bg));
+  color: var(--mpx-slot-fg-header-g-debug-theme-parameter-text, var(--mpx-player-btn-text));
+}
+
+[data-slot='fg-header-g-debug-tooltips'][aria-pressed='true'],
+[data-slot='fg-header-g-debug-native-chrome'][aria-pressed='true'],
+[data-slot='fg-header-g-debug-theme-parameter'][aria-pressed='true'] {
+  border-color: var(--mpx-header-btn-active-border, var(--mpx-player-btn-active-border));
+  background: var(--mpx-player-btn-active-bg);
+  box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
 [data-slot='fg-header-g3-popover-debug-pin'] {

@@ -24,6 +24,8 @@ describe("buildSettingsPanelProps", () => {
       sidebarRatio: 0.26,
       sidebarMinWidth: 180,
       layoutLocked: false,
+      headerDebugGroupVisible: false,
+      tooltipEnabled: true,
       electronNativeChromeEnabled: false,
       themeParameterButtonVisible: false,
       sidebarFontSize: 14,

@@ -15,6 +15,8 @@ export function useAppSettingsStore() {
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
       layoutLocked: state.layoutLocked,
+      headerDebugGroupVisible: state.headerDebugGroupVisible,
+      tooltipEnabled: state.tooltipEnabled,
       electronNativeChromeEnabled: state.electronNativeChromeEnabled,
       themeParameterButtonVisible: state.themeParameterButtonVisible,
       popoverDebugPinned: state.popoverDebugPinned,

@@ -224,6 +224,8 @@ export const zhCnCatalogPart1 = {
   "ui.settings.layoutSection": "布局参数",
   "ui.settings.layoutLocked": "布局锁定",
   "ui.settings.debugSection": "调试设置",
+  "ui.settings.debugHeaderGroup": "Debug",
+  "ui.settings.debugTooltips": "tooltips",
   "ui.settings.debugOverlaySection": "覆盖层调试",
   "ui.settings.debugOpenDeleteOverlay": "打开删除进度覆盖层（2.2秒）",
   "ui.settings.debugNativeChrome": "显示 Electron 外框与菜单",

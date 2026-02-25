@@ -82,7 +82,7 @@ function AppShell({
       <SidebarRenameDialog {...sidebarRenameDialogProps} />
       <DragImportOverlay active={dragOverlayActive} />
       <ButtonHelpOverlay active={helpOverlayActive} />
-      <TooltipLayer suspended={helpOverlayActive} />
+      <TooltipLayer suspended={helpOverlayActive || !appHeaderProps.tooltipEnabled} />
       <AdReviewDeleteOverlay {...adReviewDeleteOverlayProps} />
       <E2eBenchSection {...e2eBenchSectionProps} />
     </div>

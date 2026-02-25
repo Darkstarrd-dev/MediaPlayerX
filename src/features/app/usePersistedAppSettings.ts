@@ -24,6 +24,8 @@ export function toPersistedAppSettings(
     sidebarRatio: settings.sidebarRatio,
     sidebarMinWidth: settings.sidebarMinWidth,
     layoutLocked: settings.layoutLocked,
+    headerDebugGroupVisible: settings.headerDebugGroupVisible,
+    tooltipEnabled: settings.tooltipEnabled,
     electronNativeChromeEnabled: settings.electronNativeChromeEnabled,
     themeParameterButtonVisible: settings.themeParameterButtonVisible,
     popoverDebugPinned: settings.popoverDebugPinned,

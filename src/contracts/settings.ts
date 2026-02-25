@@ -106,6 +106,8 @@ export const appSettingsSchema = z.object({
   sidebarRatio: z.number().min(0).max(0.95),
   sidebarMinWidth: z.number().min(80).max(640),
   layoutLocked: z.boolean(),
+  headerDebugGroupVisible: z.boolean(),
+  tooltipEnabled: z.boolean(),
   electronNativeChromeEnabled: z.boolean(),
   themeParameterButtonVisible: z.boolean(),
   popoverDebugPinned: z.boolean(),

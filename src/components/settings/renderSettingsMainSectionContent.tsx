@@ -28,6 +28,8 @@ export function renderSettingsMainSection({
   sidebarMinWidthScale,
   sidebarFontSize,
   sidebarFontSizeScale,
+  headerDebugGroupVisible,
+  tooltipEnabled,
   electronNativeChromeEnabled,
   themeParameterButtonVisible,
   sidebarCountFontSize,
@@ -133,6 +135,8 @@ export function renderSettingsMainSection({
   onSidebarRatioChange,
   onSidebarMinWidthChange,
   onSidebarFontSizeChange,
+  onHeaderDebugGroupVisibleChange,
+  onTooltipEnabledChange,
   onElectronNativeChromeEnabledChange,
   onThemeParameterButtonVisibleChange,
   onSidebarCountFontSizeChange,
@@ -1156,6 +1160,22 @@ export function renderSettingsMainSection({
             <span>{t("ui.settings.debugSection")}</span>
           </header>
           <div className="settings-debug-toggle-row">
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${headerDebugGroupVisible ? "is-on" : ""}`}
+              onClick={() =>
+                onHeaderDebugGroupVisibleChange(!headerDebugGroupVisible)
+              }
+            >
+              {`${t("ui.settings.debugHeaderGroup")} · ${headerDebugGroupVisible ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+            </button>
+            <button
+              type="button"
+              className={`settings-debug-toggle-btn ${tooltipEnabled ? "is-on" : ""}`}
+              onClick={() => onTooltipEnabledChange(!tooltipEnabled)}
+            >
+              {`${t("ui.settings.debugTooltips")} · ${tooltipEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
+            </button>
             <button
               type="button"
               className={`settings-debug-toggle-btn ${electronNativeChromeEnabled ? "is-on" : ""}`}

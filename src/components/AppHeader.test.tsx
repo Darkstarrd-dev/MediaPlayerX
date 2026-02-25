@@ -41,10 +41,15 @@ function createHeaderProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderPr
     onAutoPlayEnabledChange: vi.fn(),
     onAutoPlayIntervalChange: vi.fn(),
     onTogglePaletteMode: vi.fn(),
+    headerDebugGroupVisible: false,
+    tooltipEnabled: true,
+    onTooltipEnabledChange: vi.fn(),
+    electronNativeChromeEnabled: false,
+    onElectronNativeChromeEnabledChange: vi.fn(),
     themeParameterButtonVisible: false,
+    onThemeParameterButtonVisibleChange: vi.fn(),
     popoverDebugPinned: false,
     onTogglePopoverDebugPinned: vi.fn(),
-    onOpenThemeParameter: vi.fn(),
     onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),
     ...overrides,
@@ -114,21 +119,21 @@ describe('AppHeader music quick actions', () => {
     unsubscribe()
   })
 
-  it('在开启界面参数按钮时渲染 T 按钮并触发打开回调', () => {
-    const onOpenThemeParameter = vi.fn()
-    const { container } = render(
+  it('点击 Debug 组 T 按钮会触发界面参数按钮显示开关', () => {
+    const onThemeParameterButtonVisibleChange = vi.fn()
+    render(
       <AppHeader
         {...createHeaderProps({
+          headerDebugGroupVisible: true,
           themeParameterButtonVisible: true,
-          onOpenThemeParameter,
+          onThemeParameterButtonVisibleChange,
         })}
       />,
     )
 
-    const themeParameterButton = container.querySelector('button[data-a11y-id="header.themeParameter"]') as HTMLButtonElement | null
-    expect(themeParameterButton).not.toBeNull()
-    fireEvent.click(themeParameterButton as HTMLButtonElement)
-    expect(onOpenThemeParameter).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: '主题参数' }))
+    expect(onThemeParameterButtonVisibleChange).toHaveBeenCalledTimes(1)
+    expect(onThemeParameterButtonVisibleChange).toHaveBeenCalledWith(false)
   })
 
   it('点击 O/C 按钮会触发调试固定开关', () => {
@@ -137,6 +142,40 @@ describe('AppHeader music quick actions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '调试固定悬浮层' }))
     expect(onTogglePopoverDebugPinned).toHaveBeenCalledTimes(1)
+  })
+
+  it('点击 Debug 组 N 按钮会触发 Electron 外框与菜单开关', () => {
+    const onElectronNativeChromeEnabledChange = vi.fn()
+    render(
+      <AppHeader
+        {...createHeaderProps({
+          headerDebugGroupVisible: true,
+          electronNativeChromeEnabled: false,
+          onElectronNativeChromeEnabledChange,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '显示 Electron 外框与菜单' }))
+    expect(onElectronNativeChromeEnabledChange).toHaveBeenCalledTimes(1)
+    expect(onElectronNativeChromeEnabledChange).toHaveBeenCalledWith(true)
+  })
+
+  it('点击 Debug 组 TT 按钮会触发 Tooltips 开关', () => {
+    const onTooltipEnabledChange = vi.fn()
+    render(
+      <AppHeader
+        {...createHeaderProps({
+          headerDebugGroupVisible: true,
+          tooltipEnabled: true,
+          onTooltipEnabledChange,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'tooltips' }))
+    expect(onTooltipEnabledChange).toHaveBeenCalledTimes(1)
+    expect(onTooltipEnabledChange).toHaveBeenCalledWith(false)
   })
 
   it('双侧折叠收敛时对 header 应用居中宽度约束', () => {
