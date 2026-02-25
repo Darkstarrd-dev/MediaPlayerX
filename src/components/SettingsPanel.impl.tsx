@@ -657,7 +657,7 @@ function SettingsPanel({
           <label
             key={definition.action}
             className="shortcut-row"
-            title={definition.label}
+            data-tooltip-label={definition.label}
           >
             <span>{definition.label}</span>
             <button

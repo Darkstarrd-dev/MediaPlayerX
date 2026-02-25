@@ -205,7 +205,7 @@ export function MetadataMusicEditor({
         <div className="metadata-music-booklet-bindings">
           <div className="metadata-music-booklet-bindings-head">
             <strong>{t('ui.metadata.bookletBinding')}</strong>
-            <span title={musicBookletAlbumRootPath}>{musicBookletAlbumRootPath || '-'}</span>
+            <span data-tooltip-label={musicBookletAlbumRootPath}>{musicBookletAlbumRootPath || '-'}</span>
           </div>
 
           <div className="metadata-music-booklet-bindings-grid">
@@ -250,7 +250,7 @@ export function MetadataMusicEditor({
               disabled={!canOpenMusicCover}
               type="button"
               aria-label={t('ui.metadata.openCover')}
-              title={t('ui.metadata.openCover')}
+              data-tooltip-label={t('ui.metadata.openCover')}
               onClick={onOpenMusicCover}
             >
               <MainUiIcon name="cover" />
@@ -260,7 +260,7 @@ export function MetadataMusicEditor({
               disabled={!canOpenMusicBooklet}
               type="button"
               aria-label={t('ui.metadata.openBooklet')}
-              title={t('ui.metadata.openBooklet')}
+              data-tooltip-label={t('ui.metadata.openBooklet')}
               onClick={onOpenMusicBooklet}
             >
               <MainUiIcon name="booklet" />
@@ -270,7 +270,7 @@ export function MetadataMusicEditor({
               disabled={metadataPending || !musicBookletAlbumRootPath}
               type="button"
               aria-label={t('a11y.common.restoreDefault')}
-              title={t('tip.common.restoreDefault')}
+              data-tooltip-label={t('tip.common.restoreDefault')}
               onClick={onResetMusicBookletBinding}
             >
               <MainUiIcon name="return" />
@@ -296,7 +296,7 @@ export function MetadataMusicEditor({
                 onDoubleClick={() => onSelectAudioAndPlay(audioId)}
               >
                 <span className="metadata-music-playlist-index">{index + 1}</span>
-                <span className="metadata-music-playlist-title" title={audio.fileName}>
+                <span className="metadata-music-playlist-title" data-tooltip-label={audio.fileName}>
                   {audio.fileName}
                 </span>
               </button>

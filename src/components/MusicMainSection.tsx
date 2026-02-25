@@ -679,7 +679,7 @@ function MusicMainSection({
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               className="video-action-btn"
-              title={shaderSelectTooltip}
+              data-tooltip-label={shaderSelectTooltip}
               type="button"
             >
               <MusicControlIcon name="shaderList" />
@@ -691,7 +691,7 @@ function MusicMainSection({
                     aria-label={t('a11y.music.shaderToggleLayer')}
                     aria-pressed={shaderListTargetLayer === 'foreground'}
                     className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'foreground' ? 'is-on' : 'is-off'}`}
-                    title={t('a11y.music.shaderToggleLayer')}
+                    data-tooltip-label={t('a11y.music.shaderToggleLayer')}
                     type="button"
                     onClick={() => setShaderListTargetLayer('foreground')}
                   >
@@ -701,7 +701,7 @@ function MusicMainSection({
                     aria-label={t('a11y.music.shaderToggleEnabled')}
                     aria-pressed={effectiveForegroundLayerEnabled}
                     className={`music-ctrl-shader-toolbar-btn is-power ${effectiveForegroundLayerEnabled ? 'is-on' : 'is-off'}`}
-                    title={t('a11y.music.shaderToggleEnabled')}
+                    data-tooltip-label={t('a11y.music.shaderToggleEnabled')}
                     type="button"
                     onClick={() => toggleShaderLayerEnabled('foreground')}
                   >
@@ -713,7 +713,7 @@ function MusicMainSection({
                     aria-label={t('a11y.music.shaderToggleLayer')}
                     aria-pressed={shaderListTargetLayer === 'background'}
                     className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'background' ? 'is-on' : 'is-off'}`}
-                    title={t('a11y.music.shaderToggleLayer')}
+                    data-tooltip-label={t('a11y.music.shaderToggleLayer')}
                     type="button"
                     onClick={() => setShaderListTargetLayer('background')}
                   >
@@ -723,7 +723,7 @@ function MusicMainSection({
                     aria-label={t('a11y.music.shaderToggleEnabled')}
                     aria-pressed={effectiveBackgroundLayerEnabled}
                     className={`music-ctrl-shader-toolbar-btn is-power ${effectiveBackgroundLayerEnabled ? 'is-on' : 'is-off'}`}
-                    title={t('a11y.music.shaderToggleEnabled')}
+                    data-tooltip-label={t('a11y.music.shaderToggleEnabled')}
                     type="button"
                     onClick={() => toggleShaderLayerEnabled('background')}
                   >
@@ -767,7 +767,7 @@ function MusicMainSection({
               aria-label={t('a11y.music.shaderSettings')}
               className="video-action-btn"
               data-help-overlay-placement="top"
-              title={t('tip.music.shaderSettings')}
+              data-tooltip-label={t('tip.music.shaderSettings')}
               type="button"
             >
               <MusicControlIcon name="shaderParameter" />
@@ -1009,7 +1009,7 @@ function MusicMainSection({
           <button
             aria-label={fullscreenActive ? t('a11y.media.exitFullscreen') : t('a11y.media.enterFullscreen')}
             className="video-action-btn"
-            title={t('tip.music.fullscreenToggle')}
+            data-tooltip-label={t('tip.music.fullscreenToggle')}
             type="button"
             onClick={onToggleFullscreen}
           >
@@ -1018,21 +1018,21 @@ function MusicMainSection({
         </div>
 
         <div className="music-controls-group is-center" data-slot="fg-main-content-music-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn" title={t('tip.music.prevTrack')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn" data-tooltip-label={t('tip.music.prevTrack')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
             <MusicControlIcon name="prev" />
           </button>
           <button
             aria-label={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
             className="video-action-btn"
             data-tooltip-label={playTooltip}
-            title={playTooltip}
+            data-tooltip-label={playTooltip}
             disabled={!focusedAudioSrc}
             type="button"
             onClick={toggleAudioPlayback}
           >
             <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn" title={t('tip.music.nextTrack')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn" data-tooltip-label={t('tip.music.nextTrack')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
             <MusicControlIcon name="next" />
           </button>
         </div>
@@ -1041,7 +1041,7 @@ function MusicMainSection({
           <button
             aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"
-            title={loopModeTooltip}
+            data-tooltip-label={loopModeTooltip}
             type="button"
             onClick={onCycleMusicLoopMode}
           >
@@ -1060,7 +1060,7 @@ function MusicMainSection({
               className="video-action-btn"
               data-help-overlay-placement="top"
               data-tooltip-label={volumeTooltip}
-              title={volumeTooltip}
+              data-tooltip-label={volumeTooltip}
               type="button"
               onClick={() => setAudioMuted((value) => !value)}
             >
@@ -1164,7 +1164,7 @@ function MusicMainSection({
                     className="feature-action-btn main-icon-square-btn"
                     type="button"
                     aria-label={t('a11y.common.organize')}
-                    title={t('tip.common.organize')}
+                    data-tooltip-label={t('tip.common.organize')}
                     disabled={!canManageMoveNodes || pendingManageAction}
                     onClick={onManageGroup}
                   >
@@ -1174,7 +1174,7 @@ function MusicMainSection({
                     className="vector-search-btn main-icon-square-btn"
                     type="button"
                     aria-label={t('a11y.common.delete')}
-                    title={t('tip.common.delete')}
+                    data-tooltip-label={t('tip.common.delete')}
                     disabled={!canManageDelete || pendingManageAction}
                     onClick={onManageDelete}
                   >
@@ -1182,7 +1182,7 @@ function MusicMainSection({
                   </button>
                   {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
                 </div>
-                <strong className="main-toolbar-summary" title={manageSummary}>
+                <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
                   {manageSummary}
                 </strong>
               </>
@@ -1207,24 +1207,24 @@ function MusicMainSection({
                         className="toolbar-icon-btn"
                         type="button"
                         aria-label={t('ui.metadata.openCover')}
-                        title={t('ui.metadata.openCover')}
+                        data-tooltip-label={t('ui.metadata.openCover')}
                         onClick={onJumpToCover}
                       >
                         <MainUiIcon name="cover" />
                       </button>
                     ) : null}
                     {canJumpToBooklet ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} title={t('tip.media.booklet')} onClick={onJumpToBooklet}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} data-tooltip-label={t('tip.media.booklet')} onClick={onJumpToBooklet}>
                         <MainUiIcon name="booklet" />
                       </button>
                     ) : null}
                     {canJumpToManga ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.manga')} title={t('tip.media.manga')} onClick={onJumpToManga}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.manga')} data-tooltip-label={t('tip.media.manga')} onClick={onJumpToManga}>
                         <MainUiIcon name="imageMode" />
                       </button>
                     ) : null}
                     {canJumpToAnimation ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.animation')} title={t('tip.media.animation')} onClick={onJumpToAnimation}>
+                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.animation')} data-tooltip-label={t('tip.media.animation')} onClick={onJumpToAnimation}>
                         <MainUiIcon name="videoMode" />
                       </button>
                     ) : null}

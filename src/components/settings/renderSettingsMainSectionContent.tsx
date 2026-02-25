@@ -247,7 +247,7 @@ export function renderSettingsMainSection({
           </header>
           <label
             htmlFor="settings-ui-locale-select"
-            title={settingsTip("uiLocale")}
+            data-tooltip-label={settingsTip("uiLocale")}
           >
             {t("ui.settings.languageLabel")}
             <select
@@ -277,7 +277,7 @@ export function renderSettingsMainSection({
             <span>{t("ui.settings.themeSection")}</span>
           </header>
           <div className="settings-theme-inline-row">
-            <label htmlFor="theme-style-select" title={settingsTip("style")}
+            <label htmlFor="theme-style-select" data-tooltip-label={settingsTip("style")}
             >
               {t("ui.settings.styleLabel")}
               <select
@@ -294,7 +294,7 @@ export function renderSettingsMainSection({
             </label>
             <label
               htmlFor="theme-palette-day-select"
-              title={settingsTip("paletteDay")}
+              data-tooltip-label={settingsTip("paletteDay")}
             >
               {t("ui.settings.paletteDayDefault")}
               {paletteMode === "day" ? t("ui.settings.currentActiveTag") : ""}
@@ -313,7 +313,7 @@ export function renderSettingsMainSection({
             </label>
             <label
               htmlFor="theme-palette-night-select"
-              title={settingsTip("paletteNight")}
+              data-tooltip-label={settingsTip("paletteNight")}
             >
               {t("ui.settings.paletteNightDefault")}
               {paletteMode === "night" ? t("ui.settings.currentActiveTag") : ""}
@@ -338,7 +338,7 @@ export function renderSettingsMainSection({
                   ? t("a11y.header.switchToNightPalette")
                   : t("a11y.header.switchToDayPalette")
               }
-              title={
+              data-tooltip-label={
                 paletteMode === "day"
                   ? t("a11y.header.switchToNightPalette")
                   : t("a11y.header.switchToDayPalette")
@@ -351,7 +351,7 @@ export function renderSettingsMainSection({
               <MainUiIcon name={paletteMode === "day" ? "day" : "night"} />
             </button>
           </div>
-          <label title={settingsTip("backdropOpacity")}>
+          <label data-tooltip-label={settingsTip("backdropOpacity")}>
             {t("ui.settings.backdropOpacity", {
               value: settingsBackdropOpacity.toFixed(0),
             })}
@@ -372,7 +372,7 @@ export function renderSettingsMainSection({
           <header className="settings-group-head">
             <span>{t("ui.settings.thumbnailSection")}</span>
           </header>
-          <label title={settingsTip("thumbnailGap")}>
+          <label data-tooltip-label={settingsTip("thumbnailGap")}>
             {t("ui.settings.thumbnailGapScale", {
               scale: formatScale(thumbnailGapScale),
               px: thumbnailGap,
@@ -392,7 +392,7 @@ export function renderSettingsMainSection({
           </label>
           <label
             className="settings-toggle-row"
-            title={settingsTip("thumbnailAdaptiveResolution")}
+            data-tooltip-label={settingsTip("thumbnailAdaptiveResolution")}
           >
             <span>{t("ui.settings.thumbnailAdaptiveResolution")}</span>
             <input
@@ -406,7 +406,7 @@ export function renderSettingsMainSection({
           <div className="settings-thumbnail-four-row">
             <div
               className="settings-compact-control-cell"
-              title={settingsTip("thumbnailQuality")}
+              data-tooltip-label={settingsTip("thumbnailQuality")}
             >
               <span>{t("ui.settings.thumbnailQuality")}</span>
               <div className="settings-compact-control-actions">
@@ -424,7 +424,7 @@ export function renderSettingsMainSection({
                   className="settings-icon-btn main-icon-square-btn"
                   type="button"
                   aria-label={t("a11y.common.restoreDefault")}
-                  title={t("tip.common.restoreDefault")}
+                  data-tooltip-label={t("tip.common.restoreDefault")}
                   onClick={onResetThumbnailQuality}
                 >
                   <MainUiIcon name="return" />
@@ -433,7 +433,7 @@ export function renderSettingsMainSection({
             </div>
             <div
               className="settings-compact-control-cell"
-              title={settingsTip("thumbnailResolution")}
+              data-tooltip-label={settingsTip("thumbnailResolution")}
             >
               <span>{t("ui.settings.thumbnailResolution")}</span>
               <div className="settings-compact-control-actions">
@@ -453,7 +453,7 @@ export function renderSettingsMainSection({
                   className="settings-icon-btn main-icon-square-btn"
                   type="button"
                   aria-label={t("a11y.common.restoreDefault")}
-                  title={t("tip.common.restoreDefault")}
+                  data-tooltip-label={t("tip.common.restoreDefault")}
                   onClick={onResetThumbnailWidth}
                 >
                   <MainUiIcon name="return" />
@@ -462,7 +462,7 @@ export function renderSettingsMainSection({
             </div>
             <div
               className="settings-compact-control-cell"
-              title={settingsTip("thumbnailGenerationConcurrency")}
+              data-tooltip-label={settingsTip("thumbnailGenerationConcurrency")}
             >
               <span>{t("ui.settings.thumbnailGenerationConcurrency")}</span>
               <div className="settings-compact-control-actions">
@@ -484,7 +484,7 @@ export function renderSettingsMainSection({
                   className="settings-icon-btn main-icon-square-btn"
                   type="button"
                   aria-label={t("a11y.common.restoreDefault")}
-                  title={t("tip.common.restoreDefault")}
+                  data-tooltip-label={t("tip.common.restoreDefault")}
                   onClick={onResetThumbnailGenerationConcurrency}
                 >
                   <MainUiIcon name="return" />
@@ -493,7 +493,7 @@ export function renderSettingsMainSection({
             </div>
             <div
               className="settings-compact-control-cell"
-              title={settingsTip("thumbnailResolveConcurrency")}
+              data-tooltip-label={settingsTip("thumbnailResolveConcurrency")}
             >
               <span>{t("ui.settings.thumbnailResolveConcurrency")}</span>
               <div className="settings-compact-control-actions">
@@ -513,7 +513,7 @@ export function renderSettingsMainSection({
                   className="settings-icon-btn main-icon-square-btn"
                   type="button"
                   aria-label={t("a11y.common.restoreDefault")}
-                  title={t("tip.common.restoreDefault")}
+                  data-tooltip-label={t("tip.common.restoreDefault")}
                   onClick={onResetThumbnailResolveConcurrency}
                 >
                   <MainUiIcon name="return" />
@@ -529,7 +529,7 @@ export function renderSettingsMainSection({
           </header>
           <label
             className="settings-toggle-row"
-            title={settingsTip("layoutLocked")}
+            data-tooltip-label={settingsTip("layoutLocked")}
           >
             <span>{t("ui.settings.layoutLocked")}</span>
             <input
@@ -538,7 +538,7 @@ export function renderSettingsMainSection({
               onChange={(event) => onLayoutLockedChange(event.target.checked)}
             />
           </label>
-          <label title={settingsTip("headerHeight")}>
+          <label data-tooltip-label={settingsTip("headerHeight")}>
             {t("ui.settings.headerHeightScale", {
               scale: formatScale(headerHeightScale),
               px: headerHeight,
@@ -556,7 +556,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("settingsFontScale")}>
+          <label data-tooltip-label={settingsTip("settingsFontScale")}>
             {t("ui.settings.settingsFontScale", {
               scale: formatScale(settingsFontSizeScale),
               px: settingsFontSize,
@@ -574,7 +574,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarRatio")}>
+          <label data-tooltip-label={settingsTip("sidebarRatio")}>
             {t("ui.settings.sidebarRatio", {
               percent: (sidebarRatio * 100).toFixed(0),
             })}
@@ -589,7 +589,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarMinWidth")}>
+          <label data-tooltip-label={settingsTip("sidebarMinWidth")}>
             {t("ui.settings.sidebarMinWidthScale", {
               scale: formatScale(sidebarMinWidthScale),
               px: sidebarMinWidth,
@@ -607,7 +607,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarFontScale")}>
+          <label data-tooltip-label={settingsTip("sidebarFontScale")}>
             {t("ui.settings.sidebarFontScale", {
               scale: formatScale(sidebarFontSizeScale),
               px: sidebarFontSize,
@@ -625,7 +625,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarCountFontScale")}>
+          <label data-tooltip-label={settingsTip("sidebarCountFontScale")}>
             {t("ui.settings.sidebarCountFontScale", {
               scale: formatScale(sidebarCountFontSizeScale),
               px: sidebarCountFontSize,
@@ -646,7 +646,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarIndentScale")}>
+          <label data-tooltip-label={settingsTip("sidebarIndentScale")}>
             {t("ui.settings.sidebarIndentScale", {
               scale: formatScale(sidebarIndentStepScale),
               px: sidebarIndentStep,
@@ -664,7 +664,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("sidebarVerticalGapScale")}>
+          <label data-tooltip-label={settingsTip("sidebarVerticalGapScale")}>
             {t("ui.settings.sidebarVerticalGapScale", {
               scale: formatScale(sidebarVerticalGapScale),
               px: sidebarVerticalGap,
@@ -685,7 +685,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("metadataPanelRatio")}>
+          <label data-tooltip-label={settingsTip("metadataPanelRatio")}>
             {t("ui.settings.metadataPanelRatio", {
               percent: (metadataRatio * 100).toFixed(0),
             })}
@@ -700,7 +700,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("workspaceBottomPanelHeightScale")}>
+          <label data-tooltip-label={settingsTip("workspaceBottomPanelHeightScale")}>
             {t("ui.settings.workspaceBottomPanelHeightScale", {
               scale: formatScale(workspaceBottomPanelHeightScale),
               px: workspaceBottomPanelHeight,
@@ -721,7 +721,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("fullscreenVideoControlsMaxWidthScale")}>
+          <label data-tooltip-label={settingsTip("fullscreenVideoControlsMaxWidthScale")}>
             {t("ui.settings.fullscreenVideoControlsMaxWidthScale", {
               scale: formatScale(fullscreenVideoControlsMaxWidthScale),
               px: fullscreenVideoControlsMaxWidth,
@@ -742,7 +742,7 @@ export function renderSettingsMainSection({
               }
             />
           </label>
-          <label title={settingsTip("mediaPreloadMemoryBudgetMb")}>
+          <label data-tooltip-label={settingsTip("mediaPreloadMemoryBudgetMb")}>
             {t("ui.settings.mediaPreloadMemoryBudgetMb", {
               value: mediaPreloadMemoryBudgetMb,
             })}
@@ -772,7 +772,7 @@ export function renderSettingsMainSection({
 
           <label
             htmlFor="settings-thumbnail-warmup-radius-select"
-            title={settingsTip("thumbnailWarmupRadius")}
+            data-tooltip-label={settingsTip("thumbnailWarmupRadius")}
           >
             {t("ui.settings.thumbnailWarmupRadius")}
             <select
@@ -791,7 +791,7 @@ export function renderSettingsMainSection({
 
           <label
             htmlFor="settings-thumbnail-warmup-concurrency-select"
-            title={settingsTip("thumbnailWarmupConcurrency")}
+            data-tooltip-label={settingsTip("thumbnailWarmupConcurrency")}
           >
             {t("ui.settings.thumbnailWarmupConcurrency")}
             <select
@@ -810,7 +810,7 @@ export function renderSettingsMainSection({
 
           <label
             htmlFor="settings-fullscreen-prefetch-radius-select"
-            title={settingsTip("fullscreenPrefetchRadius")}
+            data-tooltip-label={settingsTip("fullscreenPrefetchRadius")}
           >
             {t("ui.settings.fullscreenPrefetchRadius")}
             <select
@@ -830,7 +830,7 @@ export function renderSettingsMainSection({
 
           <label
             htmlFor="settings-fullscreen-decode-cache-size-select"
-            title={settingsTip("fullscreenDecodeCacheSize")}
+            data-tooltip-label={settingsTip("fullscreenDecodeCacheSize")}
           >
             {t("ui.settings.fullscreenDecodeCacheSize")}
             <select
@@ -850,9 +850,9 @@ export function renderSettingsMainSection({
 
           <label
             className="settings-toggle-row"
-            title={t("ui.settings.fullscreenResamplingEnabledTooltip")}
+            data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}
           >
-            <span title={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
+            <span data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
               {t("ui.settings.fullscreenResamplingEnabled")}
             </span>
             <input
@@ -868,10 +868,10 @@ export function renderSettingsMainSection({
             <>
               <label
                 htmlFor="settings-fullscreen-downsampling-kernel-select"
-                title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+                data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
               >
                 <span
-                  title={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+                  data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
                 >
                   {t("ui.settings.fullscreenDownsamplingKernel")}
                 </span>
@@ -905,10 +905,10 @@ export function renderSettingsMainSection({
 
               <label
                 htmlFor="settings-fullscreen-upsampling-kernel-select"
-                title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+                data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
               >
                 <span
-                  title={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+                  data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
                 >
                   {t("ui.settings.fullscreenUpsamplingKernel")}
                 </span>
@@ -949,7 +949,7 @@ export function renderSettingsMainSection({
           </header>
           <label
             htmlFor="settings-performance-preset-select"
-            title={t("ui.settings.tooltip.performancePreset")}
+            data-tooltip-label={t("ui.settings.tooltip.performancePreset")}
           >
             {t("ui.settings.performancePreset")}
             <select
@@ -978,7 +978,7 @@ export function renderSettingsMainSection({
             </select>
           </label>
           <div className="settings-compact-row">
-            <label title={settingsTip("thumbnailQueueSize")}>
+            <label data-tooltip-label={settingsTip("thumbnailQueueSize")}>
               {t("ui.settings.thumbnailQueueSize")}
             </label>
             <div className="settings-compact-input-group">
@@ -997,7 +997,7 @@ export function renderSettingsMainSection({
                 className="settings-icon-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.restoreDefault")}
-                title={t("tip.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
                 onClick={onResetThumbnailQueueSize}
               >
                 <MainUiIcon name="return" />
@@ -1005,7 +1005,7 @@ export function renderSettingsMainSection({
             </div>
           </div>
           <div className="settings-compact-row">
-            <label title={settingsTip("cpuTokenLimit")}>
+            <label data-tooltip-label={settingsTip("cpuTokenLimit")}>
               {t("ui.settings.cpuTokenLimit")}
             </label>
             <div className="settings-compact-input-group">
@@ -1024,7 +1024,7 @@ export function renderSettingsMainSection({
                 className="settings-icon-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.restoreDefault")}
-                title={t("tip.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
                 onClick={onResetCpuTokenLimit}
               >
                 <MainUiIcon name="return" />
@@ -1209,7 +1209,7 @@ export function renderSettingsMainSection({
             className="settings-icon-btn main-icon-square-btn"
             type="button"
             aria-label={t("a11y.common.restoreDefault")}
-            title={t("tip.common.restoreDefault")}
+            data-tooltip-label={t("tip.common.restoreDefault")}
             onClick={onResetShortcuts}
           >
             <MainUiIcon name="return" />
@@ -1253,7 +1253,7 @@ export function renderSettingsMainSection({
         <p className="settings-placeholder">
           {t("ui.settings.databaseResetHint")}
         </p>
-        <label title={settingsTip("databaseReset")}>
+        <label data-tooltip-label={settingsTip("databaseReset")}>
           {t("ui.settings.databaseResetLabel")}
           <button
             type="button"
@@ -1278,7 +1278,7 @@ export function renderSettingsMainSection({
           <p className="settings-placeholder">
             {t("ui.settings.databaseDirectoryMigrationHint")}
           </p>
-          <label title={settingsTip("sqlDatabasePath")}>
+          <label data-tooltip-label={settingsTip("sqlDatabasePath")}>
             {t("ui.settings.sqlDatabasePathLabel")}
             <div className="settings-inline-field">
               <input
@@ -1298,7 +1298,7 @@ export function renderSettingsMainSection({
               </button>
             </div>
           </label>
-          <label title={settingsTip("thumbnailCacheDirectory")}>
+          <label data-tooltip-label={settingsTip("thumbnailCacheDirectory")}>
             {t("ui.settings.thumbnailCacheDirectoryLabel")}
             <div className="settings-inline-field">
               <input
@@ -1328,7 +1328,7 @@ export function renderSettingsMainSection({
           <p className="settings-placeholder">
             {t("ui.settings.networkProxyHint")}
           </p>
-          <label title={settingsTip("proxyServer")}>
+          <label data-tooltip-label={settingsTip("proxyServer")}>
             {t("ui.settings.proxyServerLabel")}
             <input
               type="text"
@@ -1337,7 +1337,7 @@ export function renderSettingsMainSection({
               onChange={(event) => onProxyServerChange(event.target.value)}
             />
           </label>
-          <label title={settingsTip("ehentaiCookies")}>
+          <label data-tooltip-label={settingsTip("ehentaiCookies")}>
             {t("ui.settings.ehentaiCookiesLabel")}
             <input
               type="text"

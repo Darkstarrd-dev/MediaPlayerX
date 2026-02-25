@@ -885,7 +885,7 @@ function MetadataPanel({
         aria-label={t("a11y.common.expandMetadataPanel")}
         className="meta-restore"
         data-slot="fg-meta-restore"
-        title={t("a11y.common.expandMetadataPanel")}
+        data-tooltip-label={t("a11y.common.expandMetadataPanel")}
         type="button"
         onClick={onExpand}
       >
@@ -971,7 +971,7 @@ function MetadataPanel({
               data-slot="fg-meta-toolbar-toggle"
               type="button"
               aria-label={metadataToggleLabel}
-              title={metadataToggleLabel}
+              data-tooltip-label={metadataToggleLabel}
               onClick={() => setShowImagePreview((value) => !value)}
             >
               <MainUiIcon name={showImagePreview ? "dataMode" : "imageMode"} />

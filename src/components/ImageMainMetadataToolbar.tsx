@@ -29,7 +29,7 @@ export function ImageMainMetadataToolbar({
           className="feature-action-btn main-icon-square-btn"
           type="button"
           aria-label={t("a11y.common.syncName")}
-          title={t("tip.common.syncName")}
+          data-tooltip-label={t("tip.common.syncName")}
           disabled={metadataPending}
           onClick={onMetadataSyncName}
         >
@@ -39,7 +39,7 @@ export function ImageMainMetadataToolbar({
           className="feature-action-btn main-icon-square-btn"
           type="button"
           aria-label={t("a11y.metadata.fetch")}
-          title={t("a11y.metadata.fetch")}
+          data-tooltip-label={t("a11y.metadata.fetch")}
           onClick={onOpenMetadataFetch}
         >
           <MainUiIcon name="getMetaData" />

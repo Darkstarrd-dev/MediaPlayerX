@@ -22,7 +22,7 @@ export function AdReviewExecButton({
       aria-label={
         adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
       }
-      title={adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")}
+      data-tooltip-label={adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")}
       disabled={disabled}
       onClick={onClick}
     >

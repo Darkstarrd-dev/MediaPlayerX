@@ -183,7 +183,7 @@ function SidebarRenameDialog({
             className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn"
             type="button"
             aria-label={closeLabel}
-            title={closeLabel}
+            data-tooltip-label={closeLabel}
             disabled={pending}
             onClick={onCancel}
           >
@@ -268,7 +268,7 @@ function SidebarRenameDialog({
                       className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
                       type="button"
                       disabled={pending}
-                      title={row.sourceName}
+                      data-tooltip-label={row.sourceName}
                       onClick={() => {
                         onUseSourceNameAsReplaceFrom(row.sourceName)
                       }}
@@ -276,7 +276,7 @@ function SidebarRenameDialog({
                       {applyFromSourceLabel}: {row.sourceName}
                     </button>
                   ) : (
-                    <span className="sidebar-rename-preview-cell" title={row.sourceName}>{row.sourceName}</span>
+                    <span className="sidebar-rename-preview-cell" data-tooltip-label={row.sourceName}>{row.sourceName}</span>
                   )}
                   <span className="sidebar-rename-preview-cell">{row.reason && row.reason !== 'unchanged' ? row.reason : row.targetName}</span>
                 </div>

@@ -67,7 +67,7 @@ export function ImageMainNormalToolbar({
                 ? t("a11y.image.switchToGridMode")
                 : t("a11y.image.switchToNamesMode")
             }
-            title={
+            data-tooltip-label={
               showNamesOnly
                 ? t("tip.image.switchToGridMode")
                 : t("tip.image.switchToNamesMode")
@@ -92,7 +92,7 @@ export function ImageMainNormalToolbar({
             className="toolbar-icon-btn"
             type="button"
             aria-label={t("a11y.media.enterFullscreen")}
-            title={t("tip.media.enterFullscreen")}
+            data-tooltip-label={t("tip.media.enterFullscreen")}
             onClick={onEnterFullscreen}
             disabled={!focusedImageExists}
           >
@@ -106,7 +106,7 @@ export function ImageMainNormalToolbar({
               className="toolbar-icon-btn"
               type="button"
               aria-label={t("a11y.media.music")}
-              title={t("tip.media.music")}
+              data-tooltip-label={t("tip.media.music")}
               onClick={onJumpToMusicFromBooklet}
             >
               <MainUiIcon name="musicMode" />
@@ -121,7 +121,7 @@ export function ImageMainNormalToolbar({
                 className="toolbar-icon-btn"
                 type="button"
                 aria-label={t("a11y.media.animation")}
-                title={t("tip.media.animation")}
+                data-tooltip-label={t("tip.media.animation")}
                 onClick={onJumpToAnimation}
               >
                 <MainUiIcon name="videoMode" />
@@ -132,7 +132,7 @@ export function ImageMainNormalToolbar({
                 className="toolbar-icon-btn"
                 type="button"
                 aria-label={t("a11y.media.music")}
-                title={t("tip.media.music")}
+                data-tooltip-label={t("tip.media.music")}
                 onClick={onJumpToMusic}
               >
                 <MainUiIcon name="musicMode" />

@@ -202,7 +202,7 @@ export function FullscreenVideoControlsShell({
             <button
               aria-label={t("a11y.media.dualMode")}
               className="video-action-btn video-action-dual"
-              title={t("a11y.media.dualMode")}
+              data-tooltip-label={t("a11y.media.dualMode")}
               type="button"
               onClick={onToggleDualDisplay}
             >
@@ -220,7 +220,7 @@ export function FullscreenVideoControlsShell({
                 aria-haspopup="dialog"
                 aria-label={videoFitLabel}
                 className="video-action-btn video-action-fit"
-                title={videoFitLabel}
+                data-tooltip-label={videoFitLabel}
                 type="button"
                 onClick={onCycleVideoFitMode}
               >
@@ -284,7 +284,7 @@ export function FullscreenVideoControlsShell({
                     : t("a11y.media.subtitleOff")
                 }
                 className="video-action-btn video-action-subtitle"
-                title={
+                data-tooltip-label={
                   subtitleVisible
                     ? t("a11y.media.subtitleOn")
                     : t("a11y.media.subtitleOff")
@@ -346,7 +346,7 @@ export function FullscreenVideoControlsShell({
                   rate: videoRate.toFixed(2),
                 })}
                 className="video-action-btn video-action-speed"
-                title={t("a11y.media.playbackRate", {
+                data-tooltip-label={t("a11y.media.playbackRate", {
                   rate: videoRate.toFixed(2),
                 })}
                 type="button"
@@ -384,7 +384,7 @@ export function FullscreenVideoControlsShell({
             <button
               aria-label={t("a11y.media.exitFullscreen")}
               className="video-action-btn video-action-fullscreen video-fullscreen-btn"
-              title={t("a11y.media.exitFullscreen")}
+              data-tooltip-label={t("a11y.media.exitFullscreen")}
               type="button"
               onClick={onExit}
             >
@@ -400,7 +400,7 @@ export function FullscreenVideoControlsShell({
           <button
             aria-label={t("a11y.media.prev")}
             className="video-action-btn video-action-prev"
-            title={t("a11y.media.prev")}
+            data-tooltip-label={t("a11y.media.prev")}
             type="button"
             onClick={onPrevVideo}
           >
@@ -411,7 +411,7 @@ export function FullscreenVideoControlsShell({
               videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
             }
             className="video-action-btn video-action-play"
-            title={videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")}
+            data-tooltip-label={videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")}
             type="button"
             onClick={onToggleVideoPlay}
           >
@@ -420,7 +420,7 @@ export function FullscreenVideoControlsShell({
           <button
             aria-label={t("a11y.media.next")}
             className="video-action-btn video-action-next"
-            title={t("a11y.media.next")}
+            data-tooltip-label={t("a11y.media.next")}
             type="button"
             onClick={onNextVideo}
           >
@@ -435,7 +435,7 @@ export function FullscreenVideoControlsShell({
           <button
             aria-label={t("a11y.media.saveAsCover")}
             className="video-action-btn video-action-save-cover"
-            title={t("a11y.media.saveAsCover")}
+            data-tooltip-label={t("a11y.media.saveAsCover")}
             type="button"
             onClick={onSaveCover}
           >
@@ -453,7 +453,7 @@ export function FullscreenVideoControlsShell({
               aria-haspopup="dialog"
               aria-label={t("a11y.media.playlist")}
               className="video-action-btn video-action-playlist"
-              title={t("a11y.media.playlist")}
+              data-tooltip-label={t("a11y.media.playlist")}
               type="button"
             >
               <VideoControlIcon name="playlist" />
@@ -495,7 +495,7 @@ export function FullscreenVideoControlsShell({
               label: videoLoopModeLabel,
             })}
             className="video-action-btn video-action-loop-mode"
-            title={t("tip.media.videoLoopMode", { label: videoLoopModeLabel })}
+            data-tooltip-label={t("tip.media.videoLoopMode", { label: videoLoopModeLabel })}
             type="button"
             onClick={onCycleVideoLoopMode}
           >
@@ -518,7 +518,7 @@ export function FullscreenVideoControlsShell({
                 videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
               }
               className="video-action-btn video-action-mute"
-              title={videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")}
+              data-tooltip-label={videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")}
               type="button"
               onClick={onToggleVideoMute}
             >

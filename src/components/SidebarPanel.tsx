@@ -1226,7 +1226,7 @@ function SidebarPanel({
               data-slot="fg-sidebar-toolbar-back"
               type="button"
               aria-label={t("a11y.common.back")}
-              title={t("tip.common.back")}
+              data-tooltip-label={t("tip.common.back")}
               disabled={!canGoToFromSearchMode}
               onClick={onGoToFromSearchMode}
             >
@@ -1241,7 +1241,7 @@ function SidebarPanel({
                 data-slot="fg-sidebar-toolbar-clear"
                 type="button"
                 aria-label={t("a11y.common.clearSelection")}
-                title={t("tip.common.clearSelection")}
+                data-tooltip-label={t("tip.common.clearSelection")}
                 disabled={checkedNodes.size === 0}
                 onClick={onClearSidebarSelection}
               >
@@ -1255,7 +1255,7 @@ function SidebarPanel({
               className={`sidebar-head-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
               data-slot="fg-sidebar-toolbar-label-mode-toggle"
               type="button"
-              title={
+              data-tooltip-label={
                 effectiveSidebarLabelDisplayMode === "full"
                   ? "切换到末段名"
                   : "切换到完整路径"
@@ -1281,7 +1281,7 @@ function SidebarPanel({
                 data-slot="fg-sidebar-toolbar-collapse-all"
                 type="button"
                 aria-label={collapseImageParentsLabel}
-                title={
+                data-tooltip-label={
                   allTargetParentsCollapsed
                     ? t("tip.sidebar.expandImageParents")
                     : t("tip.sidebar.collapseImageParents")
@@ -1309,7 +1309,7 @@ function SidebarPanel({
                 data-slot="fg-sidebar-toolbar-prev-image-parent"
                 type="button"
                 aria-label={previousImageParentLabel}
-                title={t("tip.sidebar.previousImageParent")}
+                data-tooltip-label={t("tip.sidebar.previousImageParent")}
                 disabled={!targetParentNavigation.previousNodeId}
                 onClick={() => {
                   if (mode === "image") {
@@ -1339,7 +1339,7 @@ function SidebarPanel({
                 data-slot="fg-sidebar-toolbar-next-image-parent"
                 type="button"
                 aria-label={nextImageParentLabel}
-                title={t("tip.sidebar.nextImageParent")}
+                data-tooltip-label={t("tip.sidebar.nextImageParent")}
                 disabled={!targetParentNavigation.nextNodeId}
                 onClick={() => {
                   if (mode === "image") {
@@ -1362,7 +1362,7 @@ function SidebarPanel({
               data-slot="fg-sidebar-toolbar-root-toggle"
               type="button"
               aria-label={rootToggleLabel}
-              title={rootToggleLabel}
+              data-tooltip-label={rootToggleLabel}
               disabled={!rootSet && !canSetCurrentRoot}
               onClick={rootSet ? onResetRoot : onSetCurrentRoot}
             >

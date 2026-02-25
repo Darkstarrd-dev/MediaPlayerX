@@ -63,7 +63,7 @@ export function buildMainFooter({
             className="toolbar-icon-btn"
             type="button"
             aria-label={translate('a11y.common.prevPage')}
-            title={translate('tip.common.prevPage')}
+            data-tooltip-label={translate('tip.common.prevPage')}
             onClick={onPrevPage}
           >
             <VideoControlIcon className="main-ui-icon" name="prev" />
@@ -73,7 +73,7 @@ export function buildMainFooter({
             className="toolbar-icon-btn"
             type="button"
             aria-label={translate('a11y.common.nextPage')}
-            title={translate('tip.common.nextPage')}
+            data-tooltip-label={translate('tip.common.nextPage')}
             onClick={onNextPage}
           >
             <VideoControlIcon className="main-ui-icon" name="next" />

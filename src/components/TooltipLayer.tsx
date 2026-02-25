@@ -25,16 +25,6 @@ function getTooltipText(target: HTMLElement): string {
     return custom.trim()
   }
 
-  const title = target.getAttribute('title')
-  if (title && title.trim().length > 0) {
-    return title.trim()
-  }
-
-  const detachedTitle = target.getAttribute('data-tooltip-original-title')
-  if (detachedTitle && detachedTitle.trim().length > 0) {
-    return detachedTitle.trim()
-  }
-
   return ''
 }
 
@@ -52,7 +42,7 @@ function resolveTooltipTarget(eventTarget: EventTarget | null): HTMLElement | nu
     return null
   }
 
-  const target = eventTarget.closest<HTMLElement>('[title], [data-tooltip-label], [data-tooltip-original-title]')
+  const target = eventTarget.closest<HTMLElement>('[data-tooltip-label]')
   if (!target) {
     return null
   }
@@ -147,30 +137,6 @@ function resolvePosition(target: HTMLElement, bubbleWidth: number, bubbleHeight:
   }
 }
 
-function detachNativeTitle(target: HTMLElement): void {
-  if (target.hasAttribute('data-tooltip-original-title')) {
-    return
-  }
-  const title = target.getAttribute('title')
-  if (!title) {
-    return
-  }
-  target.setAttribute('data-tooltip-original-title', title)
-  target.removeAttribute('title')
-}
-
-function restoreNativeTitle(target: HTMLElement | null): void {
-  if (!target) {
-    return
-  }
-  const original = target.getAttribute('data-tooltip-original-title')
-  if (!original) {
-    return
-  }
-  target.setAttribute('title', original)
-  target.removeAttribute('data-tooltip-original-title')
-}
-
 function TooltipLayer({ suspended = false }: TooltipLayerProps) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null)
   const activeTargetRef = useRef<HTMLElement | null>(null)
@@ -187,15 +153,12 @@ function TooltipLayer({ suspended = false }: TooltipLayerProps) {
     const closeTooltip = () => {
       clearOpenTimer()
       setTooltip(null)
-      restoreNativeTitle(activeTargetRef.current)
       activeTargetRef.current = null
     }
 
     const openTooltipForTarget = (target: HTMLElement, delay: number) => {
       clearOpenTimer()
-      restoreNativeTitle(activeTargetRef.current)
       activeTargetRef.current = target
-      detachNativeTitle(target)
 
       openTimerRef.current = window.setTimeout(() => {
         if (activeTargetRef.current !== target) {

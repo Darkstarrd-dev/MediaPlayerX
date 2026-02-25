@@ -193,7 +193,7 @@ export function renderSettingsModelSection({
           <details className="settings-collapsible" open>
             <summary>{t("ui.settings.offlineSubtitleAdvancedSection")}</summary>
             <div className="settings-collapsible-content">
-              <label title={settingsTip("offlineSubtitleVadPreset")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleVadPreset")}>
                 {t("ui.settings.offlineSubtitleVadPreset")}
                 <select
                   value={subtitleAdvancedVadPreset}
@@ -217,7 +217,7 @@ export function renderSettingsModelSection({
                   </option>
                 </select>
               </label>
-              <label title={settingsTip("offlineSubtitleVadThreshold")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleVadThreshold")}>
                 {t("ui.settings.offlineSubtitleVadThreshold")}
                 <input
                   type="range"
@@ -235,7 +235,7 @@ export function renderSettingsModelSection({
                   {subtitleAdvancedVadThreshold.toFixed(2)}
                 </span>
               </label>
-              <label title={settingsTip("offlineSubtitleVadMinSilenceSec")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleVadMinSilenceSec")}>
                 {t("ui.settings.offlineSubtitleVadMinSilenceSec")}
                 <input
                   type="range"
@@ -253,7 +253,7 @@ export function renderSettingsModelSection({
                   {subtitleAdvancedVadMinSilenceSec.toFixed(2)}s
                 </span>
               </label>
-              <label title={settingsTip("offlineSubtitleVadMinSpeechSec")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleVadMinSpeechSec")}>
                 {t("ui.settings.offlineSubtitleVadMinSpeechSec")}
                 <input
                   type="range"
@@ -271,7 +271,7 @@ export function renderSettingsModelSection({
                   {subtitleAdvancedVadMinSpeechSec.toFixed(2)}s
                 </span>
               </label>
-              <label title={settingsTip("offlineSubtitleVadMaxSpeechSec")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleVadMaxSpeechSec")}>
                 {t("ui.settings.offlineSubtitleVadMaxSpeechSec")}
                 <input
                   type="range"
@@ -289,7 +289,7 @@ export function renderSettingsModelSection({
                   {subtitleAdvancedVadMaxSpeechSec.toFixed(0)}s
                 </span>
               </label>
-              <label title={settingsTip("offlineSubtitleSpeakerThreshold")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleSpeakerThreshold")}>
                 {t("ui.settings.offlineSubtitleSpeakerThreshold")}
                 <input
                   type="range"
@@ -307,7 +307,7 @@ export function renderSettingsModelSection({
                   {subtitleAdvancedSpeakerThreshold.toFixed(2)}
                 </span>
               </label>
-              <label title={settingsTip("offlineSubtitleValidPlaybackRateThreshold")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleValidPlaybackRateThreshold")}>
                 {t("ui.settings.offlineSubtitleValidPlaybackRateThreshold")}
                 <input
                   type="range"
@@ -328,7 +328,7 @@ export function renderSettingsModelSection({
             </div>
           </details>
         ) : null}
-        <label title={settingsTip("offlineSubtitleLanguage")}>
+        <label data-tooltip-label={settingsTip("offlineSubtitleLanguage")}>
           {t("ui.settings.offlineSubtitleLanguage")}
           <select
             value={subtitleLanguage}
@@ -364,7 +364,7 @@ export function renderSettingsModelSection({
             </option>
           </select>
         </label>
-        <label title={settingsTip("offlineSubtitleModelDir")}>
+        <label data-tooltip-label={settingsTip("offlineSubtitleModelDir")}>
           {t("ui.settings.offlineSubtitleModelDir")}
           <div className="settings-inline-field">
             <input
@@ -378,7 +378,7 @@ export function renderSettingsModelSection({
             </button>
           </div>
         </label>
-        <label title={settingsTip("offlineSubtitleOffsetY")}>
+        <label data-tooltip-label={settingsTip("offlineSubtitleOffsetY")}>
           {t("ui.settings.offlineSubtitleOffsetY")}
           <input
             type="range"
@@ -410,7 +410,7 @@ export function renderSettingsModelSection({
         >
           <summary>{t("ui.settings.offlineSubtitleStyleSection")}</summary>
           <div className="settings-collapsible-content">
-            <label title={settingsTip("offlineSubtitleTextFillMode")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleTextFillMode")}>
               {t("ui.settings.offlineSubtitleTextFillMode")}
               <select
                 value={subtitleTextFillMode}
@@ -429,7 +429,7 @@ export function renderSettingsModelSection({
               </select>
             </label>
             {subtitleTextFillMode === "solid" ? (
-              <label title={settingsTip("offlineSubtitleTextColor")}>
+              <label data-tooltip-label={settingsTip("offlineSubtitleTextColor")}>
                 {t("ui.settings.offlineSubtitleTextColor")}
                 <input
                   type="color"
@@ -441,7 +441,7 @@ export function renderSettingsModelSection({
               </label>
             ) : (
               <>
-                <label title={settingsTip("offlineSubtitleGradientStartColor")}>
+                <label data-tooltip-label={settingsTip("offlineSubtitleGradientStartColor")}>
                   {t("ui.settings.offlineSubtitleGradientStartColor")}
                   <input
                     type="color"
@@ -451,7 +451,7 @@ export function renderSettingsModelSection({
                     }
                   />
                 </label>
-                <label title={settingsTip("offlineSubtitleGradientEndColor")}>
+                <label data-tooltip-label={settingsTip("offlineSubtitleGradientEndColor")}>
                   {t("ui.settings.offlineSubtitleGradientEndColor")}
                   <input
                     type="color"
@@ -461,7 +461,7 @@ export function renderSettingsModelSection({
                     }
                   />
                 </label>
-                <label title={settingsTip("offlineSubtitleGradientDirection")}>
+                <label data-tooltip-label={settingsTip("offlineSubtitleGradientDirection")}>
                   {t("ui.settings.offlineSubtitleGradientDirection")}
                   <select
                     value={subtitleGradientDirection}
@@ -521,7 +521,7 @@ export function renderSettingsModelSection({
                     </option>
                   </select>
                 </label>
-                <label title={settingsTip("offlineSubtitleGradientCurve")}>
+                <label data-tooltip-label={settingsTip("offlineSubtitleGradientCurve")}>
                   {t("ui.settings.offlineSubtitleGradientCurve")}
                   <select
                     value={subtitleGradientCurve}
@@ -551,7 +551,7 @@ export function renderSettingsModelSection({
                 </label>
               </>
             )}
-            <label title={settingsTip("offlineSubtitleStrokeColor")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleStrokeColor")}>
               {t("ui.settings.offlineSubtitleStrokeColor")}
               <input
                 type="color"
@@ -561,7 +561,7 @@ export function renderSettingsModelSection({
                 }
               />
             </label>
-            <label title={settingsTip("offlineSubtitleStrokeWidth")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleStrokeWidth")}>
               {t("ui.settings.offlineSubtitleStrokeWidth")}
               <input
                 type="range"
@@ -577,7 +577,7 @@ export function renderSettingsModelSection({
                 {subtitleStrokeWidth.toFixed(1)}px
               </span>
             </label>
-            <label title={settingsTip("offlineSubtitleFontSize")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleFontSize")}>
               {t("ui.settings.offlineSubtitleFontSize")}
               <input
                 type="range"
@@ -595,7 +595,7 @@ export function renderSettingsModelSection({
                 })}
               </span>
             </label>
-            <label title={settingsTip("offlineSubtitleMaxLineChars")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleMaxLineChars")}>
               {t("ui.settings.offlineSubtitleMaxLineChars")}
               <input
                 type="range"
@@ -613,7 +613,7 @@ export function renderSettingsModelSection({
                 })}
               </span>
             </label>
-            <label title={settingsTip("offlineSubtitleStrokeShadowColor")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleStrokeShadowColor")}>
               {t("ui.settings.offlineSubtitleStrokeShadowColor")}
               <input
                 type="color"
@@ -623,7 +623,7 @@ export function renderSettingsModelSection({
                 }
               />
             </label>
-            <label title={settingsTip("offlineSubtitleStrokeShadowRadius")}>
+            <label data-tooltip-label={settingsTip("offlineSubtitleStrokeShadowRadius")}>
               {t("ui.settings.offlineSubtitleStrokeShadowRadius")}
               <input
                 type="range"
@@ -647,7 +647,7 @@ export function renderSettingsModelSection({
             type="button"
             disabled={subtitleModelsLoading}
             aria-label={t("ui.settings.offlineSubtitleRescanDirectory")}
-            title={t("ui.settings.offlineSubtitleRescanDirectory")}
+            data-tooltip-label={t("ui.settings.offlineSubtitleRescanDirectory")}
             onClick={onRefreshSubtitleModels}
           >
             <MainUiIcon name="refresh" />
@@ -661,7 +661,7 @@ export function renderSettingsModelSection({
               !subtitleModelDir
             }
             aria-label={t("ui.settings.offlineSubtitleDownloadModel")}
-            title={t("ui.settings.offlineSubtitleDownloadModel")}
+            data-tooltip-label={t("ui.settings.offlineSubtitleDownloadModel")}
             onClick={onStartSubtitleModelDownload}
           >
             <MainUiIcon name="save" />
@@ -676,7 +676,7 @@ export function renderSettingsModelSection({
                 subtitleDownloadTask.status !== "verifying")
             }
             aria-label={t("ui.settings.offlineSubtitleCancelDownload")}
-            title={t("ui.settings.offlineSubtitleCancelDownload")}
+            data-tooltip-label={t("ui.settings.offlineSubtitleCancelDownload")}
             onClick={onCancelSubtitleModelDownload}
           >
             <MainUiIcon name="close" />
@@ -685,7 +685,7 @@ export function renderSettingsModelSection({
             className="settings-icon-btn main-icon-square-btn"
             type="button"
             aria-label={t("ui.settings.offlineSubtitleOpenModelPage")}
-            title={t("ui.settings.offlineSubtitleOpenModelPage")}
+            data-tooltip-label={t("ui.settings.offlineSubtitleOpenModelPage")}
             onClick={onOpenSubtitleModelPage}
           >
             <MainUiIcon name="videoInfo" />
@@ -720,7 +720,7 @@ export function renderSettingsModelSection({
 
       <fieldset className="settings-subsection">
         <legend>{t("ui.settings.adReviewVisionLegend")}</legend>
-        <label title={settingsTip("adReviewVisionEndpoint")}>
+        <label data-tooltip-label={settingsTip("adReviewVisionEndpoint")}>
           {t("ui.settings.adReviewVisionEndpoint")}
           <input
             type="text"
@@ -730,7 +730,7 @@ export function renderSettingsModelSection({
             }
           />
         </label>
-        <label title={settingsTip("adReviewVisionModel")}>
+        <label data-tooltip-label={settingsTip("adReviewVisionModel")}>
           {t("ui.settings.adReviewVisionModel")}
           <input
             type="text"
@@ -750,7 +750,7 @@ export function renderSettingsModelSection({
                 ? t("a11y.settings.testingVisionModel")
                 : t("a11y.settings.testVisionModel")
             }
-            title={
+            data-tooltip-label={
               adReviewVisionTestPending
                 ? t("a11y.settings.testingVisionModel")
                 : t("a11y.settings.testVisionModel")
@@ -768,7 +768,7 @@ export function renderSettingsModelSection({
                 ? t("a11y.settings.savingVisionModel")
                 : t("a11y.settings.saveVisionModel")
             }
-            title={
+            data-tooltip-label={
               adReviewVisionSavePending
                 ? t("a11y.settings.savingVisionModel")
                 : t("a11y.settings.saveVisionModel")
@@ -796,7 +796,7 @@ export function renderSettingsModelSection({
 
       <fieldset className="settings-subsection">
         <legend>{t("ui.settings.subtitleCleanupLlmLegend")}</legend>
-        <label title={settingsTip("subtitleCleanupLlmEndpoint")}>
+        <label data-tooltip-label={settingsTip("subtitleCleanupLlmEndpoint")}>
           {t("ui.settings.subtitleCleanupLlmEndpoint")}
           <input
             type="text"
@@ -806,7 +806,7 @@ export function renderSettingsModelSection({
             }
           />
         </label>
-        <label title={settingsTip("subtitleCleanupLlmModel")}>
+        <label data-tooltip-label={settingsTip("subtitleCleanupLlmModel")}>
           {t("ui.settings.subtitleCleanupLlmModel")}
           <input
             type="text"
@@ -819,7 +819,7 @@ export function renderSettingsModelSection({
         <details className="settings-collapsible">
           <summary>{t("ui.settings.subtitleCleanupLlmPromptSection")}</summary>
           <div className="settings-collapsible-content">
-            <label title={settingsTip("subtitleCleanupLlmPrompt")}>
+            <label data-tooltip-label={settingsTip("subtitleCleanupLlmPrompt")}>
               {t("ui.settings.subtitleCleanupLlmPrompt")}
               <textarea
                 className="settings-scroll-hidden-textarea"

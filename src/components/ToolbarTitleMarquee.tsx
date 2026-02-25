@@ -17,7 +17,7 @@ export function ToolbarTitleMarquee({
     });
 
   return (
-    <strong className={className} title={text}>
+    <strong className={className} data-tooltip-label={text}>
       <span
         className={`main-toolbar-title-marquee ${overflowing ? "is-overflow" : ""}`}
         ref={hostRef}

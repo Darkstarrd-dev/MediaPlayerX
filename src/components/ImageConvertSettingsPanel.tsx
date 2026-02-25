@@ -178,7 +178,7 @@ export function ImageConvertSettingsPanel({
           <button
             type="button"
             disabled={imageConvertExecuting}
-            title={
+            data-tooltip-label={
               imageConvertPreviewMode
                 ? `Preview ${imageConvertPreviewScale.toFixed(1)} ${imageConvertPreviewFormat.toUpperCase()} Q${Math.round(imageConvertPreviewQuality)}`
                 : "预览"

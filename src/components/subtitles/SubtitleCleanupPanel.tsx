@@ -211,7 +211,7 @@ function SubtitleCleanupPanel({
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
           <h2>{t('ui.media.subtitleCleanupTitle')}</h2>
-          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label={t('a11y.common.close')} title={t('tip.common.close')} onClick={onClose}>
+          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label={t('a11y.common.close')} data-tooltip-label={t('tip.common.close')} onClick={onClose}>
             <MainUiIcon name="close" />
           </button>
         </header>

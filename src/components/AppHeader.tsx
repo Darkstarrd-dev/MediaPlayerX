@@ -380,7 +380,7 @@ function AppHeader(props: AppHeaderProps) {
               className={`logo-btn ${taskStatusBusy ? 'is-task-busy' : 'is-task-idle'} ${importTaskPanelOpen ? 'is-task-open' : ''}`}
               data-slot="fg-header-logo"
               data-slot-state={taskStateSlot}
-              title={taskStatusLabel}
+              data-tooltip-label={taskStatusLabel}
               type="button"
               onClick={onToggleImportTaskPanel}
             >
@@ -419,7 +419,7 @@ function AppHeader(props: AppHeaderProps) {
                 data-slot="fg-header-g1-toggle-sidebar"
                 type="button"
                 aria-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
-                title={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                data-tooltip-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
                 onClick={() => {
                   onToggleSidebarPanel?.()
                 }}
@@ -431,7 +431,7 @@ function AppHeader(props: AppHeaderProps) {
                 data-slot="fg-header-g1-toggle-metadata"
                 type="button"
                 aria-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
-                title={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                data-tooltip-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
                 onClick={() => {
                   onToggleMetadataPanel?.()
                 }}
@@ -446,7 +446,7 @@ function AppHeader(props: AppHeaderProps) {
             aria-pressed={paletteMode === 'night'}
             className="window-control-btn"
             data-slot="fg-header-g1-palette"
-            title={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+            data-tooltip-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
             type="button"
             onClick={onTogglePaletteMode}
           >
@@ -510,7 +510,7 @@ function AppHeader(props: AppHeaderProps) {
                 <button
                   aria-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
                   className="mode-action-btn"
-                  title={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
+                  data-tooltip-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
                   type="button"
                   onClick={() => {
                     dispatchMusicPlaybackControl('toggle-playback')
@@ -539,8 +539,8 @@ function AppHeader(props: AppHeaderProps) {
               aria-label={tooltipLabel}
               aria-pressed={tooltipEnabled}
               className="window-control-btn window-control-btn--theme-parameter"
+              data-tooltip-label={tooltipLabel}
               data-slot="fg-header-g-debug-tooltips"
-              title={tooltipLabel}
               type="button"
               onClick={() => {
                 onTooltipEnabledChange(!tooltipEnabled)
@@ -552,8 +552,8 @@ function AppHeader(props: AppHeaderProps) {
               aria-label={nativeChromeLabel}
               aria-pressed={electronNativeChromeEnabled}
               className="window-control-btn window-control-btn--theme-parameter"
+              data-tooltip-label={nativeChromeLabel}
               data-slot="fg-header-g-debug-native-chrome"
-              title={nativeChromeLabel}
               type="button"
               onClick={() => {
                 onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)
@@ -593,7 +593,7 @@ function AppHeader(props: AppHeaderProps) {
             aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             className="window-control-btn"
             data-slot="fg-header-g3-window-min"
-            title={t(a11yRegistry.headerWindowMinimize.labelKey)}
+            data-tooltip-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.minimize()
@@ -605,7 +605,7 @@ function AppHeader(props: AppHeaderProps) {
             aria-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             className="window-control-btn"
             data-slot="fg-header-g3-window-maxrestore"
-            title={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
+            data-tooltip-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.toggleMaximize()
@@ -617,7 +617,7 @@ function AppHeader(props: AppHeaderProps) {
             aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
             className="window-control-btn window-control-btn--close"
             data-slot="fg-header-g3-window-close"
-            title={t(a11yRegistry.headerWindowClose.labelKey)}
+            data-tooltip-label={t(a11yRegistry.headerWindowClose.labelKey)}
             type="button"
             onClick={() => {
               void window.mediaPlayerWindow?.close()

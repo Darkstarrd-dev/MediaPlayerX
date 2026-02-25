@@ -56,7 +56,7 @@ function DangerConfirmDialog({
             <p className="manage-confirm-targets-title">{targetListTitle}</p>
             <ul className="manage-confirm-targets-list">
               {targetPaths.map((path) => (
-                <li key={path} title={path}>{path}</li>
+                <li key={path} data-tooltip-label={path}>{path}</li>
               ))}
             </ul>
           </section>

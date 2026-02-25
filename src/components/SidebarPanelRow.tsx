@@ -173,7 +173,7 @@ export function SidebarPanelRow({
           }
           startManagePointerToggle(node.id, event);
         }}
-        title={
+        data-tooltip-label={
           loadState === "running"
             ? t("tip.sidebar.processingRunning")
             : loadState === "pending"
@@ -282,7 +282,7 @@ export function SidebarPanelRow({
           <span
             className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
             aria-label={imageCountLabel}
-            title={imageCountLabel}
+            data-tooltip-label={imageCountLabel}
           >
             {showProcessingCountPlaceholder
               ? "..."
@@ -301,7 +301,7 @@ export function SidebarPanelRow({
           <span
             className={musicCountClassName}
             aria-label={musicCountLabel}
-            title={musicCountLabel}
+            data-tooltip-label={musicCountLabel}
           >
             {musicCountValue}
           </span>

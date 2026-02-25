@@ -166,7 +166,7 @@ export function MetadataAdReviewSection({
               type="button"
               disabled={adReviewPending}
               onClick={() => onReviewModeChange('ad')}
-              title={t('ui.manage.adReviewTitle')}
+              data-tooltip-label={t('ui.manage.adReviewTitle')}
             >
               <span aria-hidden="true">AD</span>
             </button>
@@ -175,7 +175,7 @@ export function MetadataAdReviewSection({
               type="button"
               disabled={adReviewPending}
               onClick={() => onReviewModeChange('cover')}
-              title={t('ui.manage.coverReviewTitle')}
+              data-tooltip-label={t('ui.manage.coverReviewTitle')}
             >
               <span aria-hidden="true">C</span>
             </button>
@@ -190,7 +190,7 @@ export function MetadataAdReviewSection({
               className={`manage-ad-review-icon-btn ${adReviewStrategyMode === 'head-tail' ? 'is-active' : ''}`}
               type="button"
               aria-label={t('a11y.manage.strategyToggle')}
-              title={
+              data-tooltip-label={
                 adReviewStrategyMode === 'head-tail'
                   ? t('tip.manage.strategyHeadTailToAll')
                   : t('tip.manage.strategyAllToHeadTail')
@@ -206,7 +206,7 @@ export function MetadataAdReviewSection({
               className={`manage-ad-review-icon-btn manage-ad-review-exec-btn ${adReviewRunning ? 'is-running' : ''}`}
               type="button"
               aria-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
-              title={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
+              data-tooltip-label={adReviewRunning ? t('a11y.manage.pause') : t('a11y.manage.start')}
               disabled={adReviewPending || (!adReviewRunning && !canExecuteAdReview)}
               onClick={triggerStartOrPause}
             >
@@ -219,7 +219,7 @@ export function MetadataAdReviewSection({
               className={`manage-ad-review-icon-btn ${focusActive ? 'is-active' : ''}`}
               type="button"
               aria-label={focusActive ? t('a11y.manage.return') : t('a11y.manage.focus')}
-              title={focusActive ? t('a11y.manage.return') : t('a11y.manage.focus')}
+              data-tooltip-label={focusActive ? t('a11y.manage.return') : t('a11y.manage.focus')}
               disabled={adReviewPending}
               onClick={onToggleAdReviewFocus}
             >

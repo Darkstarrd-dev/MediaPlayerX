@@ -424,7 +424,7 @@ function MetadataFetchPanel({
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
           <h2>{t('ui.metadata.fetchTitle')}</h2>
-          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label={t('a11y.common.close')} title={t('tip.common.close')} onClick={onClose}>
+          <button className="feature-action-btn main-icon-square-btn" type="button" aria-label={t('a11y.common.close')} data-tooltip-label={t('tip.common.close')} onClick={onClose}>
             <MainUiIcon name="close" />
           </button>
         </header>
@@ -483,7 +483,7 @@ function MetadataFetchPanel({
                   className="feature-action-btn main-icon-square-btn"
                   type="button"
                   aria-label={loading ? t('a11y.common.searching') : t('a11y.common.search')}
-                  title={loading ? t('tip.common.searching') : t('tip.common.search')}
+                  data-tooltip-label={loading ? t('tip.common.searching') : t('tip.common.search')}
                   disabled={!canSearch || loading}
                   onClick={() => void runSearch()}
                 >
@@ -524,7 +524,7 @@ function MetadataFetchPanel({
                       className="feature-action-btn main-icon-square-btn"
                       type="button"
                       aria-label={t('a11y.common.parse')}
-                      title={t('tip.common.parse')}
+                      data-tooltip-label={t('tip.common.parse')}
                       disabled={!canParse}
                       onClick={() => {
                         setSelectedSource(source)
@@ -537,7 +537,7 @@ function MetadataFetchPanel({
                       className="feature-action-btn main-icon-square-btn"
                       type="button"
                       aria-label={saving && selectedSource === source ? t('a11y.common.saving') : t('a11y.common.save')}
-                      title={saving && selectedSource === source ? t('tip.common.saving') : t('tip.common.save')}
+                      data-tooltip-label={saving && selectedSource === source ? t('tip.common.saving') : t('tip.common.save')}
                       disabled={!canSave}
                       onClick={() => {
                         setSelectedSource(source)

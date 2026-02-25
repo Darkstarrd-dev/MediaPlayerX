@@ -125,7 +125,7 @@ export function ImageMainAdReviewControls({
           onClick={() =>
             onManageReviewModeChange(manageReviewMode === "ad" ? "cover" : "ad")
           }
-          title={
+          data-tooltip-label={
             manageReviewMode === "ad"
               ? t("ui.manage.adReviewTitle")
               : t("ui.manage.coverReviewTitle")
@@ -152,7 +152,7 @@ export function ImageMainAdReviewControls({
             }`}
             type="button"
             aria-label={t("a11y.manage.strategyToggle")}
-            title={
+            data-tooltip-label={
               adReviewStrategyMode === "head-tail"
                 ? t("tip.manage.strategyHeadTailToAll")
                 : t("tip.manage.strategyAllToHeadTail")
@@ -274,7 +274,7 @@ export function ImageMainAdReviewControls({
                 reviewed: adReviewTask?.reviewed_count ?? 0,
                 total: adReviewTask?.total_count ?? 0,
               })}
-              title={t("ui.manage.progress", {
+              data-tooltip-label={t("ui.manage.progress", {
                 percent: Math.round((adReviewTask?.progress ?? 0) * 100),
                 reviewed: adReviewTask?.reviewed_count ?? 0,
                 total: adReviewTask?.total_count ?? 0,
@@ -329,7 +329,7 @@ export function ImageMainAdReviewControls({
             aria-label={
               adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
             }
-            title={
+            data-tooltip-label={
               adReviewRunning ? t("a11y.manage.pause") : t("a11y.manage.start")
             }
             disabled={
@@ -346,7 +346,7 @@ export function ImageMainAdReviewControls({
               className="manage-ad-review-icon-btn main-icon-square-btn"
               type="button"
               aria-label={t("ui.manage.removeTask")}
-              title={t("ui.manage.removeTask")}
+              data-tooltip-label={t("ui.manage.removeTask")}
               disabled={
                 pendingManageAction ||
                 adReviewPending ||
@@ -366,7 +366,7 @@ export function ImageMainAdReviewControls({
             className={`main-toolbar-ad-review-review-pill ${adReviewFocusActive ? "is-active" : ""}`}
             type="button"
             aria-label={t("a11y.manage.focus")}
-            title={t("a11y.manage.focus")}
+            data-tooltip-label={t("a11y.manage.focus")}
             disabled={
               pendingManageAction ||
               adReviewPending ||
@@ -388,7 +388,7 @@ export function ImageMainAdReviewControls({
               className="manage-ad-review-icon-btn main-icon-square-btn"
               type="button"
               aria-label={t("ui.manage.removeTask")}
-              title={t("ui.manage.removeTask")}
+              data-tooltip-label={t("ui.manage.removeTask")}
               disabled={
                 pendingManageAction || adReviewPending || adReviewDeletePending
               }
@@ -401,7 +401,7 @@ export function ImageMainAdReviewControls({
             className="manage-ad-review-icon-btn main-icon-square-btn"
             type="button"
             aria-label={t("ui.manage.delete")}
-            title={t("ui.manage.delete")}
+            data-tooltip-label={t("ui.manage.delete")}
             disabled={
               pendingManageAction ||
               adReviewPending ||
@@ -415,7 +415,7 @@ export function ImageMainAdReviewControls({
             className="manage-ad-review-icon-btn main-icon-square-btn"
             type="button"
             aria-label={t("ui.manage.resetDismiss")}
-            title={t("ui.manage.resetDismiss")}
+            data-tooltip-label={t("ui.manage.resetDismiss")}
             disabled={pendingManageAction || adReviewPending}
             onClick={onDismissAdReviewTask}
           >

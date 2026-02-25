@@ -1315,8 +1315,8 @@ function FullscreenLayer({
       onNextVideo={onNextVideo}
       onToggleVideoMute={onToggleVideoMute}
       onCycleVideoLoopMode={onCycleVideoLoopMode}
-      onToggleSubtitle={onToggleSubtitle}
-      onSelectSubtitle={onSelectSubtitle}
+      onToggleSubdata-tooltip-label={onToggleSubtitle}
+      onSelectSubdata-tooltip-label={onSelectSubtitle}
       onChangeVideoVolume={onChangeVideoVolume}
       onChangeVideoRate={onChangeVideoRate}
       onCycleVideoFitMode={onCycleVideoFitMode}

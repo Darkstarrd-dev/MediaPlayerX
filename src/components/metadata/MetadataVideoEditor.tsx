@@ -325,7 +325,7 @@ export function MetadataVideoEditor({
               : t("ui.metadata.videoInfoTab")
           }
           aria-pressed={metadataTab === "playlist"}
-          title={
+          data-tooltip-label={
             metadataTab === "info"
               ? t("ui.metadata.playlistTab")
               : t("ui.metadata.videoInfoTab")
@@ -370,7 +370,7 @@ export function MetadataVideoEditor({
                 type="button"
                 className="main-icon-square-btn"
                 aria-label={t("ui.metadata.createPlaylist")}
-                title={t("ui.metadata.createPlaylist")}
+                data-tooltip-label={t("ui.metadata.createPlaylist")}
                 onClick={() => {
                   setPlaylistNameDraft("");
                   setPlaylistNameDialogMode("create");
@@ -382,7 +382,7 @@ export function MetadataVideoEditor({
                 className="main-icon-square-btn"
                 type="button"
                 aria-label={t("ui.metadata.savePlaylist")}
-                title={t("ui.metadata.savePlaylist")}
+                data-tooltip-label={t("ui.metadata.savePlaylist")}
                 onClick={() => {
                   setPlaylistNameDraft("");
                   setPlaylistNameDialogMode("save");
@@ -394,7 +394,7 @@ export function MetadataVideoEditor({
                 type="button"
                 className="main-icon-square-btn"
                 aria-label={t("ui.metadata.deleteSavedPlaylist")}
-                title={t("ui.metadata.deleteSavedPlaylist")}
+                data-tooltip-label={t("ui.metadata.deleteSavedPlaylist")}
                 disabled={!canDeleteSelectedSavedPlaylist}
                 onClick={() => {
                   if (!canDeleteSelectedSavedPlaylist) {
@@ -458,7 +458,7 @@ export function MetadataVideoEditor({
         {metadataTab === "info" && focusedVideo ? (
           <>
             <MetadataRatingGroup
-              title={t("tip.common.rating")}
+              data-tooltip-label={t("tip.common.rating")}
               groupAriaLabel={t("a11y.metadata.videoRating")}
               clearAriaLabel={t("a11y.metadata.clearVideoRating")}
               pending={metadataPending || !editable}
@@ -783,7 +783,7 @@ export function MetadataVideoEditor({
                   type="button"
                   className="playlist-item-remove main-icon-square-btn"
                   aria-label={t("a11y.common.delete")}
-                  title={t("tip.common.delete")}
+                  data-tooltip-label={t("tip.common.delete")}
                   onClick={() => onRemoveVideoFromPlaylist(videoId)}
                 >
                   <MainUiIcon name="delete" />

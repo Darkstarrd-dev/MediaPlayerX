@@ -57,14 +57,6 @@ function resolveLabel(el: HTMLElement): string {
   if (custom && custom.trim().length > 0) {
     return custom.trim()
   }
-  const fromTitle = el.getAttribute('title')
-  if (fromTitle && fromTitle.trim().length > 0) {
-    return fromTitle.trim()
-  }
-  const detachedTitle = el.getAttribute('data-tooltip-original-title')
-  if (detachedTitle && detachedTitle.trim().length > 0) {
-    return detachedTitle.trim()
-  }
   const fromA11y = el.getAttribute('aria-label')
   if (fromA11y && fromA11y.trim().length > 0) {
     return fromA11y.trim()
@@ -215,7 +207,7 @@ function ButtonHelpOverlay({ active }: ButtonHelpOverlayProps) {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['class', 'style', 'title', 'data-tooltip-label', 'data-tooltip-original-title', 'aria-label', 'hidden'],
+      attributeFilter: ['class', 'style', 'data-tooltip-label', 'aria-label', 'hidden'],
     })
 
     window.addEventListener('resize', rafRefresh)

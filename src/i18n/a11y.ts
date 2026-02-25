@@ -4,7 +4,7 @@ import { a11yRegistry, type A11yRegistryKey } from './ariaRegistry'
 export interface A11yProps {
   'data-a11y-id': string
   'aria-label': string
-  title?: string
+  'data-tooltip-label'?: string
 }
 
 interface BuildA11yPropsParams {
@@ -30,7 +30,7 @@ export function buildA11yProps({
   }
 
   if (titleKey) {
-    props.title = t(titleKey, titleParams)
+    props['data-tooltip-label'] = t(titleKey, titleParams)
   }
 
   return props

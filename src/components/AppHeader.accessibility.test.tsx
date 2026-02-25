@@ -74,7 +74,7 @@ describe('AppHeader accessibility labels', () => {
     const settingsButton = container.querySelector('button[data-a11y-id="header.settings"]')
 
     expect(settingsButton).toBeInTheDocument()
-    expect(helpButton?.getAttribute('title')).toBe('打开帮助')
+    expect(helpButton?.getAttribute('data-tooltip-label')).toBe('打开帮助')
     expect(screen.getByRole('button', { name: '切换到深色主题' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
   })

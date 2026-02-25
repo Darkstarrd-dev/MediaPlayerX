@@ -412,12 +412,12 @@ export function FullscreenFooter({
         <div className="fullscreen-group is-left">
           {imageConvertPreviewMode ? null : (
             <>
-              <button aria-label={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} className={`video-action-btn fullscreen-action-btn ${fullscreenDisplay === 'dual' ? 'is-active' : ''}`} type="button" title={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} onClick={onToggleDualDisplay}>
+              <button aria-label={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} className={`video-action-btn fullscreen-action-btn ${fullscreenDisplay === 'dual' ? 'is-active' : ''}`} type="button" data-tooltip-label={fullscreenDisplay === 'dual' ? t('ui.fullscreen.singleDisplay') : t('ui.fullscreen.dualDisplay')} onClick={onToggleDualDisplay}>
                 <span className="fullscreen-action-content">
                   <VideoControlIcon name="dual" />
                 </span>
               </button>
-              <button aria-label={t('ui.fullscreen.swapSides')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.swapSides')} disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
+              <button aria-label={t('ui.fullscreen.swapSides')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.swapSides')} disabled={fullscreenDisplay !== 'dual'} onClick={onToggleSwapSides}>
                 <span className="fullscreen-action-content">
                   <FullscreenFooterIcon name="swapSides" />
                 </span>
@@ -496,7 +496,7 @@ export function FullscreenFooter({
                 <button
                   className="video-action-btn fullscreen-action-btn header-popover-trigger"
                   type="button"
-                  title={imageConvertPreviewLongestEdgePx != null ? `LongestEdge ${Math.round(imageConvertPreviewLongestEdgePx)} (scale disabled)` : `Scale ${imageConvertPreviewScale.toFixed(1)}`}
+                  data-tooltip-label={imageConvertPreviewLongestEdgePx != null ? `LongestEdge ${Math.round(imageConvertPreviewLongestEdgePx)} (scale disabled)` : `Scale ${imageConvertPreviewScale.toFixed(1)}`}
                   disabled={imageConvertPreviewLongestEdgePx != null}
                 >
                   <span className="fullscreen-action-content">S</span>
@@ -532,7 +532,7 @@ export function FullscreenFooter({
               <button
                 className="video-action-btn fullscreen-action-btn"
                 type="button"
-                title="应用当前缩放结果到 Longest Edge"
+                data-tooltip-label="应用当前缩放结果到 Longest Edge"
                 disabled={!canApplyScaleToLongestEdge}
                 onClick={() => {
                   onApplyImageConvertPreviewScaleToLongestEdge?.()
@@ -547,7 +547,7 @@ export function FullscreenFooter({
                 }
                 setOpenPreviewFormatPopover(false)
               }}>
-                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
+                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
                   <span className="fullscreen-action-content">F</span>
                 </button>
                 <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!showPreviewFormatPopover} role="dialog" aria-label="Format">
@@ -577,7 +577,7 @@ export function FullscreenFooter({
                   setOpenPreviewQualityPopover(false)
                 }}
               >
-                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" title={`Quality ${imageConvertPreviewQuality}`}>
+                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Quality ${imageConvertPreviewQuality}`}>
                   <span className="fullscreen-action-content">Q</span>
                 </button>
                 <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewQualityPopover} role="dialog" aria-label="Quality">
@@ -610,7 +610,7 @@ export function FullscreenFooter({
               <button
                 className={`video-action-btn fullscreen-action-btn ${showImageConvertAdjustPanel ? 'is-active' : ''}`}
                 type="button"
-                title={`调节面板 (${imageConvertPreviewAdjustProfile.mode.toUpperCase()})`}
+                data-tooltip-label={`调节面板 (${imageConvertPreviewAdjustProfile.mode.toUpperCase()})`}
                 onClick={() => {
                   onToggleImageConvertAdjustPanel?.()
                 }}
@@ -632,7 +632,7 @@ export function FullscreenFooter({
               className="video-action-btn fullscreen-action-btn header-popover-trigger"
               disabled={!zoomEnabled}
               type="button"
-              title={zoomPercent === 100 ? t('ui.fullscreen.zoomIn') : t('ui.fullscreen.reset')}
+              data-tooltip-label={zoomPercent === 100 ? t('ui.fullscreen.zoomIn') : t('ui.fullscreen.reset')}
               onClick={() => {
                 setZoomDraftValue(100)
                 onSetZoomPercent(100)
@@ -678,7 +678,7 @@ export function FullscreenFooter({
             </div>
           </div>
 
-          <button aria-label={t('ui.fullscreen.exit')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.exit')} onClick={onExit}>
+          <button aria-label={t('ui.fullscreen.exit')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.exit')} onClick={onExit}>
             <span className="fullscreen-action-content">
               <VideoControlIcon name="fullscreenCompress" />
             </span>
@@ -696,22 +696,22 @@ export function FullscreenFooter({
               </button>
             </>
           ) : null}
-          <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" title={t('ui.fullscreen.prevPage')} onClick={() => onStepFocusedPane(-1)}>
+          <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.prevPage')} onClick={() => onStepFocusedPane(-1)}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="pagePrev" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" title={t('ui.fullscreen.nextPage')} onClick={() => onStepFocusedPane(1)}>
+          <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.nextPage')} onClick={() => onStepFocusedPane(1)}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="pageNext" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" title={t('ui.fullscreen.prevPackage')} disabled={mode !== 'image'} onClick={onPrevPackage}>
+          <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.prevPackage')} disabled={mode !== 'image'} onClick={onPrevPackage}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="packagePrev" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" title={t('ui.fullscreen.nextPackage')} disabled={mode !== 'image'} onClick={onNextPackage}>
+          <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.nextPackage')} disabled={mode !== 'image'} onClick={onNextPackage}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="packageNext" />
             </span>
@@ -719,22 +719,22 @@ export function FullscreenFooter({
         </div>
 
         {!hideRightGroup ? <div className="fullscreen-group is-right">
-          <button aria-label={t('ui.fullscreen.alignUp')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.alignUp')} onClick={() => onAlignFocusedPane('up')}>
+          <button aria-label={t('ui.fullscreen.alignUp')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.alignUp')} onClick={() => onAlignFocusedPane('up')}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="alignUp" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.alignDown')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.alignDown')} onClick={() => onAlignFocusedPane('down')}>
+          <button aria-label={t('ui.fullscreen.alignDown')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.alignDown')} onClick={() => onAlignFocusedPane('down')}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="alignDown" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.alignLeft')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.alignLeft')} onClick={() => onAlignFocusedPane('left')}>
+          <button aria-label={t('ui.fullscreen.alignLeft')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.alignLeft')} onClick={() => onAlignFocusedPane('left')}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="alignLeft" />
             </span>
           </button>
-          <button aria-label={t('ui.fullscreen.alignRight')} className="video-action-btn fullscreen-action-btn" type="button" title={t('ui.fullscreen.alignRight')} onClick={() => onAlignFocusedPane('right')}>
+          <button aria-label={t('ui.fullscreen.alignRight')} className="video-action-btn fullscreen-action-btn" type="button" data-tooltip-label={t('ui.fullscreen.alignRight')} onClick={() => onAlignFocusedPane('right')}>
             <span className="fullscreen-action-content">
               <FullscreenFooterIcon name="alignRight" />
             </span>
@@ -742,7 +742,7 @@ export function FullscreenFooter({
           <button
             aria-label={t('ui.fullscreen.alignCenter')}
             className="video-action-btn fullscreen-action-btn"
-            title={t('ui.fullscreen.alignCenter')}
+            data-tooltip-label={t('ui.fullscreen.alignCenter')}
             type="button"
             disabled={!zoomEnabled}
             onClick={onResetSinglePane}

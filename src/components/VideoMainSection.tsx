@@ -436,7 +436,7 @@ function VideoMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.media.addToPlaylist")}
-                title={t("tip.media.addToPlaylist")}
+                data-tooltip-label={t("tip.media.addToPlaylist")}
                 disabled={!canManageAddToPlaylist || pendingManageAction}
                 onClick={onManageAddToPlaylist}
               >
@@ -446,7 +446,7 @@ function VideoMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.organize")}
-                title={t("tip.common.organize")}
+                data-tooltip-label={t("tip.common.organize")}
                 disabled={!canManageMoveNodes || pendingManageAction}
                 onClick={onManageGroup}
               >
@@ -456,7 +456,7 @@ function VideoMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.rename")}
-                title={t("tip.common.rename")}
+                data-tooltip-label={t("tip.common.rename")}
                 disabled={!hasAnyManageSelection || pendingManageAction}
                 onClick={onManageRename}
               >
@@ -466,7 +466,7 @@ function VideoMainSection({
                 className="vector-search-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.delete")}
-                title={t("tip.common.delete")}
+                data-tooltip-label={t("tip.common.delete")}
                 disabled={!canManageDelete || pendingManageAction}
                 onClick={onManageDelete}
               >
@@ -476,7 +476,7 @@ function VideoMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("ui.media.subtitleCleanupTitle")}
-                title={t("ui.media.subtitleCleanupTitle")}
+                data-tooltip-label={t("ui.media.subtitleCleanupTitle")}
                 disabled={!subtitleCleanupVideoId}
                 onClick={() => setSubtitleCleanupPanelOpen(true)}
               >
@@ -486,7 +486,7 @@ function VideoMainSection({
                 <span className="main-toolbar-hint">{manageOperationHint}</span>
               ) : null}
             </div>
-            <strong className="main-toolbar-summary" title={manageSummary}>
+            <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
               {manageSummary}
             </strong>
           </>
@@ -501,7 +501,7 @@ function VideoMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.syncName")}
-                title={t("tip.common.syncName")}
+                data-tooltip-label={t("tip.common.syncName")}
                 disabled={metadataPending}
                 onClick={onMetadataSyncName}
               >
@@ -526,7 +526,7 @@ function VideoMainSection({
                     className="toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.manga")}
-                    title={t("tip.media.manga")}
+                    data-tooltip-label={t("tip.media.manga")}
                     onClick={onJumpToManga}
                   >
                     <MainUiIcon name="imageMode" />
@@ -537,7 +537,7 @@ function VideoMainSection({
                     className="toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.music")}
-                    title={t("tip.media.music")}
+                    data-tooltip-label={t("tip.media.music")}
                     onClick={onJumpToMusic}
                   >
                     <MainUiIcon name="musicMode" />
@@ -708,7 +708,7 @@ function VideoMainSection({
               <button
                 aria-label={t("a11y.media.dualModeFullscreenOnly")}
                 className="video-action-btn video-action-dual"
-                title={t("tip.media.dualModeInFullscreen")}
+                data-tooltip-label={t("tip.media.dualModeInFullscreen")}
                 type="button"
               >
                 <VideoControlIcon name="dual" />
@@ -726,7 +726,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-fit"
                 aria-label={videoFitLabel}
-                title={videoFitLabel}
+                data-tooltip-label={videoFitLabel}
                 type="button"
                 onClick={onCycleVideoFitMode}
               >
@@ -786,7 +786,7 @@ function VideoMainSection({
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-subtitle"
                 aria-label={subtitleToggleLabel}
-                title={subtitleToggleLabel}
+                data-tooltip-label={subtitleToggleLabel}
                 type="button"
                 onClick={onToggleSubtitle}
               >
@@ -844,7 +844,7 @@ function VideoMainSection({
                 aria-label={t("a11y.media.playbackRate", {
                   rate: videoRate.toFixed(2),
                 })}
-                title={t("a11y.media.playbackRate", {
+                data-tooltip-label={t("a11y.media.playbackRate", {
                   rate: videoRate.toFixed(2),
                 })}
                 type="button"
@@ -882,7 +882,7 @@ function VideoMainSection({
             <button
               aria-label={t("a11y.media.hotkeyFullscreen")}
               className="video-action-btn video-action-fullscreen video-fullscreen-btn"
-              title={t("a11y.media.hotkeyFullscreen")}
+              data-tooltip-label={t("a11y.media.hotkeyFullscreen")}
               type="button"
               onClick={onEnterFullscreen}
             >
@@ -897,7 +897,7 @@ function VideoMainSection({
             <button
               aria-label={t("a11y.media.prev")}
               className="video-action-btn video-action-prev"
-              title={t("a11y.media.prev")}
+              data-tooltip-label={t("a11y.media.prev")}
               type="button"
               onClick={onPrevVideo}
             >
@@ -908,7 +908,7 @@ function VideoMainSection({
                 videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
               }
               className="video-action-btn video-action-play"
-              title={
+              data-tooltip-label={
                 videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
               }
               type="button"
@@ -919,7 +919,7 @@ function VideoMainSection({
             <button
               aria-label={t("a11y.media.next")}
               className="video-action-btn video-action-next"
-              title={t("a11y.media.next")}
+              data-tooltip-label={t("a11y.media.next")}
               type="button"
               onClick={onNextVideo}
             >
@@ -934,7 +934,7 @@ function VideoMainSection({
             <button
               aria-label={t("a11y.media.saveAsCover")}
               className="video-action-btn video-action-save-cover"
-              title={t("a11y.media.saveAsCover")}
+              data-tooltip-label={t("a11y.media.saveAsCover")}
               type="button"
               onClick={onSaveCover}
             >
@@ -955,7 +955,7 @@ function VideoMainSection({
                   aria-haspopup="dialog"
                   aria-label={t("a11y.media.playlistFullscreenOnly")}
                   className="video-action-btn video-action-playlist"
-                  title={t("tip.media.playlistInFullscreen")}
+                  data-tooltip-label={t("tip.media.playlistInFullscreen")}
                   type="button"
                 >
                   <VideoControlIcon name="playlist" />
@@ -982,7 +982,7 @@ function VideoMainSection({
                 label: videoLoopModeLabel,
               })}
               className="video-action-btn video-action-loop-mode"
-              title={t("tip.media.videoLoopMode", {
+              data-tooltip-label={t("tip.media.videoLoopMode", {
                 label: videoLoopModeLabel,
               })}
               type="button"
@@ -1007,7 +1007,7 @@ function VideoMainSection({
                 aria-label={
                   videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
                 }
-                title={
+                data-tooltip-label={
                   videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
                 }
                 type="button"

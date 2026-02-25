@@ -89,7 +89,7 @@ export function renderSettingsSystemSection(
                 ? params.t("a11y.settings.loadingDiagnostics")
                 : params.t("a11y.settings.refreshDiagnostics")
             }
-            title={
+            data-tooltip-label={
               params.runtimeInfoLoading
                 ? params.t("a11y.settings.loadingDiagnostics")
                 : params.t("a11y.settings.refreshDiagnostics")
@@ -193,7 +193,7 @@ export function renderSettingsSystemSection(
                 ? params.t("a11y.settings.loadingDiagnostics")
                 : params.t("a11y.settings.refreshDiagnostics")
             }
-            title={
+            data-tooltip-label={
               params.preferenceDebugLoading
                 ? params.t("a11y.settings.loadingDiagnostics")
                 : params.t("a11y.settings.refreshDiagnostics")

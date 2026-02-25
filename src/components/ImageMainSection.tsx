@@ -1037,7 +1037,7 @@ function ImageMainSection({
                     ? t("a11y.common.clearSelection")
                     : t("a11y.media.selectAllPage")
                 }
-                title={
+                data-tooltip-label={
                   hasAnyManageSelection
                     ? t("tip.common.clearSelection")
                     : t("tip.media.selectAllPage")
@@ -1060,7 +1060,7 @@ function ImageMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.hide")}
-                title={t("tip.common.hide")}
+                data-tooltip-label={t("tip.common.hide")}
                 disabled={!canManageHide || convertInteractionLocked}
                 onClick={onManageHide}
               >
@@ -1070,7 +1070,7 @@ function ImageMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.unhide")}
-                title={t("tip.common.unhide")}
+                data-tooltip-label={t("tip.common.unhide")}
                 disabled={!canManageUnhide || convertInteractionLocked}
                 onClick={onManageUnhide}
               >
@@ -1080,7 +1080,7 @@ function ImageMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.organize")}
-                title={t("tip.common.organize")}
+                data-tooltip-label={t("tip.common.organize")}
                 disabled={!canManageMoveNodes || convertInteractionLocked}
                 onClick={onManageGroup}
               >
@@ -1090,7 +1090,7 @@ function ImageMainSection({
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.rename")}
-                title={t("tip.common.rename")}
+                data-tooltip-label={t("tip.common.rename")}
                 disabled={!hasAnyManageSelection || convertInteractionLocked}
                 onClick={onManageRename}
               >
@@ -1104,7 +1104,7 @@ function ImageMainSection({
                 }`}
                 type="button"
                 aria-label="RS"
-                title="RS"
+                data-tooltip-label="RS"
                 disabled={!canManageImageConvert || convertInteractionLocked}
                 onClick={toggleImageConvertPanel}
               >
@@ -1118,7 +1118,7 @@ function ImageMainSection({
                     ? t("ui.manage.deleting")
                     : t("a11y.common.delete")
                 }
-                title={
+                data-tooltip-label={
                   adReviewDeletePending
                     ? t("ui.manage.deleting")
                     : t("tip.common.delete")
@@ -1133,7 +1133,7 @@ function ImageMainSection({
                   className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? "is-active" : ""}`}
                   type="button"
                   aria-label={t("a11y.manage.adReview")}
-                  title={t("tip.manage.adReview")}
+                  data-tooltip-label={t("tip.manage.adReview")}
                   disabled={convertInteractionLocked}
                   onClick={onToggleAdReviewPanel}
                 >
@@ -1244,7 +1244,7 @@ function ImageMainSection({
               />
             </div>
             <div className="toolbar-actions toolbar-actions-manage-secondary">
-              <strong className="main-toolbar-summary" title={manageSummary}>
+              <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
                 {manageSummary}
               </strong>
               <ImageMainScaleControl
