@@ -106,11 +106,11 @@ function MusicMainSection({
   const shaderListTargetShaderId = shaderListTargetLayer === 'foreground'
     ? musicVisualizerLayeredForegroundShaderId
     : musicVisualizerLayeredBackgroundShaderId
-  const shaderListTargetEnabled = shaderListTargetLayer === 'foreground'
-    ? musicVisualizerLayeredForegroundEnabled
-    : musicVisualizerLayeredBackgroundEnabled
-
-  const hasNoLayerEnabled = !musicVisualizerLayeredBackgroundEnabled && !musicVisualizerLayeredForegroundEnabled
+  const hasForegroundShaderSelected = musicVisualizerLayeredForegroundShaderId.trim().length > 0
+  const hasBackgroundShaderSelected = musicVisualizerLayeredBackgroundShaderId.trim().length > 0
+  const effectiveForegroundLayerEnabled = musicVisualizerLayeredForegroundEnabled && hasForegroundShaderSelected
+  const effectiveBackgroundLayerEnabled = musicVisualizerLayeredBackgroundEnabled && hasBackgroundShaderSelected
+  const hasNoLayerEnabled = !effectiveBackgroundLayerEnabled && !effectiveForegroundLayerEnabled
 
   const runtimeRenderLongEdgePx = musicVisualizerShaderSettings.renderLongEdgePx
   const runtimeRenderScaleCoeff = musicVisualizerShaderSettings.renderScaleCoeff ?? 2
@@ -187,8 +187,8 @@ function MusicMainSection({
     renderScaleCoeff: runtimeRenderScaleCoeff,
     layeredBackgroundShaderId: musicVisualizerLayeredBackgroundShaderId,
     layeredForegroundShaderId: musicVisualizerLayeredForegroundShaderId,
-    layeredBackgroundEnabled: musicVisualizerLayeredBackgroundEnabled,
-    layeredForegroundEnabled: musicVisualizerLayeredForegroundEnabled,
+    layeredBackgroundEnabled: effectiveBackgroundLayerEnabled,
+    layeredForegroundEnabled: effectiveForegroundLayerEnabled,
     layeredBackgroundRenderScaleCoeff: backgroundLayerRenderScaleCoeff,
     layeredForegroundRenderScaleCoeff: foregroundLayerRenderScaleCoeff,
     layeredForegroundOffsetX: musicVisualizerLayeredForegroundOffsetX,
@@ -249,21 +249,21 @@ function MusicMainSection({
   }, [musicVisualizerLayeredForegroundShaderId, t])
 
   const selectedShaderLabel = useMemo(() => {
-    if (musicVisualizerLayeredBackgroundEnabled && musicVisualizerLayeredForegroundEnabled) {
+    if (effectiveBackgroundLayerEnabled && effectiveForegroundLayerEnabled) {
       return `${layeredBackgroundShaderLabel} + ${layeredForegroundShaderLabel}`
     }
-    if (musicVisualizerLayeredBackgroundEnabled) {
+    if (effectiveBackgroundLayerEnabled) {
       return layeredBackgroundShaderLabel
     }
-    if (musicVisualizerLayeredForegroundEnabled) {
+    if (effectiveForegroundLayerEnabled) {
       return layeredForegroundShaderLabel
     }
     return t('ui.music.transparent')
   }, [
+    effectiveBackgroundLayerEnabled,
+    effectiveForegroundLayerEnabled,
     layeredBackgroundShaderLabel,
     layeredForegroundShaderLabel,
-    musicVisualizerLayeredBackgroundEnabled,
-    musicVisualizerLayeredForegroundEnabled,
     t,
   ])
 
@@ -481,17 +481,36 @@ function MusicMainSection({
   })
   const fullscreenViewport = useFullscreenWindowViewport(fullscreenActive)
 
-  const toggleShaderListTargetLayer = () => {
-    setShaderListTargetLayer((value) => (value === 'foreground' ? 'background' : 'foreground'))
-  }
-
-  const toggleShaderListTargetEnabled = () => {
-    if (shaderListTargetLayer === 'foreground') {
+  const toggleShaderLayerEnabled = useCallback((layer: 'foreground' | 'background') => {
+    if (layer === 'foreground') {
+      if (!hasForegroundShaderSelected) {
+        onMusicVisualizerShaderSettingsChange({ layeredForegroundEnabled: false })
+        return
+      }
       onMusicVisualizerShaderSettingsChange({ layeredForegroundEnabled: !musicVisualizerLayeredForegroundEnabled })
       return
     }
+    if (!hasBackgroundShaderSelected) {
+      onMusicVisualizerShaderSettingsChange({ layeredBackgroundEnabled: false })
+      return
+    }
     onMusicVisualizerShaderSettingsChange({ layeredBackgroundEnabled: !musicVisualizerLayeredBackgroundEnabled })
-  }
+  }, [
+    hasBackgroundShaderSelected,
+    hasForegroundShaderSelected,
+    musicVisualizerLayeredBackgroundEnabled,
+    musicVisualizerLayeredForegroundEnabled,
+    onMusicVisualizerShaderSettingsChange,
+  ])
+
+  const shaderOptionWidthStyle = useMemo(() => {
+    const longestLabelLength = MUSIC_VISUALIZER_SHADERS.reduce((maxLength, shader) => {
+      return Math.max(maxLength, shader.label.length)
+    }, 8)
+    return {
+      '--mpx-shader-option-width-ch': `${longestLabelLength}`,
+    } as CSSProperties
+  }, [])
 
   const applyRenderLongEdgeDraft = () => {
     const parsed = Number(renderLongEdgeDraft)
@@ -648,42 +667,68 @@ function MusicMainSection({
             >
               <MusicControlIcon name="shaderList" />
             </button>
-            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={!popoverDebugPinned && openPopover !== 'shader'} id="music-main-popover-shader" role="dialog">
-              <span className="music-ctrl-panel-title">{t('ui.music.shaderTitle')}</span>
+            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={!popoverDebugPinned && openPopover !== 'shader'} id="music-main-popover-shader" role="dialog" style={shaderOptionWidthStyle}>
               <div className="music-ctrl-shader-toolbar">
-                <button
-                  aria-label={t('a11y.music.shaderToggleLayer')}
-                  className="music-ctrl-shader-toolbar-btn"
-                  title={t('a11y.music.shaderToggleLayer')}
-                  type="button"
-                  onClick={toggleShaderListTargetLayer}
-                >
-                  {shaderListTargetLayer === 'foreground' ? 'F' : 'B'}
-                </button>
-                <button
-                  aria-label={t('a11y.music.shaderToggleEnabled')}
-                  className={`music-ctrl-shader-toolbar-btn ${shaderListTargetEnabled ? 'is-on' : 'is-off'}`}
-                  title={t('a11y.music.shaderToggleEnabled')}
-                  type="button"
-                  onClick={toggleShaderListTargetEnabled}
-                >
-                  {shaderListTargetEnabled ? t('ui.music.enabled') : t('ui.music.disabled')}
-                </button>
+                <div className="music-ctrl-shader-layer-toggle">
+                  <button
+                    aria-label={t('a11y.music.shaderToggleLayer')}
+                    aria-pressed={shaderListTargetLayer === 'foreground'}
+                    className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'foreground' ? 'is-on' : 'is-off'}`}
+                    title={t('a11y.music.shaderToggleLayer')}
+                    type="button"
+                    onClick={() => setShaderListTargetLayer('foreground')}
+                  >
+                    F
+                  </button>
+                  <button
+                    aria-label={t('a11y.music.shaderToggleEnabled')}
+                    aria-pressed={effectiveForegroundLayerEnabled}
+                    className={`music-ctrl-shader-toolbar-btn is-power ${effectiveForegroundLayerEnabled ? 'is-on' : 'is-off'}`}
+                    title={t('a11y.music.shaderToggleEnabled')}
+                    type="button"
+                    onClick={() => toggleShaderLayerEnabled('foreground')}
+                  >
+                    {effectiveForegroundLayerEnabled ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+                <div className="music-ctrl-shader-layer-toggle">
+                  <button
+                    aria-label={t('a11y.music.shaderToggleLayer')}
+                    aria-pressed={shaderListTargetLayer === 'background'}
+                    className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'background' ? 'is-on' : 'is-off'}`}
+                    title={t('a11y.music.shaderToggleLayer')}
+                    type="button"
+                    onClick={() => setShaderListTargetLayer('background')}
+                  >
+                    B
+                  </button>
+                  <button
+                    aria-label={t('a11y.music.shaderToggleEnabled')}
+                    aria-pressed={effectiveBackgroundLayerEnabled}
+                    className={`music-ctrl-shader-toolbar-btn is-power ${effectiveBackgroundLayerEnabled ? 'is-on' : 'is-off'}`}
+                    title={t('a11y.music.shaderToggleEnabled')}
+                    type="button"
+                    onClick={() => toggleShaderLayerEnabled('background')}
+                  >
+                    {effectiveBackgroundLayerEnabled ? 'ON' : 'OFF'}
+                  </button>
+                </div>
               </div>
               <div className="music-ctrl-panel-options">
                 {MUSIC_VISUALIZER_SHADERS.length > 0 ? (
                   MUSIC_VISUALIZER_SHADERS.map((shader) => (
                     <button
                       aria-pressed={shaderListTargetShaderId === shader.id}
-                      className={`music-ctrl-panel-option ${shaderListTargetShaderId === shader.id ? 'is-active' : ''}`}
+                      className={`music-ctrl-panel-option ${shaderListTargetShaderId === shader.id ? 'is-active' : ''}${musicVisualizerLayeredForegroundShaderId === shader.id ? ' is-foreground-selected' : ''}${musicVisualizerLayeredBackgroundShaderId === shader.id ? ' is-background-selected' : ''}`}
                       key={shader.id}
                       type="button"
                       onClick={() => {
-                        onMusicVisualizerLayerShaderIdChange(shaderListTargetLayer, shader.id)
+                        const isSelected = shaderListTargetShaderId === shader.id
+                        onMusicVisualizerLayerShaderIdChange(shaderListTargetLayer, isSelected ? '' : shader.id)
                         closePopover()
                       }}
                     >
-                      {shader.label}
+                      <span className="music-ctrl-option-label">{shader.label}</span>
                     </button>
                   ))
                 ) : (

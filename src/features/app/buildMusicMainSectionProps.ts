@@ -305,13 +305,9 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     },
     onMusicVisualizerLayerShaderIdChange: (layer: 'foreground' | 'background', value: string) => {
       const shaderId = value.trim().slice(0, 64)
-      if (!shaderId) {
-        return
-      }
-
       const current = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
       const nextSettingsById = { ...params.musicVisualizerShaderSettingsById }
-      if (!nextSettingsById[shaderId]) {
+      if (shaderId && !nextSettingsById[shaderId]) {
         nextSettingsById[shaderId] = { ...fallbackShaderSettings }
       }
 
