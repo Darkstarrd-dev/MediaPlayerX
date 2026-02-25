@@ -26,6 +26,10 @@ interface ParsedTitleFields {
   artist: string
 }
 
+interface ParseTitleOptions {
+  bracketOnlyAsArtist?: boolean
+}
+
 export function parseExternalMetadataToHitomi(source: ExternalMetadataResultItemDto): ParsedExternalMetadata {
   const raw = source.raw && typeof source.raw === 'object' ? (source.raw as Record<string, unknown>) : {}
   const sourceSite = source.source
@@ -34,8 +38,11 @@ export function parseExternalMetadataToHitomi(source: ExternalMetadataResultItem
   const englishTitle = sourceSite === 'ehentai' ? asString(raw.title) || source.title : source.title
   const japaneseTitle = sourceSite === 'ehentai' ? asString(raw.title_jpn) || source.title_original || '' : source.title_original || ''
 
-  const englishParsed = parseTitle(englishTitle)
-  const japaneseParsed = parseTitle(japaneseTitle)
+  const parseTitleOptions: ParseTitleOptions = {
+    bracketOnlyAsArtist: sourceSite === 'nhentai',
+  }
+  const englishParsed = parseTitle(englishTitle, parseTitleOptions)
+  const japaneseParsed = parseTitle(japaneseTitle, parseTitleOptions)
 
   let englishArtist = englishParsed.artist
   let englishGroup = englishParsed.group
@@ -72,7 +79,7 @@ export function parseExternalMetadataToHitomi(source: ExternalMetadataResultItem
   return output
 }
 
-function parseTitle(value: string): ParsedTitleFields {
+function parseTitle(value: string, options?: ParseTitleOptions): ParsedTitleFields {
   const fullTitle = value.trim()
   if (!fullTitle) {
     return {
@@ -93,8 +100,9 @@ function parseTitle(value: string): ParsedTitleFields {
 
   const groupBlock = groupMatch[1].trim()
   const artistMatch = groupBlock.match(/^(.+?)\s*\((.+?)\)$/)
-  const group = artistMatch ? artistMatch[1].trim() : groupBlock
-  const artist = artistMatch ? artistMatch[2].trim() : ''
+  const bracketOnlyAsArtist = options?.bracketOnlyAsArtist ?? false
+  const group = artistMatch ? artistMatch[1].trim() : bracketOnlyAsArtist ? '' : groupBlock
+  const artist = artistMatch ? artistMatch[2].trim() : bracketOnlyAsArtist ? groupBlock : ''
 
   const firstBracketEnd = fullTitle.indexOf(']')
   const title = firstBracketEnd >= 0 ? fullTitle.slice(firstBracketEnd + 1).trim() : fullTitle

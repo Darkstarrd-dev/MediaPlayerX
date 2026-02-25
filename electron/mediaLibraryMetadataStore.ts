@@ -163,7 +163,7 @@ export class MediaLibraryMetadataStore {
   readSourceExternalMetadata(): Map<
     string,
     {
-      sourceSite: 'nhentai' | 'ehentai'
+      sourceSite: 'nhentai' | 'ehentai' | 'others'
       sourceUrl: string
       sourceRemoteId: string
       sourceToken: string
@@ -508,7 +508,7 @@ export class MediaLibraryMetadataStore {
   writeSourceExternalMetadata(
     sourceId: string,
     payload: {
-      sourceSite: 'nhentai' | 'ehentai'
+      sourceSite: 'nhentai' | 'ehentai' | 'others'
       sourceUrl: string
       sourceRemoteId: string
       sourceToken: string

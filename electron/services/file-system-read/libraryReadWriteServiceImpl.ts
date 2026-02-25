@@ -1,4 +1,5 @@
 import { promises as fs } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import axios from "axios";
 
@@ -502,34 +503,39 @@ export class LibraryReadWriteService {
       rawJson: externalMetadata.raw_json,
     });
 
+    source.external_metadata = externalMetadata;
+
     let sourceCover = source.source_cover ?? null;
     const thumbUrl = request.thumb_url?.trim() ?? "";
     if (thumbUrl.length > 0) {
-      const extension = resolveCoverFileExtension(thumbUrl);
-      const fileHash = createHash("sha1").update(thumbUrl).digest("hex");
-      const targetDir = path.join(this.options.coverOutputRootDir, "source");
-      const outputPath = path.join(
-        targetDir,
-        `${source.id}-${fileHash}${extension}`,
-      );
-      await fs.mkdir(targetDir, { recursive: true });
-      const response = await axios.get<ArrayBuffer>(thumbUrl, {
-        responseType: "arraybuffer",
-        timeout: 12_000,
-      });
-      await fs.writeFile(outputPath, Buffer.from(response.data));
+      try {
+        const extension = resolveCoverFileExtension(thumbUrl);
+        const fileHash = createHash("sha1").update(thumbUrl).digest("hex");
+        const targetDir = path.join(this.options.coverOutputRootDir, "source");
+        const outputPath = path.join(
+          targetDir,
+          `${source.id}-${fileHash}${extension}`,
+        );
+        await fs.mkdir(targetDir, { recursive: true });
+        const response = await axios.get<ArrayBuffer>(thumbUrl, {
+          responseType: "arraybuffer",
+          timeout: 12_000,
+        });
+        await fs.writeFile(outputPath, Buffer.from(response.data));
 
-      const coverColor =
-        sourceCover?.cover_color ?? resolveFallbackCoverColor(source.id);
-      sourceCover = {
-        cover_color: coverColor,
-        cover_image_path: outputPath,
-        updated_at_ms: updatedAtMs,
-      };
-      this.options.database.writeSourceCover(source.id, coverColor, outputPath);
+        const coverColor =
+          sourceCover?.cover_color ?? resolveFallbackCoverColor(source.id);
+        sourceCover = {
+          cover_color: coverColor,
+          cover_image_path: outputPath,
+          updated_at_ms: updatedAtMs,
+        };
+        this.options.database.writeSourceCover(source.id, coverColor, outputPath);
+      } catch (error) {
+        void error;
+      }
     }
 
-    source.external_metadata = externalMetadata;
     source.source_cover = sourceCover;
 
     this.options.emitLibraryChanged({
@@ -760,10 +766,7 @@ export class LibraryReadWriteService {
               : 1,
         };
       })
-      .filter(
-        (item): item is NonNullable<typeof item> =>
-          Boolean(item) && item.score === 0,
-      )
+      .flatMap((item) => (item !== null && item.score === 0 ? [item] : []))
       .sort(
         (left, right) =>
           left.score - right.score ||

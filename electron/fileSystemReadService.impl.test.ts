@@ -1,6 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
+import { createServer } from "node:http";
 import { createRequire } from "node:module";
 
 import { afterEach, describe, expect, it } from "vitest";
@@ -19,7 +20,10 @@ import {
 const require = createRequire(process.execPath);
 const { DatabaseSync } = require("node:sqlite") as {
   DatabaseSync: new (path: string) => {
-    prepare: (sql: string) => { all: (...params: unknown[]) => unknown };
+    prepare: (sql: string) => {
+      all: (...params: unknown[]) => unknown;
+      get: (...params: unknown[]) => unknown;
+    };
     close: () => void;
   };
 };
@@ -223,13 +227,20 @@ describe("FileSystemMediaReadService", () => {
 
     expect(packageDto).toBeTruthy();
     expect(packageDto?.images.length).toBe(2);
-    expect(packageDto?.images[0]?.media_locator.kind).toBe("archive-entry");
-    expect(packageDto?.images[0]?.media_locator.entry_name).toBe(
-      "pages/0001.jpg",
-    );
-    expect(packageDto?.images[1]?.media_locator.entry_name).toBe(
-      "pages/0002.png",
-    );
+    const firstLocator = packageDto?.images[0]?.media_locator;
+    const secondLocator = packageDto?.images[1]?.media_locator;
+    expect(firstLocator?.kind).toBe("archive-entry");
+    expect(secondLocator?.kind).toBe("archive-entry");
+    if (
+      !firstLocator ||
+      firstLocator.kind !== "archive-entry" ||
+      !secondLocator ||
+      secondLocator.kind !== "archive-entry"
+    ) {
+      throw new Error("zip image locator kind mismatch");
+    }
+    expect(firstLocator.entry_name).toBe("pages/0001.jpg");
+    expect(secondLocator.entry_name).toBe("pages/0002.png");
 
     const resolved = await service.resolveMediaResource({
       locator: {
@@ -589,6 +600,108 @@ describe("FileSystemMediaReadService", () => {
     expect(refreshedSource?.work_title).toBe("新的作品名");
     expect(refreshedSource?.package_name).toBe("新的作品名.zip");
     expect(refreshedSource?.display_name).toBe("新的作品名");
+  });
+
+  it("外部元数据写入在封面下载失败时仍会成功持久化", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-write-external-meta-"),
+    );
+    createdRoots.push(root);
+
+    const zipPath = path.join(root, "meta_external_pkg.zip");
+    await writeStoredZip(zipPath, [
+      { name: "001.jpg", content: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) },
+    ]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-files", [zipPath]);
+
+    const snapshot = await service.readLibrarySnapshot();
+    const source = snapshot.image_packages.find(
+      (item) => item.absolute_path === zipPath,
+    );
+    expect(source).toBeTruthy();
+    if (!source) {
+      throw new Error("snapshot missing zip source");
+    }
+
+    const server = createServer((_request, response) => {
+      response.statusCode = 500;
+      response.end("thumbnail unavailable");
+    });
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", () => resolve());
+    });
+
+    try {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        throw new Error("thumbnail server unavailable");
+      }
+      const thumbUrl = `http://127.0.0.1:${address.port}/cover.jpg`;
+
+      const updated = await service.writePackageExternalMetadata({
+        package_id: source.id,
+        source_site: "nhentai",
+        source_url: "https://nhentai.net/g/474755/",
+        source_remote_id: "474755",
+        source_token: "",
+        title: "Jotaika Kishi Belveed / Feminized Knight Belveed",
+        title_jpn: "女体化騎士ベルウィード",
+        group_name: "",
+        group_name_jpn: "天路あや",
+        artist: "tenro aya",
+        artist_jpn: "",
+        posted: "2023-09-24",
+        rating: null,
+        favorited: "2141",
+        tags: {
+          parody: "ero trap dungeon",
+          character: "",
+          tag: "big breasts, gender bender",
+        },
+        raw_json: JSON.stringify({ source: "unit-test" }),
+        thumb_url: thumbUrl,
+      });
+
+      expect(updated.package.external_metadata?.source_site).toBe("nhentai");
+      expect(updated.package.external_metadata?.source_remote_id).toBe("474755");
+      expect(updated.package.external_metadata?.title).toBe(
+        "Jotaika Kishi Belveed / Feminized Knight Belveed",
+      );
+      expect(updated.package.external_metadata?.title_jpn).toBe(
+        "女体化騎士ベルウィード",
+      );
+      expect(updated.package.external_metadata?.group_name_jpn).toBe("天路あや");
+      expect(updated.package.external_metadata?.artist).toBe("tenro aya");
+      expect(updated.package.external_metadata?.favorited).toBe("2141");
+      expect(updated.package.source_cover).toBeNull();
+
+      service.invalidateCache();
+      const refreshed = await service.readLibrarySnapshot();
+      const refreshedSource = refreshed.image_packages.find(
+        (item) => item.id === source.id,
+      );
+      expect(refreshedSource?.external_metadata?.source_site).toBe("nhentai");
+      expect(refreshedSource?.external_metadata?.title_jpn).toBe(
+        "女体化騎士ベルウィード",
+      );
+      expect(refreshedSource?.external_metadata?.group_name_jpn).toBe("天路あや");
+      expect(refreshedSource?.external_metadata?.artist).toBe("tenro aya");
+      expect(refreshedSource?.external_metadata?.posted).toBe("2023-09-24");
+      expect(refreshedSource?.external_metadata?.favorited).toBe("2141");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+    }
   });
 
   it("播放列表写入后可在服务重启后恢复", async () => {
