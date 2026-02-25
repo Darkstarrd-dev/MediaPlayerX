@@ -133,6 +133,23 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onAddFocusedVideoToPlaylist).not.toHaveBeenCalled()
   })
 
+  it('fullscreen dual + video focus in video mode still maps autoplay shortcut to autoplay toggle', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    params.imageFocusActive = false
+    params.videoShortcutActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleAutoplay).toHaveBeenCalledTimes(1)
+    expect(params.onAddFocusedVideoToPlaylist).not.toHaveBeenCalled()
+  })
+
   it('outside fullscreen, image mode maps KeyS to image-convert shortcut trigger', () => {
     const params = createBaseParams()
     renderHook(() => useShortcutEngine(params))

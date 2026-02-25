@@ -1,0 +1,129 @@
+import { act, renderHook } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type { Dispatch, SetStateAction } from 'react'
+
+import type { FocusedImageRef, ImageItem, ImagePackage } from '../../types'
+import { useImageBrowserViewModel } from './useImageBrowserViewModel'
+
+function createImage(packageId: string, ordinal: number): ImageItem {
+  return {
+    id: `${packageId}-img-${ordinal}`,
+    ordinal,
+    width: 1200,
+    height: 800,
+    sizeKb: 512,
+    cluster: 0,
+    color: '#223344',
+    mediaLocator: {
+      kind: 'filesystem',
+      absolutePath: `D:/images/${packageId}/${ordinal}.jpg`,
+      extension: '.jpg',
+      mediaType: 'image',
+      mimeType: 'image/jpeg',
+    },
+  }
+}
+
+function createPackage(packageId: string, imageCount: number): ImagePackage {
+  return {
+    id: packageId,
+    packageName: packageId,
+    displayName: packageId,
+    absolutePath: `D:/images/${packageId}`,
+    treePath: ['D:', 'images', packageId],
+    workTitle: packageId,
+    circle: 'circle',
+    author: 'author',
+    tags: [],
+    images: Array.from({ length: imageCount }, (_, index) => createImage(packageId, index + 1)),
+  }
+}
+
+function applyStateUpdater<T>(
+  updater: React.SetStateAction<T>,
+  previous: T,
+): T {
+  if (typeof updater === 'function') {
+    return (updater as (prevState: T) => T)(previous)
+  }
+  return updater
+}
+
+function asMock<T extends (...args: never[]) => unknown>(value: T) {
+  return value as unknown as ReturnType<typeof vi.fn>
+}
+
+function createParams(overrides: Partial<Parameters<typeof useImageBrowserViewModel>[0]> = {}): Parameters<typeof useImageBrowserViewModel>[0] {
+  const pkg = createPackage('pkg-1', 3)
+  const orderedRefs: FocusedImageRef[] = pkg.images.map((_, imageIndex) => ({
+    packageId: pkg.id,
+    imageIndex,
+  }))
+
+  return {
+    mode: 'video',
+    selectedPackageId: pkg.id,
+    setSelectedPackageId: vi.fn(),
+    imageFocusActive: true,
+    setImageFocusActive: vi.fn(),
+    focusByPackage: { [pkg.id]: 0 },
+    setFocusByPackage: vi.fn(),
+    pageByPackage: { [pkg.id]: 0 },
+    setPageByPackage: vi.fn(),
+    vectorSearchResults: [],
+    vectorFocusIndex: 0,
+    setVectorFocusIndex: vi.fn(),
+    vectorPage: 0,
+    setVectorPage: vi.fn(),
+    gradeByPackage: {},
+    setGradeByPackage: vi.fn(),
+    packageById: new Map([[pkg.id, pkg]]),
+    orderedRootScopedPackages: [pkg],
+    orderedRootScopedImageRefs: orderedRefs,
+    vectorResultsActive: false,
+    showNamesOnly: false,
+    thumbnailColumns: 4,
+    pagedPageSize: 40,
+    fullscreenActive: true,
+    fullscreenDisplay: 'dual',
+    fullscreenVideoFocus: true,
+    ...overrides,
+  }
+}
+
+describe('autoplay-regression/image-browser-view-model', () => {
+  it('dual + video focus 时，autoplay 来源仍可推进图片焦点', () => {
+    const params = createParams()
+    const { result } = renderHook(() => useImageBrowserViewModel(params))
+
+    act(() => {
+      result.current.moveImage(1, 'autoplay')
+    })
+
+    const setFocusByPackageMock = asMock(
+      params.setFocusByPackage as Dispatch<SetStateAction<Record<string, number>>>,
+    )
+    expect(setFocusByPackageMock).toHaveBeenCalledTimes(1)
+    const updater = setFocusByPackageMock.mock.calls[0]?.[0]
+    const nextFocus = applyStateUpdater(updater, { 'pkg-1': 0 })
+    expect(nextFocus['pkg-1']).toBe(1)
+  })
+
+  it('dual + video focus 时，manual 来源仍遵循焦点限制不推进', () => {
+    const params = createParams()
+    const { result } = renderHook(() => useImageBrowserViewModel(params))
+
+    act(() => {
+      result.current.moveImage(1)
+    })
+
+    const setFocusByPackageMock = asMock(
+      params.setFocusByPackage as Dispatch<SetStateAction<Record<string, number>>>,
+    )
+    const setPageByPackageMock = asMock(
+      params.setPageByPackage as Dispatch<SetStateAction<Record<string, number>>>,
+    )
+    expect(setFocusByPackageMock).not.toHaveBeenCalled()
+    expect(setPageByPackageMock).not.toHaveBeenCalled()
+  })
+})

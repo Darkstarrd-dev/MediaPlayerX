@@ -22,6 +22,10 @@ import type {
   VideoItem,
 } from "../../types";
 import { clamp } from "../../utils/ui";
+import {
+  resolveFullscreenImageAutoplayEnabled,
+  type FullscreenImageNavigationSource,
+} from "../../utils/fullscreenAutoplay";
 
 const TOP_PANEL_MIN_HEIGHT = 80;
 const TOP_PANEL_MAX_HEIGHT = 360;
@@ -71,7 +75,7 @@ interface UseAppEffectsParams {
   fullscreenVideoFocus: boolean;
   autoPlayEnabled: boolean;
   autoPlayInterval: number;
-  moveImage: (delta: number) => void;
+  moveImage: (delta: number, source?: FullscreenImageNavigationSource) => void;
   vectorMode: boolean;
   manageMode: boolean;
   metadataManageMode: boolean;
@@ -151,7 +155,6 @@ export function useAppEffects({
   ensureSidebarNodeVisible,
   fullscreenActive,
   fullscreenDisplay,
-  fullscreenVideoFocus,
   autoPlayEnabled,
   autoPlayInterval,
   moveImage,
@@ -721,16 +724,16 @@ export function useAppEffects({
   }, [fullscreenActive]);
 
   useEffect(() => {
-    const canAutoplayImages =
-      fullscreenActive &&
-      (fullscreenDisplay === "image-only" ||
-        (fullscreenDisplay === "dual" && !fullscreenVideoFocus));
+    const canAutoplayImages = resolveFullscreenImageAutoplayEnabled({
+      fullscreenActive,
+      fullscreenDisplay,
+    });
     if (!canAutoplayImages || !autoPlayEnabled) {
       return;
     }
 
     const timer = window.setInterval(() => {
-      moveImage(1);
+      moveImage(1, "autoplay");
     }, autoPlayInterval * 1000);
 
     return () => window.clearInterval(timer);
@@ -739,7 +742,6 @@ export function useAppEffects({
     autoPlayInterval,
     fullscreenActive,
     fullscreenDisplay,
-    fullscreenVideoFocus,
     moveImage,
   ]);
 

@@ -2,6 +2,10 @@ import { useCallback, useMemo, type Dispatch, type SetStateAction } from 'react'
 
 import type { BrowserMode, FocusedImageRef, ImageItem, ImagePackage, VectorCandidate } from '../../types'
 import { clamp } from '../../utils/ui'
+import {
+  resolveFullscreenImageNavigationEnabled,
+  type FullscreenImageNavigationSource,
+} from '../../utils/fullscreenAutoplay'
 
 interface UseImageBrowserViewModelParams {
   mode: BrowserMode
@@ -45,7 +49,7 @@ interface UseImageBrowserViewModelResult {
   pageStart: number
   refsInPage: FocusedImageRef[]
   setImageFocus: (packageId: string, imageIndex: number) => void
-  moveImage: (delta: number) => void
+  moveImage: (delta: number, source?: FullscreenImageNavigationSource) => void
   moveImageVertical: (direction: 'up' | 'down') => void
   jumpImageBoundary: (target: 'first' | 'last') => void
   goPackage: (delta: number) => void
@@ -83,8 +87,16 @@ export function useImageBrowserViewModel({
   fullscreenDisplay,
   fullscreenVideoFocus,
 }: UseImageBrowserViewModelParams): UseImageBrowserViewModelResult {
+  const canNavigateImageInFullscreenManualContext =
+    resolveFullscreenImageNavigationEnabled({
+      fullscreenActive,
+      fullscreenDisplay,
+      fullscreenVideoFocus,
+      source: 'manual',
+    })
+
   const canNavigateImageInCurrentContext =
-    mode === 'image' || (fullscreenActive && (fullscreenDisplay === 'image-only' || (fullscreenDisplay === 'dual' && !fullscreenVideoFocus)))
+    mode === 'image' || canNavigateImageInFullscreenManualContext
 
   const activePackage = packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null
 
@@ -177,8 +189,18 @@ export function useImageBrowserViewModel({
   )
 
   const moveImage = useCallback(
-    (delta: number) => {
-      if (!canNavigateImageInCurrentContext) {
+    (delta: number, source: FullscreenImageNavigationSource = 'manual') => {
+      const canNavigateBySource =
+        source === 'autoplay'
+          ? resolveFullscreenImageNavigationEnabled({
+              fullscreenActive,
+              fullscreenDisplay,
+              fullscreenVideoFocus,
+              source,
+            })
+          : canNavigateImageInCurrentContext
+
+      if (!canNavigateBySource) {
         return
       }
 
@@ -232,6 +254,8 @@ export function useImageBrowserViewModel({
       canNavigateImageInCurrentContext,
       focusByPackage,
       fullscreenActive,
+      fullscreenDisplay,
+      fullscreenVideoFocus,
       orderedRootScopedImageRefs,
       setImageFocus,
       setVectorFocusIndex,

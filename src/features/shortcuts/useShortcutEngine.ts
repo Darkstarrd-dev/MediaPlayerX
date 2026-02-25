@@ -109,6 +109,8 @@ export function useShortcutEngine({
   onImageCtrlWheelNavigateSidebar,
 }: UseShortcutEngineParams): void {
   const lastImageNavAtRef = useRef(0);
+  const autoplayShortcutEnabled =
+    fullscreenActive && fullscreenDisplay !== "video-only";
 
   const executeShortcut = useCallback(
     (action: ShortcutAction) => {
@@ -165,56 +167,32 @@ export function useShortcutEngine({
           }
           return;
         case "autoplayToggle":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onToggleAutoplay();
           }
           return;
         case "autoplayInterval1":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onApplyAutoplayIntervalByIndex(0);
           }
           return;
         case "autoplayInterval2":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onApplyAutoplayIntervalByIndex(1);
           }
           return;
         case "autoplayInterval3":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onApplyAutoplayIntervalByIndex(2);
           }
           return;
         case "autoplayInterval4":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onApplyAutoplayIntervalByIndex(3);
           }
           return;
         case "autoplayInterval5":
-          if (
-            fullscreenActive &&
-            (fullscreenDisplay === "image-only" ||
-              (fullscreenDisplay === "dual" && imageFocusActive))
-          ) {
+          if (autoplayShortcutEnabled) {
             onApplyAutoplayIntervalByIndex(4);
           }
           return;
@@ -381,9 +359,8 @@ export function useShortcutEngine({
       }
     },
     [
+      autoplayShortcutEnabled,
       fullscreenActive,
-      fullscreenDisplay,
-      imageFocusActive,
       mode,
       onAdjustVideoRate,
       onAdjustVideoVolume,
@@ -558,7 +535,7 @@ export function useShortcutEngine({
       if (
         fullscreenActive &&
         fullscreenDisplay === "dual" &&
-        imageFocusActive &&
+        autoplayShortcutEnabled &&
         shortcutMatches(shortcuts.autoplayToggle, event)
       ) {
         event.preventDefault();
@@ -682,6 +659,7 @@ export function useShortcutEngine({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     executeShortcut,
+    autoplayShortcutEnabled,
     fullscreenActive,
     handleSidebarNavigationKey,
     imageFocusActive,

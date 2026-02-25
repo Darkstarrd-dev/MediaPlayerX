@@ -13,6 +13,7 @@ import {
 
 import type { BrowserMode, ImageItem, VideoItem } from "../types";
 import { clamp } from "../utils/ui";
+import { resolveFullscreenAutoplayControlEnabled } from "../utils/fullscreenAutoplay";
 import type { VideoFitMode } from "../features/media/videoFitMode";
 import type { ImageConvertAdjustProfile } from "../features/app/useAppSessionState";
 import { buildA11yPropsByRegistry } from "../i18n/a11y";
@@ -485,10 +486,10 @@ function FullscreenLayer({
         : "image"
       : (singlePane ?? "image");
   const zoomEnabled = effectiveFullscreenDisplay !== "dual";
-  const autoplayEnabledForFocus =
-    !imageConvertPreviewActive &&
-    focusedPane === "image" &&
-    effectiveFullscreenDisplay !== "video-only";
+  const autoplayEnabledForFocus = resolveFullscreenAutoplayControlEnabled({
+    imageConvertPreviewActive,
+    fullscreenDisplay: effectiveFullscreenDisplay,
+  });
   const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec));
 
   const imageAspect =
