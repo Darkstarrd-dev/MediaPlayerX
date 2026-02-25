@@ -1,52 +1,57 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from "react";
 
-import { VideoControlIcon } from '../VideoControlIcon'
-import { MusicControlIcon } from '../MusicControlIcon'
-import { SkeuoRunway } from '../primitives/SkeuoRunway'
-import type { VideoFitMode } from '../../features/media/videoFitMode'
-import { useI18n } from '../../i18n/useI18n'
-import { formatSeconds } from '../../utils/ui'
-import { FullscreenMetaMarquee } from './FullscreenMetaMarquee'
+import { VideoControlIcon } from "../VideoControlIcon";
+import { MusicControlIcon } from "../MusicControlIcon";
+import { SkeuoRunway } from "../primitives/SkeuoRunway";
+import type { VideoFitMode } from "../../features/media/videoFitMode";
+import { useI18n } from "../../i18n/useI18n";
+import { formatSeconds } from "../../utils/ui";
+import { useVideoSeekDraft } from "../useVideoSeekDraft";
+import { FullscreenMetaMarquee } from "./FullscreenMetaMarquee";
 
-type VideoPopoverKey = 'volume' | 'subtitle' | 'speed' | 'fit' | 'playlist'
+type VideoPopoverKey = "volume" | "subtitle" | "speed" | "fit" | "playlist";
 
 interface FullscreenVideoControlsShellProps {
-  mediaInfoText: string | null
-  clampedVideoTime: number
-  durationSec: number
-  videoPlaying: boolean
-  videoMuted: boolean
-  videoFitMode: VideoFitMode
-  videoLoopMode: 'single' | 'list'
-  videoVolume: number
-  videoRate: number
-  subtitleVisible: boolean
-  subtitleLoading: boolean
-  subtitleMessage: string | null
-  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
-  selectedSubtitleId: string | null
-  playlistEntries: Array<{ id: string; label: string }>
-  selectedVideoId: string
-  onSeekVideo: (time: number) => void
-  onToggleVideoPlay: () => void
-  onPrevVideo: () => void
-  onNextVideo: () => void
-  onToggleVideoMute: () => void
-  onCycleVideoLoopMode: () => void
-  onToggleSubtitle: () => void
-  onSelectSubtitle: (subtitleId: string) => void
-  onChangeVideoVolume: (volume: number) => void
-  onChangeVideoRate: (rate: number) => void
-  onCycleVideoFitMode: () => void
-  onSetVideoFitMode: (mode: VideoFitMode) => void
-  onToggleDualDisplay: () => void
-  onSelectVideo: (videoId: string) => void
-  onSaveCover: () => void
-  onExit: () => void
-  popoverDebugPinned: boolean
-  controlsWidth?: number
-  compact?: boolean
-  hideLeftGroup?: boolean
+  mediaInfoText: string | null;
+  clampedVideoTime: number;
+  durationSec: number;
+  videoPlaying: boolean;
+  videoMuted: boolean;
+  videoFitMode: VideoFitMode;
+  videoLoopMode: "single" | "list";
+  videoVolume: number;
+  videoRate: number;
+  subtitleVisible: boolean;
+  subtitleLoading: boolean;
+  subtitleMessage: string | null;
+  subtitleOptions: Array<{
+    id: string;
+    label: string;
+    format: "vtt" | "srt" | "ass" | "ssa";
+  }>;
+  selectedSubtitleId: string | null;
+  playlistEntries: Array<{ id: string; label: string }>;
+  selectedVideoId: string;
+  onSeekVideo: (time: number) => void;
+  onToggleVideoPlay: () => void;
+  onPrevVideo: () => void;
+  onNextVideo: () => void;
+  onToggleVideoMute: () => void;
+  onCycleVideoLoopMode: () => void;
+  onToggleSubtitle: () => void;
+  onSelectSubtitle: (subtitleId: string) => void;
+  onChangeVideoVolume: (volume: number) => void;
+  onChangeVideoRate: (rate: number) => void;
+  onCycleVideoFitMode: () => void;
+  onSetVideoFitMode: (mode: VideoFitMode) => void;
+  onToggleDualDisplay: () => void;
+  onSelectVideo: (videoId: string) => void;
+  onSaveCover: () => void;
+  onExit: () => void;
+  popoverDebugPinned: boolean;
+  controlsWidth?: number;
+  compact?: boolean;
+  hideLeftGroup?: boolean;
 }
 
 export function FullscreenVideoControlsShell({
@@ -87,75 +92,60 @@ export function FullscreenVideoControlsShell({
   compact = false,
   hideLeftGroup = false,
 }: FullscreenVideoControlsShellProps) {
-  const { t } = useI18n()
-  const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null)
-  const [seekDraftTime, setSeekDraftTime] = useState<number | null>(null)
-  const lastSeekPreviewAtRef = useRef(0)
-  const lastSeekPreviewValueRef = useRef<number | null>(null)
+  const { t } = useI18n();
+  const [openPopover, setOpenPopover] = useState<VideoPopoverKey | null>(null);
+  const {
+    displayTime,
+    progressPercent,
+    volumePercent,
+    setSeekDraftTime,
+    commitSeekDraft,
+    commitSeekDraftAndBlur,
+    previewSeekDuringDrag,
+  } = useVideoSeekDraft({
+    durationSec,
+    currentTime: clampedVideoTime,
+    videoMuted,
+    videoVolume,
+    onSeekVideo,
+  });
 
   const closePopover = () => {
     if (popoverDebugPinned) {
-      return
+      return;
     }
-    setOpenPopover(null)
-  }
+    setOpenPopover(null);
+  };
 
-  const displayTime = seekDraftTime == null ? clampedVideoTime : Math.max(0, Math.min(Math.max(0, durationSec), seekDraftTime))
-  const progressPercent = durationSec > 0 ? Math.max(0, Math.min(100, (displayTime / durationSec) * 100)) : 0
-  const volumePercent = Math.max(0, Math.min(100, videoMuted ? 0 : videoVolume))
   const videoFitLabel =
-    videoFitMode === 'fill'
-      ? t('a11y.media.videoFitFill')
-      : videoFitMode === 'original'
-        ? t('a11y.media.videoFitOriginal')
-      : t('a11y.media.videoFitContain')
-  const videoLoopModeLabel = videoLoopMode === 'single' ? t('ui.media.videoLoopModeSingle') : t('ui.media.videoLoopModeList')
-  const subtitlePanelContentText = subtitleMessage ? subtitleMessage : null
+    videoFitMode === "fill"
+      ? t("a11y.media.videoFitFill")
+      : videoFitMode === "original"
+        ? t("a11y.media.videoFitOriginal")
+        : t("a11y.media.videoFitContain");
+  const videoLoopModeLabel =
+    videoLoopMode === "single"
+      ? t("ui.media.videoLoopModeSingle")
+      : t("ui.media.videoLoopModeList");
+  const subtitlePanelContentText = subtitleMessage ? subtitleMessage : null;
   const subtitlePanelHasContent =
     subtitleLoading ||
     Boolean(subtitlePanelContentText) ||
-    subtitleOptions.length > 0
+    subtitleOptions.length > 0;
   const controlsShellStyle =
-    Number.isFinite(controlsWidth) && typeof controlsWidth === 'number'
-      ? ({ '--mpx-fullscreen-controls-width': `${Math.max(120, Math.round(controlsWidth))}px` } as CSSProperties)
-      : undefined
+    Number.isFinite(controlsWidth) && typeof controlsWidth === "number"
+      ? ({
+          "--mpx-fullscreen-controls-width": `${Math.max(120, Math.round(controlsWidth))}px`,
+        } as CSSProperties)
+      : undefined;
 
   const openPopoverByHover = (key: VideoPopoverKey) => {
-    setOpenPopover(key)
-  }
-
-  const commitSeekDraft = () => {
-    if (seekDraftTime == null) {
-      return
-    }
-    const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), seekDraftTime))
-    onSeekVideo(nextTime)
-    lastSeekPreviewAtRef.current = Date.now()
-    lastSeekPreviewValueRef.current = nextTime
-    setSeekDraftTime(null)
-  }
-
-  const commitSeekDraftAndBlur = (input: HTMLInputElement) => {
-    commitSeekDraft()
-    input.blur()
-  }
-
-  const previewSeekDuringDrag = (nextTime: number) => {
-    const now = Date.now()
-    const lastAt = lastSeekPreviewAtRef.current
-    const lastValue = lastSeekPreviewValueRef.current
-    const hasLargeJump = lastValue == null || Math.abs(nextTime - lastValue) >= 2
-    if (lastAt !== 0 && now - lastAt < 90 && !hasLargeJump) {
-      return
-    }
-    onSeekVideo(nextTime)
-    lastSeekPreviewAtRef.current = now
-    lastSeekPreviewValueRef.current = nextTime
-  }
+    setOpenPopover(key);
+  };
 
   return (
     <div
-      className={`video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell${compact ? ' is-compact' : ''}${hideLeftGroup ? ' is-hide-left-group' : ''}`}
+      className={`video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell${compact ? " is-compact" : ""}${hideLeftGroup ? " is-hide-left-group" : ""}`}
       data-slot="fs-video-controls-shell"
       style={controlsShellStyle}
     >
@@ -169,10 +159,13 @@ export function FullscreenVideoControlsShell({
         </div>
       ) : null}
 
-      <div className="video-controls-progress" data-slot="fg-main-content-video-controls-progress">
+      <div
+        className="video-controls-progress"
+        data-slot="fg-main-content-video-controls-progress"
+      >
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
         <SkeuoRunway
-          ariaLabel={t('a11y.media.fullscreenProgress')}
+          ariaLabel={t("a11y.media.fullscreenProgress")}
           className="is-progress"
           fillTone="gold"
           max={Math.max(0, durationSec)}
@@ -182,217 +175,311 @@ export function FullscreenVideoControlsShell({
           thumbTone="pearl"
           value={displayTime}
           onChange={(event) => {
-            const nextTime = Math.max(0, Math.min(Math.max(0, durationSec), Number(event.target.value)))
-            setSeekDraftTime(nextTime)
-            previewSeekDuringDrag(nextTime)
+            const nextTime = Math.max(
+              0,
+              Math.min(Math.max(0, durationSec), Number(event.target.value)),
+            );
+            setSeekDraftTime(nextTime);
+            previewSeekDuringDrag(nextTime);
           }}
           onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
           onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
           onBlur={commitSeekDraft}
           onKeyUp={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              commitSeekDraft()
+            if (event.key === "Enter" || event.key === " ") {
+              commitSeekDraft();
             }
           }}
         />
       </div>
 
       <div className="video-controls-row video-controls">
-        {!hideLeftGroup ? <div className="video-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-video-controls-left">
-          <button aria-label={t('a11y.media.dualMode')} className="video-action-btn video-action-dual" title={t('a11y.media.dualMode')} type="button" onClick={onToggleDualDisplay}>
-            <VideoControlIcon name="dual" />
-          </button>
-
+        {!hideLeftGroup ? (
           <div
-            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'fit' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('fit')}
-            onMouseLeave={closePopover}
+            className="video-controls-group is-left mpx-skeuo-well"
+            data-slot="fg-main-content-video-controls-left"
           >
             <button
-              aria-controls="fullscreen-popover-fit"
-               aria-expanded={popoverDebugPinned || openPopover === 'fit'}
-              aria-haspopup="dialog"
-              aria-label={videoFitLabel}
-              className="video-action-btn video-action-fit"
-              title={videoFitLabel}
+              aria-label={t("a11y.media.dualMode")}
+              className="video-action-btn video-action-dual"
+              title={t("a11y.media.dualMode")}
               type="button"
-              onClick={onCycleVideoFitMode}
+              onClick={onToggleDualDisplay}
             >
-              <VideoControlIcon name="aspect" />
+              <VideoControlIcon name="dual" />
             </button>
-            <div className="video-ctrl-panel is-fit" data-slot="fs-video-controls-fit-pop" hidden={!popoverDebugPinned && openPopover !== 'fit'} id="fullscreen-popover-fit" role="dialog">
-              <div className="video-ctrl-panel-options">
-                {[
-                  { label: t('a11y.media.videoFitContain'), mode: 'contain' as const },
-                  { label: t('a11y.media.videoFitFill'), mode: 'fill' as const },
-                  { label: t('a11y.media.videoFitOriginal'), mode: 'original' as const },
-                ].map((option) => (
-                  <button
-                    aria-pressed={videoFitMode === option.mode}
-                    className={`video-ctrl-panel-option ${videoFitMode === option.mode ? 'is-active' : ''}`}
-                    key={option.mode}
-                    type="button"
-                    onClick={() => {
-                      onSetVideoFitMode(option.mode)
-                      closePopover()
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          <div
-            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'subtitle' ? 'is-open' : ''}`}
-            onMouseEnter={() => {
-              if (subtitlePanelHasContent) {
-                openPopoverByHover('subtitle')
-              }
-            }}
-            onMouseLeave={closePopover}
-          >
-            <button
-              aria-controls="fullscreen-popover-subtitle"
-               aria-expanded={popoverDebugPinned || openPopover === 'subtitle'}
-              aria-haspopup="dialog"
-              aria-label={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
-              className="video-action-btn video-action-subtitle"
-              title={subtitleVisible ? t('a11y.media.subtitleOn') : t('a11y.media.subtitleOff')}
-              type="button"
-              onClick={onToggleSubtitle}
-            >
-              <VideoControlIcon name="subtitle" />
-            </button>
             <div
-              className="video-ctrl-panel"
-              data-slot="fs-video-controls-subtitle-pop"
-               hidden={!popoverDebugPinned && (openPopover !== 'subtitle' || !subtitlePanelHasContent)}
-              id="fullscreen-popover-subtitle"
-              role="dialog"
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "fit" ? "is-open" : ""}`}
+              onMouseEnter={() => openPopoverByHover("fit")}
+              onMouseLeave={closePopover}
             >
-              {subtitleLoading ? <span className="video-ctrl-panel-note">{t('ui.common.loading')}</span> : null}
-              {subtitlePanelContentText ? <span className="video-ctrl-panel-note">{subtitlePanelContentText}</span> : null}
-              <div className="video-ctrl-panel-options">
-                {subtitleOptions.map((option) => (
-                  <button
-                    aria-pressed={selectedSubtitleId === option.id}
-                    className={`video-ctrl-panel-option ${selectedSubtitleId === option.id ? 'is-active' : ''}`}
-                    key={option.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectSubtitle(option.id)
-                      closePopover()
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <button
+                aria-controls="fullscreen-popover-fit"
+                aria-expanded={popoverDebugPinned || openPopover === "fit"}
+                aria-haspopup="dialog"
+                aria-label={videoFitLabel}
+                className="video-action-btn video-action-fit"
+                title={videoFitLabel}
+                type="button"
+                onClick={onCycleVideoFitMode}
+              >
+                <VideoControlIcon name="aspect" />
+              </button>
+              <div
+                className="video-ctrl-panel is-fit"
+                data-slot="fs-video-controls-fit-pop"
+                hidden={!popoverDebugPinned && openPopover !== "fit"}
+                id="fullscreen-popover-fit"
+                role="dialog"
+              >
+                <div className="video-ctrl-panel-options">
+                  {[
+                    {
+                      label: t("a11y.media.videoFitContain"),
+                      mode: "contain" as const,
+                    },
+                    {
+                      label: t("a11y.media.videoFitFill"),
+                      mode: "fill" as const,
+                    },
+                    {
+                      label: t("a11y.media.videoFitOriginal"),
+                      mode: "original" as const,
+                    },
+                  ].map((option) => (
+                    <button
+                      aria-pressed={videoFitMode === option.mode}
+                      className={`video-ctrl-panel-option ${videoFitMode === option.mode ? "is-active" : ""}`}
+                      key={option.mode}
+                      type="button"
+                      onClick={() => {
+                        onSetVideoFitMode(option.mode);
+                        closePopover();
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'speed' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('speed')}
-            onMouseLeave={closePopover}
-          >
+            <div
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "subtitle" ? "is-open" : ""}`}
+              onMouseEnter={() => {
+                if (subtitlePanelHasContent) {
+                  openPopoverByHover("subtitle");
+                }
+              }}
+              onMouseLeave={closePopover}
+            >
+              <button
+                aria-controls="fullscreen-popover-subtitle"
+                aria-expanded={popoverDebugPinned || openPopover === "subtitle"}
+                aria-haspopup="dialog"
+                aria-label={
+                  subtitleVisible
+                    ? t("a11y.media.subtitleOn")
+                    : t("a11y.media.subtitleOff")
+                }
+                className="video-action-btn video-action-subtitle"
+                title={
+                  subtitleVisible
+                    ? t("a11y.media.subtitleOn")
+                    : t("a11y.media.subtitleOff")
+                }
+                type="button"
+                onClick={onToggleSubtitle}
+              >
+                <VideoControlIcon name="subtitle" />
+              </button>
+              <div
+                className="video-ctrl-panel"
+                data-slot="fs-video-controls-subtitle-pop"
+                hidden={
+                  !popoverDebugPinned &&
+                  (openPopover !== "subtitle" || !subtitlePanelHasContent)
+                }
+                id="fullscreen-popover-subtitle"
+                role="dialog"
+              >
+                {subtitleLoading ? (
+                  <span className="video-ctrl-panel-note">
+                    {t("ui.common.loading")}
+                  </span>
+                ) : null}
+                {subtitlePanelContentText ? (
+                  <span className="video-ctrl-panel-note">
+                    {subtitlePanelContentText}
+                  </span>
+                ) : null}
+                <div className="video-ctrl-panel-options">
+                  {subtitleOptions.map((option) => (
+                    <button
+                      aria-pressed={selectedSubtitleId === option.id}
+                      className={`video-ctrl-panel-option ${selectedSubtitleId === option.id ? "is-active" : ""}`}
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        onSelectSubtitle(option.id);
+                        closePopover();
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "speed" ? "is-open" : ""}`}
+              onMouseEnter={() => openPopoverByHover("speed")}
+              onMouseLeave={closePopover}
+            >
+              <button
+                aria-controls="fullscreen-popover-speed"
+                aria-expanded={popoverDebugPinned || openPopover === "speed"}
+                aria-haspopup="dialog"
+                aria-label={t("a11y.media.playbackRate", {
+                  rate: videoRate.toFixed(2),
+                })}
+                className="video-action-btn video-action-speed"
+                title={t("a11y.media.playbackRate", {
+                  rate: videoRate.toFixed(2),
+                })}
+                type="button"
+              >
+                <VideoControlIcon name="speed" />
+              </button>
+              <div
+                className="video-ctrl-panel is-speed"
+                data-slot="fs-video-controls-speed-pop"
+                hidden={!popoverDebugPinned && openPopover !== "speed"}
+                id="fullscreen-popover-speed"
+                role="dialog"
+              >
+                <div className="video-ctrl-panel-options">
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(
+                    (rate) => (
+                      <button
+                        aria-pressed={Math.abs(videoRate - rate) < 0.01}
+                        className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? "is-active" : ""}`}
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          onChangeVideoRate(rate);
+                          closePopover();
+                        }}
+                      >
+                        {`${rate}x`}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
+
             <button
-              aria-controls="fullscreen-popover-speed"
-               aria-expanded={popoverDebugPinned || openPopover === 'speed'}
-              aria-haspopup="dialog"
-              aria-label={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
-              className="video-action-btn video-action-speed"
-              title={t('a11y.media.playbackRate', { rate: videoRate.toFixed(2) })}
+              aria-label={t("a11y.media.exitFullscreen")}
+              className="video-action-btn video-action-fullscreen video-fullscreen-btn"
+              title={t("a11y.media.exitFullscreen")}
               type="button"
+              onClick={onExit}
             >
-              <VideoControlIcon name="speed" />
+              <VideoControlIcon name="fullscreenCompress" />
             </button>
-            <div className="video-ctrl-panel is-speed" data-slot="fs-video-controls-speed-pop" hidden={!popoverDebugPinned && openPopover !== 'speed'} id="fullscreen-popover-speed" role="dialog">
-              <div className="video-ctrl-panel-options">
-                {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rate) => (
-                  <button
-                    aria-pressed={Math.abs(videoRate - rate) < 0.01}
-                    className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? 'is-active' : ''}`}
-                    key={rate}
-                    type="button"
-                    onClick={() => {
-                      onChangeVideoRate(rate)
-                      closePopover()
-                    }}
-                  >
-                    {`${rate}x`}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
+        ) : null}
 
+        <div
+          className="video-controls-group is-center"
+          data-slot="fg-main-content-video-controls-center"
+        >
           <button
-            aria-label={t('a11y.media.exitFullscreen')}
-            className="video-action-btn video-action-fullscreen video-fullscreen-btn"
-            title={t('a11y.media.exitFullscreen')}
+            aria-label={t("a11y.media.prev")}
+            className="video-action-btn video-action-prev"
+            title={t("a11y.media.prev")}
             type="button"
-            onClick={onExit}
+            onClick={onPrevVideo}
           >
-            <VideoControlIcon name="fullscreenCompress" />
-          </button>
-        </div> : null}
-
-        <div className="video-controls-group is-center" data-slot="fg-main-content-video-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" title={t('a11y.media.prev')} type="button" onClick={onPrevVideo}>
             <VideoControlIcon name="prev" />
           </button>
           <button
-            aria-label={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
+            aria-label={
+              videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
+            }
             className="video-action-btn video-action-play"
-            title={videoPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
+            title={videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")}
             type="button"
             onClick={onToggleVideoPlay}
           >
-            <VideoControlIcon name={videoPlaying ? 'pause' : 'play'} />
+            <VideoControlIcon name={videoPlaying ? "pause" : "play"} />
           </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" title={t('a11y.media.next')} type="button" onClick={onNextVideo}>
+          <button
+            aria-label={t("a11y.media.next")}
+            className="video-action-btn video-action-next"
+            title={t("a11y.media.next")}
+            type="button"
+            onClick={onNextVideo}
+          >
             <VideoControlIcon name="next" />
           </button>
         </div>
 
-        <div className="video-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-video-controls-right">
-          <button aria-label={t('a11y.media.saveAsCover')} className="video-action-btn video-action-save-cover" title={t('a11y.media.saveAsCover')} type="button" onClick={onSaveCover}>
+        <div
+          className="video-controls-group is-right mpx-skeuo-well"
+          data-slot="fg-main-content-video-controls-right"
+        >
+          <button
+            aria-label={t("a11y.media.saveAsCover")}
+            className="video-action-btn video-action-save-cover"
+            title={t("a11y.media.saveAsCover")}
+            type="button"
+            onClick={onSaveCover}
+          >
             <VideoControlIcon name="camera" />
           </button>
 
           <div
-            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'playlist' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('playlist')}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "playlist" ? "is-open" : ""}`}
+            onMouseEnter={() => openPopoverByHover("playlist")}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-playlist"
-               aria-expanded={popoverDebugPinned || openPopover === 'playlist'}
+              aria-expanded={popoverDebugPinned || openPopover === "playlist"}
               aria-haspopup="dialog"
-              aria-label={t('a11y.media.playlist')}
+              aria-label={t("a11y.media.playlist")}
               className="video-action-btn video-action-playlist"
-              title={t('a11y.media.playlist')}
+              title={t("a11y.media.playlist")}
               type="button"
             >
               <VideoControlIcon name="playlist" />
             </button>
-            <div className="video-ctrl-panel" data-slot="fs-video-controls-playlist-pop" hidden={!popoverDebugPinned && openPopover !== 'playlist'} id="fullscreen-popover-playlist" role="dialog">
+            <div
+              className="video-ctrl-panel"
+              data-slot="fs-video-controls-playlist-pop"
+              hidden={!popoverDebugPinned && openPopover !== "playlist"}
+              id="fullscreen-popover-playlist"
+              role="dialog"
+            >
               {playlistEntries.length === 0 ? (
-                <span className="video-ctrl-panel-note">{t('ui.media.emptyPlaylist')}</span>
+                <span className="video-ctrl-panel-note">
+                  {t("ui.media.emptyPlaylist")}
+                </span>
               ) : (
                 <div className="video-ctrl-panel-options">
                   {playlistEntries.map((entry) => (
                     <button
                       aria-pressed={entry.id === selectedVideoId}
-                      className={`video-ctrl-panel-option ${entry.id === selectedVideoId ? 'is-active' : ''}`}
+                      className={`video-ctrl-panel-option ${entry.id === selectedVideoId ? "is-active" : ""}`}
                       key={entry.id}
                       type="button"
                       onClick={() => {
-                        onSelectVideo(entry.id)
-                        closePopover()
+                        onSelectVideo(entry.id);
+                        closePopover();
                       }}
                     >
                       {entry.label}
@@ -404,36 +491,49 @@ export function FullscreenVideoControlsShell({
           </div>
 
           <button
-            aria-label={t('a11y.media.videoLoopMode', { label: videoLoopModeLabel })}
+            aria-label={t("a11y.media.videoLoopMode", {
+              label: videoLoopModeLabel,
+            })}
             className="video-action-btn video-action-loop-mode"
-            title={t('tip.media.videoLoopMode', { label: videoLoopModeLabel })}
+            title={t("tip.media.videoLoopMode", { label: videoLoopModeLabel })}
             type="button"
             onClick={onCycleVideoLoopMode}
           >
-            <MusicControlIcon className="video-action-icon" name={videoLoopMode === 'single' ? 'repeatOne' : 'repeatAlbum'} />
+            <MusicControlIcon
+              className="video-action-icon"
+              name={videoLoopMode === "single" ? "repeatOne" : "repeatAlbum"}
+            />
           </button>
 
           <div
-            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === 'volume' ? 'is-open' : ''}`}
-            onMouseEnter={() => openPopoverByHover('volume')}
+            className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "volume" ? "is-open" : ""}`}
+            onMouseEnter={() => openPopoverByHover("volume")}
             onMouseLeave={closePopover}
           >
             <button
               aria-controls="fullscreen-popover-volume"
-               aria-expanded={popoverDebugPinned || openPopover === 'volume'}
+              aria-expanded={popoverDebugPinned || openPopover === "volume"}
               aria-haspopup="dialog"
-              aria-label={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+              aria-label={
+                videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
+              }
               className="video-action-btn video-action-mute"
-              title={videoMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
+              title={videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")}
               type="button"
               onClick={onToggleVideoMute}
             >
-              <VideoControlIcon name={videoMuted ? 'volumeMuted' : 'volume'} />
+              <VideoControlIcon name={videoMuted ? "volumeMuted" : "volume"} />
             </button>
-            <div className="video-ctrl-panel is-volume" data-slot="fs-video-controls-volume-pop" hidden={!popoverDebugPinned && openPopover !== 'volume'} id="fullscreen-popover-volume" role="dialog">
+            <div
+              className="video-ctrl-panel is-volume"
+              data-slot="fs-video-controls-volume-pop"
+              hidden={!popoverDebugPinned && openPopover !== "volume"}
+              id="fullscreen-popover-volume"
+              role="dialog"
+            >
               <div className="video-ctrl-volume-axis">
                 <SkeuoRunway
-                  ariaLabel={t('a11y.media.fullscreenVolume')}
+                  ariaLabel={t("a11y.media.fullscreenVolume")}
                   className="is-volume"
                   fillTone="graphite"
                   inputClassName="video-ctrl-volume-range"
@@ -443,7 +543,9 @@ export function FullscreenVideoControlsShell({
                   step={1}
                   thumbTone="graphite"
                   value={videoMuted ? 0 : videoVolume}
-                  onChange={(event) => onChangeVideoVolume(Number(event.target.value))}
+                  onChange={(event) =>
+                    onChangeVideoVolume(Number(event.target.value))
+                  }
                 />
               </div>
             </div>
@@ -451,5 +553,5 @@ export function FullscreenVideoControlsShell({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { promises as fs, watch, type FSWatcher } from "node:fs";
+import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import {
@@ -109,7 +109,6 @@ import {
   isPathAllowlisted,
   type MediaAccessGuardContext,
 } from "./fileSystemMediaAccessGuard";
-import { normalizeAllowlistKey } from "./fileSystemServiceHelpers";
 import {
   type MediaProtocolResponsePayload,
   type MediaProtocolStreamResponsePayload,
@@ -119,7 +118,6 @@ import { MediaTokenService } from "./services/file-system-read/mediaTokenService
 import { ImportPathRegistry } from "./services/file-system-read/importPathRegistry";
 import {
   ARCHIVE_EXTENSIONS,
-  ARCHIVE_NORMALIZE_DIR_NAME,
   ARCHIVE_NORMALIZE_IDLE_MS,
   ARCHIVE_NORMALIZE_RECHECK_MS,
   ARCHIVE_SCAN_CONCURRENCY,
@@ -136,7 +134,6 @@ import {
   LEGACY_IMPORTS_DIR_NAME,
   MEDIA_TOKEN_TTL_MS,
   SUBTITLE_EXTENSIONS,
-  THUMBNAIL_CACHE_DIR_NAME,
   VIDEO_EXTENSIONS,
   ZIP_COMPRESSION_DEFLATE,
   ZIP_COMPRESSION_STORE,
@@ -145,7 +142,6 @@ import {
 import { ArchiveNormalizationService } from "./services/file-system-read/archiveNormalizationService";
 import {
   type ArchiveLoadStatusListener,
-  type FileSystemReadServiceEvents,
   type LibraryChangedEventPayload,
   type LibraryChangedListener,
 } from "./services/file-system-read/fileSystemReadFacadeEvents";
@@ -161,23 +157,24 @@ import { ManageCoverReviewService } from "./services/file-system-read/manageCove
 import { MediaResourceService } from "./services/file-system-read/mediaResourceService";
 import { RuntimeDependencyService } from "./services/file-system-read/runtimeDependencyService";
 import { ArchivePathLockService } from "./services/file-system-read/archivePathLockService";
+import { ExternalSourceWatcherManager } from "./services/file-system-read/externalSourceWatcherManager";
 import {
   removeImportSourcePathsWithMusicSync,
   replaceImportSourcePathsWithMusicSync,
 } from "./services/file-system-read/importSourceMaintenance";
-import {
-  type ActiveReadTask,
-  type QueuedReadTask,
-  createActiveReadTask,
-  createQueuedReadTask,
-  isAbortLikeError,
-} from "./services/file-system-read/readTaskQueueUtils";
+import { ImageReadTaskQueueManager } from "./services/file-system-read/imageReadTaskQueueManager";
 import { runStartupTempCleanup } from "./services/file-system-read/startupTempCleanupRunner";
 import { disposeTaskProcessRunners } from "./services/task-orchestrator/processTaskOrchestrator";
 import { SubtitleModelService } from "./services/file-system-read/subtitleModelService";
 import { TaskResourceGovernor } from "./services/file-system-read/taskResourceGovernor";
 import { ServiceEventBus } from "./services/file-system-read/serviceEventBus";
-import { FileSystemFacadeContext } from "./facade/types";
+import {
+  createArchiveNormalizationServiceOptions,
+  createFacadeContext,
+  createFacadeHandlers,
+  createMediaResourceServiceOptions,
+  resolveServiceRootPaths,
+} from "./facade/fileSystemFacadeFactory";
 import { FileSystemLibraryHandlers } from "./facade/FileSystemLibraryHandlers";
 import { FileSystemManagementHandlers } from "./facade/FileSystemManagementHandlers";
 import { FileSystemSystemHandlers } from "./facade/FileSystemSystemHandlers";
@@ -191,7 +188,12 @@ export interface FileSystemMediaReadServiceOptions {
   onArchiveLoadStatusChanged?: ArchiveLoadStatusListener;
 }
 
-export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
+type FileSystemEventMap = {
+  libraryChanged: LibraryChangedEventPayload;
+  archiveLoadStatusChanged: ReadArchiveLoadStatusResponseDto;
+} & Record<string, unknown>;
+
+export class FileSystemMediaReadService {
   private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256;
 
   private static readonly EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS = 600;
@@ -222,7 +224,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   private readonly taskResourceGovernor: TaskResourceGovernor;
   private readonly ownsTaskResourceGovernor: boolean;
   private readonly archivePathLockService: ArchivePathLockService;
-  private readonly eventBus: ServiceEventBus;
+  private readonly eventBus: ServiceEventBus<FileSystemEventMap>;
 
   private readonly libraryHandlers: FileSystemLibraryHandlers;
   private readonly managementHandlers: FileSystemManagementHandlers;
@@ -239,18 +241,18 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     null;
   private readLibrarySnapshotLiteInFlight: Promise<LibrarySnapshotLiteDto> | null =
     null;
-  private readonly maxConcurrentImageSidebarTreeReads = 1;
-  private activeImageSidebarTreeTasks: ActiveReadTask<ReadImageSidebarTreeResponseDto>[] =
-    [];
-  private queuedImageSidebarTreeTask: QueuedReadTask<ReadImageSidebarTreeResponseDto> | null =
-    null;
-  private readonly maxConcurrentImagePageReads = 2;
-  private activeImagePageTasks: ActiveReadTask<ReadImagePageResponseDto>[] = [];
-  private queuedImagePageTask: QueuedReadTask<ReadImagePageResponseDto> | null =
-    null;
-  private readonly externalSourceWatcherByPathKey = new Map<string, FSWatcher>();
-  private externalSourcePruneDebounceTimer: ReturnType<typeof setTimeout> | null =
-    null;
+  private readonly readTaskQueueManager = new ImageReadTaskQueueManager<
+    ReadImageSidebarTreeResponseDto,
+    ReadImagePageResponseDto
+  >({
+    maxConcurrentSidebarReads: 1,
+    maxConcurrentPageReads: 2,
+  });
+  private readonly externalSourceWatcherManager =
+    new ExternalSourceWatcherManager({
+      debounceMs: FileSystemMediaReadService.EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS,
+      onDebouncedChange: () => this.runExternalSourceRefreshFromWatcher(),
+    });
   private disposed = false;
 
   constructor(optionsOrRootDir: FileSystemMediaReadServiceOptions | string) {
@@ -258,16 +260,11 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       typeof optionsOrRootDir === "string"
         ? { rootDir: optionsOrRootDir }
         : optionsOrRootDir;
-    this.rootDir = path.resolve(options.rootDir);
-    this.coverOutputRootDir = path.join(this.rootDir, "covers");
-    this.thumbnailCacheRootDir = path.resolve(
-      options.thumbnailCacheRootDir ??
-        path.join(this.rootDir, THUMBNAIL_CACHE_DIR_NAME),
-    );
-    this.normalizedArchiveRootDir = path.join(
-      this.rootDir,
-      ARCHIVE_NORMALIZE_DIR_NAME,
-    );
+    const resolvedPaths = resolveServiceRootPaths(options);
+    this.rootDir = resolvedPaths.rootDir;
+    this.coverOutputRootDir = resolvedPaths.coverOutputRootDir;
+    this.thumbnailCacheRootDir = resolvedPaths.thumbnailCacheRootDir;
+    this.normalizedArchiveRootDir = resolvedPaths.normalizedArchiveRootDir;
 
     this.database = new MediaLibraryDatabase({
       rootDir: this.rootDir,
@@ -295,34 +292,37 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       });
     this.archivePathLockService = new ArchivePathLockService();
 
-    this.archiveNormalizationService = new ArchiveNormalizationService({
-      idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
-      recheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
-      isTargetEligible: (sourceArchivePath) =>
-        this.isArchiveNormalizationTargetEligible(sourceArchivePath),
-      hasRunningImportTasks: () =>
-        this.importTaskService.hasRunningImportTasks(),
-      isSnapshotLoading: () => this.librarySnapshotService.isSnapshotLoading(),
-      onArchiveNormalized: (sourcePath, outputPath) =>
-        this.replaceImportedFileSourcePath(sourcePath, outputPath),
-      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
-      emitArchiveLoadStatusChanged: (payload) =>
-        this.eventBus.emit("archiveLoadStatusChanged", payload),
-      withArchiveWriteLock: (archivePath, task) =>
-        this.archivePathLockService.withWriteLock(archivePath, task),
-      runWithCpuToken: (taskName, task) =>
-        this.taskResourceGovernor.runWithCpuToken(taskName, task),
-      readPersistedQueuePaths: () =>
-        this.database.readAppState<string[]>(
-          FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY,
-          [],
-        ),
-      writePersistedQueuePaths: (paths) =>
-        this.database.writeAppState(
-          FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY,
-          paths,
-        ),
-    });
+    this.archiveNormalizationService = new ArchiveNormalizationService(
+      createArchiveNormalizationServiceOptions({
+        idleMs: ARCHIVE_NORMALIZE_IDLE_MS,
+        recheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
+        isTargetEligible: (sourceArchivePath) =>
+          this.isArchiveNormalizationTargetEligible(sourceArchivePath),
+        hasRunningImportTasks: () =>
+          this.importTaskService.hasRunningImportTasks(),
+        isSnapshotLoading: () =>
+          this.librarySnapshotService.isSnapshotLoading(),
+        onArchiveNormalized: (sourcePath, outputPath) =>
+          this.replaceImportedFileSourcePath(sourcePath, outputPath),
+        emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+        emitArchiveLoadStatusChanged: (payload) =>
+          this.eventBus.emit("archiveLoadStatusChanged", payload),
+        withArchiveWriteLock: (archivePath, task) =>
+          this.archivePathLockService.withWriteLock(archivePath, task),
+        runWithCpuToken: (taskName, task) =>
+          this.taskResourceGovernor.runWithCpuToken(taskName, task),
+        readPersistedQueuePaths: () =>
+          this.database.readAppState<string[]>(
+            FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY,
+            [],
+          ),
+        writePersistedQueuePaths: (paths) =>
+          this.database.writeAppState(
+            FileSystemMediaReadService.ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY,
+            paths,
+          ),
+      }),
+    );
 
     this.librarySnapshotService = new LibrarySnapshotService({
       rootDir: this.rootDir,
@@ -440,44 +440,46 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       setImageHidden: (request) => this.setImageHidden(request),
     });
 
-    this.mediaResourceService = new MediaResourceService({
-      mediaProtocolScheme: MEDIA_PROTOCOL_SCHEME,
-      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
-      archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
-      mediaTokenService: this.mediaTokenService,
-      ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
-      refreshArchiveIndexesForPaths: (paths) =>
-        this.refreshArchiveIndexesForPaths(paths),
-      buildMediaAccessContext: () => this.buildMediaAccessContext(),
-      ensureRuntimeDependencies: () =>
-        this.runtimeDependencyService.ensureRuntimeDependencies(),
-      readImageBufferForThumbnail: (locator) =>
-        this.librarySnapshotService.readImageBufferForThumbnail(locator),
-      onThumbnailRenderingStart: (taskKey) => {
-        this.archiveNormalizationService.onThumbnailRenderingStart(taskKey);
-      },
-      onThumbnailRenderingProgress: (taskKey, payload) => {
-        this.archiveNormalizationService.onThumbnailRenderingProgress(
-          taskKey,
-          payload,
-        );
-      },
-      onThumbnailRenderingEnd: (taskKey) => {
-        this.archiveNormalizationService.onThumbnailRenderingEnd(taskKey);
-      },
-      runWithThumbnailCpuToken: (taskName, task) =>
-        this.taskResourceGovernor.runWithCpuToken(taskName, task),
-      withArchiveReadLock: (archivePath, task) =>
-        this.archivePathLockService.withReadLock(archivePath, task),
-      hasPendingArchiveNormalization: () =>
-        this.archiveNormalizationService.hasPending(),
-      scheduleArchiveNormalizationDrain: (delay) =>
-        this.scheduleArchiveNormalizationDrain(delay),
-      getZipEntryIndexByPath: () =>
-        this.librarySnapshotService.getZipEntryIndexByPath(),
-    });
+    this.mediaResourceService = new MediaResourceService(
+      createMediaResourceServiceOptions({
+        mediaProtocolScheme: MEDIA_PROTOCOL_SCHEME,
+        thumbnailCacheRootDir: this.thumbnailCacheRootDir,
+        archiveNormalizeRecheckMs: ARCHIVE_NORMALIZE_RECHECK_MS,
+        mediaTokenService: this.mediaTokenService,
+        ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
+        refreshArchiveIndexesForPaths: (paths) =>
+          this.refreshArchiveIndexesForPaths(paths),
+        buildMediaAccessContext: () => this.buildMediaAccessContext(),
+        ensureRuntimeDependencies: () =>
+          this.runtimeDependencyService.ensureRuntimeDependencies(),
+        readImageBufferForThumbnail: (locator) =>
+          this.librarySnapshotService.readImageBufferForThumbnail(locator),
+        onThumbnailRenderingStart: (taskKey) => {
+          this.archiveNormalizationService.onThumbnailRenderingStart(taskKey);
+        },
+        onThumbnailRenderingProgress: (taskKey, payload) => {
+          this.archiveNormalizationService.onThumbnailRenderingProgress(
+            taskKey,
+            payload,
+          );
+        },
+        onThumbnailRenderingEnd: (taskKey) => {
+          this.archiveNormalizationService.onThumbnailRenderingEnd(taskKey);
+        },
+        runWithThumbnailCpuToken: (taskName, task) =>
+          this.taskResourceGovernor.runWithCpuToken(taskName, task),
+        withArchiveReadLock: (archivePath, task) =>
+          this.archivePathLockService.withReadLock(archivePath, task),
+        hasPendingArchiveNormalization: () =>
+          this.archiveNormalizationService.hasPending(),
+        scheduleArchiveNormalizationDrain: (delay) =>
+          this.scheduleArchiveNormalizationDrain(delay),
+        getZipEntryIndexByPath: () =>
+          this.librarySnapshotService.getZipEntryIndexByPath(),
+      }),
+    );
 
-    const context: FileSystemFacadeContext = {
+    const context = createFacadeContext({
       rootDir: this.rootDir,
       coverOutputRootDir: this.coverOutputRootDir,
       thumbnailCacheRootDir: this.thumbnailCacheRootDir,
@@ -502,24 +504,28 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
       markInteractiveRead: () => this.markInteractiveRead(),
       clearDatabase: () => this.clearDatabase(),
-    };
-
-    this.libraryHandlers = new FileSystemLibraryHandlers(context);
-    this.managementHandlers = new FileSystemManagementHandlers(context);
-    this.systemHandlers = new FileSystemSystemHandlers(context);
+    });
+    const handlers = createFacadeHandlers(context);
+    this.libraryHandlers = handlers.libraryHandlers;
+    this.managementHandlers = handlers.managementHandlers;
+    this.systemHandlers = handlers.systemHandlers;
     void this.scheduleStartupTempCleanup();
   }
+
   onLibraryChanged(listener: LibraryChangedListener): () => void {
     return this.eventBus.on("libraryChanged", listener);
   }
   onArchiveLoadStatusChanged(listener: ArchiveLoadStatusListener): () => void {
     return this.eventBus.on("archiveLoadStatusChanged", listener);
   }
-  private emitLibraryChanged(payload: LibraryChangedEventPayload): void {
-    this.eventBus.emit("libraryChanged", payload);
+  private emitLibraryChanged(
+    payload:
+      | LibraryChangedEventPayload
+      | { reason: string; updated_at_ms: number },
+  ): void {
+    this.eventBus.emit("libraryChanged", payload as LibraryChangedEventPayload);
     if (
       payload.reason !== "import-task-updated" &&
-      payload.reason !== "archive-load-status-updated" &&
       payload.reason !== "thumbnail-rendering-progress"
     ) {
       this.scheduleArchiveNormalizationDrain(ARCHIVE_NORMALIZE_IDLE_MS);
@@ -597,161 +603,7 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
   }
 
   private clearQueuedReadTasks(reason: string): void {
-    if (this.queuedImageSidebarTreeTask) {
-      this.queuedImageSidebarTreeTask.reject(new Error(reason));
-      this.queuedImageSidebarTreeTask = null;
-    }
-    if (this.queuedImagePageTask) {
-      this.queuedImagePageTask.reject(new Error(reason));
-      this.queuedImagePageTask = null;
-    }
-  }
-
-  private clearActiveReadTasks(reason: string): void {
-    for (const task of this.activeImageSidebarTreeTasks) {
-      task.reject(new Error(reason));
-      task.controller.abort(reason);
-    }
-    this.activeImageSidebarTreeTasks = [];
-    for (const task of this.activeImagePageTasks) {
-      task.reject(new Error(reason));
-      task.controller.abort(reason);
-    }
-    this.activeImagePageTasks = [];
-  }
-
-  private startImageSidebarTreeTask(
-    key: string,
-    start: (signal: AbortSignal) => Promise<ReadImageSidebarTreeResponseDto>,
-  ): Promise<ReadImageSidebarTreeResponseDto> {
-    const activeTask =
-      createActiveReadTask<ReadImageSidebarTreeResponseDto>(key);
-    this.activeImageSidebarTreeTasks.push(activeTask);
-    void start(activeTask.controller.signal)
-      .then((response) => {
-        activeTask.resolve(response);
-      })
-      .catch((error: unknown) => {
-        if (activeTask.superseded && isAbortLikeError(error)) {
-          return;
-        }
-        activeTask.reject(error);
-      })
-      .finally(() => {
-        this.onImageSidebarTreeTaskSettled(activeTask);
-        this.startQueuedImageSidebarTreeTaskIfPossible();
-      });
-    return activeTask.promise;
-  }
-
-  private startQueuedImageSidebarTreeTaskIfPossible(): void {
-    if (
-      this.activeImageSidebarTreeTasks.length >=
-      this.maxConcurrentImageSidebarTreeReads
-    ) {
-      return;
-    }
-    if (!this.queuedImageSidebarTreeTask) {
-      return;
-    }
-    const queuedTask = this.queuedImageSidebarTreeTask;
-    this.queuedImageSidebarTreeTask = null;
-    const nextTask = this.startImageSidebarTreeTask(
-      queuedTask.key,
-      queuedTask.start,
-    );
-    queuedTask.resolve(nextTask);
-  }
-
-  private supersedeActiveImageSidebarTreeTask(
-    requestKey: string,
-    replacement: Promise<ReadImageSidebarTreeResponseDto>,
-  ): void {
-    const staleTaskIndex = this.activeImageSidebarTreeTasks.findIndex(
-      (item) => item.key !== requestKey,
-    );
-    if (staleTaskIndex < 0) {
-      return;
-    }
-    const [staleTask] = this.activeImageSidebarTreeTasks.splice(
-      staleTaskIndex,
-      1,
-    );
-    staleTask.superseded = true;
-    staleTask.resolve(replacement);
-    staleTask.controller.abort("read request superseded");
-  }
-
-  private onImageSidebarTreeTaskSettled(
-    task: ActiveReadTask<ReadImageSidebarTreeResponseDto>,
-  ): void {
-    const taskIndex = this.activeImageSidebarTreeTasks.indexOf(task);
-    if (taskIndex < 0) {
-      return;
-    }
-    this.activeImageSidebarTreeTasks.splice(taskIndex, 1);
-  }
-
-  private startImagePageTask(
-    key: string,
-    start: (signal: AbortSignal) => Promise<ReadImagePageResponseDto>,
-  ): Promise<ReadImagePageResponseDto> {
-    const activeTask = createActiveReadTask<ReadImagePageResponseDto>(key);
-    this.activeImagePageTasks.push(activeTask);
-    void start(activeTask.controller.signal)
-      .then((response) => {
-        activeTask.resolve(response);
-      })
-      .catch((error: unknown) => {
-        if (activeTask.superseded && isAbortLikeError(error)) {
-          return;
-        }
-        activeTask.reject(error);
-      })
-      .finally(() => {
-        this.onImagePageTaskSettled(activeTask);
-        this.startQueuedImagePageTaskIfPossible();
-      });
-    return activeTask.promise;
-  }
-
-  private startQueuedImagePageTaskIfPossible(): void {
-    if (this.activeImagePageTasks.length >= this.maxConcurrentImagePageReads) {
-      return;
-    }
-    if (!this.queuedImagePageTask) {
-      return;
-    }
-    const queuedTask = this.queuedImagePageTask;
-    this.queuedImagePageTask = null;
-    const nextTask = this.startImagePageTask(queuedTask.key, queuedTask.start);
-    queuedTask.resolve(nextTask);
-  }
-
-  private supersedeActiveImagePageTask(
-    requestKey: string,
-    replacement: Promise<ReadImagePageResponseDto>,
-  ): void {
-    const staleTaskIndex = this.activeImagePageTasks.findIndex(
-      (item) => item.key !== requestKey,
-    );
-    if (staleTaskIndex < 0) {
-      return;
-    }
-    const [staleTask] = this.activeImagePageTasks.splice(staleTaskIndex, 1);
-    staleTask.superseded = true;
-    staleTask.resolve(replacement);
-    staleTask.controller.abort("read request superseded");
-  }
-
-  private onImagePageTaskSettled(
-    task: ActiveReadTask<ReadImagePageResponseDto>,
-  ): void {
-    const taskIndex = this.activeImagePageTasks.indexOf(task);
-    if (taskIndex < 0) {
-      return;
-    }
-    this.activeImagePageTasks.splice(taskIndex, 1);
+    this.readTaskQueueManager.clearAll(reason);
   }
 
   dispose(): void {
@@ -759,7 +611,6 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.stopExternalSourceWatchers();
     this.readLibrarySnapshotInFlight = null;
     this.readLibrarySnapshotLiteInFlight = null;
-    this.clearActiveReadTasks("read queue cleared: service disposed");
     this.clearQueuedReadTasks("read queue cleared: service disposed");
     void disposeTaskProcessRunners().catch(() => undefined);
     if (this.ownsTaskResourceGovernor) {
@@ -860,19 +711,6 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.refreshExternalSourceWatchers();
   }
 
-  private scheduleExternalSourcePrune(): void {
-    if (this.disposed) {
-      return;
-    }
-    if (this.externalSourcePruneDebounceTimer !== null) {
-      clearTimeout(this.externalSourcePruneDebounceTimer);
-    }
-    this.externalSourcePruneDebounceTimer = setTimeout(() => {
-      this.externalSourcePruneDebounceTimer = null;
-      this.runExternalSourceRefreshFromWatcher();
-    }, FileSystemMediaReadService.EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS);
-  }
-
   private runExternalSourceRefreshFromWatcher(): void {
     if (this.disposed || this.importTaskService.hasRunningImportTasks()) {
       return;
@@ -905,66 +743,14 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     if (this.disposed) {
       return;
     }
-
-    const desiredWatchPathByKey = new Map<string, string>();
-    for (const rootPath of this.importPathRegistry.getImportDirectoryRoots()) {
-      const resolvedPath = path.resolve(rootPath);
-      desiredWatchPathByKey.set(
-        normalizeAllowlistKey(resolvedPath),
-        resolvedPath,
-      );
-    }
-    for (const filePath of this.importPathRegistry.getImportFilePaths()) {
-      const parentPath = path.dirname(path.resolve(filePath));
-      desiredWatchPathByKey.set(normalizeAllowlistKey(parentPath), parentPath);
-    }
-
-    for (const [pathKey, watcher] of this.externalSourceWatcherByPathKey) {
-      if (desiredWatchPathByKey.has(pathKey)) {
-        continue;
-      }
-      watcher.close();
-      this.externalSourceWatcherByPathKey.delete(pathKey);
-    }
-
-    const recursiveWatchSupported =
-      process.platform === "win32" || process.platform === "darwin";
-    for (const [pathKey, watchPath] of desiredWatchPathByKey) {
-      if (this.externalSourceWatcherByPathKey.has(pathKey)) {
-        continue;
-      }
-      try {
-        const watcher = watch(
-          watchPath,
-          { recursive: recursiveWatchSupported },
-          () => {
-            this.scheduleExternalSourcePrune();
-          },
-        );
-        watcher.on("error", () => {
-          const existingWatcher = this.externalSourceWatcherByPathKey.get(pathKey);
-          if (existingWatcher === watcher) {
-            this.externalSourceWatcherByPathKey.delete(pathKey);
-          }
-          watcher.close();
-          this.scheduleExternalSourcePrune();
-        });
-        this.externalSourceWatcherByPathKey.set(pathKey, watcher);
-      } catch {
-        continue;
-      }
-    }
+    this.externalSourceWatcherManager.refresh({
+      importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
+      importFilePaths: this.importPathRegistry.getImportFilePaths(),
+    });
   }
 
   private stopExternalSourceWatchers(): void {
-    if (this.externalSourcePruneDebounceTimer !== null) {
-      clearTimeout(this.externalSourcePruneDebounceTimer);
-      this.externalSourcePruneDebounceTimer = null;
-    }
-    for (const watcher of this.externalSourceWatcherByPathKey.values()) {
-      watcher.close();
-    }
-    this.externalSourceWatcherByPathKey.clear();
+    this.externalSourceWatcherManager.stop();
   }
 
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
@@ -1143,7 +929,6 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     this.librarySnapshotService.clearRuntimeState();
     this.readLibrarySnapshotInFlight = null;
     this.readLibrarySnapshotLiteInFlight = null;
-    this.clearActiveReadTasks("read queue cleared: database cleared");
     this.clearQueuedReadTasks("read queue cleared: database cleared");
     this.invalidateCache();
 
@@ -1193,66 +978,18 @@ export class FileSystemMediaReadService implements FileSystemReadServiceEvents {
     request: ReadImageSidebarTreeRequestDto,
   ): Promise<ReadImageSidebarTreeResponseDto> {
     const requestKey = JSON.stringify(request);
-    const activeTask = this.activeImageSidebarTreeTasks.find(
-      (item) => item.key === requestKey,
-    );
-    if (activeTask) {
-      return activeTask.promise;
-    }
-    if (this.queuedImageSidebarTreeTask?.key === requestKey) {
-      return this.queuedImageSidebarTreeTask.promise;
-    }
-
     const startTask = (signal: AbortSignal) =>
       this.libraryHandlers.readImageSidebarTree(request, signal);
-    if (
-      this.activeImageSidebarTreeTasks.length <
-      this.maxConcurrentImageSidebarTreeReads
-    ) {
-      return this.startImageSidebarTreeTask(requestKey, startTask);
-    }
-
-    const nextQueuedTask = createQueuedReadTask(requestKey, startTask);
-    if (this.queuedImageSidebarTreeTask) {
-      this.queuedImageSidebarTreeTask.resolve(nextQueuedTask.promise);
-    }
-    this.queuedImageSidebarTreeTask = nextQueuedTask;
-    this.supersedeActiveImageSidebarTreeTask(
-      requestKey,
-      nextQueuedTask.promise,
-    );
-    this.startQueuedImageSidebarTreeTaskIfPossible();
-    return nextQueuedTask.promise;
+    return this.readTaskQueueManager.enqueueSidebarRead(requestKey, startTask);
   }
 
   async readImagePage(
     request: ReadImagePageRequestDto,
   ): Promise<ReadImagePageResponseDto> {
     const requestKey = JSON.stringify(request);
-    const activeTask = this.activeImagePageTasks.find(
-      (item) => item.key === requestKey,
-    );
-    if (activeTask) {
-      return activeTask.promise;
-    }
-    if (this.queuedImagePageTask?.key === requestKey) {
-      return this.queuedImagePageTask.promise;
-    }
-
     const startTask = (signal: AbortSignal) =>
       this.libraryHandlers.readImagePage(request, signal);
-    if (this.activeImagePageTasks.length < this.maxConcurrentImagePageReads) {
-      return this.startImagePageTask(requestKey, startTask);
-    }
-
-    const nextQueuedTask = createQueuedReadTask(requestKey, startTask);
-    if (this.queuedImagePageTask) {
-      this.queuedImagePageTask.resolve(nextQueuedTask.promise);
-    }
-    this.queuedImagePageTask = nextQueuedTask;
-    this.supersedeActiveImagePageTask(requestKey, nextQueuedTask.promise);
-    this.startQueuedImagePageTaskIfPossible();
-    return nextQueuedTask.promise;
+    return this.readTaskQueueManager.enqueuePageRead(requestKey, startTask);
   }
 
   async readImageMetadata(

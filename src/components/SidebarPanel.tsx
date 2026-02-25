@@ -4,292 +4,24 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
-  type ReactElement,
 } from "react";
 
 import { MainUiIcon } from "./MainUiIcon";
+import { SidebarPanelRow } from "./SidebarPanelRow";
 import { useI18n } from "../i18n/useI18n";
 import type { BrowserMode, SidebarNode } from "../types";
-
-type SidebarLabelDisplayMode = "full" | "leaf";
-
-function resolveFirstAudioId(node: SidebarNode): string | null {
-  if (node.audioId) {
-    return node.audioId;
-  }
-
-  for (const child of node.children) {
-    const candidate = resolveFirstAudioId(child);
-    if (candidate) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
-
-function canFolderCollapse(
-  mode: BrowserMode,
-  node: SidebarNode,
-  imageNodeType: SidebarNode["imageNodeType"],
-): boolean {
-  if (node.kind !== "folder" || node.children.length === 0) {
-    return false;
-  }
-
-  if (!isPointerFolderNode(mode, node, imageNodeType)) {
-    return false;
-  }
-
-  return hasDirectMediaChild(mode, node);
-}
-
-function resolveImageNodeType(node: SidebarNode): SidebarNode["imageNodeType"] {
-  return node.imageNodeType ?? (node.kind === "folder" ? "folder" : "package");
-}
-
-function isImageMediaNode(node: SidebarNode): boolean {
-  const imageNodeType = resolveImageNodeType(node);
-  return (
-    node.kind === "package"
-    || imageNodeType === "package"
-    || imageNodeType === "directory"
-  );
-}
-
-function isVideoMediaNode(node: SidebarNode): boolean {
-  return node.kind === "video" || Boolean(node.videoId);
-}
-
-function isMusicMediaNode(node: SidebarNode): boolean {
-  if (node.kind === "audio") {
-    return true;
-  }
-  if (node.kind !== "folder") {
-    return false;
-  }
-  return (node.directAudioCount ?? 0) > 0;
-}
-
-function isMediaNodeForMode(mode: BrowserMode, node: SidebarNode): boolean {
-  if (mode === "image") {
-    return isImageMediaNode(node);
-  }
-  if (mode === "video") {
-    return isVideoMediaNode(node);
-  }
-  return isMusicMediaNode(node);
-}
-
-function hasDirectMediaChild(mode: BrowserMode, node: SidebarNode): boolean {
-  if (node.kind !== "folder") {
-    return false;
-  }
-  return node.children.some((child) => isMediaNodeForMode(mode, child));
-}
-
-function isPointerFolderNode(
-  mode: BrowserMode,
-  node: SidebarNode,
-  imageNodeType: SidebarNode["imageNodeType"],
-): boolean {
-  if (node.kind !== "folder") {
-    return false;
-  }
-
-  if (mode === "image") {
-    if (imageNodeType !== "folder") {
-      return false;
-    }
-    return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId;
-  }
-
-  if (mode === "video") {
-    return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId;
-  }
-
-  return (node.directAudioCount ?? 0) === 0;
-}
-
-function resolveSidebarDisplayLabel(
-  node: SidebarNode,
-  labelDisplayMode: SidebarLabelDisplayMode,
-): string {
-  if (labelDisplayMode === "full" || node.kind !== "folder") {
-    return node.label;
-  }
-
-  const segments = node.pathKey.split("/");
-  const leaf = segments[segments.length - 1]?.trim();
-  return leaf && leaf.length > 0 ? leaf : node.label;
-}
-
-function resolveAncestorNodeIds(
-  nodes: SidebarNode[],
-  targetNodeId: string,
-): string[] {
-  const path: string[] = [];
-
-  const walk = (items: SidebarNode[], ancestors: string[]): boolean => {
-    for (const node of items) {
-      if (node.id === targetNodeId) {
-        path.push(...ancestors);
-        return true;
-      }
-
-      if (node.children.length === 0) {
-        continue;
-      }
-
-      if (walk(node.children, [...ancestors, node.id])) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
-  walk(nodes, []);
-  return path;
-}
-
-function resolveNodeOrderIndexById(nodes: SidebarNode[]): Map<string, number> {
-  const indexById = new Map<string, number>();
-  let cursor = 0;
-
-  const walk = (items: SidebarNode[]) => {
-    for (const node of items) {
-      indexById.set(node.id, cursor);
-      cursor += 1;
-      if (node.children.length > 0) {
-        walk(node.children);
-      }
-    }
-  };
-
-  walk(nodes);
-  return indexById;
-}
-
-function resolveImagePackageParentNodeIds(nodes: SidebarNode[]): string[] {
-  const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[]) => {
-    for (const node of items) {
-      if (node.kind === "folder" && hasDirectMediaChild("image", node)) {
-        orderedNodeIds.push(node.id);
-      }
-
-      if (node.children.length > 0) {
-        walk(node.children);
-      }
-    }
-  };
-
-  walk(nodes);
-  return orderedNodeIds;
-}
-
-function resolveVideoParentNodeIds(nodes: SidebarNode[]): string[] {
-  const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[]) => {
-    for (const node of items) {
-      if (node.kind === "folder" && hasDirectMediaChild("video", node)) {
-        orderedNodeIds.push(node.id);
-      }
-
-      if (node.children.length > 0) {
-        walk(node.children);
-      }
-    }
-  };
-
-  walk(nodes);
-  return orderedNodeIds;
-}
-
-function resolveAudioParentNodeIds(nodes: SidebarNode[]): string[] {
-  const orderedNodeIds: string[] = [];
-  const walk = (items: SidebarNode[]) => {
-    for (const node of items) {
-      if (node.kind === "folder" && hasDirectMediaChild("music", node)) {
-        orderedNodeIds.push(node.id);
-      }
-
-      if (node.children.length > 0) {
-        walk(node.children);
-      }
-    }
-  };
-
-  walk(nodes);
-  return orderedNodeIds;
-}
-
-function isSameNodeIdSet(left: Set<string>, right: Set<string>): boolean {
-  if (left.size !== right.size) {
-    return false;
-  }
-
-  for (const value of left) {
-    if (!right.has(value)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-interface VisibleSidebarRow {
-  node: SidebarNode;
-  depth: number;
-}
-
-function flattenVisibleSidebarRows(
-  nodes: SidebarNode[],
-  depth: number,
-  mode: BrowserMode,
-  collapsedImageFolderNodeIds: Set<string>,
-  rows: VisibleSidebarRow[],
-): void {
-  for (const node of nodes) {
-    rows.push({ node, depth });
-
-    if (node.children.length === 0) {
-      continue;
-    }
-
-    const imageNodeType = resolveImageNodeType(node);
-    const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType);
-    const imageFolderCollapsed =
-      imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
-
-    if (imageFolderCollapsed) {
-      for (const child of node.children) {
-        if (isMediaNodeForMode(mode, child)) {
-          continue;
-        }
-        flattenVisibleSidebarRows(
-          [child],
-          depth + 1,
-          mode,
-          collapsedImageFolderNodeIds,
-          rows,
-        );
-      }
-      continue;
-    }
-
-    flattenVisibleSidebarRows(
-      node.children,
-      depth + 1,
-      mode,
-      collapsedImageFolderNodeIds,
-      rows,
-    );
-  }
-}
+import {
+  flattenVisibleSidebarRows,
+  isSameNodeIdSet,
+  resolveAncestorNodeIds,
+  resolveAudioParentNodeIds,
+  resolveImagePackageParentNodeIds,
+  resolveNodeOrderIndexById,
+  resolveVideoParentNodeIds,
+  type SidebarLabelDisplayMode,
+  type VisibleSidebarRow,
+} from "./sidebarPanelTreeUtils";
 
 interface SidebarPanelProps {
   mode: BrowserMode;
@@ -398,9 +130,15 @@ function SidebarPanel({
       return new Set(collapsedFolderNodeIds ?? []);
     }
     return localCollapsedImageFolderNodeIds;
-  }, [collapsedFolderNodeIds, localCollapsedImageFolderNodeIds, onSetCollapsedFolderNodeIds]);
+  }, [
+    collapsedFolderNodeIds,
+    localCollapsedImageFolderNodeIds,
+    onSetCollapsedFolderNodeIds,
+  ]);
   const manageDragCleanupRef = useRef<(() => void) | null>(null);
-  const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(new Map());
+  const labelTextElementByNodeIdRef = useRef<Map<string, HTMLSpanElement>>(
+    new Map(),
+  );
   const overflowMeasureRafIdRef = useRef<number | null>(null);
   const suppressAutoExpandAncestorFoldersRef = useRef(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
@@ -409,7 +147,9 @@ function SidebarPanel({
     useState<SidebarLabelDisplayMode>("full");
   const effectiveSidebarLabelDisplayMode =
     sidebarLabelDisplayMode ?? localSidebarLabelDisplayMode;
-  const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(new Set());
+  const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(
+    new Set(),
+  );
   const suppressManageClickRef = useRef(false);
   const manageDragStateRef = useRef<{
     startX: number;
@@ -454,14 +194,18 @@ function SidebarPanel({
 
   const refreshVisibleOverflowStates = useCallback(() => {
     const next = new Set<string>();
-    for (const [nodeId, element] of labelTextElementByNodeIdRef.current.entries()) {
+    for (const [
+      nodeId,
+      element,
+    ] of labelTextElementByNodeIdRef.current.entries()) {
       if (!element.isConnected) {
         continue;
       }
       const primaryTextElement = element.querySelector<HTMLElement>(
         ".sidebar-label-text",
       );
-      const textScrollWidth = primaryTextElement?.scrollWidth ?? element.scrollWidth;
+      const textScrollWidth =
+        primaryTextElement?.scrollWidth ?? element.scrollWidth;
       if (textScrollWidth - element.clientWidth > 1) {
         next.add(nodeId);
       }
@@ -481,33 +225,31 @@ function SidebarPanel({
   }, [clearOverflowMeasureRaf, refreshVisibleOverflowStates]);
 
   useEffect(() => {
-    if (sidebarFocus !== 'sidebar') {
+    if (sidebarFocus !== "sidebar") {
       return;
     }
 
     const onNavigationKeyDown = (event: KeyboardEvent) => {
       if (
-        event.key === 'ArrowUp'
-        || event.key === 'ArrowDown'
-        || event.key === 'PageUp'
-        || event.key === 'PageDown'
-        || event.key === 'Home'
-        || event.key === 'End'
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        event.key === "PageUp" ||
+        event.key === "PageDown" ||
+        event.key === "Home" ||
+        event.key === "End"
       ) {
         setHoveredNodeId(null);
       }
     };
 
-    window.addEventListener('keydown', onNavigationKeyDown, true);
+    window.addEventListener("keydown", onNavigationKeyDown, true);
     return () => {
-      window.removeEventListener('keydown', onNavigationKeyDown, true);
+      window.removeEventListener("keydown", onNavigationKeyDown, true);
     };
   }, [sidebarFocus]);
 
   const updateCollapsedImageFolderNodeIds = useCallback(
-    (
-    updater: (previous: Set<string>) => Set<string>,
-    ) => {
+    (updater: (previous: Set<string>) => Set<string>) => {
       if (onSetCollapsedFolderNodeIds) {
         const previous = new Set(collapsedFolderNodeIds ?? []);
         const next = updater(new Set(previous));
@@ -555,12 +297,16 @@ function SidebarPanel({
   }, [imageTreeNodes, mode]);
 
   const imagePackageParentNodeIds = useMemo(
-    () => (mode === "image" ? resolveImagePackageParentNodeIds(imageTreeNodes) : []),
+    () =>
+      mode === "image" ? resolveImagePackageParentNodeIds(imageTreeNodes) : [],
     [imageTreeNodes, mode],
   );
 
   const imageNodeOrderIndexById = useMemo(
-    () => (mode === "image" ? resolveNodeOrderIndexById(imageTreeNodes) : new Map<string, number>()),
+    () =>
+      mode === "image"
+        ? resolveNodeOrderIndexById(imageTreeNodes)
+        : new Map<string, number>(),
     [imageTreeNodes, mode],
   );
 
@@ -570,7 +316,10 @@ function SidebarPanel({
   );
 
   const videoNodeOrderIndexById = useMemo(
-    () => (mode === "video" ? resolveNodeOrderIndexById(videoTreeNodes) : new Map<string, number>()),
+    () =>
+      mode === "video"
+        ? resolveNodeOrderIndexById(videoTreeNodes)
+        : new Map<string, number>(),
     [mode, videoTreeNodes],
   );
 
@@ -580,7 +329,10 @@ function SidebarPanel({
   );
 
   const audioNodeOrderIndexById = useMemo(
-    () => (mode === "music" ? resolveNodeOrderIndexById(audioTreeNodes) : new Map<string, number>()),
+    () =>
+      mode === "music"
+        ? resolveNodeOrderIndexById(audioTreeNodes)
+        : new Map<string, number>(),
     [audioTreeNodes, mode],
   );
 
@@ -588,7 +340,9 @@ function SidebarPanel({
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
       return false;
     }
-    return imagePackageParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+    return imagePackageParentNodeIds.every((nodeId) =>
+      collapsedImageFolderNodeIds.has(nodeId),
+    );
   }, [collapsedImageFolderNodeIds, imagePackageParentNodeIds, mode]);
 
   const imageParentNavigation = useMemo(() => {
@@ -604,7 +358,8 @@ function SidebarPanel({
       : -1;
     if (selectedTargetIndex >= 0) {
       return {
-        previousNodeId: imagePackageParentNodeIds[selectedTargetIndex - 1] ?? null,
+        previousNodeId:
+          imagePackageParentNodeIds[selectedTargetIndex - 1] ?? null,
         nextNodeId: imagePackageParentNodeIds[selectedTargetIndex + 1] ?? null,
       };
     }
@@ -696,13 +451,20 @@ function SidebarPanel({
       previousNodeId,
       nextNodeId,
     };
-  }, [mode, selectedSidebarNodeId, videoNodeOrderIndexById, videoParentNodeIds]);
+  }, [
+    mode,
+    selectedSidebarNodeId,
+    videoNodeOrderIndexById,
+    videoParentNodeIds,
+  ]);
 
   const allVideoParentsCollapsed = useMemo(() => {
     if (mode !== "video" || videoParentNodeIds.length === 0) {
       return false;
     }
-    return videoParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+    return videoParentNodeIds.every((nodeId) =>
+      collapsedImageFolderNodeIds.has(nodeId),
+    );
   }, [collapsedImageFolderNodeIds, mode, videoParentNodeIds]);
 
   const audioParentNavigation = useMemo(() => {
@@ -754,13 +516,20 @@ function SidebarPanel({
       previousNodeId,
       nextNodeId,
     };
-  }, [audioNodeOrderIndexById, audioParentNodeIds, mode, selectedSidebarNodeId]);
+  }, [
+    audioNodeOrderIndexById,
+    audioParentNodeIds,
+    mode,
+    selectedSidebarNodeId,
+  ]);
 
   const allAudioParentsCollapsed = useMemo(() => {
     if (mode !== "music" || audioParentNodeIds.length === 0) {
       return false;
     }
-    return audioParentNodeIds.every((nodeId) => collapsedImageFolderNodeIds.has(nodeId));
+    return audioParentNodeIds.every((nodeId) =>
+      collapsedImageFolderNodeIds.has(nodeId),
+    );
   }, [audioParentNodeIds, collapsedImageFolderNodeIds, mode]);
 
   const focusSidebarNodeWithRetry = useCallback((targetNodeId: string) => {
@@ -773,7 +542,9 @@ function SidebarPanel({
         return;
       }
       const rowElement = Array.from(
-        currentContainer.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+        currentContainer.querySelectorAll<HTMLElement>(
+          "[data-sidebar-node-id]",
+        ),
       ).find((element) => element.dataset.sidebarNodeId === targetNodeId);
       const labelElement = rowElement?.querySelector<HTMLButtonElement>(
         "[data-slot='fg-sidebar-main-label']",
@@ -792,61 +563,76 @@ function SidebarPanel({
     requestAnimationFrame(tryFocus);
   }, []);
 
-  const scrollSidebarToNode = useCallback((targetNodeId: string) => {
-    const container = sidebarTreeRef.current;
-    if (!container) {
-      return;
-    }
+  const scrollSidebarToNode = useCallback(
+    (targetNodeId: string) => {
+      const container = sidebarTreeRef.current;
+      if (!container) {
+        return;
+      }
 
-    const rows: VisibleSidebarRow[] = [];
-    flattenVisibleSidebarRows(
+      const rows: VisibleSidebarRow[] = [];
+      flattenVisibleSidebarRows(
+        activeTreeNodes,
+        0,
+        mode,
+        collapsedImageFolderNodeIds,
+        rows,
+      );
+      const targetIndex = rows.findIndex((row) => row.node.id === targetNodeId);
+      if (targetIndex < 0) {
+        return;
+      }
+
+      const rowHeight = Math.max(
+        24,
+        Math.round(sidebarFontSize + sidebarVerticalGap + 14),
+      );
+      const rowTop = targetIndex * rowHeight;
+      const rowBottom = rowTop + rowHeight;
+      const viewTop = container.scrollTop;
+      const viewBottom = viewTop + container.clientHeight;
+      if (rowTop < viewTop) {
+        container.scrollTop = Math.max(0, rowTop - 4);
+      } else if (rowBottom > viewBottom) {
+        container.scrollTop = Math.max(
+          0,
+          rowBottom - container.clientHeight + 4,
+        );
+      }
+    },
+    [
       activeTreeNodes,
-      0,
-      mode,
       collapsedImageFolderNodeIds,
-      rows,
-    );
-    const targetIndex = rows.findIndex((row) => row.node.id === targetNodeId);
-    if (targetIndex < 0) {
-      return;
-    }
+      mode,
+      sidebarFontSize,
+      sidebarVerticalGap,
+    ],
+  );
 
-    const rowHeight = Math.max(
-      24,
-      Math.round(sidebarFontSize + sidebarVerticalGap + 14),
-    );
-    const rowTop = targetIndex * rowHeight;
-    const rowBottom = rowTop + rowHeight;
-    const viewTop = container.scrollTop;
-    const viewBottom = viewTop + container.clientHeight;
-    if (rowTop < viewTop) {
-      container.scrollTop = Math.max(0, rowTop - 4);
-    } else if (rowBottom > viewBottom) {
-      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
-    }
-  }, [activeTreeNodes, collapsedImageFolderNodeIds, mode, sidebarFontSize, sidebarVerticalGap]);
+  const jumpToImageParentNode = useCallback(
+    (targetNodeId: string | null) => {
+      if (mode !== "image" || !targetNodeId) {
+        return;
+      }
 
-  const jumpToImageParentNode = useCallback((targetNodeId: string | null) => {
-    if (mode !== "image" || !targetNodeId) {
-      return;
-    }
+      onSelectNode(targetNodeId);
+      scrollSidebarToNode(targetNodeId);
+      focusSidebarNodeWithRetry(targetNodeId);
 
-    onSelectNode(targetNodeId);
-    scrollSidebarToNode(targetNodeId);
-    focusSidebarNodeWithRetry(targetNodeId);
-
-    const targetNode = imageNodeById.get(targetNodeId);
-    if (targetNode?.imageSourceId) {
-      onSelectPackage(targetNode.imageSourceId);
-    }
-  }, [
-    focusSidebarNodeWithRetry,
-    imageNodeById,
-    mode,
-    onSelectNode,
-    onSelectPackage,
-    scrollSidebarToNode,
-  ]);
+      const targetNode = imageNodeById.get(targetNodeId);
+      if (targetNode?.imageSourceId) {
+        onSelectPackage(targetNode.imageSourceId);
+      }
+    },
+    [
+      focusSidebarNodeWithRetry,
+      imageNodeById,
+      mode,
+      onSelectNode,
+      onSelectPackage,
+      scrollSidebarToNode,
+    ],
+  );
 
   const toggleCollapseImagePackageParentNodes = useCallback(() => {
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
@@ -968,35 +754,31 @@ function SidebarPanel({
     updateCollapsedImageFolderNodeIds,
   ]);
 
-  const jumpToVideoParentNode = useCallback((targetNodeId: string | null) => {
-    if (mode !== "video" || !targetNodeId) {
-      return;
-    }
+  const jumpToVideoParentNode = useCallback(
+    (targetNodeId: string | null) => {
+      if (mode !== "video" || !targetNodeId) {
+        return;
+      }
 
-    onSelectNode(targetNodeId);
-    scrollSidebarToNode(targetNodeId);
-    focusSidebarNodeWithRetry(targetNodeId);
-  }, [
-    focusSidebarNodeWithRetry,
-    mode,
-    onSelectNode,
-    scrollSidebarToNode,
-  ]);
+      onSelectNode(targetNodeId);
+      scrollSidebarToNode(targetNodeId);
+      focusSidebarNodeWithRetry(targetNodeId);
+    },
+    [focusSidebarNodeWithRetry, mode, onSelectNode, scrollSidebarToNode],
+  );
 
-  const jumpToAudioParentNode = useCallback((targetNodeId: string | null) => {
-    if (mode !== "music" || !targetNodeId) {
-      return;
-    }
+  const jumpToAudioParentNode = useCallback(
+    (targetNodeId: string | null) => {
+      if (mode !== "music" || !targetNodeId) {
+        return;
+      }
 
-    onSelectNode(targetNodeId);
-    scrollSidebarToNode(targetNodeId);
-    focusSidebarNodeWithRetry(targetNodeId);
-  }, [
-    focusSidebarNodeWithRetry,
-    mode,
-    onSelectNode,
-    scrollSidebarToNode,
-  ]);
+      onSelectNode(targetNodeId);
+      scrollSidebarToNode(targetNodeId);
+      focusSidebarNodeWithRetry(targetNodeId);
+    },
+    [focusSidebarNodeWithRetry, mode, onSelectNode, scrollSidebarToNode],
+  );
 
   const expandSelectedSidebarNodeAncestors = useCallback(() => {
     if (!selectedSidebarNodeId) {
@@ -1076,7 +858,10 @@ function SidebarPanel({
       pointerId: event.pointerId,
     };
 
-    const resolveNodeIdAtPoint = (clientX: number, clientY: number): string | null => {
+    const resolveNodeIdAtPoint = (
+      clientX: number,
+      clientY: number,
+    ): string | null => {
       const element = document.elementFromPoint(clientX, clientY);
       const row = element?.closest<HTMLElement>("[data-sidebar-node-id]");
       return row?.dataset.sidebarNodeId ?? null;
@@ -1112,7 +897,9 @@ function SidebarPanel({
       }
       state.dragStarted = true;
 
-      applyToggleForNode(resolveNodeIdAtPoint(moveEvent.clientX, moveEvent.clientY));
+      applyToggleForNode(
+        resolveNodeIdAtPoint(moveEvent.clientX, moveEvent.clientY),
+      );
     };
 
     const onPointerUpOrCancel = (upEvent: PointerEvent) => {
@@ -1215,8 +1002,8 @@ function SidebarPanel({
       Math.floor(safeScrollTop / estimatedRowBlockHeight) - overscanRows,
     );
     const visibleCount =
-      Math.ceil((sidebarViewportHeight + rowGap) / estimatedRowBlockHeight)
-      + overscanRows * 2;
+      Math.ceil((sidebarViewportHeight + rowGap) / estimatedRowBlockHeight) +
+      overscanRows * 2;
     const endIndex = Math.min(
       visibleSidebarRows.length,
       startIndex + Math.max(1, visibleCount),
@@ -1228,8 +1015,8 @@ function SidebarPanel({
     const trailingCount = Math.max(0, visibleSidebarRows.length - endIndex);
     const bottomSpacerHeight =
       trailingCount > 0
-        ? trailingCount * estimatedRowContentHeight
-          + (trailingCount - 1) * rowGap
+        ? trailingCount * estimatedRowContentHeight +
+          (trailingCount - 1) * rowGap
         : 0;
 
     return {
@@ -1250,10 +1037,7 @@ function SidebarPanel({
 
   const rowsForRender = useMemo(
     () =>
-      visibleSidebarRows.slice(
-        virtualRange.startIndex,
-        virtualRange.endIndex,
-      ),
+      visibleSidebarRows.slice(virtualRange.startIndex, virtualRange.endIndex),
     [visibleSidebarRows, virtualRange.endIndex, virtualRange.startIndex],
   );
 
@@ -1285,7 +1069,12 @@ function SidebarPanel({
 
   useEffect(() => {
     scheduleOverflowMeasure();
-  }, [rowsForRender, scheduleOverflowMeasure, sidebarFontSize, sidebarIndentStep]);
+  }, [
+    rowsForRender,
+    scheduleOverflowMeasure,
+    sidebarFontSize,
+    sidebarIndentStep,
+  ]);
 
   useEffect(() => {
     const handleWindowResize = () => {
@@ -1305,72 +1094,85 @@ function SidebarPanel({
     };
   }, [scheduleOverflowMeasure]);
 
-  const alignSidebarNodeIntoView = useCallback((targetNodeId: string): boolean => {
-    const container = sidebarTreeRef.current;
-    if (!container) {
-      return true;
-    }
+  const alignSidebarNodeIntoView = useCallback(
+    (targetNodeId: string): boolean => {
+      const container = sidebarTreeRef.current;
+      if (!container) {
+        return true;
+      }
 
-    const renderedRow = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
-    ).find((row) => row.dataset.sidebarNodeId === targetNodeId);
+      const renderedRow = Array.from(
+        container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+      ).find((row) => row.dataset.sidebarNodeId === targetNodeId);
 
-    if (renderedRow) {
-      const rowTop = renderedRow.offsetTop;
-      const rowBottom = rowTop + renderedRow.offsetHeight;
+      if (renderedRow) {
+        const rowTop = renderedRow.offsetTop;
+        const rowBottom = rowTop + renderedRow.offsetHeight;
+        const viewTop = container.scrollTop;
+        const viewBottom = viewTop + container.clientHeight;
+
+        if (rowTop < viewTop) {
+          container.scrollTop = Math.max(0, rowTop - 4);
+        } else if (rowBottom > viewBottom) {
+          container.scrollTop = Math.max(
+            0,
+            rowBottom - container.clientHeight + 4,
+          );
+        }
+        return true;
+      }
+
+      const targetIndex = visibleSidebarRows.findIndex(
+        (row) => row.node.id === targetNodeId,
+      );
+      if (targetIndex < 0) {
+        return true;
+      }
+
+      const estimatedAlignRowHeight = Math.max(34, estimatedRowBlockHeight);
+      const rowTop = targetIndex * estimatedAlignRowHeight;
+      const rowBottom = rowTop + estimatedAlignRowHeight;
       const viewTop = container.scrollTop;
       const viewBottom = viewTop + container.clientHeight;
 
       if (rowTop < viewTop) {
         container.scrollTop = Math.max(0, rowTop - 4);
       } else if (rowBottom > viewBottom) {
-        container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
+        container.scrollTop = Math.max(
+          0,
+          rowBottom - container.clientHeight + 4,
+        );
       }
-      return true;
-    }
 
-    const targetIndex = visibleSidebarRows.findIndex(
-      (row) => row.node.id === targetNodeId,
-    );
-    if (targetIndex < 0) {
-      return true;
-    }
+      return false;
+    },
+    [estimatedRowBlockHeight, visibleSidebarRows],
+  );
 
-    const estimatedAlignRowHeight = Math.max(34, estimatedRowBlockHeight);
-    const rowTop = targetIndex * estimatedAlignRowHeight;
-    const rowBottom = rowTop + estimatedAlignRowHeight;
-    const viewTop = container.scrollTop;
-    const viewBottom = viewTop + container.clientHeight;
+  const alignSidebarNodeIntoViewWithRetry = useCallback(
+    (targetNodeId: string) => {
+      clearSidebarAlignRaf();
+      let frame = 0;
+      const maxFrames = 6;
 
-    if (rowTop < viewTop) {
-      container.scrollTop = Math.max(0, rowTop - 4);
-    } else if (rowBottom > viewBottom) {
-      container.scrollTop = Math.max(0, rowBottom - container.clientHeight + 4);
-    }
+      const tryAlign = () => {
+        const aligned = alignSidebarNodeIntoView(targetNodeId);
+        if (aligned || frame >= maxFrames) {
+          sidebarAlignRafIdRef.current = null;
+          return;
+        }
+        frame += 1;
+        sidebarAlignRafIdRef.current = requestAnimationFrame(tryAlign);
+      };
 
-    return false;
-  }, [estimatedRowBlockHeight, visibleSidebarRows]);
-
-  const alignSidebarNodeIntoViewWithRetry = useCallback((targetNodeId: string) => {
-    clearSidebarAlignRaf();
-    let frame = 0;
-    const maxFrames = 6;
-
-    const tryAlign = () => {
-      const aligned = alignSidebarNodeIntoView(targetNodeId);
-      if (aligned || frame >= maxFrames) {
-        sidebarAlignRafIdRef.current = null;
-        return;
-      }
-      frame += 1;
-      sidebarAlignRafIdRef.current = requestAnimationFrame(tryAlign);
-    };
-
-    tryAlign();
-  }, [alignSidebarNodeIntoView, clearSidebarAlignRaf]);
+      tryAlign();
+    },
+    [alignSidebarNodeIntoView, clearSidebarAlignRaf],
+  );
 
   useEffect(() => {
-    const previousSelectedSidebarNodeId = previousSelectedSidebarNodeIdRef.current;
+    const previousSelectedSidebarNodeId =
+      previousSelectedSidebarNodeIdRef.current;
     const previousSidebarFocus = previousSidebarFocusRef.current;
     previousSelectedSidebarNodeIdRef.current = selectedSidebarNodeId;
     previousSidebarFocusRef.current = sidebarFocus;
@@ -1379,7 +1181,8 @@ function SidebarPanel({
       return;
     }
 
-    const selectedNodeChanged = selectedSidebarNodeId !== previousSelectedSidebarNodeId;
+    const selectedNodeChanged =
+      selectedSidebarNodeId !== previousSelectedSidebarNodeId;
     const leftSidebarFocus =
       previousSidebarFocus === "sidebar" && sidebarFocus === "main";
 
@@ -1395,225 +1198,6 @@ function SidebarPanel({
     selectedSidebarNodeId,
     sidebarFocus,
   ]);
-
-  const renderRow = ({ node }: VisibleSidebarRow): ReactElement => {
-    const isFolder = node.kind === "folder";
-    const imageNodeType = resolveImageNodeType(node);
-    const displayLabel = resolveSidebarDisplayLabel(node, effectiveSidebarLabelDisplayMode);
-    const isFocusedNode = selectedSidebarNodeId === node.id;
-    const isHoverActive = hoveredNodeId === node.id;
-    const isPressedActive = isFocusedNode || isHoverActive;
-    const marqueeActive =
-      (focusedNodeId === node.id
-        || (sidebarFocus === "sidebar" && isFocusedNode))
-      && overflowingNodeIds.has(node.id);
-    const marqueeStyle = marqueeActive
-      ? ({
-          "--mpx-sidebar-label-marquee-duration": `${Math.max(8, Math.min(30, Math.round(displayLabel.length * 0.24)))}s`,
-        } as CSSProperties)
-      : undefined;
-    const loadState =
-      mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
-    const hasOwnImages =
-      imageNodeType === "package" || imageNodeType === "directory";
-    const imageFolderCollapsible = canFolderCollapse(
-      mode,
-      node,
-      imageNodeType,
-    );
-    const imageFolderCollapsed =
-      imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
-    const visibleImageCount = node.directImageCount ?? 0;
-    const directMediaChildCount = node.children.filter((child) =>
-      isMediaNodeForMode(mode, child),
-    ).length;
-    const directAudioCount = node.directAudioCount ?? 0;
-    const musicCountIsTrack = directAudioCount > 0;
-    const musicCountValue = musicCountIsTrack
-      ? directAudioCount
-      : directMediaChildCount;
-    const musicCountLabel = musicCountIsTrack
-      ? t("a11y.sidebar.musicTrackCount", { count: musicCountValue })
-      : t("a11y.sidebar.musicFolderCount", { count: musicCountValue });
-    const musicCountClassName = `sidebar-count ${musicCountIsTrack ? "sidebar-count-images" : "sidebar-count-packages"}`;
-    const imageCountLabel = hasOwnImages
-      ? t("a11y.sidebar.imageCount", { count: visibleImageCount })
-      : t("a11y.sidebar.nodeCount", { count: directMediaChildCount });
-    const showProcessingCountPlaceholder =
-      mode === "image" && hasOwnImages && Boolean(loadState);
-
-    return (
-      <div
-        key={node.id}
-        data-sidebar-node-id={node.id}
-        className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
-      >
-        <span
-          className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
-          aria-hidden="true"
-        />
-
-          <button
-            className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
-            data-slot="fg-sidebar-main-label"
-            type="button"
-            aria-pressed={manageStyleEnabled ? checkedNodes.has(node.id) : undefined}
-            style={{ fontSize: `${sidebarFontSize}px` }}
-            onMouseEnter={() => {
-              setHoveredNodeId(node.id);
-            }}
-            onMouseLeave={() => {
-              setHoveredNodeId((previous) => (previous === node.id ? null : previous));
-            }}
-            onFocus={() => {
-              setFocusedNodeId(node.id);
-            }}
-            onBlur={() => {
-              setFocusedNodeId((previous) => (previous === node.id ? null : previous));
-            }}
-            onPointerDown={(event) => {
-              if (!manageStyleEnabled) {
-                return;
-              }
-              startManagePointerToggle(node.id, event);
-            }}
-            title={
-              loadState === "running"
-                ? t("tip.sidebar.processingRunning")
-                : loadState === "pending"
-                  ? t("tip.sidebar.processingPending")
-                  : imageFolderCollapsible
-                ? imageFolderCollapsed
-                  ? t("tip.sidebar.expandSubfolder")
-                  : t("tip.sidebar.collapseSubfolder")
-                : effectiveSidebarLabelDisplayMode === "leaf" && isFolder
-                  ? node.pathKey
-                  : undefined
-            }
-            onClick={(event) => {
-              if (manageStyleEnabled) {
-                if (suppressManageClickRef.current) {
-                  suppressManageClickRef.current = false;
-                  return;
-                }
-                onToggleManageNode?.(node.id, event.shiftKey);
-                return;
-              }
-              if (mode === "image" && searchResultReadonly) {
-                return;
-              }
-              onSelectNode(node.id);
-              if (mode === "image" && node.imageSourceId && loadState) {
-                return;
-              }
-              if (mode === "image" && node.imageSourceId) {
-                onSelectPackage(node.imageSourceId);
-              }
-              if (mode === "music") {
-                const targetAudioId = resolveFirstAudioId(node);
-                if (targetAudioId) {
-                  onSelectAudio(targetAudioId);
-                }
-                return;
-              }
-              if (node.videoId) {
-                onSelectVideo(node.videoId);
-              }
-            }}
-            onDoubleClick={() => {
-              if (mode === "video" && node.videoId) {
-                onSelectNode(node.id);
-                if (onSelectVideoAndPlay) {
-                  onSelectVideoAndPlay(node.videoId);
-                } else {
-                  onSelectVideo(node.videoId);
-                }
-                return;
-              }
-
-              if (!imageFolderCollapsible) {
-                return;
-              }
-              updateCollapsedImageFolderNodeIds((previous) => {
-                const next = new Set(previous);
-                if (next.has(node.id)) {
-                  next.delete(node.id);
-                } else {
-                  next.add(node.id);
-                }
-                return next;
-              });
-            }}
-          >
-            <span
-              ref={(element) => {
-                if (element) {
-                  labelTextElementByNodeIdRef.current.set(node.id, element);
-                  scheduleOverflowMeasure();
-                  return;
-                }
-                labelTextElementByNodeIdRef.current.delete(node.id);
-                scheduleOverflowMeasure();
-              }}
-              className={`sidebar-label-marquee ${marqueeActive ? "is-overflow" : ""}`}
-              style={marqueeStyle}
-            >
-              <span className="sidebar-label-text">{displayLabel}</span>
-              {marqueeActive ? (
-                <span aria-hidden="true" className="sidebar-label-text">
-                  {displayLabel}
-                </span>
-              ) : null}
-            </span>
-          </button>
-
-          {mode === "music" && node.kind === "audio" && node.audioId ? (
-            <input
-              aria-label={t("a11y.sidebar.toggleAudio", { id: node.audioId })}
-              checked={audioPlaylistIds.includes(node.audioId)}
-              type="checkbox"
-              onChange={(event) =>
-                onToggleAudioPlaylist(node.audioId!, event.target.checked)
-              }
-            />
-          ) : null}
-
-          {mode === "image" ? (
-            <span
-              className="sidebar-counts"
-              style={{ fontSize: `${sidebarCountFontSize}px` }}
-            >
-              <span
-                className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
-                aria-label={imageCountLabel}
-                title={imageCountLabel}
-              >
-                {showProcessingCountPlaceholder
-                  ? "..."
-                  : hasOwnImages
-                    ? visibleImageCount
-                    : directMediaChildCount}
-              </span>
-            </span>
-          ) : null}
-
-          {mode === "music" ? (
-            <span
-              className="sidebar-counts"
-              style={{ fontSize: `${sidebarCountFontSize}px` }}
-            >
-              <span
-                className={musicCountClassName}
-                aria-label={musicCountLabel}
-                title={musicCountLabel}
-              >
-                {musicCountValue}
-              </span>
-            </span>
-          ) : null}
-      </div>
-    );
-  };
 
   return (
     <aside
@@ -1637,12 +1221,12 @@ function SidebarPanel({
 
         <div className="sidebar-head-actions">
           {searchResultMode ? (
-              <button
-                className="sidebar-head-icon-btn"
-                data-slot="fg-sidebar-toolbar-back"
-                type="button"
-                aria-label={t("a11y.common.back")}
-                title={t("tip.common.back")}
+            <button
+              className="sidebar-head-icon-btn"
+              data-slot="fg-sidebar-toolbar-back"
+              type="button"
+              aria-label={t("a11y.common.back")}
+              title={t("tip.common.back")}
               disabled={!canGoToFromSearchMode}
               onClick={onGoToFromSearchMode}
             >
@@ -1671,7 +1255,11 @@ function SidebarPanel({
               className={`sidebar-head-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
               data-slot="fg-sidebar-toolbar-label-mode-toggle"
               type="button"
-              title={effectiveSidebarLabelDisplayMode === "full" ? "切换到末段名" : "切换到完整路径"}
+              title={
+                effectiveSidebarLabelDisplayMode === "full"
+                  ? "切换到末段名"
+                  : "切换到完整路径"
+              }
               onClick={() => {
                 if (onToggleSidebarLabelDisplayMode) {
                   onToggleSidebarLabelDisplayMode();
@@ -1693,7 +1281,11 @@ function SidebarPanel({
                 data-slot="fg-sidebar-toolbar-collapse-all"
                 type="button"
                 aria-label={collapseImageParentsLabel}
-                title={allTargetParentsCollapsed ? t("tip.sidebar.expandImageParents") : t("tip.sidebar.collapseImageParents")}
+                title={
+                  allTargetParentsCollapsed
+                    ? t("tip.sidebar.expandImageParents")
+                    : t("tip.sidebar.collapseImageParents")
+                }
                 disabled={targetParentNodeIds.length === 0}
                 onClick={
                   mode === "image"
@@ -1703,7 +1295,9 @@ function SidebarPanel({
                       : toggleCollapseAudioParentNodes
                 }
               >
-                <MainUiIcon name={allTargetParentsCollapsed ? "expand" : "collapse"} />
+                <MainUiIcon
+                  name={allTargetParentsCollapsed ? "expand" : "collapse"}
+                />
               </button>
             ) : null
           ) : null}
@@ -1719,11 +1313,17 @@ function SidebarPanel({
                 disabled={!targetParentNavigation.previousNodeId}
                 onClick={() => {
                   if (mode === "image") {
-                    jumpToImageParentNode(targetParentNavigation.previousNodeId);
+                    jumpToImageParentNode(
+                      targetParentNavigation.previousNodeId,
+                    );
                   } else if (mode === "video") {
-                    jumpToVideoParentNode(targetParentNavigation.previousNodeId);
+                    jumpToVideoParentNode(
+                      targetParentNavigation.previousNodeId,
+                    );
                   } else {
-                    jumpToAudioParentNode(targetParentNavigation.previousNodeId);
+                    jumpToAudioParentNode(
+                      targetParentNavigation.previousNodeId,
+                    );
                   }
                 }}
               >
@@ -1794,7 +1394,46 @@ function SidebarPanel({
               }}
             />
           ) : null}
-          {rowsForRender.map(renderRow)}
+          {rowsForRender.map(({ node }) => (
+            <SidebarPanelRow
+              key={node.id}
+              node={node}
+              mode={mode}
+              selectedSidebarNodeId={selectedSidebarNodeId}
+              hoveredNodeId={hoveredNodeId}
+              focusedNodeId={focusedNodeId}
+              sidebarFocus={sidebarFocus}
+              overflowingNodeIds={overflowingNodeIds}
+              effectiveSidebarLabelDisplayMode={
+                effectiveSidebarLabelDisplayMode
+              }
+              imageNodeLoadStateById={imageNodeLoadStateById}
+              collapsedImageFolderNodeIds={collapsedImageFolderNodeIds}
+              manageStyleEnabled={manageStyleEnabled}
+              checkedNodes={checkedNodes}
+              sidebarFontSize={sidebarFontSize}
+              sidebarCountFontSize={sidebarCountFontSize}
+              audioPlaylistIds={audioPlaylistIds}
+              searchResultReadonly={searchResultReadonly}
+              suppressManageClickRef={suppressManageClickRef}
+              labelTextElementByNodeIdRef={labelTextElementByNodeIdRef}
+              scheduleOverflowMeasure={scheduleOverflowMeasure}
+              setHoveredNodeId={setHoveredNodeId}
+              setFocusedNodeId={setFocusedNodeId}
+              startManagePointerToggle={startManagePointerToggle}
+              updateCollapsedImageFolderNodeIds={
+                updateCollapsedImageFolderNodeIds
+              }
+              onToggleManageNode={onToggleManageNode}
+              onSelectNode={onSelectNode}
+              onSelectPackage={onSelectPackage}
+              onSelectVideo={onSelectVideo}
+              onSelectVideoAndPlay={onSelectVideoAndPlay}
+              onSelectAudio={onSelectAudio}
+              onToggleAudioPlaylist={onToggleAudioPlaylist}
+              t={t}
+            />
+          ))}
           {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
             <div
               aria-hidden="true"
