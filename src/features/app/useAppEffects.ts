@@ -712,18 +712,6 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
-    const windowApi =
-      typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
-    if (!windowApi?.setFullscreen) {
-      return;
-    }
-
-    void windowApi.setFullscreen(fullscreenActive).catch(() => {
-      // ignore runtime bridge errors and keep renderer behavior intact
-    });
-  }, [fullscreenActive]);
-
-  useEffect(() => {
     const canAutoplayImages = resolveFullscreenImageAutoplayEnabled({
       fullscreenActive,
       fullscreenDisplay,

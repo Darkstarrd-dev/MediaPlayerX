@@ -587,18 +587,27 @@ describe("MusicMainSection", () => {
     const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
 
-    const switchButton = screen.getByRole("button", {
+    const switchButtons = screen.getAllByRole("button", {
       name: "切换前景/背景选择",
     });
-    const toggleButton = screen.getByRole("button", { name: "切换当前层开关" });
+    const foregroundSwitch = switchButtons.find(
+      (button) => button.textContent?.trim() === "F",
+    ) as HTMLElement;
+    const backgroundSwitch = switchButtons.find(
+      (button) => button.textContent?.trim() === "B",
+    ) as HTMLElement;
+    const toggleButtons = screen.getAllByRole("button", {
+      name: "切换当前层开关",
+    });
+    const backgroundToggle = toggleButtons[1] as HTMLElement;
 
-    expect(switchButton).toHaveTextContent("F");
-    expect(toggleButton).toHaveTextContent("on");
+    expect(foregroundSwitch).toHaveAttribute("aria-pressed", "true");
+    expect(backgroundToggle).toHaveTextContent("ON");
 
-    fireEvent.click(switchButton);
-    expect(switchButton).toHaveTextContent("B");
+    fireEvent.click(backgroundSwitch);
+    expect(backgroundSwitch).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(toggleButton);
+    fireEvent.click(backgroundToggle);
     expect(onMusicVisualizerShaderSettingsChange).toHaveBeenCalledWith({
       layeredBackgroundEnabled: false,
     });
@@ -616,10 +625,13 @@ describe("MusicMainSection", () => {
     const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
 
-    const switchButton = screen.getByRole("button", {
+    const switchButtons = screen.getAllByRole("button", {
       name: "切换前景/背景选择",
     });
-    expect(switchButton).toHaveTextContent("F");
+    const backgroundSwitch = switchButtons.find(
+      (button) => button.textContent?.trim() === "B",
+    ) as HTMLElement;
+    expect(backgroundSwitch).toHaveAttribute("aria-pressed", "false");
 
     const settingsButton = screen.getByRole("button", { name: "Shader 设置" });
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement);
@@ -629,8 +641,8 @@ describe("MusicMainSection", () => {
     expect(screen.getByLabelText(/前景X偏移/)).toBeInTheDocument();
 
     fireEvent.mouseEnter(shaderButton.parentElement as HTMLElement);
-    fireEvent.click(switchButton);
-    expect(switchButton).toHaveTextContent("B");
+    fireEvent.click(backgroundSwitch);
+    expect(backgroundSwitch).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.mouseEnter(settingsButton.parentElement as HTMLElement);
 

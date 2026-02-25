@@ -113,4 +113,5 @@ describe('autoplay-regression/app-effects', () => {
 
     expect(params.moveImage).not.toHaveBeenCalled()
   })
+
 })
