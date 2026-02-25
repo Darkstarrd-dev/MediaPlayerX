@@ -735,6 +735,7 @@ export function useAppTopLayerState({
     onTooltipEnabledChange: (value: boolean) => appSettings.updateSettings({ tooltipEnabled: value }),
     onElectronNativeChromeEnabledChange: applyElectronNativeChromeEnabled,
     onThemeParameterButtonVisibleChange: (value: boolean) => appSettings.updateSettings({ themeParameterButtonVisible: value }),
+    onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
     sidebarCollapsed,
     metadataCollapsed,
     onToggleSidebarPanel,

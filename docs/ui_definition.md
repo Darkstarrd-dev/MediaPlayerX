@@ -51,7 +51,7 @@
 | `fg.header.gDebug` | `.header-group-debug` | `data-slot="fg-header-g-debug"` | `headerDebugGroupVisible` | Debug 组 | 位于 g2 与 g3 之间 |
 | `fg.header.gDebug.tooltips` | `.window-control-btn--theme-parameter` (TT) | `data-slot="fg-header-g-debug-tooltips"` | `headerDebugGroupVisible` | Tooltip 开关按钮 | 切换 `tooltipEnabled` |
 | `fg.header.gDebug.nativeChrome` | `.window-control-btn--theme-parameter` (N) | `data-slot="fg-header-g-debug-native-chrome"` | `headerDebugGroupVisible` | Electron 外框/菜单开关按钮 | 切换 `electronNativeChromeEnabled` |
-| `fg.header.gDebug.themeParameter` | `.window-control-btn--theme-parameter` (T) | `data-slot="fg-header-g-debug-theme-parameter"` | `headerDebugGroupVisible` | 主题参数按钮显示开关 | 切换 `themeParameterButtonVisible` |
+| `fg.header.gDebug.themeParameter` | `.window-control-btn--theme-parameter` (T) | `data-slot="fg-header-g-debug-theme-parameter"` | `headerDebugGroupVisible` | 主题参数按钮 | 打开 ThemeParameter 面板；关闭态会先启用按钮可见性 |
 | `fg.header.g3` | `.header-group-window` | `data-slot="fg-header-g3"` | always | 第 3 组 | 调试固定/帮助/窗口控制 |
 | `fg.header.g3.popoverDebugPin` | `.window-control-btn`（O/C） | `data-slot="fg-header-g3-popover-debug-pin"` | always | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
 | `fg.header.g3.themeParameter.root.panel` | `.settings-mask > .settings-panel.theme-parameter-panel` | `data-slot="fg-header-g3-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板 | 全屏遮罩+居中主面板 |

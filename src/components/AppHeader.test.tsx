@@ -48,6 +48,7 @@ function createHeaderProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderPr
     onElectronNativeChromeEnabledChange: vi.fn(),
     themeParameterButtonVisible: false,
     onThemeParameterButtonVisibleChange: vi.fn(),
+    onOpenThemeParameter: vi.fn(),
     popoverDebugPinned: false,
     onTogglePopoverDebugPinned: vi.fn(),
     onOpenHelp: vi.fn(),
@@ -119,21 +120,24 @@ describe('AppHeader music quick actions', () => {
     unsubscribe()
   })
 
-  it('点击 Debug 组 T 按钮会触发界面参数按钮显示开关', () => {
+  it('点击 Debug 组 T 按钮会打开界面参数面板，并在关闭态时自动开启显示开关', () => {
     const onThemeParameterButtonVisibleChange = vi.fn()
+    const onOpenThemeParameter = vi.fn()
     render(
       <AppHeader
         {...createHeaderProps({
           headerDebugGroupVisible: true,
-          themeParameterButtonVisible: true,
+          themeParameterButtonVisible: false,
           onThemeParameterButtonVisibleChange,
+          onOpenThemeParameter,
         })}
       />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: '主题参数' }))
     expect(onThemeParameterButtonVisibleChange).toHaveBeenCalledTimes(1)
-    expect(onThemeParameterButtonVisibleChange).toHaveBeenCalledWith(false)
+    expect(onThemeParameterButtonVisibleChange).toHaveBeenCalledWith(true)
+    expect(onOpenThemeParameter).toHaveBeenCalledTimes(1)
   })
 
   it('点击 O/C 按钮会触发调试固定开关', () => {

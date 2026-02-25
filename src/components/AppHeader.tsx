@@ -227,6 +227,7 @@ export interface AppHeaderProps {
   onElectronNativeChromeEnabledChange: (value: boolean) => void
   themeParameterButtonVisible: boolean
   onThemeParameterButtonVisibleChange: (value: boolean) => void
+  onOpenThemeParameter: () => void
   popoverDebugPinned: boolean
   onTogglePopoverDebugPinned: () => void
   onOpenHelp: () => void
@@ -263,6 +264,7 @@ function AppHeader(props: AppHeaderProps) {
     onElectronNativeChromeEnabledChange,
     themeParameterButtonVisible,
     onThemeParameterButtonVisibleChange,
+    onOpenThemeParameter,
     popoverDebugPinned,
     onTogglePopoverDebugPinned,
     onOpenHelp,
@@ -568,7 +570,10 @@ function AppHeader(props: AppHeaderProps) {
               data-slot="fg-header-g-debug-theme-parameter"
               type="button"
               onClick={() => {
-                onThemeParameterButtonVisibleChange(!themeParameterButtonVisible)
+                if (!themeParameterButtonVisible) {
+                  onThemeParameterButtonVisibleChange(true)
+                }
+                onOpenThemeParameter()
               }}
             >
               <span className="window-control-btn-text">T {themeParameterButtonVisible ? 'on' : 'off'}</span>

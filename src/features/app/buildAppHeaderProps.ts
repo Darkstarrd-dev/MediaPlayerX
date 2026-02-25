@@ -45,6 +45,7 @@ interface BuildAppHeaderPropsParams {
   onTooltipEnabledChange: (value: boolean) => void
   onElectronNativeChromeEnabledChange: (value: boolean) => void
   onThemeParameterButtonVisibleChange: (value: boolean) => void
+  onOpenThemeParameter: () => void
   sidebarCollapsed?: boolean
   metadataCollapsed?: boolean
   onToggleSidebarPanel?: () => void
@@ -145,6 +146,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     onElectronNativeChromeEnabledChange: params.onElectronNativeChromeEnabledChange,
     themeParameterButtonVisible: params.themeParameterButtonVisible,
     onThemeParameterButtonVisibleChange: params.onThemeParameterButtonVisibleChange,
+    onOpenThemeParameter: params.onOpenThemeParameter,
     popoverDebugPinned: params.popoverDebugPinned,
     onTogglePopoverDebugPinned: () => params.updateSettings({ popoverDebugPinned: !params.popoverDebugPinned }),
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),

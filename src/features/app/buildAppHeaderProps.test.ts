@@ -47,6 +47,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -101,6 +102,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -154,6 +156,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onToggleSearchPanel()
@@ -206,6 +209,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onThumbnailScaleUp()
@@ -261,6 +265,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     expect(props.searchPanelOpen).toBe(false)
@@ -309,6 +314,7 @@ describe('buildAppHeaderProps', () => {
       onTooltipEnabledChange: vi.fn(),
       onElectronNativeChromeEnabledChange: vi.fn(),
       onThemeParameterButtonVisibleChange: vi.fn(),
+      onOpenThemeParameter: vi.fn(),
     })
 
     props.onTogglePaletteMode()

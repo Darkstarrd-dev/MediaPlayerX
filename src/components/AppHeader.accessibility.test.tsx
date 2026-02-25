@@ -44,6 +44,7 @@ function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
     onElectronNativeChromeEnabledChange: vi.fn(),
     themeParameterButtonVisible: false,
     onThemeParameterButtonVisibleChange: vi.fn(),
+    onOpenThemeParameter: vi.fn(),
     popoverDebugPinned: false,
     onTogglePopoverDebugPinned: vi.fn(),
     onOpenHelp: vi.fn(),
