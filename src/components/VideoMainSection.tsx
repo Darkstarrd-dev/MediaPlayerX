@@ -210,6 +210,7 @@ function VideoMainSection({
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const previousVideoTimePropRef = useRef(videoTime);
+  const explicitSeekAtMsRef = useRef(0);
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false);
   const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] =
     useState(false);
@@ -218,6 +219,13 @@ function VideoMainSection({
     useState(false);
   const [manualSubtitleText, setManualSubtitleText] = useState<string | null>(
     null,
+  );
+  const handleSeekVideo = useCallback(
+    (time: number) => {
+      explicitSeekAtMsRef.current = Date.now();
+      onSeekVideo(time);
+    },
+    [onSeekVideo],
   );
   const clampedTime =
     durationSec > 0
@@ -237,7 +245,7 @@ function VideoMainSection({
     currentTime: clampedTime,
     videoMuted,
     videoVolume,
-    onSeekVideo,
+    onSeekVideo: handleSeekVideo,
   });
   const showVideoFrame = Boolean(
     videoSourceUrl &&
@@ -298,7 +306,7 @@ function VideoMainSection({
   };
 
   const handleStopPlayback = () => {
-    onSeekVideo(0);
+    handleSeekVideo(0);
     if (videoPlaying) {
       onTogglePlay();
     }
@@ -387,12 +395,19 @@ function VideoMainSection({
       return;
     }
 
+    const explicitSeekRecently = Date.now() - explicitSeekAtMsRef.current < 700;
+    const suspiciousResetWhilePaused =
+      !videoPlaying && clampedTime < 0.15 && video.currentTime > 0.8;
+    if (suspiciousResetWhilePaused && !explicitSeekRecently) {
+      return;
+    }
+
     if (Math.abs(video.currentTime - clampedTime) <= 0.2) {
       return;
     }
 
     video.currentTime = clampedTime;
-  }, [clampedTime, videoSourceUrl, videoTime]);
+  }, [clampedTime, videoPlaying, videoSourceUrl, videoTime]);
 
   useEffect(() => {
     const video = videoRef.current;

@@ -275,6 +275,7 @@ function FullscreenLayer({
   const videoPaneRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const previousVideoTimePropRef = useRef(videoTime);
+  const explicitSeekAtMsRef = useRef(0);
   const hideVideoControlsTimerRef = useRef<number | null>(null);
   const imageConvertPreviewActive = mode === "image" && imageConvertPreviewMode;
   const effectiveFullscreenDisplay = imageConvertPreviewActive
@@ -493,6 +494,13 @@ function FullscreenLayer({
   });
   const clampedVideoTime =
     durationSec > 0 ? clamp(videoTime, 0, durationSec) : Math.max(0, videoTime);
+  const handleSeekVideo = useCallback(
+    (time: number) => {
+      explicitSeekAtMsRef.current = Date.now();
+      onSeekVideo(time);
+    },
+    [onSeekVideo],
+  );
 
   const imageAspect =
     displayedImageAspect ??
@@ -1003,6 +1011,13 @@ function FullscreenLayer({
       return;
     }
 
+    const explicitSeekRecently = Date.now() - explicitSeekAtMsRef.current < 700;
+    const suspiciousResetWhilePaused =
+      !videoPlaying && clampedVideoTime < 0.15 && video.currentTime > 0.8;
+    if (suspiciousResetWhilePaused && !explicitSeekRecently) {
+      return;
+    }
+
     if (Math.abs(video.currentTime - clampedVideoTime) <= 0.2) {
       return;
     }
@@ -1013,6 +1028,7 @@ function FullscreenLayer({
     effectiveFullscreenDisplay,
     focusedVideoSrc,
     fullscreenActive,
+    videoPlaying,
     videoTime,
   ]);
 
@@ -1351,7 +1367,7 @@ function FullscreenLayer({
       selectedSubtitleId={selectedSubtitleId}
       playlistEntries={playlistEntries}
       selectedVideoId={selectedVideoId}
-      onSeekVideo={onSeekVideo}
+      onSeekVideo={handleSeekVideo}
       onToggleVideoPlay={handleToggleVideoPlayback}
       onPrevVideo={onPrevVideo}
       onNextVideo={onNextVideo}
