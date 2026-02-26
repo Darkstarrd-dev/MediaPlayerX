@@ -269,6 +269,32 @@ TODO Check：
 - [ ] 执行测试：`npm run test` 通过。
 - [ ] 更新本 Phase 执行记录后提交。
 
+- [x] 按功能域重组测试文件，避免单文件超长。
+- [x] 提炼共享 helper，减少重复 setup。
+- [x] 保持原有断言语义不变。
+- [x] 执行测试：`npm run test` 通过。
+- [x] 更新本 Phase 执行记录后提交。
+
+当前进度记录：
+
+- 2026-02-26：已完成 Phase 5 测试文件分域拆分。
+  - 新增：`electron/fileSystemReadService.impl.import-management-runtime.test.ts`
+  - 新增：`electron/fileSystemReadService.impl.management-audit.test.ts`
+  - 新增：`src/components/SidebarPanel.collapse-and-navigation.test.tsx`
+  - 新增：`src/components/ImageMainSection.scroll-and-rs.test.tsx`
+  - 新增：`src/features/backend/useReadOnlyDataAccess.resilience-and-fallback.test.tsx`
+  - 新增：`src/__tests__/App.metadata.interactions.test.tsx`
+  - 新增：`src/__tests__/App.state.playback-and-viewmodes.test.tsx`
+  - 调整：`electron/fileSystemReadService.impl.test.ts`
+  - 调整：`src/components/SidebarPanel.test.tsx`
+  - 调整：`src/components/ImageMainSection.test.tsx`
+  - 调整：`src/features/backend/useReadOnlyDataAccess.test.tsx`
+  - 调整：`src/__tests__/App.metadata.test.tsx`
+  - 调整：`src/__tests__/App.state.test.tsx`
+
+- 2026-02-26：Phase 5 验证通过。
+  - 验证：`npm run test` 通过（`115 passed | 1 skipped`，`634 passed | 1 skipped`）。
+
 ## 5. 执行记录（每次提交前必须更新）
 
 | Phase | 状态 | 拆分范围 | 测试命令 | 测试结果 | 提交哈希 | 日期 |
@@ -277,7 +303,7 @@ TODO Check：
 | Phase 2 | 已完成 | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `327316e` | 2026-02-26 |
 | Phase 3 | 已完成 | subtitleSession / libraryReadWriteServiceImpl / fileSystemReadFacade / mediaLibrarySnapshotStore / useLiveSubtitles 首轮拆分 | `npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` + `npm run build` + `npm run test` | 通过（1 file passed；2 tests passed；108 files passed / 1 skipped；651 tests passed / 1 skipped） | `d3fa240` | 2026-02-26 |
 | Phase 4 | 已完成 | main.css / layout.css / settings.css / soft-skeuomorphic.components.css 拆分与入口导入重组 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `df66310` | 2026-02-26 |
-| Phase 5 | 未开始 | - | - | - | - | - |
+| Phase 5 | 已完成（待提交） | fileSystemReadService.impl / SidebarPanel / ImageMainSection / useReadOnlyDataAccess / App.metadata / App.state 测试分域拆分 | `npm run test` | 通过（115 files passed / 1 skipped；634 tests passed / 1 skipped） | - | 2026-02-26 |
 
 ## 6. 拆分完成判定标准（Definition of Done）
 

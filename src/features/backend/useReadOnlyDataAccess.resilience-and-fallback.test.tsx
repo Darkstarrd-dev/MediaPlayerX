@@ -921,280 +921,132 @@ describe("useReadOnlyDataAccess", () => {
     setBenchSettings({ enabled: false });
   });
 
-  it("仅在评分筛选启用时透传 grade_overrides", async () => {
-    const repository = new GradeRefreshTrackingRepository();
-    const gradeOverrides = { "pkg-base": 4 };
-
-    const { rerender } = renderHook(
+  it("筛选切换时可取消旧请求，且旧响应不会覆盖新状态", async () => {
+    const repository = new CancellationAwareRepository();
+    const { result, rerender } = renderHook(
       (params: ReturnType<typeof createHookParams>) =>
         useReadOnlyDataAccess(params),
       {
         initialProps: createHookParams(repository, {
-          featureGradeFilter: null,
-          gradeByPackage: gradeOverrides,
+          featureNameQuery: "first",
         }),
       },
     );
 
-    await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(1);
-    });
-
-    const firstSidebarRequest =
-      repository.readImageSidebarTree.mock.calls[0]?.[0];
-    const firstPageRequest = repository.readImagePage.mock.calls[0]?.[0];
-    expect(firstSidebarRequest?.grade_overrides).toBeUndefined();
-    expect(firstPageRequest?.grade_overrides).toBeUndefined();
-
-    rerender(
-      createHookParams(repository, {
-        featureGradeFilter: 4,
-        gradeByPackage: gradeOverrides,
-      }),
-    );
+    rerender(createHookParams(repository, { featureNameQuery: "second" }));
 
     await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(2);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(2);
+      expect(result.current.sidebar.data?.imagePackages[0]?.displayName).toBe(
+        "second",
+      );
     });
-
-    const secondSidebarRequest =
-      repository.readImageSidebarTree.mock.calls[1]?.[0];
-    const secondPageRequest = repository.readImagePage.mock.calls[1]?.[0];
-    expect(secondSidebarRequest?.grade_overrides).toEqual(gradeOverrides);
-    expect(secondPageRequest?.grade_overrides).toEqual(gradeOverrides);
+    expect(result.current.sidebar.error).toBeNull();
   });
 
-  it("write-package-grade 事件在无评分筛选时不会触发刷新", async () => {
-    const repository = new GradeRefreshTrackingRepository();
 
-    renderHook(
+  it("失败后保留快照并支持重试恢复", async () => {
+    const repository = new RetrySnapshotRepository();
+    const { result, rerender } = renderHook(
       (params: ReturnType<typeof createHookParams>) =>
         useReadOnlyDataAccess(params),
       {
         initialProps: createHookParams(repository, {
-          featureGradeFilter: null,
+          featureNameQuery: "alpha",
         }),
       },
     );
 
     await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(1);
-      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1);
+      expect(result.current.sidebar.data?.imagePackages[0]?.displayName).toBe(
+        "alpha",
+      );
     });
 
-    const sidebarCallsBefore =
-      repository.readImageSidebarTree.mock.calls.length;
-    const pageCallsBefore = repository.readImagePage.mock.calls.length;
-    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length;
+    rerender(createHookParams(repository, { featureNameQuery: "bravo" }));
+
+    await waitFor(() => {
+      expect(result.current.sidebar.error).toBe("sidebar-failed");
+    });
+    expect(result.current.sidebar.data?.imagePackages[0]?.displayName).toBe(
+      "alpha",
+    );
 
     await act(async () => {
-      repository.emitLibraryChanged("write-package-grade");
-      await new Promise((resolve) => setTimeout(resolve, 220));
-    });
-
-    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(
-      sidebarCallsBefore,
-    );
-    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore);
-    expect(repository.readImageMetadata).toHaveBeenCalledTimes(
-      metadataCallsBefore,
-    );
-  });
-
-  it("thumbnail-rendering 事件不会触发 Sidebar/Page/Metadata 切片刷新", async () => {
-    const repository = new GradeRefreshTrackingRepository();
-
-    renderHook(
-      (params: ReturnType<typeof createHookParams>) =>
-        useReadOnlyDataAccess(params),
-      {
-        initialProps: createHookParams(repository, {
-          featureGradeFilter: null,
-        }),
-      },
-    );
-
-    await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(1);
-      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1);
-    });
-
-    const sidebarCallsBefore =
-      repository.readImageSidebarTree.mock.calls.length;
-    const pageCallsBefore = repository.readImagePage.mock.calls.length;
-    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length;
-
-    await act(async () => {
-      repository.emitLibraryChanged("thumbnail-rendering-start");
-      repository.emitLibraryChanged("thumbnail-rendering-end");
-      await new Promise((resolve) => setTimeout(resolve, 220));
-    });
-
-    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(
-      sidebarCallsBefore,
-    );
-    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore);
-    expect(repository.readImageMetadata).toHaveBeenCalledTimes(
-      metadataCallsBefore,
-    );
-  });
-
-  it("write-package-grade 事件在评分筛选启用时仅刷新 Sidebar/Page", async () => {
-    const repository = new GradeRefreshTrackingRepository();
-
-    renderHook(
-      (params: ReturnType<typeof createHookParams>) =>
-        useReadOnlyDataAccess(params),
-      {
-        initialProps: createHookParams(repository, {
-          featureGradeFilter: 3,
-          gradeByPackage: { "pkg-base": 3 },
-        }),
-      },
-    );
-
-    await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(1);
-      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1);
-    });
-
-    const sidebarCallsBefore =
-      repository.readImageSidebarTree.mock.calls.length;
-    const pageCallsBefore = repository.readImagePage.mock.calls.length;
-    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length;
-
-    await act(async () => {
-      repository.emitLibraryChanged("write-package-grade");
-      await new Promise((resolve) => setTimeout(resolve, 220));
+      result.current.retrySidebar();
     });
 
     await waitFor(() => {
-      expect(repository.readImageSidebarTree.mock.calls.length).toBeGreaterThan(
-        sidebarCallsBefore,
-      );
-      expect(repository.readImagePage.mock.calls.length).toBeGreaterThan(
-        pageCallsBefore,
-      );
-    });
-    expect(repository.readImageMetadata).toHaveBeenCalledTimes(
-      metadataCallsBefore,
-    );
-  });
-
-  it("元数据管理挂起刷新时，元数据写事件不会刷新缩略图相关切片，退出后补一次全量刷新", async () => {
-    const repository = new GradeRefreshTrackingRepository();
-
-    const { rerender } = renderHook(
-      (params: ReturnType<typeof createHookParams>) =>
-        useReadOnlyDataAccess(params),
-      {
-        initialProps: createHookParams(repository, {
-          featureGradeFilter: 3,
-          gradeByPackage: { "pkg-base": 3 },
-          suspendLibraryChangedRefresh: true,
-        }),
-      },
-    );
-
-    await waitFor(() => {
-      expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(1);
-      expect(repository.readImagePage).toHaveBeenCalledTimes(1);
-      expect(repository.readImageMetadata).toHaveBeenCalledTimes(1);
-    });
-
-    const sidebarCallsBefore =
-      repository.readImageSidebarTree.mock.calls.length;
-    const pageCallsBefore = repository.readImagePage.mock.calls.length;
-    const metadataCallsBefore = repository.readImageMetadata.mock.calls.length;
-
-    await act(async () => {
-      repository.emitLibraryChanged("write-package-grade");
-      repository.emitLibraryChanged("write-package-metadata");
-      repository.emitLibraryChanged("write-package-external-metadata");
-      await new Promise((resolve) => setTimeout(resolve, 220));
-    });
-
-    expect(repository.readImageSidebarTree).toHaveBeenCalledTimes(
-      sidebarCallsBefore,
-    );
-    expect(repository.readImagePage).toHaveBeenCalledTimes(pageCallsBefore);
-    expect(repository.readImageMetadata).toHaveBeenCalledTimes(
-      metadataCallsBefore,
-    );
-
-    rerender(
-      createHookParams(repository, {
-        featureGradeFilter: 3,
-        gradeByPackage: { "pkg-base": 3 },
-        suspendLibraryChangedRefresh: false,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(repository.readImageSidebarTree.mock.calls.length).toBeGreaterThan(
-        sidebarCallsBefore,
-      );
-      expect(repository.readImagePage.mock.calls.length).toBeGreaterThan(
-        pageCallsBefore,
-      );
-      expect(repository.readImageMetadata.mock.calls.length).toBeGreaterThan(
-        metadataCallsBefore,
+      expect(result.current.sidebar.error).toBeNull();
+      expect(result.current.sidebar.data?.imagePackages[0]?.displayName).toBe(
+        "charlie",
       );
     });
   });
 
-  it("importBusy 期间延迟 import-task-updated 的 library 刷新并在结束后补一次", async () => {
-    const snapshot = createLibrarySnapshot();
-    const readLibrarySnapshot = vi.fn(async () => snapshot);
-    let listener:
-      | ((payload: { reason: string; updated_at_ms: number }) => void)
-      | null = null;
+
+  it("lite 快照仅在接口缺失错误时回退到 legacy snapshot", async () => {
+    const legacySnapshot = createLibrarySnapshot();
+    const readLibrarySnapshotLite = vi
+      .fn<() => Promise<LibrarySnapshotLiteDto>>()
+      .mockRejectedValue(
+        new Error("readLibrarySnapshotLite is not a function"),
+      );
+    const readLibrarySnapshot = vi
+      .fn<() => Promise<LibrarySnapshotDto>>()
+      .mockResolvedValue(legacySnapshot);
 
     const repository = createBaselineRepository({
       getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshotLite,
       readLibrarySnapshot,
-      onLibraryChanged: (registeredListener) => {
-        listener = registeredListener;
-        return () => {
-          if (listener === registeredListener) {
-            listener = null;
-          }
-        };
-      },
     });
 
-    const { rerender } = renderHook(
+    const { result } = renderHook(
       (params: ReturnType<typeof createHookParams>) =>
         useReadOnlyDataAccess(params),
       {
-        initialProps: createHookParams(repository, { importBusy: true }),
+        initialProps: createHookParams(repository),
       },
     );
 
     await waitFor(() => {
+      expect(readLibrarySnapshotLite).toHaveBeenCalledTimes(1);
       expect(readLibrarySnapshot).toHaveBeenCalledTimes(1);
+      expect(result.current.library.error).toBeNull();
+      expect(result.current.library.data?.imagePackages.length).toBe(
+        legacySnapshot.image_packages.length,
+      );
+    });
+  });
+
+
+  it("lite 快照遇到非接口缺失错误时不回退 legacy snapshot", async () => {
+    const readLibrarySnapshotLite = vi
+      .fn<() => Promise<LibrarySnapshotLiteDto>>()
+      .mockRejectedValue(new Error("readLibrarySnapshotLite timeout"));
+    const readLibrarySnapshot = vi.fn<() => Promise<LibrarySnapshotDto>>();
+
+    const repository = createBaselineRepository({
+      getInitialLibrarySnapshot: () => null,
+      readLibrarySnapshotLite,
+      readLibrarySnapshot,
     });
 
-    await act(async () => {
-      listener?.({
-        reason: "import-task-updated",
-        updated_at_ms: Date.now(),
-      });
-      await new Promise((resolve) => setTimeout(resolve, 220));
-    });
-
-    expect(readLibrarySnapshot).toHaveBeenCalledTimes(1);
-
-    rerender(createHookParams(repository, { importBusy: false }));
+    const { result } = renderHook(
+      (params: ReturnType<typeof createHookParams>) =>
+        useReadOnlyDataAccess(params),
+      {
+        initialProps: createHookParams(repository),
+      },
+    );
 
     await waitFor(() => {
-      expect(readLibrarySnapshot.mock.calls.length).toBeGreaterThanOrEqual(2);
+      expect(result.current.library.error).toBe(
+        "readLibrarySnapshotLite timeout",
+      );
     });
+    expect(readLibrarySnapshotLite).toHaveBeenCalledTimes(1);
+    expect(readLibrarySnapshot).not.toHaveBeenCalled();
   });
 
 });
