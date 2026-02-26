@@ -758,7 +758,8 @@
 
 [data-slot='fg-header-g-debug-tooltips'][aria-pressed='true'],
 [data-slot='fg-header-g-debug-native-chrome'][aria-pressed='true'],
-[data-slot='fg-header-g-debug-theme-parameter'][aria-pressed='true'] {
+[data-slot='fg-header-g-debug-theme-parameter'][aria-pressed='true'],
+[data-slot='fg-header-g3-popover-debug-pin'][aria-pressed='true'] {
   border-color: var(--mpx-header-btn-active-border, var(--mpx-player-btn-active-border));
   background: var(--mpx-player-btn-active-bg);
   box-shadow: var(--mpx-header-btn-active-shadow);

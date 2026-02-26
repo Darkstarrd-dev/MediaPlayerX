@@ -578,19 +578,19 @@ function AppHeader(props: AppHeaderProps) {
             >
               <span className="window-control-btn-text">T {themeParameterButtonVisible ? 'on' : 'off'}</span>
             </button>
+            <button
+              {...popoverDebugPinnedButtonA11y}
+              aria-pressed={popoverDebugPinned}
+              className="window-control-btn window-control-btn--theme-parameter"
+              data-slot="fg-header-g3-popover-debug-pin"
+              type="button"
+              onClick={onTogglePopoverDebugPinned}
+            >
+              <span className="window-control-btn-text">{popoverDebugPinned ? 'O' : 'C'}</span>
+            </button>
           </div>
         ) : null}
         <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g3" role="group">
-          <button
-            {...popoverDebugPinnedButtonA11y}
-            aria-pressed={popoverDebugPinned}
-            className="window-control-btn window-control-btn--theme-parameter"
-            data-slot="fg-header-g3-popover-debug-pin"
-            type="button"
-            onClick={onTogglePopoverDebugPinned}
-          >
-            <span className="window-control-btn-text">{popoverDebugPinned ? 'O' : 'C'}</span>
-          </button>
           <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g3-help" type="button" onClick={onOpenHelp}>
             <HeaderActionIcon name="help" />
           </button>
