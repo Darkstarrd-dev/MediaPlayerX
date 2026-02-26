@@ -181,6 +181,7 @@ export const appSettingsSchema = z.object({
   subtitleAcceleration: subtitleAccelerationSchema,
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
+  subtitleModelDirByProfile: z.record(z.string().max(128), z.string().max(1024)),
   subtitleSelectedModelId: z.string().max(128).nullable(),
   subtitleTextFillMode: subtitleTextFillModeSchema,
   subtitleTextColor: z.string().max(16),

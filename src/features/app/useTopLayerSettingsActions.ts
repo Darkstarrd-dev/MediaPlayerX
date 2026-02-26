@@ -83,6 +83,7 @@ export function useTopLayerSettingsActions({
     electronNativeChromeEnabled,
     proxyServer,
     subtitleModelDir,
+    subtitleModelDirByProfile,
     subtitleSelectedModelId,
     updateSettings,
   } = appSettings
@@ -106,6 +107,8 @@ export function useTopLayerSettingsActions({
 
   const resolvedSubtitleModelId = normalizeSubtitleModelSelectionId(subtitleSelectedModelId)
   const resolvedSubtitleModel = getSubtitleModelSelectionProfile(resolvedSubtitleModelId)
+  const resolvedSubtitleModelDir =
+    (subtitleModelDirByProfile[resolvedSubtitleModelId] ?? subtitleModelDir).trim()
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
@@ -321,7 +324,7 @@ export function useTopLayerSettingsActions({
 
     const result = await mediaRepository.pickDirectoryPath({
       title: t('ui.settings.pickSubtitleModelDirectoryDialogTitle'),
-      default_path: normalizeOptionalPath(subtitleModelDir),
+      default_path: normalizeOptionalPath(resolvedSubtitleModelDir),
     })
 
     const pickedPath = result.path?.trim() ?? ''
@@ -329,8 +332,21 @@ export function useTopLayerSettingsActions({
       return
     }
 
-    updateSettings({ subtitleModelDir: pickedPath })
-  }, [mediaRepository, subtitleModelDir, t, updateSettings])
+    updateSettings({
+      subtitleModelDir: pickedPath,
+      subtitleModelDirByProfile: {
+        ...subtitleModelDirByProfile,
+        [resolvedSubtitleModelId]: pickedPath,
+      },
+    })
+  }, [
+    mediaRepository,
+    resolvedSubtitleModelDir,
+    resolvedSubtitleModelId,
+    subtitleModelDirByProfile,
+    t,
+    updateSettings,
+  ])
 
   const syncSubtitleDownloadTasks = useCallback(async () => {
     if (!mediaRepository.readSubtitleModelDownloads) {
@@ -365,7 +381,7 @@ export function useTopLayerSettingsActions({
   }, [mediaRepository, resolvedSubtitleModelId])
 
   const refreshSubtitleModels = useCallback(async (options?: { modelDirOverride?: string }) => {
-    const effectiveModelDir = (options?.modelDirOverride ?? subtitleModelDir).trim()
+    const effectiveModelDir = (options?.modelDirOverride ?? resolvedSubtitleModelDir).trim()
 
     setSubtitleModelsLoading(true)
     setSubtitleModelsError(null)
@@ -429,7 +445,7 @@ export function useTopLayerSettingsActions({
     mediaRepository,
     normalizeFsPath,
     resolvedSubtitleModel,
-    subtitleModelDir,
+    resolvedSubtitleModelDir,
     syncSubtitleDownloadTasks,
     t,
   ])
@@ -449,7 +465,7 @@ export function useTopLayerSettingsActions({
       return
     }
 
-    const modelDir = subtitleModelDir.trim()
+    const modelDir = resolvedSubtitleModelDir.trim()
     if (!modelDir) {
       setSubtitleModelsError(t('ui.settings.offlineSubtitleModelDirRequired'))
       return
@@ -492,8 +508,25 @@ export function useTopLayerSettingsActions({
     resolvedSubtitleModel.downloadSupported,
     resolvedSubtitleModel.label,
     resolvedSubtitleModelId,
-    subtitleModelDir,
+    resolvedSubtitleModelDir,
     t,
+  ])
+
+  useEffect(() => {
+    if (!appSettings.settingsOpen) {
+      return
+    }
+
+    if (resolvedSubtitleModelDir === subtitleModelDir.trim()) {
+      return
+    }
+
+    updateSettings({ subtitleModelDir: resolvedSubtitleModelDir })
+  }, [
+    appSettings.settingsOpen,
+    resolvedSubtitleModelDir,
+    subtitleModelDir,
+    updateSettings,
   ])
 
   const cancelSubtitleModelDownload = useCallback(async () => {
@@ -542,7 +575,7 @@ export function useTopLayerSettingsActions({
     })
 
     void refreshSubtitleModels()
-  }, [appSettings.settingsOpen, refreshSubtitleModels, subtitleModelDir, updateSettings])
+  }, [appSettings.settingsOpen, refreshSubtitleModels, updateSettings])
 
   useEffect(() => {
     if (!subtitleDownloadTask) {

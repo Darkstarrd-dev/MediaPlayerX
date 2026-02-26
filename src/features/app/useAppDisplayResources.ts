@@ -382,8 +382,12 @@ export function useAppDisplayResources({
   const subtitleModelId = normalizeSubtitleModelSelectionId(
     appSettings.subtitleSelectedModelId,
   );
+  const subtitleModelDirByProfile = appSettings.subtitleModelDirByProfile ?? {};
+  const activeSubtitleModelDir = (
+    subtitleModelDirByProfile[subtitleModelId] ?? subtitleModelDir
+  ).trim();
   const autoSubtitleConfigured =
-    appSettings.subtitleFeatureEnabled && subtitleModelDir.length > 0;
+    appSettings.subtitleFeatureEnabled && activeSubtitleModelDir.length > 0;
   const autoSubtitleApiAvailable =
     typeof mediaRepository.startSubtitleSession === "function" &&
     typeof mediaRepository.stopSubtitleSession === "function" &&
@@ -402,7 +406,7 @@ export function useAppDisplayResources({
     videoElement: activeVideoElement,
     videoPath: focusedVideoEffective?.absolutePath ?? null,
     currentTimeSec: Math.max(0, videoTime),
-    modelDir: subtitleModelDir,
+    modelDir: activeSubtitleModelDir,
     modelId: subtitleModelId,
     providerPreference: "cpu",
     language: appSettings.subtitleLanguage,

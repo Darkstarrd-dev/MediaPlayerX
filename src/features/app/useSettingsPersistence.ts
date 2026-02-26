@@ -260,17 +260,49 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.subtitleLanguage;
   }
 
-  if (typeof next.subtitleModelDir === "string") {
-    next.subtitleModelDir = next.subtitleModelDir.trim().slice(0, 1024);
-  } else if ("subtitleModelDir" in next) {
-    delete next.subtitleModelDir;
+  const normalizedSubtitleModelDirByProfile: Record<string, string> = {};
+  if (
+    next.subtitleModelDirByProfile
+    && typeof next.subtitleModelDirByProfile === "object"
+  ) {
+    for (const [rawModelId, rawModelDir] of Object.entries(
+      next.subtitleModelDirByProfile as Record<string, unknown>,
+    )) {
+      if (typeof rawModelDir !== "string") {
+        continue;
+      }
+      const normalizedModelDir = rawModelDir.trim().slice(0, 1024);
+      if (!normalizedModelDir) {
+        continue;
+      }
+      const normalizedModelId = normalizeSubtitleModelSelectionId(rawModelId);
+      normalizedSubtitleModelDirByProfile[normalizedModelId] =
+        normalizedModelDir;
+    }
   }
 
-  next.subtitleSelectedModelId = normalizeSubtitleModelSelectionId(
+  const legacySubtitleModelDir =
+    typeof next.subtitleModelDir === "string"
+      ? next.subtitleModelDir.trim().slice(0, 1024)
+      : "";
+
+  const normalizedSubtitleSelectedModelId = normalizeSubtitleModelSelectionId(
     typeof next.subtitleSelectedModelId === "string"
       ? next.subtitleSelectedModelId
       : null,
   );
+  next.subtitleSelectedModelId = normalizedSubtitleSelectedModelId;
+
+  const activeSubtitleModelDir =
+    normalizedSubtitleModelDirByProfile[normalizedSubtitleSelectedModelId]
+    ?? legacySubtitleModelDir;
+  if (activeSubtitleModelDir) {
+    normalizedSubtitleModelDirByProfile[normalizedSubtitleSelectedModelId] =
+      activeSubtitleModelDir;
+  }
+
+  next.subtitleModelDir = activeSubtitleModelDir;
+  next.subtitleModelDirByProfile = normalizedSubtitleModelDirByProfile;
   next.subtitleTextFillMode =
     next.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
   next.subtitleTextColor = normalizeHexColor(next.subtitleTextColor, "#ffffff");

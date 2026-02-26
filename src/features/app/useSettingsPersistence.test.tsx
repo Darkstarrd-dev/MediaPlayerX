@@ -3,6 +3,10 @@ import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_SETTINGS } from "../../store/useUiStore";
+import {
+  SUBTITLE_MODEL_CURRENT_ID,
+  SUBTITLE_MODEL_FUNASR_NANO_ID,
+} from "../subtitles/fixedModel";
 import { useSettingsPersistence } from "./useSettingsPersistence";
 
 describe("useSettingsPersistence", () => {
@@ -180,6 +184,76 @@ describe("useSettingsPersistence", () => {
       unknown
     >;
     expect(hydrationPatch).not.toHaveProperty("sidebarLabelDisplayMode");
+  });
+
+  it("migrates legacy subtitleModelDir into selected profile directory", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        subtitleSelectedModelId: SUBTITLE_MODEL_FUNASR_NANO_ID,
+        subtitleModelDir: " C:/models/funasr ",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subtitleSelectedModelId: SUBTITLE_MODEL_FUNASR_NANO_ID,
+          subtitleModelDir: "C:/models/funasr",
+          subtitleModelDirByProfile: {
+            [SUBTITLE_MODEL_FUNASR_NANO_ID]: "C:/models/funasr",
+          },
+        }),
+      );
+    });
+  });
+
+  it("hydrates profile directory map and syncs active subtitleModelDir", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        subtitleSelectedModelId: SUBTITLE_MODEL_CURRENT_ID,
+        subtitleModelDirByProfile: {
+          [SUBTITLE_MODEL_CURRENT_ID]: "C:/models/current",
+          [SUBTITLE_MODEL_FUNASR_NANO_ID]: "C:/models/funasr",
+        },
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subtitleSelectedModelId: SUBTITLE_MODEL_CURRENT_ID,
+          subtitleModelDir: "C:/models/current",
+          subtitleModelDirByProfile: {
+            [SUBTITLE_MODEL_CURRENT_ID]: "C:/models/current",
+            [SUBTITLE_MODEL_FUNASR_NANO_ID]: "C:/models/funasr",
+          },
+        }),
+      );
+    });
   });
 
   it("sanitizes fullscreen resampling settings on hydration", async () => {

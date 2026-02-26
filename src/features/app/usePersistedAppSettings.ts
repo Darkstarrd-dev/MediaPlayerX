@@ -100,6 +100,7 @@ export function toPersistedAppSettings(
     subtitleAcceleration: settings.subtitleAcceleration,
     subtitleLanguage: settings.subtitleLanguage,
     subtitleModelDir: settings.subtitleModelDir,
+    subtitleModelDirByProfile: settings.subtitleModelDirByProfile,
     subtitleSelectedModelId: settings.subtitleSelectedModelId,
     subtitleTextFillMode: settings.subtitleTextFillMode,
     subtitleTextColor: settings.subtitleTextColor,

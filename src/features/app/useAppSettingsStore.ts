@@ -91,6 +91,7 @@ export function useAppSettingsStore() {
       subtitleAcceleration: state.subtitleAcceleration,
       subtitleLanguage: state.subtitleLanguage,
       subtitleModelDir: state.subtitleModelDir,
+      subtitleModelDirByProfile: state.subtitleModelDirByProfile,
       subtitleSelectedModelId: state.subtitleSelectedModelId,
       subtitleTextFillMode: state.subtitleTextFillMode,
       subtitleTextColor: state.subtitleTextColor,

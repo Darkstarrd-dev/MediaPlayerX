@@ -101,6 +101,7 @@ interface BuildSettingsPanelPropsParams {
   subtitleLanguage: AppSettings["subtitleLanguage"];
   subtitleSelectedModelId: SubtitleModelSelectionId;
   subtitleModelDir: string;
+  subtitleModelDirByProfile: AppSettings["subtitleModelDirByProfile"];
   subtitleTextFillMode: AppSettings["subtitleTextFillMode"];
   subtitleTextColor: string;
   subtitleGradientStartColor: string;
@@ -487,7 +488,10 @@ export function buildSettingsPanelProps(
     onSubtitleLanguageChange: (value) =>
       params.updateSettings({ subtitleLanguage: value }),
     onSubtitleSelectedModelIdChange: (value) =>
-      params.updateSettings({ subtitleSelectedModelId: value }),
+      params.updateSettings({
+        subtitleSelectedModelId: value,
+        subtitleModelDir: params.subtitleModelDirByProfile[value] ?? "",
+      }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
     onSubtitleTextFillModeChange: (value) =>
       params.updateSettings({ subtitleTextFillMode: value }),

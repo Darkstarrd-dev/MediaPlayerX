@@ -66,6 +66,10 @@ describe("buildSettingsPanelProps", () => {
       subtitleLanguage: "auto",
       subtitleSelectedModelId: SUBTITLE_MODEL_CURRENT_ID,
       subtitleModelDir: "",
+      subtitleModelDirByProfile: {
+        [SUBTITLE_MODEL_CURRENT_ID]: "",
+        [SUBTITLE_MODEL_FUNASR_NANO_ID]: "C:/models/funasr",
+      },
       subtitleTextFillMode: "solid",
       subtitleTextColor: "#ffffff",
       subtitleGradientStartColor: "#ffffff",
@@ -191,6 +195,7 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(11, {
       subtitleSelectedModelId: SUBTITLE_MODEL_FUNASR_NANO_ID,
+      subtitleModelDir: "C:/models/funasr",
     });
     expect(updateSettings).toHaveBeenNthCalledWith(12, {
       themeParameterButtonVisible: true,

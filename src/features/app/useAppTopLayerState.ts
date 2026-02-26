@@ -634,6 +634,7 @@ export function useAppTopLayerState({
       appSettings.subtitleSelectedModelId,
     ),
     subtitleModelDir: appSettings.subtitleModelDir,
+    subtitleModelDirByProfile: appSettings.subtitleModelDirByProfile,
     subtitleTextFillMode: appSettings.subtitleTextFillMode,
     subtitleTextColor: appSettings.subtitleTextColor,
     subtitleGradientStartColor: appSettings.subtitleGradientStartColor,
