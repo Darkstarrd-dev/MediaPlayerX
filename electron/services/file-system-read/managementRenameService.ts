@@ -14,15 +14,11 @@ import {
 } from "../../../src/contracts/backend";
 import {
   isPathAllowlisted,
-  type MediaAccessGuardContext,
 } from "../../fileSystemMediaAccessGuard";
 import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
 import {
-  buildMetadataSynthesisName,
-  isFileSystemRootPath,
   isMetadataUnknownToken,
   isValidGroupName,
-  type ParsedSidebarNodeRef,
   parseSidebarNodeId,
   renderMetadataTemplate,
   resolveSidebarNodeSourcePath,

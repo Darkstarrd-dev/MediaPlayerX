@@ -16,11 +16,7 @@ import type {
   SQLiteDatabaseLike,
   TransactionRunner,
 } from "./mediaLibraryDatabaseTypes";
-import {
-  type AudioRow,
-  parseJson,
-  type SourceRow,
-} from "./mediaLibraryStoreUtils";
+import { parseJson } from "./mediaLibraryStoreUtils";
 import { replaceLibrarySnapshot } from "./mediaLibrarySnapshotReplace";
 import {
   mapAudioRowToAudioItem,

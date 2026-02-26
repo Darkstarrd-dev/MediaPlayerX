@@ -1,19 +1,16 @@
 import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { createServer } from "node:http";
 import { createRequire } from "node:module";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { MEDIA_PROTOCOL_SCHEME } from "./channels";
 import { DATABASE_RELATIVE_PATH } from "./mediaLibrarySchema";
 import { FileSystemMediaReadService } from "./fileSystemReadService";
 import {
   enqueueImportAndWait,
   waitForImportTaskDone,
   writeBinary,
-  writeStoredZip,
   writeTinyPng,
 } from "./fileSystemReadService.test.helpers";
 
@@ -29,6 +26,7 @@ const { DatabaseSync } = require("node:sqlite") as {
 };
 
 describe("FileSystemMediaReadService", () => {
+  const ioHeavyTestTimeoutMs = 30_000;
   const createdRoots: string[] = [];
   const createdServices: FileSystemMediaReadService[] = [];
 
@@ -46,7 +44,9 @@ describe("FileSystemMediaReadService", () => {
     createdRoots.length = 0;
   });
 
-  it("音乐导入仅支持音频文件，非音频任务会失败", async () => {
+  it(
+    "音乐导入仅支持音频文件，非音频任务会失败",
+    async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-import-music-reject-"),
     );
@@ -78,10 +78,14 @@ describe("FileSystemMediaReadService", () => {
 
     const snapshot = await service.readLibrarySnapshot();
     expect(snapshot.audios ?? []).toHaveLength(0);
-  });
+    },
+    ioHeavyTestTimeoutMs,
+  );
 
 
-  it("音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组", async () => {
+  it(
+    "音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组",
+    async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-import-music-file-"),
     );
@@ -147,10 +151,14 @@ describe("FileSystemMediaReadService", () => {
       "Album Group A",
       path.basename(outsideAudioPath),
     ]);
-  });
+    },
+    ioHeavyTestTimeoutMs,
+  );
 
 
-  it("音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根", async () => {
+  it(
+    "音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根",
+    async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-import-music-booklet-"),
     );
@@ -185,10 +193,14 @@ describe("FileSystemMediaReadService", () => {
       (audio) => path.resolve(audio.absolute_path) === path.resolve(trackPath),
     );
     expect(importedAudio).toBeTruthy();
-  });
+    },
+    ioHeavyTestTimeoutMs,
+  );
 
 
-  it("磁盘文件缺失触发自动清理时会同步移除 music_import_sources", async () => {
+  it(
+    "磁盘文件缺失触发自动清理时会同步移除 music_import_sources",
+    async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-import-music-prune-"),
     );
@@ -227,7 +239,9 @@ describe("FileSystemMediaReadService", () => {
       (item) => path.resolve(item) === path.resolve(outsideAudioPath),
     );
     expect(stillHasSourcePath).toBe(false);
-  });
+    },
+    ioHeavyTestTimeoutMs,
+  );
 
 
   it("写入偏好指标 app_state 后会更新快照并广播变更", async () => {

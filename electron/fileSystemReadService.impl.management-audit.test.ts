@@ -1,32 +1,17 @@
 import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { createServer } from "node:http";
-import { createRequire } from "node:module";
+ 
 
 import { afterEach, describe, expect, it } from "vitest";
 
 import { MEDIA_PROTOCOL_SCHEME } from "./channels";
-import { DATABASE_RELATIVE_PATH } from "./mediaLibrarySchema";
 import { FileSystemMediaReadService } from "./fileSystemReadService";
 import {
   enqueueImportAndWait,
-  waitForImportTaskDone,
   writeBinary,
   writeStoredZip,
-  writeTinyPng,
 } from "./fileSystemReadService.test.helpers";
-
-const require = createRequire(process.execPath);
-const { DatabaseSync } = require("node:sqlite") as {
-  DatabaseSync: new (path: string) => {
-    prepare: (sql: string) => {
-      all: (...params: unknown[]) => unknown;
-      get: (...params: unknown[]) => unknown;
-    };
-    close: () => void;
-  };
-};
 
 describe("FileSystemMediaReadService", () => {
   const createdRoots: string[] = [];
