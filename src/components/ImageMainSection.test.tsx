@@ -911,56 +911,61 @@ describe('ImageMainSection layout', () => {
     expect(settledButtons.every((button) => !button.disabled)).toBe(true)
   })
 
-  it('广告审核待复核模式点击缩略图时同步焦点到元数据目标图', async () => {
-    const onSelectImage = vi.fn()
-    const adReviewTask: NonNullable<ImageMainSectionProps['adReviewTask']> = {
-      task_id: 'task-review',
-      status: 'review',
-      progress: 1,
-      total_count: 1,
-      reviewed_count: 1,
-      suspected_count: 1,
-      failed_count: 0,
-      known_hash_hits: 0,
-      llm_calls: 1,
-      scope_image_ids: ['img-1'],
-      image_source_by_id: {
-        'img-1': 'llm',
-      },
-      message: null,
-      error_detail: null,
-      candidates: [
-        {
-          image_id: 'img-1',
-          package_id: packageWithImages.id,
-          package_name: packageWithImages.packageName,
-          display_name: packageWithImages.displayName,
-          ordinal: 1,
-          file_name: 'pkg-2-1.jpg',
-          reason: 'suspected-ad',
-          source: 'llm',
-          hash: 'mock-hash-1',
+  it('广告审核聚焦结果模式点击缩略图时同步焦点到元数据目标图', async () => {
+    const activeStatuses = ['running', 'paused', 'review'] as const
+
+    for (const status of activeStatuses) {
+      const onSelectImage = vi.fn()
+      const adReviewTask: NonNullable<ImageMainSectionProps['adReviewTask']> = {
+        task_id: `task-${status}`,
+        status,
+        progress: status === 'review' ? 1 : 0.5,
+        total_count: 1,
+        reviewed_count: status === 'review' ? 1 : 0,
+        suspected_count: 1,
+        failed_count: 0,
+        known_hash_hits: 0,
+        llm_calls: 1,
+        scope_image_ids: ['img-1'],
+        image_source_by_id: {
+          'img-1': 'llm',
         },
-      ],
-      created_at_ms: 1,
-      updated_at_ms: 1,
+        message: null,
+        error_detail: null,
+        candidates: [
+          {
+            image_id: 'img-1',
+            package_id: packageWithImages.id,
+            package_name: packageWithImages.packageName,
+            display_name: packageWithImages.displayName,
+            ordinal: 1,
+            file_name: 'pkg-2-1.jpg',
+            reason: 'suspected-ad',
+            source: 'llm',
+            hash: 'mock-hash-1',
+          },
+        ],
+        created_at_ms: 1,
+        updated_at_ms: 1,
+      }
+
+      const { unmount } = render(
+        <ImageMainSection
+          {...createManageImageConvertProps({
+            adReviewResultsMode: true,
+            adReviewTask,
+            onSelectImage,
+          })}
+        />,
+      )
+
+      const firstCard = document.querySelector('.thumb-card-main') as HTMLButtonElement | null
+      expect(firstCard).not.toBeNull()
+      fireEvent.mouseDown(firstCard as HTMLButtonElement, { button: 0 })
+
+      expect(onSelectImage).toHaveBeenCalledWith(packageWithImages.id, 0, 0)
+      unmount()
     }
-
-    render(
-      <ImageMainSection
-        {...createManageImageConvertProps({
-          adReviewResultsMode: true,
-          adReviewTask,
-          onSelectImage,
-        })}
-      />,
-    )
-
-    const firstCard = document.querySelector('.thumb-card-main') as HTMLButtonElement | null
-    expect(firstCard).not.toBeNull()
-    fireEvent.mouseDown(firstCard as HTMLButtonElement, { button: 0 })
-
-    expect(onSelectImage).toHaveBeenCalledWith(packageWithImages.id, 0, 0)
   })
 
   it('缩略图容器滚轮触发翻页，Ctrl+滚轮切换 sidebar 节点', () => {

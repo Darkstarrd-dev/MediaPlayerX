@@ -691,7 +691,10 @@ function ImageMainSection({
       onToggleImageChecked,
       onSelectImage,
       focusOnFirstToggle:
-        !adReviewResultsMode || adReviewTask?.status === "review",
+        !adReviewResultsMode ||
+        adReviewTask?.status === "running" ||
+        adReviewTask?.status === "paused" ||
+        adReviewTask?.status === "review",
     });
 
   const manageSummary =
