@@ -177,9 +177,9 @@
 | `fg.meta.restore` | `.meta-restore` | `data-slot="fg-meta-restore"` | `metadataCollapsed` | Meta 折叠恢复按钮 | |
 | `fg.meta.toolbar` | `.metadata-head` | `data-slot="fg-meta-toolbar"` | `!metadataCollapsed` | Meta toolbar | |
 | `fg.meta.toolbar.g3` | `.metadata-toolbar-g3` | `data-slot="fg-meta-toolbar-g3"` | `mode in (image,video,music)` | 搜索/管理/元数据管理组 | 由原 header 第 3 组迁移 |
-| `fg.meta.toolbar.g3.search` | `.search-trigger-btn` (search) | `data-slot="fg-meta-toolbar-g3-search"` | 同上 | 搜索开关按钮 | 仅开关态 |
-| `fg.meta.toolbar.g3.manage` | `.search-trigger-btn` (manage) | `data-slot="fg-meta-toolbar-g3-manage"` | 同上 | 管理模式开关 | 仅开关态 |
-| `fg.meta.toolbar.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-meta-toolbar-g3-metadata"` | 同上 | 元数据管理开关 | 仅开关态 |
+| `fg.meta.toolbar.g3.search` | `.search-trigger-btn` (search) | `data-slot="fg-meta-toolbar-g3-search"` | 同上 | 搜索开关按钮 | `data-a11y-id="metadata.toolbar.g3.search"`；`aria-label=a11y.metadata.toolbarSearch` |
+| `fg.meta.toolbar.g3.manage` | `.search-trigger-btn` (manage) | `data-slot="fg-meta-toolbar-g3-manage"` | 同上 | 管理模式开关 | `data-a11y-id="metadata.toolbar.g3.manage"`；`aria-label=a11y.metadata.toolbarManage` |
+| `fg.meta.toolbar.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-meta-toolbar-g3-metadata"` | 同上 | 元数据管理开关 | `data-a11y-id="metadata.toolbar.g3.metadataToggle"`；`aria-label` 动态：`a11y.metadata.enterMetadataManageMode` / `a11y.metadata.exitMetadataManageMode` |
 | `fg.meta.toolbar.toggle` | `.metadata-head-icon-btn` | `data-slot="fg-meta-toolbar-toggle"` | `mode=image` | 图像预览/元数据切换 | |
 | `fg.meta.main` | `MetadataImageEditor/MetadataVideoEditor/MetadataMusicEditor` | `data-slot="fg-meta-main"` | `!metadataCollapsed` | Meta 主体编辑区 | 按模式分流 |
 | `fg.meta.main.imageEditor` | `<MetadataImageEditor />` | `data-slot="fg-meta-main-image-editor"` | `mode=image` | 图像元数据编辑 | |

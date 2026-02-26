@@ -18,7 +18,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
   const getMetadataManageModeButton = () =>
     screen.getByRole("button", {
-      name: /切换到元数据模式|切换到图像模式|元数据管理/,
+      name: /进入元数据管理模式|退出元数据管理模式|元数据管理/,
     });
 
   const ensureVideoInfoTab = async () => {

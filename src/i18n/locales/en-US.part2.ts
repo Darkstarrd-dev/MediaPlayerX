@@ -522,9 +522,13 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "a11y.metadata.ratingNoneWithGroup": "{{group}} none",
   "a11y.metadata.ratingStarsWithGroup": "{{group}} {{score}} stars",
   "a11y.metadata.searchFilters": "Search filters",
+  "a11y.metadata.toolbarSearch": "Metadata panel search toggle",
+  "a11y.metadata.toolbarManage": "Metadata panel file-management toggle",
   "a11y.metadata.removeTag": "Remove tag {{tag}}",
   "a11y.metadata.englishCircle": "English circle",
   "a11y.metadata.fetchSourceSwitch": "Source switch",
+  "a11y.metadata.enterMetadataManageMode": "Enter metadata management mode",
+  "a11y.metadata.exitMetadataManageMode": "Exit metadata management mode",
   "a11y.metadata.switchToMetadataDisplay": "Switch to metadata display",
   "a11y.metadata.switchToOriginalImageDisplay":
     "Switch to original image display",

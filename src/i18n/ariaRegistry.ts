@@ -39,6 +39,20 @@ export const a11yRegistry = {
     id: 'header.metadataToggle',
     labelKey: 'a11y.header.switchToMetadataMode',
   },
+  metadataToolbarSearch: {
+    id: 'metadata.toolbar.g3.search',
+    labelKey: 'a11y.metadata.toolbarSearch',
+    titleKey: 'tip.header.search',
+  },
+  metadataToolbarManage: {
+    id: 'metadata.toolbar.g3.manage',
+    labelKey: 'a11y.metadata.toolbarManage',
+    titleKey: 'tip.header.manage',
+  },
+  metadataToolbarMetadataManageToggle: {
+    id: 'metadata.toolbar.g3.metadataToggle',
+    labelKey: 'a11y.metadata.enterMetadataManageMode',
+  },
   headerModeSwitch: {
     id: 'header.modeSwitch',
     labelKey: 'a11y.header.modeSwitch',

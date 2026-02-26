@@ -238,22 +238,22 @@ export function buildSceneApplyScript(styleId: string, paletteId: string, sceneP
   }
 
   const ensureSearchPanel = async (enabled) => {
-    const button = query('button[data-a11y-id="header.search"]')
-      || query('.header-group-search .search-trigger-btn[aria-label="检索"]')
+    const button = query('button[data-a11y-id="metadata.toolbar.g3.search"]')
+      || query('button[data-slot="fg-meta-toolbar-g3-search"][aria-label="元数据面板检索开关"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureManageMode = async (enabled) => {
-    const button = query('button[data-a11y-id="header.manage"]')
-      || query('.header-group-search .search-trigger-btn[aria-label="文件管理"]')
+    const button = query('button[data-a11y-id="metadata.toolbar.g3.manage"]')
+      || query('button[data-slot="fg-meta-toolbar-g3-manage"][aria-label="元数据面板文件管理开关"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureMetadataManageMode = async (enabled) => {
-    const preferred = query('button[data-a11y-id="header.metadataToggle"]')
-      || query('.header-group-search .search-trigger-btn[aria-label="切换到图像模式"]')
-      || query('.header-group-search .search-trigger-btn[aria-label="切换到元数据模式"]')
-    const fallback = Array.from(document.querySelectorAll('.header-group-search .search-trigger-btn'))[2] || null
+    const preferred = query('button[data-a11y-id="metadata.toolbar.g3.metadataToggle"]')
+      || query('button[data-slot="fg-meta-toolbar-g3-metadata"][aria-label="进入元数据管理模式"]')
+      || query('button[data-slot="fg-meta-toolbar-g3-metadata"][aria-label="退出元数据管理模式"]')
+    const fallback = query('button[data-slot="fg-meta-toolbar-g3-metadata"]')
     const button = preferred || fallback
     await ensureButtonActive(button, enabled)
   }

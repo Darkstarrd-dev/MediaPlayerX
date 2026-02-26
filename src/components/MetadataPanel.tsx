@@ -897,12 +897,14 @@ function MetadataPanel({
   const metadataToggleLabel = showImagePreview
     ? t("a11y.metadata.switchToMetadataDisplay")
     : t("a11y.metadata.switchToOriginalImageDisplay");
-  const searchButtonA11y = buildA11yPropsByRegistry({ key: "headerSearch", t });
-  const manageButtonA11y = buildA11yPropsByRegistry({ key: "headerManage", t });
+  const searchButtonA11y = buildA11yPropsByRegistry({ key: "metadataToolbarSearch", t });
+  const manageButtonA11y = buildA11yPropsByRegistry({ key: "metadataToolbarManage", t });
   const metadataManageMode = editable;
   const metadataToggleA11y = buildA11yProps({
-    id: a11yRegistry.headerMetadataToggle.id,
-    labelKey: metadataManageMode ? "a11y.header.switchToImageMode" : "a11y.header.switchToMetadataMode",
+    id: a11yRegistry.metadataToolbarMetadataManageToggle.id,
+    labelKey: metadataManageMode
+      ? "a11y.metadata.exitMetadataManageMode"
+      : "a11y.metadata.enterMetadataManageMode",
     t,
   });
 
