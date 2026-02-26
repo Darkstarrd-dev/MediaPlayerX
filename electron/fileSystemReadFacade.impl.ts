@@ -716,11 +716,26 @@ export class FileSystemMediaReadService {
       return;
     }
 
+    const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
+    const previousSnapshotKey = previousSnapshot
+      ? this.buildExternalWatcherSnapshotKey(previousSnapshot)
+      : null;
+
     void this.refreshSnapshotFromFilesystem()
-      .then(() => {
+      .then((nextSnapshot) => {
         if (this.disposed) {
           return;
         }
+
+        if (previousSnapshotKey !== null) {
+          const nextSnapshotKey = this.buildExternalWatcherSnapshotKey(
+            nextSnapshot,
+          );
+          if (nextSnapshotKey === previousSnapshotKey) {
+            return;
+          }
+        }
+
         this.emitLibraryChanged({
           reason: "auto-prune-missing-sources",
           updated_at_ms: Date.now(),
@@ -814,6 +829,24 @@ export class FileSystemMediaReadService {
   private async pathExists(targetPath: string): Promise<boolean> {
     const stat = await fs.stat(targetPath).catch(() => null);
     return Boolean(stat);
+  }
+
+  private buildExternalWatcherSnapshotKey(snapshot: LibrarySnapshotDto): string {
+    const tokens: string[] = [];
+    for (const source of snapshot.image_packages) {
+      tokens.push(`pkg:${source.absolute_path}`);
+    }
+    for (const source of snapshot.image_directories) {
+      tokens.push(`dir:${source.absolute_path}`);
+    }
+    for (const video of snapshot.videos) {
+      tokens.push(`video:${video.absolute_path}`);
+    }
+    for (const audio of snapshot.audios ?? []) {
+      tokens.push(`audio:${audio.absolute_path}`);
+    }
+    tokens.sort();
+    return tokens.join("\n");
   }
 
   private async pruneMissingSnapshotEntries(

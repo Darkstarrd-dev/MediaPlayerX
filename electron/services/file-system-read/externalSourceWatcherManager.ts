@@ -4,15 +4,26 @@ import path from "node:path";
 import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
 
 export class ExternalSourceWatcherManager {
+  private static readonly AUTO_SUBTITLE_SIDE_CAR_PATTERN =
+    /\.auto-live(?:\.[a-z0-9-]+)?\.srt(?:\.tmp)?$/i;
+  private static readonly UNKNOWN_EVENT_IGNORE_WINDOW_MS = 1_200;
+
   private readonly debounceMs: number;
   private readonly onDebouncedChange: () => void;
+  private readonly watchImpl: typeof watch;
 
   private readonly watcherByPathKey = new Map<string, FSWatcher>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastIgnoredSubtitleEventAtMs = 0;
 
-  constructor(options: { debounceMs: number; onDebouncedChange: () => void }) {
+  constructor(options: {
+    debounceMs: number;
+    onDebouncedChange: () => void;
+    watchImpl?: typeof watch;
+  }) {
     this.debounceMs = options.debounceMs;
     this.onDebouncedChange = options.onDebouncedChange;
+    this.watchImpl = options.watchImpl ?? watch;
   }
 
   refresh(options: {
@@ -47,10 +58,17 @@ export class ExternalSourceWatcherManager {
         continue;
       }
       try {
-        const watcher = watch(
+        const watcher = this.watchImpl(
           watchPath,
           { recursive: recursiveWatchSupported },
-          () => {
+          (_eventType, filename) => {
+            if (this.shouldIgnoreWatchFilename(filename)) {
+              this.lastIgnoredSubtitleEventAtMs = Date.now();
+              return;
+            }
+            if (this.shouldIgnoreUnknownFollowUpEvent(filename)) {
+              return;
+            }
             this.scheduleDebouncedRefresh();
           },
         );
@@ -88,5 +106,53 @@ export class ExternalSourceWatcherManager {
       this.debounceTimer = null;
       this.onDebouncedChange();
     }, this.debounceMs);
+  }
+
+  private shouldIgnoreWatchFilename(
+    filename: string | Buffer | null,
+  ): boolean {
+    if (typeof filename === "string") {
+      const normalized = filename.trim();
+      if (!normalized) {
+        return false;
+      }
+      return ExternalSourceWatcherManager.AUTO_SUBTITLE_SIDE_CAR_PATTERN.test(
+        normalized,
+      );
+    }
+
+    if (filename instanceof Buffer) {
+      const normalized = filename.toString("utf8").trim();
+      if (!normalized) {
+        return false;
+      }
+      return ExternalSourceWatcherManager.AUTO_SUBTITLE_SIDE_CAR_PATTERN.test(
+        normalized,
+      );
+    }
+
+    return false;
+  }
+
+  private shouldIgnoreUnknownFollowUpEvent(
+    filename: string | Buffer | null,
+  ): boolean {
+    let isUnknown = false;
+    if (filename === null) {
+      isUnknown = true;
+    } else if (typeof filename === "string") {
+      isUnknown = filename.trim().length === 0;
+    } else if (filename instanceof Buffer) {
+      isUnknown = filename.toString("utf8").trim().length === 0;
+    }
+
+    if (!isUnknown || this.lastIgnoredSubtitleEventAtMs <= 0) {
+      return false;
+    }
+
+    return (
+      Date.now() - this.lastIgnoredSubtitleEventAtMs <=
+      ExternalSourceWatcherManager.UNKNOWN_EVENT_IGNORE_WINDOW_MS
+    );
   }
 }

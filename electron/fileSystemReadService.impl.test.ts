@@ -757,6 +757,11 @@ describe("FileSystemMediaReadService", () => {
       eventPayloads.push(payload);
     });
 
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1_200);
+    });
+    eventPayloads.length = 0;
+
     await fs.rm(imageDirectory, { recursive: true, force: true });
     await fs.rm(videoPath, { force: true });
 
@@ -812,6 +817,52 @@ describe("FileSystemMediaReadService", () => {
     unsubscribe();
 
     expect(after.image_directories).toHaveLength(0);
+  });
+
+  it("自动字幕 sidecar 写盘不会触发 watcher 自动清理广播", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-auto-subtitle-sidecar-watch-"),
+    );
+    createdRoots.push(root);
+
+    const videoPath = path.join(root, "clip.mp4");
+    await writeBinary(videoPath, [0x00, 0x00, 0x00, 0x18]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+    await service.readLibrarySnapshot();
+
+    const eventPayloads: Array<{ reason: string; updated_at_ms: number }> = [];
+    const unsubscribe = service.onLibraryChanged((payload) => {
+      eventPayloads.push(payload);
+    });
+
+    const subtitlePath = path.join(root, "clip.auto-live.zh-CN.srt");
+    const subtitleTempPath = `${subtitlePath}.tmp`;
+    await fs.writeFile(
+      subtitleTempPath,
+      "1\n00:00:00,000 --> 00:00:01,000\nhello\n\n",
+      "utf8",
+    );
+    await fs.rename(subtitleTempPath, subtitlePath);
+    await fs.appendFile(
+      subtitlePath,
+      "2\n00:00:01,000 --> 00:00:02,000\nworld\n\n",
+      "utf8",
+    );
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1_500);
+    });
+
+    unsubscribe();
+
+    expect(
+      eventPayloads.some(
+        (payload) => payload.reason === "auto-prune-missing-sources",
+      ),
+    ).toBe(false);
   });
 
   it("导入任务以纯引用登记库外文件并完成刷新", async () => {
