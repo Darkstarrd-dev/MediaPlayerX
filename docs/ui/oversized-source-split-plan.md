@@ -276,7 +276,7 @@ TODO Check：
 | Phase 1 | 已完成 | Settings / FullscreenLayer / ImageMainSection 首轮拆分 | `npm run test` | 通过（108 passed / 1 skipped） | `65a7beb` | 2026-02-26 |
 | Phase 2 | 已完成 | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `327316e` | 2026-02-26 |
 | Phase 3 | 已完成 | subtitleSession / libraryReadWriteServiceImpl / fileSystemReadFacade / mediaLibrarySnapshotStore / useLiveSubtitles 首轮拆分 | `npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` + `npm run build` + `npm run test` | 通过（1 file passed；2 tests passed；108 files passed / 1 skipped；651 tests passed / 1 skipped） | `d3fa240` | 2026-02-26 |
-| Phase 4 | 已完成 | main.css / layout.css / settings.css / soft-skeuomorphic.components.css 拆分与入口导入重组 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
+| Phase 4 | 已完成 | main.css / layout.css / settings.css / soft-skeuomorphic.components.css 拆分与入口导入重组 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `df66310` | 2026-02-26 |
 | Phase 5 | 未开始 | - | - | - | - | - |
 
 ## 6. 拆分完成判定标准（Definition of Done）
