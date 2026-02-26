@@ -128,7 +128,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-video-controls-shell"] .video-controls-group.is-center .video-action-btn:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls"].is-fullscreen-floating .music-controls-group.is-center .video-action-btn:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .fullscreen-action-btn:active {
-  transform: scale(0.95);
+  transform: none;
   box-shadow:
     inset 2px 2px 4px rgba(120, 95, 65, 0.34),
     inset -2px -2px 3px rgba(255, 255, 255, 0.72);
@@ -150,4 +150,5 @@
   height: var(--mpx-fs-center-icon-size);
   color: #574226;
   fill: currentColor;
+  transform: none;
 }
