@@ -7,232 +7,96 @@ import {
 import type { JSX } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
+import { renderSettingsDatabaseSection } from "./renderSettingsDatabaseSection";
+import { renderSettingsDebugSection } from "./renderSettingsDebugSection";
 import { renderSettingsModelSection } from "./renderSettingsModelSection";
+import { renderSettingsPerformanceSection } from "./renderSettingsPerformanceSection";
+import { renderSettingsShortcutsSection } from "./renderSettingsShortcutsSection";
 import { renderSettingsSystemSection } from "./renderSettingsSystemSection";
 import { formatScale, SIZE_SCALE_CONFIG, toAbsolutePx } from "./settingsScale";
 import type { RenderSettingsMainSectionParams } from "./renderSettingsMainSection.types";
 
 export type { SettingsSection } from "./renderSettingsMainSection.types";
 
-export function renderSettingsMainSection({
-  t,
-  activeSection,
-  uiLocale,
-  layoutLocked,
-  headerHeight,
-  headerHeightScale,
-  settingsFontSize,
-  settingsFontSizeScale,
-  sidebarRatio,
-  sidebarMinWidth,
-  sidebarMinWidthScale,
-  sidebarFontSize,
-  sidebarFontSizeScale,
-  headerDebugGroupVisible,
-  tooltipEnabled,
-  electronNativeChromeEnabled,
-  themeParameterButtonVisible,
-  sidebarCountFontSize,
-  sidebarCountFontSizeScale,
-  sidebarIndentStep,
-  sidebarIndentStepScale,
-  sidebarVerticalGap,
-  sidebarVerticalGapScale,
-  metadataRatio,
-  workspaceBottomPanelHeight,
-  workspaceBottomPanelHeightScale,
-  fullscreenVideoControlsMaxWidth,
-  fullscreenVideoControlsMaxWidthScale,
-  mediaPreloadMemoryBudgetMb,
-  thumbnailGap,
-  thumbnailGapScale,
-  thumbnailQuality,
-  thumbnailAdaptiveResolution,
-  thumbnailWidthInputValue,
-  thumbnailGenerationConcurrencyInput,
-  thumbnailResolveConcurrencyInput,
-  thumbnailQueueSizeInput,
-  cpuTokenLimitInput,
-  thumbnailWarmupRadius,
-  thumbnailWarmupConcurrency,
-  fullscreenPrefetchRadius,
-  fullscreenDecodeCacheSize,
-  fullscreenResamplingEnabled,
-  fullscreenUpsamplingKernel,
-  fullscreenDownsamplingKernel,
-  proxyServer,
-  ehentaiCookies,
-  subtitleFeatureEnabled,
-  subtitleRenderMode,
-  subtitleAdvancedVadPreset,
-  subtitleAdvancedVadThreshold,
-  subtitleAdvancedVadMinSilenceSec,
-  subtitleAdvancedVadMinSpeechSec,
-  subtitleAdvancedVadMaxSpeechSec,
-  subtitleAdvancedSpeakerThreshold,
-  subtitleValidPlaybackRateThreshold,
-  subtitleLanguage,
-  subtitleSelectedModelId,
-  subtitleModelDir,
-  subtitleTextFillMode,
-  subtitleTextColor,
-  subtitleGradientStartColor,
-  subtitleGradientEndColor,
-  subtitleGradientDirection,
-  subtitleGradientCurve,
-  subtitleStrokeColor,
-  subtitleStrokeWidth,
-  subtitleStrokeShadowColor,
-  subtitleStrokeShadowRadius,
-  subtitleFontSize,
-  subtitleMaxLineChars,
-  subtitleOffsetY,
-  subtitleStylePanelExpanded,
-  subtitleModelsLoading,
-  subtitleModelsError,
-  subtitleModelsStatus,
-  subtitleDownloadTask,
-  subtitleDownloadPending,
-  subtitleModelDownloadSupported,
-  adReviewVisionEndpoint,
-  adReviewVisionModel,
-  adReviewVisionVerified,
-  adReviewVisionTestPending,
-  adReviewVisionTestMessage,
-  adReviewVisionSavePending,
-  adReviewVisionSaveMessage,
-  subtitleCleanupLlmEndpoint,
-  subtitleCleanupLlmModel,
-  subtitleCleanupLlmPrompt,
-  styleId,
-  paletteMode,
-  paletteDayId,
-  paletteNightId,
-  shortcutConflicts,
-  shortcutLabelByAction,
-  settingsBackdropOpacity,
-  databaseResetPending,
-  databaseResetError,
-  runtimePathUpdatePending,
-  runtimePathUpdateMessage,
-  repositoryMode,
-  backendBridgeInjected,
-  runtimeInfoLoading,
-  runtimeInfoError,
-  runtimeInfo,
-  mediaCapabilitiesLoading,
-  mediaCapabilitiesError,
-  mediaCapabilities,
-  adReviewDeleteOverlayDebugActive,
-  preferenceDebugLoading,
-  preferenceDebugError,
-  preferenceDebugData,
-  renderBindingRows,
-  onResetShortcuts,
-  onUiLocaleChange,
-  onLayoutLockedChange,
-  onHeaderHeightChange,
-  onSettingsBackdropOpacityChange,
-  onSettingsFontSizeChange,
-  onSidebarRatioChange,
-  onSidebarMinWidthChange,
-  onSidebarFontSizeChange,
-  onHeaderDebugGroupVisibleChange,
-  onTooltipEnabledChange,
-  onElectronNativeChromeEnabledChange,
-  onThemeParameterButtonVisibleChange,
-  onSidebarCountFontSizeChange,
-  onSidebarIndentStepChange,
-  onSidebarVerticalGapChange,
-  onMetadataRatioChange,
-  onWorkspaceBottomPanelHeightChange,
-  onFullscreenVideoControlsMaxWidthChange,
-  onMediaPreloadMemoryBudgetMbChange,
-  onThumbnailGapChange,
-  onThumbnailQualityChange,
-  onResetThumbnailQuality,
-  onThumbnailAdaptiveResolutionChange,
-  onThumbnailWidthInputChange,
-  onThumbnailWidthInputBlur,
-  onThumbnailWidthInputKeyDown,
-  onResetThumbnailWidth,
-  onThumbnailGenerationConcurrencyInputChange,
-  onThumbnailGenerationConcurrencyInputBlur,
-  onThumbnailGenerationConcurrencyInputKeyDown,
-  onResetThumbnailGenerationConcurrency,
-  onThumbnailResolveConcurrencyInputChange,
-  onThumbnailResolveConcurrencyInputBlur,
-  onThumbnailResolveConcurrencyInputKeyDown,
-  onResetThumbnailResolveConcurrency,
-  onThumbnailQueueSizeInputChange,
-  onThumbnailQueueSizeInputBlur,
-  onThumbnailQueueSizeInputKeyDown,
-  onResetThumbnailQueueSize,
-  onCpuTokenLimitInputChange,
-  onCpuTokenLimitInputBlur,
-  onCpuTokenLimitInputKeyDown,
-  onResetCpuTokenLimit,
-  onThumbnailWarmupRadiusChange,
-  onThumbnailWarmupConcurrencyChange,
-  onFullscreenPrefetchRadiusChange,
-  onFullscreenDecodeCacheSizeChange,
-  onFullscreenResamplingEnabledChange,
-  onFullscreenUpsamplingKernelChange,
-  onFullscreenDownsamplingKernelChange,
-  onProxyServerChange,
-  onEhentaiCookiesChange,
-  onSubtitleFeatureEnabledChange,
-  onSubtitleRenderModeChange,
-  onSubtitleAdvancedVadPresetChange,
-  onSubtitleAdvancedVadThresholdChange,
-  onSubtitleAdvancedVadMinSilenceSecChange,
-  onSubtitleAdvancedVadMinSpeechSecChange,
-  onSubtitleAdvancedVadMaxSpeechSecChange,
-  onSubtitleAdvancedSpeakerThresholdChange,
-  onSubtitleValidPlaybackRateThresholdChange,
-  onSubtitleLanguageChange,
-  onSubtitleSelectedModelIdChange,
-  onSubtitleModelDirPick,
-  onSubtitleTextFillModeChange,
-  onSubtitleTextColorChange,
-  onSubtitleGradientStartColorChange,
-  onSubtitleGradientEndColorChange,
-  onSubtitleGradientDirectionChange,
-  onSubtitleGradientCurveChange,
-  onSubtitleStrokeColorChange,
-  onSubtitleStrokeWidthChange,
-  onSubtitleStrokeShadowColorChange,
-  onSubtitleStrokeShadowRadiusChange,
-  onSubtitleFontSizeChange,
-  onSubtitleMaxLineCharsChange,
-  onSubtitleOffsetYChange,
-  onSubtitleStylePanelExpandedChange,
-  onRefreshSubtitleModels,
-  onStartSubtitleModelDownload,
-  onCancelSubtitleModelDownload,
-  onOpenSubtitleModelPage,
-  onAdReviewVisionEndpointChange,
-  onAdReviewVisionModelChange,
-  onTestAdReviewVisionModel,
-  onSaveAdReviewVisionModel,
-  onSubtitleCleanupLlmEndpointChange,
-  onSubtitleCleanupLlmModelChange,
-  onSubtitleCleanupLlmPromptChange,
-  onStyleChange,
-  onPaletteModeChange,
-  onPaletteDayChange,
-  onPaletteNightChange,
-  onClearDatabase,
-  onPickDatabaseDirectoryPath,
-  onPickThumbnailCacheDirectoryPath,
-  onRefreshRuntimeInfo,
-  onRefreshPreferenceDebug,
-  onOpenAdReviewDeleteOverlayDebug,
-  onPerformancePresetChange,
-}: RenderSettingsMainSectionParams): JSX.Element {
+export function renderSettingsMainSection(
+  params: RenderSettingsMainSectionParams,
+): JSX.Element {
+  const { t, activeSection } = params;
   const settingsTip = (key: string): string => t(`ui.settings.tooltip.${key}`);
 
   if (activeSection === "layout") {
+    const {
+      uiLocale,
+      layoutLocked,
+      headerHeight,
+      headerHeightScale,
+      settingsFontSize,
+      settingsFontSizeScale,
+      sidebarRatio,
+      sidebarMinWidth,
+      sidebarMinWidthScale,
+      sidebarFontSize,
+      sidebarFontSizeScale,
+      sidebarCountFontSize,
+      sidebarCountFontSizeScale,
+      sidebarIndentStep,
+      sidebarIndentStepScale,
+      sidebarVerticalGap,
+      sidebarVerticalGapScale,
+      metadataRatio,
+      workspaceBottomPanelHeight,
+      workspaceBottomPanelHeightScale,
+      fullscreenVideoControlsMaxWidth,
+      fullscreenVideoControlsMaxWidthScale,
+      mediaPreloadMemoryBudgetMb,
+      thumbnailGap,
+      thumbnailGapScale,
+      thumbnailQuality,
+      thumbnailAdaptiveResolution,
+      thumbnailWidthInputValue,
+      thumbnailGenerationConcurrencyInput,
+      thumbnailResolveConcurrencyInput,
+      styleId,
+      paletteMode,
+      paletteDayId,
+      paletteNightId,
+      settingsBackdropOpacity,
+      onUiLocaleChange,
+      onLayoutLockedChange,
+      onHeaderHeightChange,
+      onSettingsBackdropOpacityChange,
+      onSettingsFontSizeChange,
+      onSidebarRatioChange,
+      onSidebarMinWidthChange,
+      onSidebarFontSizeChange,
+      onSidebarCountFontSizeChange,
+      onSidebarIndentStepChange,
+      onSidebarVerticalGapChange,
+      onMetadataRatioChange,
+      onWorkspaceBottomPanelHeightChange,
+      onFullscreenVideoControlsMaxWidthChange,
+      onMediaPreloadMemoryBudgetMbChange,
+      onThumbnailGapChange,
+      onThumbnailQualityChange,
+      onResetThumbnailQuality,
+      onThumbnailAdaptiveResolutionChange,
+      onThumbnailWidthInputChange,
+      onThumbnailWidthInputBlur,
+      onThumbnailWidthInputKeyDown,
+      onResetThumbnailWidth,
+      onThumbnailGenerationConcurrencyInputChange,
+      onThumbnailGenerationConcurrencyInputBlur,
+      onThumbnailGenerationConcurrencyInputKeyDown,
+      onResetThumbnailGenerationConcurrency,
+      onThumbnailResolveConcurrencyInputChange,
+      onThumbnailResolveConcurrencyInputBlur,
+      onThumbnailResolveConcurrencyInputKeyDown,
+      onResetThumbnailResolveConcurrency,
+      onStyleChange,
+      onPaletteModeChange,
+      onPaletteDayChange,
+      onPaletteNightChange,
+    } = params;
     const styles = listStyles();
     const selectedStyleId = resolveStyleIdFromStyles(styleId, styles);
     const palettes = listPalettesByStyle(selectedStyleId);
@@ -766,595 +630,136 @@ export function renderSettingsMainSection({
   }
 
   if (activeSection === "performance") {
-    return (
-      <div className="settings-block">
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>{t("ui.settings.performanceLoadSection")}</span>
-          </header>
-
-          <label
-            htmlFor="settings-thumbnail-warmup-radius-select"
-            data-tooltip-label={settingsTip("thumbnailWarmupRadius")}
-          >
-            {t("ui.settings.thumbnailWarmupRadius")}
-            <select
-              id="settings-thumbnail-warmup-radius-select"
-              value={String(thumbnailWarmupRadius)}
-              onChange={(event) =>
-                onThumbnailWarmupRadiusChange(Number(event.target.value))
-              }
-            >
-              <option value="0">{t("ui.settings.warmupRadiusOff")}</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </label>
-
-          <label
-            htmlFor="settings-thumbnail-warmup-concurrency-select"
-            data-tooltip-label={settingsTip("thumbnailWarmupConcurrency")}
-          >
-            {t("ui.settings.thumbnailWarmupConcurrency")}
-            <select
-              id="settings-thumbnail-warmup-concurrency-select"
-              value={String(thumbnailWarmupConcurrency)}
-              onChange={(event) =>
-                onThumbnailWarmupConcurrencyChange(Number(event.target.value))
-              }
-            >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </label>
-
-          <label
-            htmlFor="settings-fullscreen-prefetch-radius-select"
-            data-tooltip-label={settingsTip("fullscreenPrefetchRadius")}
-          >
-            {t("ui.settings.fullscreenPrefetchRadius")}
-            <select
-              id="settings-fullscreen-prefetch-radius-select"
-              value={String(fullscreenPrefetchRadius)}
-              onChange={(event) =>
-                onFullscreenPrefetchRadiusChange(Number(event.target.value))
-              }
-            >
-              <option value="2">2</option>
-              <option value="4">4</option>
-              <option value="6">6</option>
-              <option value="8">8</option>
-              <option value="12">12</option>
-            </select>
-          </label>
-
-          <label
-            htmlFor="settings-fullscreen-decode-cache-size-select"
-            data-tooltip-label={settingsTip("fullscreenDecodeCacheSize")}
-          >
-            {t("ui.settings.fullscreenDecodeCacheSize")}
-            <select
-              id="settings-fullscreen-decode-cache-size-select"
-              value={String(fullscreenDecodeCacheSize)}
-              onChange={(event) =>
-                onFullscreenDecodeCacheSizeChange(Number(event.target.value))
-              }
-            >
-              <option value="4">4</option>
-              <option value="6">6</option>
-              <option value="8">8</option>
-              <option value="10">10</option>
-              <option value="16">16</option>
-            </select>
-          </label>
-
-          <label
-            className="settings-toggle-row"
-            data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}
-          >
-            <span data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
-              {t("ui.settings.fullscreenResamplingEnabled")}
-            </span>
-            <input
-              type="checkbox"
-              checked={fullscreenResamplingEnabled}
-              onChange={(event) =>
-                onFullscreenResamplingEnabledChange(event.target.checked)
-              }
-            />
-          </label>
-
-          {fullscreenResamplingEnabled ? (
-            <>
-              <label
-                htmlFor="settings-fullscreen-downsampling-kernel-select"
-                data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
-              >
-                <span
-                  data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
-                >
-                  {t("ui.settings.fullscreenDownsamplingKernel")}
-                </span>
-                <select
-                  id="settings-fullscreen-downsampling-kernel-select"
-                  value={fullscreenDownsamplingKernel}
-                  onChange={(event) =>
-                    onFullscreenDownsamplingKernelChange(
-                      event.target.value as
-                        | "lanczos3"
-                        | "mitchell"
-                        | "nearest"
-                        | "cubic",
-                    )
-                  }
-                >
-                  <option value="lanczos3">
-                    {t("ui.settings.resamplingKernelLanczos3")}
-                  </option>
-                  <option value="mitchell">
-                    {t("ui.settings.resamplingKernelMitchell")}
-                  </option>
-                  <option value="nearest">
-                    {t("ui.settings.resamplingKernelNearest")}
-                  </option>
-                  <option value="cubic">
-                    {t("ui.settings.resamplingKernelCubic")}
-                  </option>
-                </select>
-              </label>
-
-              <label
-                htmlFor="settings-fullscreen-upsampling-kernel-select"
-                data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
-              >
-                <span
-                  data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
-                >
-                  {t("ui.settings.fullscreenUpsamplingKernel")}
-                </span>
-                <select
-                  id="settings-fullscreen-upsampling-kernel-select"
-                  value={fullscreenUpsamplingKernel}
-                  onChange={(event) =>
-                    onFullscreenUpsamplingKernelChange(
-                      event.target.value as
-                        | "lanczos3"
-                        | "mitchell"
-                        | "nearest"
-                        | "cubic",
-                    )
-                  }
-                >
-                  <option value="lanczos3">
-                    {t("ui.settings.resamplingKernelLanczos3")}
-                  </option>
-                  <option value="mitchell">
-                    {t("ui.settings.resamplingKernelMitchell")}
-                  </option>
-                  <option value="nearest">
-                    {t("ui.settings.resamplingKernelNearest")}
-                  </option>
-                  <option value="cubic">
-                    {t("ui.settings.resamplingKernelCubic")}
-                  </option>
-                </select>
-              </label>
-            </>
-          ) : null}
-        </section>
-
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>{t("ui.settings.thumbnailPipelineSection")}</span>
-          </header>
-          <label
-            htmlFor="settings-performance-preset-select"
-            data-tooltip-label={t("ui.settings.tooltip.performancePreset")}
-          >
-            {t("ui.settings.performancePreset")}
-            <select
-              id="settings-performance-preset-select"
-              value=""
-              onChange={(event) => {
-                const value = event.target.value;
-                if (value) {
-                  onPerformancePresetChange(value);
-                }
-                event.target.value = "";
-              }}
-            >
-              <option value="" disabled>
-                {t("ui.settings.performancePresetPlaceholder")}
-              </option>
-              <option value="normal">
-                {t("ui.settings.performancePresetNormal")}
-              </option>
-              <option value="performance">
-                {t("ui.settings.performancePresetPerformance")}
-              </option>
-              <option value="ultra">
-                {t("ui.settings.performancePresetUltra")}
-              </option>
-            </select>
-          </label>
-          <div className="settings-compact-row">
-            <label data-tooltip-label={settingsTip("thumbnailQueueSize")}>
-              {t("ui.settings.thumbnailQueueSize")}
-            </label>
-            <div className="settings-compact-input-group">
-              <input
-                className="settings-number-input"
-                type="text"
-                inputMode="numeric"
-                value={thumbnailQueueSizeInput}
-                onChange={(event) =>
-                  onThumbnailQueueSizeInputChange(event.target.value)
-                }
-                onBlur={onThumbnailQueueSizeInputBlur}
-                onKeyDown={onThumbnailQueueSizeInputKeyDown}
-              />
-              <button
-                className="settings-icon-btn main-icon-square-btn"
-                type="button"
-                aria-label={t("a11y.common.restoreDefault")}
-                data-tooltip-label={t("tip.common.restoreDefault")}
-                onClick={onResetThumbnailQueueSize}
-              >
-                <MainUiIcon name="return" />
-              </button>
-            </div>
-          </div>
-          <div className="settings-compact-row">
-            <label data-tooltip-label={settingsTip("cpuTokenLimit")}>
-              {t("ui.settings.cpuTokenLimit")}
-            </label>
-            <div className="settings-compact-input-group">
-              <input
-                className="settings-number-input"
-                type="text"
-                inputMode="numeric"
-                value={cpuTokenLimitInput}
-                onChange={(event) =>
-                  onCpuTokenLimitInputChange(event.target.value)
-                }
-                onBlur={onCpuTokenLimitInputBlur}
-                onKeyDown={onCpuTokenLimitInputKeyDown}
-              />
-              <button
-                className="settings-icon-btn main-icon-square-btn"
-                type="button"
-                aria-label={t("a11y.common.restoreDefault")}
-                data-tooltip-label={t("tip.common.restoreDefault")}
-                onClick={onResetCpuTokenLimit}
-              >
-                <MainUiIcon name="return" />
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
+    return renderSettingsPerformanceSection({ params, settingsTip });
   }
 
   if (activeSection === "system") {
     return renderSettingsSystemSection({
       t,
-      repositoryMode,
-      backendBridgeInjected,
-      runtimeInfoLoading,
-      runtimeInfoError,
-      runtimeInfo,
-      mediaCapabilitiesLoading,
-      mediaCapabilitiesError,
-      mediaCapabilities,
-      onRefreshRuntimeInfo,
-      preferenceDebugLoading,
-      preferenceDebugError,
-      preferenceDebugData,
-      onRefreshPreferenceDebug,
+      repositoryMode: params.repositoryMode,
+      backendBridgeInjected: params.backendBridgeInjected,
+      runtimeInfoLoading: params.runtimeInfoLoading,
+      runtimeInfoError: params.runtimeInfoError,
+      runtimeInfo: params.runtimeInfo,
+      mediaCapabilitiesLoading: params.mediaCapabilitiesLoading,
+      mediaCapabilitiesError: params.mediaCapabilitiesError,
+      mediaCapabilities: params.mediaCapabilities,
+      onRefreshRuntimeInfo: params.onRefreshRuntimeInfo,
+      preferenceDebugLoading: params.preferenceDebugLoading,
+      preferenceDebugError: params.preferenceDebugError,
+      preferenceDebugData: params.preferenceDebugData,
+      onRefreshPreferenceDebug: params.onRefreshPreferenceDebug,
     });
   }
 
   if (activeSection === "model") {
     return renderSettingsModelSection({
       t,
-      subtitleFeatureEnabled,
-      subtitleRenderMode,
-      subtitleAdvancedVadPreset,
-      subtitleAdvancedVadThreshold,
-      subtitleAdvancedVadMinSilenceSec,
-      subtitleAdvancedVadMinSpeechSec,
-      subtitleAdvancedVadMaxSpeechSec,
-      subtitleAdvancedSpeakerThreshold,
-      subtitleValidPlaybackRateThreshold,
-      subtitleLanguage,
-      subtitleSelectedModelId,
-      subtitleModelDir,
-      subtitleTextFillMode,
-      subtitleTextColor,
-      subtitleGradientStartColor,
-      subtitleGradientEndColor,
-      subtitleGradientDirection,
-      subtitleGradientCurve,
-      subtitleStrokeColor,
-      subtitleStrokeWidth,
-      subtitleStrokeShadowColor,
-      subtitleStrokeShadowRadius,
-      subtitleFontSize,
-      subtitleMaxLineChars,
-      subtitleOffsetY,
-      subtitleStylePanelExpanded,
-      subtitleModelsLoading,
-      subtitleModelsError,
-      subtitleModelsStatus,
-      subtitleDownloadTask,
-      subtitleDownloadPending,
-      subtitleModelDownloadSupported,
-      adReviewVisionEndpoint,
-      adReviewVisionModel,
-      adReviewVisionVerified,
-      adReviewVisionTestPending,
-      adReviewVisionTestMessage,
-      adReviewVisionSavePending,
-      adReviewVisionSaveMessage,
-      subtitleCleanupLlmEndpoint,
-      subtitleCleanupLlmModel,
-      subtitleCleanupLlmPrompt,
-      onSubtitleFeatureEnabledChange,
-      onSubtitleRenderModeChange,
-      onSubtitleAdvancedVadPresetChange,
-      onSubtitleAdvancedVadThresholdChange,
-      onSubtitleAdvancedVadMinSilenceSecChange,
-      onSubtitleAdvancedVadMinSpeechSecChange,
-      onSubtitleAdvancedVadMaxSpeechSecChange,
-      onSubtitleAdvancedSpeakerThresholdChange,
-      onSubtitleValidPlaybackRateThresholdChange,
-      onSubtitleLanguageChange,
-      onSubtitleSelectedModelIdChange,
-      onSubtitleModelDirPick,
-      onSubtitleTextFillModeChange,
-      onSubtitleTextColorChange,
-      onSubtitleGradientStartColorChange,
-      onSubtitleGradientEndColorChange,
-      onSubtitleGradientDirectionChange,
-      onSubtitleGradientCurveChange,
-      onSubtitleStrokeColorChange,
-      onSubtitleStrokeWidthChange,
-      onSubtitleStrokeShadowColorChange,
-      onSubtitleStrokeShadowRadiusChange,
-      onSubtitleFontSizeChange,
-      onSubtitleMaxLineCharsChange,
-      onSubtitleOffsetYChange,
-      onSubtitleStylePanelExpandedChange,
-      onRefreshSubtitleModels,
-      onStartSubtitleModelDownload,
-      onCancelSubtitleModelDownload,
-      onOpenSubtitleModelPage,
-      onAdReviewVisionEndpointChange,
-      onAdReviewVisionModelChange,
-      onTestAdReviewVisionModel,
-      onSaveAdReviewVisionModel,
-      onSubtitleCleanupLlmEndpointChange,
-      onSubtitleCleanupLlmModelChange,
-      onSubtitleCleanupLlmPromptChange,
+      subtitleFeatureEnabled: params.subtitleFeatureEnabled,
+      subtitleRenderMode: params.subtitleRenderMode,
+      subtitleAdvancedVadPreset: params.subtitleAdvancedVadPreset,
+      subtitleAdvancedVadThreshold: params.subtitleAdvancedVadThreshold,
+      subtitleAdvancedVadMinSilenceSec: params.subtitleAdvancedVadMinSilenceSec,
+      subtitleAdvancedVadMinSpeechSec: params.subtitleAdvancedVadMinSpeechSec,
+      subtitleAdvancedVadMaxSpeechSec: params.subtitleAdvancedVadMaxSpeechSec,
+      subtitleAdvancedSpeakerThreshold: params.subtitleAdvancedSpeakerThreshold,
+      subtitleValidPlaybackRateThreshold:
+        params.subtitleValidPlaybackRateThreshold,
+      subtitleLanguage: params.subtitleLanguage,
+      subtitleSelectedModelId: params.subtitleSelectedModelId,
+      subtitleModelDir: params.subtitleModelDir,
+      subtitleTextFillMode: params.subtitleTextFillMode,
+      subtitleTextColor: params.subtitleTextColor,
+      subtitleGradientStartColor: params.subtitleGradientStartColor,
+      subtitleGradientEndColor: params.subtitleGradientEndColor,
+      subtitleGradientDirection: params.subtitleGradientDirection,
+      subtitleGradientCurve: params.subtitleGradientCurve,
+      subtitleStrokeColor: params.subtitleStrokeColor,
+      subtitleStrokeWidth: params.subtitleStrokeWidth,
+      subtitleStrokeShadowColor: params.subtitleStrokeShadowColor,
+      subtitleStrokeShadowRadius: params.subtitleStrokeShadowRadius,
+      subtitleFontSize: params.subtitleFontSize,
+      subtitleMaxLineChars: params.subtitleMaxLineChars,
+      subtitleOffsetY: params.subtitleOffsetY,
+      subtitleStylePanelExpanded: params.subtitleStylePanelExpanded,
+      subtitleModelsLoading: params.subtitleModelsLoading,
+      subtitleModelsError: params.subtitleModelsError,
+      subtitleModelsStatus: params.subtitleModelsStatus,
+      subtitleDownloadTask: params.subtitleDownloadTask,
+      subtitleDownloadPending: params.subtitleDownloadPending,
+      subtitleModelDownloadSupported: params.subtitleModelDownloadSupported,
+      adReviewVisionEndpoint: params.adReviewVisionEndpoint,
+      adReviewVisionModel: params.adReviewVisionModel,
+      adReviewVisionVerified: params.adReviewVisionVerified,
+      adReviewVisionTestPending: params.adReviewVisionTestPending,
+      adReviewVisionTestMessage: params.adReviewVisionTestMessage,
+      adReviewVisionSavePending: params.adReviewVisionSavePending,
+      adReviewVisionSaveMessage: params.adReviewVisionSaveMessage,
+      subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
+      subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
+      subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
+      onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
+      onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
+      onSubtitleAdvancedVadPresetChange: params.onSubtitleAdvancedVadPresetChange,
+      onSubtitleAdvancedVadThresholdChange:
+        params.onSubtitleAdvancedVadThresholdChange,
+      onSubtitleAdvancedVadMinSilenceSecChange:
+        params.onSubtitleAdvancedVadMinSilenceSecChange,
+      onSubtitleAdvancedVadMinSpeechSecChange:
+        params.onSubtitleAdvancedVadMinSpeechSecChange,
+      onSubtitleAdvancedVadMaxSpeechSecChange:
+        params.onSubtitleAdvancedVadMaxSpeechSecChange,
+      onSubtitleAdvancedSpeakerThresholdChange:
+        params.onSubtitleAdvancedSpeakerThresholdChange,
+      onSubtitleValidPlaybackRateThresholdChange:
+        params.onSubtitleValidPlaybackRateThresholdChange,
+      onSubtitleLanguageChange: params.onSubtitleLanguageChange,
+      onSubtitleSelectedModelIdChange: params.onSubtitleSelectedModelIdChange,
+      onSubtitleModelDirPick: params.onSubtitleModelDirPick,
+      onSubtitleTextFillModeChange: params.onSubtitleTextFillModeChange,
+      onSubtitleTextColorChange: params.onSubtitleTextColorChange,
+      onSubtitleGradientStartColorChange:
+        params.onSubtitleGradientStartColorChange,
+      onSubtitleGradientEndColorChange: params.onSubtitleGradientEndColorChange,
+      onSubtitleGradientDirectionChange:
+        params.onSubtitleGradientDirectionChange,
+      onSubtitleGradientCurveChange: params.onSubtitleGradientCurveChange,
+      onSubtitleStrokeColorChange: params.onSubtitleStrokeColorChange,
+      onSubtitleStrokeWidthChange: params.onSubtitleStrokeWidthChange,
+      onSubtitleStrokeShadowColorChange:
+        params.onSubtitleStrokeShadowColorChange,
+      onSubtitleStrokeShadowRadiusChange:
+        params.onSubtitleStrokeShadowRadiusChange,
+      onSubtitleFontSizeChange: params.onSubtitleFontSizeChange,
+      onSubtitleMaxLineCharsChange: params.onSubtitleMaxLineCharsChange,
+      onSubtitleOffsetYChange: params.onSubtitleOffsetYChange,
+      onSubtitleStylePanelExpandedChange:
+        params.onSubtitleStylePanelExpandedChange,
+      onRefreshSubtitleModels: params.onRefreshSubtitleModels,
+      onStartSubtitleModelDownload: params.onStartSubtitleModelDownload,
+      onCancelSubtitleModelDownload: params.onCancelSubtitleModelDownload,
+      onOpenSubtitleModelPage: params.onOpenSubtitleModelPage,
+      onAdReviewVisionEndpointChange: params.onAdReviewVisionEndpointChange,
+      onAdReviewVisionModelChange: params.onAdReviewVisionModelChange,
+      onTestAdReviewVisionModel: params.onTestAdReviewVisionModel,
+      onSaveAdReviewVisionModel: params.onSaveAdReviewVisionModel,
+      onSubtitleCleanupLlmEndpointChange:
+        params.onSubtitleCleanupLlmEndpointChange,
+      onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
+      onSubtitleCleanupLlmPromptChange: params.onSubtitleCleanupLlmPromptChange,
     });
   }
 
   if (activeSection === "debug") {
-    return (
-      <div className="settings-block">
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>{t("ui.settings.debugOverlaySection")}</span>
-          </header>
-          <div className="settings-debug-toggle-row">
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${adReviewDeleteOverlayDebugActive ? "is-on" : ""}`}
-              onClick={onOpenAdReviewDeleteOverlayDebug}
-            >
-              {`${t("ui.settings.debugOpenDeleteOverlay")} · ${adReviewDeleteOverlayDebugActive ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-          </div>
-        </section>
-
-        <section className="settings-group">
-          <header className="settings-group-head">
-            <span>{t("ui.settings.debugSection")}</span>
-          </header>
-          <div className="settings-debug-toggle-row">
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${headerDebugGroupVisible ? "is-on" : ""}`}
-              onClick={() =>
-                onHeaderDebugGroupVisibleChange(!headerDebugGroupVisible)
-              }
-            >
-              {`${t("ui.settings.debugHeaderGroup")} · ${headerDebugGroupVisible ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${tooltipEnabled ? "is-on" : ""}`}
-              onClick={() => onTooltipEnabledChange(!tooltipEnabled)}
-            >
-              {`${t("ui.settings.debugTooltips")} · ${tooltipEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${electronNativeChromeEnabled ? "is-on" : ""}`}
-              onClick={() =>
-                onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)
-              }
-            >
-              {`${t("ui.settings.debugNativeChrome")} · ${electronNativeChromeEnabled ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-            <button
-              type="button"
-              className={`settings-debug-toggle-btn ${themeParameterButtonVisible ? "is-on" : ""}`}
-              onClick={() =>
-                onThemeParameterButtonVisibleChange(!themeParameterButtonVisible)
-              }
-            >
-              {`${t("ui.settings.showThemeParameterButton")} · ${themeParameterButtonVisible ? t("ui.settings.toggleOn") : t("ui.settings.toggleOff")}`}
-            </button>
-          </div>
-        </section>
-      </div>
-    );
+    return renderSettingsDebugSection({ params });
   }
 
   if (activeSection === "shortcuts") {
-    return (
-      <div className="settings-block settings-shortcuts">
-        <div className="settings-shortcuts-head">
-          <strong>{t("ui.settings.shortcutsTitle")}</strong>
-          <button
-            className="settings-icon-btn main-icon-square-btn"
-            type="button"
-            aria-label={t("a11y.common.restoreDefault")}
-            data-tooltip-label={t("tip.common.restoreDefault")}
-            onClick={onResetShortcuts}
-          >
-            <MainUiIcon name="return" />
-          </button>
-        </div>
-
-        {renderBindingRows()}
-
-        <div className="shortcut-conflicts">
-          <strong>{t("ui.settings.shortcutConflictsTitle")}</strong>
-          {shortcutConflicts.length === 0 ? (
-            <p>{t("ui.settings.shortcutConflictsNone")}</p>
-          ) : (
-            <ul>
-              {shortcutConflicts.map((conflict) => (
-                <li key={`${conflict.scope}-${conflict.combo}`}>
-                  {t("ui.settings.shortcutConflictLine", {
-                    scope: conflict.scope,
-                    combo: conflict.combo,
-                    actions: conflict.actions
-                      .map(
-                        (action) => shortcutLabelByAction.get(action) ?? action,
-                      )
-                      .join(", "),
-                  })}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    );
+    return renderSettingsShortcutsSection({ params });
   }
 
   if (activeSection === "database") {
-    const databasePath = runtimeInfo?.database_path ?? "";
-    const thumbnailCachePath = runtimeInfo?.thumbnail_cache_path ?? "";
-
-    return (
-      <div className="settings-block">
-        <p className="settings-placeholder">
-          {t("ui.settings.databaseResetHint")}
-        </p>
-        <label data-tooltip-label={settingsTip("databaseReset")}>
-          {t("ui.settings.databaseResetLabel")}
-          <button
-            type="button"
-            className="settings-danger-btn"
-            disabled={databaseResetPending}
-            onClick={onClearDatabase}
-          >
-            {databaseResetPending
-              ? t("ui.settings.databaseResetPending")
-              : t("ui.settings.databaseResetAction")}
-          </button>
-        </label>
-        {databaseResetError ? (
-          <p className="settings-danger-text">{databaseResetError}</p>
-        ) : null}
-
-        <fieldset className="settings-subsection">
-          <legend>{t("ui.settings.databaseDirectoryLegend")}</legend>
-          <p className="settings-placeholder">
-            {t("ui.settings.databaseDirectoryHint")}
-          </p>
-          <p className="settings-placeholder">
-            {t("ui.settings.databaseDirectoryMigrationHint")}
-          </p>
-          <label data-tooltip-label={settingsTip("sqlDatabasePath")}>
-            {t("ui.settings.sqlDatabasePathLabel")}
-            <div className="settings-inline-field">
-              <input
-                type="text"
-                value={databasePath}
-                readOnly
-                placeholder={t("ui.settings.readRuntimeInfoPlaceholder")}
-              />
-              <button
-                type="button"
-                disabled={runtimePathUpdatePending}
-                onClick={onPickDatabaseDirectoryPath}
-              >
-                {runtimePathUpdatePending
-                  ? t("ui.settings.runtimePathSaving")
-                  : t("ui.settings.chooseSqlDirectory")}
-              </button>
-            </div>
-          </label>
-          <label data-tooltip-label={settingsTip("thumbnailCacheDirectory")}>
-            {t("ui.settings.thumbnailCacheDirectoryLabel")}
-            <div className="settings-inline-field">
-              <input
-                type="text"
-                value={thumbnailCachePath}
-                readOnly
-                placeholder={t("ui.settings.readRuntimeInfoPlaceholder")}
-              />
-              <button
-                type="button"
-                disabled={runtimePathUpdatePending}
-                onClick={onPickThumbnailCacheDirectoryPath}
-              >
-                {runtimePathUpdatePending
-                  ? t("ui.settings.runtimePathSaving")
-                  : t("ui.settings.chooseThumbnailDirectory")}
-              </button>
-            </div>
-          </label>
-          {runtimePathUpdateMessage ? (
-            <p className="settings-placeholder">{runtimePathUpdateMessage}</p>
-          ) : null}
-        </fieldset>
-
-        <fieldset className="settings-subsection">
-          <legend>{t("ui.settings.networkProxyLegend")}</legend>
-          <p className="settings-placeholder">
-            {t("ui.settings.networkProxyHint")}
-          </p>
-          <label data-tooltip-label={settingsTip("proxyServer")}>
-            {t("ui.settings.proxyServerLabel")}
-            <input
-              type="text"
-              value={proxyServer}
-              placeholder={t("ui.settings.proxyServerPlaceholder")}
-              onChange={(event) => onProxyServerChange(event.target.value)}
-            />
-          </label>
-          <label data-tooltip-label={settingsTip("ehentaiCookies")}>
-            {t("ui.settings.ehentaiCookiesLabel")}
-            <input
-              type="text"
-              value={ehentaiCookies}
-              placeholder={t("ui.settings.ehentaiCookiesPlaceholder")}
-              onChange={(event) => onEhentaiCookiesChange(event.target.value)}
-            />
-          </label>
-        </fieldset>
-      </div>
-    );
+    return renderSettingsDatabaseSection({ params, settingsTip });
   }
 
   return <div className="settings-block" />;

@@ -10,13 +10,12 @@ import {
 
 import { MainUiIcon } from "./MainUiIcon";
 import { AdReviewExecButton } from "./AdReviewExecButton";
-import { AdReviewStartDialog } from "./AdReviewStartDialog";
+import { ImageMainSectionContentArea } from "./ImageMainSectionContentArea";
 import { ImageConvertSettingsPanel } from "./ImageConvertSettingsPanel";
 import { ImageMainAdReviewControls } from "./ImageMainAdReviewControls";
 import { ImageMainMetadataToolbar } from "./ImageMainMetadataToolbar";
 import { ImageMainNormalToolbar } from "./ImageMainNormalToolbar";
 import { ImageMainScaleControl } from "./ImageMainScaleControl";
-import { renderImageMainContent } from "./ImageMainSection.renderers";
 import type { ImageMainSectionProps } from "./ImageMainSection.types";
 import { useManageImageSelectionInteractions } from "../features/management/useManageImageSelectionInteractions";
 import { useI18n } from "../i18n/useI18n";
@@ -29,7 +28,6 @@ import {
   preloadSessionImageUrls,
   resolveImageIdForRef,
 } from "./imageMainSectionPreload";
-import MetadataFetchPanel from "./metadata/MetadataFetchPanel";
 import { useFocusedThumbOriginSync } from "./useFocusedThumbOriginSync";
 import { resolveTaskIdFromStartResponse } from "./imageMainSectionTasks";
 import { useNameListDimsLoader } from "./useNameListDimsLoader";
@@ -1347,74 +1345,55 @@ function ImageMainSection({
         )}
       </div>
 
-      {renderImageMainContent({
-        nodeBrowseMode,
-        showNamesOnly,
-        manageMode,
-        gridRef,
-        handleThumbnailContainerWheel,
-        thumbnailColumns,
-        actualCellWidth,
-        thumbnailGap,
-        nodeBrowseItems,
-        nodeBrowsePageStart,
-        nodeBrowsePageSize,
-        markThumbInputMouse,
-        scrollFocusedThumbIntoView,
-        scheduleFocusedThumbOriginSync,
-        onSelectNodeBrowseItem,
-        t,
-        setNameListBodyEl,
-        startMarqueeSelection,
-        startThumbnailDragToggle,
-        visibleImageRefs,
-        packageById,
-        nameListDimsById,
-        focusedRef,
-        checkedImageIds,
-        adReviewCandidateImageIds,
-        onSelectImage,
-        onEnterFullscreen,
-        refsInPageForRender,
-        isThumbnailInteractionLocked,
-        imageUrlByIdForRender,
-        pageStart,
-        adReviewGroupByPackageRows,
-        showSkeleton,
-        skeletonCount,
-        vectorMode,
-        vectorCandidates,
-      })}
-
-      {marqueeStyle && marqueeStyle.width > 2 && marqueeStyle.height > 2 ? (
-        <div
-          className="manage-selection-marquee"
-          data-slot="fg-main-content-image-marquee-ovl"
-          style={{
-            left: `${marqueeStyle.left}px`,
-            top: `${marqueeStyle.top}px`,
-            width: `${marqueeStyle.width}px`,
-            height: `${marqueeStyle.height}px`,
-          }}
-        />
-      ) : null}
-
-      <AdReviewStartDialog
+      <ImageMainSectionContentArea
+        nodeBrowseMode={nodeBrowseMode}
+        showNamesOnly={showNamesOnly}
+        manageMode={manageMode}
+        gridRef={gridRef}
+        handleThumbnailContainerWheel={handleThumbnailContainerWheel}
+        thumbnailColumns={thumbnailColumns}
+        actualCellWidth={actualCellWidth}
+        thumbnailGap={thumbnailGap}
+        nodeBrowseItems={nodeBrowseItems}
+        nodeBrowsePageStart={nodeBrowsePageStart}
+        nodeBrowsePageSize={nodeBrowsePageSize}
+        markThumbInputMouse={markThumbInputMouse}
+        scrollFocusedThumbIntoView={scrollFocusedThumbIntoView}
+        scheduleFocusedThumbOriginSync={scheduleFocusedThumbOriginSync}
+        onSelectNodeBrowseItem={onSelectNodeBrowseItem}
         t={t}
-        open={adReviewStartDialogOpen}
+        setNameListBodyEl={setNameListBodyEl}
+        startMarqueeSelection={startMarqueeSelection}
+        startThumbnailDragToggle={startThumbnailDragToggle}
+        visibleImageRefs={visibleImageRefs}
+        packageById={packageById}
+        nameListDimsById={nameListDimsById}
+        focusedRef={focusedRef}
+        checkedImageIds={checkedImageIds}
+        adReviewCandidateImageIds={adReviewCandidateImageIds}
+        onSelectImage={onSelectImage}
+        onEnterFullscreen={onEnterFullscreen}
+        refsInPageForRender={refsInPageForRender}
+        isThumbnailInteractionLocked={isThumbnailInteractionLocked}
+        imageUrlByIdForRender={imageUrlByIdForRender}
+        pageStart={pageStart}
+        adReviewGroupByPackageRows={adReviewGroupByPackageRows}
+        showSkeleton={showSkeleton}
+        skeletonCount={skeletonCount}
+        vectorMode={vectorMode}
+        vectorCandidates={vectorCandidates}
+        marqueeStyle={marqueeStyle}
+        adReviewStartDialogOpen={adReviewStartDialogOpen}
         manageReviewMode={manageReviewMode}
-        onClose={() => setAdReviewStartDialogOpen(false)}
-        onStartWithOption={startToolbarAdReviewWithOption}
-      />
-
-      <MetadataFetchPanel
-        open={metadataFetchOpen}
-        targets={effectiveMetadataFetchTargets}
-        proxyServer={metadataProxyServer}
-        ehentaiCookies={metadataEhentaiCookies}
+        setAdReviewStartDialogOpen={setAdReviewStartDialogOpen}
+        startToolbarAdReviewWithOption={startToolbarAdReviewWithOption}
+        metadataFetchOpen={metadataFetchOpen}
+        effectiveMetadataFetchTargets={effectiveMetadataFetchTargets}
+        metadataProxyServer={metadataProxyServer}
+        metadataEhentaiCookies={metadataEhentaiCookies}
         metadataPending={metadataPending}
-        onClose={() => setMetadataFetchOpen(false)}
-        onSaveParsedMetadataToTarget={handleSaveParsedMetadataByPackageId}
+        setMetadataFetchOpen={setMetadataFetchOpen}
+        handleSaveParsedMetadataByPackageId={handleSaveParsedMetadataByPackageId}
       />
     </>
   );

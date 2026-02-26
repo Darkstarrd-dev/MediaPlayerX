@@ -48,7 +48,6 @@ import {
 } from "./fullscreen/paneMath";
 import {
   buildImageAdjustHistogramBins,
-  clampByte,
   estimateDataUrlSizeKb,
   formatImageSizeForFooter,
   formatVideoSizeForFooter,
@@ -66,6 +65,12 @@ import {
   resolveImageConvertTargetSize,
   resolveMediaPathForFooter,
 } from "./fullscreen/fullscreenImageAdjustUtils";
+import {
+  resolveAdjustResetPatch,
+  startAdjustPanelDrag as startImageAdjustPanelDrag,
+  startCurvePointDrag as startImageAdjustCurvePointDrag,
+  startLevelHandleDrag as startImageAdjustLevelHandleDrag,
+} from "./fullscreen/imageAdjustInteractions";
 
 const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980;
 const DUAL_IMAGE_CONTROLS_COMPACT_WIDTH = 700;
@@ -1468,29 +1473,9 @@ function FullscreenLayer({
   }
 
   function handleResetAdjustPanel(): void {
-    if (imageConvertPreviewAdjustProfile.mode === "basic") {
-      updatePreviewAdjustProfile({
-        brightness: 0,
-        contrast: 0,
-      });
-      return;
-    }
-    if (imageConvertPreviewAdjustProfile.mode === "levels") {
-      updatePreviewAdjustProfile({
-        level_input_black: 0,
-        level_input_white: 255,
-        level_gamma: 1,
-      });
-      return;
-    }
-    updatePreviewAdjustProfile({
-      curve_shadow_x: 64,
-      curve_midtone_x: 128,
-      curve_highlight_x: 192,
-      curve_shadow: 0,
-      curve_midtone: 0,
-      curve_highlight: 0,
-    });
+    updatePreviewAdjustProfile(
+      resolveAdjustResetPatch(imageConvertPreviewAdjustProfile.mode),
+    );
   }
 
   function handleCancelAdjustPanel(): void {
@@ -1520,60 +1505,13 @@ function FullscreenLayer({
     handle: "black" | "gamma" | "white",
     event: ReactMouseEvent<HTMLButtonElement>,
   ) => {
-    if (event.button !== 0) {
-      return;
-    }
-    const trackElement = levelsEditorTrackRef.current;
-    if (!trackElement) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const rect = trackElement.getBoundingClientRect();
-      if (rect.width <= 1) {
-        return;
-      }
-      const rawRatio = clamp(
-        (moveEvent.clientX - rect.left) / rect.width,
-        0,
-        1,
-      );
-      const currentBlack = imageConvertPreviewAdjustProfile.level_input_black;
-      const currentWhite = imageConvertPreviewAdjustProfile.level_input_white;
-      if (handle === "black") {
-        const nextBlack = Math.min(
-          currentWhite - 1,
-          Math.round(rawRatio * 255),
-        );
-        updatePreviewAdjustProfile({ level_input_black: nextBlack });
-        return;
-      }
-      if (handle === "white") {
-        const nextWhite = Math.max(
-          currentBlack + 1,
-          Math.round(rawRatio * 255),
-        );
-        updatePreviewAdjustProfile({ level_input_white: nextWhite });
-        return;
-      }
-      const span = Math.max(1, currentWhite - currentBlack);
-      const normalized = clamp(
-        (rawRatio * 255 - currentBlack) / span,
-        0.001,
-        0.999,
-      );
-      const nextGamma = clamp(Math.log(normalized) / Math.log(0.5), 0.1, 5);
-      updatePreviewAdjustProfile({ level_gamma: Number(nextGamma.toFixed(3)) });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    startImageAdjustLevelHandleDrag({
+      handle,
+      event,
+      trackElement: levelsEditorTrackRef.current,
+      profile: imageConvertPreviewAdjustProfile,
+      onUpdateProfile: updatePreviewAdjustProfile,
+    });
   };
 
   const curvePoints = resolveCurveControlPoints(
@@ -1596,54 +1534,13 @@ function FullscreenLayer({
   });
 
   const startAdjustPanelDrag = (event: ReactMouseEvent<HTMLDivElement>) => {
-    if (event.button !== 0) {
-      return;
-    }
-    const panelElement = imageAdjustPanelRef.current;
-    if (!panelElement) {
-      return;
-    }
-    const panelRect = panelElement.getBoundingClientRect();
-    const dragOffsetX = event.clientX - panelRect.left;
-    const dragOffsetY = event.clientY - panelRect.top;
-    const panelWidth = panelElement.offsetWidth;
-    const panelHeight = panelElement.offsetHeight;
-    event.preventDefault();
-    event.stopPropagation();
-    setImageConvertAdjustPanelDragging(true);
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const nextX = clamp(
-        moveEvent.clientX - dragOffsetX,
-        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-        Math.max(
-          IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-          fullscreenViewport.width -
-            panelWidth -
-            IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-        ),
-      );
-      const nextY = clamp(
-        moveEvent.clientY - dragOffsetY,
-        IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-        Math.max(
-          IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-          fullscreenViewport.height -
-            panelHeight -
-            IMAGE_ADJUST_PANEL_DRAG_MARGIN,
-        ),
-      );
-      setImageConvertAdjustPanelPosition({ x: nextX, y: nextY });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      setImageConvertAdjustPanelDragging(false);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    startImageAdjustPanelDrag({
+      event,
+      panelElement: imageAdjustPanelRef.current as HTMLDivElement | null,
+      viewport: fullscreenViewport,
+      onDraggingChange: setImageConvertAdjustPanelDragging,
+      onPositionChange: setImageConvertAdjustPanelPosition,
+    });
   };
 
   const imageAdjustPanelInlineStyle: CSSProperties | undefined =
@@ -1659,89 +1556,13 @@ function FullscreenLayer({
     pointKey: "shadow" | "midtone" | "highlight",
     event: ReactMouseEvent<SVGCircleElement>,
   ) => {
-    if (event.button !== 0) {
-      return;
-    }
-    const svgElement = curveSvgRef.current;
-    if (!svgElement) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const rect = svgElement.getBoundingClientRect();
-      if (rect.width <= 1 || rect.height <= 1) {
-        return;
-      }
-      const innerWidth =
-        IMAGE_ADJUST_CURVE_CANVAS_WIDTH - IMAGE_ADJUST_CURVE_PADDING * 2;
-      const innerHeight =
-        IMAGE_ADJUST_CURVE_CANVAS_HEIGHT - IMAGE_ADJUST_CURVE_PADDING * 2;
-      const normalizedX = clamp(
-        (moveEvent.clientX - rect.left) / rect.width,
-        0,
-        1,
-      );
-      const normalizedY = clamp(
-        (moveEvent.clientY - rect.top) / rect.height,
-        0,
-        1,
-      );
-      const localX = clamp(
-        normalizedX * IMAGE_ADJUST_CURVE_CANVAS_WIDTH -
-          IMAGE_ADJUST_CURVE_PADDING,
-        0,
-        innerWidth,
-      );
-      const localY = clamp(
-        normalizedY * IMAGE_ADJUST_CURVE_CANVAS_HEIGHT -
-          IMAGE_ADJUST_CURVE_PADDING,
-        0,
-        innerHeight,
-      );
-      const currentShadowX = imageConvertPreviewAdjustProfile.curve_shadow_x;
-      const currentMidtoneX = imageConvertPreviewAdjustProfile.curve_midtone_x;
-      const currentHighlightX =
-        imageConvertPreviewAdjustProfile.curve_highlight_x;
-
-      let nextX = Math.round((localX / innerWidth) * 255);
-      if (pointKey === "shadow") {
-        nextX = clamp(nextX, 1, currentMidtoneX - 1);
-      } else if (pointKey === "midtone") {
-        nextX = clamp(nextX, currentShadowX + 1, currentHighlightX - 1);
-      } else {
-        nextX = clamp(nextX, currentMidtoneX + 1, 254);
-      }
-
-      const nextAnchorY = clampByte(
-        Math.round((1 - localY / innerHeight) * 255),
-      );
-      const nextValue = clamp((nextX - nextAnchorY) / 0.52, -100, 100);
-      if (pointKey === "shadow") {
-        updatePreviewAdjustProfile({
-          curve_shadow_x: nextX,
-          curve_shadow: Number(nextValue.toFixed(1)),
-        });
-      } else if (pointKey === "midtone") {
-        updatePreviewAdjustProfile({
-          curve_midtone_x: nextX,
-          curve_midtone: Number(nextValue.toFixed(1)),
-        });
-      } else {
-        updatePreviewAdjustProfile({
-          curve_highlight_x: nextX,
-          curve_highlight: Number(nextValue.toFixed(1)),
-        });
-      }
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    startImageAdjustCurvePointDrag({
+      pointKey,
+      event,
+      svgElement: curveSvgRef.current,
+      profile: imageConvertPreviewAdjustProfile,
+      onUpdateProfile: updatePreviewAdjustProfile,
+    });
   };
 
   return (

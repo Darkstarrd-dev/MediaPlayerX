@@ -13,181 +13,39 @@ import {
   mouseEventToCombo,
   wheelEventToCombo,
   SHORTCUT_DEFINITIONS,
-  type ShortcutAction,
 } from "../shortcuts";
 import {
   renderSettingsMainSection,
   type SettingsSection,
 } from "./settings/renderSettingsMainSection";
+import { usePreferenceDebugState } from "./settings/usePreferenceDebugState";
 import { buildA11yProps } from "../i18n/a11y";
 import { a11yRegistry } from "../i18n/ariaRegistry";
 import { useI18n } from "../i18n/useI18n";
 import { MainUiIcon } from "./MainUiIcon";
+import { SettingsShortcutBindingDialog } from "./settings/SettingsShortcutBindingDialog";
+import { SettingsShortcutCaptureDialog } from "./settings/SettingsShortcutCaptureDialog";
+import {
+  CPU_TOKEN_LIMIT_MAX,
+  CPU_TOKEN_LIMIT_MIN,
+  MOUSE_CAPTURE_PRESETS,
+  type BindingTarget,
+  type PanelDragState,
+  type PanelOffset,
+  SETTINGS_SECTIONS,
+  THUMBNAIL_GENERATION_CONCURRENCY_MAX,
+  THUMBNAIL_GENERATION_CONCURRENCY_MIN,
+  THUMBNAIL_QUEUE_SIZE_MAX,
+  THUMBNAIL_QUEUE_SIZE_MIN,
+  THUMBNAIL_RESOLVE_CONCURRENCY_MAX,
+  THUMBNAIL_RESOLVE_CONCURRENCY_MIN,
+  THUMBNAIL_WIDTH_MAX,
+  THUMBNAIL_WIDTH_MIN,
+  resolveSettingsSection,
+  shouldIgnoreSettingsPanelDragStart,
+} from "./settings/settingsPanelHelpers";
 import { toScale } from "./settings/settingsScale";
 import type { SettingsPanelProps } from "./SettingsPanel.types";
-
-type BindingTarget = { action: ShortcutAction; label: string };
-type PanelOffset = { x: number; y: number };
-type PanelDragState = {
-  pointerId: number;
-  startClientX: number;
-  startClientY: number;
-  startOffsetX: number;
-  startOffsetY: number;
-};
-
-const MOUSE_CAPTURE_PRESETS: Array<{ labelKey: string; combo: string }> = [
-  { labelKey: "ui.settings.mousePresetLeft", combo: "MouseLeft" },
-  { labelKey: "ui.settings.mousePresetMiddle", combo: "MouseMiddle" },
-  { labelKey: "ui.settings.mousePresetRight", combo: "MouseRight" },
-  { labelKey: "ui.settings.mousePresetBack", combo: "MouseBack" },
-  { labelKey: "ui.settings.mousePresetForward", combo: "MouseForward" },
-  { labelKey: "ui.settings.mousePresetWheelUp", combo: "WheelUp" },
-  { labelKey: "ui.settings.mousePresetWheelDown", combo: "WheelDown" },
-];
-
-const SETTINGS_SECTIONS: Array<{ id: SettingsSection; labelKey: string }> = [
-  { id: "layout", labelKey: "ui.settings.sectionLayout" },
-  { id: "performance", labelKey: "ui.settings.sectionPerformance" },
-  { id: "model", labelKey: "ui.settings.sectionModel" },
-  { id: "debug", labelKey: "ui.settings.sectionDebug" },
-  { id: "shortcuts", labelKey: "ui.settings.sectionShortcuts" },
-  { id: "database", labelKey: "ui.settings.sectionDatabase" },
-  { id: "system", labelKey: "ui.settings.sectionSystem" },
-];
-
-const THUMBNAIL_WIDTH_MIN = 128;
-const THUMBNAIL_WIDTH_MAX = 2048;
-const THUMBNAIL_GENERATION_CONCURRENCY_MIN = 1;
-const THUMBNAIL_GENERATION_CONCURRENCY_MAX = 16;
-const THUMBNAIL_RESOLVE_CONCURRENCY_MIN = 1;
-const THUMBNAIL_RESOLVE_CONCURRENCY_MAX = 32;
-const THUMBNAIL_QUEUE_SIZE_MIN = 16;
-const THUMBNAIL_QUEUE_SIZE_MAX = 256;
-const CPU_TOKEN_LIMIT_MIN = 1;
-const CPU_TOKEN_LIMIT_MAX = 16;
-const PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
-const PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT = 8;
-
-interface PreferenceDebugViewModel {
-  reason: string;
-  updatedAtMs: number | null;
-  imageAggregateCount: number;
-  videoAggregateCount: number;
-  imageSessionCount: number;
-  videoSessionCount: number;
-  imageSessionPreview: unknown[];
-  videoSessionPreview: unknown[];
-}
-
-function dedupeSessionEventsForDebug(events: unknown[]): unknown[] {
-  const seenSessionIds = new Set<string>();
-  const dedupedReversed: unknown[] = [];
-  for (let index = events.length - 1; index >= 0; index -= 1) {
-    const event = events[index];
-    if (!event || typeof event !== "object") {
-      dedupedReversed.push(event);
-      continue;
-    }
-    const record = event as Record<string, unknown>;
-    const sessionIdRaw = record.session_id;
-    const sessionId =
-      typeof sessionIdRaw === "string" ? sessionIdRaw.trim() : "";
-    if (!sessionId) {
-      dedupedReversed.push(event);
-      continue;
-    }
-    if (seenSessionIds.has(sessionId)) {
-      continue;
-    }
-    seenSessionIds.add(sessionId);
-    dedupedReversed.push(event);
-  }
-  return dedupedReversed.reverse();
-}
-
-function parsePreferenceDebugViewModel(rawStateJson: string): PreferenceDebugViewModel {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(rawStateJson);
-  } catch {
-    parsed = {};
-  }
-
-  const record =
-    parsed && typeof parsed === "object"
-      ? (parsed as Record<string, unknown>)
-      : {};
-  const imageBySourceId =
-    record.image_by_source_id && typeof record.image_by_source_id === "object"
-      ? (record.image_by_source_id as Record<string, unknown>)
-      : {};
-  const videoById =
-    record.video_by_id && typeof record.video_by_id === "object"
-      ? (record.video_by_id as Record<string, unknown>)
-      : {};
-  const imageSessionEventsRaw = Array.isArray(record.image_session_events)
-    ? record.image_session_events
-    : [];
-  const videoSessionEventsRaw = Array.isArray(record.video_session_events)
-    ? record.video_session_events
-    : [];
-  const imageSessionEvents = dedupeSessionEventsForDebug(imageSessionEventsRaw);
-  const videoSessionEvents = dedupeSessionEventsForDebug(videoSessionEventsRaw);
-
-  const updatedAtRaw = record.updated_at_ms;
-  const updatedAtMs =
-    typeof updatedAtRaw === "number" && Number.isFinite(updatedAtRaw)
-      ? Math.floor(updatedAtRaw)
-      : null;
-
-  return {
-    reason: String(record.reason ?? "-"),
-    updatedAtMs,
-    imageAggregateCount: Object.keys(imageBySourceId).length,
-    videoAggregateCount: Object.keys(videoById).length,
-    imageSessionCount: imageSessionEvents.length,
-    videoSessionCount: videoSessionEvents.length,
-    imageSessionPreview: imageSessionEvents
-      .slice(-PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT)
-      .reverse(),
-    videoSessionPreview: videoSessionEvents
-      .slice(-PREFERENCE_DEBUG_SESSION_PREVIEW_LIMIT)
-      .reverse(),
-  };
-}
-
-function shouldIgnoreSettingsPanelDragStart(
-  target: EventTarget | null,
-): boolean {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-
-  return Boolean(
-    target.closest(
-      'button, input, select, textarea, a, label, [data-no-drag="true"]',
-    ),
-  );
-}
-
-function resolveSettingsSection(raw: unknown): SettingsSection {
-  if (
-    raw === "layout" ||
-    raw === "performance" ||
-    raw === "debug" ||
-    raw === "system" ||
-    raw === "model" ||
-    raw === "database" ||
-    raw === "shortcuts"
-  ) {
-    return raw;
-  }
-  if (raw === "theme" || raw === "thumbnail") {
-    return "layout";
-  }
-  return "layout";
-}
 
 function SettingsPanel({
   settingsOpen,
@@ -411,7 +269,6 @@ function SettingsPanel({
   const [cpuTokenLimitInput, setCpuTokenLimitInput] = useState(() =>
     String(cpuTokenLimit),
   );
-  const captureDialogRef = useRef<HTMLDivElement>(null);
   const settingsPanelRef = useRef<HTMLElement>(null);
   const panelDragStateRef = useRef<PanelDragState | null>(null);
   const [settingsPanelOffset, setSettingsPanelOffset] = useState<PanelOffset>({
@@ -419,13 +276,17 @@ function SettingsPanel({
     y: 0,
   });
   const [settingsPanelDragging, setSettingsPanelDragging] = useState(false);
-  const [preferenceDebugLoading, setPreferenceDebugLoading] = useState(false);
-  const [preferenceDebugError, setPreferenceDebugError] =
-    useState<string | null>(null);
-  const [preferenceDebugData, setPreferenceDebugData] =
-    useState<PreferenceDebugViewModel | null>(null);
-  const [preferenceDebugRefreshNonce, setPreferenceDebugRefreshNonce] =
-    useState(0);
+  const {
+    preferenceDebugLoading,
+    preferenceDebugError,
+    preferenceDebugData,
+    refreshPreferenceDebug,
+    resetPreferenceDebugState,
+  } = usePreferenceDebugState({
+    settingsOpen,
+    activeSection,
+    t,
+  });
 
   const headerHeightScale = toScale("headerHeight", headerHeight);
   const settingsFontSizeScale = toScale("settingsFontSize", settingsFontSize);
@@ -487,14 +348,12 @@ function SettingsPanel({
       panelDragStateRef.current = null;
       setSettingsPanelOffset({ x: 0, y: 0 });
       setSettingsPanelDragging(false);
-      setPreferenceDebugLoading(false);
-      setPreferenceDebugError(null);
-      setPreferenceDebugData(null);
-      setPreferenceDebugRefreshNonce(0);
+      resetPreferenceDebugState();
     }
   }, [
     settingsOpen,
     cpuTokenLimit,
+    resetPreferenceDebugState,
     thumbnailGenerationConcurrency,
     thumbnailQueueSize,
     thumbnailResolveConcurrency,
@@ -529,61 +388,6 @@ function SettingsPanel({
       setActiveSection(normalized);
     }
   }, [activeSectionRaw]);
-
-  useEffect(() => {
-    if (!settingsOpen || activeSection !== "system") {
-      return;
-    }
-
-    const backendApi =
-      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
-    if (!backendApi || typeof backendApi.readAppState !== "function") {
-      setPreferenceDebugLoading(false);
-      setPreferenceDebugError(t("ui.settings.preferenceDebugUnsupported"));
-      setPreferenceDebugData(null);
-      return;
-    }
-
-    let active = true;
-    setPreferenceDebugLoading(true);
-    setPreferenceDebugError(null);
-
-    void backendApi
-      .readAppState({
-        state_key: PREFERENCE_METRICS_STATE_KEY,
-        fallback_json: "{}",
-      })
-      .then((response) => {
-        if (!active) {
-          return;
-        }
-        setPreferenceDebugData(
-          parsePreferenceDebugViewModel(response.state_json),
-        );
-      })
-      .catch((error) => {
-        if (!active) {
-          return;
-        }
-        const fallback = t("ui.settings.preferenceDebugReadFailed");
-        const message =
-          error instanceof Error && error.message.trim().length > 0
-            ? error.message
-            : fallback;
-        setPreferenceDebugError(message);
-        setPreferenceDebugData(null);
-      })
-      .finally(() => {
-        if (!active) {
-          return;
-        }
-        setPreferenceDebugLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [activeSection, preferenceDebugRefreshNonce, settingsOpen, t]);
 
   useEffect(() => {
     if (!capturingTarget) {
@@ -1026,10 +830,6 @@ function SettingsPanel({
     stopSettingsPanelDragging();
   };
 
-  const handleRefreshPreferenceDebug = () => {
-    setPreferenceDebugRefreshNonce((value) => value + 1);
-  };
-
   const mainSection = renderSettingsMainSection({
     t,
     activeSection,
@@ -1250,7 +1050,7 @@ function SettingsPanel({
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
-    onRefreshPreferenceDebug: handleRefreshPreferenceDebug,
+    onRefreshPreferenceDebug: refreshPreferenceDebug,
     onOpenAdReviewDeleteOverlayDebug,
     onPerformancePresetChange,
   });
@@ -1328,124 +1128,41 @@ function SettingsPanel({
         </div>
 
         {bindingTarget ? (
-          <div
-            className="settings-floating-mask"
-            data-slot="fg-header-g1-settings-shortcut-edit-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t(a11yRegistry.settingsShortcutEditDialog.labelKey)}
-          >
-            <section className="settings-floating-panel">
-              <h3>{bindingTarget.label}</h3>
-              {currentCombos.length > 0 ? (
-                <ul className="binding-chip-list">
-                  {currentCombos.map((combo) => (
-                    <li key={combo}>{combo}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="settings-placeholder">
-                  {t("ui.settings.shortcutNoneConfigured")}
-                </p>
-              )}
-              <div className="settings-floating-actions">
-                <button
-                  type="button"
-                  data-capture-ignore="true"
-                  onClick={() => {
-                    setCapturedCombo("");
-                    setCapturingTarget(bindingTarget);
-                  }}
-                >
-                  {t("ui.common.add")}
-                </button>
-                <button
-                  type="button"
-                  data-capture-ignore="true"
-                  onClick={() => setBinding(bindingTarget, "")}
-                >
-                  {t("ui.common.clear")}
-                </button>
-                <button
-                  type="button"
-                  data-capture-ignore="true"
-                  onClick={() => {
-                    setBindingTarget(null);
-                    setCapturingTarget(null);
-                    setCapturedCombo("");
-                  }}
-                >
-                  {t("ui.common.close")}
-                </button>
-              </div>
-            </section>
-          </div>
+          <SettingsShortcutBindingDialog
+            t={t}
+            bindingTarget={bindingTarget}
+            currentCombos={currentCombos}
+            onStartCapture={() => {
+              setCapturedCombo("");
+              setCapturingTarget(bindingTarget);
+            }}
+            onClearBinding={() => setBinding(bindingTarget, "")}
+            onClose={() => {
+              setBindingTarget(null);
+              setCapturingTarget(null);
+              setCapturedCombo("");
+            }}
+          />
         ) : null}
 
         {capturingTarget ? (
-          <div
-            className="settings-floating-mask"
-            data-slot="fg-header-g1-settings-shortcut-capture-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}
-          >
-            <section ref={captureDialogRef} className="settings-floating-panel">
-              <h3>{t("ui.settings.shortcutCaptureTitle")}</h3>
-              <p className="settings-placeholder">
-                {t("ui.settings.shortcutCaptureHint")}
-              </p>
-              <p className="binding-capture-preview">
-                {capturedCombo || t("ui.settings.shortcutCaptureWaiting")}
-              </p>
-              <div className="binding-mouse-presets" data-capture-ignore="true">
-                <span>{t("ui.settings.shortcutMousePresets")}</span>
-                <div className="binding-mouse-preset-list">
-                  {MOUSE_CAPTURE_PRESETS.map((preset) => (
-                    <button
-                      key={preset.combo}
-                      type="button"
-                      data-capture-ignore="true"
-                      onClick={() => {
-                        setCapturedCombo(preset.combo);
-                      }}
-                    >
-                      {t(preset.labelKey)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="settings-floating-actions">
-                <button
-                  type="button"
-                  data-capture-ignore="true"
-                  disabled={!capturedCombo}
-                  onClick={() => {
-                    const existingBinding = getBinding(capturingTarget);
-                    const merged = appendShortcutBinding(
-                      existingBinding,
-                      capturedCombo,
-                    );
-                    setBinding(capturingTarget, merged);
-                    setCapturingTarget(null);
-                    setCapturedCombo("");
-                  }}
-                >
-                  {t("ui.settings.shortcutConfirmAdd")}
-                </button>
-                <button
-                  type="button"
-                  data-capture-ignore="true"
-                  onClick={() => {
-                    setCapturingTarget(null);
-                    setCapturedCombo("");
-                  }}
-                >
-                  {t("ui.common.cancel")}
-                </button>
-              </div>
-            </section>
-          </div>
+          <SettingsShortcutCaptureDialog
+            t={t}
+            capturedCombo={capturedCombo}
+            mouseCapturePresets={MOUSE_CAPTURE_PRESETS}
+            onPickPreset={setCapturedCombo}
+            onConfirmAdd={() => {
+              const existingBinding = getBinding(capturingTarget);
+              const merged = appendShortcutBinding(existingBinding, capturedCombo);
+              setBinding(capturingTarget, merged);
+              setCapturingTarget(null);
+              setCapturedCombo("");
+            }}
+            onCancel={() => {
+              setCapturingTarget(null);
+              setCapturedCombo("");
+            }}
+          />
         ) : null}
       </section>
     </div>
