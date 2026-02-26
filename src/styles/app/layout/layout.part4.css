@@ -1,0 +1,31 @@
+
+.help-overlay-tag {
+  position: fixed;
+  transform: translateX(-50%);
+  max-width: var(--mpx-help-overlay-tag-max-width, 240px);
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--mpx-border-focus) 70%, transparent);
+  border-radius: var(--mpx-tooltip-radius, var(--mpx-radius-md));
+  background: color-mix(in srgb, var(--mpx-bg-tooltip) 92%, transparent);
+  color: var(--mpx-text-inverse);
+  font-size: var(--mpx-tooltip-font-size, 12px);
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: var(--mpx-tooltip-shadow, var(--mpx-shadow-popover));
+  white-space: normal;
+}
+
+@media (max-width: 980px) {
+  .fullscreen-controls-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .fullscreen-group.is-left,
+  .fullscreen-group.is-center,
+  .fullscreen-group.is-right {
+    justify-self: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

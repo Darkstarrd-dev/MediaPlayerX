@@ -1,0 +1,383 @@
+
+#video-main-popover-speed.video-ctrl-panel {
+  border-color: var(
+    --mpx-slot-fg-main-content-video-controls-speed-pop-border,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-border,
+      var(--mpx-player-hud-border)
+    )
+  );
+  background: var(
+    --mpx-slot-fg-main-content-video-controls-speed-pop-bg,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
+      var(--mpx-player-hud-bg)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-content-video-controls-speed-pop-text,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-text,
+      var(--mpx-player-hud-text)
+    )
+  );
+}
+
+#video-main-popover-playlist.video-ctrl-panel {
+  border-color: var(
+    --mpx-slot-fg-main-content-video-controls-playlist-pop-border,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-border,
+      var(--mpx-player-hud-border)
+    )
+  );
+  background: var(
+    --mpx-slot-fg-main-content-video-controls-playlist-pop-bg,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
+      var(--mpx-player-hud-bg)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-content-video-controls-playlist-pop-text,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-text,
+      var(--mpx-player-hud-text)
+    )
+  );
+}
+
+#video-main-popover-volume.video-ctrl-panel {
+  border-color: var(
+    --mpx-slot-fg-main-content-video-controls-volume-pop-border,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-border,
+      var(--mpx-player-hud-border)
+    )
+  );
+  background: var(
+    --mpx-slot-fg-main-content-video-controls-volume-pop-bg,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
+      var(--mpx-player-hud-bg)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-content-video-controls-volume-pop-text,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-text,
+      var(--mpx-player-hud-text)
+    )
+  );
+}
+
+[data-slot="fs-video-controls-fit-pop"] {
+  border-color: var(
+    --mpx-slot-fs-video-controls-fit-pop-border,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-border,
+      var(--mpx-player-hud-border)
+    )
+  );
+  background: var(
+    --mpx-slot-fs-video-controls-fit-pop-bg,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
+      var(--mpx-player-hud-bg)
+    )
+  );
+  color: var(
+    --mpx-slot-fs-video-controls-fit-pop-text,
+    var(
+      --mpx-slot-fg-main-content-video-controls-fit-pop-text,
+      var(--mpx-player-hud-text)
+    )
+  );
+}
+
+[data-slot="fs-video-controls-subtitle-pop"] {
+  border-color: var(
+    --mpx-slot-fs-video-controls-subtitle-pop-border,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-border,
+      var(
+        --mpx-slot-fg-main-content-video-controls-subtitle-pop-border,
+        var(--mpx-player-hud-border)
+      )
+    )
+  );
+  background: var(
+    --mpx-slot-fs-video-controls-subtitle-pop-bg,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-bg,
+      var(
+        --mpx-slot-fg-main-content-video-controls-subtitle-pop-bg,
+        var(--mpx-player-hud-bg)
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fs-video-controls-subtitle-pop-text,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-text,
+      var(
+        --mpx-slot-fg-main-content-video-controls-subtitle-pop-text,
+        var(--mpx-player-hud-text)
+      )
+    )
+  );
+}
+
+[data-slot="fs-video-controls-speed-pop"] {
+  border-color: var(
+    --mpx-slot-fs-video-controls-speed-pop-border,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-border,
+      var(
+        --mpx-slot-fg-main-content-video-controls-speed-pop-border,
+        var(--mpx-player-hud-border)
+      )
+    )
+  );
+  background: var(
+    --mpx-slot-fs-video-controls-speed-pop-bg,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-bg,
+      var(
+        --mpx-slot-fg-main-content-video-controls-speed-pop-bg,
+        var(--mpx-player-hud-bg)
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fs-video-controls-speed-pop-text,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-text,
+      var(
+        --mpx-slot-fg-main-content-video-controls-speed-pop-text,
+        var(--mpx-player-hud-text)
+      )
+    )
+  );
+}
+
+[data-slot="fs-video-controls-playlist-pop"] {
+  border-color: var(
+    --mpx-slot-fs-video-controls-playlist-pop-border,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-border,
+      var(
+        --mpx-slot-fg-main-content-video-controls-playlist-pop-border,
+        var(--mpx-player-hud-border)
+      )
+    )
+  );
+  background: var(
+    --mpx-slot-fs-video-controls-playlist-pop-bg,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-bg,
+      var(
+        --mpx-slot-fg-main-content-video-controls-playlist-pop-bg,
+        var(--mpx-player-hud-bg)
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fs-video-controls-playlist-pop-text,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-text,
+      var(
+        --mpx-slot-fg-main-content-video-controls-playlist-pop-text,
+        var(--mpx-player-hud-text)
+      )
+    )
+  );
+}
+
+[data-slot="fs-video-controls-volume-pop"] {
+  border-color: var(
+    --mpx-slot-fs-video-controls-volume-pop-border,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-border,
+      var(
+        --mpx-slot-fg-main-content-video-controls-volume-pop-border,
+        var(--mpx-player-hud-border)
+      )
+    )
+  );
+  background: var(
+    --mpx-slot-fs-video-controls-volume-pop-bg,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-bg,
+      var(
+        --mpx-slot-fg-main-content-video-controls-volume-pop-bg,
+        var(--mpx-player-hud-bg)
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fs-video-controls-volume-pop-text,
+    var(
+      --mpx-slot-fs-video-controls-fit-pop-text,
+      var(
+        --mpx-slot-fg-main-content-video-controls-volume-pop-text,
+        var(--mpx-player-hud-text)
+      )
+    )
+  );
+}
+
+.video-ctrl-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.video-ctrl-panel-note {
+  font-size: 11px;
+  color: var(--mpx-player-surface-text-muted);
+}
+
+.video-ctrl-panel.is-volume {
+  min-width: var(--mpx-control-height);
+  width: var(--mpx-control-height);
+  min-height: 142px;
+  padding: 10px 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 0;
+}
+
+.video-ctrl-panel input {
+  width: 100%;
+}
+
+.video-ctrl-volume-range {
+  width: 100%;
+  min-width: 120px;
+  margin: 0;
+  direction: ltr;
+}
+
+.video-ctrl-panel-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.video-ctrl-panel-option {
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border-radius: var(--mpx-control-radius);
+  min-height: 28px;
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.video-ctrl-panel-option:hover {
+  background: var(--mpx-player-btn-hover-bg);
+}
+
+.video-ctrl-panel-option:active {
+  background: var(--mpx-player-btn-active-bg);
+  border-color: var(--mpx-player-btn-active-border);
+}
+
+.video-ctrl-panel-option.is-active {
+  background: var(--mpx-player-btn-active-bg);
+  border-color: var(--mpx-player-btn-active-border);
+}
+
+.video-action-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border-radius: var(--mpx-control-radius);
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  background: var(--mpx-player-btn-bg);
+  color: var(--mpx-player-btn-text);
+  font-weight: var(--mpx-control-font-weight);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.video-action-btn .video-action-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.video-action-btn .music-action-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.video-controls-row .video-action-btn:hover {
+  background: var(--mpx-player-btn-hover-bg);
+}
+
+.video-controls-row .video-action-btn:active {
+  background: var(--mpx-player-btn-active-bg);
+  border-color: var(--mpx-player-btn-active-border);
+}
+
+.video-controls-row .video-action-btn:disabled {
+  opacity: 0.56;
+  color: var(--mpx-player-btn-muted-text);
+  cursor: not-allowed;
+}
+
+.video-fullscreen-btn {
+  margin-left: 0;
+}
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mpx-slot-fg-app-drag-import-ovl-bg, var(--mpx-bg-tooltip));
+  backdrop-filter: blur(2px);
+}
+
+.drop-overlay-card {
+  width: min(580px, calc(100vw - 48px));
+  min-height: 190px;
+  border: 2px dashed var(--mpx-accent-contrast);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, var(--mpx-accent), var(--mpx-border-focus)),
+    radial-gradient(circle at 18% 24%, var(--mpx-accent-soft), transparent 55%);
+  color: var(--mpx-accent-contrast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  box-shadow: var(
+    --mpx-slot-fg-app-drag-import-ovl-shadow,
+    var(--mpx-shadow-panel)
+  );
+}
+
+.drop-overlay-card strong {
+  font-size: 26px;
+  letter-spacing: 0.06em;
+}
+
+.drop-overlay-card p {
+  margin: 0;
+  max-width: 440px;
+  color: color-mix(in srgb, var(--mpx-text-inverse) 92%, transparent);
+}

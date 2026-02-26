@@ -217,6 +217,39 @@ TODO Check：
 - [ ] 执行测试：`npm run test` 通过。
 - [ ] 更新本 Phase 执行记录后提交。
 
+- [x] `main.css` 按内容域拆分并维护统一入口导入顺序。
+- [x] `layout.css` 按 header/layout/sidebar/workspace 拆分。
+- [x] `settings.css` 按 settings 区块拆分。
+- [x] `soft-skeuomorphic.components.css` 按组件族拆分。
+- [x] 执行测试：`npm run test` 通过。
+- [x] 更新本 Phase 执行记录后提交。
+
+当前进度记录：
+
+- 2026-02-26：已完成样式主入口拆分并稳定导入顺序。
+  - 新增：`src/styles/app/main/main.part1.css`
+  - 新增：`src/styles/app/main/main.part2.css`
+  - 新增：`src/styles/app/main/main.part3.css`
+  - 新增：`src/styles/app/main/main.part4.css`
+  - 新增：`src/styles/app/layout/layout.part1.css`
+  - 新增：`src/styles/app/layout/layout.part2.css`
+  - 新增：`src/styles/app/layout/layout.part3.css`
+  - 新增：`src/styles/app/layout/layout.part4.css`
+  - 新增：`src/styles/app/settings/settings.part1.css`
+  - 新增：`src/styles/app/settings/settings.part2.css`
+  - 新增：`src/styles/app/settings/settings.part3.css`
+  - 新增：`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+  - 新增：`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part2.css`
+  - 新增：`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part3.css`
+  - 调整：`src/styles/app/main.css`
+  - 调整：`src/styles/app/layout.css`
+  - 调整：`src/styles/app/settings.css`
+  - 调整：`src/styles/themes/styles/soft-skeuomorphic.components.css`
+
+- 2026-02-26：Phase 4 验证通过。
+  - 验证：`npm run build` 通过。
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`，`651 passed | 1 skipped`）。
+
 ### Phase 5（P2：测试文件治理）
 
 目标文件：
@@ -242,8 +275,8 @@ TODO Check：
 |---|---|---|---|---|---|---|
 | Phase 1 | 已完成 | Settings / FullscreenLayer / ImageMainSection 首轮拆分 | `npm run test` | 通过（108 passed / 1 skipped） | `65a7beb` | 2026-02-26 |
 | Phase 2 | 已完成 | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `327316e` | 2026-02-26 |
-| Phase 3 | 已完成 | subtitleSession / libraryReadWriteServiceImpl / fileSystemReadFacade / mediaLibrarySnapshotStore / useLiveSubtitles 首轮拆分 | `npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` + `npm run build` + `npm run test` | 通过（1 file passed；2 tests passed；108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
-| Phase 4 | 未开始 | - | - | - | - | - |
+| Phase 3 | 已完成 | subtitleSession / libraryReadWriteServiceImpl / fileSystemReadFacade / mediaLibrarySnapshotStore / useLiveSubtitles 首轮拆分 | `npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` + `npm run build` + `npm run test` | 通过（1 file passed；2 tests passed；108 files passed / 1 skipped；651 tests passed / 1 skipped） | `d3fa240` | 2026-02-26 |
+| Phase 4 | 已完成 | main.css / layout.css / settings.css / soft-skeuomorphic.components.css 拆分与入口导入重组 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
 | Phase 5 | 未开始 | - | - | - | - | - |
 
 ## 6. 拆分完成判定标准（Definition of Done）

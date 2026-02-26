@@ -1,0 +1,5 @@
+
+:root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-panel {
+  border-radius: 6px;
+  box-shadow: none;
+}
