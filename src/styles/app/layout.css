@@ -1301,6 +1301,11 @@
   transform: translateY(0);
 }
 
+.fullscreen-action-icon-mirror {
+  display: inline-flex;
+  transform: scaleX(-1);
+}
+
 .fullscreen-action-btn:not(.header-popover-trigger):not(:disabled):hover .fullscreen-action-content {
   transform: translateY(-1px);
 }

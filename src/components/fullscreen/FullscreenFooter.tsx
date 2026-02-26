@@ -698,22 +698,24 @@ export function FullscreenFooter({
           ) : null}
           <button aria-label={t('ui.fullscreen.prevPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.prevPage')} onClick={() => onStepFocusedPane(-1)}>
             <span className="fullscreen-action-content">
-              <FullscreenFooterIcon name="pagePrev" />
+              <span className="fullscreen-action-icon-mirror">
+                <VideoControlIcon name="play" />
+              </span>
             </span>
           </button>
           <button aria-label={t('ui.fullscreen.nextPage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.nextPage')} onClick={() => onStepFocusedPane(1)}>
             <span className="fullscreen-action-content">
-              <FullscreenFooterIcon name="pageNext" />
+              <VideoControlIcon name="play" />
             </span>
           </button>
           <button aria-label={t('ui.fullscreen.prevPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.prevPackage')} disabled={mode !== 'image'} onClick={onPrevPackage}>
             <span className="fullscreen-action-content">
-              <FullscreenFooterIcon name="packagePrev" />
+              <VideoControlIcon name="prev" />
             </span>
           </button>
           <button aria-label={t('ui.fullscreen.nextPackage')} className="video-action-btn fullscreen-action-btn fullscreen-action-page" type="button" data-tooltip-label={t('ui.fullscreen.nextPackage')} disabled={mode !== 'image'} onClick={onNextPackage}>
             <span className="fullscreen-action-content">
-              <FullscreenFooterIcon name="packageNext" />
+              <VideoControlIcon name="next" />
             </span>
           </button>
         </div>
