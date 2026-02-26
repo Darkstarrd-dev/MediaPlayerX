@@ -33,6 +33,7 @@ interface UseShortcutEngineParams {
   onSetFullscreenActive: (
     value: boolean | ((previous: boolean) => boolean),
   ) => void;
+  onToggleWindowFullscreen: () => void;
   onToggleFullscreenPaneFocus: () => void;
   onToggleFullscreenDualDisplay: () => void;
   onToggleFullscreenSwapSides: () => void;
@@ -82,6 +83,7 @@ export function useShortcutEngine({
   handleSidebarNavigationKey,
   onSetImageFocusActive,
   onSetFullscreenActive,
+  onToggleWindowFullscreen,
   onToggleFullscreenPaneFocus,
   onToggleFullscreenDualDisplay,
   onToggleFullscreenSwapSides,
@@ -250,6 +252,11 @@ export function useShortcutEngine({
         case "fullscreenToggle":
           onSetFullscreenActive((value) => !value);
           return;
+        case "windowFullscreenToggle":
+          if (!fullscreenActive) {
+            onToggleWindowFullscreen();
+          }
+          return;
         case "videoPlayPause":
           if (videoShortcutActive) {
             onToggleVideoPlaying();
@@ -379,6 +386,7 @@ export function useShortcutEngine({
       onJumpImageBoundary,
       onAlignFocus,
       onSetFullscreenActive,
+      onToggleWindowFullscreen,
       onSetPackageGrade,
       onSetVideoGrade,
       onRequestManageOrganize,

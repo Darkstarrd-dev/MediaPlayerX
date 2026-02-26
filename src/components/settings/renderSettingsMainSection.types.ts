@@ -3,6 +3,7 @@ import type { JSX, KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { ReadRuntimeInfoResponseDto } from "../../contracts/backend";
 import type { RepositoryMode } from "../../features/backend/repository";
 import type { RuntimeMediaCapabilityProbeResult } from "../../features/app/useRuntimeInfoDiagnostics";
+import type { SubtitleModelSelectionId } from "../../features/subtitles/fixedModel";
 import type { TranslateFn } from "../../i18n/context";
 import type { ShortcutConflict } from "../../shortcuts";
 
@@ -77,6 +78,7 @@ export interface RenderSettingsMainSectionParams {
   subtitleAdvancedSpeakerThreshold: number;
   subtitleValidPlaybackRateThreshold: number;
   subtitleLanguage: "auto" | "zh" | "en" | "ja" | "ko" | "yue";
+  subtitleSelectedModelId: SubtitleModelSelectionId;
   subtitleModelDir: string;
   subtitleTextFillMode: "solid" | "gradient";
   subtitleTextColor: string;
@@ -132,6 +134,7 @@ export interface RenderSettingsMainSectionParams {
     message: string | null;
   } | null;
   subtitleDownloadPending: boolean;
+  subtitleModelDownloadSupported: boolean;
   adReviewVisionEndpoint: string;
   adReviewVisionModel: string;
   adReviewVisionVerified: boolean;
@@ -256,6 +259,7 @@ export interface RenderSettingsMainSectionParams {
   onSubtitleLanguageChange: (
     value: "auto" | "zh" | "en" | "ja" | "ko" | "yue",
   ) => void;
+  onSubtitleSelectedModelIdChange: (value: SubtitleModelSelectionId) => void;
   onSubtitleModelDirPick: () => void;
   onSubtitleTextFillModeChange: (value: "solid" | "gradient") => void;
   onSubtitleTextColorChange: (value: string) => void;

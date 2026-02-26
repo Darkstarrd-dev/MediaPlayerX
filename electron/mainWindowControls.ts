@@ -75,6 +75,10 @@ export function registerWindowControlIpcHandlers(handlers: WindowControlHandlers
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
   })
 
+  ipcMain.handle(APP_WINDOW_CHANNELS.isFullscreen, (event) => {
+    return BrowserWindow.fromWebContents(event.sender)?.isFullScreen() ?? false
+  })
+
   ipcMain.handle(APP_WINDOW_CHANNELS.writeClipboardPng, (_event, pngBytes: unknown) => {
     const normalized = normalizeClipboardPngBytes(pngBytes)
     if (!normalized || normalized.byteLength === 0) {

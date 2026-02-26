@@ -1,6 +1,7 @@
 import type { ReadRuntimeInfoResponseDto } from "../contracts/backend";
 import type { RepositoryMode } from "../features/backend/repository";
 import type { RuntimeMediaCapabilityProbeResult } from "../features/app/useRuntimeInfoDiagnostics";
+import type { SubtitleModelSelectionId } from "../features/subtitles/fixedModel";
 import type {
   ShortcutAction,
   ShortcutConflict,
@@ -60,6 +61,7 @@ export interface SettingsPanelProps {
   subtitleAdvancedSpeakerThreshold: number;
   subtitleValidPlaybackRateThreshold: number;
   subtitleLanguage: "auto" | "zh" | "en" | "ja" | "ko" | "yue";
+  subtitleSelectedModelId: SubtitleModelSelectionId;
   subtitleModelDir: string;
   subtitleTextFillMode: "solid" | "gradient";
   subtitleTextColor: string;
@@ -115,6 +117,7 @@ export interface SettingsPanelProps {
     message: string | null;
   } | null;
   subtitleDownloadPending: boolean;
+  subtitleModelDownloadSupported: boolean;
   adReviewVisionEndpoint: string;
   adReviewVisionModel: string;
   adReviewVisionVerified: boolean;
@@ -205,6 +208,7 @@ export interface SettingsPanelProps {
   onSubtitleLanguageChange: (
     value: "auto" | "zh" | "en" | "ja" | "ko" | "yue",
   ) => void;
+  onSubtitleSelectedModelIdChange: (value: SubtitleModelSelectionId) => void;
   onSubtitleModelDirPick: () => void;
   onSubtitleTextFillModeChange: (value: "solid" | "gradient") => void;
   onSubtitleTextColorChange: (value: string) => void;

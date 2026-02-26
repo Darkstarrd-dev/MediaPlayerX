@@ -59,7 +59,7 @@
 | `fg.header.g3.help.root.panel` | `.settings-mask > .settings-panel`（HelpPanel） | `data-slot="fg-header-g3-help-root-panel"` | `helpOpen` | Help 面板 | 全屏遮罩+居中主面板 |
 | `fg.header.g3.help.root.buttonOverlay.ovl` | `.help-overlay` | `data-slot="fg-header-g3-help-root-button-overlay-ovl"` | `helpOverlayActive` | 按钮说明覆盖层 | 打开 Help 后由面板内动作触发 |
 | `fg.header.g3.window.min` | `window-control-btn` (minimize) | `data-slot="fg-header-g3-window-min"` | desktop | 最小化 | 无面板 |
-| `fg.header.g3.window.maxrestore` | `window-control-btn` (maximize/restore) | `data-slot="fg-header-g3-window-maxrestore"` | desktop | 最大化/还原 | 无面板 |
+| `fg.header.g3.window.maxrestore` | `window-control-btn` (maximize/fullscreen/restore) | `data-slot="fg-header-g3-window-maxrestore"` | desktop | 三态切换：最大化→全屏→还原 | 全屏态进入 Electron Fullscreen |
 | `fg.header.g3.window.close` | `.window-control-btn--close` | `data-slot="fg-header-g3-window-close"` | desktop | 关闭窗口 | 无面板 |
 
 ## 3. Foreground / SysInfo（不常驻）

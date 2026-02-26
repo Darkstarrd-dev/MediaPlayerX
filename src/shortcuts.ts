@@ -26,6 +26,7 @@ export type ShortcutAction =
   | 'focusSwitch'
   | 'enterFullscreen'
   | 'fullscreenToggle'
+  | 'windowFullscreenToggle'
   | 'videoPlayPause'
   | 'videoPlaylistAdd'
   | 'videoPlaylistRemove'
@@ -83,6 +84,7 @@ export const SHORTCUT_DEFINITIONS: ShortcutDefinition[] = [
   { action: 'focusSwitch', scope: 'global', label: '焦点：Sidebar/Main 切换' },
   { action: 'enterFullscreen', scope: 'global', label: '全屏：进入' },
   { action: 'fullscreenToggle', scope: 'global', label: '全屏：切换' },
+  { action: 'windowFullscreenToggle', scope: 'global', label: '窗口：全屏切换' },
   { action: 'videoPlayPause', scope: 'video', label: '视频：播放/暂停' },
   { action: 'videoPlaylistAdd', scope: 'video', label: '视频：加入播放列表' },
   { action: 'videoPlaylistRemove', scope: 'video', label: '视频：移出播放列表' },
@@ -133,6 +135,7 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   focusSwitch: 'Tab',
   enterFullscreen: 'Enter',
   fullscreenToggle: 'KeyF',
+  windowFullscreenToggle: 'Shift+KeyF',
   videoPlayPause: 'Space',
   videoPlaylistAdd: 'KeyA',
   videoPlaylistRemove: 'KeyD',

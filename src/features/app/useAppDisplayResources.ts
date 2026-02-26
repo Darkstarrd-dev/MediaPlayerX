@@ -21,7 +21,7 @@ import { useLiveSubtitles } from "../subtitles/useLiveSubtitles";
 import type { MediaLocator } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { toErrorDetailWithCode } from "./errorCode";
-import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
+import { normalizeSubtitleModelSelectionId } from "../subtitles/fixedModel";
 import {
   AUTO_SUBTITLE_ID,
   NODE_BROWSE_WARMUP_MAX_TARGETS,
@@ -379,7 +379,9 @@ export function useAppDisplayResources({
     useState<HTMLVideoElement | null>(null);
 
   const subtitleModelDir = (appSettings.subtitleModelDir ?? "").trim();
-  const subtitleModelId = FIXED_SUBTITLE_MODEL_ID;
+  const subtitleModelId = normalizeSubtitleModelSelectionId(
+    appSettings.subtitleSelectedModelId,
+  );
   const autoSubtitleConfigured =
     appSettings.subtitleFeatureEnabled && subtitleModelDir.length > 0;
   const autoSubtitleApiAvailable =

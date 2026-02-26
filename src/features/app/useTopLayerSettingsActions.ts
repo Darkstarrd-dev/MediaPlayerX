@@ -11,7 +11,10 @@ import {
 } from './useAppTopLayerState.utils'
 import { SETTINGS_STATE_KEY, toPersistedAppSettings } from './usePersistedAppSettings'
 import { toErrorDetailWithCode } from './errorCode'
-import { FIXED_SUBTITLE_MODEL_ID, FIXED_SUBTITLE_MODEL_URL } from '../subtitles/fixedModel'
+import {
+  getSubtitleModelSelectionProfile,
+  normalizeSubtitleModelSelectionId,
+} from '../subtitles/fixedModel'
 
 interface UseTopLayerSettingsActionsParams {
   appSettings: AppSettingsStoreSnapshot
@@ -58,6 +61,7 @@ interface TopLayerSettingsActionsResult {
     message: string | null
   } | null
   subtitleDownloadPending: boolean
+  subtitleModelDownloadSupported: boolean
   refreshSubtitleModels: () => Promise<void>
   startSubtitleModelDownload: () => Promise<void>
   cancelSubtitleModelDownload: () => Promise<void>
@@ -79,6 +83,7 @@ export function useTopLayerSettingsActions({
     electronNativeChromeEnabled,
     proxyServer,
     subtitleModelDir,
+    subtitleSelectedModelId,
     updateSettings,
   } = appSettings
   const [adReviewVisionTestPending, setAdReviewVisionTestPending] = useState(false)
@@ -98,6 +103,9 @@ export function useTopLayerSettingsActions({
   const normalizeFsPath = useCallback((rawPath: string): string => {
     return rawPath.trim().replace(/[\\/]+$/, '').toLowerCase()
   }, [])
+
+  const resolvedSubtitleModelId = normalizeSubtitleModelSelectionId(subtitleSelectedModelId)
+  const resolvedSubtitleModel = getSubtitleModelSelectionProfile(resolvedSubtitleModelId)
 
   useEffect(() => {
     setAdReviewVisionTestMessage(null)
@@ -334,10 +342,10 @@ export function useTopLayerSettingsActions({
     const selectedTask =
       response.tasks.find(
         (task) =>
-          task.model_id === FIXED_SUBTITLE_MODEL_ID &&
+          task.model_id === resolvedSubtitleModelId &&
           (task.status === 'queued' || task.status === 'downloading' || task.status === 'verifying'),
       ) ??
-      response.tasks.find((task) => task.model_id === FIXED_SUBTITLE_MODEL_ID) ??
+      response.tasks.find((task) => task.model_id === resolvedSubtitleModelId) ??
       response.tasks[0] ??
       null
 
@@ -354,7 +362,7 @@ export function useTopLayerSettingsActions({
       etaSec: selectedTask.eta_sec,
       message: selectedTask.message,
     })
-  }, [mediaRepository])
+  }, [mediaRepository, resolvedSubtitleModelId])
 
   const refreshSubtitleModels = useCallback(async (options?: { modelDirOverride?: string }) => {
     const effectiveModelDir = (options?.modelDirOverride ?? subtitleModelDir).trim()
@@ -365,11 +373,11 @@ export function useTopLayerSettingsActions({
     try {
       setSubtitleRemoteModels([
         {
-          id: FIXED_SUBTITLE_MODEL_ID,
-          label: 'SenseVoice Small INT8 (zh/en/ja/ko/yue) 2024-07-17',
-          languageCodes: ['zh', 'en', 'ja', 'ko', 'yue'],
-          sizeBytes: 236_000_000,
-          homepageUrl: FIXED_SUBTITLE_MODEL_URL,
+          id: resolvedSubtitleModel.id,
+          label: resolvedSubtitleModel.label,
+          languageCodes: resolvedSubtitleModel.languageCodes,
+          sizeBytes: resolvedSubtitleModel.sizeBytes,
+          homepageUrl: resolvedSubtitleModel.homepageUrl,
         },
       ])
 
@@ -417,11 +425,27 @@ export function useTopLayerSettingsActions({
     } finally {
       setSubtitleModelsLoading(false)
     }
-  }, [mediaRepository, normalizeFsPath, subtitleModelDir, syncSubtitleDownloadTasks, t])
+  }, [
+    mediaRepository,
+    normalizeFsPath,
+    resolvedSubtitleModel,
+    subtitleModelDir,
+    syncSubtitleDownloadTasks,
+    t,
+  ])
 
   const startSubtitleModelDownload = useCallback(async () => {
     if (!mediaRepository.startSubtitleModelDownload) {
       setSubtitleModelsError(t('ui.settings.offlineSubtitleDownloadUnsupported'))
+      return
+    }
+
+    if (!resolvedSubtitleModel.downloadSupported) {
+      setSubtitleModelsError(
+        t('ui.settings.offlineSubtitleDownloadUnsupportedForProfile', {
+          profile: resolvedSubtitleModel.label,
+        }),
+      )
       return
     }
 
@@ -441,7 +465,7 @@ export function useTopLayerSettingsActions({
 
     try {
       const response = await mediaRepository.startSubtitleModelDownload({
-        model_id: FIXED_SUBTITLE_MODEL_ID,
+        model_id: resolvedSubtitleModelId,
         model_dir: modelDir,
         use_proxy: useProxy,
         proxy_url: useProxy ? normalizedProxy : null,
@@ -461,7 +485,16 @@ export function useTopLayerSettingsActions({
     } finally {
       setSubtitleDownloadPending(false)
     }
-  }, [mediaRepository, proxyServer, refreshSubtitleModels, subtitleModelDir, t])
+  }, [
+    mediaRepository,
+    proxyServer,
+    refreshSubtitleModels,
+    resolvedSubtitleModel.downloadSupported,
+    resolvedSubtitleModel.label,
+    resolvedSubtitleModelId,
+    subtitleModelDir,
+    t,
+  ])
 
   const cancelSubtitleModelDownload = useCallback(async () => {
     if (!mediaRepository.cancelSubtitleModelDownload || !subtitleDownloadTask) {
@@ -480,7 +513,7 @@ export function useTopLayerSettingsActions({
 
   const openSubtitleModelPage = useCallback(async () => {
     try {
-      const targetUrl = FIXED_SUBTITLE_MODEL_URL
+      const targetUrl = resolvedSubtitleModel.homepageUrl
       const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
       const openExternalUrl = backendApi?.openExternalUrl
       if (openExternalUrl) {
@@ -497,7 +530,7 @@ export function useTopLayerSettingsActions({
     } catch (error) {
       setSubtitleModelsError(t('ui.settings.offlineSubtitleOpenModelPageFailed', { message: toErrorDetailWithCode(error, t) }))
     }
-  }, [t])
+  }, [resolvedSubtitleModel.homepageUrl, t])
 
   useEffect(() => {
     if (!appSettings.settingsOpen) {
@@ -506,7 +539,6 @@ export function useTopLayerSettingsActions({
 
     updateSettings({
       subtitleAcceleration: 'cpu',
-      subtitleSelectedModelId: FIXED_SUBTITLE_MODEL_ID,
     })
 
     void refreshSubtitleModels()
@@ -578,6 +610,7 @@ export function useTopLayerSettingsActions({
     subtitleLocalModels,
     subtitleDownloadTask,
     subtitleDownloadPending,
+    subtitleModelDownloadSupported: resolvedSubtitleModel.downloadSupported,
     refreshSubtitleModels,
     startSubtitleModelDownload,
     cancelSubtitleModelDownload,

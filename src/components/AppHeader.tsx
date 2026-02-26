@@ -33,6 +33,8 @@ type HeaderIconName =
   | 'windowMinimize'
   | 'windowMaximize'
   | 'windowRestore'
+  | 'windowFullscreen'
+  | 'windowExitFullscreen'
   | 'windowClose'
   | 'help'
 
@@ -165,6 +167,24 @@ const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
       <path d="M15 11h4" />
     </>
   ),
+  windowFullscreen: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v5H4" />
+      <path d="M15 3v5h5" />
+      <path d="M9 21v-5H4" />
+      <path d="M15 21v-5h5" />
+    </>
+  ),
+  windowExitFullscreen: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 8V3H4" />
+      <path d="M15 8V3h5" />
+      <path d="M9 16v5H4" />
+      <path d="M15 16v5h5" />
+    </>
+  ),
   windowClose: (
     <>
       <path d="M18 6 6 18" />
@@ -278,6 +298,7 @@ function AppHeader(props: AppHeaderProps) {
   } = props
   const { t } = useI18n()
   const [windowMaximized, setWindowMaximized] = useState(false)
+  const [windowFullscreen, setWindowFullscreen] = useState(false)
   const [showMusicQuickActions, setShowMusicQuickActions] = useState(false)
   const [musicQuickPlaying, setMusicQuickPlaying] = useState(false)
   const musicQuickSessionArmedRef = useRef(false)
@@ -311,24 +332,26 @@ function AppHeader(props: AppHeaderProps) {
     }
 
     let active = true
-    void windowApi
-      .isMaximized()
-      .then((maximized) => {
+    void Promise.all([windowApi.isMaximized(), windowApi.isFullscreen()])
+      .then(([maximized, fullscreen]) => {
         if (active) {
           setWindowMaximized(maximized)
+          setWindowFullscreen(fullscreen)
         }
       })
-      .catch(() => {
-        // ignore initialization failures
-      })
+      .catch(() => undefined)
 
-    const unsubscribe = windowApi.onMaximizedStateChange((maximized) => {
+    const unsubscribeMaximized = windowApi.onMaximizedStateChange((maximized) => {
       setWindowMaximized(maximized)
+    })
+    const unsubscribeFullscreen = windowApi.onFullscreenStateChange((fullscreen) => {
+      setWindowFullscreen(fullscreen)
     })
 
     return () => {
       active = false
-      unsubscribe()
+      unsubscribeMaximized()
+      unsubscribeFullscreen()
     }
   }, [])
 
@@ -342,6 +365,16 @@ function AppHeader(props: AppHeaderProps) {
   const themeParameterButtonA11y = buildA11yPropsByRegistry({ key: 'headerThemeParameter', t })
   const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({ key: 'headerPopoverDebugPinned', t })
   const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
+  const windowMaxRestoreLabel = windowFullscreen
+    ? t('a11y.header.windowExitFullscreen')
+    : windowMaximized
+      ? t('a11y.header.windowEnterFullscreen')
+      : t('a11y.header.windowMaximize')
+  const windowMaxRestoreIconName: HeaderIconName = windowFullscreen
+    ? 'windowExitFullscreen'
+    : windowMaximized
+      ? 'windowFullscreen'
+      : 'windowMaximize'
   const taskStateSlot = importTaskPanelOpen
     ? 'fg-header-logo-state-open'
     : taskStatusBusy
@@ -607,16 +640,35 @@ function AppHeader(props: AppHeaderProps) {
             <HeaderActionIcon name="windowMinimize" />
           </button>
           <button
-            aria-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
+            aria-label={windowMaxRestoreLabel}
             className="window-control-btn"
             data-slot="fg-header-g3-window-maxrestore"
-            data-tooltip-label={windowMaximized ? t('a11y.header.windowRestore') : t('a11y.header.windowMaximize')}
+            data-tooltip-label={windowMaxRestoreLabel}
             type="button"
-            onClick={() => {
-              void window.mediaPlayerWindow?.toggleMaximize()
+            onClick={async () => {
+              const windowApi = window.mediaPlayerWindow
+              if (!windowApi) {
+                return
+              }
+
+              if (windowFullscreen) {
+                await windowApi.setFullscreen(false)
+                const maximized = await windowApi.isMaximized().catch(() => false)
+                if (maximized) {
+                  await windowApi.toggleMaximize()
+                }
+                return
+              }
+
+              if (windowMaximized) {
+                await windowApi.setFullscreen(true)
+                return
+              }
+
+              await windowApi.toggleMaximize()
             }}
           >
-            <HeaderActionIcon name={windowMaximized ? 'windowRestore' : 'windowMaximize'} />
+            <HeaderActionIcon name={windowMaxRestoreIconName} />
           </button>
           <button
             aria-label={t(a11yRegistry.headerWindowClose.labelKey)}

@@ -21,6 +21,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     handleSidebarNavigationKey: vi.fn(() => false),
     onSetImageFocusActive: vi.fn(),
     onSetFullscreenActive: vi.fn(),
+    onToggleWindowFullscreen: vi.fn(),
     onToggleFullscreenPaneFocus: vi.fn(),
     onToggleFullscreenDualDisplay: vi.fn(),
     onToggleFullscreenSwapSides: vi.fn(),
@@ -334,6 +335,28 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(1, expect.any(Function))
     expect(params.onSetFullscreenActive).toHaveBeenNthCalledWith(2, true)
+  })
+
+  it('Shift+F toggles window fullscreen only when media fullscreen is inactive', () => {
+    const params = createBaseParams()
+    const hook = renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', code: 'KeyF', shiftKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleWindowFullscreen).toHaveBeenCalledTimes(1)
+
+    hook.unmount()
+    params.fullscreenActive = true
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'F', code: 'KeyF', shiftKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleWindowFullscreen).toHaveBeenCalledTimes(1)
+    expect(params.onSetFullscreenActive).not.toHaveBeenCalled()
   })
 
   it('fullscreen image/video mode maps D to dual/single toggle handler', () => {

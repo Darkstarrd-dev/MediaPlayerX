@@ -4,6 +4,7 @@ import {
   resolvePalettePairForStyle,
   resolveStyleId,
 } from "../theme/themeRegistry";
+import type { SubtitleModelSelectionId } from "../subtitles/fixedModel";
 
 /** 性能预设：一次性批量覆写，不持久化预设名 */
 export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
@@ -98,6 +99,7 @@ interface BuildSettingsPanelPropsParams {
   subtitleAdvancedSpeakerThreshold: number;
   subtitleValidPlaybackRateThreshold: number;
   subtitleLanguage: AppSettings["subtitleLanguage"];
+  subtitleSelectedModelId: SubtitleModelSelectionId;
   subtitleModelDir: string;
   subtitleTextFillMode: AppSettings["subtitleTextFillMode"];
   subtitleTextColor: string;
@@ -120,6 +122,7 @@ interface BuildSettingsPanelPropsParams {
   subtitleLocalModels: SettingsPanelProps["subtitleLocalModels"];
   subtitleDownloadTask: SettingsPanelProps["subtitleDownloadTask"];
   subtitleDownloadPending: boolean;
+  subtitleModelDownloadSupported: boolean;
   adReviewVisionEndpoint: string;
   adReviewVisionModel: string;
   adReviewVisionVerified: boolean;
@@ -222,6 +225,7 @@ export function buildSettingsPanelProps(
     subtitleValidPlaybackRateThreshold:
       params.subtitleValidPlaybackRateThreshold,
     subtitleLanguage: params.subtitleLanguage,
+    subtitleSelectedModelId: params.subtitleSelectedModelId,
     subtitleModelDir: params.subtitleModelDir,
     subtitleTextFillMode: params.subtitleTextFillMode,
     subtitleTextColor: params.subtitleTextColor,
@@ -244,6 +248,7 @@ export function buildSettingsPanelProps(
     subtitleLocalModels: params.subtitleLocalModels,
     subtitleDownloadTask: params.subtitleDownloadTask,
     subtitleDownloadPending: params.subtitleDownloadPending,
+    subtitleModelDownloadSupported: params.subtitleModelDownloadSupported,
     adReviewVisionEndpoint: params.adReviewVisionEndpoint,
     adReviewVisionModel: params.adReviewVisionModel,
     adReviewVisionVerified: params.adReviewVisionVerified,
@@ -481,6 +486,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ subtitleValidPlaybackRateThreshold: value }),
     onSubtitleLanguageChange: (value) =>
       params.updateSettings({ subtitleLanguage: value }),
+    onSubtitleSelectedModelIdChange: (value) =>
+      params.updateSettings({ subtitleSelectedModelId: value }),
     onSubtitleModelDirPick: params.pickSubtitleModelDirectoryPath,
     onSubtitleTextFillModeChange: (value) =>
       params.updateSettings({ subtitleTextFillMode: value }),

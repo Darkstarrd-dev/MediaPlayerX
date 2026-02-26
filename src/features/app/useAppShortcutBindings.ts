@@ -123,6 +123,17 @@ export function useAppShortcutBindings({
     handleSidebarNavigationKey,
     onSetImageFocusActive: setImageFocusActive,
     onSetFullscreenActive: setFullscreenActiveWithAutoStop,
+    onToggleWindowFullscreen: () => {
+      const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+      if (!windowApi?.setFullscreen || !windowApi.isFullscreen) {
+        return
+      }
+
+      void windowApi
+        .isFullscreen()
+        .then((isFullscreen) => windowApi.setFullscreen(!isFullscreen))
+        .catch(() => undefined)
+    },
     onToggleFullscreenPaneFocus: () => {
       if (fullscreenDisplay !== 'dual') {
         return

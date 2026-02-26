@@ -480,6 +480,8 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "a11y.header.windowMinimize": "Minimize window",
   "a11y.header.windowMaximize": "Maximize window",
   "a11y.header.windowRestore": "Restore window",
+  "a11y.header.windowEnterFullscreen": "Fullscreen window",
+  "a11y.header.windowExitFullscreen": "Exit fullscreen window",
   "a11y.header.windowClose": "Close window",
   "a11y.header.switchToDayPalette": "Switch to day palette",
   "a11y.header.switchToNightPalette": "Switch to night palette",

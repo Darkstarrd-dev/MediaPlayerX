@@ -26,6 +26,9 @@ export function useFullscreenPlaybackBindings({
   autoPlayPresets = DEFAULT_AUTO_PLAY_PRESETS,
 }: UseFullscreenPlaybackBindingsParams) {
   const previousFullscreenActiveRef = useRef(fullscreenActive)
+  const previousWindowSyncFullscreenActiveRef = useRef(fullscreenActive)
+  const windowFullscreenBeforeMediaRef = useRef<boolean | null>(null)
+  const pendingWindowFullscreenCaptureRef = useRef<Promise<boolean> | null>(null)
   const [fullscreenAlignRequest, setFullscreenAlignRequest] = useState<{
     id: number
     direction: FullscreenAlignDirection
@@ -62,11 +65,71 @@ export function useFullscreenPlaybackBindings({
 
   useEffect(() => {
     const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
-    if (!windowApi?.setFullscreen) {
+    if (!windowApi?.setFullscreen || !windowApi.isFullscreen) {
       return
     }
 
-    void windowApi.setFullscreen(fullscreenActive).catch(() => undefined)
+    const previous = previousWindowSyncFullscreenActiveRef.current
+    previousWindowSyncFullscreenActiveRef.current = fullscreenActive
+    if (previous === fullscreenActive) {
+      return
+    }
+
+    if (fullscreenActive) {
+      const capturePromise = windowApi
+        .isFullscreen()
+        .then((active) => {
+          windowFullscreenBeforeMediaRef.current = active
+          return active
+        })
+        .catch(() => {
+          windowFullscreenBeforeMediaRef.current = false
+          return false
+        })
+
+      pendingWindowFullscreenCaptureRef.current = capturePromise
+
+      void capturePromise
+        .then((active) => {
+          if (active) {
+            return
+          }
+          return windowApi.setFullscreen(true)
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          if (pendingWindowFullscreenCaptureRef.current === capturePromise) {
+            pendingWindowFullscreenCaptureRef.current = null
+          }
+        })
+
+      return
+    }
+
+    const applyRestoreFullscreen = (fallbackValue: boolean) => {
+      const restoreValue = windowFullscreenBeforeMediaRef.current ?? fallbackValue
+      windowFullscreenBeforeMediaRef.current = null
+      void windowApi.setFullscreen(restoreValue).catch(() => undefined)
+    }
+
+    const capturePromise = pendingWindowFullscreenCaptureRef.current
+    if (capturePromise) {
+      void capturePromise
+        .then((capturedValue) => {
+          applyRestoreFullscreen(capturedValue)
+        })
+        .catch(() => {
+          applyRestoreFullscreen(false)
+        })
+        .finally(() => {
+          if (pendingWindowFullscreenCaptureRef.current === capturePromise) {
+            pendingWindowFullscreenCaptureRef.current = null
+          }
+        })
+      return
+    }
+
+    applyRestoreFullscreen(false)
   }, [fullscreenActive])
 
   const setFullscreenActiveWithAutoStop = useCallback(

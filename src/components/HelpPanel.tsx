@@ -67,6 +67,11 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
         action: t('ui.help.image.keyboard.toggleFullscreen'),
       },
       {
+        key: 'image-toggle-window-fullscreen',
+        shortcut: renderShortcutBinding(shortcuts.windowFullscreenToggle, t('ui.help.shortcutNotSet')),
+        action: t('ui.help.image.keyboard.toggleWindowFullscreen'),
+      },
+      {
         key: 'image-focus-switch',
         shortcut: renderShortcutBinding(shortcuts.focusSwitch, t('ui.help.shortcutNotSet')),
         action: t('ui.help.image.keyboard.focusSwitch'),

@@ -32,8 +32,7 @@ import {
   chooseProvider,
   type InitRequestPayload,
   resolveAuxiliaryModelPath,
-  resolveModelOnnxPath,
-  resolveModelRootDir,
+  resolveSubtitleModelAssets,
   resolveSpeakerThreshold,
   resolveVadTuning,
 } from "./asrWorkerInitConfig";
@@ -206,15 +205,14 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
   const payload = rawPayload as InitRequestPayload;
   const sherpa = loadSherpaModule(path.resolve(payload.engine_module_root));
 
-  const modelRootDir = await resolveModelRootDir(
+  const modelAssets = await resolveSubtitleModelAssets(
     payload.model_dir,
     payload.model_id,
   );
+  const modelRootDir = modelAssets.modelRootDir;
   const providerDecision = chooseProvider(payload, createEvent);
   const runtimeEvents = [...providerDecision.events];
 
-  const modelPath = await resolveModelOnnxPath(modelRootDir);
-  const tokensPath = path.join(modelRootDir, "tokens.txt");
   const modelDirRootCandidate = path.resolve(payload.model_dir);
   const vadModelPath =
     (await resolveAuxiliaryModelPath(
@@ -245,25 +243,56 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
   const normalizedLanguage = normalizeRequestedLanguage(payload.language);
   const vadTuning = resolveVadTuning(payload);
   const speakerThreshold = resolveSpeakerThreshold(payload);
-  const useInverseTextNormalization =
-    normalizedLanguage === "zh" || normalizedLanguage === "yue" ? 1 : 0;
+  const recognizer =
+    modelAssets.family === "funasr-nano"
+      ? new sherpa.OfflineRecognizer({
+          featConfig: {
+            sampleRate: 16_000,
+            featureDim: 80,
+          },
+          modelConfig: {
+            funasrNano: {
+              encoderAdaptor: modelAssets.encoderAdaptorPath,
+              llm: modelAssets.llmPath,
+              embedding: modelAssets.embeddingPath,
+              tokenizer: modelAssets.tokenizerDir,
+              language: normalizedLanguage,
+              itn: 1,
+              maxNewTokens: 512,
+              temperature: 0.000001,
+              topP: 0.8,
+            },
+            provider: providerDecision.provider,
+            numThreads: 2,
+          },
+        })
+      : new sherpa.OfflineRecognizer({
+          featConfig: {
+            sampleRate: 16_000,
+            featureDim: 80,
+          },
+          modelConfig: {
+            senseVoice: {
+              model: modelAssets.modelPath,
+              language: normalizedLanguage,
+              useInverseTextNormalization:
+                normalizedLanguage === "zh" || normalizedLanguage === "yue"
+                  ? 1
+                  : 0,
+            },
+            tokens: modelAssets.tokensPath,
+            provider: providerDecision.provider,
+            numThreads: 2,
+          },
+        });
 
-  const recognizer = new sherpa.OfflineRecognizer({
-    featConfig: {
-      sampleRate: 16_000,
-      featureDim: 80,
-    },
-    modelConfig: {
-      senseVoice: {
-        model: modelPath,
-        language: normalizedLanguage,
-        useInverseTextNormalization,
-      },
-      tokens: tokensPath,
-      provider: providerDecision.provider,
-      numThreads: 2,
-    },
-  });
+  runtimeEvents.push(
+    createEvent(
+      "model_family",
+      "info",
+      modelAssets.family === "funasr-nano" ? "funasr-nano" : "sensevoice",
+    ),
+  );
   const stream = recognizer.createStream();
 
   let vad: VadRuntime | null = null;

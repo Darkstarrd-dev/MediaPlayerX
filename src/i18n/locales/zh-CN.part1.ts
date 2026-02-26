@@ -42,6 +42,7 @@ export const zhCnCatalogPart1 = {
     "主区焦点下复制当前媒体到剪贴板（图片模式复制当前图片原图，视频模式复制当前帧）。",
   "ui.help.image.keyboard.enterFullscreen": "进入全屏。",
   "ui.help.image.keyboard.toggleFullscreen": "切换全屏。",
+  "ui.help.image.keyboard.toggleWindowFullscreen": "切换窗口全屏（仅非媒体全屏时生效）。",
   "ui.help.image.keyboard.focusSwitch": "切换 Sidebar / 主区焦点。",
   "ui.help.image.keyboard.fixedModeSwitchShortcut": "F1 / F2 / F3",
   "ui.help.image.keyboard.modeSwitchF1F3":
@@ -363,6 +364,8 @@ export const zhCnCatalogPart1 = {
   "ui.settings.tooltip.offlineSubtitleSpeakerThreshold": "说话人相似度阈值；越高越严格区分不同说话人。",
   "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold": "有效播放速率阈值；超过后可跳过不可靠片段。",
   "ui.settings.tooltip.offlineSubtitleLanguage": "设置语音识别目标语言；自动模式会先做语言判断。",
+  "ui.settings.tooltip.offlineSubtitleModelProfile":
+    "选择离线字幕模型方案：Current 保持现有稳定链路，FunASR-Nano 使用独立调试链路。",
   "ui.settings.tooltip.offlineSubtitleModelDir": "离线字幕模型存储目录；需包含可识别的模型文件。",
   "ui.settings.tooltip.offlineSubtitleOffsetY": "调整字幕垂直位置，避免遮挡主体画面。",
   "ui.settings.tooltip.offlineSubtitleTextFillMode": "设置字幕文字填充方式：纯色或渐变。",
@@ -471,6 +474,9 @@ export const zhCnCatalogPart1 = {
   "ui.settings.offlineSubtitleLanguageJa": "日语",
   "ui.settings.offlineSubtitleLanguageKo": "韩语",
   "ui.settings.offlineSubtitleLanguageYue": "粤语",
+  "ui.settings.offlineSubtitleModelProfile": "模型方案",
+  "ui.settings.offlineSubtitleModelProfileCurrent": "Current（已落地）",
+  "ui.settings.offlineSubtitleModelProfileFunasrNano": "FunASR-Nano（调试）",
   "ui.settings.offlineSubtitleModelDir": "模型目录",
   "ui.settings.offlineSubtitleModelDirPlaceholder": "请选择模型目录",
   "ui.settings.offlineSubtitleChooseModelDir": "选择模型目录",
@@ -524,6 +530,8 @@ export const zhCnCatalogPart1 = {
     "下载状态={{status}} | 进度={{percent}}% | 速度={{speed}}KB/s | 剩余={{eta}}s | 信息={{message}}",
   "ui.settings.offlineSubtitleDownloadUnsupported":
     "当前后端不支持离线字幕模型下载。",
+  "ui.settings.offlineSubtitleDownloadUnsupportedForProfile":
+    "当前模型方案不支持一键下载：{{profile}}。请手动准备模型目录。",
   "ui.settings.offlineSubtitleModelDirRequired": "请先选择模型目录。",
   "ui.settings.offlineSubtitleProxyConfirm":
     "检测到代理配置：{{proxy}}。本次模型下载是否使用代理？",
@@ -537,11 +545,11 @@ export const zhCnCatalogPart1 = {
     "模型列表已刷新：远端 {{remote}} 个，本地 {{local}} 个（{{at}}）。",
   "ui.settings.offlineSubtitleScanValid": "模型目录检测通过，可用于自动字幕。",
   "ui.settings.offlineSubtitleScanMissing":
-    "当前目录未检测到可用模型文件（需要 tokens.txt 与 model.int8.onnx 或 model.onnx）。",
+    "当前目录未检测到可用模型文件（Current 需要 tokens.txt + model.onnx；FunASR-Nano 需要 encoder_adaptor/llm/embedding + tokenizer 目录）。",
   "ui.settings.offlineSubtitleScanSelectConcreteDir":
     "检测到 {{count}} 个可用模型目录，请选择实际包含模型文件的那个目录，而不是其父目录。",
   "ui.settings.offlineSubtitleManualInstallHint":
-    "请将 tokens.txt 与 model.int8.onnx（或 model.onnx）放到你选择的模型目录中，然后点击“重新扫描模型目录”。",
+    "Current：请放置 tokens.txt 与 model.onnx；FunASR-Nano：请放置 encoder_adaptor/llm/embedding 与 tokenizer 目录，然后点击“重新扫描模型目录”。",
   "ui.settings.pickSubtitleModelDirectoryDialogTitle": "选择离线字幕模型目录",
   "ui.settings.adReviewVisionEndpoint": "视觉模型端口",
   "ui.settings.adReviewVisionModel": "视觉模型ID",

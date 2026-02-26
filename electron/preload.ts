@@ -554,6 +554,9 @@ const windowApi = {
   isMaximized: async () => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isMaximized)
   },
+  isFullscreen: async () => {
+    return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.isFullscreen)
+  },
   writeClipboardPng: async (pngBytes: Uint8Array) => {
     return await ipcRenderer.invoke(APP_WINDOW_CHANNELS.writeClipboardPng, pngBytes)
   },
@@ -571,6 +574,16 @@ const windowApi = {
     ipcRenderer.on(APP_WINDOW_CHANNELS.maximizedStateChanged, handler)
     return () => {
       ipcRenderer.removeListener(APP_WINDOW_CHANNELS.maximizedStateChanged, handler)
+    }
+  },
+  onFullscreenStateChange: (listener: (active: boolean) => void) => {
+    const handler = (_event: unknown, payload: unknown) => {
+      listener(Boolean(payload))
+    }
+
+    ipcRenderer.on(APP_WINDOW_CHANNELS.fullscreenStateChanged, handler)
+    return () => {
+      ipcRenderer.removeListener(APP_WINDOW_CHANNELS.fullscreenStateChanged, handler)
     }
   },
 }

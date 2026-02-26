@@ -43,6 +43,66 @@ interface SubtitleDownloadTaskInternal {
 const LOCAL_MANIFEST_FILE = 'model-manifest.json'
 const SAMPLE_WINDOW_MS = 3_000
 
+function hasSenseVoiceModelFiles(
+  entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]>,
+): boolean {
+  const hasTokens = entries.some(
+    (item) => item.isFile() && item.name.toLowerCase() === 'tokens.txt',
+  )
+  const hasOnnx = entries.some(
+    (item) => item.isFile() && item.name.toLowerCase().endsWith('.onnx'),
+  )
+  return hasTokens && hasOnnx
+}
+
+async function hasFunasrNanoModelFiles(localModelDir: string): Promise<boolean> {
+  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = []
+  try {
+    entries = await fs.readdir(localModelDir, { withFileTypes: true })
+  } catch {
+    return false
+  }
+
+  const hasEncoderAdaptor = entries.some(
+    (item) =>
+      item.isFile()
+      && item.name.toLowerCase().startsWith('encoder_adaptor')
+      && item.name.toLowerCase().endsWith('.onnx'),
+  )
+  const hasLlm = entries.some(
+    (item) =>
+      item.isFile()
+      && item.name.toLowerCase().startsWith('llm')
+      && item.name.toLowerCase().endsWith('.onnx'),
+  )
+  const hasEmbedding = entries.some(
+    (item) =>
+      item.isFile()
+      && item.name.toLowerCase().startsWith('embedding')
+      && item.name.toLowerCase().endsWith('.onnx'),
+  )
+
+  if (!hasEncoderAdaptor || !hasLlm || !hasEmbedding) {
+    return false
+  }
+
+  const tokenizerCandidates = entries
+    .filter((item) => item.isDirectory())
+    .map((item) => path.join(localModelDir, item.name))
+  for (const tokenizerDir of tokenizerCandidates) {
+    try {
+      const tokenizerStat = await fs.stat(path.join(tokenizerDir, 'tokenizer.json'))
+      if (tokenizerStat.isFile()) {
+        return true
+      }
+    } catch {
+      continue
+    }
+  }
+
+  return false
+}
+
 interface ProxyRequestConfig {
   useProxy: boolean
   proxyUrl: string | null
@@ -225,9 +285,9 @@ export class SubtitleModelService {
         continue
       }
 
-      const hasTokens = modelFiles.some((item) => item.isFile() && item.name.toLowerCase() === 'tokens.txt')
-      const hasOnnx = modelFiles.some((item) => item.isFile() && item.name.toLowerCase().endsWith('.onnx'))
-      if (!hasTokens || !hasOnnx) {
+      const hasSenseVoice = hasSenseVoiceModelFiles(modelFiles)
+      const hasFunasrNano = await hasFunasrNanoModelFiles(localModelDir)
+      if (!hasSenseVoice && !hasFunasrNano) {
         continue
       }
 

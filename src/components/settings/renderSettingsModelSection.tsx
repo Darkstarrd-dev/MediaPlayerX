@@ -1,6 +1,11 @@
 import type { JSX } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
+import {
+  SUBTITLE_MODEL_CURRENT_ID,
+  SUBTITLE_MODEL_FUNASR_NANO_ID,
+  type SubtitleModelSelectionId,
+} from "../../features/subtitles/fixedModel";
 import type { RenderSettingsMainSectionParams } from "./renderSettingsMainSection.types";
 
 export function renderSettingsModelSection({
@@ -15,6 +20,7 @@ export function renderSettingsModelSection({
   subtitleAdvancedSpeakerThreshold,
   subtitleValidPlaybackRateThreshold,
   subtitleLanguage,
+  subtitleSelectedModelId,
   subtitleModelDir,
   subtitleTextFillMode,
   subtitleTextColor,
@@ -35,6 +41,7 @@ export function renderSettingsModelSection({
   subtitleModelsStatus,
   subtitleDownloadTask,
   subtitleDownloadPending,
+  subtitleModelDownloadSupported,
   adReviewVisionEndpoint,
   adReviewVisionModel,
   adReviewVisionVerified,
@@ -55,6 +62,7 @@ export function renderSettingsModelSection({
   onSubtitleAdvancedSpeakerThresholdChange,
   onSubtitleValidPlaybackRateThresholdChange,
   onSubtitleLanguageChange,
+  onSubtitleSelectedModelIdChange,
   onSubtitleModelDirPick,
   onSubtitleTextFillModeChange,
   onSubtitleTextColorChange,
@@ -94,6 +102,7 @@ export function renderSettingsModelSection({
   | "subtitleAdvancedSpeakerThreshold"
   | "subtitleValidPlaybackRateThreshold"
   | "subtitleLanguage"
+  | "subtitleSelectedModelId"
   | "subtitleModelDir"
   | "subtitleTextFillMode"
   | "subtitleTextColor"
@@ -114,6 +123,7 @@ export function renderSettingsModelSection({
   | "subtitleModelsStatus"
   | "subtitleDownloadTask"
   | "subtitleDownloadPending"
+  | "subtitleModelDownloadSupported"
   | "adReviewVisionEndpoint"
   | "adReviewVisionModel"
   | "adReviewVisionVerified"
@@ -134,6 +144,7 @@ export function renderSettingsModelSection({
   | "onSubtitleAdvancedSpeakerThresholdChange"
   | "onSubtitleValidPlaybackRateThresholdChange"
   | "onSubtitleLanguageChange"
+  | "onSubtitleSelectedModelIdChange"
   | "onSubtitleModelDirPick"
   | "onSubtitleTextFillModeChange"
   | "onSubtitleTextColorChange"
@@ -361,6 +372,24 @@ export function renderSettingsModelSection({
             </option>
             <option value="yue">
               {t("ui.settings.offlineSubtitleLanguageYue")}
+            </option>
+          </select>
+        </label>
+        <label data-tooltip-label={settingsTip("offlineSubtitleModelProfile")}>
+          {t("ui.settings.offlineSubtitleModelProfile")}
+          <select
+            value={subtitleSelectedModelId}
+            onChange={(event) =>
+              onSubtitleSelectedModelIdChange(
+                event.target.value as SubtitleModelSelectionId,
+              )
+            }
+          >
+            <option value={SUBTITLE_MODEL_CURRENT_ID}>
+              {t("ui.settings.offlineSubtitleModelProfileCurrent")}
+            </option>
+            <option value={SUBTITLE_MODEL_FUNASR_NANO_ID}>
+              {t("ui.settings.offlineSubtitleModelProfileFunasrNano")}
             </option>
           </select>
         </label>
@@ -658,7 +687,8 @@ export function renderSettingsModelSection({
             disabled={
               subtitleDownloadPending ||
               subtitleModelsLoading ||
-              !subtitleModelDir
+              !subtitleModelDir ||
+              !subtitleModelDownloadSupported
             }
             aria-label={t("ui.settings.offlineSubtitleDownloadModel")}
             data-tooltip-label={t("ui.settings.offlineSubtitleDownloadModel")}

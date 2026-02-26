@@ -7,10 +7,34 @@ import {
   type SubtitleSessionProviderDto,
 } from "../../src/contracts/backend";
 
+type DirEntry = {
+  isFile: () => boolean;
+  isDirectory: () => boolean;
+  name: string;
+};
+
 export interface InitRequestPayload extends StartSubtitleSessionRequestDto {
   engine_module_root: string;
   available_providers: Array<"cpu" | "directml">;
 }
+
+export type SubtitleModelFamily = "sensevoice" | "funasr-nano";
+
+export type ResolvedSubtitleModelAssets =
+  | {
+      family: "sensevoice";
+      modelRootDir: string;
+      modelPath: string;
+      tokensPath: string;
+    }
+  | {
+      family: "funasr-nano";
+      modelRootDir: string;
+      encoderAdaptorPath: string;
+      llmPath: string;
+      embeddingPath: string;
+      tokenizerDir: string;
+    };
 
 async function pathExists(targetPath: string): Promise<boolean> {
   try {
@@ -25,65 +49,15 @@ export async function resolveModelRootDir(
   modelDir: string,
   modelId: string,
 ): Promise<string> {
-  const normalizedDir = path.resolve(modelDir);
-  const candidates = [path.join(normalizedDir, modelId), normalizedDir];
-
-  const isValidModelDir = async (candidate: string): Promise<boolean> => {
-    if (!(await pathExists(candidate))) {
-      return false;
-    }
-
-    const tokensPath = path.join(candidate, "tokens.txt");
-    if (!(await pathExists(tokensPath))) {
-      return false;
-    }
-
-    let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
-    try {
-      entries = await fs.readdir(candidate, { withFileTypes: true });
-    } catch {
-      return false;
-    }
-
-    return entries.some(
-      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
-    );
-  };
-
-  for (const candidate of candidates) {
-    if (await isValidModelDir(candidate)) {
-      return candidate;
-    }
-  }
-
-  let dirEntries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
-  try {
-    dirEntries = await fs.readdir(normalizedDir, { withFileTypes: true });
-  } catch {
-    throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
-  }
-
-  const fallbackSubdirs = dirEntries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(normalizedDir, entry.name))
-    .sort((left, right) => left.localeCompare(right));
-
-  for (const candidate of fallbackSubdirs) {
-    if (await isValidModelDir(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
+  const resolved = await resolveSubtitleModelAssets(modelDir, modelId);
+  return resolved.modelRootDir;
 }
 
 export async function resolveModelOnnxPath(
   modelRootDir: string,
 ): Promise<string> {
-  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
-  try {
-    entries = await fs.readdir(modelRootDir, { withFileTypes: true });
-  } catch {
+  const entries = await readDirEntries(modelRootDir);
+  if (entries.length === 0) {
     throw new Error(`subtitle_model_files_missing:${modelRootDir}`);
   }
 
@@ -105,14 +79,196 @@ export async function resolveModelOnnxPath(
   return path.join(modelRootDir, preferred);
 }
 
+function resolveModelFamily(modelId: string): SubtitleModelFamily {
+  const normalized = modelId.trim().toLowerCase();
+  if (normalized.includes("funasr") || normalized.includes("nano")) {
+    return "funasr-nano";
+  }
+  return "sensevoice";
+}
+
+async function readDirEntries(
+  candidate: string,
+): Promise<DirEntry[]> {
+  try {
+    const entries = await fs.readdir(candidate, {
+      withFileTypes: true,
+      encoding: "utf8",
+    });
+    return entries as unknown as DirEntry[];
+  } catch {
+    return [];
+  }
+}
+
+function findPreferredOnnxFile(
+  entries: DirEntry[],
+  preferredLowerNames: string[],
+): string | null {
+  const onnxNames = entries
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"))
+    .map((entry) => entry.name);
+  if (onnxNames.length === 0) {
+    return null;
+  }
+
+  for (const preferredName of preferredLowerNames) {
+    const match = onnxNames.find(
+      (item) => item.toLowerCase() === preferredName.toLowerCase(),
+    );
+    if (match) {
+      return match;
+    }
+  }
+
+  return onnxNames[0] ?? null;
+}
+
+async function resolveSenseVoiceAssetsFromCandidate(
+  candidate: string,
+): Promise<ResolvedSubtitleModelAssets | null> {
+  if (!(await pathExists(candidate))) {
+    return null;
+  }
+
+  const tokensPath = path.join(candidate, "tokens.txt");
+  if (!(await pathExists(tokensPath))) {
+    return null;
+  }
+
+  const entries = await readDirEntries(candidate);
+  const modelFileName = findPreferredOnnxFile(entries, [
+    "model.int8.onnx",
+    "model.onnx",
+  ]);
+  if (!modelFileName) {
+    return null;
+  }
+
+  return {
+    family: "sensevoice",
+    modelRootDir: candidate,
+    modelPath: path.join(candidate, modelFileName),
+    tokensPath,
+  };
+}
+
+function findFunasrTokenizerSubdir(
+  candidate: string,
+  entries: DirEntry[],
+): string | null {
+  const tokenizerCandidates = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(candidate, entry.name));
+  const preferred = tokenizerCandidates.find((item) => {
+    const lower = path.basename(item).toLowerCase();
+    return lower.includes("qwen") || lower.includes("tokenizer");
+  });
+  return preferred ?? tokenizerCandidates[0] ?? null;
+}
+
+async function resolveFunasrNanoAssetsFromCandidate(
+  candidate: string,
+): Promise<ResolvedSubtitleModelAssets | null> {
+  if (!(await pathExists(candidate))) {
+    return null;
+  }
+
+  const entries = await readDirEntries(candidate);
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const pickByPrefix = (prefix: string): string | null => {
+    return (
+      entries
+        .filter(
+          (entry) =>
+            entry.isFile() &&
+            entry.name.toLowerCase().endsWith(".onnx") &&
+            entry.name.toLowerCase().startsWith(prefix),
+        )
+        .map((entry) => entry.name)[0] ?? null
+    );
+  };
+
+  const encoderAdaptorName = pickByPrefix("encoder_adaptor");
+  const llmName = pickByPrefix("llm");
+  const embeddingName = pickByPrefix("embedding");
+  if (!encoderAdaptorName || !llmName || !embeddingName) {
+    return null;
+  }
+
+  const tokenizerDir = findFunasrTokenizerSubdir(candidate, entries);
+  if (!tokenizerDir) {
+    return null;
+  }
+
+  const tokenizerJsonPath = path.join(tokenizerDir, "tokenizer.json");
+  if (!(await pathExists(tokenizerJsonPath))) {
+    return null;
+  }
+
+  return {
+    family: "funasr-nano",
+    modelRootDir: candidate,
+    encoderAdaptorPath: path.join(candidate, encoderAdaptorName),
+    llmPath: path.join(candidate, llmName),
+    embeddingPath: path.join(candidate, embeddingName),
+    tokenizerDir,
+  };
+}
+
+async function resolveCandidateAssets(
+  candidate: string,
+  family: SubtitleModelFamily,
+): Promise<ResolvedSubtitleModelAssets | null> {
+  if (family === "funasr-nano") {
+    return await resolveFunasrNanoAssetsFromCandidate(candidate);
+  }
+  return await resolveSenseVoiceAssetsFromCandidate(candidate);
+}
+
+export async function resolveSubtitleModelAssets(
+  modelDir: string,
+  modelId: string,
+): Promise<ResolvedSubtitleModelAssets> {
+  const normalizedDir = path.resolve(modelDir);
+  const family = resolveModelFamily(modelId);
+  const candidates = [path.join(normalizedDir, modelId), normalizedDir];
+
+  if (!(await pathExists(normalizedDir))) {
+    throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
+  }
+  const dirEntries = await readDirEntries(normalizedDir);
+
+  const fallbackSubdirs = dirEntries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(normalizedDir, entry.name))
+    .sort((left, right) => left.localeCompare(right));
+
+  const seen = new Set<string>();
+  for (const candidate of [...candidates, ...fallbackSubdirs]) {
+    const absoluteCandidate = path.resolve(candidate);
+    if (seen.has(absoluteCandidate)) {
+      continue;
+    }
+    seen.add(absoluteCandidate);
+    const resolved = await resolveCandidateAssets(absoluteCandidate, family);
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  throw new Error(`subtitle_model_files_missing:${modelDir}:${modelId}`);
+}
+
 export async function resolveAuxiliaryModelPath(
   modelRootDir: string,
   matcher: (lowerName: string) => boolean,
 ): Promise<string | null> {
-  let entries: Array<Awaited<ReturnType<typeof fs.readdir>>[number]> = [];
-  try {
-    entries = await fs.readdir(modelRootDir, { withFileTypes: true });
-  } catch {
+  const entries = await readDirEntries(modelRootDir);
+  if (entries.length === 0) {
     return null;
   }
 

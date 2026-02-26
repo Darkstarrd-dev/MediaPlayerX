@@ -459,9 +459,22 @@ function createMainWindow(): BrowserWindow {
     );
   };
 
+  const emitFullscreenState = () => {
+    if (window.isDestroyed()) {
+      return;
+    }
+    window.webContents.send(
+      APP_WINDOW_CHANNELS.fullscreenStateChanged,
+      window.isFullScreen(),
+    );
+  };
+
   window.on("maximize", emitMaximizedState);
   window.on("unmaximize", emitMaximizedState);
+  window.on("enter-full-screen", emitFullscreenState);
+  window.on("leave-full-screen", emitFullscreenState);
   window.once("ready-to-show", emitMaximizedState);
+  window.once("ready-to-show", emitFullscreenState);
 
   if (benchMode) {
     try {

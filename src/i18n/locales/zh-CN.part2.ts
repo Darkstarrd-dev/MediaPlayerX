@@ -416,6 +416,8 @@ export const zhCnCatalogPart2 = {
   "a11y.header.windowMinimize": "最小化窗口",
   "a11y.header.windowMaximize": "最大化窗口",
   "a11y.header.windowRestore": "还原窗口",
+  "a11y.header.windowEnterFullscreen": "全屏窗口",
+  "a11y.header.windowExitFullscreen": "退出全屏窗口",
   "a11y.header.windowClose": "关闭窗口",
   "a11y.header.switchToDayPalette": "切换到浅色主题",
   "a11y.header.switchToNightPalette": "切换到深色主题",

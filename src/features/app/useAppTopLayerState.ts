@@ -22,6 +22,7 @@ import { useImportTaskPanelState } from "./useImportTaskPanelState";
 import { useRuntimeInfoDiagnostics } from "./useRuntimeInfoDiagnostics";
 import { useRuntimeWarningDismiss } from "./useRuntimeWarningDismiss";
 import { useI18n } from "../../i18n/useI18n";
+import { normalizeSubtitleModelSelectionId } from "../subtitles/fixedModel";
 import type { PlaylistPersistenceResult } from "../media/usePlaylistPersistence";
 import type { VideoFitMode } from "../media/videoFitMode";
 import type {
@@ -468,6 +469,7 @@ export function useAppTopLayerState({
     subtitleLocalModels,
     subtitleDownloadTask,
     subtitleDownloadPending,
+    subtitleModelDownloadSupported,
     refreshSubtitleModels,
     startSubtitleModelDownload,
     cancelSubtitleModelDownload,
@@ -628,6 +630,9 @@ export function useAppTopLayerState({
     subtitleValidPlaybackRateThreshold:
       appSettings.subtitleValidPlaybackRateThreshold,
     subtitleLanguage: appSettings.subtitleLanguage,
+    subtitleSelectedModelId: normalizeSubtitleModelSelectionId(
+      appSettings.subtitleSelectedModelId,
+    ),
     subtitleModelDir: appSettings.subtitleModelDir,
     subtitleTextFillMode: appSettings.subtitleTextFillMode,
     subtitleTextColor: appSettings.subtitleTextColor,
@@ -650,6 +655,7 @@ export function useAppTopLayerState({
     subtitleLocalModels,
     subtitleDownloadTask,
     subtitleDownloadPending,
+    subtitleModelDownloadSupported,
     adReviewVisionEndpoint: appSettings.adReviewVisionEndpoint,
     adReviewVisionModel: appSettings.adReviewVisionModel,
     adReviewVisionVerified: appSettings.adReviewVisionVerified,

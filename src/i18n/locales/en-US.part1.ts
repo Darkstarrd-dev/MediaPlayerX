@@ -47,6 +47,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "When main area is focused, copy current media to clipboard (image mode copies current original image, video mode copies current frame).",
   "ui.help.image.keyboard.enterFullscreen": "Enter fullscreen.",
   "ui.help.image.keyboard.toggleFullscreen": "Toggle fullscreen.",
+  "ui.help.image.keyboard.toggleWindowFullscreen": "Toggle window fullscreen (only when media fullscreen is inactive).",
   "ui.help.image.keyboard.focusSwitch":
     "Switch focus between sidebar and main.",
   "ui.help.image.keyboard.fixedModeSwitchShortcut": "F1 / F2 / F3",
@@ -381,6 +382,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.tooltip.offlineSubtitleSpeakerThreshold": "Speaker similarity threshold. Higher values separate speakers more strictly.",
   "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold": "Valid playback-rate threshold for filtering unreliable segments.",
   "ui.settings.tooltip.offlineSubtitleLanguage": "Set target ASR language. Auto mode performs language detection first.",
+  "ui.settings.tooltip.offlineSubtitleModelProfile":
+    "Select offline subtitle model profile: Current keeps the stable existing pipeline; FunASR-Nano uses an isolated debug pipeline.",
   "ui.settings.tooltip.offlineSubtitleModelDir": "Offline subtitle model directory. Must contain recognized model files.",
   "ui.settings.tooltip.offlineSubtitleOffsetY": "Adjust subtitle vertical position to avoid covering key content.",
   "ui.settings.tooltip.offlineSubtitleTextFillMode": "Set subtitle text fill mode: solid or gradient.",
@@ -497,6 +500,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.offlineSubtitleLanguageJa": "Japanese",
   "ui.settings.offlineSubtitleLanguageKo": "Korean",
   "ui.settings.offlineSubtitleLanguageYue": "Cantonese",
+  "ui.settings.offlineSubtitleModelProfile": "Model profile",
+  "ui.settings.offlineSubtitleModelProfileCurrent": "Current (stable)",
+  "ui.settings.offlineSubtitleModelProfileFunasrNano": "FunASR-Nano (debug)",
   "ui.settings.offlineSubtitleModelDir": "Model directory",
   "ui.settings.offlineSubtitleModelDirPlaceholder": "Choose model directory",
   "ui.settings.offlineSubtitleChooseModelDir": "Choose model directory",
@@ -550,6 +556,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "status={{status}} | progress={{percent}}% | speed={{speed}}KB/s | eta={{eta}}s | message={{message}}",
   "ui.settings.offlineSubtitleDownloadUnsupported":
     "Current backend does not support offline subtitle model downloads.",
+  "ui.settings.offlineSubtitleDownloadUnsupportedForProfile":
+    "One-click download is not available for this profile: {{profile}}. Please prepare model files manually.",
   "ui.settings.offlineSubtitleModelDirRequired":
     "Please choose model directory first.",
   "ui.settings.offlineSubtitleProxyConfirm":
@@ -566,11 +574,11 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.offlineSubtitleScanValid":
     "Model directory is valid and ready for auto subtitles.",
   "ui.settings.offlineSubtitleScanMissing":
-    "No valid model files found in this directory (requires tokens.txt and model.int8.onnx or model.onnx).",
+    "No valid model files found in this directory (Current requires tokens.txt + model.onnx; FunASR-Nano requires encoder_adaptor/llm/embedding + tokenizer directory).",
   "ui.settings.offlineSubtitleScanSelectConcreteDir":
     "Detected {{count}} valid model directories. Please select the concrete model directory instead of its parent.",
   "ui.settings.offlineSubtitleManualInstallHint":
-    'Place tokens.txt and model.int8.onnx (or model.onnx) into the selected model directory, then click "Rescan model directory".',
+    'Current: place tokens.txt and model.onnx. FunASR-Nano: place encoder_adaptor/llm/embedding and tokenizer directory, then click "Rescan model directory".',
   "ui.settings.pickSubtitleModelDirectoryDialogTitle":
     "Choose offline subtitle model directory",
   "ui.settings.adReviewVisionEndpoint": "Vision endpoint",
