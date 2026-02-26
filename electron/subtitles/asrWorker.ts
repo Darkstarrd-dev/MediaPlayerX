@@ -46,6 +46,7 @@ import {
   sanitizePayloadForPostMessage,
 } from "./asrWorkerUtils";
 import {
+  clearPendingSwitch,
   buildOfflineResultCues,
   consumeVadSegments,
   maybeBuildSpeakerThresholdHint,

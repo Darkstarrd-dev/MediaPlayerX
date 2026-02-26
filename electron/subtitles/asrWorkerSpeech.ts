@@ -28,7 +28,7 @@ import type {
 
 const MAX_SPEAKER_COUNT = 2;
 
-function clearPendingSwitch(speakerRuntime: SpeakerRuntime): void {
+export function clearPendingSwitch(speakerRuntime: SpeakerRuntime): void {
   speakerRuntime.pendingSwitchSpeakerId = null;
   speakerRuntime.pendingSwitchCount = 0;
   speakerRuntime.pendingSwitchDurationSec = 0;
