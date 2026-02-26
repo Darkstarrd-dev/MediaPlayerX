@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 
 import {
   dispatchMusicPlaybackControl,
@@ -8,6 +13,7 @@ import { buildA11yPropsByRegistry } from "../i18n/a11y";
 import { a11yRegistry } from "../i18n/ariaRegistry";
 import { useI18n } from "../i18n/useI18n";
 import type { BrowserMode } from "../types";
+import { useRandomSweepAnimation } from "./useRandomSweepAnimation";
 
 type HeaderIconName =
   | "statusIdle"
@@ -301,6 +307,11 @@ function AppHeader(props: AppHeaderProps) {
   const [windowFullscreen, setWindowFullscreen] = useState(false);
   const [showMusicQuickActions, setShowMusicQuickActions] = useState(false);
   const [musicQuickPlaying, setMusicQuickPlaying] = useState(false);
+  const { sweeping: logoSweeping, onAnimationEnd: handleLogoSweepAnimationEnd } =
+    useRandomSweepAnimation({
+      initialDelayRangeMs: [1000, 3000],
+      repeatDelayRangeMs: [2000, 8000],
+    });
   const musicQuickSessionArmedRef = useRef(false);
   const previousModeRef = useRef<BrowserMode>(mode);
 
@@ -431,14 +442,17 @@ function AppHeader(props: AppHeaderProps) {
           >
             <button
               aria-label={taskStatusLabel}
-              className={`logo-btn ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""}`}
+              className={`logo-btn mpx-random-sheen-host ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""} ${logoSweeping ? "is-sweeping" : ""}`}
               data-slot="fg-header-logo"
               data-slot-state={taskStateSlot}
               data-tooltip-label={taskStatusLabel}
               type="button"
               onClick={onToggleImportTaskPanel}
+              onAnimationEnd={handleLogoSweepAnimationEnd}
             >
-              {taskStatusBusy ? "Processing..." : "MediaPlayerX"}
+              <span className="logo-btn-text">
+                {taskStatusBusy ? "Processing..." : "MediaPlayerX"}
+              </span>
             </button>
             {importMenuOpen ? (
               <div

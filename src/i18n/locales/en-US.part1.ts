@@ -777,6 +777,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.sidebar.renameDialogRemoveEdgesHint": "Extra remove (from head forward / from tail backward)",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "Metadata template",
   "ui.sidebar.renameDialogPreviewLabel": "Preview",
+  "ui.sidebar.renameDialogPreviewOriginalHeader": "Original name",
+  "ui.sidebar.renameDialogPreviewNewHeader": "New name",
+  "ui.sidebar.renameDialogPreviewUnchanged": "Keep original",
   "ui.sidebar.renameDialogPreviewSummary":
     "Total {{total}}, success {{success}}, failed {{failed}}, unchanged {{unchanged}}",
   "ui.sidebar.searchResultsRoot": "Search results",

@@ -12,7 +12,8 @@
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: var(--mpx-scrollbar-thumb-bg) var(--mpx-scrollbar-track-bg);
+  scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
+    var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
 }
 
 body {
@@ -24,22 +25,36 @@ body {
 }
 
 *::-webkit-scrollbar {
-  width: var(--mpx-scrollbar-size);
-  height: var(--mpx-scrollbar-size);
+  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
+  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
 }
 
 *::-webkit-scrollbar-track {
-  background: var(--mpx-scrollbar-track-bg);
-  border-radius: var(--mpx-scrollbar-radius);
+  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
+  border-radius: var(--mpx-sidebar-tree-scrollbar-track-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
+  background: var(--mpx-sidebar-tree-scrollbar-track-bg, var(--mpx-scrollbar-track-bg));
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
 }
 
 *::-webkit-scrollbar-thumb {
-  background: var(--mpx-scrollbar-thumb-bg);
-  border-radius: var(--mpx-scrollbar-radius);
+  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
+  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
+    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
+  border-radius: var(--mpx-sidebar-tree-scrollbar-thumb-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg));
+  background-clip: padding-box;
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: var(--mpx-scrollbar-thumb-hover-bg);
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg));
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: var(--mpx-sidebar-tree-scrollbar-thumb-active-bg, var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg)));
+  background-clip: padding-box;
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-active-shadow, var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none));
 }
 
 *::-webkit-scrollbar-button {

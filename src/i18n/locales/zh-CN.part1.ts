@@ -738,6 +738,9 @@ export const zhCnCatalogPart1 = {
   "ui.sidebar.renameDialogRemoveEdgesHint": "额外移除（从头往后 / 从尾往前，单位：字符）",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "元数据模板",
   "ui.sidebar.renameDialogPreviewLabel": "预览",
+  "ui.sidebar.renameDialogPreviewOriginalHeader": "原始名称",
+  "ui.sidebar.renameDialogPreviewNewHeader": "新名称",
+  "ui.sidebar.renameDialogPreviewUnchanged": "维持原名",
   "ui.sidebar.renameDialogPreviewSummary":
     "共 {{total}} 项，成功 {{success}} 项，失败 {{failed}} 项，维持原名 {{unchanged}} 项",
   "ui.sidebar.searchResultsRoot": "检索结果",

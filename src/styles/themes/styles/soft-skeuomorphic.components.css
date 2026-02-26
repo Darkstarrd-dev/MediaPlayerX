@@ -22,6 +22,13 @@
   background: #ecf0f3;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist {
+  border: 1px solid #b8b2a6;
+  border-radius: 12px;
+  background: #ecf0f3;
+  box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer {
   border: 1px solid var(--mpx-control-panel-border);
   border-radius: clamp(14px, calc(var(--mpx-card-radius) + 4px), 24px);
@@ -431,6 +438,64 @@
   background: #f2d796;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item {
+  --mpx-sidebar-marker-width: 12px;
+  --mpx-sidebar-marker-gap: 6px;
+  position: relative;
+  overflow: hidden;
+  min-height: 30px;
+  border: 1px solid #bcc1c9;
+  border-radius: 12px;
+  padding: 0 8px 0 calc(6px + var(--mpx-sidebar-marker-width) + var(--mpx-sidebar-marker-gap));
+  color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
+  background: linear-gradient(135deg, #e4e6ea, #c8ccd3);
+  box-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
+  transition: filter 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  bottom: -1px;
+  width: calc(var(--mpx-sidebar-marker-width) + 1px);
+  opacity: 0;
+  border-radius: 12px 0 0 12px;
+  background: #8c939e;
+  pointer-events: none;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:hover {
+  filter: brightness(0.97);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item.is-active {
+  border-color: #bcc1c9;
+  background: linear-gradient(135deg, #e4e6ea, #c8ccd3);
+  box-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item.is-active::before,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:focus-visible::before {
+  opacity: 1;
+  background: #8c939e;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:focus-visible {
+  outline: none;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item .metadata-music-playlist-title {
+  display: block;
+  line-height: 30px;
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar {
   border-bottom: none;
 }
@@ -495,6 +560,134 @@
   border: 1px solid #d5d8df;
   background: linear-gradient(145deg, #f8f9fa 0%, #e8eaef 100%);
   box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -1px -1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+@keyframes mpx-random-sheen-once {
+  0% {
+    transform: translate(var(--mpx-random-sheen-start-translate), var(--mpx-random-sheen-start-translate)) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--mpx-random-sheen-opacity-peak);
+  }
+  82% {
+    opacity: var(--mpx-random-sheen-opacity-peak);
+  }
+  100% {
+    transform: translate(var(--mpx-random-sheen-end-translate), var(--mpx-random-sheen-end-translate)) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-random-sheen-host,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-random-sheen-host::after,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"]::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  right: -100%;
+  bottom: -100%;
+  left: -100%;
+  border-radius: inherit;
+  background: var(--mpx-random-sheen-overlay);
+  transform: translate(var(--mpx-random-sheen-start-translate), var(--mpx-random-sheen-start-translate)) rotate(0deg);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: var(--mpx-random-sheen-blend-mode);
+  z-index: 2;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-random-sheen-host.is-sweeping::after,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"].is-sweeping::after {
+  animation: mpx-random-sheen-once var(--mpx-random-sheen-duration) var(--mpx-random-sheen-easing) forwards;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"] {
+  --mpx-random-sheen-duration: 1.9s;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: #c6cfd9;
+  background: linear-gradient(135deg, #f0f3f8 0%, #e2e7ee 30%, #cdd4df 50%, #e2e7ee 70%, #f4f6f9 100%);
+  color: #4a5568;
+  box-shadow:
+    1px 1px 2px rgba(163, 177, 198, 0.22),
+    -1px -1px 2px rgba(255, 255, 255, 0.7),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 2px rgba(163, 177, 198, 0.2);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.012) 0,
+    rgba(0, 0, 0, 0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"] .logo-btn-text {
+  position: relative;
+  z-index: 3;
+  text-shadow: -1px -1px 0 rgba(255, 255, 255, 0.78), 1px 1px 1px rgba(163, 177, 198, 0.44);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"].is-task-idle {
+  color: #4f5d71;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"].is-task-busy {
+  border-color: #d8c6a6;
+  background: linear-gradient(135deg, #f5efe4 0%, #eae2d4 30%, #d7cab8 50%, #eae2d4 70%, #f7f3ea 100%);
+  color: #6a5535;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"]:hover {
+  border-color: #d2dae4;
+  background: linear-gradient(135deg, #f5f8fc 0%, #e8edf4 30%, #d7dee9 50%, #e8edf4 70%, #f8fafc 100%);
+  box-shadow:
+    1px 1px 2px rgba(163, 177, 198, 0.24),
+    -1px -1px 2px rgba(255, 255, 255, 0.76),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.92),
+    inset -1px -1px 2px rgba(163, 177, 198, 0.2);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"]:active {
+  border-color: #c7cfda;
+  background: linear-gradient(135deg, #dce3ec 0%, #e7ecf2 40%, #f0f4f8 100%);
+  box-shadow:
+    0 0 0 1px rgba(199, 207, 218, 0.55),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 2px rgba(163, 177, 198, 0.22);
+  transform: translateY(1px);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"].is-task-open {
+  box-shadow:
+    0 0 0 2px var(--mpx-card-focus-ring),
+    1px 1px 2px rgba(163, 177, 198, 0.22),
+    -1px -1px 2px rgba(255, 255, 255, 0.7),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 2px rgba(163, 177, 198, 0.2);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mode-switch button.is-active {

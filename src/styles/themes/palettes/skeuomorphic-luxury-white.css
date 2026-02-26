@@ -128,6 +128,20 @@
   --mpx-player-btn-active-bg: #ecddc8;
   --mpx-player-btn-active-border: #ad8752;
   --mpx-player-btn-muted-text: #9b8465;
+  --mpx-random-sheen-duration: 1.9s;
+  --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --mpx-random-sheen-overlay: linear-gradient(
+    115deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.6) 48%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.6) 52%,
+    transparent 55%
+  );
+  --mpx-random-sheen-blend-mode: overlay;
+  --mpx-random-sheen-start-translate: -42%;
+  --mpx-random-sheen-end-translate: 42%;
+  --mpx-random-sheen-opacity-peak: 1;
 
   --mpx-skeuo-shadow-dark: #cdb799;
   --mpx-skeuo-shadow-light: #fffdf7;

@@ -16,6 +16,7 @@ import {
   resolveSidebarDisplayLabel,
   type SidebarLabelDisplayMode,
 } from "./sidebarPanelTreeUtils";
+import { useRandomSweepAnimation } from "./useRandomSweepAnimation";
 
 interface SidebarPanelRowProps {
   node: SidebarNode;
@@ -140,6 +141,14 @@ export function SidebarPanelRow({
     : t("a11y.sidebar.nodeCount", { count: directMediaChildCount });
   const showProcessingCountPlaceholder =
     mode === "image" && hasOwnImages && Boolean(loadState);
+  const {
+    sweeping: sidebarFocusSweeping,
+    onAnimationEnd: handleSidebarFocusSweepAnimationEnd,
+  } = useRandomSweepAnimation({
+    enabled: isFocusedNode,
+    initialDelayRangeMs: [1000, 2600],
+    repeatDelayRangeMs: [2200, 7800],
+  });
 
   const applyMediaSelection = () => {
     if (mode === "image" && searchResultReadonly) {
@@ -176,7 +185,7 @@ export function SidebarPanelRow({
       />
 
       <button
-        className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
+        className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""} ${isFocusedNode ? "mpx-random-sheen-host" : ""} ${isFocusedNode && sidebarFocusSweeping ? "is-sweeping" : ""}`}
         data-slot="fg-sidebar-main-label"
         type="button"
         aria-label={displayLabel}
@@ -265,6 +274,7 @@ export function SidebarPanelRow({
             return next;
           });
         }}
+        onAnimationEnd={handleSidebarFocusSweepAnimationEnd}
       >
         <span
           ref={(element) => {

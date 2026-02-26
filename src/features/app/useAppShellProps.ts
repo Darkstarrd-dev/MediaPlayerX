@@ -202,6 +202,9 @@ export function useAppShellProps({
     metadataTemplatePlaceholder: t('ui.sidebar.renameDialogMetadataTemplatePlaceholder'),
     previewLabel: t('ui.sidebar.renameDialogPreviewLabel'),
     applyFromSourceLabel: t('ui.sidebar.renameDialogApplyFromSourceLabel'),
+    previewOriginalHeaderLabel: t('ui.sidebar.renameDialogPreviewOriginalHeader'),
+    previewNewHeaderLabel: t('ui.sidebar.renameDialogPreviewNewHeader'),
+    previewUnchangedLabel: t('ui.sidebar.renameDialogPreviewUnchanged'),
     previewSummaryText:
       sidebarRenameDialogParams.previewRows.length > 0
         ? (() => {
@@ -247,7 +250,6 @@ export function useAppShellProps({
     onRemoveHeadChange: sidebarRenameDialogParams.onRemoveHeadChange,
     onRemoveTailChange: sidebarRenameDialogParams.onRemoveTailChange,
     onMetadataTemplateChange: sidebarRenameDialogParams.onMetadataTemplateChange,
-    onRefreshPreview: sidebarRenameDialogParams.onRefreshPreview,
     onUseSourceNameAsReplaceFrom: sidebarRenameDialogParams.onUseSourceNameAsReplaceFrom,
     onCancel: sidebarRenameDialogParams.onCancel,
     onConfirm: () => {

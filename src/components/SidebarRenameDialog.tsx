@@ -1,5 +1,7 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 
+import { MainUiIcon } from './MainUiIcon'
+
 interface SidebarRenameDialogProps {
   open: boolean
   pending?: boolean
@@ -28,6 +30,9 @@ interface SidebarRenameDialogProps {
   metadataTemplatePlaceholder: string
   previewLabel: string
   applyFromSourceLabel: string
+  previewOriginalHeaderLabel: string
+  previewNewHeaderLabel: string
+  previewUnchangedLabel: string
   previewSummaryText: string | null
   confirmLabel: string
   cancelLabel: string
@@ -59,7 +64,6 @@ interface SidebarRenameDialogProps {
   onRemoveHeadChange: (value: string) => void
   onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
-  onRefreshPreview: () => void
   onUseSourceNameAsReplaceFrom: (value: string) => void
   onConfirm: () => void
   onCancel: () => void
@@ -92,6 +96,9 @@ function SidebarRenameDialog({
   removeEdgesHint,
   previewLabel,
   applyFromSourceLabel,
+  previewOriginalHeaderLabel,
+  previewNewHeaderLabel,
+  previewUnchangedLabel,
   previewSummaryText,
   confirmLabel,
   cancelLabel,
@@ -121,7 +128,6 @@ function SidebarRenameDialog({
   onRemoveEndChange,
   onRemoveHeadChange,
   onRemoveTailChange,
-  onRefreshPreview,
   onUseSourceNameAsReplaceFrom,
   onConfirm,
   onCancel,
@@ -154,7 +160,6 @@ function SidebarRenameDialog({
 
   const batchModeActive = targetCount > 1 || mode !== 'single'
   const singleConfirmDisabled = pending || value.trim().length === 0
-  const showManualPreviewButton = mode === 'replace'
 
   if (!open) {
     return null
@@ -178,9 +183,12 @@ function SidebarRenameDialog({
         }}
       >
         <div className="sidebar-rename-header">
-          <h3 className="sidebar-rename-title">{inputLabel}</h3>
+          <div className="sidebar-rename-header-main">
+            <h3 className="sidebar-rename-title">{inputLabel}</h3>
+            {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
+          </div>
           <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn"
+            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn"
             type="button"
             aria-label={closeLabel}
             data-tooltip-label={closeLabel}
@@ -192,21 +200,60 @@ function SidebarRenameDialog({
         </div>
         {batchModeActive ? (
           <>
-            <label className="sidebar-rename-mode-label">{modeLabel}</label>
-            <select className="manage-group-name-input" value={mode} disabled={pending} onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}>
-              <option value="replace">{modeOptionReplace}</option>
-              <option value="numbering">{modeOptionNumbering}</option>
-              <option value="remove-range">{modeOptionRemoveRange}</option>
-              <option value="metadata">{modeOptionMetadata}</option>
-              {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
-            </select>
-
             {mode === 'replace' ? (
-              <>
-                <input className="manage-group-name-input" type="text" value={replaceFrom} placeholder={replaceFromPlaceholder} disabled={pending} onChange={(event) => onReplaceFromChange(event.target.value)} />
-                <input className="manage-group-name-input" type="text" value={replaceTo} placeholder={replaceToPlaceholder} disabled={pending} onChange={(event) => onReplaceToChange(event.target.value)} />
-              </>
-            ) : null}
+              <div className="sidebar-rename-replace-controls" aria-label={modeLabel}>
+                <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
+                  <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
+                  <select
+                    className="sidebar-rename-mode-select"
+                    value={mode}
+                    disabled={pending}
+                    onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
+                  >
+                    <option value="replace">{modeOptionReplace}</option>
+                    <option value="numbering">{modeOptionNumbering}</option>
+                    <option value="remove-range">{modeOptionRemoveRange}</option>
+                    <option value="metadata">{modeOptionMetadata}</option>
+                    {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
+                  </select>
+                </label>
+                <input
+                  className="sidebar-rename-seamless-control"
+                  type="text"
+                  value={replaceFrom}
+                  placeholder={replaceFromPlaceholder}
+                  disabled={pending}
+                  onChange={(event) => onReplaceFromChange(event.target.value)}
+                />
+                <input
+                  className="sidebar-rename-seamless-control"
+                  type="text"
+                  value={replaceTo}
+                  placeholder={replaceToPlaceholder}
+                  disabled={pending}
+                  onChange={(event) => onReplaceToChange(event.target.value)}
+                />
+              </div>
+            ) : (
+              <div className="sidebar-rename-mode-row" aria-label={modeLabel}>
+                <label className="sidebar-rename-mode-control sidebar-rename-mode-cell">
+                  <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
+                  <select
+                    className="sidebar-rename-mode-select"
+                    value={mode}
+                    disabled={pending}
+                    onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
+                  >
+                    <option value="replace">{modeOptionReplace}</option>
+                    <option value="numbering">{modeOptionNumbering}</option>
+                    <option value="remove-range">{modeOptionRemoveRange}</option>
+                    <option value="metadata">{modeOptionMetadata}</option>
+                    {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
+                  </select>
+                </label>
+                <span className="sidebar-rename-mode-row-spacer" aria-hidden="true" />
+              </div>
+            )}
 
             {mode === 'numbering' ? (
               <>
@@ -254,33 +301,43 @@ function SidebarRenameDialog({
               </>
             ) : null}
 
-            {showManualPreviewButton ? (
-              <div className="settings-floating-actions manage-group-actions">
-                <button className="feature-action-btn main-icon-square-btn" type="button" disabled={pending} onClick={onRefreshPreview}>{previewLabel}</button>
+            <div className="sidebar-rename-preview-table" aria-label={previewLabel}>
+              <div className="sidebar-rename-preview-head">
+                <span>{previewOriginalHeaderLabel}</span>
+                <span aria-hidden="true" />
+                <span>{previewNewHeaderLabel}</span>
               </div>
-            ) : null}
-            {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
-            <div className="sidebar-rename-preview-list">
-              {previewRows.slice(0, 24).map((row) => (
-                <div key={row.nodeId} className={`sidebar-rename-preview-row ${row.reason && row.reason !== 'unchanged' ? 'is-failed' : ''} ${row.reason === 'unchanged' ? 'is-unchanged' : ''}`}>
-                  {mode === 'replace' ? (
-                    <button
-                      className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
-                      type="button"
-                      disabled={pending}
-                      data-tooltip-label={row.sourceName}
-                      onClick={() => {
-                        onUseSourceNameAsReplaceFrom(row.sourceName)
-                      }}
-                    >
-                      {applyFromSourceLabel}: {row.sourceName}
-                    </button>
-                  ) : (
-                    <span className="sidebar-rename-preview-cell" data-tooltip-label={row.sourceName}>{row.sourceName}</span>
-                  )}
-                  <span className="sidebar-rename-preview-cell">{row.reason && row.reason !== 'unchanged' ? row.reason : row.targetName}</span>
-                </div>
-              ))}
+              <div className="sidebar-rename-preview-list">
+                {previewRows.slice(0, 24).map((row) => {
+                  const failed = Boolean(row.reason && row.reason !== 'unchanged')
+                  const unchanged = row.reason === 'unchanged'
+                  return (
+                    <div key={row.nodeId} className={`sidebar-rename-preview-row ${failed ? 'is-failed' : ''} ${unchanged ? 'is-unchanged' : 'is-changed'}`}>
+                      {mode === 'replace' ? (
+                        <button
+                          className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
+                          type="button"
+                          disabled={pending}
+                          data-tooltip-label={`${applyFromSourceLabel}: ${row.sourceName}`}
+                          onClick={() => {
+                            onUseSourceNameAsReplaceFrom(row.sourceName)
+                          }}
+                        >
+                          {row.sourceName}
+                        </button>
+                      ) : (
+                        <span className="sidebar-rename-preview-cell" data-tooltip-label={row.sourceName}>{row.sourceName}</span>
+                      )}
+                      <span className="sidebar-rename-preview-arrow" aria-hidden="true">
+                        <MainUiIcon name="next" className="sidebar-rename-preview-arrow-icon" />
+                      </span>
+                      <span className="sidebar-rename-preview-cell">
+                        {failed ? row.reason : unchanged ? previewUnchangedLabel : row.targetName}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </>
         ) : (
@@ -309,12 +366,12 @@ function SidebarRenameDialog({
           />
         )}
         {errorMessage ? <p className="sidebar-rename-error">{errorMessage}</p> : null}
-        <div className="settings-floating-actions manage-group-actions">
-          <button className="feature-action-btn main-icon-square-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
-            {confirmLabel}
-          </button>
-          <button className="feature-action-btn main-icon-square-btn" type="button" disabled={pending} onClick={onCancel}>
+        <div className="settings-floating-actions manage-group-actions sidebar-rename-footer-actions">
+          <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn" type="button" disabled={pending} onClick={onCancel}>
             {cancelLabel}
+          </button>
+          <button className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
+            {confirmLabel}
           </button>
         </div>
       </section>
