@@ -92,6 +92,7 @@ function MusicMainSection({
   const [shaderListTargetLayer, setShaderListTargetLayer] = useState<'foreground' | 'background'>('foreground')
   const [visualizerCanvasVersion, setVisualizerCanvasVersion] = useState(0)
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
+  const [visualizerPlaybackResetNonce, setVisualizerPlaybackResetNonce] = useState(0)
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
   const musicVisualizerLayeredBackgroundShaderId = musicVisualizerShaderSettings.layeredBackgroundShaderId ?? 'galaxy'
@@ -199,6 +200,8 @@ function MusicMainSection({
     audioRef,
     canvasInstanceVersion: visualizerCanvasVersion,
     active: visualizerRuntimeActive && !hasNoLayerEnabled,
+    playbackPaused: !audioPlaying,
+    playbackResetNonce: visualizerPlaybackResetNonce,
     preferredRenderer: runtimeRenderer,
     renderLongEdgePx: runtimeRenderLongEdgePx,
     renderScaleCoeff: runtimeRenderScaleCoeff,
@@ -327,14 +330,41 @@ function MusicMainSection({
 
   const toggleAudioPlayback = useCallback(() => {
     if (!focusedAudioSrc) {
+      const nextPlaying = !audioPlaying
+      setAudioPlaying(nextPlaying)
+      if (nextPlaying) {
+        void resumeAudioAnalyser()
+      }
       return
     }
-    setAudioPlaying((value) => !value)
-  }, [focusedAudioSrc])
+
+    const audio = audioRef.current
+    if (!audio) {
+      const nextPlaying = !audioPlaying
+      setAudioPlaying(nextPlaying)
+      if (nextPlaying) {
+        void resumeAudioAnalyser()
+      }
+      return
+    }
+
+    if (!audio.paused) {
+      audio.pause()
+      setAudioPlaying(false)
+      return
+    }
+
+    setAudioPlaying(true)
+    void resumeAudioAnalyser()
+    void audio.play().catch(() => {
+      setAudioPlaying(false)
+    })
+  }, [audioPlaying, focusedAudioSrc, resumeAudioAnalyser])
 
   const stopAudioPlayback = useCallback(() => {
     setAudioPlaying(false)
     setAudioTime(0)
+    setVisualizerPlaybackResetNonce((value) => value + 1)
     emitMusicPlaybackState({ playing: false })
     const audio = audioRef.current
     if (!audio) {
@@ -1018,21 +1048,28 @@ function MusicMainSection({
         </div>
 
         <div className="music-controls-group is-center" data-slot="fg-main-content-music-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn" data-tooltip-label={t('tip.music.prevTrack')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
+          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" data-tooltip-label={t('tip.music.prevTrack')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
             <MusicControlIcon name="prev" />
           </button>
           <button
             aria-label={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
-            className="video-action-btn"
+            className="video-action-btn video-action-play"
             data-tooltip-label={playTooltip}
-            data-tooltip-label={playTooltip}
-            disabled={!focusedAudioSrc}
             type="button"
             onClick={toggleAudioPlayback}
           >
             <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
           </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn" data-tooltip-label={t('tip.music.nextTrack')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
+          <button
+            aria-label={t('a11y.media.stop')}
+            className="video-action-btn video-action-stop"
+            data-tooltip-label={t('tip.music.stopTrack')}
+            type="button"
+            onClick={stopAudioPlayback}
+          >
+            <MusicControlIcon name="stop" />
+          </button>
+          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" data-tooltip-label={t('tip.music.nextTrack')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
             <MusicControlIcon name="next" />
           </button>
         </div>
@@ -1059,7 +1096,6 @@ function MusicMainSection({
               aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn"
               data-help-overlay-placement="top"
-              data-tooltip-label={volumeTooltip}
               data-tooltip-label={volumeTooltip}
               type="button"
               onClick={() => setAudioMuted((value) => !value)}
@@ -1253,6 +1289,16 @@ function MusicMainSection({
         crossOrigin="anonymous"
         src={focusedAudioSrc ?? undefined}
         preload="metadata"
+        onPlay={() => {
+          if (focusedAudioSrc) {
+            setAudioPlaying(true)
+          }
+        }}
+        onPause={() => {
+          if (focusedAudioSrc) {
+            setAudioPlaying(false)
+          }
+        }}
         onTimeUpdate={() => {
           const currentTime = audioRef.current?.currentTime ?? 0
           setAudioTime(currentTime)

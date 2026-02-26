@@ -93,6 +93,13 @@ interface BuildFullscreenLayerPropsParams {
 }
 
 export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParams): FullscreenLayerProps {
+  const clampSeekTime = (time: number) => {
+    if (params.durationSec > 0) {
+      return clamp(time, 0, params.durationSec)
+    }
+    return Math.max(0, time)
+  }
+
   const resolveSidebarQueueOverride = () =>
     params.videoQueueSource === 'sidebar' ? params.rootScopedVideoIds : undefined
 
@@ -196,10 +203,10 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
       void params.saveVideoCover(focusedVideoId, params.videoTime, params.focusedVideoCoverColor)
     },
     onSeekVideo: (time) => {
-      params.setVideoTime(clamp(time, 0, params.durationSec))
+      params.setVideoTime(clampSeekTime(time))
     },
     onVideoTimeUpdate: (time) => {
-      params.setVideoTime(clamp(time, 0, params.durationSec))
+      params.setVideoTime(Math.max(0, time))
     },
     onVideoDurationDetected: (duration) => {
       const focusedVideoId = params.focusedVideoId

@@ -334,6 +334,19 @@ describe("MusicMainSection", () => {
     ).toBeGreaterThan(playCallCount);
   });
 
+  it("无音乐源时也可控制 shader 播放与停止", () => {
+    renderMusicMainSection({ focusedAudioSrc: null });
+
+    const playButton = screen.getByRole("button", { name: "播放" });
+    expect(playButton).not.toBeDisabled();
+
+    fireEvent.click(playButton);
+    expect(screen.getByRole("button", { name: "暂停" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "停止" }));
+    expect(screen.getByRole("button", { name: "播放" })).toBeInTheDocument();
+  });
+
   it("全屏按钮可切换音乐可视化全屏", () => {
     const onToggleFullscreen = vi.fn();
     renderMusicMainSection({ onToggleFullscreen });

@@ -105,6 +105,13 @@ interface BuildVideoMainSectionPropsParams {
 }
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
+  const clampSeekTime = (time: number) => {
+    if (params.durationSec > 0) {
+      return clamp(time, 0, params.durationSec)
+    }
+    return Math.max(0, time)
+  }
+
   return {
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
@@ -202,10 +209,10 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
       params.goPlaylist(1, undefined, { preserveRate: true })
     },
     onSeekVideo: (time: number) => {
-      params.setVideoTime(clamp(time, 0, params.durationSec))
+      params.setVideoTime(clampSeekTime(time))
     },
     onVideoTimeUpdate: (time: number) => {
-      params.setVideoTime(clamp(time, 0, params.durationSec))
+      params.setVideoTime(Math.max(0, time))
     },
     onVideoDurationDetected: (duration: number) => {
       const focusedVideoId = params.focusedVideoId

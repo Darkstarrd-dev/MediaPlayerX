@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 type MusicControlIconName =
   | 'play'
   | 'pause'
+  | 'stop'
   | 'prev'
   | 'next'
   | 'volume'
@@ -29,6 +30,7 @@ const ICON_NODES: Record<MusicControlIconName, ReactElement> = {
       <rect x="14" y="4" width="4" height="16" />
     </>
   ),
+  stop: <rect x="4" y="4" width="16" height="16" rx="1.5" ry="1.5" />,
   prev: (
     <>
       <polygon points="19 20 9 12 19 4 19 20" />

@@ -147,4 +147,17 @@ describe('buildFullscreenLayerProps', () => {
     expect(params.goPlaylist).toHaveBeenNthCalledWith(2, 1, undefined)
     expect(params.goPlaylist).toHaveBeenNthCalledWith(3, 1, undefined, { preserveRate: true })
   })
+
+  it('duration 未就绪时全屏 onVideoTimeUpdate 不回退到 0', () => {
+    const params = {
+      ...createParams(),
+      durationSec: 0,
+      setVideoTime: vi.fn(),
+    }
+    const props = buildFullscreenLayerProps(params)
+
+    props.onVideoTimeUpdate(42.5)
+
+    expect(params.setVideoTime).toHaveBeenCalledWith(42.5)
+  })
 })

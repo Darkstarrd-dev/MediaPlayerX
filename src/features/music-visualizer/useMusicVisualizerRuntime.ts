@@ -12,6 +12,7 @@ import type {
   MusicVisualizerShaderTextureDefinition,
   MusicVisualizerRenderer,
   MusicVisualizerRendererMode,
+  MusicVisualizerFrameInput,
   MusicVisualizerStats,
   MusicVisualizerToneMapMode,
 } from './types'
@@ -170,6 +171,8 @@ interface UseMusicVisualizerRuntimeParams {
   audioRef: RefObject<HTMLAudioElement | null>
   canvasInstanceVersion?: number
   active: boolean
+  playbackPaused?: boolean
+  playbackResetNonce?: number
   preferredRenderer: MusicVisualizerRendererMode
   renderLongEdgePx: number
   fpsCap: 30 | 60 | 120
@@ -396,6 +399,8 @@ export function useMusicVisualizerRuntime({
   audioRef,
   canvasInstanceVersion = 0,
   active,
+  playbackPaused = false,
+  playbackResetNonce = 0,
   preferredRenderer,
   renderLongEdgePx,
   fpsCap,
@@ -460,6 +465,8 @@ export function useMusicVisualizerRuntime({
     fpsCap,
     renderLongEdgePx,
     renderScaleCoeff,
+    playbackPaused,
+    playbackResetNonce,
     toneMapMode,
     toneMapExposure,
     toneMapStrength,
@@ -474,6 +481,8 @@ export function useMusicVisualizerRuntime({
       fpsCap,
       renderLongEdgePx,
       renderScaleCoeff,
+      playbackPaused,
+      playbackResetNonce,
       toneMapMode,
       toneMapExposure,
       toneMapStrength,
@@ -484,6 +493,8 @@ export function useMusicVisualizerRuntime({
     }
   }, [
     fpsCap,
+    playbackPaused,
+    playbackResetNonce,
     layeredForegroundOffsetX,
     layeredForegroundOffsetY,
     layeredForegroundScale,
@@ -503,12 +514,15 @@ export function useMusicVisualizerRuntime({
     if (!audioAnalyserRef.current) {
       return
     }
+
+    audioAnalyserRef.current.attach(audioRef.current)
+
     try {
       await audioAnalyserRef.current.resume()
     } catch {
       // ignore
     }
-  }, [])
+  }, [audioRef])
 
   useEffect(() => {
     return () => {
@@ -636,8 +650,11 @@ export function useMusicVisualizerRuntime({
     const audioAnalyser = audioAnalyserRef.current
     let disposed = false
     let animationFrameId = 0
-    let frame = 0
+    let shaderFrame = 0
+    let shaderTimeSec = 0
     let lastFrameAt = performance.now()
+    let lastShaderTickAt = lastFrameAt
+    let lastPlaybackResetNonce = runtimeSettingsRef.current.playbackResetNonce
     let statsStartAt = lastFrameAt
     let statsFrameCount = 0
     let latestFrameMs = 0
@@ -650,6 +667,9 @@ export function useMusicVisualizerRuntime({
     let smoothedToneMapExposure = initialToneMap.exposure
     let smoothedToneMapStrength = initialToneMap.strength
     let smoothedToneMapMode = initialToneMap.mode
+    let frozenFrameInput: MusicVisualizerFrameInput | null = null
+    const fallbackFrequencyData = new Uint8Array(512)
+    const fallbackWaveformData = new Uint8Array(512)
 
     const stepToward = (current: number, target: number, maxDelta: number): number => {
       if (!Number.isFinite(current) || !Number.isFinite(target)) {
@@ -686,9 +706,20 @@ export function useMusicVisualizerRuntime({
       renderCanvas.style.height = '100%'
       renderer.resize(renderSize.width, renderSize.height)
 
+      const playbackPaused = runtimeSettingsRef.current.playbackPaused
+      if (runtimeSettingsRef.current.playbackResetNonce !== lastPlaybackResetNonce) {
+        lastPlaybackResetNonce = runtimeSettingsRef.current.playbackResetNonce
+        shaderFrame = 0
+        shaderTimeSec = 0
+        lastShaderTickAt = now
+        frozenFrameInput = null
+      }
+
       if (audioAnalyser) {
         audioAnalyser.attach(audioRef.current)
-        audioAnalyser.sample()
+        if (!playbackPaused) {
+          audioAnalyser.sample()
+        }
         if (audioAnalyser.lastError !== lastAnalyserError) {
           lastAnalyserError = audioAnalyser.lastError
           if (lastAnalyserError) {
@@ -719,14 +750,47 @@ export function useMusicVisualizerRuntime({
         lastThemeBackgroundSyncAt = now
       }
 
-      try {
-        renderer.render({
+      let frameInput: MusicVisualizerFrameInput
+      if (playbackPaused) {
+        lastShaderTickAt = now
+        frameInput = frozenFrameInput
+          ? {
+              ...frozenFrameInput,
+              width: renderSize.width,
+              height: renderSize.height,
+            }
+          : {
+              width: renderSize.width,
+              height: renderSize.height,
+              timeSec: shaderTimeSec,
+              frame: shaderFrame,
+              frequencyData: fallbackFrequencyData,
+              waveformData: fallbackWaveformData,
+              audioLevel: 0,
+              audioBeat: 0,
+              toneMapMode: smoothedToneMapMode,
+              toneMapExposure: smoothedToneMapExposure,
+              toneMapStrength: smoothedToneMapStrength,
+              foregroundOffsetX: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetX)),
+              foregroundOffsetY: Math.max(-1, Math.min(1, runtimeSettingsRef.current.layeredForegroundOffsetY)),
+              foregroundScale: Math.max(0.25, Math.min(3, runtimeSettingsRef.current.layeredForegroundScale)),
+              compositeModeCode,
+              themeModeCode: runtimeSettingsRef.current.paletteMode === 'night' ? 1 : 0,
+              themeBackgroundR: themeBackgroundColor.r,
+              themeBackgroundG: themeBackgroundColor.g,
+              themeBackgroundB: themeBackgroundColor.b,
+            }
+      } else {
+        const timelineDeltaSec = Math.max(0, Math.min(0.2, (now - lastShaderTickAt) * 0.001))
+        shaderTimeSec += timelineDeltaSec
+        lastShaderTickAt = now
+        frameInput = {
           width: renderSize.width,
           height: renderSize.height,
-          timeSec: now * 0.001,
-          frame,
-          frequencyData: audioAnalyser?.frequencyData ?? new Uint8Array(512),
-          waveformData: audioAnalyser?.waveformData ?? new Uint8Array(512),
+          timeSec: shaderTimeSec,
+          frame: shaderFrame,
+          frequencyData: audioAnalyser?.frequencyData ?? fallbackFrequencyData,
+          waveformData: audioAnalyser?.waveformData ?? fallbackWaveformData,
           audioLevel: audioAnalyser?.audioLevel ?? 0,
           audioBeat: audioAnalyser?.audioBeat ?? 0,
           toneMapMode: smoothedToneMapMode,
@@ -740,7 +804,11 @@ export function useMusicVisualizerRuntime({
           themeBackgroundR: themeBackgroundColor.r,
           themeBackgroundG: themeBackgroundColor.g,
           themeBackgroundB: themeBackgroundColor.b,
-        })
+        }
+      }
+
+      try {
+        renderer.render(frameInput)
       } catch (error) {
         const message = toErrorDetailWithCode(error, t)
         if (message !== lastRenderError) {
@@ -756,7 +824,11 @@ export function useMusicVisualizerRuntime({
         setRuntimeError(rendererInitMessage)
       }
 
-      frame += 1
+      frozenFrameInput = frameInput
+      if (!playbackPaused) {
+        shaderFrame += 1
+      }
+
       statsFrameCount += 1
       latestFrameMs = now - lastFrameAt
       lastFrameAt = now

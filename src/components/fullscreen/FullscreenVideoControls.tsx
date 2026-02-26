@@ -143,6 +143,13 @@ export function FullscreenVideoControlsShell({
     setOpenPopover(key);
   };
 
+  const handleStopPlayback = () => {
+    onSeekVideo(0);
+    if (videoPlaying) {
+      onToggleVideoPlay();
+    }
+  };
+
   return (
     <div
       className={`video-controls-shell fullscreen-video-controls-shell fullscreen-controls-shell${compact ? " is-compact" : ""}${hideLeftGroup ? " is-hide-left-group" : ""}`}
@@ -416,6 +423,15 @@ export function FullscreenVideoControlsShell({
             onClick={onToggleVideoPlay}
           >
             <VideoControlIcon name={videoPlaying ? "pause" : "play"} />
+          </button>
+          <button
+            aria-label={t("a11y.media.stop")}
+            className="video-action-btn video-action-stop"
+            data-tooltip-label={t("a11y.media.stop")}
+            type="button"
+            onClick={handleStopPlayback}
+          >
+            <VideoControlIcon name="stop" />
           </button>
           <button
             aria-label={t("a11y.media.next")}

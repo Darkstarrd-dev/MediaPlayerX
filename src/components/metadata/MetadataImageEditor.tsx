@@ -284,6 +284,7 @@ export function MetadataImageEditor({
       ) : (
         <div className="metadata-editor-shell">
           <MetadataRatingGroup
+            title={t('ui.metadata.packageRatingLabel')}
             data-tooltip-label={t('tip.common.rating')}
             groupAriaLabel={t('a11y.metadata.packageRating')}
             clearAriaLabel={t('a11y.metadata.clearPackageRating')}

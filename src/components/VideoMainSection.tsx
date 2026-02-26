@@ -209,6 +209,7 @@ function VideoMainSection({
 }: VideoMainSectionProps) {
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const previousVideoTimePropRef = useRef(videoTime);
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false);
   const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] =
     useState(false);
@@ -218,7 +219,10 @@ function VideoMainSection({
   const [manualSubtitleText, setManualSubtitleText] = useState<string | null>(
     null,
   );
-  const clampedTime = Math.min(videoTime, Math.max(0, durationSec));
+  const clampedTime =
+    durationSec > 0
+      ? Math.min(Math.max(0, videoTime), durationSec)
+      : Math.max(0, videoTime);
   const {
     displayTime,
     progressPercent,
@@ -293,6 +297,23 @@ function VideoMainSection({
     setOpenPopover(null);
   };
 
+  const handleStopPlayback = () => {
+    onSeekVideo(0);
+    if (videoPlaying) {
+      onTogglePlay();
+    }
+  };
+
+  const handleTogglePlayback = () => {
+    if (videoPlaying) {
+      const currentTime = videoRef.current?.currentTime;
+      if (typeof currentTime === "number" && Number.isFinite(currentTime)) {
+        onVideoTimeUpdate(currentTime);
+      }
+    }
+    onTogglePlay();
+  };
+
   const handleVideoElementRef = useCallback(
     (element: HTMLVideoElement | null) => {
       videoRef.current = element;
@@ -337,10 +358,6 @@ function VideoMainSection({
       return;
     }
 
-    if (Math.abs(video.currentTime - clampedTime) > 0.35) {
-      video.currentTime = clampedTime;
-    }
-
     if (videoPlaying) {
       void video.play().catch(() => undefined);
     } else {
@@ -355,6 +372,27 @@ function VideoMainSection({
     videoSourceUrl,
     videoVolume,
   ]);
+
+  useEffect(() => {
+    const previousVideoTime = previousVideoTimePropRef.current;
+    previousVideoTimePropRef.current = videoTime;
+
+    const video = videoRef.current;
+    if (!video || !videoSourceUrl) {
+      return;
+    }
+
+    const propJump = Math.abs(videoTime - previousVideoTime) > 0.35;
+    if (!propJump) {
+      return;
+    }
+
+    if (Math.abs(video.currentTime - clampedTime) <= 0.2) {
+      return;
+    }
+
+    video.currentTime = clampedTime;
+  }, [clampedTime, videoSourceUrl, videoTime]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -912,9 +950,18 @@ function VideoMainSection({
                 videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
               }
               type="button"
-              onClick={onTogglePlay}
+              onClick={handleTogglePlayback}
             >
               <VideoControlIcon name={videoPlaying ? "pause" : "play"} />
+            </button>
+            <button
+              aria-label={t("a11y.media.stop")}
+              className="video-action-btn video-action-stop"
+              data-tooltip-label={t("a11y.media.stop")}
+              type="button"
+              onClick={handleStopPlayback}
+            >
+              <VideoControlIcon name="stop" />
             </button>
             <button
               aria-label={t("a11y.media.next")}

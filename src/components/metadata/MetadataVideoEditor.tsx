@@ -458,6 +458,7 @@ export function MetadataVideoEditor({
         {metadataTab === "info" && focusedVideo ? (
           <>
             <MetadataRatingGroup
+              title={t("a11y.metadata.videoRating")}
               data-tooltip-label={t("tip.common.rating")}
               groupAriaLabel={t("a11y.metadata.videoRating")}
               clearAriaLabel={t("a11y.metadata.clearVideoRating")}

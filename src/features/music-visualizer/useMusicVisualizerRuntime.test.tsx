@@ -49,6 +49,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     webglRenderCalls: [] as Array<{
       width: number
       height: number
+      timeSec: number
+      frame: number
       toneMapMode: string
       toneMapExposure: number
       toneMapStrength: number
@@ -139,6 +141,8 @@ vi.mock('./webglRenderer', () => {
     render(input: {
       width: number
       height: number
+      timeSec: number
+      frame: number
       toneMapMode: string
       toneMapExposure: number
       toneMapStrength: number
@@ -149,6 +153,8 @@ vi.mock('./webglRenderer', () => {
       shared.webglRenderCalls.push({
         width: input.width,
         height: input.height,
+        timeSec: input.timeSec,
+        frame: input.frame,
         toneMapMode: input.toneMapMode,
         toneMapExposure: input.toneMapExposure,
         toneMapStrength: input.toneMapStrength,
@@ -371,6 +377,84 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     expect(nextFrame?.foregroundOffsetX).toBeCloseTo(0.3, 5)
     expect(nextFrame?.foregroundOffsetY).toBeCloseTo(-0.2, 5)
     expect(nextFrame?.foregroundScale).toBeCloseTo(1.4, 5)
+  })
+
+  it('暂停时冻结 shader 帧，停止时复位到初始帧', () => {
+    const container = document.createElement('div')
+    Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true })
+    Object.defineProperty(container, 'clientHeight', { value: 600, configurable: true })
+    const canvas = document.createElement('canvas')
+    container.appendChild(canvas)
+    document.body.appendChild(container)
+
+    const audio = document.createElement('audio')
+    const canvasRef = { current: canvas }
+    const audioRef = { current: audio }
+
+    const { rerender } = renderHook((props: Parameters<typeof useMusicVisualizerRuntime>[0]) => useMusicVisualizerRuntime(props), {
+      initialProps: {
+        canvasRef,
+        audioRef,
+        active: true,
+        playbackPaused: false,
+        playbackResetNonce: 0,
+        preferredRenderer: 'gpu',
+        renderLongEdgePx: 800,
+        renderScaleCoeff: 1,
+        fpsCap: 60,
+        toneMapMode: 'aces',
+        toneMapExposure: 1,
+        toneMapStrength: 0.5,
+        selectedShaderId: 'test-shader',
+      },
+    })
+
+    flushFrame(20)
+    flushFrame(20)
+    const latestPlayingFrame = shared.webglRenderCalls.at(-1)
+    expect(latestPlayingFrame).toBeDefined()
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      playbackPaused: true,
+      playbackResetNonce: 0,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 800,
+      renderScaleCoeff: 1,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      selectedShaderId: 'test-shader',
+    })
+
+    flushFrame(20)
+    const pausedFrame = shared.webglRenderCalls.at(-1)
+    expect(pausedFrame?.timeSec).toBe(latestPlayingFrame?.timeSec)
+    expect(pausedFrame?.frame).toBe(latestPlayingFrame?.frame)
+
+    rerender({
+      canvasRef,
+      audioRef,
+      active: true,
+      playbackPaused: true,
+      playbackResetNonce: 1,
+      preferredRenderer: 'gpu',
+      renderLongEdgePx: 800,
+      renderScaleCoeff: 1,
+      fpsCap: 60,
+      toneMapMode: 'aces',
+      toneMapExposure: 1,
+      toneMapStrength: 0.5,
+      selectedShaderId: 'test-shader',
+    })
+
+    flushFrame(20)
+    const stoppedFrame = shared.webglRenderCalls.at(-1)
+    expect(stoppedFrame?.timeSec).toBe(0)
+    expect(stoppedFrame?.frame).toBe(0)
   })
 
   it('GPU 初始化失败时可使用独立 CPU 画布回退', () => {

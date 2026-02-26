@@ -274,6 +274,7 @@ function FullscreenLayer({
   const imagePaneRef = useRef<HTMLElement>(null);
   const videoPaneRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const previousVideoTimePropRef = useRef(videoTime);
   const hideVideoControlsTimerRef = useRef<number | null>(null);
   const imageConvertPreviewActive = mode === "image" && imageConvertPreviewMode;
   const effectiveFullscreenDisplay = imageConvertPreviewActive
@@ -490,7 +491,8 @@ function FullscreenLayer({
     imageConvertPreviewActive,
     fullscreenDisplay: effectiveFullscreenDisplay,
   });
-  const clampedVideoTime = clamp(videoTime, 0, Math.max(0, durationSec));
+  const clampedVideoTime =
+    durationSec > 0 ? clamp(videoTime, 0, durationSec) : Math.max(0, videoTime);
 
   const imageAspect =
     displayedImageAspect ??
@@ -964,10 +966,6 @@ function FullscreenLayer({
       return;
     }
 
-    if (Math.abs(video.currentTime - clampedVideoTime) > 0.35) {
-      video.currentTime = clampedVideoTime;
-    }
-
     if (videoPlaying) {
       void video.play().catch(() => undefined);
     } else {
@@ -985,6 +983,40 @@ function FullscreenLayer({
   ]);
 
   useEffect(() => {
+    const previousVideoTime = previousVideoTimePropRef.current;
+    previousVideoTimePropRef.current = videoTime;
+
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    const videoVisible =
+      effectiveFullscreenDisplay === "video-only" ||
+      effectiveFullscreenDisplay === "dual";
+    if (!fullscreenActive || !videoVisible || !focusedVideoSrc) {
+      return;
+    }
+
+    const propJump = Math.abs(videoTime - previousVideoTime) > 0.35;
+    if (!propJump) {
+      return;
+    }
+
+    if (Math.abs(video.currentTime - clampedVideoTime) <= 0.2) {
+      return;
+    }
+
+    video.currentTime = clampedVideoTime;
+  }, [
+    clampedVideoTime,
+    effectiveFullscreenDisplay,
+    focusedVideoSrc,
+    fullscreenActive,
+    videoTime,
+  ]);
+
+  useEffect(() => {
     const video = videoRef.current;
     if (!video) {
       return;
@@ -994,6 +1026,16 @@ function FullscreenLayer({
       video.textTracks[index].mode = mode;
     }
   }, [subtitleTrackUrl, subtitleVisible]);
+
+  const handleToggleVideoPlayback = useCallback(() => {
+    if (videoPlaying) {
+      const currentTime = videoRef.current?.currentTime;
+      if (typeof currentTime === "number" && Number.isFinite(currentTime)) {
+        onVideoTimeUpdate(currentTime);
+      }
+    }
+    onToggleVideoPlay();
+  }, [onToggleVideoPlay, onVideoTimeUpdate, videoPlaying]);
 
   if (!fullscreenActive || mode === "music") {
     return null;
@@ -1310,13 +1352,13 @@ function FullscreenLayer({
       playlistEntries={playlistEntries}
       selectedVideoId={selectedVideoId}
       onSeekVideo={onSeekVideo}
-      onToggleVideoPlay={onToggleVideoPlay}
+      onToggleVideoPlay={handleToggleVideoPlayback}
       onPrevVideo={onPrevVideo}
       onNextVideo={onNextVideo}
       onToggleVideoMute={onToggleVideoMute}
       onCycleVideoLoopMode={onCycleVideoLoopMode}
-      onToggleSubdata-tooltip-label={onToggleSubtitle}
-      onSelectSubdata-tooltip-label={onSelectSubtitle}
+      onToggleSubtitle={onToggleSubtitle}
+      onSelectSubtitle={onSelectSubtitle}
       onChangeVideoVolume={onChangeVideoVolume}
       onChangeVideoRate={onChangeVideoRate}
       onCycleVideoFitMode={onCycleVideoFitMode}

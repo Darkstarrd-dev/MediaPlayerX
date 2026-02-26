@@ -24,6 +24,6 @@ describe('buildA11yProps', () => {
       t: (key) => `translated:${key}`,
     })
 
-    expect(props.title).toBe('translated:tip.header.settings')
+    expect(props['data-tooltip-label']).toBe('translated:tip.header.settings')
   })
 })
