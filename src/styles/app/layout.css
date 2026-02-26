@@ -914,23 +914,6 @@
   overflow: hidden;
 }
 
-.fullscreen-layer,
-.fullscreen-content,
-.fullscreen-pane,
-.fullscreen-stage,
-.fullscreen-single-pane {
-  scrollbar-width: none;
-}
-
-.fullscreen-layer::-webkit-scrollbar,
-.fullscreen-content::-webkit-scrollbar,
-.fullscreen-pane::-webkit-scrollbar,
-.fullscreen-stage::-webkit-scrollbar,
-.fullscreen-single-pane::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
 .fullscreen-stage.is-draggable {
   cursor: grab;
 }

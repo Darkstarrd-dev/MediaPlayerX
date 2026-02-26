@@ -595,14 +595,8 @@
   background: var(--mpx-bg-workspace);
   max-height: calc(80vh - 280px);
   overflow: auto;
-  scrollbar-width: none;
   display: grid;
   gap: 4px;
-}
-
-.manage-confirm-targets-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .manage-confirm-targets-list li {
@@ -636,12 +630,6 @@
   gap: 12px;
   padding: 12px;
   overflow: auto;
-  scrollbar-width: none;
-}
-
-.metadata-fetch-shell::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .metadata-fetch-shell.settings-block {

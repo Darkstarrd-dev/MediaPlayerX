@@ -453,7 +453,7 @@ function SidebarRenameDialog({
               </div>
               <div
                 ref={previewListRef}
-                className="sidebar-rename-preview-list"
+                className="sidebar-rename-preview-list mpx-scroll-area"
                 onScroll={(event) => {
                   setPreviewListScrollTop(event.currentTarget.scrollTop)
                 }}

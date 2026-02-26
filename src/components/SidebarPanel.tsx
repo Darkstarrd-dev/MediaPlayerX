@@ -1415,7 +1415,7 @@ function SidebarPanel({
       <div className="sidebar-main-shell" data-slot="fg-sidebar-main">
         <div
           ref={sidebarTreeRef}
-          className="sidebar-tree"
+          className="sidebar-tree mpx-scroll-area"
           onScroll={(event) => {
             setSidebarScrollTop(event.currentTarget.scrollTop);
           }}

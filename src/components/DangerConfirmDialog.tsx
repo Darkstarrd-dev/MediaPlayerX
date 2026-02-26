@@ -54,7 +54,7 @@ function DangerConfirmDialog({
         {targetPaths.length > 0 ? (
           <section className="manage-confirm-targets" aria-label={targetListTitle}>
             <p className="manage-confirm-targets-title">{targetListTitle}</p>
-            <ul className="manage-confirm-targets-list">
+            <ul className="manage-confirm-targets-list mpx-scrollbar-hidden">
               {targetPaths.map((path) => (
                 <li key={path} data-tooltip-label={path}>{path}</li>
               ))}

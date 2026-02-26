@@ -107,7 +107,7 @@ export function FullscreenImagePane({
       onWheel={onWheel}
       onMouseDown={onMouseDown}
     >
-      <div className={`fullscreen-stage ${singlePane === 'image' ? 'is-draggable' : ''} ${draggingPane === 'image' ? 'is-dragging' : ''}`}>
+      <div className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === 'image' ? 'is-draggable' : ''} ${draggingPane === 'image' ? 'is-dragging' : ''}`}>
         <div
           className="fullscreen-media fullscreen-media-image"
           style={{
@@ -301,7 +301,7 @@ export function FullscreenVideoPane({
       onMouseLeave={onHideControls}
     >
       <div
-        className={`fullscreen-stage ${singlePane === 'video' || fullscreenDisplay === 'dual' ? 'is-draggable' : ''} ${draggingPane === 'video' ? 'is-dragging' : ''}`}
+        className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === 'video' || fullscreenDisplay === 'dual' ? 'is-draggable' : ''} ${draggingPane === 'video' ? 'is-dragging' : ''}`}
       >
         <div
           className="fullscreen-media fullscreen-media-video"

@@ -72,7 +72,7 @@ export function ThemeParameterPanelMain({
   resetCurrentStyleParameters,
 }: ThemeParameterPanelMainProps) {
   return (
-    <main className="settings-main theme-parameter-main">
+    <main className="settings-main mpx-scroll-area theme-parameter-main">
       <section className="settings-block theme-parameter-block">
         <section className="settings-group">
           <header className="settings-group-head">

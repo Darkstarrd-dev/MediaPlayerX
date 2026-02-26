@@ -45,12 +45,6 @@
   gap: 10px;
   min-height: 0;
   overflow: auto;
-  scrollbar-width: none;
-}
-
-.vector-panel-content::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .vector-top-row {

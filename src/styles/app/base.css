@@ -52,7 +52,16 @@ body {
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-active-bg, var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg)));
+  background: var(
+    --mpx-sidebar-tree-scrollbar-thumb-active-bg,
+    var(
+      --mpx-scrollbar-thumb-active-bg,
+      var(
+        --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
+        var(--mpx-scrollbar-thumb-hover-bg)
+      )
+    )
+  );
   background-clip: padding-box;
   box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-active-shadow, var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none));
 }
@@ -75,6 +84,49 @@ body {
   height: 0 !important;
   background: transparent !important;
   border: 0 !important;
+}
+
+.mpx-scroll-area {
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+  -ms-overflow-style: auto;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .mpx-scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
+      var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
+  }
+}
+
+.mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:decrement,
+.mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:increment {
+  display: block !important;
+  height: var(
+    --mpx-scrollbar-end-gap,
+    var(--mpx-sidebar-tree-scrollbar-end-gap, 0px)
+  ) !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:decrement,
+.mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.mpx-scrollbar-hidden {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none;
+}
+
+.mpx-scrollbar-hidden::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
 }
 
 button,

@@ -107,7 +107,7 @@ export function renderImageMainContent({
   if (nodeBrowseMode) {
     return (
       <div
-        className="image-grid node-browse-grid"
+        className="image-grid node-browse-grid mpx-scrollbar-hidden"
         data-slot="fg-main-content-image-node-grid"
         ref={gridRef}
         onWheel={handleThumbnailContainerWheel}
@@ -176,7 +176,7 @@ export function renderImageMainContent({
           <span>{t("ui.image.resolution")}</span>
         </div>
         <div
-          className="name-list-body"
+          className="name-list-body mpx-scroll-area"
           ref={setNameListBodyEl}
           onMouseDown={(event) => {
             startMarqueeSelection(event);
@@ -244,7 +244,7 @@ export function renderImageMainContent({
 
   return (
     <div
-      className={`image-grid ${manageMode ? "is-manage" : ""} ${isThumbnailInteractionLocked ? "is-pending-swap" : ""}`}
+      className={`image-grid mpx-scrollbar-hidden ${manageMode ? "is-manage" : ""} ${isThumbnailInteractionLocked ? "is-pending-swap" : ""}`}
       data-slot="fg-main-content-image-grid"
       ref={gridRef}
       aria-busy={isThumbnailInteractionLocked || undefined}

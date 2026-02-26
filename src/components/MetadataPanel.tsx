@@ -582,8 +582,8 @@ function MetadataPanel({
     Boolean(focusedImage) &&
     !searchModeActive;
   const metadataPanelClassName = lockMetadataScroll
-    ? "metadata-panel is-image-focus"
-    : "metadata-panel";
+    ? "metadata-panel mpx-scrollbar-hidden is-image-focus"
+    : "metadata-panel mpx-scrollbar-hidden";
   const handlePanelContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
     if (!autoOriginalImageMode || !showImagePreview) {
       return;
@@ -981,7 +981,7 @@ function MetadataPanel({
           ) : null}
         </div>
 
-        <div data-slot="fg-meta-main">
+        <div className="mpx-scrollbar-hidden" data-slot="fg-meta-main">
           {adReviewSection ? <div data-slot="fg-meta-main-ad-review">{adReviewSection}</div> : null}
 
           {metadataSearchSection ? <div data-slot="fg-meta-main-search">{metadataSearchSection}</div> : null}

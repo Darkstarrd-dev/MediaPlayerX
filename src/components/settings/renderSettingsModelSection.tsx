@@ -852,7 +852,7 @@ export function renderSettingsModelSection({
             <label data-tooltip-label={settingsTip("subtitleCleanupLlmPrompt")}>
               {t("ui.settings.subtitleCleanupLlmPrompt")}
               <textarea
-                className="settings-scroll-hidden-textarea"
+                className="settings-scroll-hidden-textarea mpx-scrollbar-hidden"
                 rows={8}
                 value={subtitleCleanupLlmPrompt}
                 onChange={(event) =>

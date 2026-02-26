@@ -294,7 +294,7 @@ export function MetadataImageEditor({
           />
 
           {editable || focusedImagePackage ? (
-            <div className="metadata-edit-grid">
+            <div className="metadata-edit-grid mpx-scroll-area">
               {!editable ? (
                 <>
                   <label>

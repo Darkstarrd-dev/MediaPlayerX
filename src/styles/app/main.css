@@ -205,7 +205,6 @@
   gap: 8px;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: none;
 }
 
 [data-slot="fg-main-content-image-node-grid"] {
@@ -218,11 +217,6 @@
     var(--mpx-slot-fg-main-content-image-grid-bg, var(--mpx-bg-workspace))
   );
   color: var(--mpx-slot-fg-main-content-image-node-grid-text, inherit);
-}
-
-.image-grid::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .thumb-card {

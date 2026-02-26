@@ -196,76 +196,6 @@
   background: var(--mpx-bg-elevated);
   padding: 14px 16px;
   overflow: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: auto;
-  scrollbar-color: auto;
-  -ms-overflow-style: auto;
-}
-
-@supports not selector(::-webkit-scrollbar) {
-  .settings-main,
-  .sidebar-rename-preview-list {
-    scrollbar-width: thin;
-    scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
-      var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
-  }
-}
-
-.settings-main::-webkit-scrollbar,
-.sidebar-rename-preview-list::-webkit-scrollbar {
-  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
-  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
-}
-
-.settings-main::-webkit-scrollbar-thumb,
-.sidebar-rename-preview-list::-webkit-scrollbar-thumb {
-  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
-  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
-    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
-  border-radius: var(--mpx-sidebar-tree-scrollbar-thumb-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg));
-  background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
-}
-
-.settings-main::-webkit-scrollbar-thumb:hover,
-.sidebar-rename-preview-list::-webkit-scrollbar-thumb:hover {
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg));
-  background-clip: padding-box;
-}
-
-.settings-main::-webkit-scrollbar-thumb:active,
-.sidebar-rename-preview-list::-webkit-scrollbar-thumb:active {
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-active-bg, var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg));
-  background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-active-shadow, var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none));
-}
-
-.settings-main::-webkit-scrollbar-track,
-.sidebar-rename-preview-list::-webkit-scrollbar-track {
-  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
-  border-radius: var(--mpx-sidebar-tree-scrollbar-track-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
-  background: var(--mpx-sidebar-tree-scrollbar-track-bg, transparent);
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
-}
-
-.settings-main::-webkit-scrollbar-button:single-button:vertical:decrement,
-.settings-main::-webkit-scrollbar-button:single-button:vertical:increment,
-.sidebar-rename-preview-list::-webkit-scrollbar-button:single-button:vertical:decrement,
-.sidebar-rename-preview-list::-webkit-scrollbar-button:single-button:vertical:increment {
-  display: block !important;
-  height: var(--mpx-sidebar-tree-scrollbar-end-gap, 0px) !important;
-  background: transparent !important;
-  border: 0 !important;
-}
-
-.settings-main::-webkit-scrollbar-button:single-button:horizontal:decrement,
-.settings-main::-webkit-scrollbar-button:single-button:horizontal:increment,
-.sidebar-rename-preview-list::-webkit-scrollbar-button:single-button:horizontal:decrement,
-.sidebar-rename-preview-list::-webkit-scrollbar-button:single-button:horizontal:increment {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
 }
 
 .settings-block {
@@ -456,13 +386,6 @@
   min-height: 148px;
   resize: vertical;
   overflow: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.settings-scroll-hidden-textarea::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .settings-theme-inline-row {

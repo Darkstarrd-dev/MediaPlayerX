@@ -467,7 +467,7 @@ export function MetadataVideoEditor({
               onChange={onVideoGradeChange}
             />
 
-            <div className="metadata-edit-grid metadata-video-grid">
+            <div className="metadata-edit-grid metadata-video-grid mpx-scroll-area">
               <label>
                 <span>{t("ui.metadata.fileName")}</span>
                 <input readOnly value={focusedVideo.fileName} />

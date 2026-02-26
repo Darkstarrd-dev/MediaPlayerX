@@ -216,7 +216,7 @@ function SubtitleCleanupPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-shell settings-block">
+        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden">
           <p className="settings-placeholder">{t('ui.media.subtitleCleanupTarget', { label: videoLabel || '-' })}</p>
           <label>
             {t('ui.settings.subtitleCleanupLlmEndpoint')}

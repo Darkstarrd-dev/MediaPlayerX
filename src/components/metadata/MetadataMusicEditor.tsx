@@ -152,7 +152,7 @@ export function MetadataMusicEditor({
   return (
     <div className="metadata-content metadata-video-content metadata-music-content">
       <div className="metadata-video-body metadata-music-body">
-        <div className="metadata-edit-grid metadata-video-grid">
+        <div className="metadata-edit-grid metadata-video-grid mpx-scroll-area">
           <label>
             <span>{t('ui.metadata.album')}</span>
             {editable ? (
@@ -320,7 +320,7 @@ export function MetadataMusicEditor({
         </div>
       ) : null}
 
-      <div className="metadata-music-playlist" aria-label={t('a11y.music.playlist')}>
+      <div className="metadata-music-playlist mpx-scroll-area" aria-label={t('a11y.music.playlist')}>
         {effectivePlaylistIds.length > 0 ? (
           effectivePlaylistIds.map((audioId) => {
             const audio = audioById.get(audioId)

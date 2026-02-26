@@ -1169,8 +1169,8 @@ function FullscreenLayer({
     "--mpx-fullscreen-controls-width": `${singleControlsWidth}px`,
   } as CSSProperties;
 
-  const imagePaneClassName = `fullscreen-pane fullscreen-image${effectiveFullscreenDisplay === "dual" && !fullscreenVideoFocus ? " is-pane-focus" : ""}`;
-  const videoPaneClassName = `fullscreen-pane fullscreen-video${effectiveFullscreenDisplay === "dual" && fullscreenVideoFocus ? " is-pane-focus" : ""}`;
+  const imagePaneClassName = `fullscreen-pane fullscreen-image mpx-scrollbar-hidden${effectiveFullscreenDisplay === "dual" && !fullscreenVideoFocus ? " is-pane-focus" : ""}`;
+  const videoPaneClassName = `fullscreen-pane fullscreen-video mpx-scrollbar-hidden${effectiveFullscreenDisplay === "dual" && fullscreenVideoFocus ? " is-pane-focus" : ""}`;
 
   const footerImageInfo = (() => {
     if (!focusedImage) {
@@ -1746,7 +1746,7 @@ function FullscreenLayer({
 
   return (
     <div
-      className="fullscreen-layer"
+      className="fullscreen-layer mpx-scrollbar-hidden"
       data-slot="bg-fs-mask"
       style={fullscreenControlsCssVars}
       data-overlay-close="fullscreen"
@@ -1771,7 +1771,7 @@ function FullscreenLayer({
     >
       <span hidden data-slot="fs-layer-root" />
       <div
-        className="fullscreen-content"
+        className="fullscreen-content mpx-scrollbar-hidden"
         data-slot="fs-layer-content"
         ref={contentRef}
       >
@@ -1801,14 +1801,14 @@ function FullscreenLayer({
           </>
         ) : effectiveFullscreenDisplay === "image-only" ? (
           <section
-            className="fullscreen-single-pane"
+            className="fullscreen-single-pane mpx-scrollbar-hidden"
             data-slot="fs-nondual-root"
           >
             {imagePane}
           </section>
         ) : (
           <section
-            className="fullscreen-single-pane"
+            className="fullscreen-single-pane mpx-scrollbar-hidden"
             data-slot="fs-nondual-root"
           >
             {videoPane}

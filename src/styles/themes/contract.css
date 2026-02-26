@@ -44,6 +44,7 @@
   --mpx-scrollbar-track-bg: #ece5d9;
   --mpx-scrollbar-thumb-bg: #b7ab95;
   --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
+  --mpx-scrollbar-thumb-active-bg: var(--mpx-scrollbar-thumb-hover-bg);
 
   --mpx-sidebar-tree-scrollbar-size: var(--mpx-scrollbar-size);
   --mpx-sidebar-tree-scrollbar-radius: var(--mpx-scrollbar-radius);
@@ -60,7 +61,10 @@
   --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
   --mpx-sidebar-tree-scrollbar-thumb-bg: var(--mpx-scrollbar-thumb-bg);
   --mpx-sidebar-tree-scrollbar-thumb-hover-bg: var(--mpx-scrollbar-thumb-hover-bg);
-  --mpx-sidebar-tree-scrollbar-thumb-active-bg: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg);
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: var(
+    --mpx-scrollbar-thumb-active-bg,
+    var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg)
+  );
   --mpx-sidebar-tree-scrollbar-thumb-shadow: none;
   --mpx-sidebar-tree-scrollbar-thumb-active-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow);
 

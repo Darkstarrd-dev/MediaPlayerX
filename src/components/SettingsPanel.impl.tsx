@@ -1324,7 +1324,7 @@ function SettingsPanel({
             ))}
           </aside>
 
-          <main className="settings-main">{mainSection}</main>
+          <main className="settings-main mpx-scroll-area">{mainSection}</main>
         </div>
 
         {bindingTarget ? (

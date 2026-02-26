@@ -497,7 +497,7 @@ function MetadataFetchPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-shell settings-block">
+        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden">
           <p className="settings-placeholder">
             {t('ui.metadata.fetchTargetPackage', { label: currentTarget?.label || '-' })}
             {` (${Math.min(activeTargetIndex + 1, Math.max(1, targets.length))}/${Math.max(1, targets.length)})`}

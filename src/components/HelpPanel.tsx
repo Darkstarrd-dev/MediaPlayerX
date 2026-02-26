@@ -310,7 +310,7 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
             </button>
           </aside>
 
-          <main className="settings-main">
+          <main className="settings-main mpx-scroll-area">
             {activeSection === 'image' ? (
               <section className="settings-block help-block">
                 <p className="settings-group-head">{t('ui.help.image.sectionTitle')}</p>
