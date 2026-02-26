@@ -26,6 +26,12 @@ import {
   type GeneratedRangeDto,
 } from "./liveSubtitlesCueOps";
 import {
+  beginNewEpochState,
+  resetRuntimeState as resetLiveRuntimeState,
+  startValidRangeIfQualifiedState,
+  updateValidRangeIfQualifiedState,
+} from "./liveSubtitlesRuntimeState";
+import {
   buildDisplayTextByMode,
   detectLatestCueLanguage,
   pickDisplayEventMessage,
@@ -124,7 +130,7 @@ export function useLiveSubtitles({
       startSubtitlePersistence,
       appendSubtitlePersistence,
       readSubtitlePersistenceWindow,
-    } = createLiveSubtitlesRepositoryApi({
+      } = createLiveSubtitlesRepositoryApi({
       startSubtitleSession: repositoryStartSubtitleSession,
       stopSubtitleSession: repositoryStopSubtitleSession,
       resetSubtitleSession: repositoryResetSubtitleSession,
@@ -135,50 +141,47 @@ export function useLiveSubtitles({
       readSubtitlePersistenceWindow: repositoryReadSubtitlePersistenceWindow,
     });
 
-    const abortInFlightPush = () => {
-      if (pushAbortRef.current) {
-        pushAbortRef.current.abort();
-        pushAbortCountRef.current += 1;
-      }
-      pushAbortRef.current = null;
+    const runtimeStateRefs = {
+      pushAbortRef,
+      pushAbortCountRef,
+      pushQueueRef,
+      sessionRunningRef,
+      sessionEpochRef,
+      chunkSeqRef,
+      lastAppliedSeqRef,
+      subtitlePersistenceEnabledRef,
+      persistenceQueueRef,
+      persistenceInFlightRef,
+      replayFromPersistenceRef,
+      replayForceUntilSecRef,
+      pendingFirstOverlapReplaceRef,
+      firstOverlapReplaceSeekAnchorSecRef,
+      persistenceWindowCuesRef,
+      persistenceWindowRawCuesRef,
+      persistenceGeneratedRangesRef,
+      persistenceReadInFlightRef,
+      persistenceLastReadAtMsRef,
+      persistenceLastReadTimelineSecRef,
+      replayLockRangeRef,
+      highRateReplayHintShownRef,
+      skipCaptureChunksRef,
+      currentValidRangeRef,
     };
 
-    const resetPersistenceRuntimeState = () => {
-      subtitlePersistenceEnabledRef.current = false;
-      persistenceQueueRef.current = [];
-      persistenceInFlightRef.current = false;
-      replayFromPersistenceRef.current = false;
-      replayForceUntilSecRef.current = null;
-      pendingFirstOverlapReplaceRef.current = false;
-      firstOverlapReplaceSeekAnchorSecRef.current = null;
-      persistenceWindowCuesRef.current = [];
-      persistenceWindowRawCuesRef.current = [];
-      persistenceGeneratedRangesRef.current = [];
-      persistenceReadInFlightRef.current = false;
-      persistenceLastReadAtMsRef.current = 0;
-      persistenceLastReadTimelineSecRef.current = -1;
-      replayLockRangeRef.current = null;
-      highRateReplayHintShownRef.current = false;
-      skipCaptureChunksRef.current = 0;
-      currentValidRangeRef.current = null;
+    const validRangeStateRefs = {
+      validPlaybackRateThresholdRef,
+      currentValidRangeRef,
     };
 
     const resetRuntimeState = (options?: {
       detachCapture?: boolean;
       resetEpoch?: boolean;
     }) => {
-      abortInFlightPush();
-      pushQueueRef.current = [];
-      sessionRunningRef.current = false;
-      resetPersistenceRuntimeState();
-      if (options?.resetEpoch) {
-        sessionEpochRef.current = 0;
-        chunkSeqRef.current = 0;
-        lastAppliedSeqRef.current = -1;
-      }
-      if (options?.detachCapture) {
-        capture.detach();
-      }
+      resetLiveRuntimeState(runtimeStateRefs, {
+        detachCapture: options?.detachCapture,
+        resetEpoch: options?.resetEpoch,
+        detachCaptureFn: () => capture.detach(),
+      });
     };
 
     if (!enabled || !videoElement || !modelId || modelDir.trim() === "") {
@@ -205,63 +208,19 @@ export function useLiveSubtitles({
     let cancelled = false;
 
     const beginNewEpoch = (reason: string) => {
-      if (pushAbortRef.current) {
-        pushAbortRef.current.abort();
-        pushAbortCountRef.current += 1;
-      }
-      sessionEpochRef.current += 1;
-      chunkSeqRef.current = 0;
-      lastAppliedSeqRef.current = -1;
-      const droppedQueueLen = pushQueueRef.current.length;
-      pushQueueRef.current = [];
-      pushAbortRef.current = null;
-      persistenceQueueRef.current = [];
-      replayFromPersistenceRef.current = false;
-      replayForceUntilSecRef.current = null;
-      pendingFirstOverlapReplaceRef.current = false;
-      firstOverlapReplaceSeekAnchorSecRef.current = null;
-      replayLockRangeRef.current = null;
-      highRateReplayHintShownRef.current = false;
-      skipCaptureChunksRef.current = 0;
-      currentValidRangeRef.current = null;
-      emitSubtitleDebug("renderer_epoch_begin", {
-        reason,
-        session_epoch: sessionEpochRef.current,
-        dropped_queue_len: droppedQueueLen,
-        push_abort_count: pushAbortCountRef.current,
-      });
+      beginNewEpochState(runtimeStateRefs, reason);
     };
 
     const startValidRangeIfQualified = () => {
-      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
-      if (playbackRate > validPlaybackRateThresholdRef.current) {
-        currentValidRangeRef.current = null;
-        return;
-      }
-      const timelineSec = Math.max(0, videoElement.currentTime || 0);
-      currentValidRangeRef.current = {
-        start_sec: timelineSec,
-        end_sec: timelineSec,
-      };
+      startValidRangeIfQualifiedState(videoElement, validRangeStateRefs);
     };
 
     const updateValidRangeIfQualified = (timelineSec: number) => {
-      const playbackRate = Math.max(0.1, videoElement.playbackRate || 1);
-      if (playbackRate > validPlaybackRateThresholdRef.current) {
-        currentValidRangeRef.current = null;
-        return;
-      }
-      if (!currentValidRangeRef.current) {
-        currentValidRangeRef.current = {
-          start_sec: timelineSec,
-          end_sec: timelineSec,
-        };
-        return;
-      }
-      currentValidRangeRef.current = {
-        start_sec: currentValidRangeRef.current.start_sec,
-        end_sec: Math.max(currentValidRangeRef.current.end_sec, timelineSec),
-      };
+      updateValidRangeIfQualifiedState(
+        videoElement,
+        validRangeStateRefs,
+        timelineSec,
+      );
     };
 
     const syncPersistenceWindow = async (

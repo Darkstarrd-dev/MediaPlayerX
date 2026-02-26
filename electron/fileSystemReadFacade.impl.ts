@@ -1031,306 +1031,56 @@ export class FileSystemMediaReadService {
     return this.libraryHandlers.readImageMetadata(request);
   }
 
-  async writePackageGrade(
-    request: WritePackageGradeRequestDto,
-  ): Promise<WritePackageGradeResponseDto> {
-    return this.libraryHandlers.writePackageGrade(request);
-  }
-
-  async setImageHidden(
-    request: SetImageHiddenRequestDto,
-  ): Promise<SetImageHiddenResponseDto> {
-    return this.managementHandlers.setImageHidden(request);
-  }
-
-  async deleteImageItems(
-    request: DeleteImageItemsRequestDto,
-  ): Promise<DeleteImageItemsResponseDto> {
-    return this.managementHandlers.deleteImageItems(request);
-  }
-
-  async deleteSidebarNodes(
-    request: DeleteSidebarNodesRequestDto,
-  ): Promise<DeleteSidebarNodesResponseDto> {
-    return this.managementHandlers.deleteSidebarNodes(request);
-  }
-
-  async moveSidebarNodes(
-    request: MoveSidebarNodesRequestDto,
-  ): Promise<MoveSidebarNodesResponseDto> {
-    return this.managementHandlers.moveSidebarNodes(request);
-  }
-
-  async renameSidebarNode(
-    request: RenameSidebarNodeRequestDto,
-  ): Promise<RenameSidebarNodeResponseDto> {
-    return this.managementHandlers.renameSidebarNode(request);
-  }
-
-  async renameSidebarNodes(
-    request: RenameSidebarNodesRequestDto,
-  ): Promise<RenameSidebarNodesResponseDto> {
-    return this.managementHandlers.renameSidebarNodes(request);
-  }
-
-  async renameItems(
-    request: RenameItemsRequestDto,
-  ): Promise<RenameItemsResponseDto> {
-    return this.managementHandlers.renameItems(request);
-  }
-
-  async startManageAdReview(
-    request: StartManageAdReviewRequestDto,
-  ): Promise<StartManageAdReviewResponseDto> {
-    return this.managementHandlers.startManageAdReview(request);
-  }
-
-  async readManageAdReviewTask(
-    request: ReadManageAdReviewTaskRequestDto,
-  ): Promise<ReadManageAdReviewTaskResponseDto> {
-    return this.managementHandlers.readManageAdReviewTask(request);
-  }
-
-  async pauseManageAdReviewTask(
-    request: PauseManageAdReviewTaskRequestDto,
-  ): Promise<PauseManageAdReviewTaskResponseDto> {
-    return this.managementHandlers.pauseManageAdReviewTask(request);
-  }
-
-  async testAdReviewVisionModel(
-    request: TestAdReviewVisionModelRequestDto,
-  ): Promise<TestAdReviewVisionModelResponseDto> {
-    return this.managementHandlers.testAdReviewVisionModel(request);
-  }
-
-  async confirmManageAdReviewDelete(
-    request: ConfirmManageAdReviewDeleteRequestDto,
-  ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
-    return this.managementHandlers.confirmManageAdReviewDelete(request);
-  }
-
-  async startManageCoverReview(
-    request: StartManageCoverReviewRequestDto,
-  ): Promise<StartManageCoverReviewResponseDto> {
-    return this.managementHandlers.startManageCoverReview(request);
-  }
-
-  async readManageCoverReviewTask(
-    request: ReadManageCoverReviewTaskRequestDto,
-  ): Promise<ReadManageCoverReviewTaskResponseDto> {
-    return this.managementHandlers.readManageCoverReviewTask(request);
-  }
-
-  async pauseManageCoverReviewTask(
-    request: PauseManageCoverReviewTaskRequestDto,
-  ): Promise<PauseManageCoverReviewTaskResponseDto> {
-    return this.managementHandlers.pauseManageCoverReviewTask(request);
-  }
-
-  async confirmManageCoverReviewHide(
-    request: ConfirmManageCoverReviewHideRequestDto,
-  ): Promise<ConfirmManageCoverReviewHideResponseDto> {
-    return this.managementHandlers.confirmManageCoverReviewHide(request);
-  }
-
-  async startManageSubtitleCleanup(
-    request: StartManageSubtitleCleanupRequestDto,
-  ): Promise<StartManageSubtitleCleanupResponseDto> {
-    return this.managementHandlers.startManageSubtitleCleanup(request);
-  }
-
-  async readManageSubtitleCleanupTask(
-    request: ReadManageSubtitleCleanupTaskRequestDto,
-  ): Promise<ReadManageSubtitleCleanupTaskResponseDto> {
-    return this.managementHandlers.readManageSubtitleCleanupTask(request);
-  }
-
-  async runManageSubtitleCleanup(
-    request: RunManageSubtitleCleanupRequestDto,
-  ): Promise<RunManageSubtitleCleanupResponseDto> {
-    return this.managementHandlers.runManageSubtitleCleanup(request);
-  }
-
-  async saveManageSubtitleCleanup(
-    request: SaveManageSubtitleCleanupRequestDto,
-  ): Promise<SaveManageSubtitleCleanupResponseDto> {
-    return this.managementHandlers.saveManageSubtitleCleanup(request);
-  }
-
-  async startImageConvertTask(
-    request: StartImageConvertTaskRequestDto,
-  ): Promise<StartImageConvertTaskResponseDto> {
-    return this.managementHandlers.startImageConvertTask(request);
-  }
-
-  async readImageConvertTask(
-    request: ReadImageConvertTaskRequestDto,
-  ): Promise<ReadImageConvertTaskResponseDto> {
-    return this.managementHandlers.readImageConvertTask(request);
-  }
-
-  async cancelImageConvertTask(
-    request: CancelImageConvertTaskRequestDto,
-  ): Promise<CancelImageConvertTaskResponseDto> {
-    return this.managementHandlers.cancelImageConvertTask(request);
-  }
-
-  async writePackageMetadata(
-    request: WritePackageMetadataRequestDto,
-  ): Promise<WritePackageMetadataResponseDto> {
-    return this.libraryHandlers.writePackageMetadata(request);
-  }
-
-  async writePackageExternalMetadata(
-    request: WritePackageExternalMetadataRequestDto,
-  ): Promise<WritePackageExternalMetadataResponseDto> {
-    return this.libraryHandlers.writePackageExternalMetadata(request);
-  }
-
-  async writeVideoMetadata(
-    request: WriteVideoMetadataRequestDto,
-  ): Promise<WriteVideoMetadataResponseDto> {
-    return this.libraryHandlers.writeVideoMetadata(request);
-  }
-
-  async writeAudioMetadata(
-    request: WriteAudioMetadataRequestDto,
-  ): Promise<WriteAudioMetadataResponseDto> {
-    return this.libraryHandlers.writeAudioMetadata(request);
-  }
-
-  async saveVideoCover(
-    request: SaveVideoCoverRequestDto,
-  ): Promise<SaveVideoCoverResponseDto> {
-    return this.libraryHandlers.saveVideoCover(request);
-  }
-
-  async readPlaylist(): Promise<ReadPlaylistResponseDto> {
-    return this.libraryHandlers.readPlaylist();
-  }
-
-  async writePlaylist(
-    request: WritePlaylistRequestDto,
-  ): Promise<WritePlaylistResponseDto> {
-    return this.libraryHandlers.writePlaylist(request);
-  }
-
-  async listVideoSubtitles(
-    request: ListVideoSubtitlesRequestDto,
-  ): Promise<ListVideoSubtitlesResponseDto> {
-    return this.libraryHandlers.listVideoSubtitles(request);
-  }
-
-  async prepareSubtitleTrack(
-    request: PrepareSubtitleTrackRequestDto,
-  ): Promise<PrepareSubtitleTrackResponseDto> {
-    return this.libraryHandlers.prepareSubtitleTrack(request);
-  }
-
-  async enqueueImportTask(
-    request: EnqueueImportTaskRequestDto,
-  ): Promise<EnqueueImportTaskResponseDto> {
-    return this.systemHandlers.enqueueImportTask(request);
-  }
-
-  async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> {
-    return this.systemHandlers.readImportTasks();
-  }
-
-  async retryImportTask(
-    request: RetryImportTaskRequestDto,
-  ): Promise<RetryImportTaskResponseDto> {
-    return this.systemHandlers.retryImportTask(request);
-  }
-
-  async resolveMediaResource(
-    request: ResolveMediaResourceRequestDto,
-  ): Promise<ResolveMediaResourceResponseDto> {
-    return this.systemHandlers.resolveMediaResource(request);
-  }
-
-  async readMediaResourceByToken(
-    token: string,
-    rangeHeader: string | null,
-  ): Promise<MediaProtocolResponsePayload> {
-    return this.systemHandlers.readMediaResourceByToken(token, rangeHeader);
-  }
-
-  async readMediaResourceByTokenStream(
-    token: string,
-    rangeHeader: string | null,
-    signal?: AbortSignal | null,
-  ): Promise<MediaProtocolStreamResponsePayload> {
-    return this.systemHandlers.readMediaResourceByTokenStream(
-      token,
-      rangeHeader,
-      signal,
-    );
-  }
-
-  async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> {
-    return this.systemHandlers.readRuntimeCapabilities();
-  }
-
-  async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> {
-    return this.systemHandlers.readSubtitleEngineStatus();
-  }
-
-  async listSubtitleRemoteModels(): Promise<ListSubtitleRemoteModelsResponseDto> {
-    return this.systemHandlers.listSubtitleRemoteModels();
-  }
-
-  async listSubtitleLocalModels(
-    request: ListSubtitleLocalModelsRequestDto,
-  ): Promise<ListSubtitleLocalModelsResponseDto> {
-    return this.systemHandlers.listSubtitleLocalModels(request);
-  }
-
-  async startSubtitleModelDownload(
-    request: StartSubtitleModelDownloadRequestDto,
-  ): Promise<StartSubtitleModelDownloadResponseDto> {
-    return this.systemHandlers.startSubtitleModelDownload(request);
-  }
-
-  async cancelSubtitleModelDownload(
-    request: CancelSubtitleModelDownloadRequestDto,
-  ): Promise<CancelSubtitleModelDownloadResponseDto> {
-    return this.systemHandlers.cancelSubtitleModelDownload(request);
-  }
-
-  async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> {
-    return this.systemHandlers.readSubtitleModelDownloads();
-  }
-
-  async clearSubtitleLocalModel(
-    request: ClearSubtitleLocalModelRequestDto,
-  ): Promise<ClearSubtitleLocalModelResponseDto> {
-    return this.systemHandlers.clearSubtitleLocalModel(request);
-  }
-
-  async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> {
-    return this.systemHandlers.readArchiveLoadStatus();
-  }
-
-  async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
-    return this.systemHandlers.readMediaAccessAudit();
-  }
-
-  async readAppState(
-    request: ReadAppStateRequestDto,
-  ): Promise<ReadAppStateResponseDto> {
-    return this.systemHandlers.readAppState(request);
-  }
-
-  async writeAppState(
-    request: WriteAppStateRequestDto,
-  ): Promise<WriteAppStateResponseDto> {
-    return this.systemHandlers.writeAppState(request);
-  }
-
-  async searchExternalMetadata(
-    request: SearchExternalMetadataRequestDto,
-  ): Promise<SearchExternalMetadataResponseDto> {
-    return this.systemHandlers.searchExternalMetadata(request);
-  }
+  async writePackageGrade(request: WritePackageGradeRequestDto): Promise<WritePackageGradeResponseDto> { return this.libraryHandlers.writePackageGrade(request); }
+  async setImageHidden(request: SetImageHiddenRequestDto): Promise<SetImageHiddenResponseDto> { return this.managementHandlers.setImageHidden(request); }
+  async deleteImageItems(request: DeleteImageItemsRequestDto): Promise<DeleteImageItemsResponseDto> { return this.managementHandlers.deleteImageItems(request); }
+  async deleteSidebarNodes(request: DeleteSidebarNodesRequestDto): Promise<DeleteSidebarNodesResponseDto> { return this.managementHandlers.deleteSidebarNodes(request); }
+  async moveSidebarNodes(request: MoveSidebarNodesRequestDto): Promise<MoveSidebarNodesResponseDto> { return this.managementHandlers.moveSidebarNodes(request); }
+  async renameSidebarNode(request: RenameSidebarNodeRequestDto): Promise<RenameSidebarNodeResponseDto> { return this.managementHandlers.renameSidebarNode(request); }
+  async renameSidebarNodes(request: RenameSidebarNodesRequestDto): Promise<RenameSidebarNodesResponseDto> { return this.managementHandlers.renameSidebarNodes(request); }
+  async renameItems(request: RenameItemsRequestDto): Promise<RenameItemsResponseDto> { return this.managementHandlers.renameItems(request); }
+  async startManageAdReview(request: StartManageAdReviewRequestDto): Promise<StartManageAdReviewResponseDto> { return this.managementHandlers.startManageAdReview(request); }
+  async readManageAdReviewTask(request: ReadManageAdReviewTaskRequestDto): Promise<ReadManageAdReviewTaskResponseDto> { return this.managementHandlers.readManageAdReviewTask(request); }
+  async pauseManageAdReviewTask(request: PauseManageAdReviewTaskRequestDto): Promise<PauseManageAdReviewTaskResponseDto> { return this.managementHandlers.pauseManageAdReviewTask(request); }
+  async testAdReviewVisionModel(request: TestAdReviewVisionModelRequestDto): Promise<TestAdReviewVisionModelResponseDto> { return this.managementHandlers.testAdReviewVisionModel(request); }
+  async confirmManageAdReviewDelete(request: ConfirmManageAdReviewDeleteRequestDto): Promise<ConfirmManageAdReviewDeleteResponseDto> { return this.managementHandlers.confirmManageAdReviewDelete(request); }
+  async startManageCoverReview(request: StartManageCoverReviewRequestDto): Promise<StartManageCoverReviewResponseDto> { return this.managementHandlers.startManageCoverReview(request); }
+  async readManageCoverReviewTask(request: ReadManageCoverReviewTaskRequestDto): Promise<ReadManageCoverReviewTaskResponseDto> { return this.managementHandlers.readManageCoverReviewTask(request); }
+  async pauseManageCoverReviewTask(request: PauseManageCoverReviewTaskRequestDto): Promise<PauseManageCoverReviewTaskResponseDto> { return this.managementHandlers.pauseManageCoverReviewTask(request); }
+  async confirmManageCoverReviewHide(request: ConfirmManageCoverReviewHideRequestDto): Promise<ConfirmManageCoverReviewHideResponseDto> { return this.managementHandlers.confirmManageCoverReviewHide(request); }
+  async startManageSubtitleCleanup(request: StartManageSubtitleCleanupRequestDto): Promise<StartManageSubtitleCleanupResponseDto> { return this.managementHandlers.startManageSubtitleCleanup(request); }
+  async readManageSubtitleCleanupTask(request: ReadManageSubtitleCleanupTaskRequestDto): Promise<ReadManageSubtitleCleanupTaskResponseDto> { return this.managementHandlers.readManageSubtitleCleanupTask(request); }
+  async runManageSubtitleCleanup(request: RunManageSubtitleCleanupRequestDto): Promise<RunManageSubtitleCleanupResponseDto> { return this.managementHandlers.runManageSubtitleCleanup(request); }
+  async saveManageSubtitleCleanup(request: SaveManageSubtitleCleanupRequestDto): Promise<SaveManageSubtitleCleanupResponseDto> { return this.managementHandlers.saveManageSubtitleCleanup(request); }
+  async startImageConvertTask(request: StartImageConvertTaskRequestDto): Promise<StartImageConvertTaskResponseDto> { return this.managementHandlers.startImageConvertTask(request); }
+  async readImageConvertTask(request: ReadImageConvertTaskRequestDto): Promise<ReadImageConvertTaskResponseDto> { return this.managementHandlers.readImageConvertTask(request); }
+  async cancelImageConvertTask(request: CancelImageConvertTaskRequestDto): Promise<CancelImageConvertTaskResponseDto> { return this.managementHandlers.cancelImageConvertTask(request); }
+  async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> { return this.libraryHandlers.writePackageMetadata(request); }
+  async writePackageExternalMetadata(request: WritePackageExternalMetadataRequestDto): Promise<WritePackageExternalMetadataResponseDto> { return this.libraryHandlers.writePackageExternalMetadata(request); }
+  async writeVideoMetadata(request: WriteVideoMetadataRequestDto): Promise<WriteVideoMetadataResponseDto> { return this.libraryHandlers.writeVideoMetadata(request); }
+  async writeAudioMetadata(request: WriteAudioMetadataRequestDto): Promise<WriteAudioMetadataResponseDto> { return this.libraryHandlers.writeAudioMetadata(request); }
+  async saveVideoCover(request: SaveVideoCoverRequestDto): Promise<SaveVideoCoverResponseDto> { return this.libraryHandlers.saveVideoCover(request); }
+  async readPlaylist(): Promise<ReadPlaylistResponseDto> { return this.libraryHandlers.readPlaylist(); }
+  async writePlaylist(request: WritePlaylistRequestDto): Promise<WritePlaylistResponseDto> { return this.libraryHandlers.writePlaylist(request); }
+  async listVideoSubtitles(request: ListVideoSubtitlesRequestDto): Promise<ListVideoSubtitlesResponseDto> { return this.libraryHandlers.listVideoSubtitles(request); }
+  async prepareSubtitleTrack(request: PrepareSubtitleTrackRequestDto): Promise<PrepareSubtitleTrackResponseDto> { return this.libraryHandlers.prepareSubtitleTrack(request); }
+  async enqueueImportTask(request: EnqueueImportTaskRequestDto): Promise<EnqueueImportTaskResponseDto> { return this.systemHandlers.enqueueImportTask(request); }
+  async readImportTasks(): Promise<{ tasks: ImportTaskDto[] }> { return this.systemHandlers.readImportTasks(); }
+  async retryImportTask(request: RetryImportTaskRequestDto): Promise<RetryImportTaskResponseDto> { return this.systemHandlers.retryImportTask(request); }
+  async resolveMediaResource(request: ResolveMediaResourceRequestDto): Promise<ResolveMediaResourceResponseDto> { return this.systemHandlers.resolveMediaResource(request); }
+  async readMediaResourceByToken(token: string, rangeHeader: string | null): Promise<MediaProtocolResponsePayload> { return this.systemHandlers.readMediaResourceByToken(token, rangeHeader); }
+  async readMediaResourceByTokenStream(token: string, rangeHeader: string | null, signal?: AbortSignal | null): Promise<MediaProtocolStreamResponsePayload> { return this.systemHandlers.readMediaResourceByTokenStream(token, rangeHeader, signal); }
+  async readRuntimeCapabilities(): Promise<ReadRuntimeCapabilitiesResponseDto> { return this.systemHandlers.readRuntimeCapabilities(); }
+  async readSubtitleEngineStatus(): Promise<ReadSubtitleEngineStatusResponseDto> { return this.systemHandlers.readSubtitleEngineStatus(); }
+  async listSubtitleRemoteModels(): Promise<ListSubtitleRemoteModelsResponseDto> { return this.systemHandlers.listSubtitleRemoteModels(); }
+  async listSubtitleLocalModels(request: ListSubtitleLocalModelsRequestDto): Promise<ListSubtitleLocalModelsResponseDto> { return this.systemHandlers.listSubtitleLocalModels(request); }
+  async startSubtitleModelDownload(request: StartSubtitleModelDownloadRequestDto): Promise<StartSubtitleModelDownloadResponseDto> { return this.systemHandlers.startSubtitleModelDownload(request); }
+  async cancelSubtitleModelDownload(request: CancelSubtitleModelDownloadRequestDto): Promise<CancelSubtitleModelDownloadResponseDto> { return this.systemHandlers.cancelSubtitleModelDownload(request); }
+  async readSubtitleModelDownloads(): Promise<ReadSubtitleModelDownloadsResponseDto> { return this.systemHandlers.readSubtitleModelDownloads(); }
+  async clearSubtitleLocalModel(request: ClearSubtitleLocalModelRequestDto): Promise<ClearSubtitleLocalModelResponseDto> { return this.systemHandlers.clearSubtitleLocalModel(request); }
+  async readArchiveLoadStatus(): Promise<ReadArchiveLoadStatusResponseDto> { return this.systemHandlers.readArchiveLoadStatus(); }
+  async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> { return this.systemHandlers.readMediaAccessAudit(); }
+  async readAppState(request: ReadAppStateRequestDto): Promise<ReadAppStateResponseDto> { return this.systemHandlers.readAppState(request); }
+  async writeAppState(request: WriteAppStateRequestDto): Promise<WriteAppStateResponseDto> { return this.systemHandlers.writeAppState(request); }
+  async searchExternalMetadata(request: SearchExternalMetadataRequestDto): Promise<SearchExternalMetadataResponseDto> { return this.systemHandlers.searchExternalMetadata(request); }
 }

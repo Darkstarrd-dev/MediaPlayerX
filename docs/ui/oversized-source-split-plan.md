@@ -115,7 +115,7 @@ TODO Check：
 - [x] `MusicMainSection` 视图/播放控制/可视化运行时拆分。
 - [x] `ManagementRenameService` 重命名计划与执行路径解耦。
 - [x] 执行测试：`npm run test` 通过。
-- [ ] 更新本 Phase 执行记录后提交。
+- [x] 更新本 Phase 执行记录后提交。
 
 当前进度记录：
 
@@ -155,13 +155,49 @@ TODO Check：
 
 TODO Check：
 
-- [ ] `subtitleSession` 按 transport/session/persistence 分层。
-- [ ] `libraryReadWriteServiceImpl` 按 read/write/subtitle-cleanup 拆分。
-- [ ] `fileSystemReadFacade` 精简装配器，保持 handlers 边界稳定。
-- [ ] `mediaLibrarySnapshotStore` 抽离 SQL 查询和 mapper。
-- [ ] `useLiveSubtitles` 拆分 queue/session/persistence hook。
-- [ ] 执行测试：`npm run test` 通过。
-- [ ] 更新本 Phase 执行记录后提交。
+- [x] `subtitleSession` 按 transport/session/persistence 分层。
+- [x] `libraryReadWriteServiceImpl` 按 read/write/subtitle-cleanup 拆分。
+- [x] `fileSystemReadFacade` 精简装配器，保持 handlers 边界稳定。
+- [x] `mediaLibrarySnapshotStore` 抽离 SQL 查询和 mapper。
+- [x] `useLiveSubtitles` 拆分 queue/session/persistence hook。
+- [x] 执行测试：`npm run test` 通过。
+- [x] 更新本 Phase 执行记录后提交。
+
+当前进度记录：
+
+- 2026-02-26：已启动 `subtitleSession.ts` 首轮拆分（transport 侧）。
+  - 新增：`electron/subtitles/subtitleWorkerClient.ts`
+  - 调整：`electron/subtitles/subtitleSession.ts`
+  - 拆分点：Worker transport + worker client 从 session 管理器中抽离为独立模块。
+  - 阶段结果：`subtitleSession.ts` 行数降至 `1194`（从 `1410`）。
+
+- 2026-02-26：已完成 `libraryReadWriteServiceImpl.ts` 首轮拆分（subtitle-cleanup 子域）。
+  - 新增：`electron/services/file-system-read/librarySubtitleCleanupTaskService.ts`
+  - 调整：`electron/services/file-system-read/libraryReadWriteServiceImpl.ts`
+  - 拆分点：字幕清洗任务状态机与执行链路抽离为独立 service。
+  - 阶段结果：`libraryReadWriteServiceImpl.ts` 行数降至 `1029`（从 `1247`）。
+
+- 2026-02-26：已完成 `fileSystemReadFacade.impl.ts` 首轮精简。
+  - 调整：`electron/fileSystemReadFacade.impl.ts`
+  - 拆分点：保持 handlers 边界稳定，装配器暴露层改为紧凑委派，降低门面实现体积。
+  - 阶段结果：`fileSystemReadFacade.impl.ts` 行数降至 `1086`（从 `1336`）。
+
+- 2026-02-26：已完成 `mediaLibrarySnapshotStore.ts` SQL/mapper 拆分。
+  - 新增：`electron/mediaLibrarySnapshotReadHelpers.ts`
+  - 调整：`electron/mediaLibrarySnapshotStore.ts`
+  - 拆分点：source/video/audio 查询与 row->dto mapper 抽离到 read helpers。
+  - 阶段结果：`mediaLibrarySnapshotStore.ts` 行数降至 `796`（从 `1326`）。
+
+- 2026-02-26：已完成 `useLiveSubtitles.ts` queue/session/persistence 运行时拆分。
+  - 新增：`src/features/subtitles/liveSubtitlesRuntimeState.ts`
+  - 调整：`src/features/subtitles/useLiveSubtitles.ts`
+  - 拆分点：epoch/runtime reset 与 valid range 状态迁移为独立 runtime-state helper。
+  - 阶段结果：`useLiveSubtitles.ts` 行数降至 `1183`（从 `1224`）。
+
+- 2026-02-26：Phase 3 验证通过。
+  - 验证：`npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` 通过（`1 passed`，`2 passed`）。
+  - 验证：`npm run build` 通过。
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`，`651 passed | 1 skipped`）。
 
 ### Phase 4（P1：样式拆分）
 
@@ -204,9 +240,9 @@ TODO Check：
 
 | Phase | 状态 | 拆分范围 | 测试命令 | 测试结果 | 提交哈希 | 日期 |
 |---|---|---|---|---|---|---|
-| Phase 1 | 已完成 | Settings / FullscreenLayer / ImageMainSection 首轮拆分 | `npm run test` | 通过（108 passed / 1 skipped） | - | 2026-02-26 |
-| Phase 2 | 已完成（待提交） | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
-| Phase 3 | 未开始 | - | - | - | - | - |
+| Phase 1 | 已完成 | Settings / FullscreenLayer / ImageMainSection 首轮拆分 | `npm run test` | 通过（108 passed / 1 skipped） | `65a7beb` | 2026-02-26 |
+| Phase 2 | 已完成 | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | `327316e` | 2026-02-26 |
+| Phase 3 | 已完成 | subtitleSession / libraryReadWriteServiceImpl / fileSystemReadFacade / mediaLibrarySnapshotStore / useLiveSubtitles 首轮拆分 | `npx vitest run electron/subtitles/subtitleSession.persistence.test.ts` + `npm run build` + `npm run test` | 通过（1 file passed；2 tests passed；108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
 | Phase 4 | 未开始 | - | - | - | - | - |
 | Phase 5 | 未开始 | - | - | - | - | - |
 
