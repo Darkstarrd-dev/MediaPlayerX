@@ -96,6 +96,21 @@
   gap: 10px 8px;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-sidebar-shortcut-rename-panel"] .sidebar-rename-dialog {
+  border-color: #b8ac9b;
+  background: var(--mpx-popover-metal-bg);
+  color: #4c4033;
+  box-shadow:
+    0 0 0 1px rgba(247, 242, 232, 0.96),
+    0 0 0 2px rgba(190, 176, 154, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.96),
+    0 2px 0 rgba(172, 155, 129, 0.68),
+    0 12px 30px rgba(120, 110, 100, 0.3),
+    0 4px 10px rgba(120, 110, 100, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(165, 146, 119, 0.45);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls-shader-pop"].music-ctrl-panel.is-shader[hidden] {
   display: none;
 }

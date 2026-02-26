@@ -63,6 +63,7 @@ interface SidebarRenameDialogInput {
   onMetadataTemplateChange: (value: string) => void
   onRefreshPreview: () => void
   onUseSourceNameAsReplaceFrom: (value: string) => void
+  onUseSourceNameAsNumberBase: (value: string) => void
   onCancel: () => void
   onConfirm: () => Promise<void>
 }
@@ -190,9 +191,13 @@ export function useAppShellProps({
     replaceFromPlaceholder: t('ui.sidebar.renameDialogReplaceFromPlaceholder'),
     replaceToPlaceholder: t('ui.sidebar.renameDialogReplaceToPlaceholder'),
     numberBasePlaceholder: t('ui.sidebar.renameDialogNumberBasePlaceholder'),
+    numberBaseLabel: t('ui.sidebar.renameDialogNumberBaseLabel'),
     numberStartPlaceholder: t('ui.sidebar.renameDialogNumberStartPlaceholder'),
+    numberStartLabel: t('ui.sidebar.renameDialogNumberStartLabel'),
     numberStepPlaceholder: t('ui.sidebar.renameDialogNumberStepPlaceholder'),
+    numberStepLabel: t('ui.sidebar.renameDialogNumberStepLabel'),
     numberPadWidthPlaceholder: t('ui.sidebar.renameDialogNumberPadWidthPlaceholder'),
+    numberPadWidthLabel: t('ui.sidebar.renameDialogNumberPadWidthLabel'),
     removeStartPlaceholder: t('ui.sidebar.renameDialogRemoveStartPlaceholder'),
     removeEndPlaceholder: t('ui.sidebar.renameDialogRemoveEndPlaceholder'),
     removeHeadPlaceholder: t('ui.sidebar.renameDialogRemoveHeadPlaceholder'),
@@ -251,6 +256,7 @@ export function useAppShellProps({
     onRemoveTailChange: sidebarRenameDialogParams.onRemoveTailChange,
     onMetadataTemplateChange: sidebarRenameDialogParams.onMetadataTemplateChange,
     onUseSourceNameAsReplaceFrom: sidebarRenameDialogParams.onUseSourceNameAsReplaceFrom,
+    onUseSourceNameAsNumberBase: sidebarRenameDialogParams.onUseSourceNameAsNumberBase,
     onCancel: sidebarRenameDialogParams.onCancel,
     onConfirm: () => {
       void sidebarRenameDialogParams.onConfirm()

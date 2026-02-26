@@ -839,19 +839,26 @@ export function useWriteDataAccess({
         throw new Error("manage_rename_items_unsupported");
       }
 
-      setManagePending(true);
-      setManageError(null);
+      const isPreviewOnly = request.preview_only === true;
+      if (!isPreviewOnly) {
+        setManagePending(true);
+        setManageError(null);
+      }
 
       try {
         return await repository.renameItems(request, {
           timeoutMs: DEFAULT_WRITE_TIMEOUT_MS,
         });
       } catch (error: unknown) {
-        const message = toErrorDetailWithCode(error, t);
-        setManageError(message);
+        if (!isPreviewOnly) {
+          const message = toErrorDetailWithCode(error, t);
+          setManageError(message);
+        }
         throw error instanceof Error ? error : new Error(String(error));
       } finally {
-        setManagePending(false);
+        if (!isPreviewOnly) {
+          setManagePending(false);
+        }
       }
     },
     [repository, t],

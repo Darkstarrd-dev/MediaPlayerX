@@ -457,7 +457,8 @@ export function useAppViewComposition({
   );
 
   const refreshSidebarRenamePreview = useCallback(async () => {
-    if (!displayState.backendWrite.renameItems) {
+    const renameItems = displayState.backendWrite.renameItems;
+    if (!renameItems) {
       return;
     }
     const request = buildBatchRenameRequest(true);
@@ -470,7 +471,7 @@ export function useAppViewComposition({
     renamePreviewRequestIdRef.current = requestId;
 
     try {
-      const response = await displayState.backendWrite.renameItems(request);
+      const response = await renameItems(request);
       if (renamePreviewRequestIdRef.current !== requestId) {
         return;
       }
@@ -486,7 +487,7 @@ export function useAppViewComposition({
     }
   }, [
     buildBatchRenameRequest,
-    displayState.backendWrite,
+    displayState.backendWrite.renameItems,
     setSidebarRenameError,
     setSidebarRenamePreviewRows,
     t,
@@ -855,6 +856,7 @@ export function useAppViewComposition({
         void refreshSidebarRenamePreview();
       },
       onUseSourceNameAsReplaceFrom: setSidebarRenameReplaceFrom,
+      onUseSourceNameAsNumberBase: setSidebarRenameNumberBase,
       onCancel: closeSidebarRenameDialog,
       onConfirm: confirmSidebarRename,
     },

@@ -18,9 +18,13 @@ interface SidebarRenameDialogProps {
   replaceFromPlaceholder: string
   replaceToPlaceholder: string
   numberBasePlaceholder: string
+  numberBaseLabel: string
   numberStartPlaceholder: string
+  numberStartLabel: string
   numberStepPlaceholder: string
+  numberStepLabel: string
   numberPadWidthPlaceholder: string
+  numberPadWidthLabel: string
   removeStartPlaceholder: string
   removeEndPlaceholder: string
   removeHeadPlaceholder: string
@@ -65,6 +69,7 @@ interface SidebarRenameDialogProps {
   onRemoveTailChange: (value: string) => void
   onMetadataTemplateChange: (value: string) => void
   onUseSourceNameAsReplaceFrom: (value: string) => void
+  onUseSourceNameAsNumberBase: (value: string) => void
   onConfirm: () => void
   onCancel: () => void
 }
@@ -84,10 +89,10 @@ function SidebarRenameDialog({
   modeOptionSingle,
   replaceFromPlaceholder,
   replaceToPlaceholder,
-  numberBasePlaceholder,
-  numberStartPlaceholder,
-  numberStepPlaceholder,
-  numberPadWidthPlaceholder,
+  numberBaseLabel,
+  numberStartLabel,
+  numberStepLabel,
+  numberPadWidthLabel,
   removeStartPlaceholder,
   removeEndPlaceholder,
   removeHeadPlaceholder,
@@ -129,6 +134,7 @@ function SidebarRenameDialog({
   onRemoveHeadChange,
   onRemoveTailChange,
   onUseSourceNameAsReplaceFrom,
+  onUseSourceNameAsNumberBase,
   onConfirm,
   onCancel,
 }: SidebarRenameDialogProps) {
@@ -187,6 +193,7 @@ function SidebarRenameDialog({
             <h3 className="sidebar-rename-title">{inputLabel}</h3>
             {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
           </div>
+          {errorMessage ? <p className="sidebar-rename-error sidebar-rename-error-header">{errorMessage}</p> : null}
           <button
             className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn"
             type="button"
@@ -251,55 +258,127 @@ function SidebarRenameDialog({
                     {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
                   </select>
                 </label>
-                <span className="sidebar-rename-mode-row-spacer" aria-hidden="true" />
+                <div className="sidebar-rename-mode-row-spacer" aria-hidden={mode !== 'numbering' && mode !== 'remove-range'}>
+                  {mode === 'numbering' ? (
+                    <div className="sidebar-rename-numbering-controls">
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control is-name">
+                        <span className="sidebar-rename-numbering-prefix">{numberBaseLabel}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="text"
+                          value={numberBase}
+                          disabled={pending}
+                          onChange={(event) => onNumberBaseChange(event.target.value)}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{numberStartLabel}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          value={numberStart}
+                          disabled={pending}
+                          onChange={(event) => onNumberStartChange(event.target.value)}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{numberStepLabel}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          value={numberStep}
+                          disabled={pending}
+                          onChange={(event) => onNumberStepChange(event.target.value)}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{numberPadWidthLabel}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          value={numberPadWidth}
+                          disabled={pending}
+                          onChange={(event) => onNumberPadWidthChange(event.target.value)}
+                        />
+                      </label>
+                    </div>
+                  ) : mode === 'remove-range' ? (
+                    <div className="sidebar-rename-remove-controls" aria-label={`${removeRangeHint} ${removeEdgesHint}`}>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{removeHeadPlaceholder}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          min={0}
+                          value={removeHead}
+                          disabled={pending}
+                          onChange={(event) => onRemoveHeadChange(event.target.value)}
+                          onKeyDown={(event) => {
+                            handleNumericArrowAdjust(event, removeHead, onRemoveHeadChange)
+                          }}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{removeTailPlaceholder}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          min={0}
+                          value={removeTail}
+                          disabled={pending}
+                          onChange={(event) => onRemoveTailChange(event.target.value)}
+                          onKeyDown={(event) => {
+                            handleNumericArrowAdjust(event, removeTail, onRemoveTailChange)
+                          }}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{removeStartPlaceholder}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          min={0}
+                          value={removeStart}
+                          disabled={pending}
+                          onChange={(event) => onRemoveStartChange(event.target.value)}
+                          onKeyDown={(event) => {
+                            const nextStart = handleNumericArrowAdjust(event, removeStart, onRemoveStartChange)
+                            if (nextStart == null) {
+                              return
+                            }
+                            const currentEnd = parseNonNegativeInt(removeEnd)
+                            if (currentEnd > 0 && nextStart > 0 && currentEnd < nextStart) {
+                              onRemoveEndChange(String(nextStart))
+                            }
+                          }}
+                        />
+                      </label>
+                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                        <span className="sidebar-rename-numbering-prefix">{removeEndPlaceholder}</span>
+                        <input
+                          className="sidebar-rename-numbering-field"
+                          type="number"
+                          min={0}
+                          value={removeEnd}
+                          disabled={pending}
+                          onChange={(event) => onRemoveEndChange(event.target.value)}
+                          onKeyDown={(event) => {
+                            const nextEnd = handleNumericArrowAdjust(event, removeEnd, onRemoveEndChange)
+                            if (nextEnd == null) {
+                              return
+                            }
+                            const currentStart = parseNonNegativeInt(removeStart)
+                            if (nextEnd > 0 && currentStart > 0 && nextEnd < currentStart) {
+                              onRemoveEndChange(String(currentStart))
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             )}
-
-            {mode === 'numbering' ? (
-              <>
-                <input className="manage-group-name-input" type="text" value={numberBase} placeholder={numberBasePlaceholder} disabled={pending} onChange={(event) => onNumberBaseChange(event.target.value)} />
-                <input className="manage-group-name-input" type="number" value={numberStart} placeholder={numberStartPlaceholder} disabled={pending} onChange={(event) => onNumberStartChange(event.target.value)} />
-                <input className="manage-group-name-input" type="number" value={numberStep} placeholder={numberStepPlaceholder} disabled={pending} onChange={(event) => onNumberStepChange(event.target.value)} />
-                <input className="manage-group-name-input" type="number" value={numberPadWidth} placeholder={numberPadWidthPlaceholder} disabled={pending} onChange={(event) => onNumberPadWidthChange(event.target.value)} />
-              </>
-            ) : null}
-
-            {mode === 'remove-range' ? (
-              <>
-                <p className="sidebar-rename-hint">{removeRangeHint}</p>
-                <div className="sidebar-rename-input-row">
-                  <input className="manage-group-name-input" type="number" min={0} value={removeStart} placeholder={removeStartPlaceholder} disabled={pending} onChange={(event) => onRemoveStartChange(event.target.value)} onKeyDown={(event) => {
-                    const nextStart = handleNumericArrowAdjust(event, removeStart, onRemoveStartChange)
-                    if (nextStart == null) {
-                      return
-                    }
-                    const currentEnd = parseNonNegativeInt(removeEnd)
-                    if (currentEnd > 0 && nextStart > 0 && currentEnd < nextStart) {
-                      onRemoveEndChange(String(nextStart))
-                    }
-                  }} />
-                  <input className="manage-group-name-input" type="number" min={0} value={removeEnd} placeholder={removeEndPlaceholder} disabled={pending} onChange={(event) => onRemoveEndChange(event.target.value)} onKeyDown={(event) => {
-                    const nextEnd = handleNumericArrowAdjust(event, removeEnd, onRemoveEndChange)
-                    if (nextEnd == null) {
-                      return
-                    }
-                    const currentStart = parseNonNegativeInt(removeStart)
-                    if (nextEnd > 0 && currentStart > 0 && nextEnd < currentStart) {
-                      onRemoveEndChange(String(currentStart))
-                    }
-                  }} />
-                </div>
-                <p className="sidebar-rename-hint">{removeEdgesHint}</p>
-                <div className="sidebar-rename-input-row">
-                  <input className="manage-group-name-input" type="number" min={0} value={removeHead} placeholder={removeHeadPlaceholder} disabled={pending} onChange={(event) => onRemoveHeadChange(event.target.value)} onKeyDown={(event) => {
-                    handleNumericArrowAdjust(event, removeHead, onRemoveHeadChange)
-                  }} />
-                  <input className="manage-group-name-input" type="number" min={0} value={removeTail} placeholder={removeTailPlaceholder} disabled={pending} onChange={(event) => onRemoveTailChange(event.target.value)} onKeyDown={(event) => {
-                    handleNumericArrowAdjust(event, removeTail, onRemoveTailChange)
-                  }} />
-                </div>
-              </>
-            ) : null}
 
             <div className="sidebar-rename-preview-table" aria-label={previewLabel}>
               <div className="sidebar-rename-preview-head">
@@ -313,14 +392,18 @@ function SidebarRenameDialog({
                   const unchanged = row.reason === 'unchanged'
                   return (
                     <div key={row.nodeId} className={`sidebar-rename-preview-row ${failed ? 'is-failed' : ''} ${unchanged ? 'is-unchanged' : 'is-changed'}`}>
-                      {mode === 'replace' ? (
+                      {mode === 'replace' || mode === 'numbering' ? (
                         <button
                           className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
                           type="button"
                           disabled={pending}
                           data-tooltip-label={`${applyFromSourceLabel}: ${row.sourceName}`}
                           onClick={() => {
-                            onUseSourceNameAsReplaceFrom(row.sourceName)
+                            if (mode === 'replace') {
+                              onUseSourceNameAsReplaceFrom(row.sourceName)
+                              return
+                            }
+                            onUseSourceNameAsNumberBase(row.sourceName)
                           }}
                         >
                           {row.sourceName}
@@ -365,7 +448,6 @@ function SidebarRenameDialog({
             autoFocus
           />
         )}
-        {errorMessage ? <p className="sidebar-rename-error">{errorMessage}</p> : null}
         <div className="settings-floating-actions manage-group-actions sidebar-rename-footer-actions">
           <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn" type="button" disabled={pending} onClick={onCancel}>
             {cancelLabel}
