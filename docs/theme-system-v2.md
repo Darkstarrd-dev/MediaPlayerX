@@ -65,6 +65,24 @@ npm run theme:verify:slots
 3. `ui_definition` 中拟定的 `data-slot` 是否已在 `src/` 与 `electron/` 出现
 4. 源码中的 `data-slot` 是否存在未登记项
 
+### 1.6 soft-skeuomorphic 拆分维护约束（新增）
+
+`soft-skeuomorphic` 已按职责拆分，禁止把规则回灌到单一大文件。新增/修改样式时必须落到对应文件：
+
+- `src/styles/themes/styles/soft-skeuomorphic.css`：基础 token 与少量全局骨架（不放具体组件大段 override）
+- `src/styles/themes/styles/soft-skeuomorphic.components.css`：通用组件视觉（sidebar/main/metadata 等）
+- `src/styles/themes/styles/soft-skeuomorphic.main-transport.css`：非全屏播放器中间组
+- `src/styles/themes/styles/soft-skeuomorphic.fullscreen-transport.css`：全屏 transport（video/music/image）
+- `src/styles/themes/styles/soft-skeuomorphic.fullscreen-shell.css`：全屏 left/right 组与 popover trigger 壳层态
+- `src/styles/themes/styles/soft-skeuomorphic.runway.css`：runway/range（轨道、thumb、webkit/moz）
+- `src/styles/themes/styles/soft-skeuomorphic.image-grid.css`：image-grid/manage 选中态与 halo
+
+强约束：
+
+1. 全屏 transport（尤其 `16/40/20` 与 image/video/music 对齐规则）只允许在 `soft-skeuomorphic.fullscreen-transport.css` 维护。
+2. 非全屏 transport 只允许在 `soft-skeuomorphic.main-transport.css` 维护。
+3. 调整 `fg-main-content-*` 三模式容器（image/video/music）时，优先修改 `soft-skeuomorphic.components.css` 的 slot 规则，避免各模式分叉。
+
 ---
 
 ## 2. 文件结构
@@ -79,6 +97,13 @@ src/styles/themes/
     _style-template.css           # Style 开发模板
     liquid-glass.css              # 示例：毛玻璃
     neobrutalism.css              # 示例：新野蛮主义
+    soft-skeuomorphic.css         # soft-skeuomorphic 基础 token/骨架
+    soft-skeuomorphic.components.css         # soft-skeuomorphic 通用组件样式
+    soft-skeuomorphic.main-transport.css     # 非全屏 transport
+    soft-skeuomorphic.fullscreen-transport.css # 全屏 transport
+    soft-skeuomorphic.fullscreen-shell.css   # 全屏壳层 left/right + trigger
+    soft-skeuomorphic.runway.css             # runway/range 轨道与 thumb
+    soft-skeuomorphic.image-grid.css         # image-grid/manage 专项
 
   palettes/                       # Palette 预设
     _palette-template.css         # Palette 开发模板

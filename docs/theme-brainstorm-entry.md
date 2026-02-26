@@ -18,6 +18,12 @@
 - 不改 AppWorkspace 结构与 pane 布局逻辑。
 - 不做业务逻辑改动。
 - 优先改 token，其次才写局部 selector override。
+- 若目标 style 为 `soft-skeuomorphic`，必须遵守拆分文件边界：
+  - 全屏 transport 仅改 `soft-skeuomorphic.fullscreen-transport.css`
+  - 非全屏 transport 仅改 `soft-skeuomorphic.main-transport.css`
+  - runway/range 仅改 `soft-skeuomorphic.runway.css`
+  - image-grid/manage 仅改 `soft-skeuomorphic.image-grid.css`
+  - 通用组件仅改 `soft-skeuomorphic.components.css`
 - 仅读取并使用下列文件/目录，避免全仓库扫描：
   - src/features/theme/themeRegistry.ts
   - src/styles/themes/contract.css
@@ -41,6 +47,11 @@
    npm run build:electron
    npm run theme:gallery -- --skip-build --styles "<候选列表>" --palettes "skeuomorphic-light,skeuomorphic-dark" --scenes "image-default,image-manage,image-metadata,settings-layout" --out-dir "docs/ui/theme-gallery"
 5) 输出 gallery 路径与建议选择。
+
+若涉及 `soft-skeuomorphic + skeuomorphic-luxury-white` 的播放器对齐，附加验收基线：
+- 全屏 image/video/music 中间组统一 `gap 16 / btn 40 / icon 20`
+- image 图标语义固定为：`play(翻转) / play / prev / next`
+- 不得通过“文件尾兜底覆盖”破坏既有分层职责
 
 输出格式要求：
 - 列出改动文件清单。
