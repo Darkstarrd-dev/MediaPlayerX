@@ -762,13 +762,11 @@ function VideoMainSection({
           <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
           <SkeuoRunway
             ariaLabel={t("a11y.media.progress")}
-            className="is-progress"
-            fillTone="gold"
+            preset="progress"
             max={durationSec}
             min={0}
             rangePercent={progressPercent}
             step={0.1}
-            thumbTone="pearl"
             value={displayTime}
             onChange={(event) => {
               setHasSeekPreviewCurrentSource(true);
@@ -1129,17 +1127,16 @@ function VideoMainSection({
                 id="video-main-popover-volume"
                 role="dialog"
               >
-                <div className="video-ctrl-volume-axis">
+                <div className="mpx-runway-axis is-vertical">
                   <SkeuoRunway
                     ariaLabel={t("a11y.media.volumeSlider")}
-                    className="is-volume"
-                    fillTone="graphite"
+                    orientation="vertical"
+                    preset="control"
                     inputClassName="video-ctrl-volume-range"
                     max={100}
                     min={0}
                     rangePercent={volumePercent}
                     step={1}
-                    thumbTone="graphite"
                     value={videoMuted ? 0 : videoVolume}
                     onChange={(event) =>
                       onChangeVolume(Number(event.target.value))

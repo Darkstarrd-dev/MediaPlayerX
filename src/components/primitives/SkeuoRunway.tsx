@@ -9,6 +9,8 @@ import type {
 
 type SkeuoRunwayFillTone = 'gold' | 'graphite'
 type SkeuoRunwayThumbTone = 'pearl' | 'graphite'
+type SkeuoRunwayPreset = 'progress' | 'control'
+type SkeuoRunwayOrientation = 'horizontal' | 'vertical'
 
 interface SkeuoRunwayProps {
   ariaLabel: string
@@ -19,8 +21,11 @@ interface SkeuoRunwayProps {
   rangePercent: number
   className?: string
   inputClassName?: string
-  fillTone?: SkeuoRunwayFillTone
+  fillTone?: SkeuoRunwayFillTone | 'none'
   thumbTone?: SkeuoRunwayThumbTone
+  preset?: SkeuoRunwayPreset
+  orientation?: SkeuoRunwayOrientation
+  reverse?: boolean
   style?: CSSProperties
   onChange: ChangeEventHandler<HTMLInputElement>
   onMouseUp?: MouseEventHandler<HTMLInputElement>
@@ -44,6 +49,9 @@ export function SkeuoRunway({
   inputClassName,
   fillTone = 'gold',
   thumbTone = 'pearl',
+  preset,
+  orientation = 'horizontal',
+  reverse = false,
   style,
   onChange,
   onMouseUp,
@@ -61,7 +69,16 @@ export function SkeuoRunway({
     <div
       className={joinClassNames(
         'mpx-runway',
-        fillTone === 'graphite' ? 'is-fill-graphite' : 'is-fill-gold',
+        orientation === 'vertical' ? 'is-vertical' : 'is-horizontal',
+        reverse ? 'is-reverse' : undefined,
+        preset === 'progress' ? 'is-preset-progress' : undefined,
+        preset === 'control' ? 'is-preset-control' : undefined,
+        fillTone === 'graphite'
+          ? 'is-fill-graphite'
+          : fillTone === 'none'
+            ? undefined
+            : 'is-fill-gold',
+        fillTone === 'none' ? 'is-fill-none' : undefined,
         thumbTone === 'graphite' ? 'is-thumb-graphite' : 'is-thumb-pearl',
         className,
       )}

@@ -453,17 +453,16 @@ export function FullscreenFooter({
                   <div className="header-vertical-slider" role="group" aria-label={t('a11y.header.autoPlayLevels')}>
                     <div className="header-vertical-slider-value">{Math.max(1, Math.min(9, Math.round(autoPlayDraftValue)))}</div>
                     <div className="header-vertical-slider-body">
-                      <div className="video-ctrl-volume-axis">
+                      <div className="mpx-runway-axis is-vertical">
                         <SkeuoRunway
                           ariaLabel={t('a11y.header.autoPlaySlider')}
-                          className="is-volume"
-                          fillTone="graphite"
+                          orientation="vertical"
+                          preset="control"
                           inputClassName="video-ctrl-volume-range"
                           max={9}
                           min={1}
                           rangePercent={autoplayRangePercent}
                           step={0.01}
-                          thumbTone="graphite"
                           value={autoPlayDraftValue}
                           onChange={(event) => {
                             const nextValue = Number(event.target.value)
@@ -653,17 +652,16 @@ export function FullscreenFooter({
               <div className="header-vertical-slider" role="group" aria-label={t('ui.fullscreen.zoomIn')}>
                 <div className="header-vertical-slider-value">{zoomDraftValue}%</div>
                 <div className="header-vertical-slider-body">
-                  <div className="video-ctrl-volume-axis">
+                  <div className="mpx-runway-axis is-vertical">
                     <SkeuoRunway
                       ariaLabel={t('ui.fullscreen.zoomIn')}
-                      className="is-volume"
-                      fillTone="graphite"
+                      orientation="vertical"
+                      preset="control"
                       inputClassName="video-ctrl-volume-range"
                       max={200}
                       min={10}
                       rangePercent={zoomRangePercent}
                       step={1}
-                      thumbTone="graphite"
                       value={zoomDraftValue}
                       onChange={(event) => {
                         const rawValue = Number(event.target.value)

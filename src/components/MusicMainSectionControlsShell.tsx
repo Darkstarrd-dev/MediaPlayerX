@@ -169,13 +169,11 @@ export function MusicMainSectionControlsShell({
         <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
         <SkeuoRunway
           ariaLabel={t('a11y.music.progress')}
-          className="is-progress"
-          fillTone="gold"
+          preset="progress"
           max={Math.max(0, audioDurationSec)}
           min={0}
           rangePercent={audioProgressPercent}
           step={0.1}
-          thumbTone="pearl"
           value={displayAudioTime}
           onChange={(event) => {
             const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
@@ -607,17 +605,16 @@ export function MusicMainSectionControlsShell({
               role="dialog"
               onMouseLeave={onClosePopover}
             >
-              <div className="music-ctrl-volume-axis">
+              <div className="mpx-runway-axis is-vertical">
                 <SkeuoRunway
                   ariaLabel={t('a11y.media.volumeSlider')}
-                  className="is-volume"
-                  fillTone="graphite"
+                  orientation="vertical"
+                  preset="control"
                   inputClassName="music-ctrl-volume-range"
                   max={100}
                   min={0}
                   rangePercent={audioVolumePercent}
                   step={1}
-                  thumbTone="graphite"
                   value={audioMuted ? 0 : audioVolume}
                   onChange={(event) => {
                     onAudioVolumeChange(clamp(Number(event.target.value), 0, 100))

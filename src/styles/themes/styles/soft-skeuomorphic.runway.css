@@ -15,6 +15,7 @@
   box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -1px -1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-axis.is-vertical,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-volume-axis,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-volume-axis {
   width: 132px;
@@ -23,6 +24,7 @@
   transform-origin: center;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-axis.is-vertical .mpx-runway,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-volume-axis .mpx-runway,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-volume-axis .mpx-runway {
   width: 132px;
@@ -42,9 +44,36 @@
   align-items: center;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-reverse {
+  transform: rotate(180deg);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-preset-progress {
+  --mpx-runway-fill-bg: var(--mpx-runway-fill-gold);
+  --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-gold);
+  --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-pearl);
+  --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-pearl);
+  --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-pearl);
+  --mpx-runway-thumb-core-shadow: var(--mpx-runway-thumb-core-shadow-pearl);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-preset-control {
+  --mpx-runway-fill-bg: var(--mpx-runway-fill-graphite);
+  --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-graphite);
+  --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-graphite);
+  --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-graphite);
+  --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-graphite);
+  --mpx-runway-thumb-core-shadow: var(--mpx-runway-thumb-core-shadow-graphite);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-fill-graphite {
   --mpx-runway-fill-bg: var(--mpx-runway-fill-graphite);
   --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-graphite);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-fill-none {
+  --mpx-runway-fill-bg: transparent;
+  --mpx-runway-fill-shadow: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-thumb-graphite {

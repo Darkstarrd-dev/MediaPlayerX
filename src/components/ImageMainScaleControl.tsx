@@ -35,8 +35,7 @@ export function ImageMainScaleControl({
     1,
     Math.min(thumbnailScaleLevelCount, Math.round(scaleDraftValue)),
   );
-  const displayScaleLevel =
-    thumbnailScaleLevelCount - roundedScaleLevel + 1;
+  const displayScaleLevel = roundedScaleLevel;
   const scaleRangePercent =
     thumbnailScaleLevelCount <= 1
       ? 0
@@ -96,17 +95,17 @@ export function ImageMainScaleControl({
         >
           <div className="header-vertical-slider-value">{displayScaleLevel}</div>
           <div className="header-vertical-slider-body">
-            <div className="video-ctrl-volume-axis">
+            <div className="mpx-runway-axis is-vertical">
               <SkeuoRunway
                 ariaLabel={t("a11y.header.scaleSlider")}
-                className="is-volume"
-                fillTone="graphite"
+                orientation="vertical"
+                preset="control"
+                reverse
                 inputClassName="video-ctrl-volume-range"
                 max={thumbnailScaleLevelCount}
                 min={1}
                 rangePercent={scaleRangePercent}
                 step={0.01}
-                thumbTone="graphite"
                 value={scaleDraftValue}
                 onChange={(event) => {
                   const nextValue = Number(event.target.value);

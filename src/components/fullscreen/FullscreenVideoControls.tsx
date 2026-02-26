@@ -173,13 +173,11 @@ export function FullscreenVideoControlsShell({
         <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
         <SkeuoRunway
           ariaLabel={t("a11y.media.fullscreenProgress")}
-          className="is-progress"
-          fillTone="gold"
+          preset="progress"
           max={Math.max(0, durationSec)}
           min={0}
           rangePercent={progressPercent}
           step={0.1}
-          thumbTone="pearl"
           value={displayTime}
           onChange={(event) => {
             const nextTime = Math.max(
@@ -547,17 +545,16 @@ export function FullscreenVideoControlsShell({
               id="fullscreen-popover-volume"
               role="dialog"
             >
-              <div className="video-ctrl-volume-axis">
+              <div className="mpx-runway-axis is-vertical">
                 <SkeuoRunway
                   ariaLabel={t("a11y.media.fullscreenVolume")}
-                  className="is-volume"
-                  fillTone="graphite"
+                  orientation="vertical"
+                  preset="control"
                   inputClassName="video-ctrl-volume-range"
                   max={100}
                   min={0}
                   rangePercent={volumePercent}
                   step={1}
-                  thumbTone="graphite"
                   value={videoMuted ? 0 : videoVolume}
                   onChange={(event) =>
                     onChangeVideoVolume(Number(event.target.value))
