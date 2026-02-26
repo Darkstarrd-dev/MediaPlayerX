@@ -154,6 +154,9 @@
 
   --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
   --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --mpx-overlay-surface-border: var(--mpx-border-1);
+  --mpx-overlay-surface-bg: var(--mpx-bg-elevated);
+  --mpx-overlay-surface-shadow: var(--mpx-shadow-popover);
   --mpx-tooltip-radius: var(--mpx-radius-md);
   --mpx-tooltip-padding-x: 10px;
   --mpx-tooltip-padding-y: 6px;

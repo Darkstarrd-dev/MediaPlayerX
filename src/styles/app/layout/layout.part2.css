@@ -17,11 +17,11 @@
   width: var(--mpx-header-btn-size);
   display: flex;
   justify-content: center;
-  border: 1px solid var(--mpx-border-1);
+  border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-1));
   border-radius: 8px;
-  background: var(--mpx-bg-elevated);
+  background: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
   padding: 8px 0;
-  box-shadow: var(--mpx-shadow-popover);
+  box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover));
   z-index: 24;
 }
 

@@ -107,10 +107,10 @@
 .settings-panel {
   width: 80vw;
   height: 80vh;
-  border: 1px solid var(--mpx-border-2);
+  border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-2));
   border-radius: 14px;
-  background: var(--mpx-bg-app);
-  box-shadow: var(--mpx-shadow-panel);
+  background: var(--mpx-overlay-surface-bg, var(--mpx-bg-app));
+  box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel));
   display: flex;
   flex-direction: column;
   overflow: hidden;

@@ -425,12 +425,12 @@
   border: 1px solid
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
-      var(--mpx-player-hud-border)
+      var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     );
   border-radius: var(--mpx-card-radius);
   background: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
-    var(--mpx-player-hud-bg)
+    var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
   );
   color: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-text,
@@ -438,7 +438,7 @@
   );
   box-shadow: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-shadow,
-    var(--mpx-shadow-popover)
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
   );
   padding: 10px;
   z-index: 15;
@@ -481,14 +481,14 @@
     --mpx-slot-fg-main-content-video-controls-subtitle-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
-      var(--mpx-player-hud-border)
+      var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     )
   );
   background: var(
     --mpx-slot-fg-main-content-video-controls-subtitle-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
-      var(--mpx-player-hud-bg)
+      var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
     )
   );
   color: var(

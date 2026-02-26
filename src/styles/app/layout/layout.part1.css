@@ -210,11 +210,11 @@
   position: absolute;
   top: calc(100% - 4px);
   left: 0;
-  background: var(--mpx-slot-fg-header-logo-import-menu-panel-bg, var(--mpx-bg-elevated));
-  border: 1px solid var(--mpx-slot-fg-header-logo-import-menu-panel-border, var(--mpx-border-1));
+  background: var(--mpx-slot-fg-header-logo-import-menu-panel-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  border: 1px solid var(--mpx-slot-fg-header-logo-import-menu-panel-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
   border-radius: 10px;
   min-width: 180px;
-  box-shadow: var(--mpx-slot-fg-header-logo-import-menu-panel-shadow, var(--mpx-shadow-panel));
+  box-shadow: var(--mpx-slot-fg-header-logo-import-menu-panel-shadow, var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel)));
   display: flex;
   flex-direction: column;
   overflow: hidden;

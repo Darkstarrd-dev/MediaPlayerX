@@ -224,15 +224,15 @@
 }
 
 .fullscreen-group .fullscreen-autoplay-control .header-popover-panel {
-  border-color: var(--mpx-slot-fs-image-controls-autoplay-pop-border, var(--mpx-border-1));
-  background: var(--mpx-slot-fs-image-controls-autoplay-pop-bg, var(--mpx-bg-elevated));
-  box-shadow: var(--mpx-slot-fs-image-controls-autoplay-pop-shadow, var(--mpx-shadow-popover));
+  border-color: var(--mpx-slot-fs-image-controls-autoplay-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
+  background: var(--mpx-slot-fs-image-controls-autoplay-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  box-shadow: var(--mpx-slot-fs-image-controls-autoplay-pop-shadow, var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover)));
 }
 
 .fullscreen-group .fullscreen-zoom-control .header-popover-panel {
-  border-color: var(--mpx-slot-fs-image-controls-zoom-pop-border, var(--mpx-border-1));
-  background: var(--mpx-slot-fs-image-controls-zoom-pop-bg, var(--mpx-bg-elevated));
-  box-shadow: var(--mpx-slot-fs-image-controls-zoom-pop-shadow, var(--mpx-shadow-popover));
+  border-color: var(--mpx-slot-fs-image-controls-zoom-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
+  background: var(--mpx-slot-fs-image-controls-zoom-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  box-shadow: var(--mpx-slot-fs-image-controls-zoom-pop-shadow, var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover)));
 }
 
 .fullscreen-convert-format-popover {
