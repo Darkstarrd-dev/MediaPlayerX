@@ -9,6 +9,7 @@ describe('buildVideoMainSectionProps', () => {
     const props = buildVideoMainSectionProps({
       manageMode: false,
       metadataManageMode: false,
+      adReviewPanelOpen: false,
       sidebarSelectedCount: 0,
       imageSelectedCount: 0,
       activeSelectionScope: null,
@@ -84,6 +85,7 @@ describe('buildVideoMainSectionProps', () => {
       setVideoVolume: vi.fn(),
       setVideoRate: vi.fn(),
       setVideoFitMode: vi.fn(),
+      onRequestSidebarLocateFromMain: vi.fn(),
       onCycleVideoLoopMode: vi.fn(),
       cycleVideoFitMode: vi.fn(),
       saveVideoCover: vi.fn(async () => undefined),
@@ -104,6 +106,7 @@ describe('buildVideoMainSectionProps', () => {
     const props = buildVideoMainSectionProps({
       manageMode: true,
       metadataManageMode: false,
+      adReviewPanelOpen: false,
       sidebarSelectedCount: 0,
       imageSelectedCount: 0,
       activeSelectionScope: null,
@@ -186,6 +189,7 @@ describe('buildVideoMainSectionProps', () => {
       setVideoVolume: vi.fn(),
       setVideoRate: vi.fn(),
       setVideoFitMode: vi.fn(),
+      onRequestSidebarLocateFromMain: vi.fn(),
       onCycleVideoLoopMode: vi.fn(),
       cycleVideoFitMode: vi.fn(),
       saveVideoCover: vi.fn(async () => undefined),

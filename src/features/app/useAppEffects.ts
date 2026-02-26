@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type RefObject,
@@ -12,6 +14,7 @@ import {
   resolvePalettePairForStyle,
   resolveStyleId,
 } from "../theme/themeRegistry";
+import { resolveAncestorNodeIds } from "../../components/sidebarPanelTreeUtils";
 import type {
   AudioItem,
   BrowserMode,
@@ -66,9 +69,15 @@ interface UseAppEffectsParams {
   rootScopedAudioIds: Set<string>;
   selectedVideoId: string;
   videoQueueSource: "sidebar" | "playlist";
+  imageSidebarLocateRequestNonce: number;
+  videoSidebarLocateRequestNonce: number;
   selectedAudioId: string;
   videoNodeIdMap: Map<string, string>;
   audioNodeIdMap: Map<string, string>;
+  sidebarTreeNodes: SidebarNode[];
+  imageCollapsedFolderNodeIds: string[];
+  videoCollapsedFolderNodeIds: string[];
+  musicCollapsedFolderNodeIds: string[];
   ensureSidebarNodeVisible: (nodeId: string) => void;
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
@@ -149,9 +158,15 @@ export function useAppEffects({
   rootScopedAudioIds,
   selectedVideoId,
   videoQueueSource,
+  imageSidebarLocateRequestNonce,
+  videoSidebarLocateRequestNonce,
   selectedAudioId,
   videoNodeIdMap,
   audioNodeIdMap,
+  sidebarTreeNodes,
+  imageCollapsedFolderNodeIds,
+  videoCollapsedFolderNodeIds,
+  musicCollapsedFolderNodeIds,
   ensureSidebarNodeVisible,
   fullscreenActive,
   fullscreenDisplay,
@@ -190,6 +205,73 @@ export function useAppEffects({
   setShowFullscreenFooter,
   updateSettings,
 }: UseAppEffectsParams) {
+  void videoQueueSource;
+  const handledImageSidebarLocateNonceRef = useRef(0);
+  const handledVideoSidebarLocateNonceRef = useRef(0);
+
+  const expandCollapsedAncestorsForNode = useCallback(
+    (targetNodeId: string) => {
+      if (sidebarTreeNodes.length === 0) {
+        return;
+      }
+
+      const ancestorNodeIds = resolveAncestorNodeIds(
+        sidebarTreeNodes,
+        targetNodeId,
+      );
+      if (ancestorNodeIds.length === 0) {
+        return;
+      }
+
+      if (mode === "image") {
+        const next = new Set(imageCollapsedFolderNodeIds);
+        let changed = false;
+        for (const ancestorNodeId of ancestorNodeIds) {
+          if (next.delete(ancestorNodeId)) {
+            changed = true;
+          }
+        }
+        if (changed) {
+          updateSettings({ imageCollapsedFolderNodeIds: Array.from(next) });
+        }
+        return;
+      }
+
+      if (mode === "video") {
+        const next = new Set(videoCollapsedFolderNodeIds);
+        let changed = false;
+        for (const ancestorNodeId of ancestorNodeIds) {
+          if (next.delete(ancestorNodeId)) {
+            changed = true;
+          }
+        }
+        if (changed) {
+          updateSettings({ videoCollapsedFolderNodeIds: Array.from(next) });
+        }
+        return;
+      }
+
+      const next = new Set(musicCollapsedFolderNodeIds);
+      let changed = false;
+      for (const ancestorNodeId of ancestorNodeIds) {
+        if (next.delete(ancestorNodeId)) {
+          changed = true;
+        }
+      }
+      if (changed) {
+        updateSettings({ musicCollapsedFolderNodeIds: Array.from(next) });
+      }
+    },
+    [
+      imageCollapsedFolderNodeIds,
+      mode,
+      musicCollapsedFolderNodeIds,
+      sidebarTreeNodes,
+      updateSettings,
+      videoCollapsedFolderNodeIds,
+    ],
+  );
+
   useEffect(() => {
     if (!appBodyRef.current) {
       return;
@@ -389,37 +471,50 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
-    const adReviewFocusActive =
-      adReviewPanelOpen && Boolean(adReviewFocusTaskId);
     if (
-      manageMode ||
       mode !== "image" ||
-      vectorResultsActive ||
-      sidebarFocus === "sidebar" ||
-      adReviewFocusActive
+      fullscreenActive ||
+      manageMode ||
+      metadataManageMode ||
+      adReviewPanelOpen ||
+      imageSidebarLocateRequestNonce <=
+        handledImageSidebarLocateNonceRef.current
     ) {
       return;
     }
 
     const nextImageNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? null;
     if (!nextImageNodeId) {
+      handledImageSidebarLocateNonceRef.current = imageSidebarLocateRequestNonce;
       return;
     }
 
+    expandCollapsedAncestorsForNode(nextImageNodeId);
     if (nextImageNodeId !== selectedSidebarNodeId) {
       setSelectedSidebarNodeId(nextImageNodeId);
     }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => ensureSidebarNodeVisible(nextImageNodeId));
+    });
+    handledImageSidebarLocateNonceRef.current = imageSidebarLocateRequestNonce;
   }, [
-    adReviewFocusTaskId,
     adReviewPanelOpen,
+    ensureSidebarNodeVisible,
+    expandCollapsedAncestorsForNode,
+    fullscreenActive,
+    imageCollapsedFolderNodeIds,
     imageSourceNodeIdMap,
+    imageSidebarLocateRequestNonce,
     manageMode,
+    metadataManageMode,
     mode,
+    musicCollapsedFolderNodeIds,
     selectedPackageId,
     selectedSidebarNodeId,
     setSelectedSidebarNodeId,
-    sidebarFocus,
-    vectorResultsActive,
+    sidebarTreeNodes,
+    updateSettings,
+    videoCollapsedFolderNodeIds,
   ]);
 
   useEffect(() => {
@@ -511,39 +606,54 @@ export function useAppEffects({
       return;
     }
 
-    if (manageMode) {
+    if (
+      fullscreenActive ||
+      manageMode ||
+      metadataManageMode ||
+      adReviewPanelOpen
+    ) {
       return;
     }
 
-    if (videoQueueSource !== "sidebar") {
-      return;
-    }
-
-    // 当前选中的是 folder 节点时，说明用户在浏览文件夹层级，不覆盖
-    const currentNode = selectedSidebarNodeId
-      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
-      : null;
-    if (currentNode && !currentNode.videoId) {
+    if (
+      videoSidebarLocateRequestNonce <=
+      handledVideoSidebarLocateNonceRef.current
+    ) {
       return;
     }
 
     const nextVideoNodeId = videoNodeIdMap.get(selectedVideoId) ?? null;
     if (!nextVideoNodeId) {
+      handledVideoSidebarLocateNonceRef.current = videoSidebarLocateRequestNonce;
       return;
     }
 
+    expandCollapsedAncestorsForNode(nextVideoNodeId);
     if (nextVideoNodeId !== selectedSidebarNodeId) {
       setSelectedSidebarNodeId(nextVideoNodeId);
     }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => ensureSidebarNodeVisible(nextVideoNodeId));
+    });
+    handledVideoSidebarLocateNonceRef.current = videoSidebarLocateRequestNonce;
   }, [
+    adReviewPanelOpen,
+    ensureSidebarNodeVisible,
+    expandCollapsedAncestorsForNode,
+    fullscreenActive,
+    imageCollapsedFolderNodeIds,
     manageMode,
+    metadataManageMode,
     mode,
+    musicCollapsedFolderNodeIds,
     selectedSidebarNodeId,
     selectedVideoId,
     setSelectedSidebarNodeId,
-    sidebarNodeById,
+    sidebarTreeNodes,
+    updateSettings,
+    videoCollapsedFolderNodeIds,
+    videoSidebarLocateRequestNonce,
     videoNodeIdMap,
-    videoQueueSource,
   ]);
 
   useEffect(() => {

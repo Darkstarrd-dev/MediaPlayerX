@@ -89,6 +89,7 @@ interface BuildImageMainSectionPropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   setVectorFocusIndex: (value: number) => void
   setImageFocus: (packageId: string, imageIndex: number) => void
+  onRequestSidebarLocateFromMain: () => void
   canJumpToAnimation: boolean
   canJumpToMusic: boolean
   canJumpToMusicFromBooklet: boolean
@@ -278,6 +279,14 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
       }
       params.setImageFocus(packageId, imageIndex)
       params.updateSettings({ sidebarFocus: 'main' })
+      if (
+        !params.fullscreenActive
+        && !params.manageMode
+        && !params.metadataManageMode
+        && !params.adReviewPanelOpen
+      ) {
+        params.onRequestSidebarLocateFromMain()
+      }
     },
     metadataPending: params.metadataPending,
     metadataTargetPackageLabel: params.metadataTargetPackageLabel,

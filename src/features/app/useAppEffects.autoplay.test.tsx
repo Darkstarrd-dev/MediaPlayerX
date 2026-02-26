@@ -42,9 +42,15 @@ function createBaseParams(overrides: Partial<UseAppEffectsParams> = {}): UseAppE
     rootScopedAudioIds: new Set(),
     selectedVideoId: '',
     videoQueueSource: 'sidebar',
+    imageSidebarLocateRequestNonce: 0,
+    videoSidebarLocateRequestNonce: 0,
     selectedAudioId: '',
     videoNodeIdMap: new Map(),
     audioNodeIdMap: new Map(),
+    sidebarTreeNodes: [],
+    imageCollapsedFolderNodeIds: [],
+    videoCollapsedFolderNodeIds: [],
+    musicCollapsedFolderNodeIds: [],
     ensureSidebarNodeVisible: vi.fn(),
     fullscreenActive: true,
     fullscreenDisplay: 'dual',
@@ -112,6 +118,54 @@ describe('autoplay-regression/app-effects', () => {
     vi.advanceTimersByTime(2100)
 
     expect(params.moveImage).not.toHaveBeenCalled()
+  })
+
+  it('image 主区触发定位时会先展开祖先折叠节点再定位', () => {
+    const folderNodeId = 'folder:/Gallery'
+    const packageNodeId = 'package:/Gallery/pkg-a.zip'
+    const params = createBaseParams({
+      mode: 'image',
+      fullscreenActive: false,
+      selectedPackageId: 'pkg-a',
+      imageSidebarLocateRequestNonce: 1,
+      imageSourceNodeIdMap: new Map([['pkg-a', packageNodeId]]),
+      sidebarTreeNodes: [
+        {
+          id: folderNodeId,
+          label: 'Gallery',
+          kind: 'folder',
+          pathKey: '/Gallery',
+          children: [
+            {
+              id: packageNodeId,
+              label: 'pkg-a.zip',
+              kind: 'package',
+              pathKey: '/Gallery/pkg-a.zip',
+              imageSourceId: 'pkg-a',
+              children: [],
+            },
+          ],
+        },
+      ],
+      imageCollapsedFolderNodeIds: [folderNodeId],
+    })
+
+    const rafSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0)
+        return 1
+      })
+
+    renderHook(() => useAppEffects(params))
+
+    expect(params.updateSettings).toHaveBeenCalledWith({
+      imageCollapsedFolderNodeIds: [],
+    })
+    expect(params.setSelectedSidebarNodeId).toHaveBeenCalledWith(packageNodeId)
+    expect(params.ensureSidebarNodeVisible).toHaveBeenCalledWith(packageNodeId)
+
+    rafSpy.mockRestore()
   })
 
 })

@@ -141,6 +141,7 @@ export interface UseAppWorkspacePropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean | ((previous: boolean) => boolean)) => void
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
   setImageFocus: (packageId: string, imageIndex: number) => void
+  requestImageSidebarLocateFromMain: () => void
   toggleImageChecked: (imageId: string, checked?: boolean) => void
   replaceImageCheckedIds: (ids: string[], append?: boolean) => void
   goPrevPage: () => void
@@ -185,6 +186,7 @@ export interface UseAppWorkspacePropsParams {
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  requestVideoSidebarLocateFromMain: () => void
   cycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   imageFocusActive: boolean

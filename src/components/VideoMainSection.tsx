@@ -117,6 +117,7 @@ interface VideoMainSectionProps {
   onNextVideo: () => void;
   onVideoEnded: () => void;
   onSeekVideo: (time: number) => void;
+  onSeekCommitted?: () => void;
   onVideoTimeUpdate: (time: number) => void;
   onVideoDurationDetected: (duration: number) => void;
   onToggleMute: () => void;
@@ -198,6 +199,7 @@ function VideoMainSection({
   onNextVideo,
   onVideoEnded,
   onSeekVideo,
+  onSeekCommitted = () => undefined,
   onVideoTimeUpdate,
   onVideoDurationDetected,
   onToggleMute,
@@ -240,6 +242,7 @@ function VideoMainSection({
       ? Math.min(Math.max(0, videoTime), durationSec)
       : Math.max(0, videoTime);
   const {
+    seekDraftTime,
     displayTime,
     progressPercent,
     volumePercent,
@@ -319,6 +322,25 @@ function VideoMainSection({
       onTogglePlay();
     }
   };
+
+  const commitSeekDraftWithLocate = useCallback(() => {
+    const hadSeekDraft = seekDraftTime != null;
+    commitSeekDraft();
+    if (hadSeekDraft) {
+      onSeekCommitted();
+    }
+  }, [commitSeekDraft, onSeekCommitted, seekDraftTime]);
+
+  const commitSeekDraftAndBlurWithLocate = useCallback(
+    (input: HTMLInputElement) => {
+      const hadSeekDraft = seekDraftTime != null;
+      commitSeekDraftAndBlur(input);
+      if (hadSeekDraft) {
+        onSeekCommitted();
+      }
+    },
+    [commitSeekDraftAndBlur, onSeekCommitted, seekDraftTime],
+  );
 
   const handleTogglePlayback = () => {
     if (videoPlaying) {
@@ -758,12 +780,16 @@ function VideoMainSection({
               setSeekDraftTime(nextTime);
               previewSeekDuringDrag(nextTime);
             }}
-            onMouseUp={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onTouchEnd={(event) => commitSeekDraftAndBlur(event.currentTarget)}
-            onBlur={commitSeekDraft}
+            onMouseUp={(event) =>
+              commitSeekDraftAndBlurWithLocate(event.currentTarget)
+            }
+            onTouchEnd={(event) =>
+              commitSeekDraftAndBlurWithLocate(event.currentTarget)
+            }
+            onBlur={commitSeekDraftWithLocate}
             onKeyUp={(event) => {
               if (event.key === "Enter" || event.key === " ") {
-                commitSeekDraft();
+                commitSeekDraftWithLocate();
               }
             }}
           />

@@ -13,6 +13,7 @@ import type {
 interface BuildVideoMainSectionPropsParams {
   manageMode: boolean
   metadataManageMode: boolean
+  adReviewPanelOpen: boolean
   metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   imageSelectedCount: number
@@ -80,6 +81,7 @@ interface BuildVideoMainSectionPropsParams {
   setVideoVolume: Dispatch<SetStateAction<number>>
   setVideoRate: Dispatch<SetStateAction<number>>
   setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
+  onRequestSidebarLocateFromMain: () => void
   onCycleVideoLoopMode: () => void
   cycleVideoFitMode: () => void
   saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
@@ -107,6 +109,12 @@ interface BuildVideoMainSectionPropsParams {
 }
 
 export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsParams) {
+  const canRequestSidebarLocateFromMain =
+    !params.fullscreenActive
+    && !params.manageMode
+    && !params.metadataManageMode
+    && !params.adReviewPanelOpen
+
   const clampSeekTime = (time: number) => {
     if (params.durationSec > 0) {
       return clamp(time, 0, params.durationSec)
@@ -200,10 +208,23 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
       if (!params.focusedVideoId) {
         return
       }
+      if (!params.videoPlaying && canRequestSidebarLocateFromMain) {
+        params.onRequestSidebarLocateFromMain()
+      }
       params.setVideoPlaying((value) => !value)
     },
-    onPrevVideo: () => params.goPlaylist(-1),
-    onNextVideo: () => params.goPlaylist(1),
+    onPrevVideo: () => {
+      params.goPlaylist(-1)
+      if (params.videoPlaying && canRequestSidebarLocateFromMain) {
+        params.onRequestSidebarLocateFromMain()
+      }
+    },
+    onNextVideo: () => {
+      params.goPlaylist(1)
+      if (params.videoPlaying && canRequestSidebarLocateFromMain) {
+        params.onRequestSidebarLocateFromMain()
+      }
+    },
     onVideoEnded: () => {
       if (params.videoLoopMode === 'single') {
         params.setVideoTime(0)
@@ -214,6 +235,11 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     },
     onSeekVideo: (time: number) => {
       params.setVideoTime(clampSeekTime(time))
+    },
+    onSeekCommitted: () => {
+      if (params.videoPlaying && canRequestSidebarLocateFromMain) {
+        params.onRequestSidebarLocateFromMain()
+      }
     },
     onVideoTimeUpdate: (time: number) => {
       params.setVideoTime(Math.max(0, time))

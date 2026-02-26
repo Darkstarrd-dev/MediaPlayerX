@@ -53,6 +53,8 @@ export function useAppSessionState({
   const [audioPlaylistIds, setAudioPlaylistIds] = useState<string[]>(audios.slice(0, 3).map((audio) => audio.id))
   const [musicLoopMode, setMusicLoopMode] = useState<MusicLoopMode>('library')
   const [musicPlayRequestNonce, setMusicPlayRequestNonce] = useState(0)
+  const [imageSidebarLocateRequestNonce, setImageSidebarLocateRequestNonce] = useState(0)
+  const [videoSidebarLocateRequestNonce, setVideoSidebarLocateRequestNonce] = useState(0)
   const [imageFocusActive, setImageFocusActive] = useState(false)
   const [focusByPackage, setFocusByPackage] = useState<Record<string, number>>(() =>
     Object.fromEntries(imageSources.map((source) => [source.id, 0])),
@@ -138,6 +140,14 @@ export function useAppSessionState({
     musicPlayRequestNonce,
     requestMusicPlay: () => {
       setMusicPlayRequestNonce((value) => value + 1)
+    },
+    imageSidebarLocateRequestNonce,
+    requestImageSidebarLocateFromMain: () => {
+      setImageSidebarLocateRequestNonce((value) => value + 1)
+    },
+    videoSidebarLocateRequestNonce,
+    requestVideoSidebarLocateFromMain: () => {
+      setVideoSidebarLocateRequestNonce((value) => value + 1)
     },
     imageFocusActive,
     setImageFocusActive,
