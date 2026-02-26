@@ -140,12 +140,8 @@
 .name-list-row.is-manage.is-selected {
   position: relative;
   z-index: 2;
-  background: var(--mpx-bg-selected);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--mpx-manage-select-ring) 30%, transparent),
-    inset 0 0 0 2px color-mix(in srgb, var(--mpx-manage-select-ring) 58%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-bg-workspace) 82%, transparent),
-    0 0 0 4px var(--mpx-manage-select-ring);
+  background: #ecf0f3;
+  box-shadow: none;
 }
 
 .thumb-card.is-manage.is-hidden {
