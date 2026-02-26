@@ -1,42 +1,42 @@
-import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from "react";
 
 import {
   dispatchMusicPlaybackControl,
   onMusicPlaybackState,
-} from '../features/media/musicPlaybackBridge'
-import { buildA11yPropsByRegistry } from '../i18n/a11y'
-import { a11yRegistry } from '../i18n/ariaRegistry'
-import { useI18n } from '../i18n/useI18n'
-import type { BrowserMode } from '../types'
+} from "../features/media/musicPlaybackBridge";
+import { buildA11yPropsByRegistry } from "../i18n/a11y";
+import { a11yRegistry } from "../i18n/ariaRegistry";
+import { useI18n } from "../i18n/useI18n";
+import type { BrowserMode } from "../types";
 
 type HeaderIconName =
-  | 'statusIdle'
-  | 'statusBusy'
-  | 'image'
-  | 'video'
-  | 'music'
-  | 'search'
-  | 'edit'
-  | 'metadata'
-  | 'dataMode'
-  | 'autoplayOn'
-  | 'autoplayOff'
-  | 'settings'
-  | 'day'
-  | 'night'
-  | 'minus'
-  | 'plus'
-  | 'zoom'
-  | 'play'
-  | 'pause'
-  | 'stop'
-  | 'windowMinimize'
-  | 'windowMaximize'
-  | 'windowRestore'
-  | 'windowFullscreen'
-  | 'windowExitFullscreen'
-  | 'windowClose'
-  | 'help'
+  | "statusIdle"
+  | "statusBusy"
+  | "image"
+  | "video"
+  | "music"
+  | "search"
+  | "edit"
+  | "metadata"
+  | "dataMode"
+  | "autoplayOn"
+  | "autoplayOff"
+  | "settings"
+  | "day"
+  | "night"
+  | "minus"
+  | "plus"
+  | "zoom"
+  | "play"
+  | "pause"
+  | "stop"
+  | "windowMinimize"
+  | "windowMaximize"
+  | "windowRestore"
+  | "windowFullscreen"
+  | "windowExitFullscreen"
+  | "windowClose"
+  | "help";
 
 const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
   statusIdle: (
@@ -198,66 +198,66 @@ const HEADER_ICON_NODES: Record<HeaderIconName, ReactElement> = {
       <path d="M12 17h.01" />
     </>
   ),
-}
+};
 
 function HeaderActionIcon({ name }: { name: HeaderIconName }) {
   return (
     <svg aria-hidden="true" className="header-action-icon" viewBox="0 0 24 24">
       {HEADER_ICON_NODES[name]}
     </svg>
-  )
+  );
 }
 
 export interface AppHeaderProps {
-  headerHeight: number
-  mode: BrowserMode
-  searchPanelOpen: boolean
-  manageMode: boolean
-  metadataManageMode: boolean
-  thumbnailScaleLevel: number
-  canThumbnailScaleDown: boolean
-  canThumbnailScaleUp: boolean
-  autoPlayEnabled: boolean
-  autoPlayInterval: number
-  paletteMode: 'day' | 'night'
-  interactionLocked?: boolean
-  importMenuOpen: boolean
-  taskStatusLabel: string
-  taskStatusBusy: boolean
-  importTaskPanelOpen: boolean
-  autoPlayPresets: number[]
-  onToggleImportMenu: () => void
-  onToggleImportTaskPanel: () => void
-  onCloseImportMenu: () => void
-  onImportFiles: () => void
-  onImportFolders: () => void
-  onModeChange: (mode: BrowserMode) => void
-  onToggleSearchPanel: () => void
-  onToggleManageMode: () => void
-  onToggleMetadataManageMode: () => void
-  onThumbnailScaleDown: () => void
-  onThumbnailScaleUp: () => void
-  onAutoPlayEnabledChange: (enabled: boolean) => void
-  onAutoPlayIntervalChange: (value: number) => void
-  onTogglePaletteMode: () => void
-  headerDebugGroupVisible: boolean
-  tooltipEnabled: boolean
-  onTooltipEnabledChange: (value: boolean) => void
-  electronNativeChromeEnabled: boolean
-  onElectronNativeChromeEnabledChange: (value: boolean) => void
-  themeParameterButtonVisible: boolean
-  onThemeParameterButtonVisibleChange: (value: boolean) => void
-  onOpenThemeParameter: () => void
-  popoverDebugPinned: boolean
-  onTogglePopoverDebugPinned: () => void
-  onOpenHelp: () => void
-  onOpenSettings: () => void
-  sidebarCollapsed?: boolean
-  metadataCollapsed?: boolean
-  showPanelToggleControls?: boolean
-  onToggleSidebarPanel?: () => void
-  onToggleMetadataPanel?: () => void
-  layoutConvergedInsetPx?: number
+  headerHeight: number;
+  mode: BrowserMode;
+  searchPanelOpen: boolean;
+  manageMode: boolean;
+  metadataManageMode: boolean;
+  thumbnailScaleLevel: number;
+  canThumbnailScaleDown: boolean;
+  canThumbnailScaleUp: boolean;
+  autoPlayEnabled: boolean;
+  autoPlayInterval: number;
+  paletteMode: "day" | "night";
+  interactionLocked?: boolean;
+  importMenuOpen: boolean;
+  taskStatusLabel: string;
+  taskStatusBusy: boolean;
+  importTaskPanelOpen: boolean;
+  autoPlayPresets: number[];
+  onToggleImportMenu: () => void;
+  onToggleImportTaskPanel: () => void;
+  onCloseImportMenu: () => void;
+  onImportFiles: () => void;
+  onImportFolders: () => void;
+  onModeChange: (mode: BrowserMode) => void;
+  onToggleSearchPanel: () => void;
+  onToggleManageMode: () => void;
+  onToggleMetadataManageMode: () => void;
+  onThumbnailScaleDown: () => void;
+  onThumbnailScaleUp: () => void;
+  onAutoPlayEnabledChange: (enabled: boolean) => void;
+  onAutoPlayIntervalChange: (value: number) => void;
+  onTogglePaletteMode: () => void;
+  headerDebugGroupVisible: boolean;
+  tooltipEnabled: boolean;
+  onTooltipEnabledChange: (value: boolean) => void;
+  electronNativeChromeEnabled: boolean;
+  onElectronNativeChromeEnabledChange: (value: boolean) => void;
+  themeParameterButtonVisible: boolean;
+  onThemeParameterButtonVisibleChange: (value: boolean) => void;
+  onOpenThemeParameter: () => void;
+  popoverDebugPinned: boolean;
+  onTogglePopoverDebugPinned: () => void;
+  onOpenHelp: () => void;
+  onOpenSettings: () => void;
+  sidebarCollapsed?: boolean;
+  metadataCollapsed?: boolean;
+  showPanelToggleControls?: boolean;
+  onToggleSidebarPanel?: () => void;
+  onToggleMetadataPanel?: () => void;
+  layoutConvergedInsetPx?: number;
 }
 
 function AppHeader(props: AppHeaderProps) {
@@ -295,94 +295,113 @@ function AppHeader(props: AppHeaderProps) {
     onToggleSidebarPanel,
     onToggleMetadataPanel,
     layoutConvergedInsetPx = 0,
-  } = props
-  const { t } = useI18n()
-  const [windowMaximized, setWindowMaximized] = useState(false)
-  const [windowFullscreen, setWindowFullscreen] = useState(false)
-  const [showMusicQuickActions, setShowMusicQuickActions] = useState(false)
-  const [musicQuickPlaying, setMusicQuickPlaying] = useState(false)
-  const musicQuickSessionArmedRef = useRef(false)
-  const previousModeRef = useRef<BrowserMode>(mode)
+  } = props;
+  const { t } = useI18n();
+  const [windowMaximized, setWindowMaximized] = useState(false);
+  const [windowFullscreen, setWindowFullscreen] = useState(false);
+  const [showMusicQuickActions, setShowMusicQuickActions] = useState(false);
+  const [musicQuickPlaying, setMusicQuickPlaying] = useState(false);
+  const musicQuickSessionArmedRef = useRef(false);
+  const previousModeRef = useRef<BrowserMode>(mode);
 
   useEffect(() => {
-    if (mode === 'music') {
-      musicQuickSessionArmedRef.current = false
-      setShowMusicQuickActions(false)
+    if (mode === "music") {
+      musicQuickSessionArmedRef.current = false;
+      setShowMusicQuickActions(false);
     }
-  }, [mode])
+  }, [mode]);
 
   useEffect(() => {
-    if (mode === 'music' && musicQuickPlaying) {
-      musicQuickSessionArmedRef.current = true
+    if (mode === "music" && musicQuickPlaying) {
+      musicQuickSessionArmedRef.current = true;
     }
-  }, [mode, musicQuickPlaying])
+  }, [mode, musicQuickPlaying]);
 
   useEffect(() => {
-    const previousMode = previousModeRef.current
-    if (previousMode === 'music' && mode !== 'music' && musicQuickSessionArmedRef.current) {
-      setShowMusicQuickActions(true)
+    const previousMode = previousModeRef.current;
+    if (
+      previousMode === "music" &&
+      mode !== "music" &&
+      musicQuickSessionArmedRef.current
+    ) {
+      setShowMusicQuickActions(true);
     }
-    previousModeRef.current = mode
-  }, [mode])
+    previousModeRef.current = mode;
+  }, [mode]);
 
   useEffect(() => {
-    const windowApi = window.mediaPlayerWindow
+    const windowApi = window.mediaPlayerWindow;
     if (!windowApi) {
-      return
+      return;
     }
 
-    let active = true
+    let active = true;
     void Promise.all([windowApi.isMaximized(), windowApi.isFullscreen()])
       .then(([maximized, fullscreen]) => {
         if (active) {
-          setWindowMaximized(maximized)
-          setWindowFullscreen(fullscreen)
+          setWindowMaximized(maximized);
+          setWindowFullscreen(fullscreen);
         }
       })
-      .catch(() => undefined)
+      .catch(() => undefined);
 
-    const unsubscribeMaximized = windowApi.onMaximizedStateChange((maximized) => {
-      setWindowMaximized(maximized)
-    })
-    const unsubscribeFullscreen = windowApi.onFullscreenStateChange((fullscreen) => {
-      setWindowFullscreen(fullscreen)
-    })
+    const unsubscribeMaximized = windowApi.onMaximizedStateChange(
+      (maximized) => {
+        setWindowMaximized(maximized);
+      },
+    );
+    const unsubscribeFullscreen = windowApi.onFullscreenStateChange(
+      (fullscreen) => {
+        setWindowFullscreen(fullscreen);
+      },
+    );
 
     return () => {
-      active = false
-      unsubscribeMaximized()
-      unsubscribeFullscreen()
-    }
-  }, [])
+      active = false;
+      unsubscribeMaximized();
+      unsubscribeFullscreen();
+    };
+  }, []);
 
   useEffect(() => {
     return onMusicPlaybackState((detail) => {
-      setMusicQuickPlaying(detail.playing)
-    })
-  }, [])
+      setMusicQuickPlaying(detail.playing);
+    });
+  }, []);
 
-  const settingsButtonA11y = buildA11yPropsByRegistry({ key: 'headerSettings', t })
-  const themeParameterButtonA11y = buildA11yPropsByRegistry({ key: 'headerThemeParameter', t })
-  const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({ key: 'headerPopoverDebugPinned', t })
-  const helpButtonA11y = buildA11yPropsByRegistry({ key: 'headerHelp', t })
+  const settingsButtonA11y = buildA11yPropsByRegistry({
+    key: "headerSettings",
+    t,
+  });
+  const themeParameterButtonA11y = buildA11yPropsByRegistry({
+    key: "headerThemeParameter",
+    t,
+  });
+  const popoverDebugPinnedButtonA11y = buildA11yPropsByRegistry({
+    key: "headerPopoverDebugPinned",
+    t,
+  });
+  const helpButtonA11y = buildA11yPropsByRegistry({ key: "headerHelp", t });
   const windowMaxRestoreLabel = windowFullscreen
-    ? t('a11y.header.windowExitFullscreen')
+    ? t("a11y.header.windowExitFullscreen")
     : windowMaximized
-      ? t('a11y.header.windowEnterFullscreen')
-      : t('a11y.header.windowMaximize')
+      ? t("a11y.header.windowEnterFullscreen")
+      : t("a11y.header.windowMaximize");
   const windowMaxRestoreIconName: HeaderIconName = windowFullscreen
-    ? 'windowExitFullscreen'
+    ? "windowExitFullscreen"
     : windowMaximized
-      ? 'windowFullscreen'
-      : 'windowMaximize'
+      ? "windowFullscreen"
+      : "windowMaximize";
   const taskStateSlot = importTaskPanelOpen
-    ? 'fg-header-logo-state-open'
+    ? "fg-header-logo-state-open"
     : taskStatusBusy
-      ? 'fg-header-logo-state-busy'
-      : 'fg-header-logo-state-idle'
-  const dualCollapsed = sidebarCollapsed && metadataCollapsed
-  const tooltipLabel = t('ui.settings.debugTooltips')
-  const nativeChromeLabel = t('ui.settings.debugNativeChrome')
+      ? "fg-header-logo-state-busy"
+      : "fg-header-logo-state-idle";
+  const dualCollapsed = sidebarCollapsed && metadataCollapsed;
+  const tooltipLabel = t("ui.settings.debugTooltips");
+  const nativeChromeLabel = t("ui.settings.debugNativeChrome");
+  const collapseSidebarLabel = t("a11y.common.collapseSidebar");
+  const collapseMetadataPanelLabel = t("a11y.common.collapseMetadataPanel");
 
   return (
     <header
@@ -392,9 +411,9 @@ function AppHeader(props: AppHeaderProps) {
         height: `${headerHeight}px`,
         ...(dualCollapsed
           ? {
-              width: '100%',
+              width: "100%",
               maxWidth: `calc(100% - ${layoutConvergedInsetPx}px - (var(--mpx-slot-bg-app-workspace-padding, var(--mpx-layout-padding)) * 2))`,
-              marginInline: 'auto',
+              marginInline: "auto",
             }
           : {}),
       }}
@@ -405,70 +424,95 @@ function AppHeader(props: AppHeaderProps) {
             className="logo-wrap"
             onMouseEnter={() => {
               if (!importMenuOpen) {
-                onToggleImportMenu()
+                onToggleImportMenu();
               }
             }}
             onMouseLeave={onCloseImportMenu}
           >
             <button
               aria-label={taskStatusLabel}
-              className={`logo-btn ${taskStatusBusy ? 'is-task-busy' : 'is-task-idle'} ${importTaskPanelOpen ? 'is-task-open' : ''}`}
+              className={`logo-btn ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""}`}
               data-slot="fg-header-logo"
               data-slot-state={taskStateSlot}
               data-tooltip-label={taskStatusLabel}
               type="button"
               onClick={onToggleImportTaskPanel}
             >
-              {taskStatusBusy ? 'Processing...' : 'MediaPlayerX'}
+              {taskStatusBusy ? "Processing..." : "MediaPlayerX"}
             </button>
             {importMenuOpen ? (
-              <div className="import-menu" data-slot="fg-header-logo-import-menu-panel">
+              <div
+                className="import-menu"
+                data-slot="fg-header-logo-import-menu-panel"
+              >
                 <button
                   type="button"
                   onClick={() => {
-                    onImportFiles()
-                    onCloseImportMenu()
+                    onImportFiles();
+                    onCloseImportMenu();
                   }}
                 >
-                  {t('ui.header.importFiles')}
+                  {t("ui.header.importFiles")}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    onImportFolders()
-                    onCloseImportMenu()
+                    onImportFolders();
+                    onCloseImportMenu();
                   }}
                 >
-                  {t('ui.header.importFolders')}
+                  {t("ui.header.importFolders")}
                 </button>
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="header-group header-group-primary" data-slot="fg-header-g1">
+        <div
+          className="header-group header-group-primary"
+          data-slot="fg-header-g1"
+        >
           {showPanelToggleControls ? (
-            <div className="panel-toggle-wrap" data-slot="fg-header-g1-panel-toggles">
+            <div
+              className="panel-toggle-wrap"
+              data-slot="fg-header-g1-panel-toggles"
+            >
               <button
-                className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? 'is-collapsed' : ''}`}
+                className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? "is-collapsed" : ""}`}
                 data-slot="fg-header-g1-toggle-sidebar"
                 type="button"
-                aria-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
-                data-tooltip-label={sidebarCollapsed ? t('a11y.common.expandSidebar') : t('a11y.common.close')}
+                aria-label={
+                  sidebarCollapsed
+                    ? t("a11y.common.expandSidebar")
+                    : collapseSidebarLabel
+                }
+                data-tooltip-label={
+                  sidebarCollapsed
+                    ? t("a11y.common.expandSidebar")
+                    : collapseSidebarLabel
+                }
                 onClick={() => {
-                  onToggleSidebarPanel?.()
+                  onToggleSidebarPanel?.();
                 }}
               >
                 <span className="window-control-btn-text">L</span>
               </button>
               <button
-                className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? 'is-collapsed' : ''}`}
+                className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? "is-collapsed" : ""}`}
                 data-slot="fg-header-g1-toggle-metadata"
                 type="button"
-                aria-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
-                data-tooltip-label={metadataCollapsed ? t('a11y.common.expandMetadataPanel') : t('a11y.common.close')}
+                aria-label={
+                  metadataCollapsed
+                    ? t("a11y.common.expandMetadataPanel")
+                    : collapseMetadataPanelLabel
+                }
+                data-tooltip-label={
+                  metadataCollapsed
+                    ? t("a11y.common.expandMetadataPanel")
+                    : collapseMetadataPanelLabel
+                }
                 onClick={() => {
-                  onToggleMetadataPanel?.()
+                  onToggleMetadataPanel?.();
                 }}
               >
                 <span className="window-control-btn-text">R</span>
@@ -477,99 +521,159 @@ function AppHeader(props: AppHeaderProps) {
           ) : null}
 
           <button
-            aria-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
-            aria-pressed={paletteMode === 'night'}
+            aria-label={
+              paletteMode === "day"
+                ? t("a11y.header.switchToNightPalette")
+                : t("a11y.header.switchToDayPalette")
+            }
+            aria-pressed={paletteMode === "night"}
             className="window-control-btn"
             data-slot="fg-header-g1-palette"
-            data-tooltip-label={paletteMode === 'day' ? t('a11y.header.switchToNightPalette') : t('a11y.header.switchToDayPalette')}
+            data-tooltip-label={
+              paletteMode === "day"
+                ? t("a11y.header.switchToNightPalette")
+                : t("a11y.header.switchToDayPalette")
+            }
             type="button"
             onClick={onTogglePaletteMode}
           >
-            <HeaderActionIcon name={paletteMode === 'day' ? 'day' : 'night'} />
+            <HeaderActionIcon name={paletteMode === "day" ? "day" : "night"} />
           </button>
 
-          <button {...settingsButtonA11y} className="window-control-btn" data-slot="fg-header-g1-settings" type="button" onClick={onOpenSettings}>
+          <button
+            {...settingsButtonA11y}
+            className="window-control-btn"
+            data-slot="fg-header-g1-settings"
+            type="button"
+            onClick={onOpenSettings}
+          >
             <HeaderActionIcon name="settings" />
           </button>
         </div>
 
-        <div className="header-group header-group-modes" data-slot="fg-header-g2">
+        <div
+          className="header-group header-group-modes"
+          data-slot="fg-header-g2"
+        >
           <div className="mode-switch-wrap">
-            <div className="mode-switch" role="group" aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}>
+            <div
+              className="mode-switch"
+              role="group"
+              aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}
+            >
               <button
-                {...buildA11yPropsByRegistry({ key: 'headerModeImage', t })}
-                className={mode === 'image' ? 'is-active' : ''}
+                {...buildA11yPropsByRegistry({ key: "headerModeImage", t })}
+                className={mode === "image" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-image"
                 type="button"
                 disabled={interactionLocked}
-                onClick={() => onModeChange('image')}
+                onClick={() => onModeChange("image")}
               >
                 <span className="header-btn-content">
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="image" />
                   </span>
-                  <span className="header-btn-label">{t('ui.header.imageMode')}</span>
+                  <span className="header-btn-label">
+                    {t("ui.header.imageMode")}
+                  </span>
                 </span>
               </button>
               <button
-                {...buildA11yPropsByRegistry({ key: 'headerModeVideo', t })}
-                className={mode === 'video' ? 'is-active' : ''}
+                {...buildA11yPropsByRegistry({ key: "headerModeVideo", t })}
+                className={mode === "video" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-video"
                 type="button"
                 disabled={interactionLocked}
-                onClick={() => onModeChange('video')}
+                onClick={() => onModeChange("video")}
               >
                 <span className="header-btn-content">
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="video" />
                   </span>
-                  <span className="header-btn-label">{t('ui.header.videoMode')}</span>
+                  <span className="header-btn-label">
+                    {t("ui.header.videoMode")}
+                  </span>
                 </span>
               </button>
               <button
-                {...buildA11yPropsByRegistry({ key: 'headerModeMusic', t })}
-                className={mode === 'music' ? 'is-active' : ''}
+                {...buildA11yPropsByRegistry({ key: "headerModeMusic", t })}
+                className={mode === "music" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-music"
                 type="button"
                 disabled={interactionLocked}
-                onClick={() => onModeChange('music')}
+                onClick={() => onModeChange("music")}
               >
                 <span className="header-btn-content">
                   <span className="header-btn-icon">
                     <HeaderActionIcon name="music" />
                   </span>
-                  <span className="header-btn-label">{t('ui.header.musicMode')}</span>
+                  <span className="header-btn-label">
+                    {t("ui.header.musicMode")}
+                  </span>
                 </span>
               </button>
-              <div className={`music-quick-actions ${showMusicQuickActions && mode !== 'music' ? 'is-visible' : ''}`} data-slot="fg-header-g2-music-quick">
+              <div
+                className={`music-quick-actions ${showMusicQuickActions && mode !== "music" ? "is-visible" : ""}`}
+                data-slot="fg-header-g2-music-quick"
+              >
                 <button
-                  aria-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
+                  aria-label={
+                    musicQuickPlaying
+                      ? t("a11y.header.musicPause")
+                      : t("a11y.header.musicPlay")
+                  }
                   className="mode-action-btn"
-                  data-tooltip-label={musicQuickPlaying ? t('a11y.header.musicPause') : t('a11y.header.musicPlay')}
+                  data-tooltip-label={
+                    musicQuickPlaying
+                      ? t("a11y.header.musicPause")
+                      : t("a11y.header.musicPlay")
+                  }
                   type="button"
                   onClick={() => {
-                    dispatchMusicPlaybackControl('toggle-playback')
+                    dispatchMusicPlaybackControl("toggle-playback");
                   }}
                 >
-                  <HeaderActionIcon name={musicQuickPlaying ? 'pause' : 'play'} />
+                  <HeaderActionIcon
+                    name={musicQuickPlaying ? "pause" : "play"}
+                  />
                 </button>
-                <button {...buildA11yPropsByRegistry({ key: 'headerMusicStop', t })} className="mode-action-btn" type="button" onClick={() => {
-                  setShowMusicQuickActions(false)
-                  musicQuickSessionArmedRef.current = false
-                  dispatchMusicPlaybackControl('stop')
-                }}>
+                <button
+                  {...buildA11yPropsByRegistry({ key: "headerMusicStop", t })}
+                  className="mode-action-btn"
+                  type="button"
+                  onClick={() => {
+                    setShowMusicQuickActions(false);
+                    musicQuickSessionArmedRef.current = false;
+                    dispatchMusicPlaybackControl("stop");
+                  }}
+                >
                   <HeaderActionIcon name="stop" />
                 </button>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
       <div className="header-right">
+        {themeParameterButtonVisible && !headerDebugGroupVisible ? (
+          <button
+            {...themeParameterButtonA11y}
+            className="window-control-btn window-control-btn--theme-parameter"
+            data-slot="fg-header-g3-theme-parameter"
+            type="button"
+            onClick={onOpenThemeParameter}
+          >
+            <span className="window-control-btn-text">T</span>
+          </button>
+        ) : null}
         {headerDebugGroupVisible ? (
-          <div aria-label={t('ui.settings.sectionDebug')} className="header-group header-group-debug" data-slot="fg-header-g-debug" role="group">
+          <div
+            aria-label={t("ui.settings.sectionDebug")}
+            className="header-group header-group-debug"
+            data-slot="fg-header-g-debug"
+            role="group"
+          >
             <button
               aria-label={tooltipLabel}
               aria-pressed={tooltipEnabled}
@@ -578,10 +682,12 @@ function AppHeader(props: AppHeaderProps) {
               data-slot="fg-header-g-debug-tooltips"
               type="button"
               onClick={() => {
-                onTooltipEnabledChange(!tooltipEnabled)
+                onTooltipEnabledChange(!tooltipEnabled);
               }}
             >
-              <span className="window-control-btn-text">TT {tooltipEnabled ? 'on' : 'off'}</span>
+              <span className="window-control-btn-text">
+                TT {tooltipEnabled ? "on" : "off"}
+              </span>
             </button>
             <button
               aria-label={nativeChromeLabel}
@@ -591,10 +697,14 @@ function AppHeader(props: AppHeaderProps) {
               data-slot="fg-header-g-debug-native-chrome"
               type="button"
               onClick={() => {
-                onElectronNativeChromeEnabledChange(!electronNativeChromeEnabled)
+                onElectronNativeChromeEnabledChange(
+                  !electronNativeChromeEnabled,
+                );
               }}
             >
-              <span className="window-control-btn-text">N {electronNativeChromeEnabled ? 'on' : 'off'}</span>
+              <span className="window-control-btn-text">
+                N {electronNativeChromeEnabled ? "on" : "off"}
+              </span>
             </button>
             <button
               {...themeParameterButtonA11y}
@@ -604,12 +714,14 @@ function AppHeader(props: AppHeaderProps) {
               type="button"
               onClick={() => {
                 if (!themeParameterButtonVisible) {
-                  onThemeParameterButtonVisibleChange(true)
+                  onThemeParameterButtonVisibleChange(true);
                 }
-                onOpenThemeParameter()
+                onOpenThemeParameter();
               }}
             >
-              <span className="window-control-btn-text">T {themeParameterButtonVisible ? 'on' : 'off'}</span>
+              <span className="window-control-btn-text">
+                T {themeParameterButtonVisible ? "on" : "off"}
+              </span>
             </button>
             <button
               {...popoverDebugPinnedButtonA11y}
@@ -619,12 +731,25 @@ function AppHeader(props: AppHeaderProps) {
               type="button"
               onClick={onTogglePopoverDebugPinned}
             >
-              <span className="window-control-btn-text">{popoverDebugPinned ? 'O' : 'C'}</span>
+              <span className="window-control-btn-text">
+                {popoverDebugPinned ? "O" : "C"}
+              </span>
             </button>
           </div>
         ) : null}
-        <div aria-label={t(a11yRegistry.headerWindowControls.labelKey)} className="window-controls header-group header-group-window" data-slot="fg-header-g3" role="group">
-          <button {...helpButtonA11y} className="window-control-btn" data-slot="fg-header-g3-help" type="button" onClick={onOpenHelp}>
+        <div
+          aria-label={t(a11yRegistry.headerWindowControls.labelKey)}
+          className="window-controls header-group header-group-window"
+          data-slot="fg-header-g3"
+          role="group"
+        >
+          <button
+            {...helpButtonA11y}
+            className="window-control-btn"
+            data-slot="fg-header-g3-help"
+            type="button"
+            onClick={onOpenHelp}
+          >
             <HeaderActionIcon name="help" />
           </button>
           <button
@@ -634,7 +759,7 @@ function AppHeader(props: AppHeaderProps) {
             data-tooltip-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
             type="button"
             onClick={() => {
-              void window.mediaPlayerWindow?.minimize()
+              void window.mediaPlayerWindow?.minimize();
             }}
           >
             <HeaderActionIcon name="windowMinimize" />
@@ -646,26 +771,28 @@ function AppHeader(props: AppHeaderProps) {
             data-tooltip-label={windowMaxRestoreLabel}
             type="button"
             onClick={async () => {
-              const windowApi = window.mediaPlayerWindow
+              const windowApi = window.mediaPlayerWindow;
               if (!windowApi) {
-                return
+                return;
               }
 
               if (windowFullscreen) {
-                await windowApi.setFullscreen(false)
-                const maximized = await windowApi.isMaximized().catch(() => false)
+                await windowApi.setFullscreen(false);
+                const maximized = await windowApi
+                  .isMaximized()
+                  .catch(() => false);
                 if (maximized) {
-                  await windowApi.toggleMaximize()
+                  await windowApi.toggleMaximize();
                 }
-                return
+                return;
               }
 
               if (windowMaximized) {
-                await windowApi.setFullscreen(true)
-                return
+                await windowApi.setFullscreen(true);
+                return;
               }
 
-              await windowApi.toggleMaximize()
+              await windowApi.toggleMaximize();
             }}
           >
             <HeaderActionIcon name={windowMaxRestoreIconName} />
@@ -677,7 +804,7 @@ function AppHeader(props: AppHeaderProps) {
             data-tooltip-label={t(a11yRegistry.headerWindowClose.labelKey)}
             type="button"
             onClick={() => {
-              void window.mediaPlayerWindow?.close()
+              void window.mediaPlayerWindow?.close();
             }}
           >
             <HeaderActionIcon name="windowClose" />
@@ -685,7 +812,7 @@ function AppHeader(props: AppHeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default AppHeader
+export default AppHeader;

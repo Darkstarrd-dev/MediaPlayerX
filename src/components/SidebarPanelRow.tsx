@@ -179,6 +179,7 @@ export function SidebarPanelRow({
         className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""}`}
         data-slot="fg-sidebar-main-label"
         type="button"
+        aria-label={displayLabel}
         aria-pressed={
           manageStyleEnabled ? checkedNodes.has(node.id) : undefined
         }

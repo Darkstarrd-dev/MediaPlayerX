@@ -31,7 +31,7 @@ describe("useSettingsPersistence", () => {
       expect(updateSettings).toHaveBeenCalledWith(
         expect.objectContaining({
           themeId: "tokyo-night",
-          styleId: "flush",
+          styleId: "soft-skeuomorphic",
           paletteId: "tokyo-night",
         }),
       );
