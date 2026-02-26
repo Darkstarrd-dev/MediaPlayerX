@@ -27,6 +27,7 @@
 @import './styles/liquid-glass.css';
 @import './styles/neobrutalism.css';
 @import './styles/soft-skeuomorphic.css';
+@import './styles/soft-skeuomorphic.components.css';
 @import './styles/soft-skeuomorphic.main-transport.css';
 @import './styles/soft-skeuomorphic.fullscreen-transport.css';
 @import './styles/soft-skeuomorphic.fullscreen-shell.css';

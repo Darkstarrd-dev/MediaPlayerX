@@ -1,6 +1,5 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"] {
-  --mpx-card-radius: 8px;
   --mpx-slot-fg-main-content-image-grid-card-border: #bcc4cf;
   --mpx-slot-fg-main-content-image-grid-card-bg: var(--mpx-runway-groove-bg);
   --mpx-slot-fg-main-content-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
@@ -10,7 +9,7 @@
   --mpx-card-shadow: var(--mpx-runway-groove-shadow);
   --mpx-control-hover-shadow: var(--mpx-runway-groove-shadow);
   --mpx-control-hover-transform: none;
-  border-radius: 8px;
+  border-radius: var(--mpx-card-radius);
   padding: 5px;
   overflow: hidden;
   transition: padding 0.15s ease, box-shadow 0.25s ease;
