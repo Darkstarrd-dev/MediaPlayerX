@@ -1171,6 +1171,57 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
   );
 
   it(
+    "元数据管理支持单选/复选切换，单选仅保留最后焦点节点",
+    async () => {
+      render(<App />);
+
+      await click(getMetadataManageModeButton());
+
+      const toSingleModeButton = screen.getByRole("button", {
+        name: "切换到单选模式",
+      });
+      expect(toSingleModeButton.textContent).toBe("M");
+      await click(toSingleModeButton);
+
+      const toMultipleModeButton = screen.getByRole("button", {
+        name: "切换到复选模式",
+      });
+      expect(toMultipleModeButton.textContent).toBe("S");
+
+      const labels = document.querySelectorAll(
+        ".sidebar-row.is-manage .sidebar-label",
+      );
+      expect(labels.length).toBeGreaterThan(1);
+
+      await click(labels[0] as HTMLButtonElement);
+      await click(labels[1] as HTMLButtonElement);
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage.is-selected").length,
+        ).toBe(1);
+      });
+
+      await click(toMultipleModeButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "切换到单选模式" }),
+        ).toBeInTheDocument();
+      });
+
+      await click(labels[0] as HTMLButtonElement);
+
+      await waitFor(() => {
+        expect(
+          document.querySelectorAll(".sidebar-row.is-manage.is-selected").length,
+        ).toBeGreaterThan(1);
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
     "元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称",
     async () => {
       render(<App />);

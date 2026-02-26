@@ -52,6 +52,7 @@ function ImageMainSection({
   vectorMode,
   showNamesOnly,
   metadataManageMode,
+  metadataManageSelectionMode = "multiple",
   thumbnailScaleLevel = 1,
   thumbnailScaleLevelCount = 9,
   canThumbnailScaleDown = true,
@@ -187,6 +188,7 @@ function ImageMainSection({
   metadataProxyServer,
   metadataEhentaiCookies,
   onMetadataSyncName,
+  onToggleMetadataManageSelectionMode = () => undefined,
   onMetadataSaveParsed,
   onMetadataSaveParsedByPackageId,
   nodeBrowseMode = false,
@@ -1304,13 +1306,17 @@ function ImageMainSection({
             </div>
           </>
         ) : metadataManageMode ? (
-          <ImageMainMetadataToolbar
-            t={t}
-            metadataPending={metadataPending}
-            manageOperationHint={manageOperationHint}
-            onMetadataSyncName={onMetadataSyncName}
-            onOpenMetadataFetch={() => setMetadataFetchOpen(true)}
-          />
+            <ImageMainMetadataToolbar
+              t={t}
+              metadataPending={metadataPending}
+              metadataManageSelectionMode={metadataManageSelectionMode}
+              manageOperationHint={manageOperationHint}
+              onMetadataSyncName={onMetadataSyncName}
+              onToggleMetadataManageSelectionMode={
+                onToggleMetadataManageSelectionMode
+              }
+              onOpenMetadataFetch={() => setMetadataFetchOpen(true)}
+            />
         ) : (
           <ImageMainNormalToolbar
             t={t}

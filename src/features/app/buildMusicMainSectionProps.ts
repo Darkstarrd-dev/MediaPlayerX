@@ -14,6 +14,7 @@ interface BuildMusicMainSectionPropsParams {
   playRequestNonce: number
   manageMode: boolean
   metadataManageMode: boolean
+  metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
@@ -57,6 +58,7 @@ interface BuildMusicMainSectionPropsParams {
   mediaPreloadMemoryBudgetMb: number
   fullscreenVideoControlsMaxWidth: number
   updateSettings: (patch: Partial<AppSettings>) => void
+  onToggleMetadataManageSelectionMode?: () => void
 }
 
 const MUSIC_LOOP_MODE_ORDER: MusicLoopMode[] = ['single', 'folder', 'album', 'library']
@@ -204,6 +206,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     playRequestNonce: params.playRequestNonce,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
+    metadataManageSelectionMode: params.metadataManageSelectionMode ?? 'multiple',
     sidebarSelectedCount: params.sidebarSelectedCount,
     imageSelectedCount: params.imageSelectedCount,
     activeSelectionScope: params.activeSelectionScope,
@@ -215,6 +218,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     onManageGroup: params.onManageGroup,
     onManageMove: params.onManageMove,
     onClearManageSelection: params.onClearManageSelection,
+    onToggleMetadataManageSelectionMode: params.onToggleMetadataManageSelectionMode,
     canJumpToManga: params.canJumpToManga,
     canJumpToAnimation: params.canJumpToAnimation,
     canJumpToCover: params.canJumpToCover,

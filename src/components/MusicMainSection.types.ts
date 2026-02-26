@@ -9,6 +9,7 @@ export interface MusicMainSectionProps {
   playRequestNonce: number
   manageMode: boolean
   metadataManageMode: boolean
+  metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
@@ -20,6 +21,7 @@ export interface MusicMainSectionProps {
   onManageGroup?: () => void
   onManageMove?: () => void
   onClearManageSelection: () => void
+  onToggleMetadataManageSelectionMode?: () => void
   canJumpToManga: boolean
   canJumpToAnimation: boolean
   canJumpToCover: boolean

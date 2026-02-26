@@ -34,6 +34,7 @@ interface BuildSidebarPanelPropsParams {
   searchResultsReadOnly: boolean;
   manageMode: boolean;
   metadataManageMode: boolean;
+  metadataManageSelectionMode?: "single" | "multiple";
   checkedSidebarNodeIdSet: Set<string>;
   focusedRef: { packageId: string; imageIndex: number } | null;
   playlistIds: string[];
@@ -56,6 +57,7 @@ interface BuildSidebarPanelPropsParams {
   setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>;
   onToggleManageNode: (nodeId: string, shiftKey: boolean) => void;
   onClearSidebarSelection: () => void;
+  onSelectMetadataSingleNode?: (nodeId: string) => void;
   titleCollapseEnabled?: boolean;
 }
 
@@ -63,6 +65,8 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
   const adReviewResultsMode = params.adReviewResultsMode ?? false;
   const sidebarResultMode = params.searchResultsMode || adReviewResultsMode;
   const sidebarLabelDisplayMode = params.sidebarLabelDisplayMode ?? "full";
+  const metadataManageSelectionMode =
+    params.metadataManageSelectionMode ?? "multiple";
 
   return {
     mode: params.mode,
@@ -94,6 +98,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     searchResultReadonly: params.searchResultsReadOnly,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
+    metadataManageSelectionMode,
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: adReviewResultsMode
       ? true
@@ -163,6 +168,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onToggleManageNode: params.onToggleManageNode,
     onClearSidebarSelection: params.onClearSidebarSelection,
+    onSelectMetadataSingleNode: params.onSelectMetadataSingleNode,
     onToggleAudioPlaylist: (audioId: string, checked: boolean) => {
       params.setAudioPlaylistIds((previous) => {
         if (checked) {

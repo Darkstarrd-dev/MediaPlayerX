@@ -529,6 +529,8 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "a11y.metadata.fetchSourceSwitch": "Source switch",
   "a11y.metadata.enterMetadataManageMode": "Enter metadata management mode",
   "a11y.metadata.exitMetadataManageMode": "Exit metadata management mode",
+  "a11y.metadata.switchToSingleSelectMode": "Switch to single-select mode",
+  "a11y.metadata.switchToMultipleSelectMode": "Switch to multi-select mode",
   "a11y.metadata.switchToMetadataDisplay": "Switch to metadata display",
   "a11y.metadata.switchToOriginalImageDisplay":
     "Switch to original image display",

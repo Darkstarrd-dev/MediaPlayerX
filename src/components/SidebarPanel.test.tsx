@@ -768,7 +768,7 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.getByLabelText("曲 2")).toBeInTheDocument();
   });
 
-  it("元数据管理模式下点击节点标签仅切换勾选并保留管理样式", () => {
+  it("元数据管理模式下点击节点标签会切换勾选并同步导航", () => {
     const { onSelectAudio, onSelectNode, onToggleManageNode } =
       renderMusicSidebar({ metadataManageMode: true });
 
@@ -778,11 +778,28 @@ describe("SidebarPanel music interactions", () => {
       "folder:X盘/Album A",
       false,
     );
-    expect(onSelectNode).not.toHaveBeenCalled();
-    expect(onSelectAudio).not.toHaveBeenCalled();
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
     expect(
       document.querySelectorAll(".sidebar-row.is-manage").length,
     ).toBeGreaterThan(0);
+  });
+
+  it("元数据管理单选模式下点击节点标签仅同步单选目标与导航", () => {
+    const onSelectMetadataSingleNode = vi.fn();
+    const { onSelectAudio, onSelectNode, onToggleManageNode } =
+      renderMusicSidebar({
+        metadataManageMode: true,
+        metadataManageSelectionMode: "single",
+        onSelectMetadataSingleNode,
+      });
+
+    fireEvent.click(screen.getByRole("button", { name: "Album A" }));
+
+    expect(onToggleManageNode).not.toHaveBeenCalled();
+    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
   });
 
   it("管理模式下点击节点标签仅切换勾选，不触发导航", () => {
@@ -912,6 +929,44 @@ describe("SidebarPanel music interactions", () => {
 });
 
 describe("SidebarPanel image collapse interactions", () => {
+  it("元数据管理模式下点击图片节点会切换勾选并同步包选择", () => {
+    const onToggleManageNode = vi.fn();
+    const { onSelectNode, onSelectPackage } = renderImageSidebar(
+      IMAGE_TREE_COLLAPSIBLE_FIXTURE,
+      {
+        metadataManageMode: true,
+        onToggleManageNode,
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Vol.1" }));
+
+    expect(onToggleManageNode).toHaveBeenCalledWith("package:图库/Vol.1", false);
+    expect(onSelectNode).toHaveBeenCalledWith("package:图库/Vol.1");
+    expect(onSelectPackage).toHaveBeenCalledWith("pkg-1");
+  });
+
+  it("元数据管理单选模式下点击图片节点只同步单选目标与包选择", () => {
+    const onToggleManageNode = vi.fn();
+    const onSelectMetadataSingleNode = vi.fn();
+    const { onSelectNode, onSelectPackage } = renderImageSidebar(
+      IMAGE_TREE_COLLAPSIBLE_FIXTURE,
+      {
+        metadataManageMode: true,
+        metadataManageSelectionMode: "single",
+        onToggleManageNode,
+        onSelectMetadataSingleNode,
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Vol.1" }));
+
+    expect(onToggleManageNode).not.toHaveBeenCalled();
+    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith("package:图库/Vol.1");
+    expect(onSelectNode).toHaveBeenCalledWith("package:图库/Vol.1");
+    expect(onSelectPackage).toHaveBeenCalledWith("pkg-1");
+  });
+
   it("处理中图片节点点击仅聚焦，不触发包切换", () => {
     const { onSelectNode, onSelectPackage } = renderImageSidebar(
       IMAGE_TREE_COLLAPSIBLE_FIXTURE,
@@ -928,7 +983,7 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(onSelectPackage).not.toHaveBeenCalled();
     expect(screen.getByText("...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Vol.1" })).toHaveAttribute(
-      "title",
+      "data-tooltip-label",
       "归一化处理中，暂不可预览",
     );
   });

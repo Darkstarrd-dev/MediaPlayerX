@@ -27,6 +27,7 @@ function MusicMainSection({
   playRequestNonce,
   manageMode,
   metadataManageMode,
+  metadataManageSelectionMode = 'multiple',
   sidebarSelectedCount,
   imageSelectedCount,
   activeSelectionScope,
@@ -34,6 +35,7 @@ function MusicMainSection({
   manageOperationHint,
   canManageDelete,
   onManageDelete,
+  onToggleMetadataManageSelectionMode = () => undefined,
   canManageMoveNodes = false,
   onManageGroup = () => undefined,
   canJumpToManga,
@@ -71,6 +73,10 @@ function MusicMainSection({
   onCycleMusicLoopMode,
 }: MusicMainSectionProps) {
   const { t } = useI18n()
+  const metadataSelectionToggleLabel =
+    metadataManageSelectionMode === 'single'
+      ? t('a11y.metadata.switchToMultipleSelectMode')
+      : t('a11y.metadata.switchToSingleSelectMode')
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const visualizerGpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const visualizerCpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -1226,11 +1232,20 @@ function MusicMainSection({
               <>
                 <span hidden data-slot="fg-main-toolbar-state-metadata" />
                 <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
-                {manageOperationHint ? (
-                  <div className="toolbar-actions toolbar-actions-manage">
+                <div className="toolbar-actions toolbar-actions-manage">
+                  <button
+                    className="feature-action-btn main-icon-square-btn"
+                    type="button"
+                    aria-label={metadataSelectionToggleLabel}
+                    data-tooltip-label={metadataSelectionToggleLabel}
+                    onClick={onToggleMetadataManageSelectionMode}
+                  >
+                    {metadataManageSelectionMode === 'single' ? 'S' : 'M'}
+                  </button>
+                  {manageOperationHint ? (
                     <span className="main-toolbar-hint">{manageOperationHint}</span>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
               </>
             ) : (
               <>

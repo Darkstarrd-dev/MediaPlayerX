@@ -14,6 +14,7 @@ import type { BrowserMode, SidebarNode } from "../types";
 import {
   flattenVisibleSidebarRows,
   isSameNodeIdSet,
+  resolveFirstAudioId,
   resolveAncestorNodeIds,
   resolveAudioParentNodeIds,
   resolveImagePackageParentNodeIds,
@@ -51,6 +52,7 @@ interface SidebarPanelProps {
   canGoToFromSearchMode?: boolean;
   manageMode?: boolean;
   metadataManageMode?: boolean;
+  metadataManageSelectionMode?: "single" | "multiple";
   checkedSidebarNodeIds?: ReadonlySet<string>;
   playlistIds: string[];
   audioPlaylistIds: string[];
@@ -66,6 +68,7 @@ interface SidebarPanelProps {
   onToggleVideoPlaylist: (videoId: string, checked: boolean) => void;
   onToggleAudioPlaylist: (audioId: string, checked: boolean) => void;
   onClearSidebarSelection?: () => void;
+  onSelectMetadataSingleNode?: (nodeId: string) => void;
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
@@ -98,6 +101,7 @@ function SidebarPanel({
   canGoToFromSearchMode = false,
   manageMode = false,
   metadataManageMode = false,
+  metadataManageSelectionMode = "multiple",
   checkedSidebarNodeIds,
   audioPlaylistIds,
   onSelectNode,
@@ -111,6 +115,7 @@ function SidebarPanel({
   onResetRoot,
   onToggleAudioPlaylist,
   onClearSidebarSelection,
+  onSelectMetadataSingleNode,
   onToggleManageNode,
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
@@ -120,6 +125,11 @@ function SidebarPanel({
 }: SidebarPanelProps) {
   const { t } = useI18n();
   const manageStyleEnabled = manageMode || metadataManageMode;
+  const metadataSingleSelectEnabled =
+    metadataManageMode && metadataManageSelectionMode === "single";
+  const manageToggleEnabled =
+    manageMode ||
+    (metadataManageMode && metadataManageSelectionMode === "multiple");
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>();
   const [
     localCollapsedImageFolderNodeIds,
@@ -295,6 +305,20 @@ function SidebarPanel({
     walk(imageTreeNodes);
     return map;
   }, [imageTreeNodes, mode]);
+
+  const activeNodeById = useMemo(() => {
+    const map = new Map<string, SidebarNode>();
+    const walk = (nodes: SidebarNode[]) => {
+      for (const node of nodes) {
+        map.set(node.id, node);
+        if (node.children.length > 0) {
+          walk(node.children);
+        }
+      }
+    };
+    walk(activeTreeNodes);
+    return map;
+  }, [activeTreeNodes]);
 
   const imagePackageParentNodeIds = useMemo(
     () =>
@@ -833,7 +857,7 @@ function SidebarPanel({
     startNodeId: string,
     event: ReactPointerEvent<HTMLElement>,
   ) => {
-    if (!manageStyleEnabled || !onToggleManageNode) {
+    if (!manageToggleEnabled || !onToggleManageNode) {
       return;
     }
     if (event.button !== 0) {
@@ -844,7 +868,7 @@ function SidebarPanel({
     }
 
     // Do selection toggle on pointer down so Shift+Click and drag toggling are stable.
-    // Click handler only performs fallback toggle in manage styles; navigation happens in non-manage styles.
+    // Click handler may additionally drive navigation in metadata-manage mode.
     event.preventDefault();
     suppressManageClickRef.current = true;
     onToggleManageNode(startNodeId, event.shiftKey);
@@ -909,6 +933,22 @@ function SidebarPanel({
       }
       if (upEvent.type === "pointerup") {
         onSelectNode(state.lastNodeId);
+        if (metadataManageMode) {
+          const targetNode = activeNodeById.get(state.lastNodeId);
+          if (mode === "image" && targetNode?.imageSourceId) {
+            onSelectPackage(targetNode.imageSourceId);
+          } else if (mode === "video" && targetNode?.videoId) {
+            onSelectVideo(targetNode.videoId);
+          } else if (mode === "music" && targetNode) {
+            const targetAudioId = resolveFirstAudioId(targetNode);
+            if (targetAudioId) {
+              onSelectAudio(targetAudioId);
+            }
+          }
+          if (metadataSingleSelectEnabled) {
+            onSelectMetadataSingleNode?.(state.lastNodeId);
+          }
+        }
       }
       detachManageDragListeners();
     };
@@ -1410,6 +1450,9 @@ function SidebarPanel({
               imageNodeLoadStateById={imageNodeLoadStateById}
               collapsedImageFolderNodeIds={collapsedImageFolderNodeIds}
               manageStyleEnabled={manageStyleEnabled}
+              manageToggleEnabled={manageToggleEnabled}
+              metadataSingleSelectEnabled={metadataSingleSelectEnabled}
+              metadataManageMode={metadataManageMode}
               checkedNodes={checkedNodes}
               sidebarFontSize={sidebarFontSize}
               sidebarCountFontSize={sidebarCountFontSize}
@@ -1425,6 +1468,7 @@ function SidebarPanel({
                 updateCollapsedImageFolderNodeIds
               }
               onToggleManageNode={onToggleManageNode}
+              onSelectMetadataSingleNode={onSelectMetadataSingleNode}
               onSelectNode={onSelectNode}
               onSelectPackage={onSelectPackage}
               onSelectVideo={onSelectVideo}

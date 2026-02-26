@@ -277,7 +277,7 @@
 
 .sidebar-row {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
   padding-right: 0;
@@ -448,6 +448,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  margin-left: auto;
 }
 
 .sidebar-count {
@@ -471,13 +472,13 @@
 
 .sidebar-count-packages {
   color: var(--mpx-status-info-text);
-  background: color-mix(in srgb, var(--mpx-status-info-bg) 72%, transparent);
+  background: transparent;
   border-color: var(--mpx-status-info-border);
 }
 
 .sidebar-count-images {
   color: var(--mpx-status-success-text);
-  background: color-mix(in srgb, var(--mpx-status-success-bg) 72%, transparent);
+  background: transparent;
   border-color: var(--mpx-status-success-border);
 }
 

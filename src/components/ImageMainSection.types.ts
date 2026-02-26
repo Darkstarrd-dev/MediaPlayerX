@@ -16,6 +16,7 @@ export interface ImageMainSectionProps {
   vectorMode: boolean;
   showNamesOnly: boolean;
   metadataManageMode: boolean;
+  metadataManageSelectionMode?: "single" | "multiple";
   thumbnailScaleLevel?: number;
   thumbnailScaleLevelCount?: number;
   canThumbnailScaleDown?: boolean;
@@ -69,6 +70,7 @@ export interface ImageMainSectionProps {
   metadataProxyServer: string;
   metadataEhentaiCookies: string;
   onMetadataSyncName: () => void;
+  onToggleMetadataManageSelectionMode?: () => void;
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>;
   onMetadataSaveParsedByPackageId?: (
     packageId: string,

@@ -244,6 +244,7 @@ export function useAppWorkspaceProps({
   collapseSidebar,
   applyCurrentRootFromSelection,
   toggleSidebarNodeChecked,
+  checkSidebarNode,
   setAudioPlaylistIds,
   requestMusicPlay,
   musicBookletBindings,
@@ -252,6 +253,8 @@ export function useAppWorkspaceProps({
   const [nodeBrowsePageByNodeId, setNodeBrowsePageByNodeId] = useState<
     Record<string, number>
   >({});
+  const [metadataManageSelectionMode, setMetadataManageSelectionMode] =
+    useState<"single" | "multiple">("multiple");
 
   const featureTagOptionsEffective = Array.from(
     new Set(
@@ -281,6 +284,33 @@ export function useAppWorkspaceProps({
     selectedSidebarNodeId,
     imageTreeForSidebar,
   });
+
+  useEffect(() => {
+    if (!metadataManageMode || metadataManageSelectionMode !== "single") {
+      return;
+    }
+
+    if (!selectedSidebarNodeId || !sidebarNodeById.has(selectedSidebarNodeId)) {
+      clearSidebarSelections();
+      return;
+    }
+
+    clearSidebarSelections();
+    checkSidebarNode(selectedSidebarNodeId);
+  }, [
+    checkSidebarNode,
+    clearSidebarSelections,
+    metadataManageMode,
+    metadataManageSelectionMode,
+    selectedSidebarNodeId,
+    sidebarNodeById,
+  ]);
+
+  const toggleMetadataManageSelectionMode = () => {
+    setMetadataManageSelectionMode((value) =>
+      value === "single" ? "multiple" : "single",
+    );
+  };
 
   const { onToggleAdReviewFocus } = useAdReviewFocusBindings({
     adReviewPanelOpen,
@@ -339,6 +369,7 @@ export function useAppWorkspaceProps({
     searchResultsReadOnly: adReviewResultsMode ? false : searchResultsReadOnly,
     manageMode,
     metadataManageMode,
+    metadataManageSelectionMode,
     checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
     focusedRef,
     playlistIds,
@@ -395,6 +426,10 @@ export function useAppWorkspaceProps({
     setAudioPlaylistIds,
     onToggleManageNode: toggleSidebarNodeChecked,
     onClearSidebarSelection: clearSidebarSelections,
+    onSelectMetadataSingleNode: (nodeId) => {
+      clearSidebarSelections();
+      checkSidebarNode(nodeId);
+    },
     titleCollapseEnabled: !luxuryWhiteActive,
   });
 
@@ -791,6 +826,7 @@ export function useAppWorkspaceProps({
     vectorResultsActive,
     showNamesOnly,
     metadataManageMode,
+    metadataManageSelectionMode,
     thumbnailScaleLevel: displayThumbnailScaleLevel,
     thumbnailScaleLevelCount,
     canThumbnailScaleDown,
@@ -882,6 +918,7 @@ export function useAppWorkspaceProps({
     metadataProxyServer: appSettings.proxyServer,
     metadataEhentaiCookies: appSettings.ehentaiCookies,
     onMetadataSyncName: applyMetadataSyncName,
+    onToggleMetadataManageSelectionMode: toggleMetadataManageSelectionMode,
     onMetadataSaveParsed: saveParsedMetadata,
     onMetadataSaveParsedByPackageId: saveParsedMetadataByPackageId,
     onToggleImageChecked: toggleImageChecked,
@@ -1121,6 +1158,7 @@ export function useAppWorkspaceProps({
   const videoMainSectionProps = buildVideoMainSectionProps({
     manageMode,
     metadataManageMode,
+    metadataManageSelectionMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
@@ -1243,6 +1281,7 @@ export function useAppWorkspaceProps({
     setFullscreenActiveWithAutoStop,
     metadataPending: metadataWriteBindings.metadataPending,
     onMetadataSyncName: applyMetadataSyncName,
+    onToggleMetadataManageSelectionMode: toggleMetadataManageSelectionMode,
   });
 
   const musicMainSectionProps = buildMusicMainSectionProps({
@@ -1254,6 +1293,7 @@ export function useAppWorkspaceProps({
     playRequestNonce: musicPlayRequestNonce,
     manageMode,
     metadataManageMode,
+    metadataManageSelectionMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
@@ -1312,6 +1352,7 @@ export function useAppWorkspaceProps({
     musicVisualizerShaderSettingsById:
       appSettings.musicVisualizerShaderSettingsById,
     updateSettings: appSettings.updateSettings,
+    onToggleMetadataManageSelectionMode: toggleMetadataManageSelectionMode,
   });
 
   const metadataPanelProps = buildWorkspaceMetadataPanelProps({

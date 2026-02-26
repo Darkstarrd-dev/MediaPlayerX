@@ -13,6 +13,7 @@ import type {
 interface BuildVideoMainSectionPropsParams {
   manageMode: boolean
   metadataManageMode: boolean
+  metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
@@ -85,6 +86,7 @@ interface BuildVideoMainSectionPropsParams {
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   metadataPending: boolean
   onMetadataSyncName: () => void
+  onToggleMetadataManageSelectionMode?: () => void
   canJumpToManga: boolean
   canJumpToMusic: boolean
   onJumpToManga: () => void
@@ -115,6 +117,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
   return {
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
+    metadataManageSelectionMode: params.metadataManageSelectionMode ?? 'multiple',
     sidebarSelectedCount: params.sidebarSelectedCount,
     imageSelectedCount: params.imageSelectedCount,
     activeSelectionScope: params.activeSelectionScope,
@@ -175,6 +178,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
     metadataPending: params.metadataPending,
     onMetadataSyncName: params.onMetadataSyncName,
+    onToggleMetadataManageSelectionMode: params.onToggleMetadataManageSelectionMode,
     canJumpToManga: params.canJumpToManga,
     canJumpToMusic: params.canJumpToMusic,
     onJumpToManga: params.onJumpToManga,

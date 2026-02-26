@@ -17,6 +17,7 @@ interface BuildImageMainSectionPropsParams {
   vectorResultsActive: boolean
   showNamesOnly: boolean
   metadataManageMode: boolean
+  metadataManageSelectionMode?: 'single' | 'multiple'
   thumbnailScaleLevel: number
   thumbnailScaleLevelCount: number
   canThumbnailScaleDown: boolean
@@ -101,6 +102,7 @@ interface BuildImageMainSectionPropsParams {
   metadataProxyServer: string
   metadataEhentaiCookies: string
   onMetadataSyncName: () => void
+  onToggleMetadataManageSelectionMode?: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   onMetadataSaveParsedByPackageId: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
   onToggleImageChecked: (imageId: string, checked?: boolean) => void
@@ -163,6 +165,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,
     metadataManageMode: params.metadataManageMode,
+    metadataManageSelectionMode: params.metadataManageSelectionMode ?? 'multiple',
     thumbnailScaleLevel: params.thumbnailScaleLevel,
     thumbnailScaleLevelCount: params.thumbnailScaleLevelCount,
     canThumbnailScaleDown: params.canThumbnailScaleDown,
@@ -283,6 +286,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataProxyServer: params.metadataProxyServer,
     metadataEhentaiCookies: params.metadataEhentaiCookies,
     onMetadataSyncName: params.onMetadataSyncName,
+    onToggleMetadataManageSelectionMode: params.onToggleMetadataManageSelectionMode,
     onMetadataSaveParsed: params.onMetadataSaveParsed,
     onMetadataSaveParsedByPackageId: params.onMetadataSaveParsedByPackageId,
     nodeBrowseMode: params.nodeBrowseMode,

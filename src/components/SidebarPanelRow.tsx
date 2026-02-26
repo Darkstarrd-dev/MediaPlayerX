@@ -29,6 +29,9 @@ interface SidebarPanelRowProps {
   imageNodeLoadStateById: Record<string, "pending" | "running">;
   collapsedImageFolderNodeIds: Set<string>;
   manageStyleEnabled: boolean;
+  manageToggleEnabled: boolean;
+  metadataSingleSelectEnabled: boolean;
+  metadataManageMode: boolean;
   checkedNodes: ReadonlySet<string>;
   sidebarFontSize: number;
   sidebarCountFontSize: number;
@@ -47,6 +50,7 @@ interface SidebarPanelRowProps {
     updater: (previous: Set<string>) => Set<string>,
   ) => void;
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
+  onSelectMetadataSingleNode?: (nodeId: string) => void;
   onSelectNode: (nodeId: string) => void;
   onSelectPackage: (packageId: string) => void;
   onSelectVideo: (videoId: string) => void;
@@ -68,6 +72,9 @@ export function SidebarPanelRow({
   imageNodeLoadStateById,
   collapsedImageFolderNodeIds,
   manageStyleEnabled,
+  manageToggleEnabled,
+  metadataSingleSelectEnabled,
+  metadataManageMode,
   checkedNodes,
   sidebarFontSize,
   sidebarCountFontSize,
@@ -81,6 +88,7 @@ export function SidebarPanelRow({
   startManagePointerToggle,
   updateCollapsedImageFolderNodeIds,
   onToggleManageNode,
+  onSelectMetadataSingleNode,
   onSelectNode,
   onSelectPackage,
   onSelectVideo,
@@ -132,6 +140,30 @@ export function SidebarPanelRow({
     : t("a11y.sidebar.nodeCount", { count: directMediaChildCount });
   const showProcessingCountPlaceholder =
     mode === "image" && hasOwnImages && Boolean(loadState);
+
+  const applyMediaSelection = () => {
+    if (mode === "image" && searchResultReadonly) {
+      return;
+    }
+
+    onSelectNode(node.id);
+    if (mode === "image" && node.imageSourceId && loadState) {
+      return;
+    }
+    if (mode === "image" && node.imageSourceId) {
+      onSelectPackage(node.imageSourceId);
+    }
+    if (mode === "music") {
+      const targetAudioId = resolveFirstAudioId(node);
+      if (targetAudioId) {
+        onSelectAudio(targetAudioId);
+      }
+      return;
+    }
+    if (node.videoId) {
+      onSelectVideo(node.videoId);
+    }
+  };
 
   return (
     <div
@@ -188,33 +220,25 @@ export function SidebarPanelRow({
         }
         onClick={(event) => {
           if (manageStyleEnabled) {
-            if (suppressManageClickRef.current) {
-              suppressManageClickRef.current = false;
-              return;
+            if (manageToggleEnabled) {
+              if (suppressManageClickRef.current) {
+                suppressManageClickRef.current = false;
+              } else {
+                onToggleManageNode?.(node.id, event.shiftKey);
+              }
             }
-            onToggleManageNode?.(node.id, event.shiftKey);
-            return;
-          }
-          if (mode === "image" && searchResultReadonly) {
-            return;
-          }
-          onSelectNode(node.id);
-          if (mode === "image" && node.imageSourceId && loadState) {
-            return;
-          }
-          if (mode === "image" && node.imageSourceId) {
-            onSelectPackage(node.imageSourceId);
-          }
-          if (mode === "music") {
-            const targetAudioId = resolveFirstAudioId(node);
-            if (targetAudioId) {
-              onSelectAudio(targetAudioId);
+
+            if (metadataSingleSelectEnabled) {
+              onSelectMetadataSingleNode?.(node.id);
+            }
+
+            if (metadataManageMode) {
+              applyMediaSelection();
             }
             return;
           }
-          if (node.videoId) {
-            onSelectVideo(node.videoId);
-          }
+
+          applyMediaSelection();
         }}
         onDoubleClick={() => {
           if (mode === "video" && node.videoId) {
@@ -261,6 +285,40 @@ export function SidebarPanelRow({
             </span>
           ) : null}
         </span>
+
+        {mode === "image" ? (
+          <span
+            className="sidebar-counts"
+            style={{ fontSize: `${sidebarCountFontSize}px` }}
+          >
+            <span
+              className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
+              aria-label={imageCountLabel}
+              data-tooltip-label={imageCountLabel}
+            >
+              {showProcessingCountPlaceholder
+                ? "..."
+                : hasOwnImages
+                  ? visibleImageCount
+                  : directMediaChildCount}
+            </span>
+          </span>
+        ) : null}
+
+        {mode === "music" ? (
+          <span
+            className="sidebar-counts"
+            style={{ fontSize: `${sidebarCountFontSize}px` }}
+          >
+            <span
+              className={musicCountClassName}
+              aria-label={musicCountLabel}
+              data-tooltip-label={musicCountLabel}
+            >
+              {musicCountValue}
+            </span>
+          </span>
+        ) : null}
       </button>
 
       {mode === "music" && node.kind === "audio" && node.audioId ? (
@@ -272,40 +330,6 @@ export function SidebarPanelRow({
             onToggleAudioPlaylist(node.audioId!, event.target.checked)
           }
         />
-      ) : null}
-
-      {mode === "image" ? (
-        <span
-          className="sidebar-counts"
-          style={{ fontSize: `${sidebarCountFontSize}px` }}
-        >
-          <span
-            className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
-            aria-label={imageCountLabel}
-            data-tooltip-label={imageCountLabel}
-          >
-            {showProcessingCountPlaceholder
-              ? "..."
-              : hasOwnImages
-                ? visibleImageCount
-                : directMediaChildCount}
-          </span>
-        </span>
-      ) : null}
-
-      {mode === "music" ? (
-        <span
-          className="sidebar-counts"
-          style={{ fontSize: `${sidebarCountFontSize}px` }}
-        >
-          <span
-            className={musicCountClassName}
-            aria-label={musicCountLabel}
-            data-tooltip-label={musicCountLabel}
-          >
-            {musicCountValue}
-          </span>
-        </span>
       ) : null}
     </div>
   );

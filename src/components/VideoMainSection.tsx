@@ -31,6 +31,7 @@ type VideoPopoverKey = "volume" | "subtitle" | "speed" | "fit" | "playlist";
 interface VideoMainSectionProps {
   manageMode: boolean;
   metadataManageMode: boolean;
+  metadataManageSelectionMode?: "single" | "multiple";
   sidebarSelectedCount: number;
   imageSelectedCount: number;
   activeSelectionScope: "sidebar" | "image" | null;
@@ -51,6 +52,7 @@ interface VideoMainSectionProps {
   onClearManageSelection: () => void;
   metadataPending: boolean;
   onMetadataSyncName: () => void;
+  onToggleMetadataManageSelectionMode?: () => void;
   canJumpToManga: boolean;
   canJumpToMusic: boolean;
   onJumpToManga: () => void;
@@ -132,6 +134,7 @@ interface VideoMainSectionProps {
 function VideoMainSection({
   manageMode,
   metadataManageMode,
+  metadataManageSelectionMode = "multiple",
   sidebarSelectedCount,
   imageSelectedCount,
   activeSelectionScope,
@@ -146,6 +149,7 @@ function VideoMainSection({
   onManageAddToPlaylist = () => undefined,
   metadataPending,
   onMetadataSyncName,
+  onToggleMetadataManageSelectionMode = () => undefined,
   canJumpToManga,
   canJumpToMusic,
   onJumpToManga,
@@ -208,6 +212,10 @@ function VideoMainSection({
   onEnterFullscreen,
 }: VideoMainSectionProps) {
   const { t } = useI18n();
+  const metadataSelectionToggleLabel =
+    metadataManageSelectionMode === "single"
+      ? t("a11y.metadata.switchToMultipleSelectMode")
+      : t("a11y.metadata.switchToSingleSelectMode");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const previousVideoTimePropRef = useRef(videoTime);
   const explicitSeekAtMsRef = useRef(0);
@@ -550,6 +558,15 @@ function VideoMainSection({
               {t("ui.header.metadataManage")}
             </strong>
             <div className="toolbar-actions toolbar-actions-manage">
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={metadataSelectionToggleLabel}
+                data-tooltip-label={metadataSelectionToggleLabel}
+                onClick={onToggleMetadataManageSelectionMode}
+              >
+                {metadataManageSelectionMode === "single" ? "S" : "M"}
+              </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"

@@ -463,6 +463,8 @@ export const zhCnCatalogPart2 = {
   "a11y.metadata.fetchSourceSwitch": "来源切换",
   "a11y.metadata.enterMetadataManageMode": "进入元数据管理模式",
   "a11y.metadata.exitMetadataManageMode": "退出元数据管理模式",
+  "a11y.metadata.switchToSingleSelectMode": "切换到单选模式",
+  "a11y.metadata.switchToMultipleSelectMode": "切换到复选模式",
   "a11y.metadata.switchToMetadataDisplay": "切换到元数据显示",
   "a11y.metadata.switchToOriginalImageDisplay": "切换到原图显示",
   "a11y.metadata.packageRating": "图包评分",
