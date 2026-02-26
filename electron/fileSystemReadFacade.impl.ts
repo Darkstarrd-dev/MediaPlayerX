@@ -235,6 +235,7 @@ export class FileSystemMediaReadService {
   private pruneMissingSnapshotPromise: Promise<void> | null = null;
 
   private pruneMissingSnapshotQueued = false;
+  private managementMutationInFlightCount = 0;
   private startupCleanupPromise: Promise<void> | null = null;
   private lastInteractiveReadAtMs = 0;
   private readLibrarySnapshotInFlight: Promise<LibrarySnapshotDto> | null =
@@ -588,6 +589,32 @@ export class FileSystemMediaReadService {
     this.archiveNormalizationService.scheduleDrain(delayMs);
   }
 
+  private hasManagementMutationInFlight(): boolean {
+    return this.managementMutationInFlightCount > 0;
+  }
+
+  private async withManagementMutationGuard<T>(
+    task: () => Promise<T>,
+  ): Promise<T> {
+    this.managementMutationInFlightCount += 1;
+    try {
+      return await task();
+    } finally {
+      this.managementMutationInFlightCount = Math.max(
+        0,
+        this.managementMutationInFlightCount - 1,
+      );
+      if (
+        this.managementMutationInFlightCount === 0 &&
+        this.pruneMissingSnapshotQueued &&
+        !this.pruneMissingSnapshotPromise &&
+        !this.disposed
+      ) {
+        this.schedulePruneMissingSnapshotEntries();
+      }
+    }
+  }
+
   invalidateCache(): void {
     this.librarySnapshotService.invalidateCache();
     this.stateHydrated = false;
@@ -712,7 +739,11 @@ export class FileSystemMediaReadService {
   }
 
   private runExternalSourceRefreshFromWatcher(): void {
-    if (this.disposed || this.importTaskService.hasRunningImportTasks()) {
+    if (
+      this.disposed ||
+      this.importTaskService.hasRunningImportTasks() ||
+      this.hasManagementMutationInFlight()
+    ) {
       return;
     }
 
@@ -852,6 +883,11 @@ export class FileSystemMediaReadService {
   private async pruneMissingSnapshotEntries(
     snapshot: LibrarySnapshotDto,
   ): Promise<LibrarySnapshotDto> {
+    if (this.hasManagementMutationInFlight()) {
+      this.pruneMissingSnapshotQueued = true;
+      return snapshot;
+    }
+
     const missingPaths = new Set<string>();
     const imageSources = [
       ...snapshot.image_packages,
@@ -875,6 +911,11 @@ export class FileSystemMediaReadService {
     }
 
     if (missingPaths.size === 0) {
+      return snapshot;
+    }
+
+    if (this.hasManagementMutationInFlight()) {
+      this.pruneMissingSnapshotQueued = true;
       return snapshot;
     }
 
@@ -902,6 +943,11 @@ export class FileSystemMediaReadService {
 
   private schedulePruneMissingSnapshotEntries(): void {
     if (this.disposed) {
+      return;
+    }
+
+    if (this.hasManagementMutationInFlight()) {
+      this.pruneMissingSnapshotQueued = true;
       return;
     }
 
@@ -1032,13 +1078,41 @@ export class FileSystemMediaReadService {
   }
 
   async writePackageGrade(request: WritePackageGradeRequestDto): Promise<WritePackageGradeResponseDto> { return this.libraryHandlers.writePackageGrade(request); }
-  async setImageHidden(request: SetImageHiddenRequestDto): Promise<SetImageHiddenResponseDto> { return this.managementHandlers.setImageHidden(request); }
-  async deleteImageItems(request: DeleteImageItemsRequestDto): Promise<DeleteImageItemsResponseDto> { return this.managementHandlers.deleteImageItems(request); }
-  async deleteSidebarNodes(request: DeleteSidebarNodesRequestDto): Promise<DeleteSidebarNodesResponseDto> { return this.managementHandlers.deleteSidebarNodes(request); }
-  async moveSidebarNodes(request: MoveSidebarNodesRequestDto): Promise<MoveSidebarNodesResponseDto> { return this.managementHandlers.moveSidebarNodes(request); }
-  async renameSidebarNode(request: RenameSidebarNodeRequestDto): Promise<RenameSidebarNodeResponseDto> { return this.managementHandlers.renameSidebarNode(request); }
-  async renameSidebarNodes(request: RenameSidebarNodesRequestDto): Promise<RenameSidebarNodesResponseDto> { return this.managementHandlers.renameSidebarNodes(request); }
-  async renameItems(request: RenameItemsRequestDto): Promise<RenameItemsResponseDto> { return this.managementHandlers.renameItems(request); }
+  async setImageHidden(request: SetImageHiddenRequestDto): Promise<SetImageHiddenResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.setImageHidden(request),
+    );
+  }
+  async deleteImageItems(request: DeleteImageItemsRequestDto): Promise<DeleteImageItemsResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.deleteImageItems(request),
+    );
+  }
+  async deleteSidebarNodes(request: DeleteSidebarNodesRequestDto): Promise<DeleteSidebarNodesResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.deleteSidebarNodes(request),
+    );
+  }
+  async moveSidebarNodes(request: MoveSidebarNodesRequestDto): Promise<MoveSidebarNodesResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.moveSidebarNodes(request),
+    );
+  }
+  async renameSidebarNode(request: RenameSidebarNodeRequestDto): Promise<RenameSidebarNodeResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.renameSidebarNode(request),
+    );
+  }
+  async renameSidebarNodes(request: RenameSidebarNodesRequestDto): Promise<RenameSidebarNodesResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.renameSidebarNodes(request),
+    );
+  }
+  async renameItems(request: RenameItemsRequestDto): Promise<RenameItemsResponseDto> {
+    return this.withManagementMutationGuard(() =>
+      this.managementHandlers.renameItems(request),
+    );
+  }
   async startManageAdReview(request: StartManageAdReviewRequestDto): Promise<StartManageAdReviewResponseDto> { return this.managementHandlers.startManageAdReview(request); }
   async readManageAdReviewTask(request: ReadManageAdReviewTaskRequestDto): Promise<ReadManageAdReviewTaskResponseDto> { return this.managementHandlers.readManageAdReviewTask(request); }
   async pauseManageAdReviewTask(request: PauseManageAdReviewTaskRequestDto): Promise<PauseManageAdReviewTaskResponseDto> { return this.managementHandlers.pauseManageAdReviewTask(request); }

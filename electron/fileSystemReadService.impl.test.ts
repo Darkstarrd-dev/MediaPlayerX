@@ -3,7 +3,7 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { createServer } from "node:http";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MEDIA_PROTOCOL_SCHEME } from "./channels";
 import { FileSystemMediaReadService } from "./fileSystemReadService";
@@ -762,6 +762,130 @@ describe("FileSystemMediaReadService", () => {
         (payload) => payload.reason === "auto-prune-missing-sources",
       ),
     ).toBe(true);
+  });
+
+  it("管理变更进行中应延后自动缺失清理", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-prune-guard-"));
+    createdRoots.push(root);
+
+    await writeBinary(path.join(root, "gallery", "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+    await service.readLibrarySnapshot();
+
+    const serviceInternal = service as unknown as {
+      managementMutationInFlightCount: number;
+      pruneMissingSnapshotPromise: Promise<void> | null;
+      pruneMissingSnapshotQueued: boolean;
+      schedulePruneMissingSnapshotEntries: () => void;
+      pruneMissingSnapshotEntries: (snapshot: unknown) => Promise<unknown>;
+    };
+    const pruneSpy = vi.spyOn(serviceInternal, "pruneMissingSnapshotEntries");
+
+    serviceInternal.managementMutationInFlightCount = 1;
+    serviceInternal.schedulePruneMissingSnapshotEntries();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pruneSpy).not.toHaveBeenCalled();
+    expect(serviceInternal.pruneMissingSnapshotQueued).toBe(true);
+    expect(serviceInternal.pruneMissingSnapshotPromise).toBeNull();
+
+    serviceInternal.managementMutationInFlightCount = 0;
+    serviceInternal.schedulePruneMissingSnapshotEntries();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(pruneSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("同一批目录多轮 replace 重命名后不应丢失 sidebar 节点", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-rename-replace-loop-"));
+    createdRoots.push(root);
+
+    await writeBinary(path.join(root, "set demo A", "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(path.join(root, "set B", "b.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(path.join(root, "set demo C", "c.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const featureFilter = {
+      name_query: "",
+      work_title_query: "",
+      series_id_query: "",
+      circle_query: "",
+      author_query: "",
+      tags: [],
+      grade: null,
+    };
+
+    const beforeSnapshot = await service.readLibrarySnapshot();
+    expect(beforeSnapshot.image_directories).toHaveLength(3);
+
+    const firstTargets = beforeSnapshot.image_directories.map((source) => ({
+      kind: "sidebar-node" as const,
+      node_id: `package:${source.tree_path.join("/")}`,
+    }));
+
+    const firstRename = await service.renameItems({
+      targets: firstTargets,
+      mode: "replace",
+      replace_from: " demo",
+      replace_to: "",
+      fail_fast: false,
+      preview_only: false,
+    });
+
+    expect(firstRename.failed).toEqual([]);
+    expect(firstRename.renamed_count).toBe(2);
+
+    const secondSnapshotBase = await service.readLibrarySnapshot();
+    expect(secondSnapshotBase.image_directories).toHaveLength(3);
+
+    const secondTargets = secondSnapshotBase.image_directories.map((source) => ({
+      kind: "sidebar-node" as const,
+      node_id: `package:${source.tree_path.join("/")}`,
+    }));
+
+    const secondRename = await service.renameItems({
+      targets: secondTargets,
+      mode: "replace",
+      replace_from: " demo",
+      replace_to: "",
+      fail_fast: false,
+      preview_only: false,
+    });
+
+    expect(secondRename.failed).toEqual([]);
+    expect(secondRename.renamed_count).toBe(0);
+    expect(
+      secondRename.results.every((item) => item.reason === "replace-target-not-found"),
+    ).toBe(true);
+
+    const sidebar = await service.readImageSidebarTree({
+      feature_filter: featureFilter,
+      grade_overrides: {},
+    });
+    expect(sidebar.image_directories).toHaveLength(3);
+
+    const labels = sidebar.image_directories
+      .map((item) => item.display_name)
+      .sort((left, right) => left.localeCompare(right, "zh-CN"));
+    expect(labels).toEqual(["set A", "set B", "set C"]);
+
+    await expect(fs.stat(path.join(root, "set A", "a.jpg"))).resolves.toMatchObject({
+      isFile: expect.any(Function),
+    });
+    await expect(fs.stat(path.join(root, "set B", "b.jpg"))).resolves.toMatchObject({
+      isFile: expect.any(Function),
+    });
+    await expect(fs.stat(path.join(root, "set C", "c.jpg"))).resolves.toMatchObject({
+      isFile: expect.any(Function),
+    });
   });
 
   it("外部删除导入源后会通过 watcher 自动清理并广播变更", async () => {
