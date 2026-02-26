@@ -478,6 +478,27 @@ export class SubtitleSessionManager {
     );
   }
 
+  private isSessionNotRunningError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message === "subtitle_session_not_running";
+  }
+
+  private hasActiveSession(
+    webContentsId: number,
+    session: SubtitleSessionState,
+  ): boolean {
+    return this.sessions.get(webContentsId) === session;
+  }
+
+  private ensureActiveSession(
+    webContentsId: number,
+    session: SubtitleSessionState,
+  ): void {
+    if (!this.hasActiveSession(webContentsId, session)) {
+      throw new Error("subtitle_session_not_running");
+    }
+  }
+
   private clearHeartbeatMonitor(session: SubtitleSessionState): void {
     if (!session.heartbeatMonitorTimer) {
       return;
@@ -577,6 +598,8 @@ export class SubtitleSessionManager {
       await session.restartPromise;
     }
 
+    this.ensureActiveSession(webContentsId, session);
+
     try {
       return await this.requestWithGpuQuota(
         session.workerClient,
@@ -600,6 +623,7 @@ export class SubtitleSessionManager {
       }
 
       await session.restartPromise;
+      this.ensureActiveSession(webContentsId, session);
       return await this.requestWithGpuQuota(
         session.workerClient,
         command,
@@ -1300,13 +1324,55 @@ export class SubtitleSessionManager {
       });
     }
 
-    const payload = await this.requestSessionWorker(
-      webContentsId,
-      session,
-      "push-audio",
-      request,
-    );
-    return pushSubtitleAudioResponseSchema.parse(payload);
+    try {
+      const payload = await this.requestSessionWorker(
+        webContentsId,
+        session,
+        "push-audio",
+        request,
+      );
+      return pushSubtitleAudioResponseSchema.parse(payload);
+    } catch (error) {
+      if (
+        !this.isRecoverableWorkerError(error) &&
+        !this.isSessionNotRunningError(error)
+      ) {
+        throw error;
+      }
+
+      const requestEpoch = Number.isFinite(request.session_epoch)
+        ? Math.max(0, Math.floor(request.session_epoch))
+        : 0;
+      const requestChunkSeq = Number.isFinite(request.chunk_seq)
+        ? Math.max(0, Math.floor(request.chunk_seq))
+        : 0;
+      const sessionStillActive = this.hasActiveSession(webContentsId, session);
+
+      return pushSubtitleAudioResponseSchema.parse({
+        session_id: sessionStillActive ? session.sessionId : null,
+        accepted: false,
+        provider: sessionStillActive ? session.provider : null,
+        cues: [],
+        events: [
+          {
+            code: sessionStillActive
+              ? "worker_unavailable"
+              : "session_not_running",
+            level: "warning",
+            message: sessionStillActive
+              ? error instanceof Error
+                ? error.message
+                : String(error)
+              : "subtitle session is not running",
+            at_ms: nowMs(),
+          },
+        ],
+        session_epoch: requestEpoch,
+        chunk_seq: requestChunkSeq,
+        queue_len: 0,
+        updated_at_ms: nowMs(),
+      });
+    }
   }
 
   private resolveWorkerScriptPath(): string {

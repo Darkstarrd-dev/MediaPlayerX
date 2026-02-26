@@ -494,6 +494,8 @@ async function handleFlush(): Promise<unknown> {
         16_000,
         Math.max(0, currentSession.lastChunkEndSec - 2),
         currentSession.lastChunkEndSec,
+        emitWorkerDebug,
+        nowMs,
       );
     } else {
       cues = tryDecodeAndBuildCues(
@@ -657,11 +659,16 @@ async function handlePushAudio(rawPayload: unknown): Promise<unknown> {
         16_000,
         request.chunk_start_sec,
         request.chunk_end_sec,
+        emitWorkerDebug,
+        nowMs,
       ),
     );
 
     if (currentSession.speaker) {
-      const thresholdHintEvent = maybeBuildSpeakerThresholdHint(currentSession);
+      const thresholdHintEvent = maybeBuildSpeakerThresholdHint(
+        currentSession,
+        createEvent,
+      );
       if (thresholdHintEvent) {
         events.push(thresholdHintEvent);
       }
