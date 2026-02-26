@@ -64,12 +64,42 @@
 
 TODO Check：
 
-- [ ] 拆分 `SettingsPanel`：状态管理 / 绑定录制 / 拖拽逻辑分离。
-- [ ] 拆分 `renderSettingsMainSectionContent`：按 section 渲染器拆文件。
-- [ ] 拆分 `FullscreenLayer`：pane 计算、拖拽、调参面板逻辑提取。
-- [ ] 拆分 `ImageMainSection`：普通工具栏、审查流程、转换面板解耦。
-- [ ] 执行测试：`npm run test` 通过。
-- [ ] 更新本 Phase 执行记录后提交。
+- [x] 拆分 `SettingsPanel`：状态管理 / 绑定录制 / 拖拽逻辑分离。
+- [x] 拆分 `renderSettingsMainSectionContent`：按 section 渲染器拆文件。
+- [x] 拆分 `FullscreenLayer`：pane 计算、拖拽、调参面板逻辑提取。
+- [x] 拆分 `ImageMainSection`：普通工具栏、审查流程、转换面板解耦。
+- [x] 执行测试：`npm run test` 通过。
+- [x] 更新本 Phase 执行记录后提交。
+
+当前进度记录：
+
+- 2026-02-26：已完成 `renderSettingsMainSectionContent` 首轮拆分。
+  - 新增：`src/components/settings/renderSettingsPerformanceSection.tsx`
+  - 新增：`src/components/settings/renderSettingsDebugSection.tsx`
+  - 新增：`src/components/settings/renderSettingsShortcutsSection.tsx`
+  - 新增：`src/components/settings/renderSettingsDatabaseSection.tsx`
+  - 调整：`src/components/settings/renderSettingsMainSectionContent.tsx`
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`）
+
+- 2026-02-26：已完成 `SettingsPanel.impl.tsx` 首轮拆分。
+  - 新增：`src/components/settings/settingsPanelHelpers.ts`
+  - 新增：`src/components/settings/usePreferenceDebugState.ts`
+  - 新增：`src/components/settings/SettingsShortcutBindingDialog.tsx`
+  - 新增：`src/components/settings/SettingsShortcutCaptureDialog.tsx`
+  - 调整：`src/components/SettingsPanel.impl.tsx`
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`）
+
+- 2026-02-26：已完成 `FullscreenLayer.tsx` 首轮拆分。
+  - 新增：`src/components/fullscreen/imageAdjustInteractions.ts`
+  - 调整：`src/components/FullscreenLayer.tsx`
+  - 拆分点：图像调整面板交互（重置补丁、levels 拖拽、曲线点拖拽、面板拖拽）抽离。
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`）
+
+- 2026-02-26：已完成 `ImageMainSection.tsx` 首轮拆分。
+  - 新增：`src/components/ImageMainSectionContentArea.tsx`
+  - 调整：`src/components/ImageMainSection.tsx`
+  - 拆分点：主内容区渲染、框选遮罩、审核起始弹窗与元数据抓取弹窗收敛到独立子组件。
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`）
 
 ### Phase 2（P0 首轮：工作区编排与音乐）
 
@@ -81,11 +111,37 @@ TODO Check：
 
 TODO Check：
 
-- [ ] `useAppWorkspaceProps` 参数与派生逻辑按 domain 拆分。
-- [ ] `MusicMainSection` 视图/播放控制/可视化运行时拆分。
-- [ ] `ManagementRenameService` 重命名计划与执行路径解耦。
-- [ ] 执行测试：`npm run test` 通过。
+- [x] `useAppWorkspaceProps` 参数与派生逻辑按 domain 拆分。
+- [x] `MusicMainSection` 视图/播放控制/可视化运行时拆分。
+- [x] `ManagementRenameService` 重命名计划与执行路径解耦。
+- [x] 执行测试：`npm run test` 通过。
 - [ ] 更新本 Phase 执行记录后提交。
+
+当前进度记录：
+
+- 2026-02-26：已完成 `managementRenameService.ts` 首轮拆分。
+  - 新增：`electron/services/file-system-read/managementRenameService.types.ts`
+  - 新增：`electron/services/file-system-read/managementRenameSidebarOps.ts`
+  - 调整：`electron/services/file-system-read/managementRenameService.ts`
+  - 拆分点：Sidebar 节点重命名流程（批量/单节点）抽离为独立 operation。
+
+- 2026-02-26：已完成 `useAppWorkspaceProps.impl.ts` 首轮拆分。
+  - 新增：`src/features/app/workspaceMetadataFetchTargets.ts`
+  - 新增：`src/features/app/useWorkspaceNodeBrowsePaging.ts`
+  - 新增：`src/features/app/workspaceImageMainSectionHandlers.ts`
+  - 新增：`src/features/app/useMetadataManageSelectionMode.ts`
+  - 调整：`src/features/app/useAppWorkspaceProps.impl.ts`
+  - 拆分点：metadata fetch targets、node browse 分页、image main section 行为处理器与 metadata manage selection mode 逻辑解耦。
+
+- 2026-02-26：已完成 `MusicMainSection.tsx` 首轮拆分。
+  - 新增：`src/components/MusicMainSectionLayout.tsx`
+  - 新增：`src/components/MusicMainSectionControlsShell.tsx`
+  - 调整：`src/components/MusicMainSection.tsx`
+  - 拆分点：toolbar/fullscreen 布局与 controls shell（播放控制 + shader 控制 + 音量）从主组件分离。
+
+- 2026-02-26：Phase 2 验证通过。
+  - 验证：`npm run build` 通过。
+  - 验证：`npm run test` 通过（`108 passed | 1 skipped`，`651 passed | 1 skipped`）。
 
 ### Phase 3（P0/P1：后端会话与读写）
 
@@ -148,8 +204,8 @@ TODO Check：
 
 | Phase | 状态 | 拆分范围 | 测试命令 | 测试结果 | 提交哈希 | 日期 |
 |---|---|---|---|---|---|---|
-| Phase 1 | 未开始 | - | - | - | - | - |
-| Phase 2 | 未开始 | - | - | - | - | - |
+| Phase 1 | 已完成 | Settings / FullscreenLayer / ImageMainSection 首轮拆分 | `npm run test` | 通过（108 passed / 1 skipped） | - | 2026-02-26 |
+| Phase 2 | 已完成（待提交） | useAppWorkspaceProps / MusicMainSection / managementRenameService 首轮拆分 | `npm run build` + `npm run test` | 通过（108 files passed / 1 skipped；651 tests passed / 1 skipped） | - | 2026-02-26 |
 | Phase 3 | 未开始 | - | - | - | - | - |
 | Phase 4 | 未开始 | - | - | - | - | - |
 | Phase 5 | 未开始 | - | - | - | - | - |

@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { createPortal } from 'react-dom'
-
-import { MainUiIcon } from './MainUiIcon'
-import { MusicControlIcon } from './MusicControlIcon'
-import { SkeuoRunway } from './primitives/SkeuoRunway'
+import { MusicMainSectionControlsShell } from './MusicMainSectionControlsShell'
+import { MusicMainSectionLayout } from './MusicMainSectionLayout'
 import type { MusicMainSectionProps, MusicPopoverKey } from './MusicMainSection.types'
-import { ToolbarTitleMarquee } from './ToolbarTitleMarquee'
 import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
-import { FullscreenMetaMarquee } from './fullscreen/FullscreenMetaMarquee'
 import { useFullscreenWindowViewport } from './fullscreen/useFullscreenWindowViewport'
-import { resolveLoopModeIconName, resolveMusicToolbarSummary } from './musicMainSectionUtils'
+import { resolveMusicToolbarSummary } from './musicMainSectionUtils'
 import { useMediaPreloadWindow } from './useMediaPreloadWindow'
 import { useFullscreenFloatingControls } from './useFullscreenFloatingControls'
 import { useI18n } from '../i18n/useI18n'
@@ -19,7 +14,7 @@ import {
 } from '../features/media/musicPlaybackBridge'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
-import { clamp, formatSeconds } from '../utils/ui'
+import { clamp } from '../utils/ui'
 
 function MusicMainSection({
   active,
@@ -326,13 +321,6 @@ function MusicMainSection({
     : visualizerDisplayBackend === 'cpu'
       ? undefined
       : ({ display: 'none' } as CSSProperties)
-
-  const manageSummary =
-    activeSelectionScope === 'sidebar'
-      ? t('a11y.manage.selectedSidebarNodes', { count: sidebarSelectedCount })
-      : activeSelectionScope === 'image'
-        ? t('a11y.manage.selectedMediaItems', { count: imageSelectedCount })
-        : t('a11y.manage.noSelection')
 
   const toggleAudioPlayback = useCallback(() => {
     if (!focusedAudioSrc) {
@@ -646,8 +634,6 @@ function MusicMainSection({
     } as CSSProperties
   }, [fullscreenActive, fullscreenVideoControlsMaxWidth, fullscreenViewport.height, fullscreenViewport.width])
 
-  const effectiveFullscreenControlsMounted = popoverDebugPinned || fullscreenControlsMounted
-  const effectiveFullscreenControlsVisible = popoverDebugPinned || fullscreenControlsVisible
   const musicVolumeTooltipStatus = audioMuted
     ? t('tip.music.volumeStatusMuted')
     : t('tip.music.volumeStatusPercent', { value: Math.round(audioVolume) })
@@ -657,489 +643,81 @@ function MusicMainSection({
   const playTooltip = audioPlaying ? t('tip.music.pauseTrack') : t('tip.music.playTrack')
 
   const musicControlsShell = (
-    <div
-      className={`music-controls-shell${fullscreenActive ? ' is-fullscreen-floating fullscreen-controls-shell' : ''}${fullscreenActive && effectiveFullscreenControlsVisible ? ' is-visible' : ''}${fullscreenActive && !effectiveFullscreenControlsMounted ? ' is-hidden' : ''}`}
-      data-slot="fg-main-content-music-controls"
-      hidden={fullscreenActive ? !effectiveFullscreenControlsMounted : undefined}
-      onMouseEnter={fullscreenActive ? showFullscreenControls : undefined}
-      onMouseLeave={fullscreenActive ? hideFullscreenControls : closePopover}
-    >
-      {fullscreenActive && focusedAudio ? (
-        <div className="fullscreen-meta-row is-single">
-          <div className="fullscreen-meta-line">
-            <div className="fullscreen-meta-line-segment">
-              <FullscreenMetaMarquee text={`${focusedAudio.absolutePath} | ${formatSeconds(Math.max(0, focusedAudio.durationSec))} | ${Number(focusedAudio.sizeMb.toFixed(2))}MB`} />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="music-controls-progress" data-slot="fg-main-content-music-controls-progress">
-        <span className="video-progress-time">{`${formatSeconds(displayAudioTime)} / ${formatSeconds(audioDurationSec)}`}</span>
-        <SkeuoRunway
-          ariaLabel={t('a11y.music.progress')}
-          className="is-progress"
-          fillTone="gold"
-          max={Math.max(0, audioDurationSec)}
-          min={0}
-          rangePercent={audioProgressPercent}
-          step={0.1}
-          thumbTone="pearl"
-          value={displayAudioTime}
-          onChange={(event) => {
-            const nextTime = clamp(Number(event.target.value), 0, Math.max(0, audioDurationSec))
-            setAudioSeekDraftTime(nextTime)
-            previewAudioSeekDuringDrag(nextTime)
-          }}
-          onMouseUp={commitAudioSeekDraft}
-          onTouchEnd={commitAudioSeekDraft}
-          onBlur={commitAudioSeekDraft}
-          onKeyUp={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              commitAudioSeekDraft()
-            }
-          }}
-        />
-      </div>
-
-      <div className="music-controls-row">
-        <div className="music-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-music-controls-left">
-          <div
-            className={`music-ctrl-popover ${popoverDebugPinned || openPopover === 'shader' ? 'is-open' : ''}`}
-            onMouseEnter={() => setOpenPopover('shader')}
-            onMouseLeave={closePopover}
-          >
-            <button
-              aria-controls="music-main-popover-shader"
-                aria-expanded={popoverDebugPinned || openPopover === 'shader'}
-              aria-haspopup="dialog"
-              aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
-              className="video-action-btn"
-              data-tooltip-label={shaderSelectTooltip}
-              type="button"
-            >
-              <MusicControlIcon name="shaderList" />
-            </button>
-            <div className="music-ctrl-panel is-shader" data-slot="fg-main-content-music-controls-shader-pop" hidden={!popoverDebugPinned && openPopover !== 'shader'} id="music-main-popover-shader" role="dialog" style={shaderOptionWidthStyle}>
-              <div className="music-ctrl-shader-toolbar">
-                <div className="music-ctrl-shader-layer-toggle">
-                  <button
-                    aria-label={t('a11y.music.shaderToggleLayer')}
-                    aria-pressed={shaderListTargetLayer === 'foreground'}
-                    className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'foreground' ? 'is-on' : 'is-off'}`}
-                    data-tooltip-label={t('a11y.music.shaderToggleLayer')}
-                    type="button"
-                    onClick={() => setShaderListTargetLayer('foreground')}
-                  >
-                    F
-                  </button>
-                  <button
-                    aria-label={t('a11y.music.shaderToggleEnabled')}
-                    aria-pressed={effectiveForegroundLayerEnabled}
-                    className={`music-ctrl-shader-toolbar-btn is-power ${effectiveForegroundLayerEnabled ? 'is-on' : 'is-off'}`}
-                    data-tooltip-label={t('a11y.music.shaderToggleEnabled')}
-                    type="button"
-                    onClick={() => toggleShaderLayerEnabled('foreground')}
-                  >
-                    {effectiveForegroundLayerEnabled ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-                <div className="music-ctrl-shader-layer-toggle">
-                  <button
-                    aria-label={t('a11y.music.shaderToggleLayer')}
-                    aria-pressed={shaderListTargetLayer === 'background'}
-                    className={`music-ctrl-shader-toolbar-btn is-layer ${shaderListTargetLayer === 'background' ? 'is-on' : 'is-off'}`}
-                    data-tooltip-label={t('a11y.music.shaderToggleLayer')}
-                    type="button"
-                    onClick={() => setShaderListTargetLayer('background')}
-                  >
-                    B
-                  </button>
-                  <button
-                    aria-label={t('a11y.music.shaderToggleEnabled')}
-                    aria-pressed={effectiveBackgroundLayerEnabled}
-                    className={`music-ctrl-shader-toolbar-btn is-power ${effectiveBackgroundLayerEnabled ? 'is-on' : 'is-off'}`}
-                    data-tooltip-label={t('a11y.music.shaderToggleEnabled')}
-                    type="button"
-                    onClick={() => toggleShaderLayerEnabled('background')}
-                  >
-                    {effectiveBackgroundLayerEnabled ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-              </div>
-              <div className="music-ctrl-panel-options">
-                {MUSIC_VISUALIZER_SHADERS.length > 0 ? (
-                  MUSIC_VISUALIZER_SHADERS.map((shader) => (
-                    <button
-                      aria-pressed={shaderListTargetShaderId === shader.id}
-                      className={`music-ctrl-panel-option ${shaderListTargetShaderId === shader.id ? 'is-active' : ''}${musicVisualizerLayeredForegroundShaderId === shader.id ? ' is-foreground-selected' : ''}${musicVisualizerLayeredBackgroundShaderId === shader.id ? ' is-background-selected' : ''}`}
-                      key={shader.id}
-                      type="button"
-                      onClick={() => {
-                        const isSelected = shaderListTargetShaderId === shader.id
-                        onMusicVisualizerLayerShaderIdChange(shaderListTargetLayer, isSelected ? '' : shader.id)
-                        closePopover()
-                      }}
-                    >
-                      <span className="music-ctrl-option-label">{shader.label}</span>
-                    </button>
-                  ))
-                ) : (
-                  <span className="music-ctrl-panel-note">{t('ui.music.noShaders')}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`music-ctrl-popover is-dock-left ${popoverDebugPinned || openPopover === 'shaderSettings' ? 'is-open' : ''}`}
-            onMouseEnter={() => setOpenPopover('shaderSettings')}
-            onMouseLeave={closePopover}
-          >
-            <button
-              aria-controls="music-main-popover-shader-settings"
-                aria-expanded={popoverDebugPinned || openPopover === 'shaderSettings'}
-              aria-haspopup="dialog"
-              aria-label={t('a11y.music.shaderSettings')}
-              className="video-action-btn"
-              data-help-overlay-placement="top"
-              data-tooltip-label={t('tip.music.shaderSettings')}
-              type="button"
-            >
-              <MusicControlIcon name="shaderParameter" />
-            </button>
-            <div
-              className="music-ctrl-panel is-shader is-shader-settings"
-              data-slot="fg-main-content-music-controls-shader-settings-pop"
-              hidden={!popoverDebugPinned && openPopover !== 'shaderSettings'}
-              id="music-main-popover-shader-settings"
-              role="dialog"
-            >
-              <span className="music-ctrl-panel-title">{t('ui.music.shaderSettingsTitle')}</span>
-              <div className="music-ctrl-panel-options music-ctrl-shader-settings-form">
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.renderLongEdge')}</span>
-                  <input
-                    className="music-ctrl-shader-input"
-                    type="number"
-                    value={renderLongEdgeDraft}
-                    onChange={(event) => {
-                      setRenderLongEdgeDraft(event.target.value)
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault()
-                        applyRenderLongEdgeDraft()
-                      }
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundResolutionScale', { value: foregroundRenderScaleCoeffValue.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={5}
-                    min={1}
-                    step={0.01}
-                    style={foregroundRenderScaleCoeffStyle}
-                    type="range"
-                    value={foregroundRenderScaleCoeffValue}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      setForegroundRenderScaleCoeffDraft(Math.max(1, Math.min(5, value)))
-                    }}
-                    onMouseUp={applyForegroundRenderScaleCoeffDraft}
-                    onTouchEnd={applyForegroundRenderScaleCoeffDraft}
-                    onBlur={applyForegroundRenderScaleCoeffDraft}
-                    onKeyUp={(event) => {
-                      if (event.key === 'Enter') {
-                        applyForegroundRenderScaleCoeffDraft()
-                      }
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.backgroundResolutionScale', { value: backgroundRenderScaleCoeffValue.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={5}
-                    min={1}
-                    step={0.01}
-                    style={backgroundRenderScaleCoeffStyle}
-                    type="range"
-                    value={backgroundRenderScaleCoeffValue}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      setBackgroundRenderScaleCoeffDraft(Math.max(1, Math.min(5, value)))
-                    }}
-                    onMouseUp={applyBackgroundRenderScaleCoeffDraft}
-                    onTouchEnd={applyBackgroundRenderScaleCoeffDraft}
-                    onBlur={applyBackgroundRenderScaleCoeffDraft}
-                    onKeyUp={(event) => {
-                      if (event.key === 'Enter') {
-                        applyBackgroundRenderScaleCoeffDraft()
-                      }
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundOffsetX', { value: musicVisualizerLayeredForegroundOffsetX.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={1}
-                    min={-1}
-                    step={0.01}
-                    type="range"
-                    value={musicVisualizerLayeredForegroundOffsetX}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      onMusicVisualizerShaderSettingsChange({ layeredForegroundOffsetX: Math.max(-1, Math.min(1, value)) })
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundOffsetY', { value: musicVisualizerLayeredForegroundOffsetY.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={1}
-                    min={-1}
-                    step={0.01}
-                    type="range"
-                    value={musicVisualizerLayeredForegroundOffsetY}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      onMusicVisualizerShaderSettingsChange({ layeredForegroundOffsetY: Math.max(-1, Math.min(1, value)) })
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.foregroundScale', { value: musicVisualizerLayeredForegroundScale.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={3}
-                    min={0.25}
-                    step={0.01}
-                    type="range"
-                    value={musicVisualizerLayeredForegroundScale}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      onMusicVisualizerShaderSettingsChange({ layeredForegroundScale: Math.max(0.25, Math.min(3, value)) })
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.fpsCap')}</span>
-                  <select
-                    className="music-ctrl-shader-input"
-                    value={musicVisualizerShaderSettings.fpsCap}
-                    onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
-                        fpsCap: Number(event.target.value) as 30 | 60 | 120,
-                      })
-                    }
-                  >
-                    <option value={30}>{t('ui.music.fpsCapOption30')}</option>
-                    <option value={60}>{t('ui.music.fpsCapOption60')}</option>
-                    <option value={120}>{t('ui.music.fpsCapOption120')}</option>
-                  </select>
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapping')}</span>
-                  <select
-                    className="music-ctrl-shader-input"
-                    value={musicVisualizerShaderSettings.toneMapMode}
-                    onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
-                        toneMapMode: event.target.value as 'off' | 'reinhard' | 'aces' | 'filmic' | 'agx' | 'khronos',
-                      })
-                    }
-                  >
-                    <option value="off">{t('ui.music.disabled')}</option>
-                    <option value="aces">{t('ui.music.toneMapModeAces')}</option>
-                    <option value="reinhard">{t('ui.music.toneMapModeReinhard')}</option>
-                    <option value="filmic">{t('ui.music.toneMapModeFilmic')}</option>
-                    <option value="agx">{t('ui.music.toneMapModeAgx')}</option>
-                    <option value="khronos">{t('ui.music.toneMapModeKhronos')}</option>
-                  </select>
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapExposure', { value: musicVisualizerShaderSettings.toneMapExposure.toFixed(2) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={2}
-                    min={0.5}
-                    step={0.01}
-                    style={toneMapExposureRangeStyle}
-                    type="range"
-                    value={musicVisualizerShaderSettings.toneMapExposure}
-                    onChange={(event) => {
-                      const value = Number(event.target.value)
-                      if (!Number.isFinite(value)) {
-                        return
-                      }
-                      onMusicVisualizerShaderSettingsChange({
-                        toneMapExposure: Math.max(0.5, Math.min(2, value)),
-                      })
-                    }}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.toneMapStrength', { value: (musicVisualizerShaderSettings.toneMapStrength * 100).toFixed(0) })}</span>
-                  <input
-                    className="music-ctrl-shader-range"
-                    max={1}
-                    min={0}
-                    step={0.01}
-                    style={toneMapStrengthRangeStyle}
-                    type="range"
-                    value={musicVisualizerShaderSettings.toneMapStrength}
-                    onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
-                        toneMapStrength: Math.max(0, Math.min(1, Number(event.target.value))),
-                      })
-                    }
-                  />
-                </label>
-                <label className="music-ctrl-shader-toggle">
-                  <span className="music-ctrl-shader-label">{t('ui.music.showFpsDebug')}</span>
-                  <input
-                    type="checkbox"
-                    checked={musicVisualizerShaderSettings.showFps}
-                    onChange={(event) => onMusicVisualizerShaderSettingsChange({ showFps: event.target.checked })}
-                  />
-                </label>
-                <label className="music-ctrl-shader-field">
-                  <span className="music-ctrl-shader-label">{t('ui.music.renderBackend')}</span>
-                  <select
-                    className="music-ctrl-shader-input"
-                    value={musicVisualizerShaderSettings.renderer}
-                    onChange={(event) =>
-                      onMusicVisualizerShaderSettingsChange({
-                        renderer: event.target.value as 'gpu' | 'cpu',
-                      })
-                    }
-                  >
-                    <option value="gpu">{t('ui.music.rendererGpu')}</option>
-                    <option value="cpu">{t('ui.music.rendererCpu')}</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button
-            aria-label={fullscreenActive ? t('a11y.media.exitFullscreen') : t('a11y.media.enterFullscreen')}
-            className="video-action-btn"
-            data-tooltip-label={t('tip.music.fullscreenToggle')}
-            type="button"
-            onClick={onToggleFullscreen}
-          >
-            <MusicControlIcon name={fullscreenActive ? 'fullscreenCompress' : 'fullscreenExpand'} />
-          </button>
-        </div>
-
-        <div className="music-controls-group is-center" data-slot="fg-main-content-music-controls-center">
-          <button aria-label={t('a11y.media.prev')} className="video-action-btn video-action-prev" data-tooltip-label={t('tip.music.prevTrack')} disabled={!canPrevAudio} type="button" onClick={onPrevAudio}>
-            <MusicControlIcon name="prev" />
-          </button>
-          <button
-            aria-label={audioPlaying ? t('a11y.media.pause') : t('a11y.media.play')}
-            className="video-action-btn video-action-play"
-            data-tooltip-label={playTooltip}
-            type="button"
-            onClick={toggleAudioPlayback}
-          >
-            <MusicControlIcon name={audioPlaying ? 'pause' : 'play'} />
-          </button>
-          <button
-            aria-label={t('a11y.media.stop')}
-            className="video-action-btn video-action-stop"
-            data-tooltip-label={t('tip.music.stopTrack')}
-            type="button"
-            onClick={stopAudioPlayback}
-          >
-            <MusicControlIcon name="stop" />
-          </button>
-          <button aria-label={t('a11y.media.next')} className="video-action-btn video-action-next" data-tooltip-label={t('tip.music.nextTrack')} disabled={!canNextAudio} type="button" onClick={onNextAudio}>
-            <MusicControlIcon name="next" />
-          </button>
-        </div>
-
-        <div className="music-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-music-controls-right">
-          <button
-            aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
-            className="video-action-btn"
-            data-tooltip-label={loopModeTooltip}
-            type="button"
-            onClick={onCycleMusicLoopMode}
-          >
-            <MusicControlIcon name={resolveLoopModeIconName(musicLoopMode)} />
-          </button>
-
-          <div
-            className={`music-ctrl-popover ${popoverDebugPinned || openPopover === 'volume' ? 'is-open' : ''}`}
-            onMouseEnter={() => setOpenPopover('volume')}
-          >
-            <button
-              aria-controls="music-main-popover-volume"
-                aria-expanded={popoverDebugPinned || openPopover === 'volume'}
-              aria-haspopup="dialog"
-              aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
-              className="video-action-btn"
-              data-help-overlay-placement="top"
-              data-tooltip-label={volumeTooltip}
-              type="button"
-              onClick={() => setAudioMuted((value) => !value)}
-            >
-              <MusicControlIcon name={audioMuted ? 'volumeMuted' : 'volume'} />
-            </button>
-
-            <div
-              className="music-ctrl-panel is-volume"
-              data-slot="fg-main-content-music-controls-volume-pop"
-              hidden={!popoverDebugPinned && openPopover !== 'volume'}
-              id="music-main-popover-volume"
-              role="dialog"
-              onMouseLeave={closePopover}
-            >
-              <div className="music-ctrl-volume-axis">
-                <SkeuoRunway
-                  ariaLabel={t('a11y.media.volumeSlider')}
-                  className="is-volume"
-                  fillTone="graphite"
-                  inputClassName="music-ctrl-volume-range"
-                  max={100}
-                  min={0}
-                  rangePercent={audioVolumePercent}
-                  step={1}
-                  thumbTone="graphite"
-                  value={audioMuted ? 0 : audioVolume}
-                  onChange={(event) => {
-                    setAudioMuted(false)
-                    setAudioVolume(clamp(Number(event.target.value), 0, 100))
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <MusicMainSectionControlsShell
+      t={t}
+      fullscreenActive={fullscreenActive}
+      focusedAudio={focusedAudio}
+      popoverDebugPinned={popoverDebugPinned}
+      openPopover={openPopover}
+      onSetOpenPopover={setOpenPopover}
+      onClosePopover={closePopover}
+      controlsMounted={fullscreenControlsMounted}
+      controlsVisible={fullscreenControlsVisible}
+      showFullscreenControls={showFullscreenControls}
+      hideFullscreenControls={hideFullscreenControls}
+      displayAudioTime={displayAudioTime}
+      audioDurationSec={audioDurationSec}
+      audioProgressPercent={audioProgressPercent}
+      onAudioSeekDraftChange={(nextTime) => {
+        setAudioSeekDraftTime(nextTime)
+        previewAudioSeekDuringDrag(nextTime)
+      }}
+      onCommitAudioSeekDraft={commitAudioSeekDraft}
+      shaderSelectTooltip={shaderSelectTooltip}
+      selectedShaderLabel={selectedShaderLabel}
+      shaderOptionWidthStyle={shaderOptionWidthStyle}
+      shaderListTargetLayer={shaderListTargetLayer}
+      onSetShaderListTargetLayer={setShaderListTargetLayer}
+      effectiveForegroundLayerEnabled={effectiveForegroundLayerEnabled}
+      effectiveBackgroundLayerEnabled={effectiveBackgroundLayerEnabled}
+      onToggleShaderLayerEnabled={toggleShaderLayerEnabled}
+      shaderListTargetShaderId={shaderListTargetShaderId}
+      musicVisualizerLayeredForegroundShaderId={musicVisualizerLayeredForegroundShaderId}
+      musicVisualizerLayeredBackgroundShaderId={musicVisualizerLayeredBackgroundShaderId}
+      onMusicVisualizerLayerShaderIdChange={onMusicVisualizerLayerShaderIdChange}
+      renderLongEdgeDraft={renderLongEdgeDraft}
+      onRenderLongEdgeDraftChange={setRenderLongEdgeDraft}
+      onApplyRenderLongEdgeDraft={applyRenderLongEdgeDraft}
+      foregroundRenderScaleCoeffValue={foregroundRenderScaleCoeffValue}
+      foregroundRenderScaleCoeffStyle={foregroundRenderScaleCoeffStyle}
+      onForegroundRenderScaleCoeffDraftChange={setForegroundRenderScaleCoeffDraft}
+      onApplyForegroundRenderScaleCoeffDraft={applyForegroundRenderScaleCoeffDraft}
+      backgroundRenderScaleCoeffValue={backgroundRenderScaleCoeffValue}
+      backgroundRenderScaleCoeffStyle={backgroundRenderScaleCoeffStyle}
+      onBackgroundRenderScaleCoeffDraftChange={setBackgroundRenderScaleCoeffDraft}
+      onApplyBackgroundRenderScaleCoeffDraft={applyBackgroundRenderScaleCoeffDraft}
+      musicVisualizerLayeredForegroundOffsetX={musicVisualizerLayeredForegroundOffsetX}
+      musicVisualizerLayeredForegroundOffsetY={musicVisualizerLayeredForegroundOffsetY}
+      musicVisualizerLayeredForegroundScale={musicVisualizerLayeredForegroundScale}
+      musicVisualizerShaderSettings={musicVisualizerShaderSettings}
+      toneMapExposureRangeStyle={toneMapExposureRangeStyle}
+      toneMapStrengthRangeStyle={toneMapStrengthRangeStyle}
+      onMusicVisualizerShaderSettingsChange={onMusicVisualizerShaderSettingsChange}
+      onToggleFullscreen={onToggleFullscreen}
+      playTooltip={playTooltip}
+      canPrevAudio={canPrevAudio}
+      onPrevAudio={onPrevAudio}
+      audioPlaying={audioPlaying}
+      onToggleAudioPlayback={toggleAudioPlayback}
+      onStopAudioPlayback={stopAudioPlayback}
+      canNextAudio={canNextAudio}
+      onNextAudio={onNextAudio}
+      loopModeTooltip={loopModeTooltip}
+      musicLoopModeLabel={musicLoopModeLabel}
+      musicLoopMode={musicLoopMode}
+      onCycleMusicLoopMode={onCycleMusicLoopMode}
+      volumeTooltip={volumeTooltip}
+      audioMuted={audioMuted}
+      onToggleAudioMuted={() => {
+        setAudioMuted((value) => !value)
+      }}
+      audioVolume={audioVolume}
+      audioVolumePercent={audioVolumePercent}
+      onAudioVolumeChange={(value) => {
+        setAudioMuted(false)
+        setAudioVolume(value)
+      }}
+    />
   )
 
   const visualizerPane = (
@@ -1195,108 +773,36 @@ function MusicMainSection({
 
   return (
     <>
-      {active ? (
-        <>
-          <div className="main-toolbar" data-slot="fg-main-toolbar">
-            {manageMode ? (
-              <>
-                <span hidden data-slot="fg-main-toolbar-state-manage" />
-                <div className="toolbar-actions toolbar-actions-manage">
-                  <button
-                    className="feature-action-btn main-icon-square-btn"
-                    type="button"
-                    aria-label={t('a11y.common.organize')}
-                    data-tooltip-label={t('tip.common.organize')}
-                    disabled={!canManageMoveNodes || pendingManageAction}
-                    onClick={onManageGroup}
-                  >
-                    <MainUiIcon name="organize" />
-                  </button>
-                  <button
-                    className="vector-search-btn main-icon-square-btn"
-                    type="button"
-                    aria-label={t('a11y.common.delete')}
-                    data-tooltip-label={t('tip.common.delete')}
-                    disabled={!canManageDelete || pendingManageAction}
-                    onClick={onManageDelete}
-                  >
-                    <MainUiIcon name="delete" />
-                  </button>
-                  {manageOperationHint ? <span className="main-toolbar-hint">{manageOperationHint}</span> : null}
-                </div>
-                <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
-                  {manageSummary}
-                </strong>
-              </>
-            ) : metadataManageMode ? (
-              <>
-                <span hidden data-slot="fg-main-toolbar-state-metadata" />
-                <strong className="main-toolbar-title">{t('ui.header.metadataManage')}</strong>
-                <div className="toolbar-actions toolbar-actions-manage">
-                  <button
-                    className="feature-action-btn main-icon-square-btn"
-                    type="button"
-                    aria-label={metadataSelectionToggleLabel}
-                    data-tooltip-label={metadataSelectionToggleLabel}
-                    onClick={onToggleMetadataManageSelectionMode}
-                  >
-                    {metadataManageSelectionMode === 'single' ? 'S' : 'M'}
-                  </button>
-                  {manageOperationHint ? (
-                    <span className="main-toolbar-hint">{manageOperationHint}</span>
-                  ) : null}
-                </div>
-              </>
-            ) : (
-              <>
-                <span hidden data-slot="fg-main-toolbar-state-normal" />
-                <ToolbarTitleMarquee text={musicToolbarTitle} />
-                {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
-                  <div className="toolbar-actions">
-                    {canJumpToCover ? (
-                      <button
-                        className="toolbar-icon-btn"
-                        type="button"
-                        aria-label={t('ui.metadata.openCover')}
-                        data-tooltip-label={t('ui.metadata.openCover')}
-                        onClick={onJumpToCover}
-                      >
-                        <MainUiIcon name="cover" />
-                      </button>
-                    ) : null}
-                    {canJumpToBooklet ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.booklet')} data-tooltip-label={t('tip.media.booklet')} onClick={onJumpToBooklet}>
-                        <MainUiIcon name="booklet" />
-                      </button>
-                    ) : null}
-                    {canJumpToManga ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.manga')} data-tooltip-label={t('tip.media.manga')} onClick={onJumpToManga}>
-                        <MainUiIcon name="imageMode" />
-                      </button>
-                    ) : null}
-                    {canJumpToAnimation ? (
-                      <button className="toolbar-icon-btn" type="button" aria-label={t('a11y.media.animation')} data-tooltip-label={t('tip.media.animation')} onClick={onJumpToAnimation}>
-                        <MainUiIcon name="videoMode" />
-                      </button>
-                    ) : null}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-
-          {fullscreenActive && typeof document !== 'undefined'
-            ? createPortal(
-              <div className="music-fullscreen-layer" data-overlay-close="fullscreen">
-                {visualizerPane}
-              </div>,
-              document.body,
-            )
-            : visualizerPane}
-
-          {!fullscreenActive ? musicControlsShell : null}
-        </>
-      ) : null}
+      <MusicMainSectionLayout
+        active={active}
+        t={t}
+        manageMode={manageMode}
+        metadataManageMode={metadataManageMode}
+        metadataManageSelectionMode={metadataManageSelectionMode}
+        metadataSelectionToggleLabel={metadataSelectionToggleLabel}
+        sidebarSelectedCount={sidebarSelectedCount}
+        imageSelectedCount={imageSelectedCount}
+        activeSelectionScope={activeSelectionScope}
+        pendingManageAction={pendingManageAction}
+        manageOperationHint={manageOperationHint}
+        canManageDelete={canManageDelete}
+        canManageMoveNodes={canManageMoveNodes}
+        canJumpToManga={canJumpToManga}
+        canJumpToAnimation={canJumpToAnimation}
+        canJumpToCover={canJumpToCover}
+        canJumpToBooklet={canJumpToBooklet}
+        onManageDelete={onManageDelete}
+        onManageGroup={onManageGroup}
+        onToggleMetadataManageSelectionMode={onToggleMetadataManageSelectionMode}
+        onJumpToManga={onJumpToManga}
+        onJumpToAnimation={onJumpToAnimation}
+        onJumpToCover={onJumpToCover}
+        onJumpToBooklet={onJumpToBooklet}
+        musicToolbarTitle={musicToolbarTitle}
+        fullscreenActive={fullscreenActive}
+        visualizerPane={visualizerPane}
+        musicControlsShell={musicControlsShell}
+      />
 
       <audio
         ref={audioRef}

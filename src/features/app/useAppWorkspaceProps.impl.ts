@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
@@ -33,15 +33,15 @@ import {
   createSaveParsedMetadataByPackageId,
   createSaveParsedMetadata,
 } from "./workspaceMetadataActions";
+import { buildWorkspaceMetadataFetchTargets } from "./workspaceMetadataFetchTargets";
+import { useWorkspaceNodeBrowsePaging } from "./useWorkspaceNodeBrowsePaging";
+import { createWorkspaceImageMainSectionHandlers } from "./workspaceImageMainSectionHandlers";
+import { useMetadataManageSelectionMode } from "./useMetadataManageSelectionMode";
 import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
 import { buildWorkspaceMetadataPanelProps } from "./workspaceMetadataPanelProps";
 import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
 import type { MetadataFetchTarget } from "../metadata/metadataFetchTargets";
 import { useI18n } from "../../i18n/useI18n";
-
-function stripArchiveSuffix(value: string): string {
-  return value.replace(/\.(zip|rar|7z|cbz|cbr)$/i, "").trim();
-}
 export function useAppWorkspaceProps({
   appSettings,
   mediaRepository,
@@ -252,11 +252,14 @@ export function useAppWorkspaceProps({
   musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
-  const [nodeBrowsePageByNodeId, setNodeBrowsePageByNodeId] = useState<
-    Record<string, number>
-  >({});
-  const [metadataManageSelectionMode, setMetadataManageSelectionMode] =
-    useState<"single" | "multiple">("multiple");
+  const { metadataManageSelectionMode, toggleMetadataManageSelectionMode } =
+    useMetadataManageSelectionMode({
+      metadataManageMode,
+      selectedSidebarNodeId,
+      sidebarNodeById,
+      clearSidebarSelections,
+      checkSidebarNode,
+    });
 
   const featureTagOptionsEffective = Array.from(
     new Set(
@@ -286,33 +289,6 @@ export function useAppWorkspaceProps({
     selectedSidebarNodeId,
     imageTreeForSidebar,
   });
-
-  useEffect(() => {
-    if (!metadataManageMode || metadataManageSelectionMode !== "single") {
-      return;
-    }
-
-    if (!selectedSidebarNodeId || !sidebarNodeById.has(selectedSidebarNodeId)) {
-      clearSidebarSelections();
-      return;
-    }
-
-    clearSidebarSelections();
-    checkSidebarNode(selectedSidebarNodeId);
-  }, [
-    checkSidebarNode,
-    clearSidebarSelections,
-    metadataManageMode,
-    metadataManageSelectionMode,
-    selectedSidebarNodeId,
-    sidebarNodeById,
-  ]);
-
-  const toggleMetadataManageSelectionMode = () => {
-    setMetadataManageSelectionMode((value) =>
-      value === "single" ? "multiple" : "single",
-    );
-  };
 
   const { onToggleAdReviewFocus } = useAdReviewFocusBindings({
     adReviewPanelOpen,
@@ -471,49 +447,14 @@ export function useAppWorkspaceProps({
   });
 
   const metadataFetchTargets: MetadataFetchTarget[] = useMemo(() => {
-    if (mode !== "image") {
-      return [];
-    }
-
-    const orderedPackageIds: string[] = [];
-    const seenPackageId = new Set<string>();
-    const appendTarget = (packageId: string | null | undefined) => {
-      const normalized = packageId?.trim() ?? "";
-      if (!normalized || seenPackageId.has(normalized)) {
-        return;
-      }
-      seenPackageId.add(normalized);
-      orderedPackageIds.push(normalized);
-    };
-
-    if (metadataManageMode && sidebarCheckedNodeIds.length > 0) {
-      for (const nodeId of sidebarCheckedNodeIds) {
-        const node = sidebarNodeById.get(nodeId);
-        if (!node) {
-          continue;
-        }
-        appendTarget(node.packageId);
-        appendTarget(node.imageSourceId);
-      }
-    }
-
-    if (orderedPackageIds.length === 0) {
-      appendTarget(metadataImagePackageEffective?.id);
-    }
-
-    return orderedPackageIds
-      .map((packageId) => {
-        const source = packageByIdEffective.get(packageId);
-        if (!source) {
-          return null;
-        }
-        return {
-          packageId,
-          label: source.displayName,
-          defaultText: stripArchiveSuffix(source.packageName),
-        } satisfies MetadataFetchTarget;
-      })
-      .filter((item): item is MetadataFetchTarget => item !== null);
+    return buildWorkspaceMetadataFetchTargets({
+      mode,
+      metadataManageMode,
+      sidebarCheckedNodeIds,
+      sidebarNodeById,
+      metadataImagePackageId: metadataImagePackageEffective?.id ?? null,
+      packageById: packageByIdEffective,
+    });
   }, [
     metadataImagePackageEffective?.id,
     metadataManageMode,
@@ -641,107 +582,29 @@ export function useAppWorkspaceProps({
     sourceCoverImageUrlBySourceId,
     thumbnailImageUrlById,
   });
-  const nodeBrowsePageSize = Math.max(1, pagedPageSize);
   const nodeBrowseNodeId = nodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "";
-  const nodeBrowseRawPageIndex =
-    nodeBrowseNodeId && nodeBrowsePageByNodeId[nodeBrowseNodeId] != null
-      ? nodeBrowsePageByNodeId[nodeBrowseNodeId]
-      : 0;
-  const nodeBrowseTotalPages = nodeBrowseMode
-    ? Math.max(1, Math.ceil(nodeBrowseItems.length / nodeBrowsePageSize))
-    : 1;
-  const nodeBrowseNormalizedPageIndex = nodeBrowseMode
-    ? Math.max(0, Math.min(nodeBrowseTotalPages - 1, nodeBrowseRawPageIndex))
-    : 0;
-  const nodeBrowsePageStart = nodeBrowseMode
-    ? nodeBrowseNormalizedPageIndex * nodeBrowsePageSize
-    : 0;
-
-  useEffect(() => {
-    if (!nodeBrowseMode || !nodeBrowseNodeId) {
-      return;
-    }
-    if (nodeBrowseRawPageIndex === nodeBrowseNormalizedPageIndex) {
-      return;
-    }
-    setNodeBrowsePageByNodeId((previous) => ({
-      ...previous,
-      [nodeBrowseNodeId]: nodeBrowseNormalizedPageIndex,
-    }));
-  }, [
+  const {
+    nodeBrowsePageStart,
+    nodeBrowsePageSize,
+    normalizedPageIndexForFooterWithPreview,
+    imageTotalPagesForFooter,
+    onPrevPageForMain,
+    onNextPageForMain,
+    onThumbnailWheelTurnPage,
+    onThumbnailWheelDeltaPreview,
+  } = useWorkspaceNodeBrowsePaging({
     nodeBrowseMode,
     nodeBrowseNodeId,
-    nodeBrowseNormalizedPageIndex,
-    nodeBrowseRawPageIndex,
-  ]);
-
-  const setNodeBrowsePage = (updater: (value: number) => number) => {
-    if (!nodeBrowseMode || !nodeBrowseNodeId) {
-      return;
-    }
-    setNodeBrowsePageByNodeId((previous) => {
-      const currentRaw = previous[nodeBrowseNodeId] ?? 0;
-      const current = Math.max(0, Math.min(nodeBrowseTotalPages - 1, currentRaw));
-      const next = Math.max(0, Math.min(nodeBrowseTotalPages - 1, updater(current)));
-      if (next === currentRaw) {
-        return previous;
-      }
-      return {
-        ...previous,
-        [nodeBrowseNodeId]: next,
-      };
-    });
-  };
-
-  const onPrevPageForMain = nodeBrowseMode
-    ? () => setNodeBrowsePage((value) => value - 1)
-    : adReviewResultsMode
-      ? () => setAdReviewPageIndex((value) => Math.max(0, value - 1))
-      : goPrevPage;
-  const onNextPageForMain = nodeBrowseMode
-    ? () => setNodeBrowsePage((value) => value + 1)
-    : adReviewResultsMode
-      ? () =>
-          setAdReviewPageIndex((value) =>
-            Math.min(Math.max(0, imageTotalPagesForMain - 1), value + 1),
-          )
-      : goNextPage;
-  const normalizedPageIndexForFooter = nodeBrowseMode
-    ? nodeBrowseNormalizedPageIndex
-    : normalizedPageIndexForMain;
-  const imageTotalPagesForFooter = nodeBrowseMode
-    ? nodeBrowseTotalPages
-    : imageTotalPagesForMain;
-
-  // 滚轮预览：绝对目标页模式，避免 settle → 真实页传播期间的回跳闪烁
-  const [wheelTargetPage, setWheelTargetPage] = useState<number | null>(null);
-  const onPagePreviewDelta = (accumulatedDelta: number) => {
-    if (accumulatedDelta === 0) return; // settle 信号 — 不清除目标，由 effect 接管
-    setWheelTargetPage(
-      Math.max(
-        0,
-        Math.min(
-          imageTotalPagesForFooter - 1,
-          normalizedPageIndexForFooter + accumulatedDelta,
-        ),
-      ),
-    );
-  };
-  // 真实页码追赶到目标后清除冻结
-  useEffect(() => {
-    if (wheelTargetPage === null) return;
-    if (normalizedPageIndexForFooter === wheelTargetPage) {
-      setWheelTargetPage(null);
-    }
-  }, [normalizedPageIndexForFooter, wheelTargetPage]);
-  // 安全超时：防止真实页码因快照等机制永远无法精确匹配目标
-  useEffect(() => {
-    if (wheelTargetPage === null) return;
-    const timer = setTimeout(() => setWheelTargetPage(null), 2000);
-    return () => clearTimeout(timer);
-  }, [wheelTargetPage]);
-  const normalizedPageIndexForFooterWithPreview =
-    wheelTargetPage ?? normalizedPageIndexForFooter;
+    nodeBrowseItemsLength: nodeBrowseItems.length,
+    pagedPageSize,
+    adReviewResultsMode,
+    imageTotalPagesForMain,
+    normalizedPageIndexForMain,
+    setAdReviewPageIndex,
+    goPrevPage,
+    goNextPage,
+    goPageByDelta,
+  });
 
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
@@ -820,6 +683,54 @@ export function useAppWorkspaceProps({
     setSelectedPackageId,
     setSelectedAudioId,
     selectVideoFromBrowser,
+  });
+
+  const imageMainSectionHandlers = createWorkspaceImageMainSectionHandlers({
+    canManageImageConvert,
+    selectedConvertibleSidebarNodeIds,
+    backendWrite,
+    requestManageGroup,
+    requestManageMove,
+    runManageHideAction,
+    manageAdReview,
+    setAdReviewPanelOpen,
+    setAdReviewFocusTaskId,
+    setAdReviewPageIndex,
+    setSelectedSidebarNodeId,
+    setSelectedPackageId,
+    setImageFocus,
+    normalImageSourceNodeIdMap,
+    orderedRootScopedImageRefs,
+    packageByIdEffective,
+    clearAllSelections,
+    thumbnailScaleLevelCount,
+    appSettings,
+    setImageConvertScale,
+    setImageConvertLongestEdgePx,
+    setImageConvertAdjustProfile,
+    setImageConvertFormat,
+    setImageConvertQuality,
+    imageConvertScale,
+    imageConvertLongestEdgePx,
+    imageConvertAdjustProfile,
+    imageConvertFormat,
+    imageConvertQuality,
+    setImageConvertPreviewScale,
+    setImageConvertPreviewLongestEdgePx,
+    setImageConvertPreviewAdjustProfile,
+    setImageConvertPreviewFormat,
+    setImageConvertPreviewQuality,
+    setImageConvertPreviewMode,
+    imageConvertPreviewScale,
+    imageConvertPreviewLongestEdgePx,
+    imageConvertPreviewAdjustProfile,
+    imageConvertPreviewFormat,
+    imageConvertPreviewQuality,
+    setFullscreenActiveWithAutoStop,
+    imageSidebarNodeIdsForWheel,
+    imageSidebarNodeIndexByIdForWheel,
+    selectedSidebarNodeId,
+    effectiveSidebarNodeById,
   });
 
   const imageMainSectionProps = buildImageMainSectionProps({
@@ -928,44 +839,12 @@ export function useAppWorkspaceProps({
     onReplaceCheckedImages: replaceImageCheckedIds,
     onManageDelete: requestManageDelete,
     onManageRename: () => undefined,
-    onManageGroup: () => {
-      void requestManageGroup();
-    },
-    onManageMove: () => {
-      void requestManageMove();
-    },
-    onStartImageConvertTask: async (request) => {
-      if (!canManageImageConvert) {
-        return;
-      }
-      const normalizedNodeIds = Array.from(
-        new Set(
-          selectedConvertibleSidebarNodeIds
-            .map((nodeId) => nodeId.trim())
-            .filter(Boolean),
-        ),
-      );
-      if (normalizedNodeIds.length === 0) {
-        return;
-      }
-
-      return await backendWrite.startImageConvertTask({
-        ...request,
-        node_ids: normalizedNodeIds,
-      });
-    },
-    onManageHide: () => {
-      void runManageHideAction(true);
-    },
-    onManageUnhide: () => {
-      void runManageHideAction(false);
-    },
-    onToggleAdReviewPanel: () => {
-      if (manageAdReview.deletePending) {
-        return;
-      }
-      setAdReviewPanelOpen((value) => !value);
-    },
+    onManageGroup: imageMainSectionHandlers.onManageGroup,
+    onManageMove: imageMainSectionHandlers.onManageMove,
+    onStartImageConvertTask: imageMainSectionHandlers.onStartImageConvertTask,
+    onManageHide: imageMainSectionHandlers.onManageHide,
+    onManageUnhide: imageMainSectionHandlers.onManageUnhide,
+    onToggleAdReviewPanel: imageMainSectionHandlers.onToggleAdReviewPanel,
     onManageReviewModeChange: manageAdReview.setReviewMode,
     onToggleAdReviewFocus,
     onAdReviewStrategyModeChange,
@@ -973,127 +852,29 @@ export function useAppWorkspaceProps({
     onAdReviewHeadNChange,
     onAdReviewTailNChange,
     onAdReviewTailStopCleanStreakChange,
-    onStartAdReview: (options) => {
-      void (async () => {
-        const startedTask = await manageAdReview.startManageAdReview(options);
-        if (!startedTask) {
-          return;
-        }
-        setAdReviewFocusTaskId(startedTask.task_id);
-        setAdReviewPageIndex(0);
-        setSelectedSidebarNodeId(null);
-      })();
-    },
-    onPauseAdReview: () => {
-      void manageAdReview.pauseManageAdReview();
-    },
-    onRemoveAdReviewTask: (taskId) => {
-      void manageAdReview.removeTask(taskId);
-    },
-    onDeleteSelectedAdReviewCandidates: () => {
-      void (async () => {
-        const result = await manageAdReview.confirmDeleteSelectedCandidates();
-        if (!result.ok) {
-          return;
-        }
-
-        setAdReviewFocusTaskId(null);
-        setAdReviewPageIndex(0);
-
-        if (result.firstHitPackageId) {
-          const targetNodeId = normalImageSourceNodeIdMap.get(
-            result.firstHitPackageId,
-          );
-          if (targetNodeId) {
-            setSelectedSidebarNodeId(targetNodeId);
-          }
-          setSelectedPackageId(result.firstHitPackageId);
-        }
-
-        if (result.firstHitImageId) {
-          const focusRef = orderedRootScopedImageRefs.find((ref) => {
-            const imageId =
-              packageByIdEffective.get(ref.packageId)?.images[ref.imageIndex]
-                ?.id ?? null;
-            return imageId === result.firstHitImageId;
-          });
-          if (focusRef) {
-            setImageFocus(focusRef.packageId, focusRef.imageIndex);
-          }
-        }
-      })();
-    },
-    onDismissAdReviewTask: manageAdReview.dismissTask,
-    onClearManageSelection: clearAllSelections,
-    onThumbnailScaleLevelChange: (level) => {
-      const targetLevel = Math.max(
-        1,
-        Math.min(thumbnailScaleLevelCount, Math.round(level)),
-      );
-      const nextNormalizedScale = Math.max(
-        1,
-        Math.min(
-          thumbnailScaleLevelCount,
-          thumbnailScaleLevelCount - targetLevel + 1,
-        ),
-      );
-
-      if (nextNormalizedScale === appSettings.thumbnailScale) {
-        return;
-      }
-
-      appSettings.updateSettings({ thumbnailScale: nextNormalizedScale });
-    },
-    onImageConvertScaleChange: (value) => {
-      setImageConvertScale(
-        Math.max(0.1, Math.min(1, Number(value.toFixed(1)))),
-      );
-    },
-    onImageConvertLongestEdgePxChange: (value) => {
-      if (value == null || !Number.isFinite(value)) {
-        setImageConvertLongestEdgePx(null);
-        return;
-      }
-      setImageConvertLongestEdgePx(
-        Math.max(1, Math.min(16384, Math.round(value))),
-      );
-    },
-    onImageConvertFormatChange: (value) => {
-      setImageConvertFormat(value);
-    },
-    onImageConvertQualityChange: (value) => {
-      setImageConvertQuality(Math.max(10, Math.min(100, Math.round(value))));
-    },
-    onOpenImageConvertPreview: () => {
-      if (!canManageImageConvert) {
-        return;
-      }
-      setImageConvertPreviewScale(imageConvertScale);
-      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
-      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
-      setImageConvertPreviewFormat(imageConvertFormat);
-      setImageConvertPreviewQuality(imageConvertQuality);
-      setImageConvertPreviewMode(true);
-      setFullscreenActiveWithAutoStop(true);
-    },
-    onConfirmImageConvertPreview: () => {
-      setImageConvertScale(imageConvertPreviewScale);
-      setImageConvertLongestEdgePx(imageConvertPreviewLongestEdgePx);
-      setImageConvertAdjustProfile(imageConvertPreviewAdjustProfile);
-      setImageConvertFormat(imageConvertPreviewFormat);
-      setImageConvertQuality(imageConvertPreviewQuality);
-      setImageConvertPreviewMode(false);
-      setFullscreenActiveWithAutoStop(false);
-    },
-    onCancelImageConvertPreview: () => {
-      setImageConvertPreviewScale(imageConvertScale);
-      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
-      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
-      setImageConvertPreviewFormat(imageConvertFormat);
-      setImageConvertPreviewQuality(imageConvertQuality);
-      setImageConvertPreviewMode(false);
-      setFullscreenActiveWithAutoStop(false);
-    },
+    onStartAdReview: imageMainSectionHandlers.onStartAdReview,
+    onPauseAdReview: imageMainSectionHandlers.onPauseAdReview,
+    onRemoveAdReviewTask: imageMainSectionHandlers.onRemoveAdReviewTask,
+    onDeleteSelectedAdReviewCandidates:
+      imageMainSectionHandlers.onDeleteSelectedAdReviewCandidates,
+    onDismissAdReviewTask: imageMainSectionHandlers.onDismissAdReviewTask,
+    onClearManageSelection: imageMainSectionHandlers.onClearManageSelection,
+    onThumbnailScaleLevelChange:
+      imageMainSectionHandlers.onThumbnailScaleLevelChange,
+    onImageConvertScaleChange:
+      imageMainSectionHandlers.onImageConvertScaleChange,
+    onImageConvertLongestEdgePxChange:
+      imageMainSectionHandlers.onImageConvertLongestEdgePxChange,
+    onImageConvertFormatChange:
+      imageMainSectionHandlers.onImageConvertFormatChange,
+    onImageConvertQualityChange:
+      imageMainSectionHandlers.onImageConvertQualityChange,
+    onOpenImageConvertPreview:
+      imageMainSectionHandlers.onOpenImageConvertPreview,
+    onConfirmImageConvertPreview:
+      imageMainSectionHandlers.onConfirmImageConvertPreview,
+    onCancelImageConvertPreview:
+      imageMainSectionHandlers.onCancelImageConvertPreview,
     nodeBrowseMode,
     nodeBrowseLabel: nodeBrowseMode
       ? (selectedSidebarNode?.label ?? t("ui.image.nodeBrowseDefaultLabel"))
@@ -1101,61 +882,11 @@ export function useAppWorkspaceProps({
     nodeBrowseItems,
     nodeBrowsePageStart,
     nodeBrowsePageSize,
-    onSelectNodeBrowseItem: (nodeId, imageSourceId) => {
-      setSelectedSidebarNodeId(nodeId);
-      if (imageSourceId) {
-        setSelectedPackageId(imageSourceId);
-      }
-    },
-    onThumbnailWheelTurnPage: (delta) => {
-      if (nodeBrowseMode) {
-        setNodeBrowsePage((value) => value + delta);
-        return;
-      }
-      if (adReviewResultsMode) {
-        setAdReviewPageIndex((value) => {
-          const maxPage = Math.max(0, imageTotalPagesForMain - 1);
-          return Math.max(0, Math.min(maxPage, value + delta));
-        });
-        return;
-      }
-      goPageByDelta(delta);
-    },
-    onThumbnailWheelDeltaPreview: onPagePreviewDelta,
-    onThumbnailWheelSwitchSidebarNode: (direction) => {
-      if (imageSidebarNodeIdsForWheel.length === 0) {
-        return;
-      }
-
-      const currentNodeId =
-        selectedSidebarNodeId &&
-        imageSidebarNodeIndexByIdForWheel.has(selectedSidebarNodeId)
-          ? selectedSidebarNodeId
-          : imageSidebarNodeIdsForWheel[0];
-      const currentIndex = imageSidebarNodeIndexByIdForWheel.get(currentNodeId);
-      if (currentIndex === undefined) {
-        return;
-      }
-
-      const nextIndex = Math.max(
-        0,
-        Math.min(
-          imageSidebarNodeIdsForWheel.length - 1,
-          currentIndex + (direction === "next" ? 1 : -1),
-        ),
-      );
-      const nextNodeId = imageSidebarNodeIdsForWheel[nextIndex];
-      if (!nextNodeId || nextNodeId === selectedSidebarNodeId) {
-        return;
-      }
-
-      setSelectedSidebarNodeId(nextNodeId);
-
-      const nextNode = effectiveSidebarNodeById.get(nextNodeId);
-      if (nextNode?.imageSourceId) {
-        setSelectedPackageId(nextNode.imageSourceId);
-      }
-    },
+    onSelectNodeBrowseItem: imageMainSectionHandlers.onSelectNodeBrowseItem,
+    onThumbnailWheelTurnPage,
+    onThumbnailWheelDeltaPreview,
+    onThumbnailWheelSwitchSidebarNode:
+      imageMainSectionHandlers.onThumbnailWheelSwitchSidebarNode,
   });
 
   const videoMainSectionProps = buildVideoMainSectionProps({
