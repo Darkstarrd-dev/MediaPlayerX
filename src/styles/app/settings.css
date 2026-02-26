@@ -1181,6 +1181,7 @@
   display: grid;
   grid-template-columns: minmax(0, 5fr) 52px minmax(0, 6fr);
   align-items: center;
+  flex: 0 0 auto;
   min-height: 44px;
   border-left: 4px solid transparent;
   border-bottom: 1px solid #cfd7df;

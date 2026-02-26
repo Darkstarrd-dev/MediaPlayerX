@@ -1,4 +1,4 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
 
@@ -138,6 +138,10 @@ function SidebarRenameDialog({
   onConfirm,
   onCancel,
 }: SidebarRenameDialogProps) {
+  const previewListRef = useRef<HTMLDivElement | null>(null)
+  const [previewListViewportHeight, setPreviewListViewportHeight] = useState(0)
+  const [previewListScrollTop, setPreviewListScrollTop] = useState(0)
+
   const parseNonNegativeInt = (raw: string): number => {
     const parsed = Number.parseInt(raw, 10)
     if (!Number.isFinite(parsed) || parsed < 0) {
@@ -166,6 +170,67 @@ function SidebarRenameDialog({
 
   const batchModeActive = targetCount > 1 || mode !== 'single'
   const singleConfirmDisabled = pending || value.trim().length === 0
+  const previewRowHeight = 45
+  const previewVirtualizeThreshold = 80
+  const shouldVirtualizePreviewRows = batchModeActive && previewRows.length > previewVirtualizeThreshold && previewListViewportHeight > 0
+
+  const previewVirtualRange = useMemo(() => {
+    if (!shouldVirtualizePreviewRows) {
+      return {
+        startIndex: 0,
+        endIndex: previewRows.length,
+        topSpacerHeight: 0,
+        bottomSpacerHeight: 0,
+      }
+    }
+
+    const overscanRows = 8
+    const safeScrollTop = Math.max(0, previewListScrollTop)
+    const unclampedStartIndex = Math.max(0, Math.floor(safeScrollTop / previewRowHeight) - overscanRows)
+    const startIndex = Math.min(Math.max(0, previewRows.length - 1), unclampedStartIndex)
+    const visibleCount = Math.ceil(previewListViewportHeight / previewRowHeight) + overscanRows * 2
+    const endIndex = Math.min(previewRows.length, startIndex + Math.max(1, visibleCount))
+    const topSpacerHeight = startIndex * previewRowHeight
+    const trailingCount = Math.max(0, previewRows.length - endIndex)
+    const bottomSpacerHeight = trailingCount * previewRowHeight
+
+    return {
+      startIndex,
+      endIndex,
+      topSpacerHeight,
+      bottomSpacerHeight,
+    }
+  }, [previewListScrollTop, previewListViewportHeight, previewRows.length, shouldVirtualizePreviewRows])
+
+  const previewRowsForRender = useMemo(
+    () => previewRows.slice(previewVirtualRange.startIndex, previewVirtualRange.endIndex),
+    [previewRows, previewVirtualRange.endIndex, previewVirtualRange.startIndex],
+  )
+
+  useEffect(() => {
+    const listElement = previewListRef.current
+    if (!listElement) {
+      return
+    }
+
+    const refreshViewportHeight = () => {
+      setPreviewListViewportHeight(listElement.clientHeight)
+    }
+
+    refreshViewportHeight()
+    if (typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    const observer = new ResizeObserver(() => {
+      refreshViewportHeight()
+    })
+    observer.observe(listElement)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [batchModeActive, open])
 
   if (!open) {
     return null
@@ -386,8 +451,24 @@ function SidebarRenameDialog({
                 <span aria-hidden="true" />
                 <span>{previewNewHeaderLabel}</span>
               </div>
-              <div className="sidebar-rename-preview-list">
-                {previewRows.slice(0, 24).map((row) => {
+              <div
+                ref={previewListRef}
+                className="sidebar-rename-preview-list"
+                onScroll={(event) => {
+                  setPreviewListScrollTop(event.currentTarget.scrollTop)
+                }}
+              >
+                {shouldVirtualizePreviewRows && previewVirtualRange.topSpacerHeight > 0 ? (
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      height: `${previewVirtualRange.topSpacerHeight}px`,
+                      flex: '0 0 auto',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                ) : null}
+                {previewRowsForRender.map((row) => {
                   const failed = Boolean(row.reason && row.reason !== 'unchanged')
                   const unchanged = row.reason === 'unchanged'
                   return (
@@ -420,6 +501,16 @@ function SidebarRenameDialog({
                     </div>
                   )
                 })}
+                {shouldVirtualizePreviewRows && previewVirtualRange.bottomSpacerHeight > 0 ? (
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      height: `${previewVirtualRange.bottomSpacerHeight}px`,
+                      flex: '0 0 auto',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                ) : null}
               </div>
             </div>
           </>
