@@ -495,3 +495,110 @@
   text-align: right;
   color: var(--mpx-text-2);
 }
+
+.theme-parameter-note-intro {
+  margin: 0;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.theme-parameter-note-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.theme-parameter-note-list li {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+  line-height: 1.45;
+}
+
+.theme-parameter-note-list li > strong {
+  color: var(--mpx-text-1);
+}
+
+.theme-parameter-note-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.theme-parameter-state-demo {
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-parameter-state-demo .mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  position: static;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  height: auto;
+}
+
+.theme-parameter-state-demo .mode-switch button {
+  border: var(--mpx-control-border-width) solid transparent;
+  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
+  min-width: max(var(--mpx-header-btn-size), 92px);
+  min-height: var(--mpx-header-btn-size);
+  padding: 0 var(--mpx-header-btn-padding-x);
+  background: var(--mpx-slot-fg-header-g2-mode-image-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-header-g2-mode-image-text, var(--mpx-text-1));
+  border-color: var(--mpx-slot-fg-header-g2-mode-image-border, var(--mpx-border-2));
+  box-shadow: var(--mpx-header-btn-shadow);
+  font-weight: var(--mpx-control-font-weight);
+  cursor: pointer;
+  transition: var(--mpx-control-transition);
+}
+
+.theme-parameter-state-demo .mode-switch button:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+}
+
+.theme-parameter-state-demo .mode-switch button:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+}
+
+.theme-parameter-state-demo .mode-switch button.is-active {
+  border-color: var(--mpx-header-btn-active-border);
+  background: var(--mpx-accent-soft);
+  color: var(--mpx-accent);
+}
+
+.theme-parameter-state-demo .mode-switch button:disabled {
+  opacity: 0.56;
+  color: var(--mpx-player-btn-muted-text);
+  cursor: not-allowed;
+}
+
+.theme-parameter-state-demo .window-control-btn {
+  min-width: 104px;
+}
+
+.theme-parameter-state-demo .main-icon-square-btn.is-pending {
+  width: auto;
+  min-width: 104px;
+  padding: 0 var(--mpx-control-padding-x);
+}
+
+.theme-parameter-state-demo .main-icon-square-btn.is-pending {
+  color: var(--mpx-status-warning-text);
+  border-color: var(--mpx-status-warning-border);
+  background: var(--mpx-status-warning-bg);
+}
+
+.theme-parameter-state-demo .window-control-btn--close:hover {
+  background: #d0334f;
+  color: #fff;
+}
