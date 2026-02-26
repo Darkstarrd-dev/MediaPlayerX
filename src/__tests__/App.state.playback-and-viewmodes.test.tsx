@@ -9,21 +9,10 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
-import { MockMediaRepository } from "../features/backend/repository/mockRepository";
-import { resetUiStoreState, useUiStore } from "../store/useUiStore";
+import { resetUiStoreState } from "../store/useUiStore";
 
 describe("MediaPlayer 虚拟 UI", () => {
   const uiLongTestTimeoutMs = 25_000;
-
-  const getMetadataManageModeButton = () =>
-    screen.getByRole("button", {
-      name: /切换到元数据模式|切换到图像模式|元数据管理/,
-    });
-
-  const getFirstManageSidebarNodeButton = () =>
-    document.querySelector(
-      ".sidebar-row.is-manage .sidebar-label",
-    ) as HTMLButtonElement | null;
 
   const flushUiUpdates = async () => {
     await act(async () => {
@@ -43,11 +32,6 @@ describe("MediaPlayer 虚拟 UI", () => {
 
   const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
     fireEvent.mouseDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const wheel = async (target: Element | Window, init?: WheelEventInit) => {
-    fireEvent.wheel(target as Element, init);
     await flushUiUpdates();
   };
 

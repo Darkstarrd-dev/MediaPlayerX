@@ -4,12 +4,10 @@ import {
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
-import type { LibrarySnapshotDto } from "../contracts/backend";
 import { MockMediaRepository } from "../features/backend/repository/mockRepository";
 import { resetUiStoreState } from "../store/useUiStore";
 
@@ -20,15 +18,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     screen.getByRole("button", {
       name: /进入元数据管理模式|退出元数据管理模式|元数据管理/,
     });
-
-  const ensureVideoInfoTab = async () => {
-    const backToInfoButton = screen.queryByRole("button", {
-      name: "视频信息",
-    });
-    if (backToInfoButton) {
-      await click(backToInfoButton);
-    }
-  };
 
   const flushUiUpdates = async () => {
     await act(async () => {
@@ -43,11 +32,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
   const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
     fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.mouseDown(target as Element, init);
     await flushUiUpdates();
   };
 
