@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { DEFAULT_SHORTCUTS } from "../../shortcuts";
+import {
+  SUBTITLE_MODEL_CURRENT_ID,
+  SUBTITLE_MODEL_FUNASR_NANO_ID,
+} from "../subtitles/fixedModel";
 import { buildSettingsPanelProps } from "./buildSettingsPanelProps";
 
 describe("buildSettingsPanelProps", () => {
@@ -10,11 +14,11 @@ describe("buildSettingsPanelProps", () => {
     const props = buildSettingsPanelProps({
       settingsOpen: true,
       uiLocale: "auto",
-      styleId: "flush",
-      paletteId: "parchment",
+      styleId: "soft-skeuomorphic",
+      paletteId: "skeuomorphic-luxury-white",
       paletteMode: "day",
-      paletteDayId: "parchment",
-      paletteNightId: "tokyo-night",
+      paletteDayId: "skeuomorphic-luxury-white",
+      paletteNightId: "skeuomorphic-luxury-white",
       thumbnailAdaptiveResolution: true,
       thumbnailQueueSize: 64,
       cpuTokenLimit: 2,
@@ -60,6 +64,7 @@ describe("buildSettingsPanelProps", () => {
       subtitleAdvancedSpeakerThreshold: 0.5,
       subtitleValidPlaybackRateThreshold: 1,
       subtitleLanguage: "auto",
+      subtitleSelectedModelId: SUBTITLE_MODEL_CURRENT_ID,
       subtitleModelDir: "",
       subtitleTextFillMode: "solid",
       subtitleTextColor: "#ffffff",
@@ -82,6 +87,7 @@ describe("buildSettingsPanelProps", () => {
       subtitleLocalModels: [],
       subtitleDownloadTask: null,
       subtitleDownloadPending: false,
+      subtitleModelDownloadSupported: true,
       adReviewVisionEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
       adReviewVisionModel: "",
       adReviewVisionVerified: false,
@@ -138,11 +144,12 @@ describe("buildSettingsPanelProps", () => {
     props.onThumbnailGapChange(12);
     props.onSettingsBackdropOpacityChange(42);
     props.onPaletteModeChange("night");
-    props.onPaletteDayChange("geist-light");
-    props.onPaletteNightChange("tokyo-night");
+    props.onPaletteDayChange("skeuomorphic-luxury-white");
+    props.onPaletteNightChange("skeuomorphic-luxury-white");
     props.onUiLocaleChange("en-US");
     props.onSubtitleFeatureEnabledChange(true);
     props.onSubtitleLanguageChange("ja");
+    props.onSubtitleSelectedModelIdChange(SUBTITLE_MODEL_FUNASR_NANO_ID);
     props.onThemeParameterButtonVisibleChange(true);
     props.onThumbnailWarmupRadiusChange(3);
     props.onThumbnailWarmupConcurrencyChange(4);
@@ -160,20 +167,20 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(5, {
       paletteMode: "night",
-      paletteDayId: "parchment",
-      paletteNightId: "tokyo-night",
-      paletteId: "tokyo-night",
-      themeId: "tokyo-night",
+      paletteDayId: "skeuomorphic-luxury-white",
+      paletteNightId: "skeuomorphic-luxury-white",
+      paletteId: "skeuomorphic-luxury-white",
+      themeId: "skeuomorphic-luxury-white",
     });
     expect(updateSettings).toHaveBeenNthCalledWith(6, {
-      paletteDayId: "geist-light",
-      paletteNightId: "tokyo-night",
-      paletteId: "geist-light",
-      themeId: "geist-light",
+      paletteDayId: "skeuomorphic-luxury-white",
+      paletteNightId: "skeuomorphic-luxury-white",
+      paletteId: "skeuomorphic-luxury-white",
+      themeId: "skeuomorphic-luxury-white",
     });
     expect(updateSettings).toHaveBeenNthCalledWith(7, {
-      paletteDayId: "parchment",
-      paletteNightId: "tokyo-night",
+      paletteDayId: "skeuomorphic-luxury-white",
+      paletteNightId: "skeuomorphic-luxury-white",
     });
     expect(updateSettings).toHaveBeenNthCalledWith(8, { uiLocale: "en-US" });
     expect(updateSettings).toHaveBeenNthCalledWith(9, {
@@ -183,27 +190,30 @@ describe("buildSettingsPanelProps", () => {
       subtitleLanguage: "ja",
     });
     expect(updateSettings).toHaveBeenNthCalledWith(11, {
-      themeParameterButtonVisible: true,
+      subtitleSelectedModelId: SUBTITLE_MODEL_FUNASR_NANO_ID,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(12, {
-      thumbnailWarmupRadius: 3,
+      themeParameterButtonVisible: true,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(13, {
-      thumbnailWarmupConcurrency: 4,
+      thumbnailWarmupRadius: 3,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(14, {
-      fullscreenPrefetchRadius: 8,
+      thumbnailWarmupConcurrency: 4,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(15, {
-      fullscreenDecodeCacheSize: 16,
+      fullscreenPrefetchRadius: 8,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(16, {
-      fullscreenResamplingEnabled: true,
+      fullscreenDecodeCacheSize: 16,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(17, {
-      fullscreenDownsamplingKernel: "mitchell",
+      fullscreenResamplingEnabled: true,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(18, {
+      fullscreenDownsamplingKernel: "mitchell",
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(19, {
       fullscreenUpsamplingKernel: "nearest",
     });
   });

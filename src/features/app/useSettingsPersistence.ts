@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { AppSettings } from "../../contracts/settings";
 import type { MediaRepository } from "../backend/repository/types";
 import { resolvePaletteModeById } from "../theme/themeRegistry";
-import { FIXED_SUBTITLE_MODEL_ID } from "../subtitles/fixedModel";
+import { normalizeSubtitleModelSelectionId } from "../subtitles/fixedModel";
 import { getBenchSettings } from "../perf/benchSettings";
 
 interface UseSettingsPersistenceParams {
@@ -203,15 +203,15 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
       ? next.sidebarLabelDisplayMode.trim()
       : "";
 
-  next.styleId = rawStyleId || "flush";
-  next.paletteId = rawPaletteId || rawThemeId || "parchment";
+  next.styleId = rawStyleId || "soft-skeuomorphic";
+  next.paletteId = rawPaletteId || rawThemeId || "skeuomorphic-luxury-white";
   next.paletteMode = rawPaletteMode;
   next.paletteDayId =
     rawPaletteDayId ||
-    (rawPaletteMode === "day" ? next.paletteId : "parchment");
+    (rawPaletteMode === "day" ? next.paletteId : "skeuomorphic-luxury-white");
   next.paletteNightId =
     rawPaletteNightId ||
-    (rawPaletteMode === "night" ? next.paletteId : "tokyo-night");
+    (rawPaletteMode === "night" ? next.paletteId : "skeuomorphic-luxury-white");
   if (
     rawUiLocale === "auto" ||
     rawUiLocale === "zh-CN" ||
@@ -266,7 +266,11 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.subtitleModelDir;
   }
 
-  next.subtitleSelectedModelId = FIXED_SUBTITLE_MODEL_ID;
+  next.subtitleSelectedModelId = normalizeSubtitleModelSelectionId(
+    typeof next.subtitleSelectedModelId === "string"
+      ? next.subtitleSelectedModelId
+      : null,
+  );
   next.subtitleTextFillMode =
     next.subtitleTextFillMode === "gradient" ? "gradient" : "solid";
   next.subtitleTextColor = normalizeHexColor(next.subtitleTextColor, "#ffffff");

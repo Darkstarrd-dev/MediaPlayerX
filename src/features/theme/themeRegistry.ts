@@ -15,40 +15,22 @@ export interface PaletteInfo {
 
 export type PaletteMode = 'day' | 'night'
 
-export const DEFAULT_STYLE_ID = 'flush'
-export const DEFAULT_PALETTE_ID = 'parchment'
+export const DEFAULT_STYLE_ID = 'soft-skeuomorphic'
+export const DEFAULT_PALETTE_ID = 'skeuomorphic-luxury-white'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
 const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
-  'soft-skeuomorphic': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-crisp': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-plush': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
-  'soft-skeuomorphic-etched': ['skeuomorphic-scroll', 'skeuomorphic-light', 'skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark'],
+  'soft-skeuomorphic': ['skeuomorphic-luxury-white'],
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
-  'soft-skeuomorphic': 'skeuomorphic-light',
-  'soft-skeuomorphic-crisp': 'skeuomorphic-light',
-  'soft-skeuomorphic-plush': 'skeuomorphic-light',
-  'soft-skeuomorphic-etched': 'skeuomorphic-light',
+  'soft-skeuomorphic': 'skeuomorphic-luxury-white',
 }
 
 const STYLE_DEFAULT_PALETTE_PAIR: Record<string, { day: string; night: string }> = {
   'soft-skeuomorphic': {
-    day: 'skeuomorphic-light',
-    night: 'skeuomorphic-dark',
-  },
-  'soft-skeuomorphic-crisp': {
-    day: 'skeuomorphic-light',
-    night: 'skeuomorphic-dark',
-  },
-  'soft-skeuomorphic-plush': {
-    day: 'skeuomorphic-light',
-    night: 'skeuomorphic-dark',
-  },
-  'soft-skeuomorphic-etched': {
-    day: 'skeuomorphic-light',
-    night: 'skeuomorphic-dark',
+    day: 'skeuomorphic-luxury-white',
+    night: 'skeuomorphic-luxury-white',
   },
 }
 
@@ -122,7 +104,8 @@ export function listThemes(): ThemeInfo[] {
 }
 
 export function listStyles(): StyleInfo[] {
-  return ensureDefaultOption<StyleInfo>(collectInfos(STYLE_FILES), DEFAULT_STYLE_ID)
+  const styleInfos = collectInfos(STYLE_FILES).filter((item) => !item.id.includes('.'))
+  return ensureDefaultOption<StyleInfo>(styleInfos, DEFAULT_STYLE_ID)
 }
 
 export function listPalettes(): PaletteInfo[] {
@@ -229,7 +212,7 @@ export function resolvePalettePairForStyle(
   const resolvedNight = resolvePaletteIdFromPalettes(
     nightPaletteId,
     palettes,
-    defaults?.night ?? (resolvedDay === DEFAULT_PALETTE_ID ? 'tokyo-night' : resolvedDay),
+    defaults?.night ?? DEFAULT_PALETTE_ID,
   )
 
   if (resolvedDay !== resolvedNight) {

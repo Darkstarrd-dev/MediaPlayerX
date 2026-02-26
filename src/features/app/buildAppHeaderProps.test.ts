@@ -288,8 +288,8 @@ describe('buildAppHeaderProps', () => {
       autoPlayInterval: 3,
       styleId: 'soft-skeuomorphic',
       paletteMode: 'day',
-      paletteDayId: 'skeuomorphic-light',
-      paletteNightId: 'skeuomorphic-dark',
+      paletteDayId: 'skeuomorphic-luxury-white',
+      paletteNightId: 'skeuomorphic-luxury-white',
       headerDebugGroupVisible: false,
       tooltipEnabled: true,
       electronNativeChromeEnabled: false,
@@ -321,10 +321,10 @@ describe('buildAppHeaderProps', () => {
 
     expect(updateSettings).toHaveBeenCalledWith({
       paletteMode: 'night',
-      paletteDayId: 'skeuomorphic-light',
-      paletteNightId: 'skeuomorphic-dark',
-      paletteId: 'skeuomorphic-dark',
-      themeId: 'skeuomorphic-dark',
+      paletteDayId: 'skeuomorphic-luxury-white',
+      paletteNightId: 'skeuomorphic-luxury-white',
+      paletteId: 'skeuomorphic-luxury-white',
+      themeId: 'skeuomorphic-luxury-white',
     })
   })
 })

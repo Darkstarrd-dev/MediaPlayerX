@@ -36,16 +36,15 @@ describe('resolveThemeIdFromThemes', () => {
 
 describe('resolveStyleIdFromStyles', () => {
   const styles: StyleInfo[] = [
-    { id: 'flush', label: 'Flush' },
-    { id: 'liquid-glass', label: 'Liquid Glass' },
+    { id: 'soft-skeuomorphic', label: 'Soft Skeuomorphic' },
   ]
 
   it('keeps current style when still available', () => {
-    expect(resolveStyleIdFromStyles('liquid-glass', styles)).toBe('liquid-glass')
+    expect(resolveStyleIdFromStyles('soft-skeuomorphic', styles)).toBe('soft-skeuomorphic')
   })
 
   it('falls back to first available style when current style is missing', () => {
-    expect(resolveStyleIdFromStyles('missing-style', styles)).toBe('flush')
+    expect(resolveStyleIdFromStyles('missing-style', styles)).toBe('soft-skeuomorphic')
   })
 
   it('falls back to default style when no style preset exists', () => {
@@ -55,16 +54,15 @@ describe('resolveStyleIdFromStyles', () => {
 
 describe('resolvePaletteIdFromPalettes', () => {
   const palettes: PaletteInfo[] = [
-    { id: 'parchment', label: 'Parchment' },
-    { id: 'tokyo-night', label: 'Tokyo Night' },
+    { id: 'skeuomorphic-luxury-white', label: 'Luxury White' },
   ]
 
   it('keeps current palette when still available', () => {
-    expect(resolvePaletteIdFromPalettes('tokyo-night', palettes)).toBe('tokyo-night')
+    expect(resolvePaletteIdFromPalettes('skeuomorphic-luxury-white', palettes)).toBe('skeuomorphic-luxury-white')
   })
 
   it('falls back to first available palette when current palette is missing', () => {
-    expect(resolvePaletteIdFromPalettes('missing-palette', palettes)).toBe('parchment')
+    expect(resolvePaletteIdFromPalettes('missing-palette', palettes)).toBe('skeuomorphic-luxury-white')
   })
 
   it('falls back to default palette when no palette preset exists', () => {
@@ -75,26 +73,26 @@ describe('resolvePaletteIdFromPalettes', () => {
 describe('listPalettesByStyle', () => {
   it('limits soft-skeuomorphic to dedicated palettes', () => {
     const ids = listPalettesByStyle('soft-skeuomorphic').map((item) => item.id)
-    expect(ids).toEqual(['skeuomorphic-light-white', 'skeuomorphic-luxury-white', 'skeuomorphic-dark', 'skeuomorphic-light', 'skeuomorphic-scroll'])
+    expect(ids).toEqual(['skeuomorphic-luxury-white'])
   })
 
-  it('keeps unrestricted styles compatible with default palette', () => {
-    const ids = listPalettesByStyle('flush').map((item) => item.id)
-    expect(ids).toContain(DEFAULT_PALETTE_ID)
+  it('keeps fallback style compatible with default palette', () => {
+    const ids = listPalettesByStyle('missing-style').map((item) => item.id)
+    expect(ids).toEqual([DEFAULT_PALETTE_ID])
   })
 })
 
 describe('resolvePaletteIdForStyle', () => {
   it('falls back to style default palette when current palette is out of allowlist', () => {
-    expect(resolvePaletteIdForStyle('parchment', 'soft-skeuomorphic')).toBe('skeuomorphic-light')
+    expect(resolvePaletteIdForStyle('parchment', 'soft-skeuomorphic')).toBe('skeuomorphic-luxury-white')
   })
 })
 
 describe('resolvePalettePairForStyle', () => {
-  it('keeps selected day palette when day/night conflict on day palette', () => {
-    expect(resolvePalettePairForStyle('soft-skeuomorphic', 'skeuomorphic-light-white', 'skeuomorphic-light-white')).toEqual({
-      day: 'skeuomorphic-light-white',
-      night: 'skeuomorphic-dark',
+  it('locks day/night palette pair to luxury-white', () => {
+    expect(resolvePalettePairForStyle('soft-skeuomorphic', 'skeuomorphic-light', 'skeuomorphic-dark')).toEqual({
+      day: 'skeuomorphic-luxury-white',
+      night: 'skeuomorphic-luxury-white',
     })
   })
 })
