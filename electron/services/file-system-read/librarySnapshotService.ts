@@ -168,7 +168,22 @@ function countMatches(value: string, pattern: RegExp): number {
   return matched ? matched.length : 0
 }
 
-function scoreCueDecodedText(value: string): number {
+interface CueDecodeCandidate {
+  encoding: string
+  text: string
+  trackCount: number
+  indexCount: number
+  fileCount: number
+  titleCount: number
+  performerCount: number
+  replacementCount: number
+  nullCharCount: number
+  weirdControlCharCount: number
+  suspiciousMojibakeCount: number
+  score: number
+}
+
+function scoreCueDecodedText(value: string): Omit<CueDecodeCandidate, 'encoding' | 'text'> {
   let score = 0
 
   const trackCount = countMatches(value, /^\s*TRACK\s+\d+/gim)
@@ -177,29 +192,51 @@ function scoreCueDecodedText(value: string): number {
   const titleCount = countMatches(value, /^\s*TITLE\s+/gim)
   const performerCount = countMatches(value, /^\s*PERFORMER\s+/gim)
 
-  score += trackCount * 40
-  score += indexCount * 25
-  score += fileCount * 16
-  score += titleCount * 8
-  score += performerCount * 8
+  score += trackCount * 80
+  score += indexCount * 60
+  score += fileCount * 30
+  score += titleCount * 10
+  score += performerCount * 10
 
   const replacementCount = countMatches(value, /\uFFFD/g)
-  score -= replacementCount * 60
+  score -= replacementCount * 120
+
+  const suspiciousMojibakeCount = countMatches(value, /(?:Ã.|Â.|ã.|â.)/g)
+  score -= suspiciousMojibakeCount * 50
 
   const nullCharCount = countMatches(value, /\u0000/g)
-  score -= nullCharCount * 80
+  score -= nullCharCount * 220
 
   const weirdControlCharCount = countMatches(value, /[\x00-\x08\x0B\x0C\x0E-\x1F]/g)
-  score -= weirdControlCharCount * 14
+  score -= weirdControlCharCount * 60
 
-  if (trackCount > 0 && indexCount > 0) {
-    score += 120
+  const knownKeywordCount = countMatches(value, /^\s*(REM|FILE|TRACK|INDEX|TITLE|PERFORMER|CATALOG|ISRC)\b/gim)
+  if (knownKeywordCount === 0) {
+    score -= 280
   }
 
-  return score
+  if (trackCount > 0 && indexCount > 0) {
+    score += 320
+  }
+
+  return {
+    trackCount,
+    indexCount,
+    fileCount,
+    titleCount,
+    performerCount,
+    replacementCount,
+    nullCharCount,
+    weirdControlCharCount,
+    suspiciousMojibakeCount,
+    score,
+  }
 }
 
-function decodeCueBufferByEncoding(rawBuffer: Buffer, encoding: 'utf8' | 'utf16le' | 'utf16be' | 'shift_jis' | 'euc-jp'): string {
+function decodeCueBufferByEncoding(
+  rawBuffer: Buffer,
+  encoding: 'utf8' | 'utf16le' | 'utf16be' | 'shift_jis' | 'cp932' | 'euc-jp' | 'iso-2022-jp' | 'gb18030',
+): string {
   if (encoding === 'utf8') {
     return rawBuffer.toString('utf8')
   }
@@ -212,15 +249,76 @@ function decodeCueBufferByEncoding(rawBuffer: Buffer, encoding: 'utf8' | 'utf16l
   return new TextDecoder(encoding).decode(rawBuffer)
 }
 
-function decodeCueTextFromBuffer(rawBuffer: Buffer): string {
+function detectLikelyUtf16EncodingWithoutBom(rawBuffer: Buffer): 'utf16le' | 'utf16be' | null {
+  const pairLimit = Math.min(2048, Math.floor(rawBuffer.length / 2))
+  if (pairLimit <= 8) {
+    return null
+  }
+
+  let leAsciiPairs = 0
+  let beAsciiPairs = 0
+  let leZeroHighBytePairs = 0
+  let beZeroHighBytePairs = 0
+
+  for (let pairIndex = 0; pairIndex < pairLimit; pairIndex += 1) {
+    const lowByte = rawBuffer[pairIndex * 2]
+    const highByte = rawBuffer[pairIndex * 2 + 1]
+    if (highByte === 0) {
+      leZeroHighBytePairs += 1
+      if (lowByte >= 0x09 && lowByte <= 0x7e) {
+        leAsciiPairs += 1
+      }
+    }
+    if (lowByte === 0) {
+      beZeroHighBytePairs += 1
+      if (highByte >= 0x09 && highByte <= 0x7e) {
+        beAsciiPairs += 1
+      }
+    }
+  }
+
+  if (leAsciiPairs >= 16 && leAsciiPairs >= beAsciiPairs * 2 && leZeroHighBytePairs >= pairLimit * 0.2) {
+    return 'utf16le'
+  }
+  if (beAsciiPairs >= 16 && beAsciiPairs >= leAsciiPairs * 2 && beZeroHighBytePairs >= pairLimit * 0.2) {
+    return 'utf16be'
+  }
+  return null
+}
+
+function decodeCueTextFromBuffer(rawBuffer: Buffer): { text: string; encoding: string } {
   const bomUtf8 = rawBuffer.length >= 3 && rawBuffer[0] === 0xef && rawBuffer[1] === 0xbb && rawBuffer[2] === 0xbf
   const bomUtf16Le = rawBuffer.length >= 2 && rawBuffer[0] === 0xff && rawBuffer[1] === 0xfe
   const bomUtf16Be = rawBuffer.length >= 2 && rawBuffer[0] === 0xfe && rawBuffer[1] === 0xff
 
-  const encodings: Array<'utf8' | 'utf16le' | 'utf16be' | 'shift_jis' | 'euc-jp'> = ['utf8', 'utf16le', 'utf16be', 'shift_jis', 'euc-jp']
+  if (bomUtf8) {
+    return { text: rawBuffer.toString('utf8'), encoding: 'utf8-bom' }
+  }
+  if (bomUtf16Le) {
+    return { text: rawBuffer.toString('utf16le'), encoding: 'utf16le-bom' }
+  }
+  if (bomUtf16Be) {
+    return { text: swapUtf16ByteOrder(rawBuffer).toString('utf16le'), encoding: 'utf16be-bom' }
+  }
 
-  let bestText = rawBuffer.toString('utf8')
-  let bestScore = Number.NEGATIVE_INFINITY
+  const likelyUtf16WithoutBom = detectLikelyUtf16EncodingWithoutBom(rawBuffer)
+  if (likelyUtf16WithoutBom === 'utf16le') {
+    return { text: rawBuffer.toString('utf16le'), encoding: 'utf16le-heuristic' }
+  }
+  if (likelyUtf16WithoutBom === 'utf16be') {
+    return { text: swapUtf16ByteOrder(rawBuffer).toString('utf16le'), encoding: 'utf16be-heuristic' }
+  }
+
+  const encodings: Array<'utf8' | 'shift_jis' | 'cp932' | 'euc-jp' | 'iso-2022-jp' | 'gb18030'> = [
+    'utf8',
+    'shift_jis',
+    'cp932',
+    'euc-jp',
+    'iso-2022-jp',
+    'gb18030',
+  ]
+
+  let bestCandidate: CueDecodeCandidate | null = null
 
   for (const encoding of encodings) {
     let decoded = ''
@@ -230,24 +328,35 @@ function decodeCueTextFromBuffer(rawBuffer: Buffer): string {
       continue
     }
 
-    let score = scoreCueDecodedText(decoded)
-    if (encoding === 'utf8' && bomUtf8) {
-      score += 40
-    }
-    if (encoding === 'utf16le' && bomUtf16Le) {
-      score += 80
-    }
-    if (encoding === 'utf16be' && bomUtf16Be) {
-      score += 80
+    const metrics = scoreCueDecodedText(decoded)
+    const candidate: CueDecodeCandidate = {
+      encoding,
+      text: decoded,
+      ...metrics,
     }
 
-    if (score > bestScore) {
-      bestScore = score
-      bestText = decoded
+    if (!bestCandidate || candidate.score > bestCandidate.score) {
+      bestCandidate = candidate
+      continue
+    }
+
+    if (candidate.score === bestCandidate.score) {
+      const candidateStructure = candidate.trackCount + candidate.indexCount + candidate.fileCount
+      const bestStructure = bestCandidate.trackCount + bestCandidate.indexCount + bestCandidate.fileCount
+      if (candidateStructure > bestStructure) {
+        bestCandidate = candidate
+      }
     }
   }
 
-  return bestText
+  if (!bestCandidate) {
+    return { text: rawBuffer.toString('utf8'), encoding: 'utf8-fallback' }
+  }
+
+  return {
+    text: bestCandidate.text,
+    encoding: bestCandidate.encoding,
+  }
 }
 
 function parseCueTextValue(rawValue: string): string {
@@ -804,7 +913,8 @@ export class LibrarySnapshotService {
       return []
     }
 
-    const rawCueText = decodeCueTextFromBuffer(cueRawBuffer)
+    const decodedCue = decodeCueTextFromBuffer(cueRawBuffer)
+    const rawCueText = decodedCue.text
 
     const parsedCueRecord = parseCueFileRecord(cueFile.absolutePath, rawCueText)
     if (parsedCueRecord.tracks.length === 0) {
@@ -814,7 +924,8 @@ export class LibrarySnapshotService {
         .filter((line) => line.length > 0)
         .slice(0, 12)
         .join(' | ')
-      console.warn(`[cue] parsed zero tracks: path=${cueFile.absolutePath}; preview=${firstLines}`)
+      const preview = firstLines.length > 320 ? `${firstLines.slice(0, 320)}...` : firstLines
+      console.warn(`[cue] parsed zero tracks: path=${cueFile.absolutePath}; encoding=${decodedCue.encoding}; preview=${preview}`)
       return []
     }
 
