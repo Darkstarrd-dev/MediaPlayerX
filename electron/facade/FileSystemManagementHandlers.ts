@@ -46,12 +46,24 @@ import {
   type ReadImageConvertTaskResponseDto,
   type CancelImageConvertTaskRequestDto,
   type CancelImageConvertTaskResponseDto,
+  type AudioTranscodeTaskDto,
+  type StartAudioTranscodeTaskRequestDto,
+  type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeTaskRequestDto,
+  type ReadAudioTranscodeTaskResponseDto,
+  type CancelAudioTranscodeTaskRequestDto,
+  type CancelAudioTranscodeTaskResponseDto,
 } from '../../src/contracts/backend'
 import { FileSystemFacadeContext } from './types'
 
 export class FileSystemManagementHandlers {
   private readonly imageConvertTasks = new Map<string, ImageConvertTaskDto>()
   private readonly imageConvertTaskRuntime = new Map<string, { cancelRequested: boolean }>()
+  private readonly audioTranscodeTasks = new Map<string, AudioTranscodeTaskDto>()
+  private readonly audioTranscodeTaskRuntime = new Map<string, {
+    cancelRequested: boolean
+    abortController: AbortController
+  }>()
 
   constructor(private context: FileSystemFacadeContext) {}
 
@@ -131,6 +143,90 @@ export class FileSystemManagementHandlers {
       })
       .finally(() => {
         this.imageConvertTaskRuntime.delete(taskId)
+      })
+  }
+
+  private updateAudioTranscodeTask(
+    taskId: string,
+    updater: (task: AudioTranscodeTaskDto) => AudioTranscodeTaskDto,
+  ): AudioTranscodeTaskDto {
+    const currentTask = this.audioTranscodeTasks.get(taskId)
+    if (!currentTask) {
+      throw new Error(`audio_transcode_task_not_found:${taskId}`)
+    }
+    const nextTask = updater(currentTask)
+    this.audioTranscodeTasks.set(taskId, nextTask)
+    return nextTask
+  }
+
+  private isAudioTranscodeCancelledError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false
+    }
+    return error.name === 'AudioTranscodeCancelledError' || error.message === 'audio_transcode_cancelled'
+  }
+
+  private executeAudioTranscodeTask(
+    taskId: string,
+    request: StartAudioTranscodeTaskRequestDto,
+  ): void {
+    const runtime = this.audioTranscodeTaskRuntime.get(taskId)
+    if (!runtime) {
+      return
+    }
+
+    void this.context.managementMutationService.runAudioTranscodeTask(request, {
+      isCancelled: () => runtime.cancelRequested,
+      signal: runtime.abortController.signal,
+      onProgress: (payload) => {
+        this.updateAudioTranscodeTask(taskId, (task) => ({
+          ...task,
+          status: 'running',
+          progress: payload.total_count > 0
+            ? Math.max(0, Math.min(1, payload.processed_count / payload.total_count))
+            : 0,
+          total_count: payload.total_count,
+          processed_count: payload.processed_count,
+          success_count: payload.success_count,
+          failed_count: payload.failed_count,
+          message: payload.message,
+          updated_at_ms: Date.now(),
+        }))
+      },
+    })
+      .then((result) => {
+        const nextStatus = runtime.cancelRequested ? 'cancelled' : result.failed_count > 0 ? 'failed' : 'completed'
+        this.updateAudioTranscodeTask(taskId, (task) => ({
+          ...task,
+          status: nextStatus,
+          progress: 1,
+          total_count: result.total_count,
+          processed_count: result.processed_count,
+          success_count: result.success_count,
+          failed_count: result.failed_count,
+          output_files: result.output_files,
+          message: runtime.cancelRequested
+            ? 'audio transcode task cancelled'
+            : nextStatus === 'completed'
+              ? 'audio transcode task completed'
+              : 'audio transcode task finished with failure',
+          error_detail: nextStatus === 'failed' ? result.first_error_detail : null,
+          updated_at_ms: Date.now(),
+        }))
+      })
+      .catch((error) => {
+        const cancelled = runtime.cancelRequested || this.isAudioTranscodeCancelledError(error)
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        this.updateAudioTranscodeTask(taskId, (task) => ({
+          ...task,
+          status: cancelled ? 'cancelled' : 'failed',
+          message: cancelled ? 'audio transcode task cancelled' : 'audio transcode task failed',
+          error_detail: cancelled ? null : reason,
+          updated_at_ms: Date.now(),
+        }))
+      })
+      .finally(() => {
+        this.audioTranscodeTaskRuntime.delete(taskId)
       })
   }
 
@@ -312,6 +408,72 @@ export class FileSystemManagementHandlers {
           updated_at_ms: Date.now(),
         }
     this.imageConvertTasks.set(nextTask.task_id, nextTask)
+    return { task: nextTask }
+  }
+
+  async startAudioTranscodeTask(
+    request: StartAudioTranscodeTaskRequestDto,
+  ): Promise<StartAudioTranscodeTaskResponseDto> {
+    const now = Date.now()
+    const taskId = `audio-transcode-${now}-${Math.floor(Math.random() * 100_000)}`
+    const task: AudioTranscodeTaskDto = {
+      task_id: taskId,
+      status: 'running',
+      progress: 0,
+      total_count: 0,
+      processed_count: 0,
+      success_count: 0,
+      failed_count: 0,
+      output_files: [],
+      message: 'audio transcode task started',
+      error_detail: null,
+      created_at_ms: now,
+      updated_at_ms: now,
+    }
+    this.audioTranscodeTasks.set(taskId, task)
+    this.audioTranscodeTaskRuntime.set(taskId, {
+      cancelRequested: false,
+      abortController: new AbortController(),
+    })
+    this.executeAudioTranscodeTask(taskId, request)
+    return { task }
+  }
+
+  async readAudioTranscodeTask(
+    request: ReadAudioTranscodeTaskRequestDto,
+  ): Promise<ReadAudioTranscodeTaskResponseDto> {
+    return {
+      task: this.audioTranscodeTasks.get(request.task_id) ?? null,
+    }
+  }
+
+  async cancelAudioTranscodeTask(
+    request: CancelAudioTranscodeTaskRequestDto,
+  ): Promise<CancelAudioTranscodeTaskResponseDto> {
+    const existingTask = this.audioTranscodeTasks.get(request.task_id)
+    if (!existingTask) {
+      throw new Error(`audio_transcode_task_not_found:${request.task_id}`)
+    }
+    const runtime = this.audioTranscodeTaskRuntime.get(request.task_id)
+    if (runtime) {
+      runtime.cancelRequested = true
+      runtime.abortController.abort()
+    }
+    const isTerminal =
+      existingTask.status === 'cancelled' ||
+      existingTask.status === 'completed' ||
+      existingTask.status === 'failed'
+    const nextTask: AudioTranscodeTaskDto = isTerminal
+      ? {
+          ...existingTask,
+          updated_at_ms: Date.now(),
+        }
+      : {
+          ...existingTask,
+          message: 'audio transcode cancellation requested',
+          updated_at_ms: Date.now(),
+        }
+    this.audioTranscodeTasks.set(nextTask.task_id, nextTask)
     return { task: nextTask }
   }
 }

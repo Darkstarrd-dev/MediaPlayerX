@@ -262,6 +262,33 @@ export type CancelImageConvertTaskRequestDto = Infer<
 export type CancelImageConvertTaskResponseDto = Infer<
   typeof Backend.cancelImageConvertTaskResponseSchema
 >;
+export type AudioTranscodeTaskStatusDto = Infer<
+  typeof Backend.audioTranscodeTaskStatusSchema
+>;
+export type AudioTranscodePresetDto = Infer<
+  typeof Backend.audioTranscodePresetSchema
+>;
+export type AudioTranscodeTaskDto = Infer<
+  typeof Backend.audioTranscodeTaskSchema
+>;
+export type StartAudioTranscodeTaskRequestDto = Infer<
+  typeof Backend.startAudioTranscodeTaskRequestSchema
+>;
+export type StartAudioTranscodeTaskResponseDto = Infer<
+  typeof Backend.startAudioTranscodeTaskResponseSchema
+>;
+export type ReadAudioTranscodeTaskRequestDto = Infer<
+  typeof Backend.readAudioTranscodeTaskRequestSchema
+>;
+export type ReadAudioTranscodeTaskResponseDto = Infer<
+  typeof Backend.readAudioTranscodeTaskResponseSchema
+>;
+export type CancelAudioTranscodeTaskRequestDto = Infer<
+  typeof Backend.cancelAudioTranscodeTaskRequestSchema
+>;
+export type CancelAudioTranscodeTaskResponseDto = Infer<
+  typeof Backend.cancelAudioTranscodeTaskResponseSchema
+>;
 export type WritePackageMetadataRequestDto = Infer<
   typeof Backend.writePackageMetadataRequestSchema
 >;

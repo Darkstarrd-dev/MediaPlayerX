@@ -131,6 +131,12 @@ import {
   readImageConvertTaskResponseSchema,
   cancelImageConvertTaskRequestSchema,
   cancelImageConvertTaskResponseSchema,
+  startAudioTranscodeTaskRequestSchema,
+  startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeTaskRequestSchema,
+  readAudioTranscodeTaskResponseSchema,
+  cancelAudioTranscodeTaskRequestSchema,
+  cancelAudioTranscodeTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -617,6 +623,27 @@ export function registerBackendIpcHandlers(): void {
     cancelImageConvertTaskRequestSchema,
     cancelImageConvertTaskResponseSchema,
     (request) => ensureService().cancelImageConvertTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.startAudioTranscodeTask,
+    startAudioTranscodeTaskRequestSchema,
+    startAudioTranscodeTaskResponseSchema,
+    (request) => ensureService().startAudioTranscodeTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.readAudioTranscodeTask,
+    readAudioTranscodeTaskRequestSchema,
+    readAudioTranscodeTaskResponseSchema,
+    (request) => ensureService().readAudioTranscodeTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.cancelAudioTranscodeTask,
+    cancelAudioTranscodeTaskRequestSchema,
+    cancelAudioTranscodeTaskResponseSchema,
+    (request) => ensureService().cancelAudioTranscodeTask(request),
   );
 
   registerIpcCommand(

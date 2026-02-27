@@ -15,6 +15,7 @@ import {
   type SetImageHiddenRequestDto,
   type SetImageHiddenResponseDto,
   type StartImageConvertTaskRequestDto,
+  type StartAudioTranscodeTaskRequestDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
 } from "../../../src/contracts/backend";
@@ -23,8 +24,10 @@ import { MediaLibraryDatabase } from "../../mediaLibraryDatabase";
 import { ImportPathRegistry } from "./importPathRegistry";
 import { ManagementArchiveOps } from "./managementArchiveOps";
 import { ManagementImageConvertService } from "./managementImageConvertService";
+import { ManagementAudioTranscodeService } from "./managementAudioTranscodeService";
 import { ManagementMoveDeleteService } from "./managementMoveDeleteService";
 import { ManagementRenameService } from "./managementRenameService";
+import { type RuntimeDependencySnapshot } from "./runtimeDependencyService";
 
 interface ImageConvertProgressPayload {
   total_count: number;
@@ -47,6 +50,29 @@ interface RunImageConvertTaskResult {
   first_error_detail: string | null;
 }
 
+interface AudioTranscodeProgressPayload {
+  total_count: number;
+  processed_count: number;
+  success_count: number;
+  failed_count: number;
+  message: string;
+}
+
+interface RunAudioTranscodeTaskOptions {
+  isCancelled?: () => boolean;
+  signal?: AbortSignal;
+  onProgress?: (payload: AudioTranscodeProgressPayload) => void;
+}
+
+interface RunAudioTranscodeTaskResult {
+  total_count: number;
+  processed_count: number;
+  success_count: number;
+  failed_count: number;
+  output_files: string[];
+  first_error_detail: string | null;
+}
+
 interface ManagementMutationServiceOptions {
   rootDir: string;
   thumbnailCacheRootDir: string;
@@ -58,6 +84,8 @@ interface ManagementMutationServiceOptions {
     force?: boolean;
   }) => Promise<LibrarySnapshotDto>;
   syncSnapshotFromDatabase: () => LibrarySnapshotDto;
+  ffmpegBin: string;
+  ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>;
   refreshArchiveIndexesForPaths: (
     archivePaths: Iterable<string>,
   ) => Promise<void>;
@@ -80,6 +108,7 @@ interface ManagementMutationServiceOptions {
 export class ManagementMutationService {
   private readonly archiveOps: ManagementArchiveOps;
   private readonly imageConvertService: ManagementImageConvertService;
+  private readonly audioTranscodeService: ManagementAudioTranscodeService;
   private readonly renameService: ManagementRenameService;
   private readonly moveDeleteService: ManagementMoveDeleteService;
 
@@ -97,6 +126,18 @@ export class ManagementMutationService {
       buildMediaAccessContext: options.buildMediaAccessContext,
       emitLibraryChanged: options.emitLibraryChanged,
       withArchiveWriteLock: this.withArchiveWriteLock.bind(this),
+    });
+    this.audioTranscodeService = new ManagementAudioTranscodeService({
+      ffmpegBin: options.ffmpegBin,
+      ensureRuntimeDependencies: options.ensureRuntimeDependencies,
+      ensureStateLoaded: options.ensureStateLoaded,
+      ensureSnapshotLoaded: options.ensureSnapshotLoaded,
+      refreshSnapshotFromFilesystem: options.refreshSnapshotFromFilesystem,
+      syncSnapshotFromDatabase: options.syncSnapshotFromDatabase,
+      buildMediaAccessContext: options.buildMediaAccessContext,
+      readMusicImportSources: () => options.database.readMusicImportSources(),
+      writeMusicImportSources: (next) => options.database.writeMusicImportSources(next),
+      emitLibraryChanged: options.emitLibraryChanged,
     });
     this.renameService = new ManagementRenameService({
       database: options.database,
@@ -178,6 +219,13 @@ export class ManagementMutationService {
     options: RunImageConvertTaskOptions = {},
   ): Promise<RunImageConvertTaskResult> {
     return await this.imageConvertService.runImageConvertTask(request, options);
+  }
+
+  async runAudioTranscodeTask(
+    request: StartAudioTranscodeTaskRequestDto,
+    options: RunAudioTranscodeTaskOptions = {},
+  ): Promise<RunAudioTranscodeTaskResult> {
+    return await this.audioTranscodeService.runAudioTranscodeTask(request, options);
   }
 
   async setImageHidden(

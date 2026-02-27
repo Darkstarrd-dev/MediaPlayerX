@@ -272,3 +272,64 @@ export const cancelImageConvertTaskRequestSchema = z.object({
 export const cancelImageConvertTaskResponseSchema = z.object({
   task: imageConvertTaskSchema,
 });
+
+export const audioTranscodeTaskStatusSchema = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "cancelled",
+  "failed",
+]);
+
+export const audioTranscodePresetSchema = z.enum([
+  "flac",
+  "alac",
+  "wav",
+  "opus",
+  "aac",
+  "mp3",
+]);
+
+export const audioTranscodeTaskSchema = z.object({
+  task_id: z.string().min(1),
+  status: audioTranscodeTaskStatusSchema,
+  progress: z.number().min(0).max(1),
+  total_count: nonNegativeIntSchema,
+  processed_count: nonNegativeIntSchema,
+  success_count: nonNegativeIntSchema,
+  failed_count: nonNegativeIntSchema,
+  output_files: z.array(z.string().min(1)),
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const startAudioTranscodeTaskRequestSchema = z.object({
+  audio_ids: z.array(z.string().min(1)).min(1),
+  preset: audioTranscodePresetSchema,
+  output_dir: z.string().min(1).optional(),
+  overwrite: z.boolean().optional(),
+  copy_metadata: z.boolean().optional(),
+  add_output_to_music_sources: z.boolean().optional(),
+});
+
+export const startAudioTranscodeTaskResponseSchema = z.object({
+  task: audioTranscodeTaskSchema,
+});
+
+export const readAudioTranscodeTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const readAudioTranscodeTaskResponseSchema = z.object({
+  task: audioTranscodeTaskSchema.nullable(),
+});
+
+export const cancelAudioTranscodeTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const cancelAudioTranscodeTaskResponseSchema = z.object({
+  task: audioTranscodeTaskSchema,
+});

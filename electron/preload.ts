@@ -124,6 +124,12 @@ import {
   readImageConvertTaskResponseSchema,
   cancelImageConvertTaskRequestSchema,
   cancelImageConvertTaskResponseSchema,
+  startAudioTranscodeTaskRequestSchema,
+  startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeTaskRequestSchema,
+  readAudioTranscodeTaskResponseSchema,
+  cancelAudioTranscodeTaskRequestSchema,
+  cancelAudioTranscodeTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -301,6 +307,21 @@ const backendApi = {
     const parsed = cancelImageConvertTaskRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.cancelImageConvertTask, parsed)
     return cancelImageConvertTaskResponseSchema.parse(response)
+  },
+  startAudioTranscodeTask: async (request: unknown) => {
+    const parsed = startAudioTranscodeTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startAudioTranscodeTask, parsed)
+    return startAudioTranscodeTaskResponseSchema.parse(response)
+  },
+  readAudioTranscodeTask: async (request: unknown) => {
+    const parsed = readAudioTranscodeTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAudioTranscodeTask, parsed)
+    return readAudioTranscodeTaskResponseSchema.parse(response)
+  },
+  cancelAudioTranscodeTask: async (request: unknown) => {
+    const parsed = cancelAudioTranscodeTaskRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.cancelAudioTranscodeTask, parsed)
+    return cancelAudioTranscodeTaskResponseSchema.parse(response)
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request)

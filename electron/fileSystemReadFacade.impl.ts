@@ -89,6 +89,12 @@ import {
   type ReadImageConvertTaskResponseDto,
   type CancelImageConvertTaskRequestDto,
   type CancelImageConvertTaskResponseDto,
+  type StartAudioTranscodeTaskRequestDto,
+  type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeTaskRequestDto,
+  type ReadAudioTranscodeTaskResponseDto,
+  type CancelAudioTranscodeTaskRequestDto,
+  type CancelAudioTranscodeTaskResponseDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -408,6 +414,9 @@ export class FileSystemMediaReadService {
       thumbnailCacheRootDir: this.thumbnailCacheRootDir,
       database: this.database,
       importPathRegistry: this.importPathRegistry,
+      ffmpegBin: FFMPEG_BIN,
+      ensureRuntimeDependencies: () =>
+        this.runtimeDependencyService.ensureRuntimeDependencies(),
       ensureStateLoaded: () => this.ensureStateLoaded(),
       ensureSnapshotLoaded: () => this.ensureSnapshotLoaded(),
       refreshSnapshotFromFilesystem: (options) =>
@@ -1243,6 +1252,9 @@ export class FileSystemMediaReadService {
   async startImageConvertTask(request: StartImageConvertTaskRequestDto): Promise<StartImageConvertTaskResponseDto> { return this.managementHandlers.startImageConvertTask(request); }
   async readImageConvertTask(request: ReadImageConvertTaskRequestDto): Promise<ReadImageConvertTaskResponseDto> { return this.managementHandlers.readImageConvertTask(request); }
   async cancelImageConvertTask(request: CancelImageConvertTaskRequestDto): Promise<CancelImageConvertTaskResponseDto> { return this.managementHandlers.cancelImageConvertTask(request); }
+  async startAudioTranscodeTask(request: StartAudioTranscodeTaskRequestDto): Promise<StartAudioTranscodeTaskResponseDto> { return this.managementHandlers.startAudioTranscodeTask(request); }
+  async readAudioTranscodeTask(request: ReadAudioTranscodeTaskRequestDto): Promise<ReadAudioTranscodeTaskResponseDto> { return this.managementHandlers.readAudioTranscodeTask(request); }
+  async cancelAudioTranscodeTask(request: CancelAudioTranscodeTaskRequestDto): Promise<CancelAudioTranscodeTaskResponseDto> { return this.managementHandlers.cancelAudioTranscodeTask(request); }
   async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> { return this.libraryHandlers.writePackageMetadata(request); }
   async writePackageExternalMetadata(request: WritePackageExternalMetadataRequestDto): Promise<WritePackageExternalMetadataResponseDto> { return this.libraryHandlers.writePackageExternalMetadata(request); }
   async writeVideoMetadata(request: WriteVideoMetadataRequestDto): Promise<WriteVideoMetadataResponseDto> { return this.libraryHandlers.writeVideoMetadata(request); }

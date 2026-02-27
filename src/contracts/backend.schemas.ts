@@ -63,6 +63,15 @@ export {
   readImageConvertTaskResponseSchema,
   cancelImageConvertTaskRequestSchema,
   cancelImageConvertTaskResponseSchema,
+  audioTranscodeTaskStatusSchema,
+  audioTranscodePresetSchema,
+  audioTranscodeTaskSchema,
+  startAudioTranscodeTaskRequestSchema,
+  startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeTaskRequestSchema,
+  readAudioTranscodeTaskResponseSchema,
+  cancelAudioTranscodeTaskRequestSchema,
+  cancelAudioTranscodeTaskResponseSchema,
 } from "./backend.schemas.management";
 
 const nonNegativeIntSchema = z.number().int().nonnegative();

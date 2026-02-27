@@ -93,6 +93,12 @@ import type {
   ReadImageConvertTaskResponseDto,
   CancelImageConvertTaskRequestDto,
   CancelImageConvertTaskResponseDto,
+  StartAudioTranscodeTaskRequestDto,
+  StartAudioTranscodeTaskResponseDto,
+  ReadAudioTranscodeTaskRequestDto,
+  ReadAudioTranscodeTaskResponseDto,
+  CancelAudioTranscodeTaskRequestDto,
+  CancelAudioTranscodeTaskResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -259,6 +265,18 @@ export interface MediaRepository {
     request: CancelImageConvertTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<CancelImageConvertTaskResponseDto>
+  startAudioTranscodeTask?(
+    request: StartAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartAudioTranscodeTaskResponseDto>
+  readAudioTranscodeTask?(
+    request: ReadAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAudioTranscodeTaskResponseDto>
+  cancelAudioTranscodeTask?(
+    request: CancelAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelAudioTranscodeTaskResponseDto>
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
@@ -458,6 +476,15 @@ export interface SynchronousMediaRepository extends MediaRepository {
   cancelImageConvertTaskSync?(
     request: CancelImageConvertTaskRequestDto,
   ): CancelImageConvertTaskResponseDto
+  startAudioTranscodeTaskSync?(
+    request: StartAudioTranscodeTaskRequestDto,
+  ): StartAudioTranscodeTaskResponseDto
+  readAudioTranscodeTaskSync?(
+    request: ReadAudioTranscodeTaskRequestDto,
+  ): ReadAudioTranscodeTaskResponseDto
+  cancelAudioTranscodeTaskSync?(
+    request: CancelAudioTranscodeTaskRequestDto,
+  ): CancelAudioTranscodeTaskResponseDto
   writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
   writePackageExternalMetadataSync?(
     request: WritePackageExternalMetadataRequestDto,

@@ -88,6 +88,9 @@ import {
   startImageConvertTaskResponseSchema,
   readImageConvertTaskResponseSchema,
   cancelImageConvertTaskResponseSchema,
+  startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeTaskResponseSchema,
+  cancelAudioTranscodeTaskResponseSchema,
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   updatePerformanceConfigResponseSchema,
@@ -220,6 +223,12 @@ import {
   type ReadImageConvertTaskResponseDto,
   type CancelImageConvertTaskRequestDto,
   type CancelImageConvertTaskResponseDto,
+  type StartAudioTranscodeTaskRequestDto,
+  type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeTaskRequestDto,
+  type ReadAudioTranscodeTaskResponseDto,
+  type CancelAudioTranscodeTaskRequestDto,
+  type CancelAudioTranscodeTaskResponseDto,
   type WritePackageGradeRequestDto,
   type WritePackageGradeResponseDto,
   type ReadAppStateRequestDto,
@@ -546,6 +555,36 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(cancelImageConvertTask(request), options)
     return cancelImageConvertTaskResponseSchema.parse(response)
+  }
+
+  async startAudioTranscodeTask(
+    request: StartAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartAudioTranscodeTaskResponseDto> {
+    const startAudioTranscodeTask = requireBackendMethod('startAudioTranscodeTask')
+
+    const response = await withAbort(startAudioTranscodeTask(request), options)
+    return startAudioTranscodeTaskResponseSchema.parse(response)
+  }
+
+  async readAudioTranscodeTask(
+    request: ReadAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAudioTranscodeTaskResponseDto> {
+    const readAudioTranscodeTask = requireBackendMethod('readAudioTranscodeTask')
+
+    const response = await withAbort(readAudioTranscodeTask(request), options)
+    return readAudioTranscodeTaskResponseSchema.parse(response)
+  }
+
+  async cancelAudioTranscodeTask(
+    request: CancelAudioTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelAudioTranscodeTaskResponseDto> {
+    const cancelAudioTranscodeTask = requireBackendMethod('cancelAudioTranscodeTask')
+
+    const response = await withAbort(cancelAudioTranscodeTask(request), options)
+    return cancelAudioTranscodeTaskResponseSchema.parse(response)
   }
 
   async writePackageMetadata(

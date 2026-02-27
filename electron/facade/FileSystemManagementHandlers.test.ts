@@ -3,12 +3,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { FileSystemManagementHandlers } from './FileSystemManagementHandlers'
 import type { FileSystemFacadeContext } from './types'
 
-function createHandlersWithConvertRunner(
-  runner: FileSystemFacadeContext['managementMutationService']['runImageConvertTask'],
+function createHandlersWithTaskRunners(
+  imageConvertRunner: FileSystemFacadeContext['managementMutationService']['runImageConvertTask'],
+  audioTranscodeRunner: FileSystemFacadeContext['managementMutationService']['runAudioTranscodeTask'] = vi.fn(),
 ): FileSystemManagementHandlers {
   const context = {
     managementMutationService: {
-      runImageConvertTask: runner,
+      runImageConvertTask: imageConvertRunner,
+      runAudioTranscodeTask: audioTranscodeRunner,
       setImageHidden: vi.fn(),
       deleteImageItems: vi.fn(),
       deleteSidebarNodes: vi.fn(),
@@ -57,9 +59,26 @@ async function waitForTerminalStatus(
   return 'timeout'
 }
 
+async function waitForAudioTranscodeTerminalStatus(
+  handlers: FileSystemManagementHandlers,
+  taskId: string,
+  timeoutMs = 2_000,
+): Promise<string> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const response = await handlers.readAudioTranscodeTask({ task_id: taskId })
+    const status = response.task?.status ?? 'missing'
+    if (status === 'cancelled' || status === 'completed' || status === 'failed') {
+      return status
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  return 'timeout'
+}
+
 describe('FileSystemManagementHandlers image convert task runtime', () => {
   it('取消任务时应将运行态任务收敛为 cancelled', async () => {
-    const handlers = createHandlersWithConvertRunner(async (_request, options) => {
+    const handlers = createHandlersWithTaskRunners(async (_request, options) => {
       options.onProgress?.({
         total_count: 3,
         processed_count: 0,
@@ -88,5 +107,66 @@ describe('FileSystemManagementHandlers image convert task runtime', () => {
 
     const terminal = await waitForTerminalStatus(handlers, started.task.task_id)
     expect(terminal).toBe('cancelled')
+  })
+})
+
+describe('FileSystemManagementHandlers audio transcode task runtime', () => {
+  it('取消任务时应将运行态任务收敛为 cancelled', async () => {
+    const handlers = createHandlersWithTaskRunners(vi.fn(), async (_request, options) => {
+      options.onProgress?.({
+        total_count: 2,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        message: 'starting',
+      })
+      while (!options.isCancelled?.()) {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      }
+      const cancelledError = new Error('audio_transcode_cancelled')
+      cancelledError.name = 'AudioTranscodeCancelledError'
+      throw cancelledError
+    })
+
+    const started = await handlers.startAudioTranscodeTask({
+      audio_ids: ['audio-1'],
+      preset: 'flac',
+    })
+
+    const cancelled = await handlers.cancelAudioTranscodeTask({ task_id: started.task.task_id })
+    expect(cancelled.task.message).toContain('cancellation requested')
+
+    const terminal = await waitForAudioTranscodeTerminalStatus(handlers, started.task.task_id)
+    expect(terminal).toBe('cancelled')
+  })
+
+  it('任务成功完成时应记录输出文件', async () => {
+    const handlers = createHandlersWithTaskRunners(vi.fn(), async (_request, options) => {
+      options.onProgress?.({
+        total_count: 1,
+        processed_count: 1,
+        success_count: 1,
+        failed_count: 0,
+        message: 'done',
+      })
+      return {
+        total_count: 1,
+        processed_count: 1,
+        success_count: 1,
+        failed_count: 0,
+        output_files: ['D:/Music/output.flac'],
+        first_error_detail: null,
+      }
+    })
+
+    const started = await handlers.startAudioTranscodeTask({
+      audio_ids: ['audio-1'],
+      preset: 'flac',
+    })
+    const terminal = await waitForAudioTranscodeTerminalStatus(handlers, started.task.task_id)
+    expect(terminal).toBe('completed')
+
+    const readBack = await handlers.readAudioTranscodeTask({ task_id: started.task.task_id })
+    expect(readBack.task?.output_files).toEqual(['D:/Music/output.flac'])
   })
 })

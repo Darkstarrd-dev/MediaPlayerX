@@ -7,11 +7,13 @@ const mockState = vi.hoisted(() => {
   })
 
   const moveSidebarNodes = vi.fn()
+  const startAudioTranscodeTask = vi.fn()
   const onLibraryChanged = vi.fn()
   const dispose = vi.fn()
 
   const service = {
     moveSidebarNodes,
+    startAudioTranscodeTask,
     onLibraryChanged,
     dispose,
   }
@@ -24,6 +26,7 @@ const mockState = vi.hoisted(() => {
     handlers,
     ipcHandle,
     moveSidebarNodes,
+    startAudioTranscodeTask,
     onLibraryChanged,
     dispose,
     service,
@@ -48,6 +51,7 @@ vi.mock('electron', () => {
       getVersion: vi.fn(() => '0.0.0-test'),
       isPackaged: false,
       isHardwareAccelerationEnabled: vi.fn(() => true),
+      once: vi.fn(),
     },
     BrowserWindow: {
       getAllWindows: vi.fn(() => []),
@@ -94,6 +98,7 @@ describe('registerBackendIpcHandlers.moveSidebarNodes', () => {
     mockState.handlers.clear()
     mockState.ipcHandle.mockClear()
     mockState.moveSidebarNodes.mockReset()
+    mockState.startAudioTranscodeTask.mockReset()
     mockState.fileSystemServiceConstructor.mockClear()
   })
 
@@ -186,5 +191,76 @@ describe('registerBackendIpcHandlers.moveSidebarNodes', () => {
     ).rejects.toMatchObject({
       name: 'ZodError',
     })
+  })
+})
+
+describe('registerBackendIpcHandlers.startAudioTranscodeTask', () => {
+  beforeEach(() => {
+    mockState.handlers.clear()
+    mockState.ipcHandle.mockClear()
+    mockState.startAudioTranscodeTask.mockReset()
+    mockState.fileSystemServiceConstructor.mockClear()
+  })
+
+  it('应通过 schema 校验并转发到 service', async () => {
+    mockState.startAudioTranscodeTask.mockResolvedValue({
+      task: {
+        task_id: 'audio-transcode-1',
+        status: 'running',
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: 'started',
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    })
+
+    registerBackendIpcHandlers()
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.startAudioTranscodeTask)
+    if (!handler) {
+      throw new Error('startAudioTranscodeTask handler missing')
+    }
+
+    const request = {
+      audio_ids: ['audio-1'],
+      preset: 'flac',
+      overwrite: true,
+    }
+    const response = await handler({}, request)
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1)
+    expect(mockState.startAudioTranscodeTask).toHaveBeenCalledWith(request)
+    expect(response).toEqual(
+      expect.objectContaining({
+        task: expect.objectContaining({
+          task_id: 'audio-transcode-1',
+        }),
+      }),
+    )
+  })
+
+  it('非法请求应抛出 ZodError 且不触发 service 调用', async () => {
+    registerBackendIpcHandlers()
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.startAudioTranscodeTask)
+    if (!handler) {
+      throw new Error('startAudioTranscodeTask handler missing')
+    }
+
+    await expect(
+      handler({}, {
+        audio_ids: [],
+        preset: 'flac',
+      }),
+    ).rejects.toMatchObject({
+      name: 'ZodError',
+    })
+
+    expect(mockState.fileSystemServiceConstructor).not.toHaveBeenCalled()
+    expect(mockState.startAudioTranscodeTask).not.toHaveBeenCalled()
   })
 })

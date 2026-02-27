@@ -369,6 +369,13 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - [ ] 100 首批量转码可完成，失败项可重试。
 - [ ] 转码后文件可按策略自动入库并可立即播放。
 
+阶段进展记录：
+
+- 2026-02-28：已完成 P2 首轮后端链路（无 UI）：
+  - 新增音频转码任务 DTO 与 IPC（`start/read/cancelAudioTranscodeTask`）。
+  - 主进程新增 `ManagementAudioTranscodeService`，支持按音频条目批量转码（FLAC/ALAC/WAV/Opus/AAC/MP3）、CUE 分轨区间转码、任务取消与失败回收。
+  - 转码成功输出可写回 `music_import_sources` 并触发快照刷新，确保后续可入库可见。
+
 ### P3：硬化与发布（1~2 周）
 
 目标：发布可维护、可排障版本。
