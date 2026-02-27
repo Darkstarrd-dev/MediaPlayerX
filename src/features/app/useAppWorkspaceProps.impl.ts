@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { buildImageMainSectionProps } from "./buildImageMainSectionProps";
 import { buildMainFooter } from "./buildMainFooter";
@@ -332,6 +332,8 @@ export function useAppWorkspaceProps({
     videoByIdEffective,
     videoCoverImageUrlById,
   });
+  const autoSavedVideoCoverIdsRef = useRef<Set<string>>(new Set());
+  const pendingAutoSaveVideoCoverIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!videoNodeBrowseMode) {
@@ -635,6 +637,62 @@ export function useAppWorkspaceProps({
     goNextPage,
     goPageByDelta,
   });
+
+  useEffect(() => {
+    if (!videoNodeBrowseMode || !selectedSidebarNode) {
+      return;
+    }
+
+    const pageStart = Math.max(0, nodeBrowsePageStart);
+    const pageSize = Math.max(1, nodeBrowsePageSize);
+    const pagedItems = videoNodeBrowseItems.slice(pageStart, pageStart + pageSize);
+
+    for (const item of pagedItems) {
+      const videoId = item.videoId?.trim() ?? "";
+      if (!videoId) {
+        continue;
+      }
+
+      if (pendingAutoSaveVideoCoverIdsRef.current.has(videoId)) {
+        continue;
+      }
+
+      if (autoSavedVideoCoverIdsRef.current.has(videoId)) {
+        continue;
+      }
+
+      const video = videoByIdEffective.get(videoId);
+      if (!video) {
+        continue;
+      }
+
+      const hasExistingCover = Boolean(video.coverImagePath || videoCoverImageUrlById[videoId]);
+      if (hasExistingCover) {
+        autoSavedVideoCoverIdsRef.current.add(videoId);
+        continue;
+      }
+
+      pendingAutoSaveVideoCoverIdsRef.current.add(videoId);
+      void backendWrite
+        .saveVideoCover(videoId, 0.1, video.coverColor)
+        .then(() => {
+          autoSavedVideoCoverIdsRef.current.add(videoId);
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          pendingAutoSaveVideoCoverIdsRef.current.delete(videoId);
+        });
+    }
+  }, [
+    backendWrite,
+    nodeBrowsePageSize,
+    nodeBrowsePageStart,
+    selectedSidebarNode,
+    videoByIdEffective,
+    videoCoverImageUrlById,
+    videoNodeBrowseItems,
+    videoNodeBrowseMode,
+  ]);
 
   const refsInPageForDisplay = resolveRefsInPageForDisplay(refsInPageBase, {
     manageMode,
@@ -951,17 +1009,19 @@ export function useAppWorkspaceProps({
     displayThumbnailScaleLevel,
     canThumbnailScaleDown,
     canThumbnailScaleUp,
+    onGridElementChange,
     onThumbnailScaleLevelChange:
       imageMainSectionHandlers.onThumbnailScaleLevelChange,
-    onPreviewNodeBrowseItem: (nodeId, videoId) => {
-      setSelectedSidebarNodeId(nodeId);
-      setVideoPlaying(false);
-      if (videoId) {
-        selectVideoFromBrowser(videoId, {
-          queueSource: "sidebar",
-          preserveRate: true,
-        });
+    onPreviewNodeBrowseItem: (_nodeId, videoId) => {
+      if (!videoId) {
+        return;
       }
+      setVideoPlaying(false);
+      selectVideoFromBrowser(videoId, {
+        play: false,
+        queueSource: "sidebar",
+        preserveRate: true,
+      });
     },
     onActivateNodeBrowseItem: (nodeId, videoId) => {
       setSelectedSidebarNodeId(nodeId);

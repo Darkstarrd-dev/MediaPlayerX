@@ -121,4 +121,27 @@ describe('useMediaState video speed behavior', () => {
     expect(result.current.selectedVideoId).toBe(videos[0].id)
     expect(result.current.videoTime).toBe(0)
   })
+
+  it('selectVideoFromBrowser 显式 play false 时会暂停', () => {
+    const videos = [createVideo('video-a'), createVideo('video-b')]
+    const { result } = renderHook(() =>
+      useMediaState({
+        initialVideoId: videos[0].id,
+        initialPlaylistIds: videos.map((video) => video.id),
+        videos,
+      }),
+    )
+
+    act(() => {
+      result.current.setVideoPlaying(true)
+    })
+    expect(result.current.videoPlaying).toBe(true)
+
+    act(() => {
+      result.current.selectVideoFromBrowser(videos[1].id, { play: false, queueSource: 'sidebar' })
+    })
+
+    expect(result.current.selectedVideoId).toBe(videos[1].id)
+    expect(result.current.videoPlaying).toBe(false)
+  })
 })

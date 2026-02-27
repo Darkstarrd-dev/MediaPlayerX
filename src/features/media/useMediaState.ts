@@ -143,7 +143,8 @@ export function useMediaState({ initialVideoId, initialPlaylistIds, videos }: Us
       if (options?.queueSource) {
         setVideoQueueSource(options.queueSource)
       }
-      setVideoPlaying((previous) => (options?.play ? true : previous))
+      const hasExplicitPlay = Boolean(options && 'play' in options)
+      setVideoPlaying((previous) => (hasExplicitPlay ? Boolean(options?.play) : previous))
     },
     [],
   )

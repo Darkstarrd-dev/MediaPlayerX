@@ -249,8 +249,19 @@ export function useAppNavigationState({
       updateSettings({ workspaceBottomPanelHeight: value }),
   });
 
-  // 简化条件：仅在 image 模式 + 非锁定布局时执行 gap snap
-  const canGapSnap = mode === "image" && !layoutLocked;
+  const selectedSidebarNode = selectedSidebarNodeId
+    ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+    : null;
+  const videoNodeBrowseSnapActive =
+    mode === "video" &&
+    Boolean(
+      selectedSidebarNode &&
+        selectedSidebarNode.kind === "folder" &&
+        selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
+    );
+
+  // image 模式和 video 节点缩略图模式都允许 gap snap
+  const canGapSnap = !layoutLocked && (mode === "image" || videoNodeBrowseSnapActive);
 
   const thumbnailLayout = useMemo(
     () =>

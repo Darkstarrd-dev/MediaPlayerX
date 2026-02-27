@@ -22,6 +22,7 @@ interface UseAppShortcutBindingsParams {
   videoShortcutActive: boolean
   handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
   setImageFocusActive: Dispatch<SetStateAction<boolean>>
+  onEscapeFromVideoPlaybackToNodeBrowse: ShortcutEngineParams['onEscapeFromVideoPlaybackToNodeBrowse']
   setFullscreenActiveWithAutoStop: ShortcutEngineParams['onSetFullscreenActive']
   setFullscreenEntryDisplay: Dispatch<SetStateAction<'image-only' | 'video-only'>>
   setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
@@ -73,6 +74,7 @@ export function useAppShortcutBindings({
   videoShortcutActive,
   handleSidebarNavigationKey,
   setImageFocusActive,
+  onEscapeFromVideoPlaybackToNodeBrowse,
   setFullscreenActiveWithAutoStop,
   setFullscreenEntryDisplay,
   setFullscreenDisplay,
@@ -122,6 +124,7 @@ export function useAppShortcutBindings({
     videoShortcutActive,
     handleSidebarNavigationKey,
     onSetImageFocusActive: setImageFocusActive,
+    onEscapeFromVideoPlaybackToNodeBrowse,
     onSetFullscreenActive: setFullscreenActiveWithAutoStop,
     onToggleWindowFullscreen: () => {
       const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined

@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -60,6 +61,7 @@ interface VideoMainSectionProps {
   canThumbnailScaleDown?: boolean;
   canThumbnailScaleUp?: boolean;
   onThumbnailScaleLevelChange?: (level: number) => void;
+  onGridElementChange?: (element: HTMLDivElement | null) => void;
   onPreviewNodeBrowseItem?: (nodeId: string, videoId?: string) => void;
   onActivateNodeBrowseItem?: (nodeId: string, videoId?: string) => void;
   canManageHide: boolean;
@@ -180,6 +182,7 @@ function VideoMainSection({
   canThumbnailScaleDown = false,
   canThumbnailScaleUp = false,
   onThumbnailScaleLevelChange,
+  onGridElementChange,
   onPreviewNodeBrowseItem,
   onActivateNodeBrowseItem,
   onManageDelete,
@@ -556,15 +559,25 @@ function VideoMainSection({
 
   const effectiveNodeBrowsePageSize = Math.max(1, Math.floor(nodeBrowsePageSize));
   const effectiveNodeBrowsePageStart = Math.max(0, Math.floor(nodeBrowsePageStart));
-  const pagedNodeBrowseItems = nodeBrowseMode
-    ? nodeBrowseItems.slice(
-        effectiveNodeBrowsePageStart,
-        effectiveNodeBrowsePageStart + effectiveNodeBrowsePageSize,
-      )
-    : [];
+  const pagedNodeBrowseItems = useMemo(
+    () =>
+      nodeBrowseMode
+        ? nodeBrowseItems.slice(
+            effectiveNodeBrowsePageStart,
+            effectiveNodeBrowsePageStart + effectiveNodeBrowsePageSize,
+          )
+        : [],
+    [
+      effectiveNodeBrowsePageSize,
+      effectiveNodeBrowsePageStart,
+      nodeBrowseItems,
+      nodeBrowseMode,
+    ],
+  );
 
   const [focusedBrowseIndex, setFocusedBrowseIndex] = useState(0);
   const browseCardButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const nodeBrowseGridRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setScaleDraftValue(Math.max(1, Math.round(displayThumbnailScaleLevel)));
@@ -611,6 +624,22 @@ function VideoMainSection({
       Math.max(0, Math.min(pagedNodeBrowseItems.length - 1, previous)),
     );
   }, [pagedNodeBrowseItems.length]);
+
+  useEffect(() => {
+    if (!onGridElementChange) {
+      return;
+    }
+
+    if (!nodeBrowseMode) {
+      onGridElementChange(null);
+      return;
+    }
+
+    onGridElementChange(nodeBrowseGridRef.current);
+    return () => {
+      onGridElementChange(null);
+    };
+  }, [nodeBrowseMode, onGridElementChange]);
 
   const handlePreviewNodeBrowseItem = useCallback(
     (item: { nodeId: string; videoId?: string }) => {
@@ -908,6 +937,7 @@ function VideoMainSection({
 
       {nodeBrowseMode ? (
         <div
+          ref={nodeBrowseGridRef}
           className="image-grid node-browse-grid mpx-scrollbar-hidden"
           data-slot="fg-main-content-image-node-grid"
           onPointerDownCapture={onRequestMainFocus}

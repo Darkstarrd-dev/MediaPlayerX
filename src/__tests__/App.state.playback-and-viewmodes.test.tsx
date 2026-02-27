@@ -227,6 +227,119 @@ describe("MediaPlayer 虚拟 UI", () => {
 
 
   it(
+    "视频节点浏览中单击/方向键仅预览并更新焦点信息，双击才进入播放",
+    async () => {
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(screen.getByRole("button", { name: "X盘/视频/项目A" }));
+
+      await waitFor(() => {
+        expect(
+          document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+        ).not.toBeNull();
+      });
+
+      const forestButton = screen.getByRole("button", {
+        name: /X盘\/视频\/项目A\s*\/\s*teaser_forest/,
+      });
+      await click(forestButton);
+
+      expect(
+        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).toBeNull();
+      expect(
+        document.querySelector('[data-slot="fg-main-footer-meta"]')?.textContent,
+      ).toContain("teaser_forest.mp4");
+
+      const nodeBrowseGrid = document.querySelector(
+        '[data-slot="fg-main-content-image-node-grid"]',
+      ) as HTMLElement | null;
+      expect(nodeBrowseGrid).not.toBeNull();
+      fireEvent.keyDown(nodeBrowseGrid as HTMLElement, {
+        key: "ArrowLeft",
+        code: "ArrowLeft",
+      });
+      await flushUiUpdates();
+      expect(
+        document.querySelector('[data-slot="fg-main-footer-meta"]')?.textContent,
+      ).toContain("teaser_city.mp4");
+
+      fireEvent.doubleClick(forestButton);
+      await flushUiUpdates();
+
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+      ).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
+    "非全屏视频播放按 Esc 返回节点缩略图；全屏先退回非全屏播放再按 Esc 返回缩略图",
+    async () => {
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await click(screen.getByRole("button", { name: "X盘/视频/项目A" }));
+      const forestButton = screen.getByRole("button", {
+        name: /X盘\/视频\/项目A\s*\/\s*teaser_forest/,
+      });
+
+      fireEvent.doubleClick(forestButton);
+      await flushUiUpdates();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).not.toBeNull();
+
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(
+        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).toBeNull();
+
+      const forestButtonForFullscreen = screen.getByRole("button", {
+        name: /X盘\/视频\/项目A\s*\/\s*teaser_forest/,
+      });
+      fireEvent.doubleClick(forestButtonForFullscreen);
+      await flushUiUpdates();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).not.toBeNull();
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await waitFor(() => {
+        expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+      });
+
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      await waitFor(() => {
+        expect(document.querySelector(".fullscreen-layer")).toBeNull();
+      });
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).not.toBeNull();
+
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(
+        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[data-slot="fg-main-content-video-preview"]'),
+      ).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
+
+
+  it(
     "视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应",
     async () => {
       render(<App />);

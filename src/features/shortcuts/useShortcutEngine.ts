@@ -30,6 +30,7 @@ interface UseShortcutEngineParams {
   videoShortcutActive: boolean;
   handleSidebarNavigationKey: (event: KeyboardEvent) => boolean;
   onSetImageFocusActive: (active: boolean) => void;
+  onEscapeFromVideoPlaybackToNodeBrowse: () => boolean;
   onSetFullscreenActive: (
     value: boolean | ((previous: boolean) => boolean),
   ) => void;
@@ -82,6 +83,7 @@ export function useShortcutEngine({
   videoShortcutActive,
   handleSidebarNavigationKey,
   onSetImageFocusActive,
+  onEscapeFromVideoPlaybackToNodeBrowse,
   onSetFullscreenActive,
   onToggleWindowFullscreen,
   onToggleFullscreenPaneFocus,
@@ -441,6 +443,16 @@ export function useShortcutEngine({
 
       if (
         event.key === "Escape" &&
+        mode === "video" &&
+        !fullscreenActive &&
+        onEscapeFromVideoPlaybackToNodeBrowse()
+      ) {
+        event.preventDefault();
+        return;
+      }
+
+      if (
+        event.key === "Escape" &&
         mode === "image" &&
         !vectorMode &&
         imageFocusActive
@@ -711,6 +723,7 @@ export function useShortcutEngine({
     handleSidebarNavigationKey,
     imageFocusActive,
     mode,
+    onEscapeFromVideoPlaybackToNodeBrowse,
     onSetFullscreenActive,
     onSetImageFocusActive,
     onToggleFullscreenDualDisplay,

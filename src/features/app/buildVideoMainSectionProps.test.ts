@@ -228,6 +228,7 @@ describe('buildVideoMainSectionProps', () => {
   it('透传视频节点浏览参数并触发回调', () => {
     const onPreviewNodeBrowseItem = vi.fn()
     const onActivateNodeBrowseItem = vi.fn()
+    const onGridElementChange = vi.fn()
 
     const props = buildVideoMainSectionProps({
       manageMode: false,
@@ -261,6 +262,7 @@ describe('buildVideoMainSectionProps', () => {
       canThumbnailScaleDown: true,
       canThumbnailScaleUp: true,
       onThumbnailScaleLevelChange: vi.fn(),
+      onGridElementChange,
       onPreviewNodeBrowseItem,
       onActivateNodeBrowseItem,
       canManageHide: false,
@@ -338,8 +340,10 @@ describe('buildVideoMainSectionProps', () => {
     expect(props.nodeBrowsePageStart).toBe(2)
     expect(props.nodeBrowsePageSize).toBe(8)
     expect(props.thumbnailColumns).toBe(5)
+    props.onGridElementChange?.(null)
     props.onPreviewNodeBrowseItem?.('video:Videos/a.mp4', 'video-a')
     props.onActivateNodeBrowseItem?.('video:Videos/a.mp4', 'video-a')
+    expect(onGridElementChange).toHaveBeenCalledWith(null)
     expect(onPreviewNodeBrowseItem).toHaveBeenCalledWith('video:Videos/a.mp4', 'video-a')
     expect(onActivateNodeBrowseItem).toHaveBeenCalledWith('video:Videos/a.mp4', 'video-a')
   })

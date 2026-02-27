@@ -41,6 +41,7 @@ interface BuildVideoMainSectionPropsParams {
   canThumbnailScaleDown?: boolean
   canThumbnailScaleUp?: boolean
   onThumbnailScaleLevelChange?: (level: number) => void
+  onGridElementChange?: (element: HTMLDivElement | null) => void
   onPreviewNodeBrowseItem?: (nodeId: string, videoId?: string) => void
   onActivateNodeBrowseItem?: (nodeId: string, videoId?: string) => void
   canManageHide: boolean
@@ -167,6 +168,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     canThumbnailScaleDown: params.canThumbnailScaleDown ?? false,
     canThumbnailScaleUp: params.canThumbnailScaleUp ?? false,
     onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
+    onGridElementChange: params.onGridElementChange,
     onPreviewNodeBrowseItem: params.onPreviewNodeBrowseItem,
     onActivateNodeBrowseItem: params.onActivateNodeBrowseItem,
     canManageHide: params.canManageHide,

@@ -20,6 +20,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     videoShortcutActive: false,
     handleSidebarNavigationKey: vi.fn(() => false),
     onSetImageFocusActive: vi.fn(),
+    onEscapeFromVideoPlaybackToNodeBrowse: vi.fn(() => false),
     onSetFullscreenActive: vi.fn(),
     onToggleWindowFullscreen: vi.fn(),
     onToggleFullscreenPaneFocus: vi.fn(),
@@ -302,6 +303,38 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
 
     expect(params.onGoPlaylist).toHaveBeenNthCalledWith(1, -1)
     expect(params.onGoPlaylist).toHaveBeenNthCalledWith(2, 1)
+  })
+
+  it('non-fullscreen video mode Escape 可回退到节点缩略图', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.fullscreenActive = false
+    const escapeToNodeBrowse = vi.fn(() => true)
+    params.onEscapeFromVideoPlaybackToNodeBrowse = escapeToNodeBrowse
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }))
+    })
+
+    expect(escapeToNodeBrowse).toHaveBeenCalledTimes(1)
+    expect(params.onSetFullscreenActive).not.toHaveBeenCalled()
+  })
+
+  it('fullscreen video mode Escape 仍优先退出全屏', () => {
+    const params = createBaseParams()
+    params.mode = 'video'
+    params.fullscreenActive = true
+    const escapeToNodeBrowse = vi.fn(() => true)
+    params.onEscapeFromVideoPlaybackToNodeBrowse = escapeToNodeBrowse
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onSetFullscreenActive).toHaveBeenCalledWith(false)
+    expect(escapeToNodeBrowse).not.toHaveBeenCalled()
   })
 
   it('M shortcut only triggers organize in manage mode', () => {

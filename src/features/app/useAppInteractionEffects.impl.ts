@@ -10,6 +10,7 @@ import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
 } from "./workspaceImageManageUtils";
+import { resolveAncestorNodeIds } from "../../components/sidebarPanelTreeUtils";
 import { mapMediaLocatorToDto } from "../backend/mediaLocator";
 import { clamp } from "../../utils/ui";
 import type { FocusedImageRef, ImageItem } from "../../types";
@@ -492,6 +493,68 @@ export function useAppInteractionEffects({
     requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id));
   };
 
+  const escapeFromVideoPlaybackToNodeBrowse = () => {
+    if (mode !== "video" || fullscreenActive) {
+      return false;
+    }
+
+    const currentNode = selectedSidebarNodeId
+      ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+      : null;
+
+    if (
+      currentNode &&
+      currentNode.kind === "folder" &&
+      currentNode.children.some((child) => Boolean(child.videoId))
+    ) {
+      return false;
+    }
+
+    const playbackNodeId =
+      (currentNode && currentNode.videoId ? currentNode.id : null) ??
+      videoNodeIdMap.get(selectedVideoId) ??
+      null;
+    if (!playbackNodeId) {
+      return false;
+    }
+
+    const ancestorNodeIds = resolveAncestorNodeIds(
+      videoTreeForSidebar,
+      playbackNodeId,
+    );
+    if (ancestorNodeIds.length === 0) {
+      return false;
+    }
+
+    let targetNodeId: string | null = null;
+    for (let index = ancestorNodeIds.length - 1; index >= 0; index -= 1) {
+      const candidateNodeId = ancestorNodeIds[index];
+      const candidateNode = candidateNodeId
+        ? (sidebarNodeById.get(candidateNodeId) ?? null)
+        : null;
+      if (
+        candidateNode &&
+        candidateNode.kind === "folder" &&
+        candidateNode.children.some((child) => Boolean(child.videoId))
+      ) {
+        targetNodeId = candidateNode.id;
+        break;
+      }
+    }
+
+    if (!targetNodeId) {
+      targetNodeId = ancestorNodeIds[ancestorNodeIds.length - 1] ?? null;
+    }
+    if (!targetNodeId) {
+      return false;
+    }
+
+    setSelectedSidebarNodeId(targetNodeId);
+    setVideoPlaying(false);
+    requestAnimationFrame(() => ensureSidebarNodeVisible(targetNodeId));
+    return true;
+  };
+
   useAppInteractionLayer({
     appSettings,
     sessionState,
@@ -518,6 +581,7 @@ export function useAppInteractionEffects({
     videoShortcutActive,
     handleSidebarNavigationKey,
     setImageFocusActive,
+    onEscapeFromVideoPlaybackToNodeBrowse: escapeFromVideoPlaybackToNodeBrowse,
     setFullscreenActiveWithAutoStop,
     setFullscreenEntryDisplay,
     setFullscreenDisplay,

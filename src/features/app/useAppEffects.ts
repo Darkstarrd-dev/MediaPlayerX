@@ -296,10 +296,6 @@ export function useAppEffects({
   }, [appBodyRef, setAppBodyWidth]);
 
   useEffect(() => {
-    if (mode !== "image") {
-      return;
-    }
-
     if (!gridElement) {
       return;
     }
@@ -336,7 +332,7 @@ export function useAppEffects({
     return () => {
       observer.disconnect();
     };
-  }, [gridElement, mode, setGridSize, showNamesOnly]);
+  }, [gridElement, setGridSize, showNamesOnly]);
 
   useEffect(() => {
     if (sidebarRatio >= sidebarCollapseRatio) {
