@@ -222,6 +222,7 @@ export function FullscreenVideoControlsShell({
               <button
                 aria-controls="fullscreen-popover-fit"
                 aria-expanded={popoverDebugPinned || openPopover === "fit"}
+                aria-pressed={popoverDebugPinned || openPopover === "fit"}
                 aria-haspopup="dialog"
                 aria-label={videoFitLabel}
                 className="video-action-btn video-action-fit"
@@ -282,6 +283,7 @@ export function FullscreenVideoControlsShell({
               <button
                 aria-controls="fullscreen-popover-subtitle"
                 aria-expanded={popoverDebugPinned || openPopover === "subtitle"}
+                aria-pressed={popoverDebugPinned || openPopover === "subtitle"}
                 aria-haspopup="dialog"
                 aria-label={
                   subtitleVisible
@@ -346,6 +348,7 @@ export function FullscreenVideoControlsShell({
               <button
                 aria-controls="fullscreen-popover-speed"
                 aria-expanded={popoverDebugPinned || openPopover === "speed"}
+                aria-pressed={popoverDebugPinned || openPopover === "speed"}
                 aria-haspopup="dialog"
                 aria-label={t("a11y.media.playbackRate", {
                   rate: videoRate.toFixed(2),
@@ -464,6 +467,7 @@ export function FullscreenVideoControlsShell({
             <button
               aria-controls="fullscreen-popover-playlist"
               aria-expanded={popoverDebugPinned || openPopover === "playlist"}
+              aria-pressed={popoverDebugPinned || openPopover === "playlist"}
               aria-haspopup="dialog"
               aria-label={t("a11y.media.playlist")}
               className="video-action-btn video-action-playlist"
@@ -527,6 +531,7 @@ export function FullscreenVideoControlsShell({
             <button
               aria-controls="fullscreen-popover-volume"
               aria-expanded={popoverDebugPinned || openPopover === "volume"}
+              aria-pressed={popoverDebugPinned || openPopover === "volume"}
               aria-haspopup="dialog"
               aria-label={
                 videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")

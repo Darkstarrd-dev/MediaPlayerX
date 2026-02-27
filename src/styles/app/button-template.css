@@ -1,0 +1,604 @@
+.mpx-btn-group.is-groove {
+  padding: 2px;
+  border: 1px solid var(--mpx-btn-group-groove-border);
+  border-radius: var(--mpx-btn-group-groove-radius);
+  background: var(--mpx-btn-group-groove-bg);
+  box-shadow: var(--mpx-btn-group-groove-shadow);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+) {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
+  border-radius: var(--mpx-control-radius);
+  background: var(--mpx-btn-template-base) !important;
+  color: var(--mpx-btn-template-text-idle) !important;
+  box-shadow: var(--mpx-btn-template-shadow-idle) !important;
+  transform: translateY(0);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+):not(:disabled):hover,
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).force-hover {
+  background: var(--mpx-btn-template-hover) !important;
+  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
+  transform: var(--mpx-btn-template-transform-hover);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+):not(:disabled):active,
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).force-active {
+  background: var(--mpx-btn-template-active) !important;
+  box-shadow: var(--mpx-btn-template-shadow-active) !important;
+  transform: var(--mpx-btn-template-transform-active);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).is-active {
+  color: var(--mpx-btn-template-text-active) !important;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+)[aria-pressed='true'] {
+  background: var(--mpx-btn-template-pressed) !important;
+  border-color: var(--mpx-btn-template-border) !important;
+  color: var(--mpx-btn-template-text-pressed) !important;
+  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
+  transform: var(--mpx-btn-template-transform-pressed);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).is-active[aria-pressed='true'] {
+  color: var(--mpx-btn-template-text-merged) !important;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).danger:not(:disabled):hover,
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).danger.force-hover,
+button.window-control-btn.window-control-btn--close:not(:disabled):hover {
+  background: var(--mpx-btn-template-danger-hover-bg) !important;
+  border-color: var(--mpx-btn-template-danger-hover-border) !important;
+  color: var(--mpx-btn-template-danger-hover-text) !important;
+  box-shadow: var(--mpx-btn-template-danger-hover-shadow) !important;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+):disabled {
+  opacity: 0.56;
+  color: var(--mpx-btn-template-text-disabled) !important;
+  cursor: not-allowed;
+  transform: translateY(0);
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  .mode-switch > button
+).is-pending {
+  color: var(--mpx-status-warning-text) !important;
+  border-color: var(--mpx-status-warning-border) !important;
+  background: var(--mpx-status-warning-bg) !important;
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+) {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
+  background: var(--mpx-btn-template-base) !important;
+  color: var(--mpx-btn-template-text-idle) !important;
+  box-shadow: var(--mpx-btn-template-shadow-idle) !important;
+  transform: translateY(0);
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+):not(:disabled):hover {
+  background: var(--mpx-btn-template-hover) !important;
+  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
+  transform: var(--mpx-btn-template-transform-hover);
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+):not(:disabled):active {
+  background: var(--mpx-btn-template-active) !important;
+  box-shadow: var(--mpx-btn-template-shadow-active) !important;
+  transform: var(--mpx-btn-template-transform-active);
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+).is-active,
+.toolbar-icon-btn.is-grid-mode,
+.toolbar-icon-btn.is-names-mode {
+  color: var(--mpx-btn-template-text-active) !important;
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+)[aria-pressed='true'] {
+  background: var(--mpx-btn-template-pressed) !important;
+  border-color: var(--mpx-btn-template-border) !important;
+  color: var(--mpx-btn-template-text-pressed) !important;
+  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
+  transform: var(--mpx-btn-template-transform-pressed);
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+).is-active[aria-pressed='true'] {
+  color: var(--mpx-btn-template-text-merged) !important;
+}
+
+:is(
+  .sidebar-head button,
+  .toolbar-actions button,
+  .metadata-head button,
+  .settings-head button,
+  .settings-side button,
+  .settings-shortcuts-head button,
+  .main-footer-pagination button,
+  .video-controls button:not(.video-action-btn),
+  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+  .main-toolbar button,
+  .settings-block button:not(.sidebar-mini-btn),
+  .search-mode-switch button,
+  .zoom-stepper .zoom-stepper-btn,
+  .auto-play-toggle-btn,
+  .header-settings-btn,
+  .video-ctrl-panel-option,
+  .music-ctrl-panel-option,
+  .fullscreen-convert-format-btn,
+  .main-toolbar-ad-review-review-pill,
+  .main-toolbar-ad-review-running-pill,
+  .manage-ad-review-icon-btn
+):disabled {
+  opacity: 0.56;
+  color: var(--mpx-btn-template-text-disabled) !important;
+  cursor: not-allowed;
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+) {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
+  background: var(--mpx-btn-template-base) !important;
+  color: var(--mpx-btn-template-text-idle) !important;
+  box-shadow: var(--mpx-btn-template-shadow-idle) !important;
+  transform: translateY(0);
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):not(:disabled):hover {
+  background: var(--mpx-btn-template-hover) !important;
+  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
+  transform: var(--mpx-btn-template-transform-hover);
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):not(:disabled):active {
+  background: var(--mpx-btn-template-active) !important;
+  box-shadow: var(--mpx-btn-template-shadow-active) !important;
+  transform: var(--mpx-btn-template-transform-active);
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+).is-active {
+  color: var(--mpx-btn-template-text-active) !important;
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+)[aria-pressed='true'] {
+  background: var(--mpx-btn-template-pressed) !important;
+  border-color: var(--mpx-btn-template-border) !important;
+  color: var(--mpx-btn-template-text-pressed) !important;
+  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
+  transform: var(--mpx-btn-template-transform-pressed);
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+).is-active[aria-pressed='true'] {
+  color: var(--mpx-btn-template-text-merged) !important;
+}
+
+:is(
+  button.main-icon-square-btn,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):disabled {
+  opacity: 0.56;
+  color: var(--mpx-btn-template-text-disabled) !important;
+  cursor: not-allowed;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  button.main-icon-square-btn,
+  .mode-switch > button,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):focus,
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  button.main-icon-square-btn,
+  .mode-switch > button,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):focus-visible {
+  outline: none !important;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  button.main-icon-square-btn,
+  .mode-switch > button,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+):focus-visible:not([aria-pressed='true']) {
+  border-color: var(--mpx-btn-template-border) !important;
+  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
+}
+
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  button.main-icon-square-btn,
+  .mode-switch > button,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+)[aria-pressed='true']:focus,
+:is(
+  button.feature-action-btn,
+  button.window-control-btn,
+  button.search-trigger-btn,
+  button.mode-action-btn,
+  button.logo-btn,
+  button.video-action-btn,
+  button.fullscreen-action-btn,
+  button.header-popover-trigger,
+  button.toolbar-icon-btn,
+  button.settings-icon-btn,
+  button.main-icon-square-btn,
+  .mode-switch > button,
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .meta-tabs button
+)[aria-pressed='true']:focus-visible {
+  border-color: var(--mpx-btn-template-border) !important;
+  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
+}
+
+.video-controls-group.is-center .video-action-btn,
+.music-controls-group.is-center .video-action-btn,
+.fullscreen-group.is-center .fullscreen-action-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border) !important;
+  background: var(--mpx-player-btn-bg) !important;
+  color: var(--mpx-player-btn-text) !important;
+  box-shadow: none !important;
+  transform: translateY(0);
+}
+
+.video-controls-group.is-center .video-action-btn:not(:disabled):hover,
+.music-controls-group.is-center .video-action-btn:not(:disabled):hover,
+.fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
+  background: var(--mpx-player-btn-hover-bg) !important;
+}
+
+.video-controls-group.is-center .video-action-btn:not(:disabled):active,
+.music-controls-group.is-center .video-action-btn:not(:disabled):active,
+.fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
+  background: var(--mpx-player-btn-active-bg) !important;
+  border-color: var(--mpx-player-btn-active-border) !important;
+}
+
+.video-controls-group.is-center .video-action-btn:focus,
+.music-controls-group.is-center .video-action-btn:focus,
+.fullscreen-group.is-center .fullscreen-action-btn:focus,
+.video-controls-group.is-center .video-action-btn:focus-visible,
+.music-controls-group.is-center .video-action-btn:focus-visible,
+.fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
+  outline: none !important;
+}

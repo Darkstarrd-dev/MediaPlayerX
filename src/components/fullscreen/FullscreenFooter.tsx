@@ -493,6 +493,7 @@ export function FullscreenFooter({
                 }}
               >
                 <button
+                  aria-pressed={showPreviewScalePopover}
                   className="video-action-btn fullscreen-action-btn header-popover-trigger"
                   type="button"
                   data-tooltip-label={imageConvertPreviewLongestEdgePx != null ? `LongestEdge ${Math.round(imageConvertPreviewLongestEdgePx)} (scale disabled)` : `Scale ${imageConvertPreviewScale.toFixed(1)}`}
@@ -546,7 +547,7 @@ export function FullscreenFooter({
                 }
                 setOpenPreviewFormatPopover(false)
               }}>
-                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
+                <button aria-pressed={showPreviewFormatPopover} className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
                   <span className="fullscreen-action-content">F</span>
                 </button>
                 <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!showPreviewFormatPopover} role="dialog" aria-label="Format">
@@ -576,7 +577,7 @@ export function FullscreenFooter({
                   setOpenPreviewQualityPopover(false)
                 }}
               >
-                <button className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Quality ${imageConvertPreviewQuality}`}>
+                <button aria-pressed={showPreviewQualityPopover} className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Quality ${imageConvertPreviewQuality}`}>
                   <span className="fullscreen-action-content">Q</span>
                 </button>
                 <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewQualityPopover} role="dialog" aria-label="Quality">
@@ -628,6 +629,7 @@ export function FullscreenFooter({
           >
             <button
               aria-label={zoomPercent === 100 ? t('ui.fullscreen.zoomIn') : t('ui.fullscreen.reset')}
+              aria-pressed={showZoomPopover}
               className="video-action-btn fullscreen-action-btn header-popover-trigger"
               disabled={!zoomEnabled}
               type="button"

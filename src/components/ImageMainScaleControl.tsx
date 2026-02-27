@@ -61,6 +61,7 @@ export function ImageMainScaleControl({
           key: "headerThumbnailScale",
           t,
         })}
+        aria-pressed={openScalePopover}
         className="toolbar-icon-btn header-popover-trigger"
         disabled={!canThumbnailScaleDown && !canThumbnailScaleUp}
         type="button"

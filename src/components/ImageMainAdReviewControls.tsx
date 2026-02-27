@@ -151,6 +151,7 @@ export function ImageMainAdReviewControls({
               adReviewStrategyMode === "head-tail" ? "is-active" : ""
             }`}
             type="button"
+            aria-pressed={openAdReviewStrategyPopover}
             aria-label={t("a11y.manage.strategyToggle")}
             data-tooltip-label={
               adReviewStrategyMode === "head-tail"
@@ -269,6 +270,7 @@ export function ImageMainAdReviewControls({
             <button
               className="main-toolbar-ad-review-running-pill"
               type="button"
+              aria-pressed={openAdReviewProgressPopover}
               aria-label={t("ui.manage.progress", {
                 percent: Math.round((adReviewTask?.progress ?? 0) * 100),
                 reviewed: adReviewTask?.reviewed_count ?? 0,

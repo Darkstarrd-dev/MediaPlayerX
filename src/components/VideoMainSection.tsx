@@ -1178,6 +1178,7 @@ function VideoMainSection({
               <button
                 aria-controls="video-main-popover-fit"
                 aria-expanded={popoverDebugPinned || openPopover === "fit"}
+                aria-pressed={popoverDebugPinned || openPopover === "fit"}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-fit"
                 aria-label={videoFitLabel}
@@ -1238,6 +1239,7 @@ function VideoMainSection({
               <button
                 aria-controls="video-main-popover-subtitle"
                 aria-expanded={popoverDebugPinned || openPopover === "subtitle"}
+                aria-pressed={popoverDebugPinned || openPopover === "subtitle"}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-subtitle"
                 aria-label={subtitleToggleLabel}
@@ -1294,6 +1296,7 @@ function VideoMainSection({
               <button
                 aria-controls="video-main-popover-speed"
                 aria-expanded={popoverDebugPinned || openPopover === "speed"}
+                aria-pressed={popoverDebugPinned || openPopover === "speed"}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-speed"
                 aria-label={t("a11y.media.playbackRate", {
@@ -1416,6 +1419,9 @@ function VideoMainSection({
                   aria-expanded={
                     popoverDebugPinned || openPopover === "playlist"
                   }
+                  aria-pressed={
+                    popoverDebugPinned || openPopover === "playlist"
+                  }
                   aria-haspopup="dialog"
                   aria-label={t("a11y.media.playlistFullscreenOnly")}
                   className="video-action-btn video-action-playlist"
@@ -1466,6 +1472,7 @@ function VideoMainSection({
               <button
                 aria-controls="video-main-popover-volume"
                 aria-expanded={popoverDebugPinned || openPopover === "volume"}
+                aria-pressed={popoverDebugPinned || openPopover === "volume"}
                 aria-haspopup="dialog"
                 className="video-action-btn video-action-mute"
                 aria-label={

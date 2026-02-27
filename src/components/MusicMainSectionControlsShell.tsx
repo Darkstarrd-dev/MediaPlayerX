@@ -200,6 +200,7 @@ export function MusicMainSectionControlsShell({
             <button
               aria-controls="music-main-popover-shader"
               aria-expanded={popoverDebugPinned || openPopover === 'shader'}
+              aria-pressed={popoverDebugPinned || openPopover === 'shader'}
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
               className="video-action-btn"
@@ -287,6 +288,7 @@ export function MusicMainSectionControlsShell({
             <button
               aria-controls="music-main-popover-shader-settings"
               aria-expanded={popoverDebugPinned || openPopover === 'shaderSettings'}
+              aria-pressed={popoverDebugPinned || openPopover === 'shaderSettings'}
               aria-haspopup="dialog"
               aria-label={t('a11y.music.shaderSettings')}
               className="video-action-btn"
@@ -586,6 +588,7 @@ export function MusicMainSectionControlsShell({
             <button
               aria-controls="music-main-popover-volume"
               aria-expanded={popoverDebugPinned || openPopover === 'volume'}
+              aria-pressed={popoverDebugPinned || openPopover === 'volume'}
               aria-haspopup="dialog"
               aria-label={audioMuted ? t('a11y.media.unmute') : t('a11y.media.mute')}
               className="video-action-btn"
