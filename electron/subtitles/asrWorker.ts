@@ -214,32 +214,50 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
   const runtimeEvents = [...providerDecision.events];
 
   const modelDirRootCandidate = path.resolve(payload.model_dir);
-  const vadModelPath =
-    (await resolveAuxiliaryModelPath(
-      modelRootDir,
-      (name) => name.includes("silero") && name.includes("vad"),
-    )) ??
-    (modelDirRootCandidate !== modelRootDir
-      ? await resolveAuxiliaryModelPath(
-          modelDirRootCandidate,
-          (name) => name.includes("silero") && name.includes("vad"),
-        )
-      : null);
-  const speakerModelPath =
-    (await resolveAuxiliaryModelPath(
-      modelRootDir,
-      (name) =>
-        name.includes("eres2net") ||
-        (name.includes("3dspeaker") && name.includes("sv")),
-    )) ??
-    (modelDirRootCandidate !== modelRootDir
-      ? await resolveAuxiliaryModelPath(
-          modelDirRootCandidate,
-          (name) =>
-            name.includes("eres2net") ||
-            (name.includes("3dspeaker") && name.includes("sv")),
-        )
-      : null);
+  const modelRootParentCandidate = path.dirname(modelRootDir);
+  const modelDirParentCandidate = path.dirname(modelDirRootCandidate);
+  const auxiliaryCandidates = [
+    modelRootDir,
+    modelDirRootCandidate,
+    modelRootParentCandidate,
+    modelDirParentCandidate,
+  ];
+  const resolveFromCandidates = async (
+    matcher: (name: string) => boolean,
+    options?: {
+      preferredExactFileNames?: string[];
+      maxDepth?: number;
+    },
+  ): Promise<string | null> => {
+    const seenAuxiliaryCandidates = new Set<string>();
+    for (let index = 0; index < auxiliaryCandidates.length; index += 1) {
+      const candidate = path.resolve(auxiliaryCandidates[index]);
+      if (seenAuxiliaryCandidates.has(candidate)) {
+        continue;
+      }
+      seenAuxiliaryCandidates.add(candidate);
+      const resolved = await resolveAuxiliaryModelPath(candidate, matcher, options);
+      if (resolved) {
+        return resolved;
+      }
+    }
+    return null;
+  };
+  const vadModelPath = await resolveFromCandidates(
+    (name) => name.includes("silero") && name.includes("vad"),
+    {
+      preferredExactFileNames: ["silero_vad.onnx"],
+      maxDepth: 3,
+    },
+  );
+  const speakerModelPath = await resolveFromCandidates(
+    (name) =>
+      name.includes("eres2net") ||
+      (name.includes("3dspeaker") && name.includes("sv")),
+    {
+      maxDepth: 3,
+    },
+  );
   const normalizedLanguage = normalizeRequestedLanguage(payload.language);
   const vadTuning = resolveVadTuning(payload);
   const speakerThreshold = resolveSpeakerThreshold(payload);
@@ -324,16 +342,42 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
           error instanceof Error ? error.message : String(error),
         ),
       );
+      console.warn("[subtitle-asr] VAD init failed", {
+        model_dir: payload.model_dir,
+        model_root_dir: modelRootDir,
+        vad_model_path: vadModelPath,
+        has_vad_constructor: Boolean(VadConstructor),
+      });
     }
   } else if (wantsVad) {
     const exportKeys = Object.keys(sherpa).sort().join(",");
+    const unavailableReason =
+      !VadConstructor && !vadModelPath
+        ? "missing_constructor_and_model"
+        : !VadConstructor
+          ? "missing_constructor"
+          : "missing_model";
+    const unavailableMessage =
+      `silero vad model or constructor is unavailable; ` +
+      `reason=${unavailableReason}; ` +
+      `model_dir=${payload.model_dir}; ` +
+      `model_root_dir=${modelRootDir}; ` +
+      `vad_model_path=${vadModelPath ?? "null"}; ` +
+      `fallback to legacy decoding`;
     runtimeEvents.push(
       createEvent(
         "advanced_vad_unavailable",
         "warning",
-        `silero vad model or constructor is unavailable; fallback to legacy decoding; exports=${exportKeys}`,
+        unavailableMessage,
       ),
     );
+    console.warn("[subtitle-asr] VAD unavailable", {
+      reason: unavailableReason,
+      model_dir: payload.model_dir,
+      model_root_dir: modelRootDir,
+      vad_model_path: vadModelPath,
+      has_vad_constructor: Boolean(VadConstructor),
+    });
   }
 
   let speaker: SpeakerRuntime | null = null;
@@ -373,13 +417,27 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
     }
   } else if (payload.render_mode === "advanced") {
     const exportKeys = Object.keys(sherpa).sort().join(",");
+    const unavailableReason =
+      !sherpa.SpeakerEmbeddingExtractor && !speakerModelPath
+        ? "missing_constructor_and_model"
+        : !sherpa.SpeakerEmbeddingExtractor
+          ? "missing_constructor"
+          : "missing_model";
     runtimeEvents.push(
       createEvent(
         "advanced_speaker_unavailable",
         "warning",
-        `speaker embedding model or constructor is unavailable; speaker split is disabled; exports=${exportKeys}`,
+        `speaker embedding model or constructor is unavailable; reason=${unavailableReason}; speaker split is disabled`,
       ),
     );
+    console.warn("[subtitle-asr] speaker unavailable", {
+      reason: unavailableReason,
+      model_dir: payload.model_dir,
+      model_root_dir: modelRootDir,
+      speaker_model_path: speakerModelPath,
+      has_speaker_constructor: Boolean(sherpa.SpeakerEmbeddingExtractor),
+      exports: exportKeys,
+    });
   }
 
   const sessionId = `subtitle-session-${nowMs()}-${Math.floor(Math.random() * 100_000)}`;
@@ -515,7 +573,7 @@ async function handleFlush(): Promise<unknown> {
     if (canFlushVad) {
       const vadDetector = currentSession.vad!.detector;
       if (typeof (vadDetector as { flush?: () => void }).flush === "function") {
-        (vadDetector as { flush: () => void }).flush();
+        (vadDetector as unknown as { flush: () => void }).flush();
       }
       cues = consumeVadSegments(
         currentSession,
@@ -847,35 +905,36 @@ bindIncomingMessageChannel((message: unknown) => {
   ) {
     return;
   }
+  const requestId = request.request_id;
 
-  if (cancelledRequestIds.has(request.request_id)) {
-    cancelledRequestIds.delete(request.request_id);
+  if (cancelledRequestIds.has(requestId)) {
+    cancelledRequestIds.delete(requestId);
     return;
   }
 
   void handleRequest(request.command as SubtitleWorkerCommand, request.payload)
     .then((payload) => {
-      if (cancelledRequestIds.has(request.request_id)) {
-        cancelledRequestIds.delete(request.request_id);
+      if (cancelledRequestIds.has(requestId)) {
+        cancelledRequestIds.delete(requestId);
         return;
       }
       postOutgoingMessage({
         kind: "response",
-        request_id: request.request_id,
+        request_id: requestId,
         ok: true,
         payload: sanitizePayloadForPostMessage(payload),
       });
     })
     .catch((error: unknown) => {
-      if (cancelledRequestIds.has(request.request_id)) {
-        cancelledRequestIds.delete(request.request_id);
+      if (cancelledRequestIds.has(requestId)) {
+        cancelledRequestIds.delete(requestId);
         return;
       }
       const messageText =
         error instanceof Error && error.message ? error.message : String(error);
       postOutgoingMessage({
         kind: "response",
-        request_id: request.request_id,
+        request_id: requestId,
         ok: false,
         error: messageText,
       });

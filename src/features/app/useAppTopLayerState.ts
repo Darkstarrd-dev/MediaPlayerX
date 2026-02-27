@@ -106,6 +106,7 @@ interface UseAppTopLayerStateParams {
   subtitleVisible: boolean;
   subtitleLoading: boolean;
   subtitleMessage: string | null;
+  subtitleRuntimeErrorMessage: string | null;
   subtitleOptions: Array<{
     id: string;
     label: string;
@@ -245,6 +246,7 @@ export function useAppTopLayerState({
   subtitleVisible,
   subtitleLoading,
   subtitleMessage,
+  subtitleRuntimeErrorMessage,
   subtitleOptions,
   selectedSubtitleId,
   autoSubtitleActive,
@@ -364,11 +366,20 @@ export function useAppTopLayerState({
       }
     : null;
 
+  const subtitleRuntimeErrorRow = subtitleRuntimeErrorMessage
+    ? {
+        key: "subtitle-runtime",
+        label: t("ui.settings.offlineSubtitleLegend"),
+        message: subtitleRuntimeErrorMessage,
+      }
+    : null;
+
   const managementErrorRows = manageMode
     ? backendErrorRows.filter((row) => row.key === "manage-write")
     : [];
   const bannerBackendErrorRows = [
     bridgeMissingRow,
+    subtitleRuntimeErrorRow,
     ...backendErrorRows.filter((row) => row.key !== "manage-write"),
   ].filter((row): row is NonNullable<typeof row> => Boolean(row));
 

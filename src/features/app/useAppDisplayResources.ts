@@ -460,6 +460,10 @@ export function useAppDisplayResources({
     liveSubtitle.message,
     t,
   );
+  const autoSubtitleBannerMessage = toAutoSubtitleUiMessage(
+    liveSubtitle.bannerMessage,
+    t,
+  );
   const subtitleOverlayStyle = buildSubtitleOverlayStyle(appSettings);
   const configuredSubtitleLanguage = (appSettings.subtitleLanguage ?? "auto")
     .trim()
@@ -937,6 +941,9 @@ export function useAppDisplayResources({
     subtitleMessage: autoSubtitleRunning
       ? autoSubtitleStatusMessage
       : subtitleMessage,
+    subtitleRuntimeErrorMessage: autoSubtitleRunning
+      ? autoSubtitleBannerMessage
+      : null,
     autoSubtitleActive: autoSubtitleRunning,
     liveSubtitleText: liveSubtitle.activeText,
     subtitleOverlayStyle,

@@ -27,6 +27,10 @@
 - 高优化需求项目表：`high-optimization-demand-table.md`
 - 视频节点浏览实现记录：`video-node-browse-implementation-log-2026-02-27.md`
 
+## 待办
+
+- [ ] FunASR 参数调优执行计划（高效版）：`funasr-parameter-tuning-execution-plan.md`
+
 ## SSOT 同步提醒
 
 - 当实现“高级分页 / 加载性能”相关交互或默认值调整时，必须同步更新：

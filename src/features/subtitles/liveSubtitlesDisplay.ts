@@ -4,10 +4,49 @@ import type {
 } from "../../contracts/backend";
 import type { SubtitleDebugOffsetMode } from "./liveSubtitlesDebug";
 
+const POPOVER_SUPPRESSED_EVENT_CODES = new Set([
+  "advanced_vad_unavailable",
+  "advanced_vad_init_failed",
+  "advanced_speaker_unavailable",
+  "advanced_speaker_init_failed",
+]);
+
+const ERROR_BANNER_EVENT_CODES = new Set([
+  "advanced_vad_unavailable",
+  "advanced_vad_init_failed",
+  "advanced_speaker_unavailable",
+  "advanced_speaker_init_failed",
+]);
+
+const POPOVER_SUPPRESSED_MESSAGE_FRAGMENTS = [
+  "silero vad model or constructor is unavailable",
+  "fallback to legacy decoding",
+  "speaker embedding model or constructor is unavailable",
+  "exports=",
+];
+
+export function isSubtitlePopoverSuppressedMessage(
+  rawMessage: string | null | undefined,
+): boolean {
+  const normalized = (rawMessage ?? "").trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  return POPOVER_SUPPRESSED_MESSAGE_FRAGMENTS.some((fragment) =>
+    normalized.includes(fragment),
+  );
+}
+
 export function pickDisplayEventMessage(
   events: SubtitleSessionEventDto[],
 ): string | null {
   const selected = events.find((item) => {
+    if (POPOVER_SUPPRESSED_EVENT_CODES.has(item.code)) {
+      return false;
+    }
+    if (isSubtitlePopoverSuppressedMessage(item.message)) {
+      return false;
+    }
     if (item.level === "error") {
       return true;
     }
@@ -18,6 +57,19 @@ export function pickDisplayEventMessage(
       return false;
     }
     return item.level === "warning";
+  });
+
+  return selected?.message ?? null;
+}
+
+export function pickErrorBannerEventMessage(
+  events: SubtitleSessionEventDto[],
+): string | null {
+  const selected = events.find((item) => {
+    if (!ERROR_BANNER_EVENT_CODES.has(item.code)) {
+      return false;
+    }
+    return item.level === "warning" || item.level === "error";
   });
 
   return selected?.message ?? null;

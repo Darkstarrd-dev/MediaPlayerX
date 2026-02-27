@@ -266,23 +266,71 @@ export async function resolveSubtitleModelAssets(
 export async function resolveAuxiliaryModelPath(
   modelRootDir: string,
   matcher: (lowerName: string) => boolean,
+  options?: {
+    preferredExactFileNames?: string[];
+    maxDepth?: number;
+  },
 ): Promise<string | null> {
-  const entries = await readDirEntries(modelRootDir);
-  if (entries.length === 0) {
-    return null;
+  const normalizedRoot = path.resolve(modelRootDir);
+  const preferredExact = (options?.preferredExactFileNames ?? []).map((item) =>
+    item.trim().toLowerCase(),
+  );
+  const maxDepth = Math.max(0, Math.floor(options?.maxDepth ?? 2));
+  const pending: Array<{ dir: string; depth: number }> = [
+    { dir: normalizedRoot, depth: 0 },
+  ];
+  const visited = new Set<string>();
+
+  while (pending.length > 0) {
+    const next = pending.shift();
+    if (!next) {
+      continue;
+    }
+    const absoluteDir = path.resolve(next.dir);
+    if (visited.has(absoluteDir)) {
+      continue;
+    }
+    visited.add(absoluteDir);
+
+    const entries = await readDirEntries(absoluteDir);
+    if (entries.length === 0) {
+      continue;
+    }
+
+    const onnxNames = entries
+      .filter(
+        (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
+      )
+      .map((entry) => entry.name);
+
+    for (const preferredName of preferredExact) {
+      const exactMatch = onnxNames.find(
+        (item) => item.toLowerCase() === preferredName,
+      );
+      if (exactMatch) {
+        return path.join(absoluteDir, exactMatch);
+      }
+    }
+
+    const fuzzyMatch = onnxNames.find((name) => matcher(name.toLowerCase()));
+    if (fuzzyMatch) {
+      return path.join(absoluteDir, fuzzyMatch);
+    }
+
+    if (next.depth >= maxDepth) {
+      continue;
+    }
+
+    const childDirs = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(absoluteDir, entry.name))
+      .sort((left, right) => left.localeCompare(right));
+    for (let i = 0; i < childDirs.length; i += 1) {
+      pending.push({ dir: childDirs[i], depth: next.depth + 1 });
+    }
   }
 
-  const match = entries
-    .filter(
-      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".onnx"),
-    )
-    .map((entry) => entry.name)
-    .find((name) => matcher(name.toLowerCase()));
-
-  if (!match) {
-    return null;
-  }
-  return path.join(modelRootDir, match);
+  return null;
 }
 
 export function chooseProvider(

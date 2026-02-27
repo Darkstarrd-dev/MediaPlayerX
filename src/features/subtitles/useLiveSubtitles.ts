@@ -34,6 +34,8 @@ import {
 import {
   buildDisplayTextByMode,
   detectLatestCueLanguage,
+  isSubtitlePopoverSuppressedMessage,
+  pickErrorBannerEventMessage,
   pickDisplayEventMessage,
 } from "./liveSubtitlesDisplay";
 import {
@@ -83,6 +85,7 @@ export function useLiveSubtitles({
   const [cues, setCues] = useState<SubtitleCueDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
   const capture = useMemo(() => new VideoSubtitleCapture(), []);
   const cleanupRef = useRef<(() => Promise<void>) | null>(null);
@@ -187,6 +190,7 @@ export function useLiveSubtitles({
     if (!enabled || !videoElement || !modelId || modelDir.trim() === "") {
       setLoading(false);
       setMessage(null);
+      setBannerMessage(null);
       setCues([]);
       resetRuntimeState({ detachCapture: true, resetEpoch: true });
       return;
@@ -201,6 +205,7 @@ export function useLiveSubtitles({
     ) {
       setLoading(false);
       setMessage("subtitle session API unavailable");
+      setBannerMessage(null);
       setCues([]);
       return;
     }
@@ -221,6 +226,21 @@ export function useLiveSubtitles({
         validRangeStateRefs,
         timelineSec,
       );
+    };
+
+    const setSubtitlePopoverMessage = (
+      nextMessage: string | null | undefined,
+    ) => {
+      const normalized = (nextMessage ?? "").trim();
+      if (!normalized) {
+        setMessage(null);
+        return;
+      }
+      if (isSubtitlePopoverSuppressedMessage(normalized)) {
+        setMessage(null);
+        return;
+      }
+      setMessage(normalized);
     };
 
     const syncPersistenceWindow = async (
@@ -462,7 +482,9 @@ export function useLiveSubtitles({
         }
       } catch (error) {
         if (!cancelled && !isAbortLikeError(error)) {
-          setMessage(error instanceof Error ? error.message : String(error));
+          setSubtitlePopoverMessage(
+            error instanceof Error ? error.message : String(error),
+          );
           emitSubtitleDebug("renderer_push_error", {
             session_epoch: sessionEpoch,
             chunk_seq: chunkSeq,
@@ -589,14 +611,17 @@ export function useLiveSubtitles({
         currentPlaybackRate,
       );
       const displayMessage = pickDisplayEventMessage(response.events);
-      if (displayMessage) {
-        setMessage(displayMessage);
+      setSubtitlePopoverMessage(displayMessage);
+      const errorBannerMessage = pickErrorBannerEventMessage(response.events);
+      if (errorBannerMessage) {
+        setBannerMessage(errorBannerMessage);
       }
     };
 
     const start = async () => {
       setLoading(true);
       setMessage(null);
+      setBannerMessage(null);
       setCues([]);
       beginNewEpoch("start");
 
@@ -633,7 +658,8 @@ export function useLiveSubtitles({
         }
 
         sessionRunningRef.current = true;
-        setMessage(pickDisplayEventMessage(startResponse.events));
+        setSubtitlePopoverMessage(pickDisplayEventMessage(startResponse.events));
+        setBannerMessage(pickErrorBannerEventMessage(startResponse.events));
 
         subtitlePersistenceEnabledRef.current = false;
         validPlaybackRateThresholdRef.current = 1.0;
@@ -677,7 +703,7 @@ export function useLiveSubtitles({
           } catch (error) {
             subtitlePersistenceEnabledRef.current = false;
             if (!cancelled && !isAbortLikeError(error)) {
-              setMessage(
+              setSubtitlePopoverMessage(
                 error instanceof Error ? error.message : String(error),
               );
             }
@@ -1117,7 +1143,7 @@ export function useLiveSubtitles({
         setLoading(false);
         const messageText =
           error instanceof Error ? error.message : String(error);
-        setMessage(messageText);
+        setSubtitlePopoverMessage(messageText);
         setCues([]);
         resetRuntimeState({ detachCapture: true });
       }
@@ -1179,5 +1205,5 @@ export function useLiveSubtitles({
 
   const detectedLanguage = useMemo(() => detectLatestCueLanguage(cues), [cues]);
 
-  return { loading, message, activeText, detectedLanguage };
+  return { loading, message, bannerMessage, activeText, detectedLanguage };
 }

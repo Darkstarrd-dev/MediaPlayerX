@@ -20,9 +20,11 @@ function BackendErrorBanner({ rows, repositoryMode }: BackendErrorBannerProps) {
         {rows.map((row) => (
           <li key={row.key}>
             <span>{`${row.label}: ${row.message}`}</span>
-            <button type="button" onClick={row.onRetry}>
-              重试
-            </button>
+            {row.onRetry ? (
+              <button type="button" onClick={row.onRetry}>
+                重试
+              </button>
+            ) : null}
           </li>
         ))}
       </ul>

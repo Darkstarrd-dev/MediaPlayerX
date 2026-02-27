@@ -382,6 +382,17 @@ export function isAutoLiveSubtitleFile(fileName: string): boolean {
   );
 }
 
+export function parseAutoLiveSubtitleLocale(fileName: string): string | null {
+  const match = /\.auto-live(?:\.([A-Za-z0-9-]+))?\.(srt|vtt|ass|ssa)$/i.exec(
+    fileName,
+  );
+  if (!match) {
+    return null;
+  }
+  const locale = (match[1] ?? "").trim();
+  return locale.length > 0 ? locale : "auto";
+}
+
 export function normalizeExternalMetadataText(
   value: string | undefined,
 ): string {

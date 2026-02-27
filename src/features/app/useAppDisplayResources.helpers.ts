@@ -244,6 +244,11 @@ export function toAutoSubtitleUiMessage(
     return t("ui.media.autoSubtitleUnavailable");
   }
 
+  const exportsIndex = normalized.toLowerCase().indexOf("; exports=");
+  if (exportsIndex >= 0) {
+    return normalized.slice(0, exportsIndex).trim();
+  }
+
   return normalized;
 }
 

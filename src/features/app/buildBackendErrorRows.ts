@@ -2,7 +2,7 @@ export interface BackendErrorRow {
   key: string
   label: string
   message: string
-  onRetry: () => void
+  onRetry?: () => void
 }
 
 interface BuildBackendErrorRowsParams {
@@ -151,5 +151,5 @@ export function buildBackendErrorRows({
           onRetry: runtimeCapabilities.retry,
         }
       : null,
-  ].filter((item): item is BackendErrorRow => Boolean(item))
+  ].filter((item) => Boolean(item)) as BackendErrorRow[]
 }

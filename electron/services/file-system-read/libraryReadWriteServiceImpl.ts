@@ -88,6 +88,7 @@ import {
   filterHiddenImagesFromSources,
   isAutoLiveSubtitleFile,
   normalizeExternalMetadataText,
+  parseAutoLiveSubtitleLocale,
   parsePreferenceRuntimeCheckpoints,
   parsePersistedPreferenceMetrics,
   resolveCoverFileExtension,
@@ -730,9 +731,6 @@ export class LibraryReadWriteService {
     const subtitles = entries
       .filter((entry) => entry.isFile())
       .map((entry) => {
-        if (isAutoLiveSubtitleFile(entry.name)) {
-          return null;
-        }
         const ext = path.extname(entry.name).toLowerCase();
         if (!SUBTITLE_EXTENSIONS.has(ext)) {
           return null;
@@ -743,6 +741,12 @@ export class LibraryReadWriteService {
           entry.name,
           videoStem,
         );
+        const autoLiveLocale = parseAutoLiveSubtitleLocale(entry.name);
+        const label = autoLiveLocale
+          ? `自动字幕（已保存，${autoLiveLocale}）`
+          : isAutoLiveSubtitleFile(entry.name)
+            ? "自动字幕（已保存）"
+            : (languageLabel ?? entry.name);
         const format = ext.slice(1) as "vtt" | "srt" | "ass" | "ssa";
         const locator: MediaLocatorDto = {
           kind: "filesystem",
@@ -754,7 +758,7 @@ export class LibraryReadWriteService {
 
         return {
           id: makeStableId("subtitle", absolutePath),
-          label: languageLabel ?? entry.name,
+          label,
           source: "external" as const,
           format,
           locator,
