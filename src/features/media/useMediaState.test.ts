@@ -103,4 +103,22 @@ describe('useMediaState video speed behavior', () => {
 
     expect(result.current.selectedVideoId).toBe(videos[1].id)
   })
+
+  it('goPlaylist 在当前视频不在队列中时从队列首项开始', () => {
+    const videos = [createVideo('video-a'), createVideo('video-b'), createVideo('video-c')]
+    const { result } = renderHook(() =>
+      useMediaState({
+        initialVideoId: videos[2].id,
+        initialPlaylistIds: videos.map((video) => video.id),
+        videos,
+      }),
+    )
+
+    act(() => {
+      result.current.goPlaylist(1, [videos[0].id, videos[1].id], { preserveRate: true })
+    })
+
+    expect(result.current.selectedVideoId).toBe(videos[0].id)
+    expect(result.current.videoTime).toBe(0)
+  })
 })

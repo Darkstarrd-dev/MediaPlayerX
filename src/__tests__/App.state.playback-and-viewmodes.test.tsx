@@ -390,6 +390,52 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
+  it(
+    "应用初始进入 image 全屏后切到 dual，首次播放结束应直接切到下一条",
+    async () => {
+      render(<App />);
+
+      await keyDown(window, { key: "f", code: "KeyF" });
+
+      const fullscreenLayer = document.querySelector(
+        ".fullscreen-layer",
+      ) as HTMLElement | null;
+      expect(fullscreenLayer).not.toBeNull();
+      fireEvent.mouseMove(fullscreenLayer as HTMLElement, {
+        clientY: window.innerHeight - 4,
+      });
+
+      await click(
+        screen.getByRole("button", {
+          name: "双显示",
+        }),
+      );
+
+      const dualVideoPane = document.querySelector(
+        ".fullscreen-video",
+      ) as HTMLElement | null;
+      expect(dualVideoPane).not.toBeNull();
+      fireEvent.mouseEnter(dualVideoPane as HTMLElement);
+
+      const videoElementBefore = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(videoElementBefore).not.toBeNull();
+      const srcBefore = videoElementBefore?.getAttribute("src") ?? "";
+      expect(srcBefore.length).toBeGreaterThan(0);
+
+      fireEvent.ended(videoElementBefore as HTMLVideoElement);
+      await flushUiUpdates();
+
+      const videoElementAfter = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      const srcAfter = videoElementAfter?.getAttribute("src") ?? "";
+      expect(srcAfter).not.toBe(srcBefore);
+    },
+    uiLongTestTimeoutMs,
+  );
+
 
   it(
     "视频全屏双显示下，文件列表循环在播放结束后会切到下一条",

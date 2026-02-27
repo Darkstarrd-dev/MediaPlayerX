@@ -574,7 +574,11 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
-    if (mode !== "video") {
+    const videoPaneVisibleInFullscreen =
+      fullscreenActive &&
+      (fullscreenDisplay === "dual" || fullscreenDisplay === "video-only");
+
+    if (mode !== "video" && !videoPaneVisibleInFullscreen) {
       return;
     }
 
@@ -593,6 +597,8 @@ export function useAppEffects({
       selectVideoFromBrowser(videosForSidebar[0].id);
     }
   }, [
+    fullscreenActive,
+    fullscreenDisplay,
     manageMode,
     mode,
     rootScopedVideoIds,
