@@ -2,7 +2,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-booklet-bindings,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .feature-tag-picker-panel,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .playlist-item {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item {
   border-color: color-mix(in srgb, var(--mpx-border-1) 86%, var(--mpx-palette-accent-raw) 14%);
   box-shadow: var(--mpx-card-shadow);
 }

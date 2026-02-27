@@ -59,7 +59,7 @@ export const zhCnCatalogPart1 = {
   "ui.help.image.keyboard.videoPlaylistAdd":
     "视频模式下将当前焦点视频加入播放列表。",
   "ui.help.image.keyboard.videoPlaylistRemove":
-    "视频模式下将当前焦点视频移出播放列表。",
+    "视频模式下将当前焦点视频移出播放列表；元数据播放列表中聚焦条目时可按 Delete 删除。",
   "ui.help.image.keyboard.manageOrganize":
     "文件管理模式下打开整理弹窗（移动/分组，需已选中节点）。",
   "ui.help.image.keyboard.imageConvertShortcut":

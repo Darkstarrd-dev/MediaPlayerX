@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { AudioItem } from '../../types'
@@ -158,6 +158,7 @@ describe('MetadataMusicEditor', () => {
       id: 'audio-2',
       fileName: 'audio-2.mp3',
       absolutePath: 'D:/audio/audio-2.mp3',
+      durationSec: 152,
       trackTitle: 'Track B',
       mediaLocator: {
         kind: 'filesystem' as const,
@@ -203,6 +204,10 @@ describe('MetadataMusicEditor', () => {
     )
 
     expect(screen.getByLabelText('音乐播放列表')).toBeInTheDocument()
+    const playlist = screen.getByLabelText('音乐播放列表')
+    expect(within(playlist).getByText('01')).toBeInTheDocument()
+    expect(within(playlist).getByText('02')).toBeInTheDocument()
+    expect(within(playlist).getByText('3')).toBeInTheDocument()
     const audio2Button = screen.getByRole('button', { name: /audio-2.mp3/i })
     fireEvent.click(audio2Button)
     expect(onSelectAudio).toHaveBeenCalledWith('audio-2')

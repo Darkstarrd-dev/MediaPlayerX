@@ -1,7 +1,7 @@
-import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import { MainUiIcon } from '../MainUiIcon'
-import { useRandomSweepAnimation } from '../useRandomSweepAnimation'
+import { MetadataPlaylistItem } from './MetadataPlaylistItem'
 import { useI18n } from '../../i18n/useI18n'
 import type { AudioItem } from '../../types'
 
@@ -59,46 +59,6 @@ function commitOnEnter(
 function normalizeSearchValue(value: string): string {
   const normalized = value.trim()
   return normalized.length > 0 && normalized !== '-' ? normalized : ''
-}
-
-interface MetadataMusicPlaylistItemProps {
-  audioId: string
-  audioFileName: string
-  active: boolean
-  onSelectAudio: (audioId: string) => void
-  onSelectAudioAndPlay: (audioId: string) => void
-}
-
-function MetadataMusicPlaylistItem({
-  audioId,
-  audioFileName,
-  active,
-  onSelectAudio,
-  onSelectAudioAndPlay,
-}: MetadataMusicPlaylistItemProps) {
-  const [focused, setFocused] = useState(false)
-  const sheenEnabled = active || focused
-  const { sweeping, onAnimationEnd } = useRandomSweepAnimation({
-    enabled: sheenEnabled,
-    initialDelayRangeMs: [1200, 3000],
-    repeatDelayRangeMs: [2500, 8200],
-  })
-
-  return (
-    <button
-      className={`metadata-music-playlist-item ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
-      type="button"
-      onClick={() => onSelectAudio(audioId)}
-      onDoubleClick={() => onSelectAudioAndPlay(audioId)}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onAnimationEnd={onAnimationEnd}
-    >
-      <span className="metadata-music-playlist-title" data-tooltip-label={audioFileName}>
-        {audioFileName}
-      </span>
-    </button>
-  )
 }
 
 export function MetadataMusicEditor({
@@ -322,20 +282,22 @@ export function MetadataMusicEditor({
 
       <div className="metadata-music-playlist mpx-scroll-area" aria-label={t('a11y.music.playlist')}>
         {effectivePlaylistIds.length > 0 ? (
-          effectivePlaylistIds.map((audioId) => {
+          effectivePlaylistIds.map((audioId, index) => {
             const audio = audioById.get(audioId)
             if (!audio) {
               return null
             }
 
             return (
-              <MetadataMusicPlaylistItem
+              <MetadataPlaylistItem
                 key={audioId}
-                audioId={audioId}
-                audioFileName={audio.fileName}
+                mediaId={audioId}
+                title={audio.fileName}
+                index={index + 1}
+                durationSec={audio.durationSec}
                 active={selectedAudioId === audioId}
-                onSelectAudio={onSelectAudio}
-                onSelectAudioAndPlay={onSelectAudioAndPlay}
+                onSelect={onSelectAudio}
+                onSelectAndPlay={onSelectAudioAndPlay}
               />
             )
           })

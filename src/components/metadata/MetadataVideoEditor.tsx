@@ -10,6 +10,7 @@ import type { VideoItem } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { MainUiIcon } from "../MainUiIcon";
 import { VideoControlIcon } from "../VideoControlIcon";
+import { MetadataPlaylistItem } from "./MetadataPlaylistItem";
 import { MetadataRatingGroup } from "./MetadataRatingGroup";
 
 interface MetadataVideoEditorProps {
@@ -454,9 +455,10 @@ export function MetadataVideoEditor({
         </div>
       ) : null}
 
-      <div className="metadata-video-body">
-        {metadataTab === "info" && focusedVideo ? (
-          <>
+      {metadataTab === "info" ? (
+        <div className="metadata-video-body">
+          {focusedVideo ? (
+            <>
             <MetadataRatingGroup
               title={t("a11y.metadata.videoRating")}
               data-tooltip-label={t("tip.common.rating")}
@@ -731,13 +733,17 @@ export function MetadataVideoEditor({
                 )}
               </label>
             </div>
-          </>
-        ) : null}
-      </div>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       {metadataTab === "playlist" ? (
-        <div className="playlist-list">
-          {playlistIds.map((videoId) => {
+        <div className="metadata-music-playlist mpx-scroll-area">
+          {playlistIds.length === 0 ? (
+            <p className="metadata-empty-tip">{t("ui.metadata.noPlaylistEntries")}</p>
+          ) : null}
+          {playlistIds.map((videoId, index) => {
             const video = videoById.get(videoId);
             if (!video) {
               return null;
@@ -746,7 +752,7 @@ export function MetadataVideoEditor({
             return (
               <div
                 key={videoId}
-                className={`playlist-item ${selectedVideoId === videoId ? "is-active" : ""}`}
+                className="metadata-playlist-row"
                 draggable
                 onDragStart={() => onDragStart(videoId)}
                 onDragEnd={onDragEnd}
@@ -766,29 +772,23 @@ export function MetadataVideoEditor({
                   onDragEnd();
                 }}
               >
-                <button
-                  type="button"
-                  ref={(element) => {
+                <MetadataPlaylistItem
+                  mediaId={videoId}
+                  title={video.fileName}
+                  index={index + 1}
+                  durationSec={video.durationSec}
+                  active={selectedVideoId === videoId}
+                  onSelect={onSelectVideo}
+                  onSelectAndPlay={onSelectVideoAndPlay}
+                  onDelete={onRemoveVideoFromPlaylist}
+                  buttonRef={(element) => {
                     if (element) {
                       playlistItemButtonByIdRef.current.set(videoId, element);
                       return;
                     }
                     playlistItemButtonByIdRef.current.delete(videoId);
                   }}
-                  onClick={() => onSelectVideo(videoId)}
-                  onDoubleClick={() => onSelectVideoAndPlay(videoId)}
-                >
-                  {video.fileName}
-                </button>
-                <button
-                  type="button"
-                  className="playlist-item-remove main-icon-square-btn"
-                  aria-label={t("a11y.common.delete")}
-                  data-tooltip-label={t("tip.common.delete")}
-                  onClick={() => onRemoveVideoFromPlaylist(videoId)}
-                >
-                  <MainUiIcon name="delete" />
-                </button>
+                />
               </div>
             );
           })}

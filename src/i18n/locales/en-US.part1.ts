@@ -65,7 +65,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.image.keyboard.videoPlaylistAdd":
     "In video mode, add current focused video to playlist.",
   "ui.help.image.keyboard.videoPlaylistRemove":
-    "In video mode, remove current focused video from playlist.",
+    "In video mode, remove current focused video from playlist; when a metadata-playlist item is focused, Delete also removes it.",
   "ui.help.image.keyboard.manageOrganize":
     "In file-manage mode, open organize dialog (move/group, requires selected nodes).",
   "ui.help.image.keyboard.imageConvertShortcut":
