@@ -202,6 +202,8 @@ function MetadataFetchPanel({
   onSaveParsedMetadataToTarget,
 }: MetadataFetchPanelProps) {
   const { t } = useI18n()
+  const resetTargetsRef = useRef<MetadataFetchTarget[]>(targets)
+  const resetTargetIdentityKeyRef = useRef<string | null>(null)
   const [sourceMode, setSourceMode] = useState<SourceMode>('all')
   const [inputId, setInputId] = useState('')
   const [requestIntervalMs, setRequestIntervalMs] = useState(1200)
@@ -213,6 +215,10 @@ function MetadataFetchPanel({
   const [saving, setSaving] = useState(false)
   const [runtimeByTarget, setRuntimeByTarget] = useState<Record<string, TargetRuntimeState>>({})
   const runTokenRef = useRef(0)
+  const targetIdentityKey = useMemo(
+    () => targets.map((target) => target.packageId.trim()).join('\u0001'),
+    [targets],
+  )
 
   const getSourceLabel = (source: MetadataSource): string => t(getSourceDisplayLabel(source))
   const currentTarget = targets[activeTargetIndex] ?? null
@@ -257,17 +263,27 @@ function MetadataFetchPanel({
   )
 
   useEffect(() => {
+    resetTargetsRef.current = targets
+  }, [targets])
+
+  useEffect(() => {
     if (!open) {
+      resetTargetIdentityKeyRef.current = null
       return
     }
+    if (resetTargetIdentityKeyRef.current === targetIdentityKey) {
+      return
+    }
+    const resetTargets = resetTargetsRef.current
     setInputId('')
     setRequestIntervalMs(1200)
     setRequestIntervalInput('1200ms')
     setActiveTargetIndex(0)
     setSelectedSource('nhentai')
-    setTargetKeywords(targets.map((target) => target.defaultText))
-    setRuntimeByTarget(createTargetRuntimeStateMap(targets))
-  }, [open, targets])
+    setTargetKeywords(resetTargets.map((target) => target.defaultText))
+    setRuntimeByTarget(createTargetRuntimeStateMap(resetTargets))
+    resetTargetIdentityKeyRef.current = targetIdentityKey
+  }, [open, targetIdentityKey])
 
   useEffect(() => {
     if (!open) {
@@ -512,7 +528,7 @@ function MetadataFetchPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-search-wrap">
+        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden">
           <div className="metadata-fetch-search-row" aria-label={t('ui.metadata.fetchSearchParams')}>
             <div className="metadata-fetch-source-group" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
               <button type="button" className={`metadata-fetch-mode-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('nhentai')}>
@@ -585,9 +601,6 @@ function MetadataFetchPanel({
               </button>
             </div>
           </div>
-        </div>
-
-        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden">
           {currentRuntime.error ? <p className="settings-danger-text">{currentRuntime.error}</p> : null}
 
           <div className="metadata-fetch-results">

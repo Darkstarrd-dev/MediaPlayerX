@@ -155,7 +155,7 @@ describe('MetadataFetchPanel', () => {
       />,
     )
 
-    fireEvent.change(within(container).getByLabelText('请求间隔(ms)'), {
+    fireEvent.change(within(container).getByPlaceholderText('请求间隔(ms)'), {
       target: { value: '0' },
     })
 
@@ -185,6 +185,80 @@ describe('MetadataFetchPanel', () => {
         'pkg-2',
         expect.objectContaining({ artist: 'Artist Two' }),
       )
+    })
+  })
+
+  it('targets 引用变化但 packageId 不变时不重置输入与结果', async () => {
+    const searchExternalMetadata = vi.fn(async () => ({
+      items: [
+        {
+          source: 'nhentai' as const,
+          id: '1001',
+          title: '[Artist One]',
+          title_original: '[作者一]',
+          cover: null,
+          url: 'https://nhentai.net/g/1001/',
+          token: '',
+          tags: [],
+          pages: 1,
+          posted: '1695513600',
+          rating: null,
+          favorited: 1,
+          raw: {
+            title: {
+              english: '[Artist One]',
+              japanese: '[作者一]',
+            },
+            tags: [],
+          },
+        },
+      ],
+      debug: null,
+    }))
+
+    window.mediaPlayerBackend = {
+      searchExternalMetadata,
+    } as unknown as typeof window.mediaPlayerBackend
+
+    const { container, rerender } = render(
+      <MetadataFetchPanel
+        open={true}
+        targets={[{ packageId: 'pkg-1', label: 'pkg-1', defaultText: 'kw-1' }]}
+        proxyServer=""
+        ehentaiCookies=""
+        metadataPending={false}
+        onClose={vi.fn()}
+        onSaveParsedMetadataToTarget={vi.fn().mockResolvedValue(undefined)}
+      />,
+    )
+
+    const keywordInput = within(container).getByPlaceholderText('检索关键字') as HTMLInputElement
+    fireEvent.change(keywordInput, { target: { value: 'manual-keyword' } })
+    fireEvent.click(within(container).getByRole('button', { name: '检索' }))
+
+    await waitFor(() => {
+      expect(searchExternalMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({ source: 'nhentai', input_text: 'manual-keyword' }),
+      )
+      expect(within(container).getByText('[Artist One]')).toBeInTheDocument()
+    })
+
+    rerender(
+      <MetadataFetchPanel
+        open={true}
+        targets={[{ packageId: 'pkg-1', label: 'pkg-1-new', defaultText: 'kw-reset' }]}
+        proxyServer=""
+        ehentaiCookies=""
+        metadataPending={false}
+        onClose={vi.fn()}
+        onSaveParsedMetadataToTarget={vi.fn().mockResolvedValue(undefined)}
+      />,
+    )
+
+    await waitFor(() => {
+      const nextKeywordInput = within(container).getByPlaceholderText('检索关键字') as HTMLInputElement
+      expect(nextKeywordInput.value).toBe('manual-keyword')
+      expect(within(container).getByText('[Artist One]')).toBeInTheDocument()
     })
   })
 })

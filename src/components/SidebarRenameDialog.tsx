@@ -272,245 +272,247 @@ function SidebarRenameDialog({
         </div>
         {batchModeActive ? (
           <>
-            {mode === 'replace' ? (
-              <div className="sidebar-rename-replace-controls" aria-label={modeLabel}>
-                <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
-                  <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
-                  <select
-                    className="sidebar-rename-mode-select"
-                    value={mode}
+            <div className="sidebar-rename-merge-shell">
+              {mode === 'replace' ? (
+                <div className="sidebar-rename-replace-controls" aria-label={modeLabel}>
+                  <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
+                    <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
+                    <select
+                      className="sidebar-rename-mode-select"
+                      value={mode}
+                      disabled={pending}
+                      onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
+                    >
+                      <option value="replace">{modeOptionReplace}</option>
+                      <option value="numbering">{modeOptionNumbering}</option>
+                      <option value="remove-range">{modeOptionRemoveRange}</option>
+                      <option value="metadata">{modeOptionMetadata}</option>
+                      {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
+                    </select>
+                  </label>
+                  <input
+                    className="sidebar-rename-seamless-control"
+                    type="text"
+                    value={replaceFrom}
+                    placeholder={replaceFromPlaceholder}
                     disabled={pending}
-                    onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
-                  >
-                    <option value="replace">{modeOptionReplace}</option>
-                    <option value="numbering">{modeOptionNumbering}</option>
-                    <option value="remove-range">{modeOptionRemoveRange}</option>
-                    <option value="metadata">{modeOptionMetadata}</option>
-                    {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
-                  </select>
-                </label>
-                <input
-                  className="sidebar-rename-seamless-control"
-                  type="text"
-                  value={replaceFrom}
-                  placeholder={replaceFromPlaceholder}
-                  disabled={pending}
-                  onChange={(event) => onReplaceFromChange(event.target.value)}
-                />
-                <input
-                  className="sidebar-rename-seamless-control"
-                  type="text"
-                  value={replaceTo}
-                  placeholder={replaceToPlaceholder}
-                  disabled={pending}
-                  onChange={(event) => onReplaceToChange(event.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="sidebar-rename-mode-row" aria-label={modeLabel}>
-                <label className="sidebar-rename-mode-control sidebar-rename-mode-cell">
-                  <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
-                  <select
-                    className="sidebar-rename-mode-select"
-                    value={mode}
+                    onChange={(event) => onReplaceFromChange(event.target.value)}
+                  />
+                  <input
+                    className="sidebar-rename-seamless-control"
+                    type="text"
+                    value={replaceTo}
+                    placeholder={replaceToPlaceholder}
                     disabled={pending}
-                    onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
-                  >
-                    <option value="replace">{modeOptionReplace}</option>
-                    <option value="numbering">{modeOptionNumbering}</option>
-                    <option value="remove-range">{modeOptionRemoveRange}</option>
-                    <option value="metadata">{modeOptionMetadata}</option>
-                    {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
-                  </select>
-                </label>
-                <div className="sidebar-rename-mode-row-spacer" aria-hidden={mode !== 'numbering' && mode !== 'remove-range'}>
-                  {mode === 'numbering' ? (
-                    <div className="sidebar-rename-numbering-controls">
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control is-name">
-                        <span className="sidebar-rename-numbering-prefix">{numberBaseLabel}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="text"
-                          value={numberBase}
-                          disabled={pending}
-                          onChange={(event) => onNumberBaseChange(event.target.value)}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{numberStartLabel}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          value={numberStart}
-                          disabled={pending}
-                          onChange={(event) => onNumberStartChange(event.target.value)}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{numberStepLabel}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          value={numberStep}
-                          disabled={pending}
-                          onChange={(event) => onNumberStepChange(event.target.value)}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{numberPadWidthLabel}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          value={numberPadWidth}
-                          disabled={pending}
-                          onChange={(event) => onNumberPadWidthChange(event.target.value)}
-                        />
-                      </label>
-                    </div>
-                  ) : mode === 'remove-range' ? (
-                    <div className="sidebar-rename-remove-controls" aria-label={`${removeRangeHint} ${removeEdgesHint}`}>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{removeHeadPlaceholder}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          min={0}
-                          value={removeHead}
-                          disabled={pending}
-                          onChange={(event) => onRemoveHeadChange(event.target.value)}
-                          onKeyDown={(event) => {
-                            handleNumericArrowAdjust(event, removeHead, onRemoveHeadChange)
-                          }}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{removeTailPlaceholder}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          min={0}
-                          value={removeTail}
-                          disabled={pending}
-                          onChange={(event) => onRemoveTailChange(event.target.value)}
-                          onKeyDown={(event) => {
-                            handleNumericArrowAdjust(event, removeTail, onRemoveTailChange)
-                          }}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{removeStartPlaceholder}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          min={0}
-                          value={removeStart}
-                          disabled={pending}
-                          onChange={(event) => onRemoveStartChange(event.target.value)}
-                          onKeyDown={(event) => {
-                            const nextStart = handleNumericArrowAdjust(event, removeStart, onRemoveStartChange)
-                            if (nextStart == null) {
-                              return
-                            }
-                            const currentEnd = parseNonNegativeInt(removeEnd)
-                            if (currentEnd > 0 && nextStart > 0 && currentEnd < nextStart) {
-                              onRemoveEndChange(String(nextStart))
-                            }
-                          }}
-                        />
-                      </label>
-                      <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
-                        <span className="sidebar-rename-numbering-prefix">{removeEndPlaceholder}</span>
-                        <input
-                          className="sidebar-rename-numbering-field"
-                          type="number"
-                          min={0}
-                          value={removeEnd}
-                          disabled={pending}
-                          onChange={(event) => onRemoveEndChange(event.target.value)}
-                          onKeyDown={(event) => {
-                            const nextEnd = handleNumericArrowAdjust(event, removeEnd, onRemoveEndChange)
-                            if (nextEnd == null) {
-                              return
-                            }
-                            const currentStart = parseNonNegativeInt(removeStart)
-                            if (nextEnd > 0 && currentStart > 0 && nextEnd < currentStart) {
-                              onRemoveEndChange(String(currentStart))
-                            }
-                          }}
-                        />
-                      </label>
-                    </div>
+                    onChange={(event) => onReplaceToChange(event.target.value)}
+                  />
+                </div>
+              ) : (
+                <div className="sidebar-rename-mode-row" aria-label={modeLabel}>
+                  <label className="sidebar-rename-mode-control sidebar-rename-mode-cell">
+                    <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
+                    <select
+                      className="sidebar-rename-mode-select"
+                      value={mode}
+                      disabled={pending}
+                      onChange={(event) => onModeChange(event.target.value as SidebarRenameDialogProps['mode'])}
+                    >
+                      <option value="replace">{modeOptionReplace}</option>
+                      <option value="numbering">{modeOptionNumbering}</option>
+                      <option value="remove-range">{modeOptionRemoveRange}</option>
+                      <option value="metadata">{modeOptionMetadata}</option>
+                      {targetCount === 1 ? <option value="single">{modeOptionSingle}</option> : null}
+                    </select>
+                  </label>
+                  <div className="sidebar-rename-mode-row-spacer" aria-hidden={mode !== 'numbering' && mode !== 'remove-range'}>
+                    {mode === 'numbering' ? (
+                      <div className="sidebar-rename-numbering-controls">
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control is-name">
+                          <span className="sidebar-rename-numbering-prefix">{numberBaseLabel}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="text"
+                            value={numberBase}
+                            disabled={pending}
+                            onChange={(event) => onNumberBaseChange(event.target.value)}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{numberStartLabel}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            value={numberStart}
+                            disabled={pending}
+                            onChange={(event) => onNumberStartChange(event.target.value)}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{numberStepLabel}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            value={numberStep}
+                            disabled={pending}
+                            onChange={(event) => onNumberStepChange(event.target.value)}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{numberPadWidthLabel}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            value={numberPadWidth}
+                            disabled={pending}
+                            onChange={(event) => onNumberPadWidthChange(event.target.value)}
+                          />
+                        </label>
+                      </div>
+                    ) : mode === 'remove-range' ? (
+                      <div className="sidebar-rename-remove-controls" aria-label={`${removeRangeHint} ${removeEdgesHint}`}>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{removeHeadPlaceholder}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            min={0}
+                            value={removeHead}
+                            disabled={pending}
+                            onChange={(event) => onRemoveHeadChange(event.target.value)}
+                            onKeyDown={(event) => {
+                              handleNumericArrowAdjust(event, removeHead, onRemoveHeadChange)
+                            }}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{removeTailPlaceholder}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            min={0}
+                            value={removeTail}
+                            disabled={pending}
+                            onChange={(event) => onRemoveTailChange(event.target.value)}
+                            onKeyDown={(event) => {
+                              handleNumericArrowAdjust(event, removeTail, onRemoveTailChange)
+                            }}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{removeStartPlaceholder}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            min={0}
+                            value={removeStart}
+                            disabled={pending}
+                            onChange={(event) => onRemoveStartChange(event.target.value)}
+                            onKeyDown={(event) => {
+                              const nextStart = handleNumericArrowAdjust(event, removeStart, onRemoveStartChange)
+                              if (nextStart == null) {
+                                return
+                              }
+                              const currentEnd = parseNonNegativeInt(removeEnd)
+                              if (currentEnd > 0 && nextStart > 0 && currentEnd < nextStart) {
+                                onRemoveEndChange(String(nextStart))
+                              }
+                            }}
+                          />
+                        </label>
+                        <label className="sidebar-rename-seamless-control sidebar-rename-numbering-control">
+                          <span className="sidebar-rename-numbering-prefix">{removeEndPlaceholder}</span>
+                          <input
+                            className="sidebar-rename-numbering-field"
+                            type="number"
+                            min={0}
+                            value={removeEnd}
+                            disabled={pending}
+                            onChange={(event) => onRemoveEndChange(event.target.value)}
+                            onKeyDown={(event) => {
+                              const nextEnd = handleNumericArrowAdjust(event, removeEnd, onRemoveEndChange)
+                              if (nextEnd == null) {
+                                return
+                              }
+                              const currentStart = parseNonNegativeInt(removeStart)
+                              if (nextEnd > 0 && currentStart > 0 && nextEnd < currentStart) {
+                                onRemoveEndChange(String(currentStart))
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+
+              <div className="sidebar-rename-preview-table" aria-label={previewLabel}>
+                <div className="sidebar-rename-preview-head">
+                  <span>{previewOriginalHeaderLabel}</span>
+                  <span aria-hidden="true" />
+                  <span>{previewNewHeaderLabel}</span>
+                </div>
+                <div
+                  ref={previewListRef}
+                  className="sidebar-rename-preview-list mpx-scroll-area"
+                  onScroll={(event) => {
+                    setPreviewListScrollTop(event.currentTarget.scrollTop)
+                  }}
+                >
+                  {shouldVirtualizePreviewRows && previewVirtualRange.topSpacerHeight > 0 ? (
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        height: `${previewVirtualRange.topSpacerHeight}px`,
+                        flex: '0 0 auto',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  ) : null}
+                  {previewRowsForRender.map((row) => {
+                    const failed = Boolean(row.reason && row.reason !== 'unchanged')
+                    const unchanged = row.reason === 'unchanged'
+                    return (
+                      <div key={row.nodeId} className={`sidebar-rename-preview-row ${failed ? 'is-failed' : ''} ${unchanged ? 'is-unchanged' : 'is-changed'}`}>
+                        {mode === 'replace' || mode === 'numbering' ? (
+                          <button
+                            className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
+                            type="button"
+                            disabled={pending}
+                            data-tooltip-label={`${applyFromSourceLabel}: ${row.sourceName}`}
+                            onClick={() => {
+                              if (mode === 'replace') {
+                                onUseSourceNameAsReplaceFrom(row.sourceName)
+                                return
+                              }
+                              onUseSourceNameAsNumberBase(row.sourceName)
+                            }}
+                          >
+                            {row.sourceName}
+                          </button>
+                        ) : (
+                          <span className="sidebar-rename-preview-cell" data-tooltip-label={row.sourceName}>{row.sourceName}</span>
+                        )}
+                        <span className="sidebar-rename-preview-arrow" aria-hidden="true">
+                          <MainUiIcon name="next" className="sidebar-rename-preview-arrow-icon" />
+                        </span>
+                        <span className="sidebar-rename-preview-cell">
+                          {failed ? row.reason : unchanged ? previewUnchangedLabel : row.targetName}
+                        </span>
+                      </div>
+                    )
+                  })}
+                  {shouldVirtualizePreviewRows && previewVirtualRange.bottomSpacerHeight > 0 ? (
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        height: `${previewVirtualRange.bottomSpacerHeight}px`,
+                        flex: '0 0 auto',
+                        pointerEvents: 'none',
+                      }}
+                    />
                   ) : null}
                 </div>
-              </div>
-            )}
-
-            <div className="sidebar-rename-preview-table" aria-label={previewLabel}>
-              <div className="sidebar-rename-preview-head">
-                <span>{previewOriginalHeaderLabel}</span>
-                <span aria-hidden="true" />
-                <span>{previewNewHeaderLabel}</span>
-              </div>
-              <div
-                ref={previewListRef}
-                className="sidebar-rename-preview-list mpx-scroll-area"
-                onScroll={(event) => {
-                  setPreviewListScrollTop(event.currentTarget.scrollTop)
-                }}
-              >
-                {shouldVirtualizePreviewRows && previewVirtualRange.topSpacerHeight > 0 ? (
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      height: `${previewVirtualRange.topSpacerHeight}px`,
-                      flex: '0 0 auto',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                ) : null}
-                {previewRowsForRender.map((row) => {
-                  const failed = Boolean(row.reason && row.reason !== 'unchanged')
-                  const unchanged = row.reason === 'unchanged'
-                  return (
-                    <div key={row.nodeId} className={`sidebar-rename-preview-row ${failed ? 'is-failed' : ''} ${unchanged ? 'is-unchanged' : 'is-changed'}`}>
-                      {mode === 'replace' || mode === 'numbering' ? (
-                        <button
-                          className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
-                          type="button"
-                          disabled={pending}
-                          data-tooltip-label={`${applyFromSourceLabel}: ${row.sourceName}`}
-                          onClick={() => {
-                            if (mode === 'replace') {
-                              onUseSourceNameAsReplaceFrom(row.sourceName)
-                              return
-                            }
-                            onUseSourceNameAsNumberBase(row.sourceName)
-                          }}
-                        >
-                          {row.sourceName}
-                        </button>
-                      ) : (
-                        <span className="sidebar-rename-preview-cell" data-tooltip-label={row.sourceName}>{row.sourceName}</span>
-                      )}
-                      <span className="sidebar-rename-preview-arrow" aria-hidden="true">
-                        <MainUiIcon name="next" className="sidebar-rename-preview-arrow-icon" />
-                      </span>
-                      <span className="sidebar-rename-preview-cell">
-                        {failed ? row.reason : unchanged ? previewUnchangedLabel : row.targetName}
-                      </span>
-                    </div>
-                  )
-                })}
-                {shouldVirtualizePreviewRows && previewVirtualRange.bottomSpacerHeight > 0 ? (
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      height: `${previewVirtualRange.bottomSpacerHeight}px`,
-                      flex: '0 0 auto',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                ) : null}
               </div>
             </div>
           </>
