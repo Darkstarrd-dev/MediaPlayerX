@@ -1,8 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_SHORTCUTS } from '../../shortcuts'
 import { useShortcutEngine } from './useShortcutEngine'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+function mockTextSelection(text: string): void {
+  vi.spyOn(window, 'getSelection').mockReturnValue({
+    isCollapsed: false,
+    toString: () => text,
+  } as unknown as Selection)
+}
 
 function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
   return {
@@ -459,6 +470,21 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
   })
 
+  it('non-fullscreen image mode + main focus + text selection keeps native text copy', () => {
+    const params = createBaseParams()
+    params.mode = 'image'
+    params.sidebarFocus = 'main'
+    mockTextSelection('selected text')
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled()
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+  })
+
   it('fullscreen image-only maps Ctrl+C to image clipboard copy', () => {
     const params = createBaseParams()
     params.fullscreenActive = true
@@ -510,5 +536,20 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     })
 
     expect(params.onCopyFocusedVideoFrameToClipboard).toHaveBeenCalledTimes(1)
+  })
+
+  it('fullscreen video-only + text selection keeps native text copy', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'video-only'
+    mockTextSelection('fullscreen selected text')
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled()
+    expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled()
   })
 })

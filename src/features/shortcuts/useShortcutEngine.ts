@@ -13,6 +13,15 @@ import { isEditableTarget } from "../../utils/ui";
 const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72;
 const VIDEO_FRAME_STEP_SECONDS = 1 / 30;
 
+function hasActiveTextSelection(): boolean {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed) {
+    return false;
+  }
+
+  return selection.toString().trim().length > 0;
+}
+
 type AlignDirection = "up" | "down" | "left" | "right";
 
 interface UseShortcutEngineParams {
@@ -565,6 +574,10 @@ export function useShortcutEngine({
         !event.metaKey &&
         event.code === "KeyC"
       ) {
+        if (hasActiveTextSelection()) {
+          return;
+        }
+
         let handled = false;
 
         if (fullscreenActive) {
