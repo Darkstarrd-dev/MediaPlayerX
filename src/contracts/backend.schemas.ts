@@ -1220,6 +1220,18 @@ export const readAudioEnginePlaybackStatusResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 });
 
+export const readAudioEngineAnalysisFrameResponseSchema = z.object({
+  ok: z.boolean(),
+  mode: audioEngineModeSchema,
+  loaded: z.boolean(),
+  audio_level: z.number().min(0).max(1),
+  audio_beat: z.number().min(0).max(1),
+  frequency_bins: z.array(z.number().int().min(0).max(255)),
+  waveform_bins: z.array(z.number().int().min(0).max(255)),
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
 export const audioEngineLoadTrackRequestSchema = z.object({
   file_path: z.string().min(1),
   start_sec: z.number().min(0).nullable().optional(),

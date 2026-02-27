@@ -191,6 +191,13 @@ interface UseMusicVisualizerRuntimeParams {
   layeredForegroundOffsetY?: number
   layeredForegroundScale?: number
   paletteMode?: 'day' | 'night'
+  disableAudioAnalyser?: boolean
+  externalAudioFrame?: {
+    frequencyData: Uint8Array
+    waveformData: Uint8Array
+    audioLevel: number
+    audioBeat: number
+  } | null
 }
 
 interface UseMusicVisualizerRuntimeResult {
@@ -419,6 +426,8 @@ export function useMusicVisualizerRuntime({
   layeredForegroundOffsetY = 0,
   layeredForegroundScale = 1,
   paletteMode = 'day',
+  disableAudioAnalyser = false,
+  externalAudioFrame = null,
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const { t } = useI18n()
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
@@ -461,6 +470,8 @@ export function useMusicVisualizerRuntime({
     selectedShaderId,
   ])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
+  const disableAudioAnalyserRef = useRef(disableAudioAnalyser)
+  const externalAudioFrameRef = useRef(externalAudioFrame)
   const runtimeSettingsRef = useRef({
     fpsCap,
     renderLongEdgePx,
@@ -506,11 +517,22 @@ export function useMusicVisualizerRuntime({
     toneMapStrength,
   ])
 
+  useEffect(() => {
+    disableAudioAnalyserRef.current = disableAudioAnalyser
+  }, [disableAudioAnalyser])
+
+  useEffect(() => {
+    externalAudioFrameRef.current = externalAudioFrame
+  }, [externalAudioFrame])
+
   if (audioAnalyserRef.current == null) {
     audioAnalyserRef.current = new MusicAudioAnalyser()
   }
 
   const resumeAudioAnalyser = useCallback(async () => {
+    if (disableAudioAnalyserRef.current) {
+      return
+    }
     if (!audioAnalyserRef.current) {
       return
     }
@@ -716,7 +738,7 @@ export function useMusicVisualizerRuntime({
         frozenFrameInput = null
       }
 
-      if (audioAnalyser) {
+      if (audioAnalyser && !disableAudioAnalyserRef.current) {
         audioAnalyser.attach(audioRef.current)
         if (!playbackPaused) {
           audioAnalyser.sample()
@@ -785,15 +807,16 @@ export function useMusicVisualizerRuntime({
         const timelineDeltaSec = Math.max(0, Math.min(0.2, (now - lastShaderTickAt) * 0.001))
         shaderTimeSec += timelineDeltaSec
         lastShaderTickAt = now
+        const externalFrame = externalAudioFrameRef.current
         frameInput = {
           width: renderSize.width,
           height: renderSize.height,
           timeSec: shaderTimeSec,
           frame: shaderFrame,
-          frequencyData: audioAnalyser?.frequencyData ?? fallbackFrequencyData,
-          waveformData: audioAnalyser?.waveformData ?? fallbackWaveformData,
-          audioLevel: audioAnalyser?.audioLevel ?? 0,
-          audioBeat: audioAnalyser?.audioBeat ?? 0,
+          frequencyData: externalFrame?.frequencyData ?? audioAnalyser?.frequencyData ?? fallbackFrequencyData,
+          waveformData: externalFrame?.waveformData ?? audioAnalyser?.waveformData ?? fallbackWaveformData,
+          audioLevel: externalFrame?.audioLevel ?? audioAnalyser?.audioLevel ?? 0,
+          audioBeat: externalFrame?.audioBeat ?? audioAnalyser?.audioBeat ?? 0,
           toneMapMode: smoothedToneMapMode,
           toneMapExposure: smoothedToneMapExposure,
           toneMapStrength: smoothedToneMapStrength,

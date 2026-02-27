@@ -56,6 +56,7 @@ import {
   setAudioReplayGainModeResponseSchema,
   audioEngineActionResponseSchema,
   readAudioEnginePlaybackStatusResponseSchema,
+  readAudioEngineAnalysisFrameResponseSchema,
   audioEngineLoadTrackRequestSchema,
   audioEngineSetPausedRequestSchema,
   audioEngineSeekToRequestSchema,
@@ -398,6 +399,10 @@ const backendApi = {
   readAudioEnginePlaybackStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAudioEnginePlaybackStatus)
     return readAudioEnginePlaybackStatusResponseSchema.parse(response)
+  },
+  readAudioEngineAnalysisFrame: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAudioEngineAnalysisFrame)
+    return readAudioEngineAnalysisFrameResponseSchema.parse(response)
   },
   setAudioEngineMode: async (request: unknown) => {
     const parsed = setAudioEngineModeRequestSchema.parse(request)

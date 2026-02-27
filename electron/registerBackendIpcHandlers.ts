@@ -64,6 +64,7 @@ import {
   setAudioReplayGainModeResponseSchema,
   audioEngineActionResponseSchema,
   readAudioEnginePlaybackStatusResponseSchema,
+  readAudioEngineAnalysisFrameResponseSchema,
   audioEngineLoadTrackRequestSchema,
   audioEngineSetPausedRequestSchema,
   audioEngineSeekToRequestSchema,
@@ -1006,6 +1007,21 @@ export function registerBackendIpcHandlers(): void {
       paused: snapshot.paused,
       time_sec: snapshot.timeSec,
       duration_sec: snapshot.durationSec,
+      message: snapshot.message,
+      updated_at_ms: snapshot.updatedAtMs,
+    });
+  });
+
+  ipcMain.handle(BACKEND_CHANNELS.readAudioEngineAnalysisFrame, async () => {
+    const snapshot = await audioEngineController.readAnalysisFrame();
+    return readAudioEngineAnalysisFrameResponseSchema.parse({
+      ok: snapshot.ok,
+      mode: snapshot.mode,
+      loaded: snapshot.loaded,
+      audio_level: snapshot.audioLevel,
+      audio_beat: snapshot.audioBeat,
+      frequency_bins: snapshot.frequencyBins,
+      waveform_bins: snapshot.waveformBins,
       message: snapshot.message,
       updated_at_ms: snapshot.updatedAtMs,
     });

@@ -101,6 +101,12 @@ function MusicMainSection({
   const [visualizerCanvasVersion, setVisualizerCanvasVersion] = useState(0)
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
   const [visualizerPlaybackResetNonce, setVisualizerPlaybackResetNonce] = useState(0)
+  const [visualizerExternalAudioFrame, setVisualizerExternalAudioFrame] = useState<{
+    frequencyData: Uint8Array
+    waveformData: Uint8Array
+    audioLevel: number
+    audioBeat: number
+  } | null>(null)
   const [audioEngineMode, setAudioEngineMode] = useState<'chromium' | 'mpv'>('chromium')
   const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
@@ -242,7 +248,9 @@ function MusicMainSection({
     cpuCanvasRef: visualizerCpuCanvasRef,
     audioRef,
     canvasInstanceVersion: visualizerCanvasVersion,
-    active: visualizerRuntimeActive && !hasNoLayerEnabled && audioEngineMode !== 'mpv',
+    active: visualizerRuntimeActive && !hasNoLayerEnabled,
+    disableAudioAnalyser: audioEngineMode === 'mpv',
+    externalAudioFrame: audioEngineMode === 'mpv' ? visualizerExternalAudioFrame : null,
     playbackPaused: !audioPlaying,
     playbackResetNonce: visualizerPlaybackResetNonce,
     preferredRenderer: runtimeRenderer,
@@ -386,6 +394,7 @@ function MusicMainSection({
 
     void setAudioEngineModeMethod({ mode: 'mpv' }).then((response) => {
       setAudioEngineMode(response.mode)
+      setAudioPlaying(true)
       window.dispatchEvent(new CustomEvent(AUDIO_ENGINE_MODE_CHANGED_EVENT, {
         detail: {
           mode: response.mode,
@@ -663,6 +672,48 @@ function MusicMainSection({
       volume: clamp(audioMuted ? 0 : audioVolume, 0, 100),
     }).catch(() => undefined)
   }, [audioEngineMode, audioMuted, audioVolume])
+
+  useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode !== 'mpv' || typeof backendApi?.readAudioEngineAnalysisFrame !== 'function') {
+      setVisualizerExternalAudioFrame(null)
+      return
+    }
+
+    let active = true
+    const syncAnalysisFrame = () => {
+      void backendApi.readAudioEngineAnalysisFrame!().then((response) => {
+        if (!active || response.mode !== 'mpv' || !response.ok || !response.loaded) {
+          return
+        }
+
+        const frequencyData = new Uint8Array(512)
+        const waveformData = new Uint8Array(512)
+        const bins = response.frequency_bins
+        const waveformBins = response.waveform_bins
+        for (let index = 0; index < 512; index += 1) {
+          const frequencyValue = bins[index]
+          const waveformValue = waveformBins[index]
+          frequencyData[index] = typeof frequencyValue === 'number' ? Math.max(0, Math.min(255, Math.round(frequencyValue))) : 0
+          waveformData[index] = typeof waveformValue === 'number' ? Math.max(0, Math.min(255, Math.round(waveformValue))) : 128
+        }
+
+        setVisualizerExternalAudioFrame({
+          frequencyData,
+          waveformData,
+          audioLevel: Math.max(0, Math.min(1, response.audio_level)),
+          audioBeat: Math.max(0, Math.min(1, response.audio_beat)),
+        })
+      }).catch(() => undefined)
+    }
+
+    syncAnalysisFrame()
+    const timer = window.setInterval(syncAnalysisFrame, 33)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [audioEngineMode])
 
   useEffect(() => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined

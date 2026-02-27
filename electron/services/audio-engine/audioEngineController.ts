@@ -36,6 +36,18 @@ export interface AudioEnginePlaybackStatusSnapshot {
   updatedAtMs: number
 }
 
+export interface AudioEngineAnalysisFrameSnapshot {
+  ok: boolean
+  mode: AudioEngineMode
+  loaded: boolean
+  audioLevel: number
+  audioBeat: number
+  frequencyBins: number[]
+  waveformBins: number[]
+  message: string | null
+  updatedAtMs: number
+}
+
 interface AudioEngineControllerOptions {
   projectRoot?: string
 }
@@ -482,6 +494,51 @@ export class AudioEngineController {
         durationSec: null,
         message,
         updatedAtMs: this.updatedAtMs,
+      }
+    }
+  }
+
+  async readAnalysisFrame(): Promise<AudioEngineAnalysisFrameSnapshot> {
+    if (this.mode !== 'mpv') {
+      return {
+        ok: true,
+        mode: this.mode,
+        loaded: false,
+        audioLevel: 0,
+        audioBeat: 0,
+        frequencyBins: [],
+        waveformBins: [],
+        message: null,
+        updatedAtMs: Date.now(),
+      }
+    }
+
+    try {
+      const frame = await this.mpvEngine.readAnalysisFrame()
+      return {
+        ok: true,
+        mode: this.mode,
+        loaded: frame.loaded,
+        audioLevel: frame.audioLevel,
+        audioBeat: frame.audioBeat,
+        frequencyBins: frame.frequencyBins,
+        waveformBins: frame.waveformBins,
+        message: null,
+        updatedAtMs: frame.updatedAtMs,
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.lastError = message
+      return {
+        ok: false,
+        mode: this.mode,
+        loaded: false,
+        audioLevel: 0,
+        audioBeat: 0,
+        frequencyBins: [],
+        waveformBins: [],
+        message,
+        updatedAtMs: Date.now(),
       }
     }
   }

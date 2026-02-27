@@ -263,8 +263,8 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - [x] 设备枚举与切换（失败提示 + `fallbackToShared` 策略）。
 - [x] WASAPI 独占开关与失败回退。
 - [x] Gapless 与 ReplayGain（基础配置）。
-- [ ] `AudioAnalysisService`：`af-metadata` -> `audioLevel/audioBeat`，并生成伪音频纹理（默认 30fps）。
-- [ ] Renderer 侧接线：增强模式时使用外部分析帧替代 WebAudio 采样输入（保持 shader 契约不变）。
+- [x] `AudioAnalysisService`：`af-metadata` -> `audioLevel/audioBeat`，并生成伪音频纹理（默认 30fps）。
+- [x] Renderer 侧接线：增强模式时使用外部分析帧替代 WebAudio 采样输入（保持 shader 契约不变）。
 - [x] CUE：解析、虚拟曲目列表、区间播放（单文件/多文件）。
 
 验收：
@@ -349,6 +349,10 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - 新增 `readAudioEnginePlaybackStatus` IPC 查询并在播放器中轮询同步进度/时长，修复增强模式进度条停在 `00:00` 的问题。
   - 兼容模式检测到 `.ape/.wv/.tta/.tak/.shn` 或 `resolveMediaResource` fallback 时，提示用户切换增强模式（带一键切换）。
   - 侧栏删除流程补齐 `cue://` 路径分支：仅移除时不再走文件系统删除与 allowlist 校验，避免误报 `path_outside_root`。
+- 2026-02-28：完成 P1 分析帧链路首版（增强模式可视化接线）：
+  - mpv 侧新增分析帧读取：通过 `af-metadata/mpxstats` 解析 `astats` 元数据，输出 `audioLevel/audioBeat` 与 512 维伪频谱/波形纹理。
+  - 新增 `readAudioEngineAnalysisFrame` IPC，前端按 30fps 轮询并注入 visualizer runtime。
+  - visualizer runtime 新增外部分析帧输入通道；增强模式下禁用 WebAudio 分析，改为消费后端分析帧，保持 shader 契约不变。
 
 ### P2：转码服务 + 格式扩展（2 周）
 
