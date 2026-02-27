@@ -44,10 +44,6 @@
   align-items: center;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-reverse {
-  transform: rotate(180deg);
-}
-
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-preset-progress {
   --mpx-runway-fill-bg: var(--mpx-runway-fill-gold);
   --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-gold);

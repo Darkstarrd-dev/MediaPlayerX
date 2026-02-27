@@ -111,7 +111,7 @@
 | `fg.main.content.image.nameList.row` | `.name-list-row` | `data-slot="fg-main-content-image-name-list-row"` | `mode=image && showNamesOnly` | 文件名列表行容器 | |
 | `fg.main.content.image.nameList.label` | `.name-list-row-label` | `data-slot="fg-main-content-image-name-list-label"` | `mode=image && showNamesOnly` | 文件名列文本（首列） | |
 | `fg.main.content.image.marquee.ovl` | `.manage-selection-marquee` | `data-slot="fg-main-content-image-marquee-ovl"` | 框选中 | 管理框选遮罩 | fixed 定位 |
-| `fg.main.toolbar.image.scale.pop` | `.main-toolbar-scale-control .header-popover-panel` | `data-slot="fg-main-toolbar-image-scale-pop"` | scale popover open | 缩略图比例弹层 | 下拉窄面板 |
+| `fg.main.toolbar.image.scale.pop` | `.main-toolbar-scale-control .header-popover-panel` | `data-slot="fg-main-toolbar-image-scale-pop"` | scale popover open | 缩略图比例弹层 | 下拉窄面板；`level=rows`（`1→1行`，`7→7行`）；纵向方向由 axis rotate 控制，不使用 runway reverse |
 | `fg.main.toolbar.image.adReviewStrategy.pop` | `.main-toolbar-ad-review-strategy-panel` | `data-slot="fg-main-toolbar-image-ad-review-strategy-pop"` | 对应按钮 hover/open | 审核策略 popover | 左对齐下拉 |
 | `fg.main.toolbar.image.adReviewProgress.pop` | `.main-toolbar-ad-review-progress-panel` | `data-slot="fg-main-toolbar-image-ad-review-progress-pop"` | 运行中 hover/open | 审核进度 popover | 左对齐下拉 |
 | `fg.main.toolbar.image.adReviewStart.panel` | `.manage-ad-review-start-mask > .manage-ad-review-start-dialog` | `data-slot="fg-main-toolbar-image-ad-review-start-panel"` | 从图像主区工具栏启动审核时 | 审核启动对话框 | 居中浮层 |

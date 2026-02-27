@@ -100,7 +100,6 @@ export function ImageMainScaleControl({
                 ariaLabel={t("a11y.header.scaleSlider")}
                 orientation="vertical"
                 preset="control"
-                reverse
                 inputClassName="video-ctrl-volume-range"
                 max={thumbnailScaleLevelCount}
                 min={1}

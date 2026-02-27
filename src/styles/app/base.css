@@ -654,6 +654,10 @@ select option {
   width: var(--mpx-icon-button-size);
 }
 
+[data-slot='fg-main-toolbar-image-scale-pop'] .mpx-runway-axis.is-vertical {
+  transform: rotate(90deg);
+}
+
 .toolbar-actions .main-toolbar-ad-review-strategy-control {
   position: relative;
 }

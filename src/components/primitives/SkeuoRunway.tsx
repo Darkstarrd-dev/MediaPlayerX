@@ -25,7 +25,6 @@ interface SkeuoRunwayProps {
   thumbTone?: SkeuoRunwayThumbTone
   preset?: SkeuoRunwayPreset
   orientation?: SkeuoRunwayOrientation
-  reverse?: boolean
   style?: CSSProperties
   onChange: ChangeEventHandler<HTMLInputElement>
   onMouseUp?: MouseEventHandler<HTMLInputElement>
@@ -51,7 +50,6 @@ export function SkeuoRunway({
   thumbTone = 'pearl',
   preset,
   orientation = 'horizontal',
-  reverse = false,
   style,
   onChange,
   onMouseUp,
@@ -70,7 +68,6 @@ export function SkeuoRunway({
       className={joinClassNames(
         'mpx-runway',
         orientation === 'vertical' ? 'is-vertical' : 'is-horizontal',
-        reverse ? 'is-reverse' : undefined,
         preset === 'progress' ? 'is-preset-progress' : undefined,
         preset === 'control' ? 'is-preset-control' : undefined,
         fillTone === 'graphite'

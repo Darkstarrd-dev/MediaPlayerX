@@ -1,4 +1,5 @@
 import type { UseAppWorkspacePropsParams } from './useAppWorkspaceProps.types'
+import { toNormalizedThumbnailScale } from './thumbnailScaleMapping'
 
 type StartImageConvertTaskPayload = Parameters<UseAppWorkspacePropsParams['backendWrite']['startImageConvertTask']>[0]
 type StartImageConvertTaskInput = Omit<StartImageConvertTaskPayload, 'node_ids'>
@@ -151,16 +152,9 @@ export function createWorkspaceImageMainSectionHandlers(
   }
 
   const onThumbnailScaleLevelChange = (level: number) => {
-    const targetLevel = Math.max(
-      1,
-      Math.min(params.thumbnailScaleLevelCount, Math.round(level)),
-    )
-    const nextNormalizedScale = Math.max(
-      1,
-      Math.min(
-        params.thumbnailScaleLevelCount,
-        params.thumbnailScaleLevelCount - targetLevel + 1,
-      ),
+    const nextNormalizedScale = toNormalizedThumbnailScale(
+      level,
+      params.thumbnailScaleLevelCount,
     )
 
     if (nextNormalizedScale === params.appSettings.thumbnailScale) {

@@ -19,6 +19,7 @@ import {
 import { useImageBrowserViewModel } from "./useImageBrowserViewModel";
 import { clamp } from "../../utils/ui";
 import { resolveMetadataMainDelta } from "../layout/thumbnailGapPolicy";
+import { toDisplayThumbnailScaleLevel } from "./thumbnailScaleMapping";
 
 const SIDEBAR_COLLAPSE_RATIO = 0.03;
 const GAP_SNAP_MIN_PX = 4;
@@ -283,8 +284,10 @@ export function useAppNavigationState({
   );
   const normalizedThumbnailScale = thumbnailLayout.zoomLevel;
   const thumbnailScaleLevelCount = thumbnailLayout.zoomLevelCount;
-  const displayThumbnailScaleLevel =
-    thumbnailScaleLevelCount - normalizedThumbnailScale + 1;
+  const displayThumbnailScaleLevel = toDisplayThumbnailScaleLevel(
+    normalizedThumbnailScale,
+    thumbnailScaleLevelCount,
+  );
   const canThumbnailScaleDown =
     normalizedThumbnailScale < thumbnailScaleLevelCount;
   const canThumbnailScaleUp = normalizedThumbnailScale > 1;
