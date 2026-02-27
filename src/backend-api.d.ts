@@ -13,6 +13,7 @@ import type {
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
   ReadAudioEngineStateResponseDto,
+  ReadAudioEnginePlaybackStatusResponseDto,
   SetAudioEngineModeRequestDto,
   SetAudioEngineModeResponseDto,
   ListAudioOutputDevicesResponseDto,
@@ -230,6 +231,7 @@ interface MediaPlayerBackendApi {
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
   readAudioEngineState?: () => Promise<ReadAudioEngineStateResponseDto>
+  readAudioEnginePlaybackStatus?: () => Promise<ReadAudioEnginePlaybackStatusResponseDto>
   setAudioEngineMode?: (request: SetAudioEngineModeRequestDto) => Promise<SetAudioEngineModeResponseDto>
   listAudioOutputDevices?: () => Promise<ListAudioOutputDevicesResponseDto>
   setAudioOutputDevice?: (

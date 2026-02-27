@@ -55,6 +55,7 @@ export const BACKEND_CHANNELS = {
   setAudioExclusive: 'backend:setAudioExclusive',
   setAudioGaplessMode: 'backend:setAudioGaplessMode',
   setAudioReplayGainMode: 'backend:setAudioReplayGainMode',
+  readAudioEnginePlaybackStatus: 'backend:readAudioEnginePlaybackStatus',
   audioEngineLoadTrack: 'backend:audioEngineLoadTrack',
   audioEngineSetPaused: 'backend:audioEngineSetPaused',
   audioEngineSeekTo: 'backend:audioEngineSeekTo',

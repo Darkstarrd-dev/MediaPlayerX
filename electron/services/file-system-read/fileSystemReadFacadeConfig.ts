@@ -11,7 +11,20 @@ export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif
 
 export const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mkv', '.mov'])
 
-export const AUDIO_EXTENSIONS = new Set(['.mp3', '.flac', '.wav', '.ogg', '.m4a', '.opus', '.aac'])
+export const AUDIO_EXTENSIONS = new Set([
+  '.mp3',
+  '.flac',
+  '.wav',
+  '.ogg',
+  '.m4a',
+  '.opus',
+  '.aac',
+  '.ape',
+  '.wv',
+  '.tta',
+  '.tak',
+  '.shn',
+])
 
 export const CUE_EXTENSIONS = new Set(['.cue'])
 

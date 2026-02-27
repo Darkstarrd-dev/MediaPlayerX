@@ -329,8 +329,13 @@ export class ManagementMoveDeleteService {
     const nodeIdsBySelectedPath = new Map<string, Set<string>>();
     const importPathsToRemove = new Set<string>();
 
+    const hasUriScheme = (value: string): boolean =>
+      /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(value);
+
     const rememberSelectedPath = (absolutePath: string, nodeId: string) => {
-      const resolvedPath = path.resolve(absolutePath);
+      const resolvedPath = hasUriScheme(absolutePath)
+        ? absolutePath
+        : path.resolve(absolutePath);
       selectedPaths.add(resolvedPath);
       const nodeIds =
         nodeIdsBySelectedPath.get(resolvedPath) ?? new Set<string>();
@@ -438,6 +443,8 @@ export class ManagementMoveDeleteService {
     for (const candidatePath of sortedPaths) {
       if (
         prunedPaths.some((existingPath) =>
+          !hasUriScheme(existingPath) &&
+          !hasUriScheme(candidatePath) &&
           isPathInsideRoot(existingPath, candidatePath),
         )
       ) {
@@ -450,6 +457,12 @@ export class ManagementMoveDeleteService {
     const pathsToPurgeFromSnapshot = new Set<string>();
     for (const absolutePath of prunedPaths) {
       try {
+        if (hasUriScheme(absolutePath)) {
+          pathsToPurgeFromSnapshot.add(absolutePath);
+          deletedCount += 1;
+          continue;
+        }
+
         if (isFileSystemRootPath(absolutePath)) {
           const nodeIds =
             nodeIdsBySelectedPath.get(absolutePath) ?? new Set<string>();

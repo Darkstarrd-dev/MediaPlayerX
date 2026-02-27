@@ -63,6 +63,7 @@ import {
   setAudioReplayGainModeRequestSchema,
   setAudioReplayGainModeResponseSchema,
   audioEngineActionResponseSchema,
+  readAudioEnginePlaybackStatusResponseSchema,
   audioEngineLoadTrackRequestSchema,
   audioEngineSetPausedRequestSchema,
   audioEngineSeekToRequestSchema,
@@ -992,6 +993,20 @@ export function registerBackendIpcHandlers(): void {
       exclusive_enabled: snapshot.exclusiveEnabled,
       gapless_mode: snapshot.gaplessMode,
       replaygain_mode: snapshot.replayGainMode,
+      updated_at_ms: snapshot.updatedAtMs,
+    });
+  });
+
+  ipcMain.handle(BACKEND_CHANNELS.readAudioEnginePlaybackStatus, async () => {
+    const snapshot = await audioEngineController.readPlaybackStatus();
+    return readAudioEnginePlaybackStatusResponseSchema.parse({
+      ok: snapshot.ok,
+      mode: snapshot.mode,
+      loaded: snapshot.loaded,
+      paused: snapshot.paused,
+      time_sec: snapshot.timeSec,
+      duration_sec: snapshot.durationSec,
+      message: snapshot.message,
       updated_at_ms: snapshot.updatedAtMs,
     });
   });

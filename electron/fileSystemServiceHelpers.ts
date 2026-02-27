@@ -281,6 +281,21 @@ export function detectMimeTypeByExtension(
     if (lowerExt === '.aac') {
       return 'audio/aac'
     }
+    if (lowerExt === '.ape') {
+      return 'audio/ape'
+    }
+    if (lowerExt === '.wv') {
+      return 'audio/wavpack'
+    }
+    if (lowerExt === '.tta') {
+      return 'audio/x-tta'
+    }
+    if (lowerExt === '.tak') {
+      return 'audio/x-tak'
+    }
+    if (lowerExt === '.shn') {
+      return 'audio/x-shorten'
+    }
     return 'application/octet-stream'
   }
 

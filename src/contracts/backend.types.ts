@@ -560,6 +560,9 @@ export type SetAudioReplayGainModeResponseDto = Infer<
 export type AudioEngineActionResponseDto = Infer<
   typeof Backend.audioEngineActionResponseSchema
 >;
+export type ReadAudioEnginePlaybackStatusResponseDto = Infer<
+  typeof Backend.readAudioEnginePlaybackStatusResponseSchema
+>;
 export type AudioEngineLoadTrackRequestDto = Infer<
   typeof Backend.audioEngineLoadTrackRequestSchema
 >;

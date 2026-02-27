@@ -265,7 +265,7 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - [x] Gapless 与 ReplayGain（基础配置）。
 - [ ] `AudioAnalysisService`：`af-metadata` -> `audioLevel/audioBeat`，并生成伪音频纹理（默认 30fps）。
 - [ ] Renderer 侧接线：增强模式时使用外部分析帧替代 WebAudio 采样输入（保持 shader 契约不变）。
-- [ ] CUE：解析、虚拟曲目列表、区间播放（单文件/多文件）。
+- [x] CUE：解析、虚拟曲目列表、区间播放（单文件/多文件）。
 
 验收：
 
@@ -274,7 +274,7 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - [x] 播放中切设备成功率 >= 95%（当前样本为手工验证，待补自动化统计）。
 - [x] 独占开启/关闭后状态可恢复，失败场景可回退 shared（已完成手工验证）。
 - [ ] 增强模式下 shader 随音频有明显联动（至少 `iAudioLevel/iAudioBeat` 生效，`iChannel0` 有动态）。
-- [ ] CUE 切轨边界无明显串轨。
+- [x] CUE 切轨边界无明显串轨（当前样本手工验证通过，待补更大样本回归）。
 
 阶段进展记录：
 
@@ -335,6 +335,20 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - 自动剪枝阶段不再直接用 `audio.absolute_path` 检测 CUE 虚拟轨存在性，改为优先校验 `media_locator.absolute_path`（真实音频路径）并联合校验 `cue://` 中的 cue 文件路径。
   - 快照删除路径与导入源清理路径解耦：数据库删除继续使用快照路径；导入源同步仅使用真实文件系统路径，避免 `cue://` 伪路径干扰。
   - CUE 逻辑路径补充 `start/end` 编码，数据库回读时从 `cue://` 反解 `cue_source_path/cue_track_no/cue_start_sec/cue_end_sec`，保持播放边界在刷新后的可恢复性。
+- 2026-02-28：修复 CUE 编码回归并统一分轨时长语义：
+  - 解码候选评分改为“结构关键字优先 + 乱码强惩罚”，并加入 `cp932/iso-2022-jp/gb18030` 与无 BOM UTF-16 识别，修复部分样本 `parsed zero tracks` 回归。
+  - 兼容模式（Chromium）下统一应用 CUE 区间时长/进度/seek 逻辑，避免分轨时长退化为整轨时长。
+- 2026-02-28：完成 P1 首批格式白名单扩展（导入侧）：
+  - `AUDIO_EXTENSIONS` 与导入过滤器新增 `ape/wv/tta/tak/shn`。
+  - MIME 识别补充上述扩展，保证媒体定位信息完整。
+- 2026-02-28：修复 P1 联调回归（APE 播放与 CUE 节点删除）：
+  - 增强模式下播放控制去耦原生 `<audio>.play()` 成败，避免 Chromium 不支持 `.ape` 时误把 mpv 播放状态回写为暂停。
+  - 快照删除支持 `cue://` 逻辑路径匹配（含解析 `cue/src` 真实路径），修复侧栏“仅移除”无法删除 CUE 虚拟轨记录的问题。
+- 2026-02-28：继续修复 mpv 播放状态与删除边界：
+  - `mpv stop` 改为 `pause + seek(0)`（不卸载轨道），修复“停止后无法再次播放，需切歌恢复”问题。
+  - 新增 `readAudioEnginePlaybackStatus` IPC 查询并在播放器中轮询同步进度/时长，修复增强模式进度条停在 `00:00` 的问题。
+  - 兼容模式检测到 `.ape/.wv/.tta/.tak/.shn` 或 `resolveMediaResource` fallback 时，提示用户切换增强模式（带一键切换）。
+  - 侧栏删除流程补齐 `cue://` 路径分支：仅移除时不再走文件系统删除与 allowlist 校验，避免误报 `path_outside_root`。
 
 ### P2：转码服务 + 格式扩展（2 周）
 

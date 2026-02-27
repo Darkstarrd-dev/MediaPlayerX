@@ -25,6 +25,17 @@ export interface AudioEngineStateSnapshot {
   updatedAtMs: number
 }
 
+export interface AudioEnginePlaybackStatusSnapshot {
+  ok: boolean
+  mode: AudioEngineMode
+  loaded: boolean
+  paused: boolean | null
+  timeSec: number | null
+  durationSec: number | null
+  message: string | null
+  updatedAtMs: number
+}
+
 interface AudioEngineControllerOptions {
   projectRoot?: string
 }
@@ -427,6 +438,50 @@ export class AudioEngineController {
         ok: false,
         mode: this.mode,
         message,
+      }
+    }
+  }
+
+  async readPlaybackStatus(): Promise<AudioEnginePlaybackStatusSnapshot> {
+    if (this.mode !== 'mpv') {
+      return {
+        ok: true,
+        mode: this.mode,
+        loaded: false,
+        paused: null,
+        timeSec: null,
+        durationSec: null,
+        message: null,
+        updatedAtMs: Date.now(),
+      }
+    }
+
+    try {
+      const status = await this.mpvEngine.readPlaybackStatus()
+      this.updatedAtMs = Date.now()
+      return {
+        ok: true,
+        mode: this.mode,
+        loaded: status.loaded,
+        paused: status.paused,
+        timeSec: status.timeSec,
+        durationSec: status.durationSec,
+        message: null,
+        updatedAtMs: this.updatedAtMs,
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      this.lastError = message
+      this.updatedAtMs = Date.now()
+      return {
+        ok: false,
+        mode: this.mode,
+        loaded: false,
+        paused: null,
+        timeSec: null,
+        durationSec: null,
+        message,
+        updatedAtMs: this.updatedAtMs,
       }
     }
   }

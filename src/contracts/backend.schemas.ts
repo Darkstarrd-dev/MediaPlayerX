@@ -1209,6 +1209,17 @@ export const audioEngineActionResponseSchema = z.object({
   updated_at_ms: z.number().int().positive(),
 });
 
+export const readAudioEnginePlaybackStatusResponseSchema = z.object({
+  ok: z.boolean(),
+  mode: audioEngineModeSchema,
+  loaded: z.boolean(),
+  paused: z.boolean().nullable(),
+  time_sec: z.number().min(0).nullable(),
+  duration_sec: z.number().min(0).nullable(),
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
 export const audioEngineLoadTrackRequestSchema = z.object({
   file_path: z.string().min(1),
   start_sec: z.number().min(0).nullable().optional(),

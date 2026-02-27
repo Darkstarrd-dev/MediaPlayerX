@@ -117,6 +117,14 @@ function MusicMainSection({
     ? Math.max(0, cueEndSec - cueStartSec)
     : Math.max(0, focusedAudio?.durationSec ?? 0)
   const hasCueSegment = cueStartSec > 0 || cueEndSec != null
+  const focusedAudioExtension = focusedAudio?.mediaLocator.kind === 'filesystem' ? focusedAudio.mediaLocator.extension.toLowerCase() : ''
+  const requiresEnhancedModeInChromium =
+    (focusedAudioExtension === '.ape' ||
+      focusedAudioExtension === '.wv' ||
+      focusedAudioExtension === '.tta' ||
+      focusedAudioExtension === '.tak' ||
+      focusedAudioExtension === '.shn') ||
+    (typeof focusedAudioSrc === 'string' && focusedAudioSrc.startsWith('data:application/octet-stream;base64,'))
 
   const suppressNativePlaybackEventsFor = useCallback((ms: number) => {
     suppressNativePlaybackEventsRef.current = true
@@ -356,7 +364,51 @@ function MusicMainSection({
       ? undefined
       : ({ display: 'none' } as CSSProperties)
 
+  const suggestEnhancedModeForUnsupported = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const backendApi = window.mediaPlayerBackend
+    const setAudioEngineModeMethod = backendApi?.setAudioEngineMode
+    const tipMessage = '当前音频格式在兼容模式下无法播放，建议切换到增强模式 (mpv)。是否立即切换？'
+    if (typeof setAudioEngineModeMethod !== 'function') {
+      if (typeof window.alert === 'function') {
+        window.alert('当前音频格式在兼容模式下无法播放，请在设置中切换到增强模式 (mpv)。')
+      }
+      return
+    }
+
+    const confirmed = typeof window.confirm === 'function' ? window.confirm(tipMessage) : true
+    if (!confirmed) {
+      return
+    }
+
+    void setAudioEngineModeMethod({ mode: 'mpv' }).then((response) => {
+      setAudioEngineMode(response.mode)
+      window.dispatchEvent(new CustomEvent(AUDIO_ENGINE_MODE_CHANGED_EVENT, {
+        detail: {
+          mode: response.mode,
+        },
+      }))
+    }).catch(() => undefined)
+  }, [AUDIO_ENGINE_MODE_CHANGED_EVENT])
+
   const toggleAudioPlayback = useCallback(() => {
+    if (audioEngineMode === 'mpv') {
+      const nextPlaying = !audioPlaying
+      setAudioPlaying(nextPlaying)
+      if (nextPlaying) {
+        void resumeAudioAnalyser()
+      }
+      return
+    }
+
+    if (!audioPlaying && requiresEnhancedModeInChromium) {
+      suggestEnhancedModeForUnsupported()
+      return
+    }
+
     if (!focusedAudioSrc) {
       const nextPlaying = !audioPlaying
       setAudioPlaying(nextPlaying)
@@ -387,7 +439,14 @@ function MusicMainSection({
     void audio.play().catch(() => {
       setAudioPlaying(false)
     })
-  }, [audioPlaying, focusedAudioSrc, resumeAudioAnalyser])
+  }, [
+    audioEngineMode,
+    audioPlaying,
+    focusedAudioSrc,
+    requiresEnhancedModeInChromium,
+    resumeAudioAnalyser,
+    suggestEnhancedModeForUnsupported,
+  ])
 
   const stopAudioPlayback = useCallback(() => {
     setAudioPlaying(false)
@@ -606,6 +665,57 @@ function MusicMainSection({
   }, [audioEngineMode, audioMuted, audioVolume])
 
   useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode !== 'mpv' || typeof backendApi?.readAudioEnginePlaybackStatus !== 'function') {
+      return
+    }
+
+    let active = true
+    const syncPlaybackStatus = () => {
+      void backendApi.readAudioEnginePlaybackStatus!().then((response) => {
+        if (!active || response.mode !== 'mpv' || !response.ok) {
+          return
+        }
+
+        if (!response.loaded) {
+          if (audioSeekDraftTime == null) {
+            setAudioTime(0)
+          }
+          setAudioPlaying(false)
+          return
+        }
+
+        if (typeof response.paused === 'boolean') {
+          setAudioPlaying(!response.paused)
+        }
+
+        if (typeof response.time_sec === 'number' && Number.isFinite(response.time_sec) && audioSeekDraftTime == null) {
+          if (hasCueSegment) {
+            const relativeTime = Math.max(0, response.time_sec - cueStartSec)
+            const clampedRelativeTime = cueEndSec != null ? Math.min(relativeTime, cueSegmentDurationSec) : relativeTime
+            setAudioTime(clampedRelativeTime)
+          } else {
+            setAudioTime(Math.max(0, response.time_sec))
+          }
+        }
+
+        if (hasCueSegment) {
+          setAudioDurationSec(cueSegmentDurationSec)
+        } else if (typeof response.duration_sec === 'number' && Number.isFinite(response.duration_sec) && response.duration_sec > 0) {
+          setAudioDurationSec(response.duration_sec)
+        }
+      }).catch(() => undefined)
+    }
+
+    syncPlaybackStatus()
+    const timer = window.setInterval(syncPlaybackStatus, 250)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [audioEngineMode, audioSeekDraftTime, cueEndSec, cueSegmentDurationSec, cueStartSec, hasCueSegment])
+
+  useEffect(() => {
     const audio = audioRef.current
     if (!audio) {
       return
@@ -617,6 +727,11 @@ function MusicMainSection({
 
     audio.muted = audioMuted || audioEngineMode === 'mpv'
     audio.volume = clamp(audioVolume / 100, 0, 1)
+
+    if (audioEngineMode === 'mpv') {
+      audio.pause()
+      return
+    }
 
     if (!focusedAudioSrc) {
       audio.pause()
@@ -675,8 +790,21 @@ function MusicMainSection({
     if (!focusedAudioSrc || interruptByVideoPlayback) {
       return
     }
+
+    if (audioEngineMode !== 'mpv' && requiresEnhancedModeInChromium) {
+      suggestEnhancedModeForUnsupported()
+      return
+    }
+
     setAudioPlaying(true)
-  }, [focusedAudioSrc, interruptByVideoPlayback, playRequestNonce])
+  }, [
+    audioEngineMode,
+    focusedAudioSrc,
+    interruptByVideoPlayback,
+    playRequestNonce,
+    requiresEnhancedModeInChromium,
+    suggestEnhancedModeForUnsupported,
+  ])
 
   useEffect(() => {
     if (!audioPlaying) {

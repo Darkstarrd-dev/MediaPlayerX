@@ -274,8 +274,67 @@ export class MediaLibrarySnapshotStore {
     deletedVideoCount: number;
     deletedAudioCount: number;
   } {
+    const hasUriScheme = (value: string): boolean =>
+      /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(value.trim());
+
+    const normalizePathForMatching = (value: string): string => {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return "";
+      }
+      if (hasUriScheme(trimmed)) {
+        return trimmed;
+      }
+      return path.resolve(trimmed);
+    };
+
+    const decodeSafely = (value: string | null): string | null => {
+      if (!value || value.trim().length === 0) {
+        return null;
+      }
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    };
+
+    const parseCueVirtualAudioPath = (
+      value: string,
+    ): { cuePath: string | null; sourcePath: string | null } | null => {
+      if (!value.startsWith("cue://")) {
+        return null;
+      }
+
+      try {
+        const parsed = new URL(value);
+        const encodedCuePath = `${parsed.host}${parsed.pathname ?? ""}`.replace(
+          /^\/+/,
+          "",
+        );
+        const cuePath = decodeSafely(encodedCuePath);
+        const sourcePath = decodeSafely(parsed.searchParams.get("src"));
+        return {
+          cuePath,
+          sourcePath,
+        };
+      } catch {
+        const matched = /^cue:\/\/([^?]+)(?:\?(.*))?$/i.exec(value);
+        if (!matched) {
+          return null;
+        }
+        const cuePath = decodeSafely(matched[1] ?? null);
+        const searchParams = new URLSearchParams(matched[2] ?? "");
+        const sourcePath = decodeSafely(searchParams.get("src"));
+        return {
+          cuePath,
+          sourcePath,
+        };
+      }
+    };
+
     const normalizedRoots = Array.from(
-      new Set(paths.map((value) => path.resolve(value)).filter(Boolean)),
+      new Set(paths.map((value) => normalizePathForMatching(value)).filter(Boolean)),
     );
     if (normalizedRoots.length === 0) {
       return {
@@ -316,13 +375,26 @@ export class MediaLibrarySnapshotStore {
       .all() as Array<{ id: string; absolute_path: string }>;
 
     const matchesAnyRoot = (candidatePath: string): boolean => {
-      const resolvedCandidate = path.resolve(candidatePath);
-      return normalizedRoots.some(
-        (rootPath) =>
-          normalizeAllowlistKey(rootPath) ===
-            normalizeAllowlistKey(resolvedCandidate) ||
-          isPathInsideRoot(rootPath, resolvedCandidate),
-      );
+      const normalizedCandidate = normalizePathForMatching(candidatePath);
+      if (!normalizedCandidate) {
+        return false;
+      }
+
+      return normalizedRoots.some((rootPath) => {
+        const exactMatch = hasUriScheme(rootPath) || hasUriScheme(normalizedCandidate)
+          ? rootPath === normalizedCandidate
+          : normalizeAllowlistKey(rootPath) ===
+            normalizeAllowlistKey(normalizedCandidate);
+        if (exactMatch) {
+          return true;
+        }
+
+        if (hasUriScheme(rootPath) || hasUriScheme(normalizedCandidate)) {
+          return false;
+        }
+
+        return isPathInsideRoot(rootPath, normalizedCandidate);
+      });
     };
 
     const sourceIdsToDelete = sourceRows
@@ -332,7 +404,18 @@ export class MediaLibrarySnapshotStore {
       .filter((row) => matchesAnyRoot(row.absolute_path))
       .map((row) => row.id);
     const audioIdsToDelete = audioRows
-      .filter((row) => matchesAnyRoot(row.absolute_path))
+      .filter((row) => {
+        const candidatePaths = [row.absolute_path];
+        const cueVirtual = parseCueVirtualAudioPath(row.absolute_path);
+        if (cueVirtual?.cuePath) {
+          candidatePaths.push(cueVirtual.cuePath);
+        }
+        if (cueVirtual?.sourcePath) {
+          candidatePaths.push(cueVirtual.sourcePath);
+        }
+
+        return candidatePaths.some((candidatePath) => matchesAnyRoot(candidatePath));
+      })
       .map((row) => row.id);
 
     if (
