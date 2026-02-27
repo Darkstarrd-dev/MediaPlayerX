@@ -23,6 +23,8 @@
 - 当前评估：`project-evaluation-report-v12.md`
 - 风险台账：`dependency-risk-register.md`
 - 性能实施计划：`thumb_acceleration_implementation_plan.md`
+- 音频增强与转码计划：`mpv-增强模式与转码实施计划-v1.md`
+- 音频增强专家咨询申请：`mpv-增强模式专家咨询申请-2026-02-27.md`
 - 全屏重采样 SSOT 草案：`fullscreen_resampling_ssot_draft.md`
 - 高优化需求项目表：`high-optimization-demand-table.md`
 - 视频节点浏览实现记录：`video-node-browse-implementation-log-2026-02-27.md`
@@ -30,6 +32,15 @@
 ## 待办
 
 - [ ] FunASR 参数调优执行计划（高效版）：`funasr-parameter-tuning-execution-plan.md`
+
+## 当前进展（样式统一）
+
+- [x] 已完成按钮模板化（Button Template）基础收敛：统一 `idle / hover / active / pressed` 状态语义，修复 `aria-pressed` 视觉延后问题。
+- [x] 已完成多处触发器语义对齐：面板打开态按钮统一补齐 `aria-pressed`，并与 `aria-expanded` 协同。
+- [x] 已完成部分浮层内容结构原语沉淀：新增并落地一批 `mpx-overlay-*` 共通样式类，减少重复样式实现。
+- [ ] 待完成：各 Panel / Dialog 的统一样式修订（全量收口）。
+  - 修订原则：凡是结构与交互可复用的位置，优先使用共通样式（Called Common Styles / `mpx-overlay-*`），仅在确有差异时追加局部样式。
+  - 目标：降低样式分叉与覆盖冲突，保证跨面板视觉与状态表现一致。
 
 ## SSOT 同步提醒
 
