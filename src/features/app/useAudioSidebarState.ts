@@ -60,23 +60,29 @@ function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
 
   const tree = buildSidebarTree(Array.from(uniqueFolderLeaves.values()), 'folder')
 
-  const hydrateDescendantAudioCounts = (nodes: SidebarNode[]): number => {
+  const hydrateDescendantAudioCounts = (nodes: SidebarNode[]): { audioFolderCount: number; trackCount: number } => {
     let totalAudioFolderCount = 0
+    let totalTrackCount = 0
 
     for (const node of nodes) {
-      const childAudioFolderCount = hydrateDescendantAudioCounts(node.children)
+      const childCounts = hydrateDescendantAudioCounts(node.children)
       const directCount = directAudioCountByPath.get(node.pathKey) ?? 0
       const selfAudioFolderCount = directCount > 0 ? 1 : 0
-      const nodeAudioFolderCount = selfAudioFolderCount + childAudioFolderCount
+      const nodeAudioFolderCount = selfAudioFolderCount + childCounts.audioFolderCount
+      const nodeTrackCount = directCount + childCounts.trackCount
 
       node.directAudioCount = directCount
       node.descendantAudioFolderCount = nodeAudioFolderCount
-      node.descendantNodeCount = directCount > 0 ? directCount : childAudioFolderCount
+      node.descendantNodeCount = nodeTrackCount
       node.audioId = firstAudioIdByPath.get(node.pathKey)
       totalAudioFolderCount += nodeAudioFolderCount
+      totalTrackCount += nodeTrackCount
     }
 
-    return totalAudioFolderCount
+    return {
+      audioFolderCount: totalAudioFolderCount,
+      trackCount: totalTrackCount,
+    }
   }
 
   hydrateDescendantAudioCounts(tree)

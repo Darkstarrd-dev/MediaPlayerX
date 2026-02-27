@@ -515,6 +515,63 @@ export type ReadRuntimeCapabilitiesResponseDto = Infer<
 export type RuntimeMediaCapabilityHintDto = Infer<
   typeof Backend.runtimeMediaCapabilityHintSchema
 >;
+export type AudioEngineModeDto = Infer<typeof Backend.audioEngineModeSchema>;
+export type AudioGaplessModeDto = Infer<typeof Backend.audioGaplessModeSchema>;
+export type AudioReplayGainModeDto = Infer<
+  typeof Backend.audioReplayGainModeSchema
+>;
+export type AudioOutputDeviceDto = Infer<typeof Backend.audioOutputDeviceSchema>;
+export type ReadAudioEngineStateResponseDto = Infer<
+  typeof Backend.readAudioEngineStateResponseSchema
+>;
+export type SetAudioEngineModeRequestDto = Infer<
+  typeof Backend.setAudioEngineModeRequestSchema
+>;
+export type SetAudioEngineModeResponseDto = Infer<
+  typeof Backend.setAudioEngineModeResponseSchema
+>;
+export type ListAudioOutputDevicesResponseDto = Infer<
+  typeof Backend.listAudioOutputDevicesResponseSchema
+>;
+export type SetAudioOutputDeviceRequestDto = Infer<
+  typeof Backend.setAudioOutputDeviceRequestSchema
+>;
+export type SetAudioOutputDeviceResponseDto = Infer<
+  typeof Backend.setAudioOutputDeviceResponseSchema
+>;
+export type SetAudioExclusiveRequestDto = Infer<
+  typeof Backend.setAudioExclusiveRequestSchema
+>;
+export type SetAudioExclusiveResponseDto = Infer<
+  typeof Backend.setAudioExclusiveResponseSchema
+>;
+export type SetAudioGaplessModeRequestDto = Infer<
+  typeof Backend.setAudioGaplessModeRequestSchema
+>;
+export type SetAudioGaplessModeResponseDto = Infer<
+  typeof Backend.setAudioGaplessModeResponseSchema
+>;
+export type SetAudioReplayGainModeRequestDto = Infer<
+  typeof Backend.setAudioReplayGainModeRequestSchema
+>;
+export type SetAudioReplayGainModeResponseDto = Infer<
+  typeof Backend.setAudioReplayGainModeResponseSchema
+>;
+export type AudioEngineActionResponseDto = Infer<
+  typeof Backend.audioEngineActionResponseSchema
+>;
+export type AudioEngineLoadTrackRequestDto = Infer<
+  typeof Backend.audioEngineLoadTrackRequestSchema
+>;
+export type AudioEngineSetPausedRequestDto = Infer<
+  typeof Backend.audioEngineSetPausedRequestSchema
+>;
+export type AudioEngineSeekToRequestDto = Infer<
+  typeof Backend.audioEngineSeekToRequestSchema
+>;
+export type AudioEngineSetVolumeRequestDto = Infer<
+  typeof Backend.audioEngineSetVolumeRequestSchema
+>;
 export type ReadRuntimeInfoResponseDto = Infer<
   typeof Backend.readRuntimeInfoResponseSchema
 >;

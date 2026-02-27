@@ -528,22 +528,22 @@ function MetadataFetchPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden">
-          <div className="metadata-fetch-search-row" aria-label={t('ui.metadata.fetchSearchParams')}>
+        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden mpx-overlay-merged-stack">
+          <div className="metadata-fetch-search-row mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={t('ui.metadata.fetchSearchParams')}>
             <div className="metadata-fetch-source-group" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
-              <button type="button" className={`metadata-fetch-mode-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('nhentai')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('nhentai')}>
                 N
               </button>
-              <button type="button" className={`metadata-fetch-mode-btn ${sourceMode === 'ehentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('ehentai')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'ehentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('ehentai')}>
                 E
               </button>
-              <button type="button" className={`metadata-fetch-mode-btn ${sourceMode === 'all' ? 'is-active' : ''}`} onClick={() => setSourceMode('all')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'all' ? 'is-active' : ''}`} onClick={() => setSourceMode('all')}>
                 A
               </button>
             </div>
 
             <input
-              className="metadata-fetch-seamless-control"
+              className="metadata-fetch-seamless-control mpx-overlay-seamless-cell"
               type="text"
               value={inputId}
               placeholder="检索ID"
@@ -552,7 +552,7 @@ function MetadataFetchPanel({
             />
 
             <input
-              className="metadata-fetch-seamless-control"
+              className="metadata-fetch-seamless-control mpx-overlay-seamless-cell"
               type="text"
               value={targetKeywords[activeTargetIndex] ?? ''}
               placeholder="检索关键字"
@@ -568,7 +568,7 @@ function MetadataFetchPanel({
             />
 
             <input
-              className="metadata-fetch-seamless-control metadata-fetch-interval-control"
+              className="metadata-fetch-seamless-control metadata-fetch-interval-control mpx-overlay-seamless-cell"
               type="text"
               inputMode="numeric"
               value={requestIntervalInput}
@@ -590,7 +590,7 @@ function MetadataFetchPanel({
 
             <div className="metadata-fetch-search-action">
               <button
-                className="feature-action-btn main-icon-square-btn metadata-fetch-search-btn"
+                className="feature-action-btn main-icon-square-btn metadata-fetch-search-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn"
                 type="button"
                 aria-label={loading ? t('a11y.common.searching') : t('a11y.common.search')}
                 data-tooltip-label={loading ? t('tip.common.searching') : t('tip.common.search')}
@@ -603,7 +603,7 @@ function MetadataFetchPanel({
           </div>
           {currentRuntime.error ? <p className="settings-danger-text">{currentRuntime.error}</p> : null}
 
-          <div className="metadata-fetch-results">
+          <div className="metadata-fetch-results mpx-overlay-merged-bottom">
             {SOURCE_KEYS.map((source) => {
               const list = currentRuntime.sourceLists[source]
               const selectedIndex = currentRuntime.selectedIndexBySource[source] ?? 0
@@ -625,7 +625,7 @@ function MetadataFetchPanel({
                   <header className="metadata-fetch-source-head">
                     <strong>{getSourceLabel(source)}</strong>
                     <span>{t('ui.metadata.fetchSourceResultCount', { count: list.length })}</span>
-                    <div className="settings-floating-actions metadata-fetch-actions metadata-fetch-actions-inline">
+                    <div className="mpx-overlay-actions mpx-overlay-actions-inline-end mpx-overlay-inline-icon-actions">
                       <button
                         className="feature-action-btn main-icon-square-btn"
                         type="button"
@@ -680,7 +680,7 @@ function MetadataFetchPanel({
                   </header>
 
                   <div className="metadata-fetch-source-body mpx-scroll-area">
-                    <ul className="metadata-fetch-result-list">
+                    <ul className="metadata-fetch-result-list mpx-overlay-result-list">
                       {list.map((item, index) => (
                         <li key={`${source}-${item.id}-${index}`}>
                           <button

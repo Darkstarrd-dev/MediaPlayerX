@@ -43,16 +43,17 @@
   color: var(--mpx-text-1);
 }
 
-.sidebar-rename-dialog .manage-group-name-input {
+.sidebar-rename-dialog .mpx-overlay-input {
   border-color: var(--sidebar-rename-soft-border);
   background: var(--sidebar-rename-soft-input-bg);
 }
 
-.sidebar-rename-dialog .manage-group-name-input:hover {
+.sidebar-rename-dialog .mpx-overlay-input:hover {
   background: var(--sidebar-rename-soft-input-hover-bg);
 }
 
-.sidebar-rename-dialog .manage-group-name-input:focus {
+.sidebar-rename-dialog .mpx-overlay-input:focus,
+.sidebar-rename-dialog .mpx-overlay-input:focus-visible {
   background: var(--sidebar-rename-soft-input-focus-bg);
   outline: none;
 }
@@ -75,22 +76,7 @@
 }
 
 .sidebar-rename-merge-shell {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.sidebar-rename-merge-shell > .sidebar-rename-replace-controls,
-.sidebar-rename-merge-shell > .sidebar-rename-mode-row {
-  border-radius: 16px 16px 0 0;
-  border-bottom: 0;
-}
-
-.sidebar-rename-merge-shell > .sidebar-rename-preview-table {
-  border-top: 0;
-  border-radius: 0 0 16px 16px;
+  --mpx-overlay-merge-radius: 16px;
 }
 
 .sidebar-rename-preview-head {
@@ -98,8 +84,8 @@
   grid-template-columns: minmax(0, 5fr) 52px minmax(0, 6fr);
   align-items: center;
   min-height: 38px;
-  border-bottom: 1px solid #bcc7d1;
-  background: #D1D5DB;
+  border-bottom: 1px solid var(--mpx-overlay-soft-head-divider);
+  background: var(--mpx-overlay-soft-head-bg);
   color: var(--mpx-text-2);
   font-size: 15px;
   font-weight: 700;
@@ -132,7 +118,7 @@
   flex: 0 0 auto;
   min-height: 44px;
   border-left: 4px solid transparent;
-  border-bottom: 1px solid #cfd7df;
+  border-bottom: 1px solid var(--mpx-overlay-soft-row-divider);
   margin: 0;
   color: var(--mpx-text-1);
   font-size: 14px;
@@ -213,7 +199,7 @@
   color: var(--mpx-text-2);
 }
 
-.sidebar-rename-footer-actions {
+.sidebar-rename-dialog .mpx-overlay-footer-actions {
   margin-top: auto;
   padding-top: 14px;
   justify-content: flex-end;
@@ -221,13 +207,8 @@
   font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
 }
 
-.sidebar-rename-footer-actions .feature-action-btn {
-  min-width: 88px;
-  border-radius: 14px;
-  height: 44px;
-  padding: 0 20px;
+.sidebar-rename-dialog .mpx-overlay-footer-btn {
   font-size: inherit;
-  line-height: 1;
 }
 
 [data-slot='fg-sidebar-shortcut-rename-panel'] {
@@ -304,72 +285,9 @@
     font-size: 18px;
   }
 
-  .sidebar-rename-footer-actions .feature-action-btn {
+  .sidebar-rename-dialog .mpx-overlay-footer-btn {
     font-size: 18px;
     height: 38px;
   }
 }
 
-.manage-group-actions .feature-action-btn {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
-  background: var(--mpx-btn-secondary-bg);
-  color: var(--mpx-btn-secondary-text);
-}
-
-.manage-group-name-input {
-  border: 1px solid var(--mpx-border-2);
-  border-radius: 8px;
-  background: var(--mpx-bg-elevated);
-  color: var(--mpx-text-1);
-  height: var(--mpx-icon-button-size);
-  min-height: var(--mpx-icon-button-size);
-  padding: 0 8px;
-}
-
-.manage-group-name-input:disabled {
-  color: var(--mpx-input-readonly-text);
-  background: var(--mpx-input-readonly-bg);
-  border-color: var(--mpx-input-readonly-border);
-}
-
-.binding-chip-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.binding-chip-list li {
-  border: 1px solid var(--mpx-border-1);
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
-  font-family: var(--mpx-font-mono);
-  font-size: 12px;
-}
-
-.binding-capture-preview {
-  margin: 0;
-  border: 1px dashed var(--mpx-border-2);
-  border-radius: 10px;
-  padding: 10px;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--mpx-font-mono);
-}
-
-.binding-mouse-presets {
-  display: grid;
-  gap: 8px;
-}
-
-.binding-mouse-preset-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}

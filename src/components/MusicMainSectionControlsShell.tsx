@@ -146,6 +146,11 @@ export function MusicMainSectionControlsShell({
 }: MusicMainSectionControlsShellProps) {
   const effectiveFullscreenControlsMounted = popoverDebugPinned || controlsMounted
   const effectiveFullscreenControlsVisible = popoverDebugPinned || controlsVisible
+  const focusedAudioDisplayPath = focusedAudio
+    ? focusedAudio.mediaLocator.kind === 'filesystem'
+      ? focusedAudio.mediaLocator.absolutePath
+      : focusedAudio.absolutePath
+    : ''
 
   return (
     <div
@@ -159,7 +164,7 @@ export function MusicMainSectionControlsShell({
         <div className="fullscreen-meta-row is-single">
           <div className="fullscreen-meta-line">
             <div className="fullscreen-meta-line-segment">
-              <FullscreenMetaMarquee text={`${focusedAudio.absolutePath} | ${formatSeconds(Math.max(0, focusedAudio.durationSec))} | ${Number(focusedAudio.sizeMb.toFixed(2))}MB`} />
+              <FullscreenMetaMarquee text={`${focusedAudioDisplayPath} | ${formatSeconds(Math.max(0, focusedAudio.durationSec))} | ${Number(focusedAudio.sizeMb.toFixed(2))}MB`} />
             </div>
           </div>
         </div>

@@ -59,6 +59,9 @@ export const subtitleGradientCurveSchema = z.enum([
   "smoother",
 ]);
 export const subtitleRenderModeSchema = z.enum(["simple", "advanced"]);
+export const audioEngineModeSchema = z.enum(["chromium", "mpv"]);
+export const audioGaplessModeSchema = z.enum(["no", "weak", "yes"]);
+export const audioReplayGainModeSchema = z.enum(["off", "track", "album"]);
 export const subtitleAdvancedVadPresetSchema = z.enum([
   "balanced",
   "conservative",
@@ -132,6 +135,12 @@ export const appSettingsSchema = z.object({
   imageRootNodeId: z.string().nullable(),
   videoRootNodeId: z.string().nullable(),
   musicRootNodeId: z.string().nullable(),
+  audioEngineMode: audioEngineModeSchema,
+  audioOutputDeviceId: z.string().max(256).nullable(),
+  audioExclusiveEnabled: z.boolean(),
+  audioExclusiveFallbackToShared: z.boolean(),
+  audioGaplessMode: audioGaplessModeSchema,
+  audioReplayGainMode: audioReplayGainModeSchema,
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),

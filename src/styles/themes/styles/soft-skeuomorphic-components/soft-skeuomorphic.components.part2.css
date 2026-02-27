@@ -165,15 +165,15 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar button,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-head button,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .window-controls .window-control-btn {
-  border: 1px solid #d5d8df;
-  background: linear-gradient(145deg, #f8f9fa 0%, #e8eaef 100%);
-  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -1px -1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
+  background: var(--mpx-btn-template-base);
+  box-shadow: var(--mpx-btn-template-shadow-idle);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-footer-pagination"] .toolbar-icon-btn {
-  border: 1px solid #d5d8df;
-  background: linear-gradient(145deg, #f8f9fa 0%, #e8eaef 100%);
-  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -1px -1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
+  background: var(--mpx-btn-template-base);
+  box-shadow: var(--mpx-btn-template-shadow-idle);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-group.is-left > .video-action-btn:hover,
@@ -184,15 +184,17 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar button:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-head button:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .window-controls .window-control-btn:hover {
-  background: linear-gradient(145deg, #fafbfd 0%, #eceff4 100%);
-  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.92), inset -1px -1px 2px rgba(0, 0, 0, 0.03), 0 2px 5px rgba(0, 0, 0, 0.03);
-  filter: brightness(1.03);
+  background: var(--mpx-btn-template-hover);
+  box-shadow: var(--mpx-btn-template-shadow-hover);
+  transform: var(--mpx-btn-template-transform-hover);
+  filter: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-footer-pagination"] .toolbar-icon-btn:hover {
-  background: linear-gradient(145deg, #fafbfd 0%, #eceff4 100%);
-  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.92), inset -1px -1px 2px rgba(0, 0, 0, 0.03), 0 2px 5px rgba(0, 0, 0, 0.03);
-  filter: brightness(1.03);
+  background: var(--mpx-btn-template-hover);
+  box-shadow: var(--mpx-btn-template-shadow-hover);
+  transform: var(--mpx-btn-template-transform-hover);
+  filter: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-group.is-left > .video-action-btn:active,
@@ -211,17 +213,19 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-group.is-left .music-ctrl-popover.is-open > .video-action-btn:not(:disabled),
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-group.is-right .music-ctrl-popover:hover > .video-action-btn:not(:disabled),
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-group.is-right .music-ctrl-popover.is-open > .video-action-btn:not(:disabled) {
-  background: linear-gradient(145deg, #eef0f4 0%, #e1e5eb 100%);
-  border-color: #cbd1da;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.12), inset -1px -1px 2px rgba(255, 255, 255, 0.85);
+  background: var(--mpx-btn-template-active);
+  border-color: var(--mpx-btn-template-border);
+  box-shadow: var(--mpx-btn-template-shadow-active);
   color: var(--mpx-skeuo-active-icon);
+  transform: var(--mpx-btn-template-transform-active);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-footer-pagination"] .toolbar-icon-btn:active {
-  background: linear-gradient(145deg, #eef0f4 0%, #e1e5eb 100%);
-  border-color: #cbd1da;
-  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.12), inset -1px -1px 2px rgba(255, 255, 255, 0.85);
+  background: var(--mpx-btn-template-active);
+  border-color: var(--mpx-btn-template-border);
+  box-shadow: var(--mpx-btn-template-shadow-active);
   color: var(--mpx-skeuo-active-icon);
+  transform: var(--mpx-btn-template-transform-active);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-panel.is-volume,
@@ -304,34 +308,37 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-panel-option,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-panel-option {
-  border: 1px solid #bcc1c9;
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
   border-radius: 12px;
   min-height: 30px;
   padding: 0 12px;
   text-align: left;
-  color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
-  background: linear-gradient(135deg, #e4e6ea, #c8ccd3);
-  box-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
+  color: var(--mpx-btn-template-text-idle);
+  background: var(--mpx-btn-template-base);
+  box-shadow: var(--mpx-btn-template-shadow-idle);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-convert-format-btn,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar-ad-review-review-pill,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar-ad-review-running-pill {
-  border: 1px solid #bcc1c9;
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
   border-radius: 12px;
   min-height: 30px;
   padding: 0 12px;
   text-align: left;
-  color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
-  background: linear-gradient(135deg, #e4e6ea, #c8ccd3);
-  box-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
+  color: var(--mpx-btn-template-text-idle);
+  background: var(--mpx-btn-template-base);
+  box-shadow: var(--mpx-btn-template-shadow-idle);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-panel-option:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-panel-option:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-convert-format-btn:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar-ad-review-review-pill:hover {
-  filter: brightness(0.97);
+  background: var(--mpx-btn-template-hover);
+  box-shadow: var(--mpx-btn-template-shadow-hover);
+  transform: var(--mpx-btn-template-transform-hover);
+  filter: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-panel-option:active,
@@ -341,8 +348,10 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-convert-format-btn.is-active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar-ad-review-review-pill:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .main-toolbar-ad-review-review-pill.is-active {
-  transform: var(--mpx-control-active-transform);
-  box-shadow: var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow));
+  background: var(--mpx-btn-template-active);
+  border-color: var(--mpx-btn-template-border);
+  box-shadow: var(--mpx-btn-template-shadow-active);
+  transform: var(--mpx-btn-template-transform-active);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]:not([data-mpx-palette="skeuomorphic-luxury-white"]) .video-controls-shell:not(.fullscreen-video-controls-shell) {

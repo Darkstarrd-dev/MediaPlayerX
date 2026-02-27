@@ -12,6 +12,23 @@ import type {
   ReadArchiveLoadStatusResponseDto,
   ReadImportTasksResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  ReadAudioEngineStateResponseDto,
+  SetAudioEngineModeRequestDto,
+  SetAudioEngineModeResponseDto,
+  ListAudioOutputDevicesResponseDto,
+  SetAudioOutputDeviceRequestDto,
+  SetAudioOutputDeviceResponseDto,
+  SetAudioExclusiveRequestDto,
+  SetAudioExclusiveResponseDto,
+  SetAudioGaplessModeRequestDto,
+  SetAudioGaplessModeResponseDto,
+  SetAudioReplayGainModeRequestDto,
+  SetAudioReplayGainModeResponseDto,
+  AudioEngineActionResponseDto,
+  AudioEngineLoadTrackRequestDto,
+  AudioEngineSetPausedRequestDto,
+  AudioEngineSeekToRequestDto,
+  AudioEngineSetVolumeRequestDto,
   ReadSubtitleEngineStatusResponseDto,
   ListSubtitleRemoteModelsResponseDto,
   ListSubtitleLocalModelsRequestDto,
@@ -212,6 +229,32 @@ interface MediaPlayerBackendApi {
   retryImportTask: (request: RetryImportTaskRequestDto) => Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit: () => Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities: () => Promise<ReadRuntimeCapabilitiesResponseDto>
+  readAudioEngineState?: () => Promise<ReadAudioEngineStateResponseDto>
+  setAudioEngineMode?: (request: SetAudioEngineModeRequestDto) => Promise<SetAudioEngineModeResponseDto>
+  listAudioOutputDevices?: () => Promise<ListAudioOutputDevicesResponseDto>
+  setAudioOutputDevice?: (
+    request: SetAudioOutputDeviceRequestDto,
+  ) => Promise<SetAudioOutputDeviceResponseDto>
+  setAudioExclusive?: (request: SetAudioExclusiveRequestDto) => Promise<SetAudioExclusiveResponseDto>
+  setAudioGaplessMode?: (
+    request: SetAudioGaplessModeRequestDto,
+  ) => Promise<SetAudioGaplessModeResponseDto>
+  setAudioReplayGainMode?: (
+    request: SetAudioReplayGainModeRequestDto,
+  ) => Promise<SetAudioReplayGainModeResponseDto>
+  audioEngineLoadTrack?: (
+    request: AudioEngineLoadTrackRequestDto,
+  ) => Promise<AudioEngineActionResponseDto>
+  audioEngineSetPaused?: (
+    request: AudioEngineSetPausedRequestDto,
+  ) => Promise<AudioEngineActionResponseDto>
+  audioEngineSeekTo?: (
+    request: AudioEngineSeekToRequestDto,
+  ) => Promise<AudioEngineActionResponseDto>
+  audioEngineSetVolume?: (
+    request: AudioEngineSetVolumeRequestDto,
+  ) => Promise<AudioEngineActionResponseDto>
+  audioEngineStopPlayback?: () => Promise<AudioEngineActionResponseDto>
   readSubtitleEngineStatus?: () => Promise<ReadSubtitleEngineStatusResponseDto>
   listSubtitleRemoteModels?: () => Promise<ListSubtitleRemoteModelsResponseDto>
   listSubtitleLocalModels?: (

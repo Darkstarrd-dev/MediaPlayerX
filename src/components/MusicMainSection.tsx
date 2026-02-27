@@ -67,6 +67,7 @@ function MusicMainSection({
   onNextAudio,
   onCycleMusicLoopMode,
 }: MusicMainSectionProps) {
+  const AUDIO_ENGINE_MODE_CHANGED_EVENT = 'mpx:audio-engine-mode-changed'
   const { t } = useI18n()
   const metadataSelectionToggleLabel =
     metadataManageSelectionMode === 'single'
@@ -80,6 +81,12 @@ function MusicMainSection({
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
   const visualizerActivateRafRef = useRef<number | null>(null)
   const visualizerActivateRaf2Ref = useRef<number | null>(null)
+  const suppressNativePlaybackEventsRef = useRef(false)
+  const suppressNativePlaybackTimerRef = useRef<number | null>(null)
+  const modeTransitionInProgressRef = useRef(false)
+  const modeTransitionReconcileTimerRef = useRef<number | null>(null)
+  const audioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
+  const pendingMpvResumeStartSecRef = useRef<number | null>(null)
   const [openPopover, setOpenPopover] = useState<MusicPopoverKey | null>(null)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioVolume, setAudioVolume] = useState(60)
@@ -94,7 +101,25 @@ function MusicMainSection({
   const [visualizerCanvasVersion, setVisualizerCanvasVersion] = useState(0)
   const [visualizerRuntimeActive, setVisualizerRuntimeActive] = useState(false)
   const [visualizerPlaybackResetNonce, setVisualizerPlaybackResetNonce] = useState(0)
+  const [audioEngineMode, setAudioEngineMode] = useState<'chromium' | 'mpv'>('chromium')
+  const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
+
+  useEffect(() => {
+    audioEngineModeRef.current = audioEngineMode
+  }, [audioEngineMode])
+
+  const suppressNativePlaybackEventsFor = useCallback((ms: number) => {
+    suppressNativePlaybackEventsRef.current = true
+    if (suppressNativePlaybackTimerRef.current != null) {
+      window.clearTimeout(suppressNativePlaybackTimerRef.current)
+      suppressNativePlaybackTimerRef.current = null
+    }
+    suppressNativePlaybackTimerRef.current = window.setTimeout(() => {
+      suppressNativePlaybackEventsRef.current = false
+      suppressNativePlaybackTimerRef.current = null
+    }, Math.max(80, ms))
+  }, [])
 
   const musicVisualizerLayeredBackgroundShaderId = musicVisualizerShaderSettings.layeredBackgroundShaderId ?? 'galaxy'
   const musicVisualizerLayeredForegroundShaderId = musicVisualizerShaderSettings.layeredForegroundShaderId ?? 'mcs-szb'
@@ -200,7 +225,7 @@ function MusicMainSection({
     cpuCanvasRef: visualizerCpuCanvasRef,
     audioRef,
     canvasInstanceVersion: visualizerCanvasVersion,
-    active: visualizerRuntimeActive && !hasNoLayerEnabled,
+    active: visualizerRuntimeActive && !hasNoLayerEnabled && audioEngineMode !== 'mpv',
     playbackPaused: !audioPlaying,
     playbackResetNonce: visualizerPlaybackResetNonce,
     preferredRenderer: runtimeRenderer,
@@ -362,11 +387,219 @@ function MusicMainSection({
     emitMusicPlaybackState({ playing: false })
     const audio = audioRef.current
     if (!audio) {
+      const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+      if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineStopPlayback === 'function') {
+        void backendApi.audioEngineStopPlayback().catch(() => undefined)
+      }
       return
     }
     audio.pause()
     audio.currentTime = 0
-  }, [])
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineStopPlayback === 'function') {
+      void backendApi.audioEngineStopPlayback().catch(() => undefined)
+    }
+  }, [audioEngineMode])
+
+  useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    const readAudioEngineState = backendApi?.readAudioEngineState
+    if (typeof readAudioEngineState !== 'function') {
+      setAudioEngineMode('chromium')
+      return
+    }
+
+    let activeState = true
+    const refreshMode = () => {
+      void readAudioEngineState().then((response) => {
+        if (!activeState) {
+          return
+        }
+        setAudioEngineMode(response.mode)
+      }).catch(() => undefined)
+    }
+
+    refreshMode()
+    const onModeChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ mode?: unknown }>).detail
+      const mode = detail?.mode
+      if (mode === 'chromium' || mode === 'mpv') {
+        setAudioEngineMode(mode)
+      }
+    }
+
+    window.addEventListener(AUDIO_ENGINE_MODE_CHANGED_EVENT, onModeChanged)
+    const timer = window.setInterval(refreshMode, 3000)
+    return () => {
+      activeState = false
+      window.removeEventListener(AUDIO_ENGINE_MODE_CHANGED_EVENT, onModeChanged)
+      window.clearInterval(timer)
+    }
+  }, [AUDIO_ENGINE_MODE_CHANGED_EVENT])
+
+  useEffect(() => {
+    const previousMode = previousAudioEngineModeRef.current
+    previousAudioEngineModeRef.current = audioEngineMode
+    if (previousMode === audioEngineMode) {
+      return
+    }
+
+    const audio = audioRef.current
+    if (!audio) {
+      return
+    }
+
+    if (previousMode === 'chromium' && audioEngineMode === 'mpv') {
+      modeTransitionInProgressRef.current = false
+      if (modeTransitionReconcileTimerRef.current != null) {
+        window.clearTimeout(modeTransitionReconcileTimerRef.current)
+        modeTransitionReconcileTimerRef.current = null
+      }
+      pendingMpvResumeStartSecRef.current = Math.max(0, audio.currentTime)
+      suppressNativePlaybackEventsFor(220)
+      audio.muted = true
+      return
+    }
+
+    if (previousMode !== 'mpv' || audioEngineMode !== 'chromium') {
+      return
+    }
+
+    modeTransitionInProgressRef.current = true
+    suppressNativePlaybackEventsFor(220)
+    audio.muted = audioMuted
+    audio.volume = clamp(audioVolume / 100, 0, 1)
+
+    if (!focusedAudioSrc) {
+      audio.pause()
+      setAudioPlaying(false)
+      return
+    }
+
+    const resumeAtSec = clamp(audio.currentTime, 0, Math.max(0, audioDurationSec))
+    if (Number.isFinite(resumeAtSec) && Math.abs(audio.currentTime - resumeAtSec) > 0.6) {
+      try {
+        audio.currentTime = resumeAtSec
+      } catch {
+        // ignore seek failure during mode switch
+      }
+    }
+
+    if (!audioPlaying) {
+      audio.pause()
+      modeTransitionInProgressRef.current = false
+      return
+    }
+
+    void resumeAudioAnalyser()
+    void audio.play().catch(() => {
+      setAudioPlaying(false)
+      modeTransitionInProgressRef.current = false
+    })
+
+    const baselineTime = audio.currentTime
+    const expectedSrc = focusedAudioSrc
+    if (modeTransitionReconcileTimerRef.current != null) {
+      window.clearTimeout(modeTransitionReconcileTimerRef.current)
+      modeTransitionReconcileTimerRef.current = null
+    }
+    modeTransitionReconcileTimerRef.current = window.setTimeout(() => {
+      modeTransitionReconcileTimerRef.current = null
+      if (audioEngineModeRef.current !== 'chromium') {
+        modeTransitionInProgressRef.current = false
+        return
+      }
+      const currentAudio = audioRef.current
+      if (!currentAudio || expectedSrc !== focusedAudioSrc) {
+        modeTransitionInProgressRef.current = false
+        return
+      }
+
+      const progressed = currentAudio.currentTime > baselineTime + 0.05
+      if (audioPlaying && (!progressed || currentAudio.paused)) {
+        void resumeAudioAnalyser()
+        void currentAudio.play().catch(() => {
+          setAudioPlaying(false)
+        }).finally(() => {
+          modeTransitionInProgressRef.current = false
+        })
+        return
+      }
+      modeTransitionInProgressRef.current = false
+    }, 360)
+  }, [
+    audioDurationSec,
+    audioEngineMode,
+    audioMuted,
+    audioPlaying,
+    audioVolume,
+    focusedAudioSrc,
+    resumeAudioAnalyser,
+    suppressNativePlaybackEventsFor,
+  ])
+
+  useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode !== 'mpv' || typeof backendApi?.audioEngineLoadTrack !== 'function') {
+      return
+    }
+    if (!focusedAudioSrc || !focusedAudio?.absolutePath) {
+      if (typeof backendApi.audioEngineStopPlayback === 'function') {
+        void backendApi.audioEngineStopPlayback().catch(() => undefined)
+      }
+      return
+    }
+
+    const pendingStartSec = pendingMpvResumeStartSecRef.current
+    pendingMpvResumeStartSecRef.current = null
+    const cueStartSec = Math.max(0, focusedAudio?.cueStartSec ?? 0)
+    const cueEndSec = typeof focusedAudio?.cueEndSec === 'number' && focusedAudio.cueEndSec > cueStartSec
+      ? focusedAudio.cueEndSec
+      : null
+
+    const request: {
+      file_path: string
+      start_sec?: number
+      end_sec?: number
+    } = {
+      file_path:
+        focusedAudio.mediaLocator.kind === 'filesystem'
+          ? focusedAudio.mediaLocator.absolutePath
+          : focusedAudio.absolutePath,
+    }
+
+    if (typeof pendingStartSec === 'number' && Number.isFinite(pendingStartSec) && pendingStartSec > 0.05) {
+      request.start_sec = pendingStartSec
+    } else if (cueStartSec > 0.05) {
+      request.start_sec = cueStartSec
+    }
+
+    if (cueEndSec != null) {
+      request.end_sec = cueEndSec
+    }
+
+    void backendApi.audioEngineLoadTrack(request).catch(() => undefined)
+  }, [audioEngineMode, focusedAudio?.absolutePath, focusedAudio?.id, focusedAudio?.mediaLocator.kind, focusedAudioSrc])
+
+  useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode !== 'mpv' || typeof backendApi?.audioEngineSetPaused !== 'function') {
+      return
+    }
+    void backendApi.audioEngineSetPaused({
+      paused: !audioPlaying,
+    }).catch(() => undefined)
+  }, [audioEngineMode, audioPlaying])
+
+  useEffect(() => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode !== 'mpv' || typeof backendApi?.audioEngineSetVolume !== 'function') {
+      return
+    }
+    void backendApi.audioEngineSetVolume({
+      volume: clamp(audioMuted ? 0 : audioVolume, 0, 100),
+    }).catch(() => undefined)
+  }, [audioEngineMode, audioMuted, audioVolume])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -374,7 +607,11 @@ function MusicMainSection({
       return
     }
 
-    audio.muted = audioMuted
+    if (modeTransitionInProgressRef.current) {
+      return
+    }
+
+    audio.muted = audioMuted || audioEngineMode === 'mpv'
     audio.volume = clamp(audioVolume / 100, 0, 1)
 
     if (!focusedAudioSrc) {
@@ -391,7 +628,21 @@ function MusicMainSection({
     }
 
     audio.pause()
-  }, [audioMuted, audioPlaying, audioVolume, focusedAudioSrc])
+  }, [audioEngineMode, audioMuted, audioPlaying, audioVolume, focusedAudioSrc])
+
+  useEffect(() => {
+    return () => {
+      if (suppressNativePlaybackTimerRef.current != null) {
+        window.clearTimeout(suppressNativePlaybackTimerRef.current)
+        suppressNativePlaybackTimerRef.current = null
+      }
+      if (modeTransitionReconcileTimerRef.current != null) {
+        window.clearTimeout(modeTransitionReconcileTimerRef.current)
+        modeTransitionReconcileTimerRef.current = null
+      }
+      modeTransitionInProgressRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     setAudioTime(0)
@@ -485,8 +736,14 @@ function MusicMainSection({
     const nextTime = clamp(audioSeekDraftTime, 0, Math.max(0, audioDurationSec))
     setAudioTime(nextTime)
     const audio = audioRef.current
+    const cueStartSec = audioEngineMode === 'mpv' ? Math.max(0, focusedAudio?.cueStartSec ?? 0) : 0
+    const absoluteSeekTime = cueStartSec > 0 ? cueStartSec + nextTime : nextTime
     if (audio) {
-      audio.currentTime = nextTime
+      audio.currentTime = absoluteSeekTime
+    }
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineSeekTo === 'function') {
+      void backendApi.audioEngineSeekTo({ time_sec: absoluteSeekTime }).catch(() => undefined)
     }
     setAudioSeekDraftTime(null)
     lastAudioSeekPreviewAtRef.current = Date.now()
@@ -504,8 +761,14 @@ function MusicMainSection({
 
     setAudioTime(nextTime)
     const audio = audioRef.current
+    const cueStartSec = audioEngineMode === 'mpv' ? Math.max(0, focusedAudio?.cueStartSec ?? 0) : 0
+    const absoluteSeekTime = cueStartSec > 0 ? cueStartSec + nextTime : nextTime
     if (audio) {
-      audio.currentTime = nextTime
+      audio.currentTime = absoluteSeekTime
+    }
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineSeekTo === 'function') {
+      void backendApi.audioEngineSeekTo({ time_sec: absoluteSeekTime }).catch(() => undefined)
     }
     lastAudioSeekPreviewAtRef.current = now
     lastAudioSeekPreviewValueRef.current = nextTime
@@ -811,20 +1074,50 @@ function MusicMainSection({
         src={focusedAudioSrc ?? undefined}
         preload="metadata"
         onPlay={() => {
+          if (audioEngineMode === 'mpv' || suppressNativePlaybackEventsRef.current) {
+            return
+          }
           if (focusedAudioSrc) {
             setAudioPlaying(true)
           }
         }}
         onPause={() => {
+          if (audioEngineMode === 'mpv' || suppressNativePlaybackEventsRef.current) {
+            return
+          }
           if (focusedAudioSrc) {
             setAudioPlaying(false)
           }
         }}
         onTimeUpdate={() => {
           const currentTime = audioRef.current?.currentTime ?? 0
+          const cueStartSec = audioEngineMode === 'mpv' ? Math.max(0, focusedAudio?.cueStartSec ?? 0) : 0
+          if (cueStartSec > 0) {
+            const cueEndSec =
+              audioEngineMode === 'mpv' && typeof focusedAudio?.cueEndSec === 'number' && focusedAudio.cueEndSec > cueStartSec
+                ? focusedAudio.cueEndSec
+                : null
+            const relativeTime = Math.max(0, currentTime - cueStartSec)
+            const clampedRelativeTime = cueEndSec != null ? Math.min(relativeTime, cueEndSec - cueStartSec) : relativeTime
+            setAudioTime(clampedRelativeTime)
+            return
+          }
           setAudioTime(currentTime)
         }}
         onLoadedMetadata={() => {
+          const cueStartSec = audioEngineMode === 'mpv' ? Math.max(0, focusedAudio?.cueStartSec ?? 0) : 0
+          const cueEndSec =
+            audioEngineMode === 'mpv' && typeof focusedAudio?.cueEndSec === 'number' && focusedAudio.cueEndSec > cueStartSec
+              ? focusedAudio.cueEndSec
+              : null
+          if (cueStartSec > 0 || cueEndSec != null) {
+            if (audioRef.current) {
+              audioRef.current.currentTime = cueStartSec
+            }
+            setAudioDurationSec(Math.max(0, focusedAudio?.durationSec ?? (cueEndSec != null ? cueEndSec - cueStartSec : 0)))
+            setAudioTime(0)
+            return
+          }
           const duration = audioRef.current?.duration ?? 0
           if (Number.isFinite(duration) && duration > 0) {
             setAudioDurationSec(duration)

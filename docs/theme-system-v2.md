@@ -756,6 +756,7 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.settings-panel` | 设置主面板 |
 | `.settings-floating-mask` | 浮层对话框遮罩 |
 | `.settings-floating-panel` | 浮层对话框 |
+| `.mpx-overlay-merged-stack` | 弹出面板上下拼接容器 |
 | `.metadata-fetch-panel` | 元数据抓取面板 |
 | `.drop-overlay` | 拖拽导入遮罩 |
 | `.fullscreen-layer` | 全屏层 |
@@ -799,6 +800,29 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.metadata-edit-grid` | 编辑网格 |
 | `.meta-tabs` | 元数据页签 |
 | `.meta-tabs button` | 页签按钮 |
+| `.mpx-overlay-seamless-row` | 一体化输入行容器 |
+| `.mpx-overlay-seamless-cell` | 一体化输入行单元 |
+| `.mpx-overlay-seamless-btn` | 一体化输入行按钮态 |
+| `.mpx-overlay-result-list` | 弹出面板通用结果列表 |
+| `.mpx-overlay-field-row` | 弹窗参数行（标签+控件） |
+| `.mpx-overlay-list-surface` | 弹窗列表表面容器 |
+| `.mpx-overlay-scroll-list` | 弹窗可滚动列表容器 |
+| `.mpx-overlay-content-surface` | 弹窗通用内容表面容器 |
+| `.mpx-overlay-input` | 弹窗通用输入框样式 |
+| `.mpx-overlay-chip-list` | 弹窗标签列表容器 |
+| `.mpx-overlay-chip` | 弹窗标签项样式 |
+| `.mpx-overlay-chip-btn` | 弹窗胶囊按钮样式 |
+| `.mpx-overlay-description` | 弹窗主说明文本 |
+| `.mpx-overlay-caption` | 弹窗辅助说明文本 |
+| `.mpx-overlay-list-item-truncate` | 弹窗列表单行截断项 |
+| `.mpx-overlay-section` | 弹窗分组容器（纵向） |
+| `.mpx-overlay-actions` | 弹窗动作区容器 |
+| `.mpx-overlay-actions-start` | 弹窗动作区左对齐修饰符 |
+| `.mpx-overlay-actions-inline-end` | 弹窗内联动作区右对齐修饰符 |
+| `.mpx-overlay-inline-icon-actions` | 弹窗头部紧凑图标动作区 |
+| `.mpx-overlay-footer-actions` | 弹窗页脚动作区容器 |
+| `.mpx-overlay-footer-btn` | 弹窗页脚按钮样式 |
+| `.mpx-overlay-check-row` | 弹窗勾选确认行 |
 | `.playlist-item` | 播放列表项 |
 | `.manage-confirm-dialog` | 危险操作确认对话框 |
 | `.main-footer` | Main 底部信息栏 |
@@ -837,7 +861,8 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | Metadata 面板 | `--mpx-metadata-{bg,radius,border-width,border-style,shadow,backdrop-filter,transform,transition,padding}` |
 | Metadata 检索区 | `--mpx-input-*` + `--mpx-btn-secondary-*` + `--mpx-accent*` + `--mpx-text-*` |
 | Metadata AI 审核区 | `--mpx-status-{busy,warning,danger}-*` + `--mpx-accent*` + `--mpx-border-*` |
-| 元数据抓取面板 | `--mpx-bg-{app,panel,elevated}` + `--mpx-input-*` + `--mpx-btn-secondary-*` + `--mpx-shadow-panel` |
+| 元数据抓取面板 | `--mpx-overlay-surface-*` + `--mpx-overlay-soft-*` + `--mpx-input-*` + `--mpx-btn-secondary-*` |
+| 侧栏重命名弹窗 | `--mpx-overlay-surface-*` + `--mpx-overlay-soft-*` + `--mpx-text-*` + `--mpx-accent*` |
 | 危险确认对话框 | `--mpx-bg-elevated` + `--mpx-status-danger-*` + `--mpx-border-*` + `--mpx-shadow-panel` |
 | 分割条 | `--mpx-splitter-{width,track-bg,handle-bg,handle-hover-bg}` |
 | 缩略图卡片 | `--mpx-card-{radius,shadow,border-width}` + `--mpx-control-hover-{transform,shadow}` |

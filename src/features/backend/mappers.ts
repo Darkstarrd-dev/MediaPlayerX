@@ -241,6 +241,10 @@ export function mapAudioItemDto(audio: AudioItemDto): AudioItem {
     author: audio.author ?? '',
     trackTitle: audio.track_title?.trim().length ? audio.track_title : fallbackTrackTitle,
     seriesId: audio.series_id ?? '',
+    cueSourcePath: audio.cue_source_path,
+    cueTrackNo: audio.cue_track_no,
+    cueStartSec: audio.cue_start_sec,
+    cueEndSec: audio.cue_end_sec,
     mediaLocator: mapMediaLocatorDto(audio.media_locator),
   }
 }

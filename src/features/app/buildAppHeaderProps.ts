@@ -25,6 +25,9 @@ interface BuildAppHeaderPropsParams {
   electronNativeChromeEnabled: boolean
   themeParameterButtonVisible: boolean
   popoverDebugPinned: boolean
+  settingsOpen?: boolean
+  helpOpen?: boolean
+  themeParameterPanelOpen?: boolean
   interactionLocked?: boolean
   importMenuOpen: boolean
   taskStatusLabel: string
@@ -145,6 +148,9 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     onTooltipEnabledChange: params.onTooltipEnabledChange,
     onElectronNativeChromeEnabledChange: params.onElectronNativeChromeEnabledChange,
     themeParameterButtonVisible: params.themeParameterButtonVisible,
+    settingsOpen: params.settingsOpen ?? false,
+    helpOpen: params.helpOpen ?? false,
+    themeParameterPanelOpen: params.themeParameterPanelOpen ?? false,
     onThemeParameterButtonVisibleChange: params.onThemeParameterButtonVisibleChange,
     onOpenThemeParameter: params.onOpenThemeParameter,
     popoverDebugPinned: params.popoverDebugPinned,

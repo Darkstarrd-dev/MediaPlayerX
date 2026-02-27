@@ -65,6 +65,41 @@
   --mpx-btn-secondary-bg: #fffdf8;
   --mpx-btn-secondary-border: #c7b295;
   --mpx-btn-secondary-text: #3f3224;
+  --mpx-btn-template-base: #ecf0f3;
+  --mpx-btn-template-hover: #f8fafc;
+  --mpx-btn-template-active: #dce2e8;
+  --mpx-btn-template-pressed: #d6dee5;
+  --mpx-btn-template-border: #cbd5e1;
+  --mpx-btn-template-text-idle: #4a4a4a;
+  --mpx-btn-template-text-active: #334155;
+  --mpx-btn-template-text-pressed: #555555;
+  --mpx-btn-template-text-merged: #0f172a;
+  --mpx-btn-template-shadow-idle:
+    0 4px 6px rgba(0, 0, 0, 0.12),
+    inset 0 2px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+  --mpx-btn-template-shadow-hover:
+    0 6px 10px rgba(0, 0, 0, 0.15),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+  --mpx-btn-template-shadow-active:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+  --mpx-btn-template-shadow-pressed:
+    0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 4px 8px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 2px rgba(255, 255, 255, 0.7);
+  --mpx-btn-template-transform-hover: translateY(-1px);
+  --mpx-btn-template-transform-active: translateY(2px);
+  --mpx-btn-template-transform-pressed: translateY(1px);
+  --mpx-btn-template-danger-hover-bg: #fee2e2;
+  --mpx-btn-template-danger-hover-border: #fca5a5;
+  --mpx-btn-template-danger-hover-text: #dc2626;
+  --mpx-btn-template-danger-hover-shadow:
+    0 6px 10px rgba(220, 38, 38, 0.15),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(220, 38, 38, 0.15);
 
   --mpx-status-danger-bg: #fceeea;
   --mpx-status-danger-border: #dfae9f;

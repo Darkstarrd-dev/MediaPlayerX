@@ -123,6 +123,10 @@ export function toAudioItemDto(audio: AudioItem): AudioItemDto {
     author: audio.author ?? '',
     track_title: audio.trackTitle?.trim().length ? audio.trackTitle : fallbackTrackTitle,
     series_id: audio.seriesId ?? '',
+    cue_source_path: audio.cueSourcePath,
+    cue_track_no: audio.cueTrackNo,
+    cue_start_sec: audio.cueStartSec,
+    cue_end_sec: audio.cueEndSec,
     media_locator: toMediaLocatorDto(audio.mediaLocator),
   }
 }
@@ -185,6 +189,10 @@ export function toAudioItemViewModel(dto: AudioItemDto): AudioItem {
     author: dto.author ?? '',
     trackTitle: dto.track_title ?? '',
     seriesId: dto.series_id ?? '',
+    cueSourcePath: dto.cue_source_path,
+    cueTrackNo: dto.cue_track_no,
+    cueStartSec: dto.cue_start_sec,
+    cueEndSec: dto.cue_end_sec,
     mediaLocator: toMediaLocatorViewModel(dto.media_locator),
   }
 }

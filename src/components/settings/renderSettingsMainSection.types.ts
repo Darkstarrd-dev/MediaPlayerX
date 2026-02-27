@@ -1,6 +1,12 @@
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from "react";
 
-import type { ReadRuntimeInfoResponseDto } from "../../contracts/backend";
+import type {
+  AudioGaplessModeDto,
+  AudioEngineModeDto,
+  AudioOutputDeviceDto,
+  AudioReplayGainModeDto,
+  ReadRuntimeInfoResponseDto,
+} from "../../contracts/backend";
 import type { RepositoryMode } from "../../features/backend/repository";
 import type { RuntimeMediaCapabilityProbeResult } from "../../features/app/useRuntimeInfoDiagnostics";
 import type { SubtitleModelSelectionId } from "../../features/subtitles/fixedModel";
@@ -167,6 +173,20 @@ export interface RenderSettingsMainSectionParams {
   adReviewDeleteOverlayDebugActive: boolean;
   preferenceDebugLoading: boolean;
   preferenceDebugError: string | null;
+  audioEngineLoading: boolean;
+  audioEngineUpdating: boolean;
+  audioEngineError: string | null;
+  audioEngineMode: AudioEngineModeDto;
+  audioEngineDesiredMode: AudioEngineModeDto;
+  audioEngineUsingFallback: boolean;
+  audioEngineMpvAvailable: boolean;
+  audioEngineMpvBinPath: string | null;
+  audioEngineActiveDeviceId: string | null;
+  audioEngineExclusiveEnabled: boolean;
+  audioEngineGaplessMode: AudioGaplessModeDto;
+  audioEngineReplayGainMode: AudioReplayGainModeDto;
+  audioOutputDevicesLoading: boolean;
+  audioOutputDevices: AudioOutputDeviceDto[];
   preferenceDebugData: {
     reason: string;
     updatedAtMs: number | null;
@@ -307,6 +327,13 @@ export interface RenderSettingsMainSectionParams {
   onPickThumbnailCacheDirectoryPath: () => void;
   onRefreshRuntimeInfo: () => void;
   onRefreshPreferenceDebug: () => void;
+  onRefreshAudioEngineState: () => void;
+  onRefreshAudioOutputDevices: () => void;
+  onAudioEngineModeChange: (mode: AudioEngineModeDto) => void;
+  onAudioOutputDeviceChange: (deviceId: string) => void;
+  onAudioExclusiveChange: (enabled: boolean) => void;
+  onAudioGaplessModeChange: (mode: AudioGaplessModeDto) => void;
+  onAudioReplayGainModeChange: (mode: AudioReplayGainModeDto) => void;
   onOpenAdReviewDeleteOverlayDebug: () => void;
   onPerformancePresetChange: (preset: string) => void;
 }

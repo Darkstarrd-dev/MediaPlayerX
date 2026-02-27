@@ -29,16 +29,17 @@ export function SettingsShortcutCaptureDialog({
     >
       <section className="settings-floating-panel">
         <h3>{t("ui.settings.shortcutCaptureTitle")}</h3>
-        <p className="settings-placeholder">{t("ui.settings.shortcutCaptureHint")}</p>
-        <p className="binding-capture-preview">
+        <p className="mpx-overlay-caption">{t("ui.settings.shortcutCaptureHint")}</p>
+        <p className="mpx-overlay-content-surface mpx-overlay-mono-preview">
           {capturedCombo || t("ui.settings.shortcutCaptureWaiting")}
         </p>
-        <div className="binding-mouse-presets" data-capture-ignore="true">
-          <span>{t("ui.settings.shortcutMousePresets")}</span>
-          <div className="binding-mouse-preset-list">
+        <div className="mpx-overlay-content-surface mpx-overlay-padded-stack" data-capture-ignore="true">
+          <span className="mpx-overlay-caption">{t("ui.settings.shortcutMousePresets")}</span>
+          <div className="mpx-overlay-chip-list">
             {mouseCapturePresets.map((preset) => (
               <button
                 key={preset.combo}
+                className="mpx-overlay-chip-btn"
                 type="button"
                 data-capture-ignore="true"
                 onClick={() => onPickPreset(preset.combo)}
@@ -48,7 +49,7 @@ export function SettingsShortcutCaptureDialog({
             ))}
           </div>
         </div>
-        <div className="settings-floating-actions">
+        <div className="mpx-overlay-actions">
           <button
             type="button"
             data-capture-ignore="true"

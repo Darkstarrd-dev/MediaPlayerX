@@ -1,12 +1,13 @@
 import type { useI18n } from "../i18n/useI18n";
-import type { ImageMainSectionProps } from "./ImageMainSection.types";
+import type { ManageReviewModeDto } from "../contracts/backend";
 
 type TranslateFn = ReturnType<typeof useI18n>["t"];
 
 interface AdReviewStartDialogProps {
   t: TranslateFn;
   open: boolean;
-  manageReviewMode: NonNullable<ImageMainSectionProps["manageReviewMode"]>;
+  manageReviewMode: ManageReviewModeDto;
+  slot?: "fg-main-toolbar-image-ad-review-start-panel" | "fg-meta-main-ad-review-start-panel";
   onClose: () => void;
   onStartWithOption: (skipReviewedNodes: boolean) => void;
 }
@@ -15,6 +16,7 @@ export function AdReviewStartDialog({
   t,
   open,
   manageReviewMode,
+  slot = "fg-main-toolbar-image-ad-review-start-panel",
   onClose,
   onStartWithOption,
 }: AdReviewStartDialogProps) {
@@ -25,7 +27,7 @@ export function AdReviewStartDialog({
   return (
     <div
       className="manage-ad-review-start-mask"
-      data-slot="fg-main-toolbar-image-ad-review-start-panel"
+      data-slot={slot}
       role="dialog"
       aria-modal="true"
       aria-label={t("a11y.manage.startModeDialog")}
@@ -44,10 +46,10 @@ export function AdReviewStartDialog({
             ? t("ui.manage.startDialogTitleCover")
             : t("ui.manage.startDialogTitle")}
         </h3>
-        <p className="manage-ad-review-start-description">
+        <p className="mpx-overlay-caption">
           {t("ui.manage.startDialogDescription")}
         </p>
-        <div className="settings-floating-actions">
+        <div className="mpx-overlay-actions">
           <button type="button" onClick={() => onStartWithOption(true)}>
             {t("ui.manage.startSkipScanned")}
           </button>

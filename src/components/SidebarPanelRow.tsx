@@ -130,10 +130,13 @@ export function SidebarPanelRow({
     isMediaNodeForMode(mode, child),
   ).length;
   const directAudioCount = node.directAudioCount ?? 0;
+  const descendantAudioCount = Math.max(0, node.descendantNodeCount ?? 0);
   const musicCountIsTrack = directAudioCount > 0;
   const musicCountValue = musicCountIsTrack
     ? directAudioCount
-    : directMediaChildCount;
+    : descendantAudioCount > 0
+      ? descendantAudioCount
+      : directMediaChildCount;
   const musicCountLabel = musicCountIsTrack
     ? t("a11y.sidebar.musicTrackCount", { count: musicCountValue })
     : t("a11y.sidebar.musicFolderCount", { count: musicCountValue });

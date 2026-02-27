@@ -17,11 +17,11 @@ function compactSidebarNode(
   if (!isRoot || shouldCompactCurrentRoot) {
     while (options.shouldCompressFolderNode(cursor) && cursor.children.length === 1) {
       const child = cursor.children[0]
-      if (!options.shouldCompressFolderNode(child)) {
-        break
-      }
       mergedLabels.push(child.label)
       cursor = child
+      if (!options.shouldCompressFolderNode(cursor)) {
+        break
+      }
     }
   }
 

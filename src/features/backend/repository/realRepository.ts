@@ -36,6 +36,18 @@ import {
   readSubtitlePersistenceWindowRequestSchema,
   readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readAudioEngineStateResponseSchema,
+  setAudioEngineModeRequestSchema,
+  setAudioEngineModeResponseSchema,
+  listAudioOutputDevicesResponseSchema,
+  setAudioOutputDeviceRequestSchema,
+  setAudioOutputDeviceResponseSchema,
+  setAudioExclusiveRequestSchema,
+  setAudioExclusiveResponseSchema,
+  setAudioGaplessModeRequestSchema,
+  setAudioGaplessModeResponseSchema,
+  setAudioReplayGainModeRequestSchema,
+  setAudioReplayGainModeResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
   listVideoSubtitlesResponseSchema,
@@ -117,6 +129,18 @@ import {
   type ReadSubtitlePersistenceWindowRequestDto,
   type ReadSubtitlePersistenceWindowResponseDto,
   type ReadRuntimeCapabilitiesResponseDto,
+  type ReadAudioEngineStateResponseDto,
+  type SetAudioEngineModeRequestDto,
+  type SetAudioEngineModeResponseDto,
+  type ListAudioOutputDevicesResponseDto,
+  type SetAudioOutputDeviceRequestDto,
+  type SetAudioOutputDeviceResponseDto,
+  type SetAudioExclusiveRequestDto,
+  type SetAudioExclusiveResponseDto,
+  type SetAudioGaplessModeRequestDto,
+  type SetAudioGaplessModeResponseDto,
+  type SetAudioReplayGainModeRequestDto,
+  type SetAudioReplayGainModeResponseDto,
   type MediaAccessAuditResponseDto,
   type LibrarySnapshotDto,
   type LibrarySnapshotLiteDto,
@@ -699,6 +723,75 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(api.readRuntimeCapabilities(), options)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  }
+
+  async readAudioEngineState(options?: RepositoryRequestOptions): Promise<ReadAudioEngineStateResponseDto> {
+    const readAudioEngineState = requireBackendMethod('readAudioEngineState')
+
+    const response = await withAbort(readAudioEngineState(), options)
+    return readAudioEngineStateResponseSchema.parse(response)
+  }
+
+  async setAudioEngineMode(
+    request: SetAudioEngineModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioEngineModeResponseDto> {
+    const setAudioEngineMode = requireBackendMethod('setAudioEngineMode')
+    const parsedRequest = setAudioEngineModeRequestSchema.parse(request)
+
+    const response = await withAbort(setAudioEngineMode(parsedRequest), options)
+    return setAudioEngineModeResponseSchema.parse(response)
+  }
+
+  async listAudioOutputDevices(options?: RepositoryRequestOptions): Promise<ListAudioOutputDevicesResponseDto> {
+    const listAudioOutputDevices = requireBackendMethod('listAudioOutputDevices')
+
+    const response = await withAbort(listAudioOutputDevices(), options)
+    return listAudioOutputDevicesResponseSchema.parse(response)
+  }
+
+  async setAudioOutputDevice(
+    request: SetAudioOutputDeviceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioOutputDeviceResponseDto> {
+    const setAudioOutputDevice = requireBackendMethod('setAudioOutputDevice')
+    const parsedRequest = setAudioOutputDeviceRequestSchema.parse(request)
+
+    const response = await withAbort(setAudioOutputDevice(parsedRequest), options)
+    return setAudioOutputDeviceResponseSchema.parse(response)
+  }
+
+  async setAudioExclusive(
+    request: SetAudioExclusiveRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioExclusiveResponseDto> {
+    const setAudioExclusive = requireBackendMethod('setAudioExclusive')
+    const parsedRequest = setAudioExclusiveRequestSchema.parse(request)
+
+    const response = await withAbort(setAudioExclusive(parsedRequest), options)
+    return setAudioExclusiveResponseSchema.parse(response)
+  }
+
+  async setAudioGaplessMode(
+    request: SetAudioGaplessModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioGaplessModeResponseDto> {
+    const setAudioGaplessMode = requireBackendMethod('setAudioGaplessMode')
+    const parsedRequest = setAudioGaplessModeRequestSchema.parse(request)
+
+    const response = await withAbort(setAudioGaplessMode(parsedRequest), options)
+    return setAudioGaplessModeResponseSchema.parse(response)
+  }
+
+  async setAudioReplayGainMode(
+    request: SetAudioReplayGainModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioReplayGainModeResponseDto> {
+    const setAudioReplayGainMode = requireBackendMethod('setAudioReplayGainMode')
+    const parsedRequest = setAudioReplayGainModeRequestSchema.parse(request)
+
+    const response = await withAbort(setAudioReplayGainMode(parsedRequest), options)
+    return setAudioReplayGainModeResponseSchema.parse(response)
   }
 
   async readSubtitleEngineStatus(options?: RepositoryRequestOptions): Promise<ReadSubtitleEngineStatusResponseDto> {

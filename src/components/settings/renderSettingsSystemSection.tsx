@@ -1,6 +1,11 @@
 import type { JSX } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
+import type {
+  AudioEngineModeDto,
+  AudioGaplessModeDto,
+  AudioReplayGainModeDto,
+} from "../../contracts/backend";
 import type { RenderSettingsMainSectionParams } from "./renderSettingsMainSection.types";
 
 interface RenderSettingsSystemSectionParams {
@@ -18,6 +23,51 @@ interface RenderSettingsSystemSectionParams {
   preferenceDebugData: RenderSettingsMainSectionParams["preferenceDebugData"];
   onRefreshRuntimeInfo: RenderSettingsMainSectionParams["onRefreshRuntimeInfo"];
   onRefreshPreferenceDebug: RenderSettingsMainSectionParams["onRefreshPreferenceDebug"];
+  audioEngineLoading: RenderSettingsMainSectionParams["audioEngineLoading"];
+  audioEngineUpdating: RenderSettingsMainSectionParams["audioEngineUpdating"];
+  audioEngineError: RenderSettingsMainSectionParams["audioEngineError"];
+  audioEngineMode: RenderSettingsMainSectionParams["audioEngineMode"];
+  audioEngineDesiredMode: RenderSettingsMainSectionParams["audioEngineDesiredMode"];
+  audioEngineUsingFallback: RenderSettingsMainSectionParams["audioEngineUsingFallback"];
+  audioEngineMpvAvailable: RenderSettingsMainSectionParams["audioEngineMpvAvailable"];
+  audioEngineMpvBinPath: RenderSettingsMainSectionParams["audioEngineMpvBinPath"];
+  audioEngineActiveDeviceId: RenderSettingsMainSectionParams["audioEngineActiveDeviceId"];
+  audioEngineExclusiveEnabled: RenderSettingsMainSectionParams["audioEngineExclusiveEnabled"];
+  audioEngineGaplessMode: RenderSettingsMainSectionParams["audioEngineGaplessMode"];
+  audioEngineReplayGainMode: RenderSettingsMainSectionParams["audioEngineReplayGainMode"];
+  audioOutputDevicesLoading: RenderSettingsMainSectionParams["audioOutputDevicesLoading"];
+  audioOutputDevices: RenderSettingsMainSectionParams["audioOutputDevices"];
+  onRefreshAudioEngineState: RenderSettingsMainSectionParams["onRefreshAudioEngineState"];
+  onRefreshAudioOutputDevices: RenderSettingsMainSectionParams["onRefreshAudioOutputDevices"];
+  onAudioEngineModeChange: RenderSettingsMainSectionParams["onAudioEngineModeChange"];
+  onAudioOutputDeviceChange: RenderSettingsMainSectionParams["onAudioOutputDeviceChange"];
+  onAudioExclusiveChange: RenderSettingsMainSectionParams["onAudioExclusiveChange"];
+  onAudioGaplessModeChange: RenderSettingsMainSectionParams["onAudioGaplessModeChange"];
+  onAudioReplayGainModeChange: RenderSettingsMainSectionParams["onAudioReplayGainModeChange"];
+}
+
+function resolveModeLabel(mode: AudioEngineModeDto): string {
+  return mode === "mpv" ? "增强模式 (mpv)" : "兼容模式 (chromium)";
+}
+
+function resolveGaplessLabel(mode: AudioGaplessModeDto): string {
+  if (mode === "yes") {
+    return "强无缝 (yes)";
+  }
+  if (mode === "no") {
+    return "关闭 (no)";
+  }
+  return "平衡 (weak)";
+}
+
+function resolveReplayGainLabel(mode: AudioReplayGainModeDto): string {
+  if (mode === "track") {
+    return "按曲目 (track)";
+  }
+  if (mode === "album") {
+    return "按专辑 (album)";
+  }
+  return "关闭 (off)";
 }
 
 function formatDateTimeOrDash(timestamp: number | null): string {
@@ -46,6 +96,130 @@ export function renderSettingsSystemSection(
 
   return (
     <div className="settings-block">
+      <fieldset className="settings-subsection">
+        <legend>音频增强模式</legend>
+        <p className="settings-placeholder">
+          默认保持兼容模式；切换到增强模式后使用 mpv 输出链路。
+        </p>
+        <div className="settings-runtime-grid">
+          <span>当前模式</span>
+          <code>{resolveModeLabel(params.audioEngineMode)}</code>
+          <span>目标模式</span>
+          <code>{resolveModeLabel(params.audioEngineDesiredMode)}</code>
+          <span>mpv 可用</span>
+          <code>{String(params.audioEngineMpvAvailable)}</code>
+          <span>回退状态</span>
+          <code>{String(params.audioEngineUsingFallback)}</code>
+          <span>mpv 路径</span>
+          <code>{params.audioEngineMpvBinPath ?? "-"}</code>
+          <span>Gapless</span>
+          <code>{resolveGaplessLabel(params.audioEngineGaplessMode)}</code>
+          <span>ReplayGain</span>
+          <code>{resolveReplayGainLabel(params.audioEngineReplayGainMode)}</code>
+        </div>
+        <div className="settings-runtime-actions">
+          <button
+            className="settings-icon-btn main-icon-square-btn"
+            type="button"
+            disabled={params.audioEngineLoading || params.audioEngineUpdating}
+            aria-label="刷新音频引擎状态"
+            data-tooltip-label="刷新音频引擎状态"
+            onClick={params.onRefreshAudioEngineState}
+          >
+            <MainUiIcon name="refresh" />
+          </button>
+          <button
+            className="settings-icon-btn main-icon-square-btn"
+            type="button"
+            disabled={params.audioOutputDevicesLoading || params.audioEngineUpdating}
+            aria-label="刷新输出设备列表"
+            data-tooltip-label="刷新输出设备列表"
+            onClick={params.onRefreshAudioOutputDevices}
+          >
+            <MainUiIcon name="refresh" />
+          </button>
+        </div>
+        <label>
+          音频模式
+          <select
+            value={params.audioEngineDesiredMode}
+            disabled={params.audioEngineUpdating || !params.audioEngineMpvAvailable}
+            onChange={(event) =>
+              params.onAudioEngineModeChange(event.target.value as AudioEngineModeDto)
+            }
+          >
+            <option value="chromium">兼容模式 (chromium)</option>
+            <option value="mpv">增强模式 (mpv)</option>
+          </select>
+        </label>
+        <label>
+          输出设备
+          <select
+            value={params.audioEngineActiveDeviceId ?? "auto"}
+            disabled={
+              params.audioEngineUpdating ||
+              params.audioEngineDesiredMode !== "mpv" ||
+              params.audioOutputDevices.length <= 0
+            }
+            onChange={(event) => {
+              params.onAudioOutputDeviceChange(event.target.value);
+            }}
+          >
+            {params.audioOutputDevices.length > 0 ? (
+              params.audioOutputDevices.map((device) => (
+                <option key={device.id} value={device.id}>
+                  {device.label}
+                </option>
+              ))
+            ) : (
+              <option value="auto">自动选择</option>
+            )}
+          </select>
+        </label>
+        <label className="settings-toggle-row">
+          <input
+            type="checkbox"
+            checked={params.audioEngineExclusiveEnabled}
+            disabled={params.audioEngineUpdating || params.audioEngineDesiredMode !== "mpv"}
+            onChange={(event) => params.onAudioExclusiveChange(event.target.checked)}
+          />
+          <span>独占输出 (WASAPI Exclusive)</span>
+        </label>
+        <label>
+          Gapless
+          <select
+            value={params.audioEngineGaplessMode}
+            disabled={params.audioEngineUpdating || params.audioEngineDesiredMode !== "mpv"}
+            onChange={(event) =>
+              params.onAudioGaplessModeChange(event.target.value as AudioGaplessModeDto)
+            }
+          >
+            <option value="weak">平衡 (weak)</option>
+            <option value="yes">强无缝 (yes)</option>
+            <option value="no">关闭 (no)</option>
+          </select>
+        </label>
+        <label>
+          ReplayGain
+          <select
+            value={params.audioEngineReplayGainMode}
+            disabled={params.audioEngineUpdating || params.audioEngineDesiredMode !== "mpv"}
+            onChange={(event) =>
+              params.onAudioReplayGainModeChange(
+                event.target.value as AudioReplayGainModeDto,
+              )
+            }
+          >
+            <option value="off">关闭 (off)</option>
+            <option value="track">按曲目 (track)</option>
+            <option value="album">按专辑 (album)</option>
+          </select>
+        </label>
+        {params.audioEngineError ? (
+          <p className="settings-danger-text">{params.audioEngineError}</p>
+        ) : null}
+      </fieldset>
+
       <fieldset className="settings-subsection">
         <legend>{params.t("ui.settings.runtimeDiagnosticsLegend")}</legend>
         <p className="settings-placeholder">

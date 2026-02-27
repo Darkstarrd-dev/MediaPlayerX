@@ -303,8 +303,75 @@ export function mapVideoRowToVideoItem(row: VideoRow): VideoItemDto {
 }
 
 export function mapAudioRowToAudioItem(row: AudioRow): AudioItemDto {
+  const parseCueMetadata = (absolutePath: string): {
+    cueSourcePath?: string;
+    cueTrackNo?: number;
+    cueStartSec?: number;
+    cueEndSec?: number | null;
+  } | null => {
+    if (!absolutePath.startsWith("cue://")) {
+      return null;
+    }
+
+    const decodeSafely = (value: string | null): string | null => {
+      if (!value || value.trim().length === 0) {
+        return null;
+      }
+      try {
+        return decodeURIComponent(value);
+      } catch {
+        return value;
+      }
+    };
+
+    let cueSourcePath: string | null = null;
+    let trackNo: number | null = null;
+    let startSec: number | null = null;
+    let endSec: number | null = null;
+
+    try {
+      const parsed = new URL(absolutePath);
+      cueSourcePath = decodeSafely(`${parsed.host}${parsed.pathname ?? ""}`.replace(/^\/+/, ""));
+      const rawTrackNo = parsed.searchParams.get("track");
+      const rawStartSec = parsed.searchParams.get("start");
+      const rawEndSec = parsed.searchParams.get("end");
+
+      const parsedTrackNo = rawTrackNo ? Number(rawTrackNo) : Number.NaN;
+      if (Number.isFinite(parsedTrackNo) && parsedTrackNo > 0) {
+        trackNo = Math.round(parsedTrackNo);
+      }
+
+      const parsedStartSec = rawStartSec ? Number(rawStartSec) : Number.NaN;
+      if (Number.isFinite(parsedStartSec) && parsedStartSec >= 0) {
+        startSec = parsedStartSec;
+      }
+
+      const parsedEndSec = rawEndSec ? Number(rawEndSec) : Number.NaN;
+      if (Number.isFinite(parsedEndSec) && parsedEndSec >= 0) {
+        endSec = parsedEndSec;
+      }
+    } catch {
+      return null;
+    }
+
+    return {
+      cueSourcePath: cueSourcePath ?? undefined,
+      cueTrackNo: trackNo ?? undefined,
+      cueStartSec: startSec ?? undefined,
+      cueEndSec: endSec,
+    };
+  };
+
   const defaultTrackTitle = row.file_name.replace(/\.[^./\\]+$/, "");
   const trackTitle = row.metadata_track_title ?? row.track_title ?? defaultTrackTitle;
+  const mediaLocator = parseJson<MediaLocatorDto>(row.media_locator_json, {
+    kind: "filesystem",
+    absolute_path: row.absolute_path,
+    extension: path.extname(row.absolute_path).toLowerCase() || ".mp3",
+    media_type: "audio",
+    mime_type: "audio/mpeg",
+  });
+  const cueMetadata = parseCueMetadata(row.absolute_path);
   return {
     id: row.id,
     file_name: row.file_name,
@@ -316,12 +383,10 @@ export function mapAudioRowToAudioItem(row: AudioRow): AudioItemDto {
     author: row.metadata_author ?? row.author ?? "",
     track_title: trackTitle.trim().length > 0 ? trackTitle : defaultTrackTitle,
     series_id: row.metadata_series_id ?? row.series_id ?? "",
-    media_locator: parseJson<MediaLocatorDto>(row.media_locator_json, {
-      kind: "filesystem",
-      absolute_path: row.absolute_path,
-      extension: path.extname(row.absolute_path).toLowerCase() || ".mp3",
-      media_type: "audio",
-      mime_type: "audio/mpeg",
-    }),
+    cue_source_path: cueMetadata?.cueSourcePath,
+    cue_track_no: cueMetadata?.cueTrackNo,
+    cue_start_sec: cueMetadata?.cueStartSec,
+    cue_end_sec: cueMetadata?.cueEndSec,
+    media_locator: mediaLocator,
   };
 }

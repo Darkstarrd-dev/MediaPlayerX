@@ -23,6 +23,7 @@ async function inspectImportPath(
     imageExtensions: ReadonlySet<string>
     videoExtensions: ReadonlySet<string>
     audioExtensions: ReadonlySet<string>
+    cueExtensions: ReadonlySet<string>
     archiveExtensions: ReadonlySet<string>
     musicImportMode: boolean
   },
@@ -59,8 +60,10 @@ async function inspectImportPath(
 
   const extension = path.extname(absolutePath).toLowerCase()
   if (options.musicImportMode) {
-    if (!options.audioExtensions.has(extension)) {
-      return { ok: false, reason: `音乐导入仅支持音频文件: ${absolutePath}` }
+    const isAudioFile = options.audioExtensions.has(extension)
+    const isCueFile = options.cueExtensions.has(extension)
+    if (!isAudioFile && !isCueFile) {
+      return { ok: false, reason: `音乐导入仅支持音频或 CUE 文件: ${absolutePath}` }
     }
 
     return {
@@ -101,6 +104,7 @@ interface ExecuteImportTaskParams {
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
+  cueExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   musicImportMode: boolean
   database: MediaLibraryDatabase
@@ -203,6 +207,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
       imageExtensions: params.imageExtensions,
       videoExtensions: params.videoExtensions,
       audioExtensions: params.audioExtensions,
+      cueExtensions: params.cueExtensions,
       archiveExtensions: params.archiveExtensions,
       musicImportMode: params.musicImportMode,
     })

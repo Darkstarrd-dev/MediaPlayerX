@@ -24,6 +24,17 @@
   - runway/range 仅改 `soft-skeuomorphic.runway.css`
   - image-grid/manage 仅改 `soft-skeuomorphic.image-grid.css`
   - 通用组件仅改 `soft-skeuomorphic.components.css`
+- 弹出面板内部结构优先复用内容层原语，避免重复写专有块：
+  - `.mpx-overlay-merged-stack`
+  - `.mpx-overlay-seamless-row` / `.mpx-overlay-seamless-cell`
+  - `.mpx-overlay-result-list` / `.mpx-overlay-scroll-list`
+  - `.mpx-overlay-field-row` / `.mpx-overlay-list-surface`
+  - `.mpx-overlay-content-surface`
+  - `.mpx-overlay-input` / `.mpx-overlay-chip-list` / `.mpx-overlay-chip` / `.mpx-overlay-chip-btn`
+  - `.mpx-overlay-description` / `.mpx-overlay-caption` / `.mpx-overlay-list-item-truncate`
+  - `.mpx-overlay-section` / `.mpx-overlay-actions` / `.mpx-overlay-actions-start` / `.mpx-overlay-actions-inline-end`
+  - `.mpx-overlay-inline-icon-actions` / `.mpx-overlay-footer-actions` / `.mpx-overlay-footer-btn`
+  - `.mpx-overlay-check-row`
 - 仅读取并使用下列文件/目录，避免全仓库扫描：
   - src/features/theme/themeRegistry.ts
   - src/styles/themes/contract.css

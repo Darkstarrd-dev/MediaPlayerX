@@ -1,6 +1,6 @@
 import type { OpenDialogOptions } from 'electron'
 
-const AUDIO_FILE_FILTER_EXTENSIONS = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'opus', 'aac']
+const AUDIO_FILE_FILTER_EXTENSIONS = ['mp3', 'flac', 'wav', 'ogg', 'm4a', 'opus', 'aac', 'cue']
 const GENERIC_MEDIA_FILE_FILTER_EXTENSIONS = [
   'jpg',
   'jpeg',

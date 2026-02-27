@@ -522,16 +522,6 @@
   margin-bottom: 10px;
 }
 
-.meta-tabs button {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
-  border-radius: var(--mpx-control-radius);
-  min-height: var(--mpx-control-height);
-  background: var(--mpx-btn-secondary-bg);
-  color: var(--mpx-btn-secondary-text);
-  font-weight: var(--mpx-control-font-weight);
-  padding: 0 var(--mpx-control-padding-x);
-}
-
 .metadata-playlist-save-row {
   display: inline-flex;
   align-items: center;
@@ -961,12 +951,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.meta-tabs button.is-active {
-  background: var(--mpx-btn-primary-bg);
-  border-color: var(--mpx-btn-primary-bg);
-  color: var(--mpx-btn-primary-text);
 }
 
 .metadata-playlist-row {

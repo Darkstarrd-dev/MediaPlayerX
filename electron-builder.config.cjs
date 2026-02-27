@@ -2,6 +2,17 @@ const enableWindowsSigning = ['1', 'true', 'yes'].includes(String(process.env.MP
 const fs = require('node:fs')
 const path = require('node:path')
 
+const bundledMpvDir = (() => {
+  const raw = String(process.env.MPX_MPV_DIR ?? '').trim()
+  if (raw) {
+    const resolved = path.resolve(raw)
+    return fs.existsSync(resolved) ? resolved : null
+  }
+
+  const defaultDir = path.resolve('vendor', 'mpv', 'win32-x64')
+  return fs.existsSync(defaultDir) ? defaultDir : null
+})()
+
 const offlineSubtitleComponentDir = (() => {
   const raw = String(process.env.MPX_OFFLINE_SUBTITLE_COMPONENT_DIR ?? '').trim()
   if (!raw) {
@@ -11,6 +22,24 @@ const offlineSubtitleComponentDir = (() => {
   const resolved = path.resolve(raw)
   return fs.existsSync(resolved) ? resolved : null
 })()
+
+const extraResources = []
+
+if (bundledMpvDir) {
+  extraResources.push({
+    from: bundledMpvDir,
+    to: 'vendor/mpv',
+    filter: ['**/*'],
+  })
+}
+
+if (offlineSubtitleComponentDir) {
+  extraResources.push({
+    from: offlineSubtitleComponentDir,
+    to: 'optional/offline-subtitles',
+    filter: ['**/*'],
+  })
+}
 
 module.exports = {
   appId: 'com.darkstarrd.mediaplayerx',
@@ -41,15 +70,7 @@ module.exports = {
     '!node_modules/sherpa-onnx-node/**',
     '!node_modules/sherpa-onnx-*/**',
   ],
-  extraResources: offlineSubtitleComponentDir
-    ? [
-        {
-          from: offlineSubtitleComponentDir,
-          to: 'optional/offline-subtitles',
-          filter: ['**/*'],
-        },
-      ]
-    : [],
+  extraResources,
   asarUnpack: ['**/*.node'],
   win: {
     icon: 'build/icons/icon.ico',

@@ -88,7 +88,7 @@ export function ImageConvertSettingsPanel({
         onMouseDown={onPanelMouseDown}
       >
         <h3 className="main-toolbar-image-convert-title">RS 转换设置</h3>
-        <label className="main-toolbar-image-convert-row">
+        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>Scale {imageConvertScale.toFixed(1)}</span>
           <input
             type="range"
@@ -100,7 +100,7 @@ export function ImageConvertSettingsPanel({
             onChange={(event) => onScaleChange(Number(event.target.value))}
           />
         </label>
-        <label className="main-toolbar-image-convert-row">
+        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>Longest Edge</span>
           <input
             type="number"
@@ -126,7 +126,7 @@ export function ImageConvertSettingsPanel({
             }}
           />
         </label>
-        <label className="main-toolbar-image-convert-row">
+        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>Format</span>
           <select
             value={imageConvertFormat}
@@ -143,7 +143,7 @@ export function ImageConvertSettingsPanel({
             <option value="avif">Avif</option>
           </select>
         </label>
-        <label className="main-toolbar-image-convert-row">
+        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>Quality {imageConvertQuality}</span>
           <input
             type="range"
@@ -155,7 +155,7 @@ export function ImageConvertSettingsPanel({
             onChange={(event) => onQualityChange(Number(event.target.value))}
           />
         </label>
-        <label className="main-toolbar-image-convert-row">
+        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>Threads {imageConvertConcurrency}</span>
           <input
             type="range"
@@ -174,7 +174,7 @@ export function ImageConvertSettingsPanel({
             {`RS ${imageConvertTaskStatus} ${Math.round(imageConvertTaskProgress * 100)}%${imageConvertTaskMessage ? ` | ${imageConvertTaskMessage}` : ""}`}
           </p>
         ) : null}
-        <div className="settings-floating-actions manage-group-actions">
+        <div className="mpx-overlay-actions mpx-overlay-actions-start">
           <button
             type="button"
             disabled={imageConvertExecuting}

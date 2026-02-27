@@ -131,6 +131,10 @@ export interface AudioItem {
   author: string
   trackTitle: string
   seriesId?: string
+  cueSourcePath?: string
+  cueTrackNo?: number
+  cueStartSec?: number
+  cueEndSec?: number | null
   mediaLocator: MediaLocator
 }
 

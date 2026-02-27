@@ -45,7 +45,7 @@ function GroupNameDialog({
       <section className="settings-floating-panel manage-group-dialog" role="document" style={{ width: `min(92vw, max(270px, ${dialogWidthCh}))` }}>
         <input
           id="manage-group-name-input"
-          className="manage-group-name-input"
+          className="mpx-overlay-input mpx-overlay-input-compact"
           aria-label={inputLabel}
           type="text"
           value={value}
@@ -67,7 +67,7 @@ function GroupNameDialog({
           }}
           autoFocus
         />
-        <div className="settings-floating-actions manage-group-actions">
+        <div className="mpx-overlay-actions mpx-overlay-actions-start">
           <button className="feature-action-btn main-icon-square-btn" type="button" onClick={onGroup} disabled={disabledGroup}>
             {groupLabel}
           </button>

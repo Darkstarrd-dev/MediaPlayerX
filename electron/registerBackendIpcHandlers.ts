@@ -50,6 +50,23 @@ import {
   readSubtitlePersistenceWindowRequestSchema,
   readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readAudioEngineStateResponseSchema,
+  setAudioEngineModeRequestSchema,
+  setAudioEngineModeResponseSchema,
+  listAudioOutputDevicesResponseSchema,
+  setAudioOutputDeviceRequestSchema,
+  setAudioOutputDeviceResponseSchema,
+  setAudioExclusiveRequestSchema,
+  setAudioExclusiveResponseSchema,
+  setAudioGaplessModeRequestSchema,
+  setAudioGaplessModeResponseSchema,
+  setAudioReplayGainModeRequestSchema,
+  setAudioReplayGainModeResponseSchema,
+  audioEngineActionResponseSchema,
+  audioEngineLoadTrackRequestSchema,
+  audioEngineSetPausedRequestSchema,
+  audioEngineSeekToRequestSchema,
+  audioEngineSetVolumeRequestSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
   setRuntimeStoragePathsResponseSchema,
@@ -167,6 +184,7 @@ import {
 } from "./externalUrlPolicy";
 import { SubtitleSessionManager } from "./subtitles/subtitleSession";
 import { resolveBenchMode } from "./mainBenchRuntime";
+import { AudioEngineController } from "./services/audio-engine/audioEngineController";
 
 interface IpcBreakdownEntry {
   timestamp: string;
@@ -235,6 +253,14 @@ export function registerBackendIpcHandlers(): void {
   let service: FileSystemMediaReadService | null = null;
   const metadataScraper = new MetadataScraperService({
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
+  });
+  const audioEngineController = new AudioEngineController({
+    projectRoot: process.cwd(),
+  });
+  app.once("before-quit", () => {
+    void audioEngineController.setMode("chromium").catch(() => {
+      // ignore audio engine cleanup failures during quit
+    });
   });
   const taskResourceGovernor = new TaskResourceGovernor({
     cpuTokenLimit: GLOBAL_CPU_TOKEN_LIMIT,
@@ -664,8 +690,9 @@ export function registerBackendIpcHandlers(): void {
     BACKEND_CHANNELS.pickImportPaths,
     async (_event, payload: unknown) => {
       const request = pickImportPathsRequestSchema.parse(payload);
+      const targetMode = request.target_mode ?? "image";
       const result = await dialog.showOpenDialog(
-        buildImportPathsDialogOptions(request.mode, request.target_mode),
+        buildImportPathsDialogOptions(request.mode, targetMode),
       );
 
       return pickImportPathsResponseSchema.parse({
@@ -949,6 +976,188 @@ export function registerBackendIpcHandlers(): void {
           content_type: 'video/webm; codecs="vp09.00.41.08"',
         },
       ],
+    });
+  });
+
+  ipcMain.handle(BACKEND_CHANNELS.readAudioEngineState, async () => {
+    const snapshot = audioEngineController.readState();
+    return readAudioEngineStateResponseSchema.parse({
+      mode: snapshot.mode,
+      desired_mode: snapshot.desiredMode,
+      mpv_available: snapshot.mpvAvailable,
+      mpv_bin_path: snapshot.mpvBinPath,
+      using_fallback: snapshot.usingFallback,
+      last_error: snapshot.lastError,
+      active_device_id: snapshot.activeDeviceId,
+      exclusive_enabled: snapshot.exclusiveEnabled,
+      gapless_mode: snapshot.gaplessMode,
+      replaygain_mode: snapshot.replayGainMode,
+      updated_at_ms: snapshot.updatedAtMs,
+    });
+  });
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.setAudioEngineMode,
+    async (_event, payload: unknown) => {
+      const request = setAudioEngineModeRequestSchema.parse(payload);
+      const snapshot = await audioEngineController.setMode(request.mode);
+      return setAudioEngineModeResponseSchema.parse({
+        mode: snapshot.mode,
+        desired_mode: snapshot.desiredMode,
+        mpv_available: snapshot.mpvAvailable,
+        mpv_bin_path: snapshot.mpvBinPath,
+        using_fallback: snapshot.usingFallback,
+        last_error: snapshot.lastError,
+        active_device_id: snapshot.activeDeviceId,
+        exclusive_enabled: snapshot.exclusiveEnabled,
+        gapless_mode: snapshot.gaplessMode,
+        replaygain_mode: snapshot.replayGainMode,
+        updated_at_ms: snapshot.updatedAtMs,
+      });
+    },
+  );
+
+  ipcMain.handle(BACKEND_CHANNELS.listAudioOutputDevices, async () => {
+    const response = await audioEngineController.listAudioDevices();
+    return listAudioOutputDevicesResponseSchema.parse({
+      devices: response.devices.map((device) => ({
+        id: device.id,
+        label: device.label,
+        is_default: device.isDefault,
+      })),
+      active_device_id: response.activeDeviceId,
+      updated_at_ms: Date.now(),
+    });
+  });
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.setAudioOutputDevice,
+    async (_event, payload: unknown) => {
+      const request = setAudioOutputDeviceRequestSchema.parse(payload);
+      const response = await audioEngineController.setAudioDevice(
+        request.device_id,
+      );
+      return setAudioOutputDeviceResponseSchema.parse({
+        ok: response.ok,
+        active_device_id: response.activeDeviceId,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.setAudioExclusive,
+    async (_event, payload: unknown) => {
+      const request = setAudioExclusiveRequestSchema.parse(payload);
+      const response = await audioEngineController.setAudioExclusive(
+        request.enabled,
+      );
+      return setAudioExclusiveResponseSchema.parse({
+        ok: response.ok,
+        enabled: response.enabled,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.setAudioGaplessMode,
+    async (_event, payload: unknown) => {
+      const request = setAudioGaplessModeRequestSchema.parse(payload);
+      const response = await audioEngineController.setGaplessMode(request.mode);
+      return setAudioGaplessModeResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.setAudioReplayGainMode,
+    async (_event, payload: unknown) => {
+      const request = setAudioReplayGainModeRequestSchema.parse(payload);
+      const response = await audioEngineController.setReplayGainMode(
+        request.mode,
+      );
+      return setAudioReplayGainModeResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.audioEngineLoadTrack,
+    async (_event, payload: unknown) => {
+      const request = audioEngineLoadTrackRequestSchema.parse(payload);
+      const response = await audioEngineController.loadTrack(request.file_path, {
+        startSec: request.start_sec ?? null,
+        endSec: request.end_sec ?? null,
+      });
+      return audioEngineActionResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.audioEngineSetPaused,
+    async (_event, payload: unknown) => {
+      const request = audioEngineSetPausedRequestSchema.parse(payload);
+      const response = await audioEngineController.setPaused(request.paused);
+      return audioEngineActionResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.audioEngineSeekTo,
+    async (_event, payload: unknown) => {
+      const request = audioEngineSeekToRequestSchema.parse(payload);
+      const response = await audioEngineController.seekToSec(request.time_sec);
+      return audioEngineActionResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.audioEngineSetVolume,
+    async (_event, payload: unknown) => {
+      const request = audioEngineSetVolumeRequestSchema.parse(payload);
+      const response = await audioEngineController.setVolume(request.volume);
+      return audioEngineActionResponseSchema.parse({
+        ok: response.ok,
+        mode: response.mode,
+        message: response.message,
+        updated_at_ms: Date.now(),
+      });
+    },
+  );
+
+  ipcMain.handle(BACKEND_CHANNELS.audioEngineStopPlayback, async () => {
+    const response = await audioEngineController.stopPlayback();
+    return audioEngineActionResponseSchema.parse({
+      ok: response.ok,
+      mode: response.mode,
+      message: response.message,
+      updated_at_ms: Date.now(),
     });
   });
 

@@ -90,7 +90,7 @@ export class MusicAudioAnalyser {
       return
     }
 
-    if (this.attachedAudioElement === audioElement && this.analyserNode) {
+    if (this.attachedAudioElement === audioElement && this.analyserNode && this.mediaSourceNode) {
       return
     }
 
@@ -121,13 +121,8 @@ export class MusicAudioAnalyser {
         this.waveformScratch = new Uint8Array(this.analyserNode.fftSize)
       }
 
-      if (!this.mediaSourceNode || this.attachedAudioElement !== audioElement) {
-        this.mediaSourceNode = this.audioContext.createMediaElementSource(audioElement)
-        this.mediaSourceNode.connect(this.analyserNode)
-        this.analyserNode.connect(this.audioContext.destination)
-      }
-
       this.attachedAudioElement = audioElement
+      this.ensureMediaSourceConnected(audioElement)
       this.lastError = null
     } catch (error) {
       this.lastError = error instanceof Error ? error.message : String(error)
@@ -177,10 +172,22 @@ export class MusicAudioAnalyser {
   }
 
   async resume(): Promise<void> {
-    if (!this.audioContext || this.audioContext.state !== 'suspended') {
+    if (!this.audioContext) {
       return
     }
-    await this.audioContext.resume()
+    if (this.audioContext.state === 'suspended') {
+      await this.audioContext.resume()
+    }
+    if (this.attachedAudioElement) {
+      this.ensureMediaSourceConnected(this.attachedAudioElement)
+    }
+  }
+
+  suspend(): void {
+    if (!this.audioContext || this.audioContext.state !== 'running') {
+      return
+    }
+    void this.audioContext.suspend().catch(() => undefined)
   }
 
   dispose(): void {
@@ -254,5 +261,18 @@ export class MusicAudioAnalyser {
       this.analyserNode = null
     }
     this.attachedAudioElement = null
+  }
+
+  private ensureMediaSourceConnected(audioElement: HTMLAudioElement): void {
+    if (!this.audioContext || !this.analyserNode || this.mediaSourceNode) {
+      return
+    }
+    if (this.audioContext.state !== 'running') {
+      return
+    }
+
+    this.mediaSourceNode = this.audioContext.createMediaElementSource(audioElement)
+    this.mediaSourceNode.connect(this.analyserNode)
+    this.analyserNode.connect(this.audioContext.destination)
   }
 }

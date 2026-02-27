@@ -532,6 +532,7 @@ export function useMusicVisualizerRuntime({
 
   useEffect(() => {
     if (!active) {
+      audioAnalyserRef.current?.suspend()
       setStats(null)
       setActiveBackend(null)
       setRuntimeError(null)

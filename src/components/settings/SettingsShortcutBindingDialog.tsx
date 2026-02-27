@@ -30,15 +30,15 @@ export function SettingsShortcutBindingDialog({
       <section className="settings-floating-panel">
         <h3>{bindingTarget.label}</h3>
         {currentCombos.length > 0 ? (
-          <ul className="binding-chip-list">
+          <ul className="mpx-overlay-chip-list">
             {currentCombos.map((combo) => (
-              <li key={combo}>{combo}</li>
+              <li key={combo} className="mpx-overlay-chip">{combo}</li>
             ))}
           </ul>
         ) : (
-          <p className="settings-placeholder">{t("ui.settings.shortcutNoneConfigured")}</p>
+          <p className="mpx-overlay-caption">{t("ui.settings.shortcutNoneConfigured")}</p>
         )}
-        <div className="settings-floating-actions">
+        <div className="mpx-overlay-actions">
           <button type="button" data-capture-ignore="true" onClick={onStartCapture}>
             {t("ui.common.add")}
           </button>

@@ -561,26 +561,16 @@ select option {
 }
 
 .main-toolbar-image-convert-row {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
+  --mpx-overlay-field-label-width: 92px;
 }
 
 .main-toolbar-image-convert-row > span {
-  font-size: 12px;
-  color: var(--mpx-text-2);
+  white-space: nowrap;
 }
 
 .main-toolbar-image-convert-row > input[type='range'],
 .main-toolbar-image-convert-row > select {
   width: 100%;
-}
-
-.toolbar-actions .feature-action-btn.is-active {
-  border-color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-border-2));
-  background: color-mix(in srgb, var(--mpx-accent-soft) 64%, var(--mpx-bg-muted));
-  color: var(--mpx-text-1);
 }
 
 .toolbar-actions .toolbar-icon-btn,
@@ -626,14 +616,6 @@ select option {
   color: var(--mpx-status-warning-text);
   border-color: var(--mpx-status-warning-border);
   background: var(--mpx-status-warning-bg);
-}
-
-.toolbar-actions .toolbar-icon-btn.is-grid-mode {
-  background: var(--mpx-bg-selected);
-}
-
-.toolbar-actions .toolbar-icon-btn.is-names-mode {
-  background: var(--mpx-bg-muted);
 }
 
 .toolbar-actions .main-toolbar-scale-control::before {
@@ -739,16 +721,9 @@ select option {
   height: var(--mpx-icon-button-size);
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--mpx-accent) 40%, var(--mpx-border-1));
-  background: color-mix(in srgb, var(--mpx-accent-soft) 52%, var(--mpx-bg-elevated));
-  color: var(--mpx-text-1);
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.main-toolbar-ad-review-review-pill.is-active {
-  border-color: color-mix(in srgb, var(--mpx-accent) 70%, var(--mpx-border-1));
 }
 
 .main-toolbar-ad-review-review-pill:disabled {
@@ -765,9 +740,6 @@ select option {
   height: var(--mpx-icon-button-size);
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--mpx-border-1) 85%, var(--mpx-accent));
-  background: color-mix(in srgb, var(--mpx-bg-elevated) 78%, var(--mpx-accent-soft));
-  color: var(--mpx-text-1);
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;

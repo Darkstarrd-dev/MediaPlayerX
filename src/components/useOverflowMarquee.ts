@@ -34,7 +34,10 @@ export function useOverflowMarquee<TElement extends HTMLElement>(
     }
 
     const updateOverflowState = () => {
-      setOverflowing(textElement.scrollWidth > hostElement.clientWidth);
+      const nextOverflowing = textElement.scrollWidth > hostElement.clientWidth;
+      setOverflowing((previous) =>
+        previous === nextOverflowing ? previous : nextOverflowing,
+      );
     };
 
     updateOverflowState();

@@ -144,13 +144,22 @@ export function collectScopedAudioIdsByFolderNode(params: {
     return audioSidebarOrderedIds
   }
 
-  const selectedPath = selectedSidebarNode.pathKey
-  const selectedPrefix = `${selectedPath}/`
+  const scopedFolderPathSet = new Set<string>()
+  const collectFolderPaths = (node: SidebarNode) => {
+    if ((node.directAudioCount ?? 0) > 0) {
+      scopedFolderPathSet.add(node.pathKey)
+    }
+    for (const child of node.children) {
+      collectFolderPaths(child)
+    }
+  }
+  collectFolderPaths(selectedSidebarNode)
+
   const scopedIdSet = new Set(
     audiosForSidebar
       .filter((audio) => {
         const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
-        return folderPath === selectedPath || folderPath.startsWith(selectedPrefix)
+        return scopedFolderPathSet.has(folderPath)
       })
       .map((audio) => audio.id),
   )

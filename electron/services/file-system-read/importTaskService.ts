@@ -21,6 +21,7 @@ interface ImportTaskServiceOptions {
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
+  cueExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
   invalidateSnapshotCache: () => void
@@ -243,6 +244,7 @@ export class ImportTaskService {
       imageExtensions: this.options.imageExtensions,
       videoExtensions: this.options.videoExtensions,
       audioExtensions: this.options.audioExtensions,
+      cueExtensions: this.options.cueExtensions,
       archiveExtensions: this.options.archiveExtensions,
       musicImportMode,
       database: this.options.database,

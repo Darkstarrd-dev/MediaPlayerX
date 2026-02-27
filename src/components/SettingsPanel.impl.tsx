@@ -19,6 +19,7 @@ import {
   type SettingsSection,
 } from "./settings/renderSettingsMainSection";
 import { usePreferenceDebugState } from "./settings/usePreferenceDebugState";
+import { useAudioEngineState } from "./settings/useAudioEngineState";
 import { buildA11yProps } from "../i18n/a11y";
 import { a11yRegistry } from "../i18n/ariaRegistry";
 import { useI18n } from "../i18n/useI18n";
@@ -286,6 +287,24 @@ function SettingsPanel({
     settingsOpen,
     activeSection,
     t,
+  });
+  const {
+    audioEngineLoading,
+    audioEngineUpdating,
+    audioEngineError,
+    audioEngineState,
+    audioOutputDevicesLoading,
+    audioOutputDevices,
+    refreshAudioEngineState,
+    refreshAudioOutputDevices,
+    setAudioEngineMode,
+    setAudioOutputDevice,
+    setAudioExclusive,
+    setAudioGaplessMode,
+    setAudioReplayGainMode,
+  } = useAudioEngineState({
+    settingsOpen,
+    activeSection,
   });
 
   const headerHeightScale = toScale("headerHeight", headerHeight);
@@ -943,6 +962,20 @@ function SettingsPanel({
     adReviewDeleteOverlayDebugActive,
     preferenceDebugLoading,
     preferenceDebugError,
+    audioEngineLoading,
+    audioEngineUpdating,
+    audioEngineError,
+    audioEngineMode: audioEngineState?.mode ?? "chromium",
+    audioEngineDesiredMode: audioEngineState?.desired_mode ?? "chromium",
+    audioEngineUsingFallback: audioEngineState?.using_fallback ?? false,
+    audioEngineMpvAvailable: audioEngineState?.mpv_available ?? false,
+    audioEngineMpvBinPath: audioEngineState?.mpv_bin_path ?? null,
+    audioEngineActiveDeviceId: audioEngineState?.active_device_id ?? null,
+    audioEngineExclusiveEnabled: audioEngineState?.exclusive_enabled ?? false,
+    audioEngineGaplessMode: audioEngineState?.gapless_mode ?? "weak",
+    audioEngineReplayGainMode: audioEngineState?.replaygain_mode ?? "off",
+    audioOutputDevicesLoading,
+    audioOutputDevices,
     preferenceDebugData,
     renderBindingRows,
     onResetShortcuts,
@@ -1051,6 +1084,23 @@ function SettingsPanel({
     onPickThumbnailCacheDirectoryPath,
     onRefreshRuntimeInfo,
     onRefreshPreferenceDebug: refreshPreferenceDebug,
+    onRefreshAudioEngineState: refreshAudioEngineState,
+    onRefreshAudioOutputDevices: refreshAudioOutputDevices,
+    onAudioEngineModeChange: (mode) => {
+      void setAudioEngineMode(mode);
+    },
+    onAudioOutputDeviceChange: (deviceId) => {
+      void setAudioOutputDevice(deviceId);
+    },
+    onAudioExclusiveChange: (enabled) => {
+      void setAudioExclusive(enabled);
+    },
+    onAudioGaplessModeChange: (mode) => {
+      void setAudioGaplessMode(mode);
+    },
+    onAudioReplayGainModeChange: (mode) => {
+      void setAudioReplayGainMode(mode);
+    },
     onOpenAdReviewDeleteOverlayDebug,
     onPerformancePresetChange,
   });

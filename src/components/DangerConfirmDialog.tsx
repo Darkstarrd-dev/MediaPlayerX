@@ -49,20 +49,20 @@ function DangerConfirmDialog({
     <div className="settings-floating-mask" data-slot="fg-main-toolbar-manage-delete-confirm-panel" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="delete-confirm">
       <section className="settings-floating-panel manage-confirm-dialog">
         <h3>{title}</h3>
-        <p className="manage-confirm-description">{description}</p>
+        <p className="mpx-overlay-description">{description}</p>
 
         {targetPaths.length > 0 ? (
-          <section className="manage-confirm-targets" aria-label={targetListTitle}>
-            <p className="manage-confirm-targets-title">{targetListTitle}</p>
-            <ul className="manage-confirm-targets-list mpx-scrollbar-hidden">
+          <section className="mpx-overlay-section" aria-label={targetListTitle}>
+            <p className="mpx-overlay-caption">{targetListTitle}</p>
+            <ul className="mpx-overlay-list-surface mpx-overlay-scroll-list mpx-scrollbar-hidden">
               {targetPaths.map((path) => (
-                <li key={path} data-tooltip-label={path}>{path}</li>
+                <li key={path} className="mpx-overlay-list-item-truncate" data-tooltip-label={path}>{path}</li>
               ))}
             </ul>
           </section>
         ) : null}
 
-        <label className="manage-confirm-ack">
+        <label className="mpx-overlay-check-row">
           <input
             checked={acknowledged}
             type="checkbox"
@@ -72,7 +72,7 @@ function DangerConfirmDialog({
           <span>{acknowledgeLabel}</span>
         </label>
 
-        <div className="settings-floating-actions">
+        <div className="mpx-overlay-actions">
           {onRemoveOnly && removeOnlyLabel ? (
             <button type="button" disabled={!removeOnlyEnabled || pending} onClick={onRemoveOnly}>
               {removeOnlyLabel}

@@ -26,6 +26,7 @@ interface CollectMediaFilesParams {
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
+  cueExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   onRecordDiscovered?: (payload: {
     scannedCount: number
@@ -152,6 +153,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           params.imageExtensions.has(extension) ||
           params.videoExtensions.has(extension) ||
           params.audioExtensions.has(extension) ||
+          params.cueExtensions.has(extension) ||
           params.archiveExtensions.has(extension)
         if (!supported) {
           continue
@@ -244,6 +246,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
         params.imageExtensions.has(extension) ||
         params.videoExtensions.has(extension) ||
         params.audioExtensions.has(extension) ||
+        params.cueExtensions.has(extension) ||
         params.archiveExtensions.has(extension)
       if (!supported) {
         return null

@@ -46,7 +46,7 @@ export function buildMainFooter({
   }
 
   if (mode === 'music' && focusedAudio) {
-    primary = focusedAudio.absolutePath
+    primary = focusedAudio.mediaLocator.kind === 'filesystem' ? focusedAudio.mediaLocator.absolutePath : focusedAudio.absolutePath
   }
 
   const showPagination = (mode === 'image' || (mode === 'video' && nodeBrowseMode)) && imageTotalPages > 1

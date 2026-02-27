@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import type { ManageAdReviewTaskDto, ManageReviewModeDto } from '../../contracts/backend'
 import { useI18n } from '../../i18n/useI18n'
+import { AdReviewStartDialog } from '../AdReviewStartDialog'
 import {
   AD_REVIEW_CONCURRENCY_OPTIONS,
   AD_REVIEW_STREAK_OPTIONS,
@@ -409,34 +410,14 @@ export function MetadataAdReviewSection({
       ) : null}
 
       {startDialogOpen ? (
-        <div
-          className="manage-ad-review-start-mask"
-          data-slot="fg-meta-main-ad-review-start-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('a11y.manage.startModeDialog')}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setStartDialogOpen(false)
-            }
-          }}
-        >
-          <section className="settings-floating-panel manage-ad-review-start-dialog" onMouseDown={(event) => event.stopPropagation()}>
-            <h3>{reviewMode === 'cover' ? t('ui.manage.startDialogTitleCover') : t('ui.manage.startDialogTitle')}</h3>
-            <p className="manage-ad-review-start-description">{t('ui.manage.startDialogDescription')}</p>
-            <div className="settings-floating-actions">
-              <button type="button" onClick={() => startWithOption(true)}>
-                {t('ui.manage.startSkipScanned')}
-              </button>
-              <button type="button" onClick={() => startWithOption(false)}>
-                {t('ui.manage.startDontSkipScanned')}
-              </button>
-              <button type="button" onClick={() => setStartDialogOpen(false)}>
-                {t('ui.common.cancel')}
-              </button>
-            </div>
-          </section>
-        </div>
+        <AdReviewStartDialog
+          t={t}
+          open={startDialogOpen}
+          manageReviewMode={reviewMode}
+          slot="fg-meta-main-ad-review-start-panel"
+          onClose={() => setStartDialogOpen(false)}
+          onStartWithOption={startWithOption}
+        />
       ) : null}
     </section>
   )

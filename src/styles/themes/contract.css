@@ -127,6 +127,46 @@
   --mpx-btn-secondary-bg: #ffffff;
   --mpx-btn-secondary-border: #b7ab95;
   --mpx-btn-secondary-text: #2e2a22;
+  --mpx-btn-template-base: #ecf0f3;
+  --mpx-btn-template-hover: #f8fafc;
+  --mpx-btn-template-active: #dce2e8;
+  --mpx-btn-template-pressed: #d6dee5;
+  --mpx-btn-template-border: #cbd5e1;
+  --mpx-btn-template-text-idle: #4a4a4a;
+  --mpx-btn-template-text-active: #334155;
+  --mpx-btn-template-text-pressed: #555555;
+  --mpx-btn-template-text-merged: #0f172a;
+  --mpx-btn-template-text-disabled: var(--mpx-player-btn-muted-text);
+  --mpx-btn-template-shadow-idle:
+    0 4px 6px rgba(0, 0, 0, 0.12),
+    inset 0 2px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+  --mpx-btn-template-shadow-hover:
+    0 6px 10px rgba(0, 0, 0, 0.15),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+  --mpx-btn-template-shadow-active:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+  --mpx-btn-template-shadow-pressed:
+    0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 4px 8px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 2px rgba(255, 255, 255, 0.7);
+  --mpx-btn-template-transform-hover: translateY(-1px);
+  --mpx-btn-template-transform-active: translateY(2px);
+  --mpx-btn-template-transform-pressed: translateY(1px);
+  --mpx-btn-template-danger-hover-bg: #fee2e2;
+  --mpx-btn-template-danger-hover-border: #fca5a5;
+  --mpx-btn-template-danger-hover-text: #dc2626;
+  --mpx-btn-template-danger-hover-shadow:
+    0 6px 10px rgba(220, 38, 38, 0.15),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+  --mpx-btn-group-groove-bg: var(--mpx-slot-fg-header-g2-mode-image-bg, var(--mpx-btn-template-base));
+  --mpx-btn-group-groove-border: var(--mpx-slot-fg-header-g2-mode-image-border, var(--mpx-btn-template-border));
+  --mpx-btn-group-groove-radius: 10px;
+  --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
 
   --mpx-status-danger-bg: #fdeee8;
   --mpx-status-danger-border: #d7a596;
@@ -157,6 +197,13 @@
   --mpx-overlay-surface-border: var(--mpx-border-1);
   --mpx-overlay-surface-bg: var(--mpx-bg-elevated);
   --mpx-overlay-surface-shadow: var(--mpx-shadow-popover);
+  --mpx-overlay-soft-border: #c7d0d8;
+  --mpx-overlay-soft-bg: #ecf0f3;
+  --mpx-overlay-soft-hover-bg: #e3e9ef;
+  --mpx-overlay-soft-focus-bg: #dbe3eb;
+  --mpx-overlay-soft-head-bg: #d1d5db;
+  --mpx-overlay-soft-head-divider: #bcc7d1;
+  --mpx-overlay-soft-row-divider: #cfd7df;
   --mpx-tooltip-radius: var(--mpx-radius-md);
   --mpx-tooltip-padding-x: 10px;
   --mpx-tooltip-padding-y: 6px;

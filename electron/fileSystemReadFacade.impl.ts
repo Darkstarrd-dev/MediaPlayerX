@@ -123,6 +123,7 @@ import {
   ARCHIVE_SCAN_CONCURRENCY,
   AUDIO_EXTENSIONS,
   COLOR_PALETTE,
+  CUE_EXTENSIONS,
   DIRECTORY_SCAN_CONCURRENCY,
   FFMPEG_BIN,
   FFPROBE_CONCURRENCY,
@@ -334,6 +335,7 @@ export class FileSystemMediaReadService {
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
       audioExtensions: AUDIO_EXTENSIONS,
+      cueExtensions: CUE_EXTENSIONS,
       archiveExtensions: ARCHIVE_EXTENSIONS,
       colorPalette: COLOR_PALETTE,
       imageExtensionsForWebpConvert: IMAGE_EXTENSIONS_FOR_WEBP_CONVERT,
@@ -375,6 +377,7 @@ export class FileSystemMediaReadService {
       imageExtensions: IMAGE_EXTENSIONS,
       videoExtensions: VIDEO_EXTENSIONS,
       audioExtensions: AUDIO_EXTENSIONS,
+      cueExtensions: CUE_EXTENSIONS,
       archiveExtensions: ARCHIVE_EXTENSIONS,
       database: this.database,
       invalidateSnapshotCache: () => this.invalidateSnapshotCache(),
@@ -862,6 +865,89 @@ export class FileSystemMediaReadService {
     return Boolean(stat);
   }
 
+  private static parseCueVirtualPath(value: string): {
+    cuePath: string | null;
+    sourcePath: string | null;
+  } | null {
+    if (!value.startsWith("cue://")) {
+      return null;
+    }
+
+    const decodeSafely = (rawValue: string | null): string | null => {
+      if (!rawValue || rawValue.trim().length === 0) {
+        return null;
+      }
+      try {
+        return decodeURIComponent(rawValue);
+      } catch {
+        return rawValue;
+      }
+    };
+
+    try {
+      const parsed = new URL(value);
+      const encodedCuePath = `${parsed.host}${parsed.pathname ?? ""}`.replace(/^\/+/, "");
+      const cuePath = decodeSafely(encodedCuePath);
+      const sourcePath = parsed.searchParams.get("src");
+      return {
+        cuePath,
+        sourcePath: sourcePath && sourcePath.trim().length > 0 ? sourcePath : null,
+      };
+    } catch {
+      const matched = /^cue:\/\/([^?]+)(?:\?(.*))?$/i.exec(value);
+      if (!matched) {
+        return null;
+      }
+      const cuePath = decodeSafely(matched[1] ?? null);
+      const searchParams = new URLSearchParams(matched[2] ?? "");
+      const sourcePath = searchParams.get("src");
+      return {
+        cuePath,
+        sourcePath: sourcePath && sourcePath.trim().length > 0 ? sourcePath : null,
+      };
+    }
+  }
+
+  private resolveAudioExistencePaths(audio: LibrarySnapshotDto["audios"][number]): {
+    checkPaths: string[];
+    importCleanupPaths: string[];
+  } {
+    const checkPathSet = new Set<string>();
+    const importCleanupPathSet = new Set<string>();
+    const pushPath = (targetPath: string | null | undefined) => {
+      if (!targetPath || targetPath.trim().length === 0) {
+        return;
+      }
+      if (/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(targetPath)) {
+        return;
+      }
+      const resolved = path.resolve(targetPath);
+      checkPathSet.add(resolved);
+      importCleanupPathSet.add(resolved);
+    };
+
+    if (audio.media_locator.kind === "filesystem") {
+      pushPath(audio.media_locator.absolute_path);
+    }
+
+    const cueVirtual = FileSystemMediaReadService.parseCueVirtualPath(
+      audio.absolute_path,
+    );
+    if (cueVirtual) {
+      pushPath(cueVirtual.cuePath);
+      pushPath(cueVirtual.sourcePath);
+    }
+
+    if (checkPathSet.size === 0) {
+      pushPath(audio.absolute_path);
+    }
+
+    return {
+      checkPaths: Array.from(checkPathSet),
+      importCleanupPaths: Array.from(importCleanupPathSet),
+    };
+  }
+
   private buildExternalWatcherSnapshotKey(snapshot: LibrarySnapshotDto): string {
     const tokens: string[] = [];
     for (const source of snapshot.image_packages) {
@@ -889,6 +975,7 @@ export class FileSystemMediaReadService {
     }
 
     const missingPaths = new Set<string>();
+    const missingFilesystemPaths = new Set<string>();
     const imageSources = [
       ...snapshot.image_packages,
       ...snapshot.image_directories,
@@ -897,17 +984,41 @@ export class FileSystemMediaReadService {
     for (const source of imageSources) {
       if (!(await this.pathExists(source.absolute_path))) {
         missingPaths.add(source.absolute_path);
+        missingFilesystemPaths.add(path.resolve(source.absolute_path));
       }
     }
     for (const video of snapshot.videos) {
       if (!(await this.pathExists(video.absolute_path))) {
         missingPaths.add(video.absolute_path);
+        missingFilesystemPaths.add(path.resolve(video.absolute_path));
       }
     }
+    const missingSnapshotPaths = new Set<string>();
     for (const audio of snapshot.audios ?? []) {
-      if (!(await this.pathExists(audio.absolute_path))) {
-        missingPaths.add(audio.absolute_path);
+      const resolvedPaths = this.resolveAudioExistencePaths(audio);
+      const missingCheckPaths: string[] = [];
+      for (const targetPath of resolvedPaths.checkPaths) {
+        if (await this.pathExists(targetPath)) {
+          continue;
+        }
+        missingCheckPaths.push(targetPath);
       }
+
+      if (missingCheckPaths.length === 0) {
+        continue;
+      }
+
+      missingSnapshotPaths.add(audio.absolute_path);
+      for (const fileSystemPath of resolvedPaths.importCleanupPaths) {
+        if (!missingCheckPaths.includes(fileSystemPath)) {
+          continue;
+        }
+        missingFilesystemPaths.add(fileSystemPath);
+      }
+    }
+
+    for (const missingAudioSnapshotPath of missingSnapshotPaths) {
+      missingPaths.add(missingAudioSnapshotPath);
     }
 
     if (missingPaths.size === 0) {
@@ -919,8 +1030,9 @@ export class FileSystemMediaReadService {
       return snapshot;
     }
 
-    const pathsToPrune = Array.from(missingPaths);
-    const deleted = this.database.deleteSnapshotEntriesByPaths(pathsToPrune);
+    const snapshotPathsToPrune = Array.from(missingPaths);
+    const fileSystemPathsToPrune = Array.from(missingFilesystemPaths);
+    const deleted = this.database.deleteSnapshotEntriesByPaths(snapshotPathsToPrune);
     if (
       deleted.deletedSourceCount === 0 &&
       deleted.deletedVideoCount === 0 &&
@@ -929,8 +1041,10 @@ export class FileSystemMediaReadService {
       return snapshot;
     }
 
-    this.pruneArchiveIndexesByDeletedRoots(pathsToPrune);
-    await this.removeImportSourcePaths(pathsToPrune);
+    if (fileSystemPathsToPrune.length > 0) {
+      this.pruneArchiveIndexesByDeletedRoots(fileSystemPathsToPrune);
+      await this.removeImportSourcePaths(fileSystemPathsToPrune);
+    }
     const nextSnapshot = this.syncSnapshotFromDatabase();
 
     this.emitLibraryChanged({

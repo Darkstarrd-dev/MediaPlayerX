@@ -75,7 +75,7 @@ export function ThemeParameterPanelMain({
     {
       key: "idle",
       state: "默认态 (idle)",
-      styleSource: ".mode-switch button",
+      styleSource: ".mpx-btn-template (idle)",
       interaction: "初始渲染，未悬停/未按下/未选中",
       usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-image'",
       demoLabel: "默认",
@@ -83,7 +83,7 @@ export function ThemeParameterPanelMain({
     {
       key: "hover",
       state: "悬停态 (hover)",
-      styleSource: ".mode-switch button:hover",
+      styleSource: ".mpx-btn-template:hover / .force-hover",
       interaction: "pointerenter / mouseenter",
       usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-video'",
       demoLabel: "悬停测试",
@@ -91,7 +91,7 @@ export function ThemeParameterPanelMain({
     {
       key: "active",
       state: "按下态 (active)",
-      styleSource: ".mode-switch button:active",
+      styleSource: ".mpx-btn-template:active / .force-active",
       interaction: "pointerdown / mousedown",
       usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-music'",
       demoLabel: "按下测试",
@@ -99,7 +99,7 @@ export function ThemeParameterPanelMain({
     {
       key: "selected",
       state: "选中态 (is-active)",
-      styleSource: ".mode-switch button.is-active",
+      styleSource: ".mpx-btn-template.is-active",
       interaction: "click 后由业务状态切换 class",
       usage: "AppHeader.tsx -> className={mode === 'image' ? 'is-active' : ''}",
       demoLabel: "已选中",
@@ -107,7 +107,7 @@ export function ThemeParameterPanelMain({
     {
       key: "pressed",
       state: "开关按压态 (aria-pressed='true')",
-      styleSource: "[aria-pressed='true']",
+      styleSource: ".mpx-btn-template[aria-pressed='true']",
       interaction: "click 切换布尔开关状态",
       usage: "AppHeader.tsx -> fg-header-g-debug-tooltips",
       demoLabel: "开关已按下",
@@ -131,7 +131,7 @@ export function ThemeParameterPanelMain({
     {
       key: "close-hover",
       state: "危险悬停态 (close:hover)",
-      styleSource: ".window-control-btn--close:hover",
+      styleSource: ".mpx-btn-template.danger:hover",
       interaction: "关闭按钮 hover",
       usage: "AppHeader.tsx -> window-control-btn--close",
       demoLabel: "关闭悬停测试",
@@ -342,16 +342,16 @@ export function ThemeParameterPanelMain({
                       </button>
                     ) : item.key === "close-hover" ? (
                       <button
-                        className="window-control-btn window-control-btn--close"
+                        className="window-control-btn window-control-btn--close danger force-hover"
                         type="button"
                       >
                         <span className="window-control-btn-text">{item.demoLabel}</span>
                       </button>
                     ) : (
                       <div className="mode-switch-wrap theme-parameter-g2-wrap-demo">
-                        <div className="mode-switch theme-parameter-g2-mode-demo">
+                        <div className="mode-switch mpx-btn-group is-groove theme-parameter-g2-mode-demo">
                           <button
-                            className={item.key === "selected" ? "is-active" : ""}
+                            className={`${item.key === "selected" ? "is-active" : ""} ${item.key === "hover" ? "force-hover" : ""} ${item.key === "active" ? "force-active" : ""}`.trim()}
                             data-slot="fg-header-g2-mode-image"
                             type="button"
                             disabled={item.key === "disabled"}

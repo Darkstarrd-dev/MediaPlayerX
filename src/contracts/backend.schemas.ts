@@ -222,6 +222,10 @@ export const audioItemDtoSchema = z.object({
   author: z.string().default(""),
   track_title: z.string().default(""),
   series_id: z.string().default(""),
+  cue_source_path: z.string().min(1).optional(),
+  cue_track_no: z.number().int().positive().optional(),
+  cue_start_sec: z.number().min(0).optional(),
+  cue_end_sec: z.number().min(0).nullable().optional(),
   media_locator: mediaLocatorDtoSchema,
 });
 
@@ -1115,6 +1119,112 @@ export const runtimeMediaCapabilityHintSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
   content_type: z.string().min(1),
+});
+
+export const audioEngineModeSchema = z.enum(["chromium", "mpv"]);
+export const audioGaplessModeSchema = z.enum(["no", "weak", "yes"]);
+export const audioReplayGainModeSchema = z.enum(["off", "track", "album"]);
+
+export const audioOutputDeviceSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  is_default: z.boolean().default(false),
+});
+
+export const readAudioEngineStateResponseSchema = z.object({
+  mode: audioEngineModeSchema,
+  desired_mode: audioEngineModeSchema,
+  mpv_available: z.boolean(),
+  mpv_bin_path: z.string().min(1).nullable(),
+  using_fallback: z.boolean(),
+  last_error: z.string().nullable(),
+  active_device_id: z.string().min(1).nullable(),
+  exclusive_enabled: z.boolean(),
+  gapless_mode: audioGaplessModeSchema,
+  replaygain_mode: audioReplayGainModeSchema,
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setAudioEngineModeRequestSchema = z.object({
+  mode: audioEngineModeSchema,
+});
+
+export const setAudioEngineModeResponseSchema =
+  readAudioEngineStateResponseSchema;
+
+export const listAudioOutputDevicesResponseSchema = z.object({
+  devices: z.array(audioOutputDeviceSchema),
+  active_device_id: z.string().min(1).nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setAudioOutputDeviceRequestSchema = z.object({
+  device_id: z.string().min(1),
+});
+
+export const setAudioOutputDeviceResponseSchema = z.object({
+  ok: z.boolean(),
+  active_device_id: z.string().min(1).nullable(),
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setAudioExclusiveRequestSchema = z.object({
+  enabled: z.boolean(),
+});
+
+export const setAudioExclusiveResponseSchema = z.object({
+  ok: z.boolean(),
+  enabled: z.boolean(),
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setAudioGaplessModeRequestSchema = z.object({
+  mode: audioGaplessModeSchema,
+});
+
+export const setAudioGaplessModeResponseSchema = z.object({
+  ok: z.boolean(),
+  mode: audioGaplessModeSchema,
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setAudioReplayGainModeRequestSchema = z.object({
+  mode: audioReplayGainModeSchema,
+});
+
+export const setAudioReplayGainModeResponseSchema = z.object({
+  ok: z.boolean(),
+  mode: audioReplayGainModeSchema,
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const audioEngineActionResponseSchema = z.object({
+  ok: z.boolean(),
+  mode: audioEngineModeSchema,
+  message: z.string().nullable(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const audioEngineLoadTrackRequestSchema = z.object({
+  file_path: z.string().min(1),
+  start_sec: z.number().min(0).nullable().optional(),
+  end_sec: z.number().min(0).nullable().optional(),
+});
+
+export const audioEngineSetPausedRequestSchema = z.object({
+  paused: z.boolean(),
+});
+
+export const audioEngineSeekToRequestSchema = z.object({
+  time_sec: z.number().min(0),
+});
+
+export const audioEngineSetVolumeRequestSchema = z.object({
+  volume: z.number().min(0).max(100),
 });
 
 export const readRuntimeInfoResponseSchema = z.object({

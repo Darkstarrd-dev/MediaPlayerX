@@ -255,6 +255,9 @@ export interface AppHeaderProps {
   onThemeParameterButtonVisibleChange: (value: boolean) => void;
   onOpenThemeParameter: () => void;
   popoverDebugPinned: boolean;
+  settingsOpen?: boolean;
+  helpOpen?: boolean;
+  themeParameterPanelOpen?: boolean;
   onTogglePopoverDebugPinned: () => void;
   onOpenHelp: () => void;
   onOpenSettings: () => void;
@@ -292,6 +295,9 @@ function AppHeader(props: AppHeaderProps) {
     onThemeParameterButtonVisibleChange,
     onOpenThemeParameter,
     popoverDebugPinned,
+    settingsOpen = false,
+    helpOpen = false,
+    themeParameterPanelOpen = false,
     onTogglePopoverDebugPinned,
     onOpenHelp,
     onOpenSettings,
@@ -540,7 +546,6 @@ function AppHeader(props: AppHeaderProps) {
                 ? t("a11y.header.switchToNightPalette")
                 : t("a11y.header.switchToDayPalette")
             }
-            aria-pressed={paletteMode === "night"}
             className="window-control-btn"
             data-slot="fg-header-g1-palette"
             data-tooltip-label={
@@ -556,6 +561,7 @@ function AppHeader(props: AppHeaderProps) {
 
           <button
             {...settingsButtonA11y}
+            aria-pressed={settingsOpen}
             className="window-control-btn"
             data-slot="fg-header-g1-settings"
             type="button"
@@ -571,12 +577,13 @@ function AppHeader(props: AppHeaderProps) {
         >
           <div className="mode-switch-wrap">
             <div
-              className="mode-switch"
+              className="mode-switch mpx-btn-group is-groove"
               role="group"
               aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}
             >
               <button
                 {...buildA11yPropsByRegistry({ key: "headerModeImage", t })}
+                aria-pressed={mode === "image"}
                 className={mode === "image" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-image"
                 type="button"
@@ -594,6 +601,7 @@ function AppHeader(props: AppHeaderProps) {
               </button>
               <button
                 {...buildA11yPropsByRegistry({ key: "headerModeVideo", t })}
+                aria-pressed={mode === "video"}
                 className={mode === "video" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-video"
                 type="button"
@@ -611,6 +619,7 @@ function AppHeader(props: AppHeaderProps) {
               </button>
               <button
                 {...buildA11yPropsByRegistry({ key: "headerModeMusic", t })}
+                aria-pressed={mode === "music"}
                 className={mode === "music" ? "is-active" : ""}
                 data-slot="fg-header-g2-mode-music"
                 type="button"
@@ -673,6 +682,7 @@ function AppHeader(props: AppHeaderProps) {
         {themeParameterButtonVisible && !headerDebugGroupVisible ? (
           <button
             {...themeParameterButtonA11y}
+            aria-pressed={themeParameterPanelOpen}
             className="window-control-btn window-control-btn--theme-parameter"
             data-slot="fg-header-g3-theme-parameter"
             type="button"
@@ -722,7 +732,7 @@ function AppHeader(props: AppHeaderProps) {
             </button>
             <button
               {...themeParameterButtonA11y}
-              aria-pressed={themeParameterButtonVisible}
+              aria-pressed={themeParameterPanelOpen}
               className="window-control-btn window-control-btn--theme-parameter"
               data-slot="fg-header-g-debug-theme-parameter"
               type="button"
@@ -734,7 +744,7 @@ function AppHeader(props: AppHeaderProps) {
               }}
             >
               <span className="window-control-btn-text">
-                T {themeParameterButtonVisible ? "on" : "off"}
+                T {themeParameterPanelOpen ? "on" : "off"}
               </span>
             </button>
             <button
@@ -757,10 +767,11 @@ function AppHeader(props: AppHeaderProps) {
           data-slot="fg-header-g3"
           role="group"
         >
-          <button
-            {...helpButtonA11y}
-            className="window-control-btn"
-            data-slot="fg-header-g3-help"
+            <button
+              {...helpButtonA11y}
+              aria-pressed={helpOpen}
+              className="window-control-btn"
+              data-slot="fg-header-g3-help"
             type="button"
             onClick={onOpenHelp}
           >

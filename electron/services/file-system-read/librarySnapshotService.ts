@@ -82,6 +82,7 @@ interface LibrarySnapshotServiceOptions {
   imageExtensions: ReadonlySet<string>
   videoExtensions: ReadonlySet<string>
   audioExtensions: ReadonlySet<string>
+  cueExtensions: ReadonlySet<string>
   archiveExtensions: ReadonlySet<string>
   colorPalette: readonly string[]
   imageExtensionsForWebpConvert: ReadonlySet<string>
@@ -134,6 +135,324 @@ const ARCHIVE_PLACEHOLDER_ROOT_LABEL = 'Archive Pending Index'
 const COLLECTING_PREVIEW_CONTAINER_LIMIT = 120
 const COLLECTING_PREVIEW_CONTAINER_UPDATE_DELTA = 8
 const COLLECTING_PREVIEW_PERSIST_INTERVAL_MS = 1_500
+
+interface ParsedCueTrackRecord {
+  order: number
+  trackNo: number
+  audioPath: string
+  title: string
+  performer: string
+  startSec: number
+}
+
+interface ParsedCueFileRecord {
+  album: string
+  performer: string
+  tracks: ParsedCueTrackRecord[]
+}
+
+function swapUtf16ByteOrder(rawBuffer: Buffer): Buffer {
+  const swapped = Buffer.allocUnsafe(rawBuffer.length)
+  for (let index = 0; index + 1 < rawBuffer.length; index += 2) {
+    swapped[index] = rawBuffer[index + 1]
+    swapped[index + 1] = rawBuffer[index]
+  }
+  if (rawBuffer.length % 2 === 1) {
+    swapped[rawBuffer.length - 1] = rawBuffer[rawBuffer.length - 1]
+  }
+  return swapped
+}
+
+function countMatches(value: string, pattern: RegExp): number {
+  const matched = value.match(pattern)
+  return matched ? matched.length : 0
+}
+
+function scoreCueDecodedText(value: string): number {
+  let score = 0
+
+  const trackCount = countMatches(value, /^\s*TRACK\s+\d+/gim)
+  const indexCount = countMatches(value, /^\s*INDEX\s+\d+\s+\d+:\d{2}:\d{2}/gim)
+  const fileCount = countMatches(value, /^\s*FILE\s+/gim)
+  const titleCount = countMatches(value, /^\s*TITLE\s+/gim)
+  const performerCount = countMatches(value, /^\s*PERFORMER\s+/gim)
+
+  score += trackCount * 40
+  score += indexCount * 25
+  score += fileCount * 16
+  score += titleCount * 8
+  score += performerCount * 8
+
+  const replacementCount = countMatches(value, /\uFFFD/g)
+  score -= replacementCount * 60
+
+  const nullCharCount = countMatches(value, /\u0000/g)
+  score -= nullCharCount * 80
+
+  const weirdControlCharCount = countMatches(value, /[\x00-\x08\x0B\x0C\x0E-\x1F]/g)
+  score -= weirdControlCharCount * 14
+
+  if (trackCount > 0 && indexCount > 0) {
+    score += 120
+  }
+
+  return score
+}
+
+function decodeCueBufferByEncoding(rawBuffer: Buffer, encoding: 'utf8' | 'utf16le' | 'utf16be' | 'shift_jis' | 'euc-jp'): string {
+  if (encoding === 'utf8') {
+    return rawBuffer.toString('utf8')
+  }
+  if (encoding === 'utf16le') {
+    return rawBuffer.toString('utf16le')
+  }
+  if (encoding === 'utf16be') {
+    return swapUtf16ByteOrder(rawBuffer).toString('utf16le')
+  }
+  return new TextDecoder(encoding).decode(rawBuffer)
+}
+
+function decodeCueTextFromBuffer(rawBuffer: Buffer): string {
+  const bomUtf8 = rawBuffer.length >= 3 && rawBuffer[0] === 0xef && rawBuffer[1] === 0xbb && rawBuffer[2] === 0xbf
+  const bomUtf16Le = rawBuffer.length >= 2 && rawBuffer[0] === 0xff && rawBuffer[1] === 0xfe
+  const bomUtf16Be = rawBuffer.length >= 2 && rawBuffer[0] === 0xfe && rawBuffer[1] === 0xff
+
+  const encodings: Array<'utf8' | 'utf16le' | 'utf16be' | 'shift_jis' | 'euc-jp'> = ['utf8', 'utf16le', 'utf16be', 'shift_jis', 'euc-jp']
+
+  let bestText = rawBuffer.toString('utf8')
+  let bestScore = Number.NEGATIVE_INFINITY
+
+  for (const encoding of encodings) {
+    let decoded = ''
+    try {
+      decoded = decodeCueBufferByEncoding(rawBuffer, encoding)
+    } catch {
+      continue
+    }
+
+    let score = scoreCueDecodedText(decoded)
+    if (encoding === 'utf8' && bomUtf8) {
+      score += 40
+    }
+    if (encoding === 'utf16le' && bomUtf16Le) {
+      score += 80
+    }
+    if (encoding === 'utf16be' && bomUtf16Be) {
+      score += 80
+    }
+
+    if (score > bestScore) {
+      bestScore = score
+      bestText = decoded
+    }
+  }
+
+  return bestText
+}
+
+function parseCueTextValue(rawValue: string): string {
+  const trimmed = rawValue.trim()
+  if (trimmed.length < 2) {
+    return trimmed
+  }
+
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1).trim()
+  }
+
+  return trimmed
+}
+
+function parseCueTimestampToSec(rawValue: string): number | null {
+  const match = rawValue.trim().match(/^(\d+):(\d{2}):(\d{2})$/)
+  if (!match) {
+    return null
+  }
+
+  const minutes = Number(match[1])
+  const seconds = Number(match[2])
+  const frames = Number(match[3])
+  if (!Number.isFinite(minutes) || !Number.isFinite(seconds) || !Number.isFinite(frames)) {
+    return null
+  }
+  if (minutes < 0 || seconds < 0 || seconds >= 60 || frames < 0 || frames >= 75) {
+    return null
+  }
+
+  return minutes * 60 + seconds + frames / 75
+}
+
+function resolveCueReferencedAudioPath(cuePath: string, cueFileRawPath: string): string {
+  const cueDirPath = path.dirname(cuePath)
+  const normalizedRelativePath = cueFileRawPath.trim().replace(/[\\/]+/g, path.sep)
+  return path.resolve(cueDirPath, normalizedRelativePath)
+}
+
+function pickSingleFileCueFallbackAudio(cuePath: string, cueDirectoryAudios: AudioItemDto[]): AudioItemDto | null {
+  if (cueDirectoryAudios.length === 0) {
+    return null
+  }
+  if (cueDirectoryAudios.length === 1) {
+    return cueDirectoryAudios[0]
+  }
+
+  const cueBaseName = path.basename(cuePath, path.extname(cuePath)).trim().toLocaleLowerCase('zh-CN')
+  const sameBaseNameCandidates = cueDirectoryAudios.filter((audio) => {
+    const audioBaseName = path.basename(audio.absolute_path, path.extname(audio.absolute_path)).trim().toLocaleLowerCase('zh-CN')
+    return audioBaseName.length > 0 && audioBaseName === cueBaseName
+  })
+  if (sameBaseNameCandidates.length === 1) {
+    return sameBaseNameCandidates[0]
+  }
+
+  const candidates = sameBaseNameCandidates.length > 1 ? sameBaseNameCandidates : cueDirectoryAudios
+  let selected = candidates[0]
+  for (let index = 1; index < candidates.length; index += 1) {
+    const candidate = candidates[index]
+    if (candidate.duration_sec > selected.duration_sec) {
+      selected = candidate
+    }
+  }
+  return selected
+}
+
+function pickAudioByCueBaseName(cuePath: string, audioItems: AudioItemDto[]): AudioItemDto | null {
+  if (audioItems.length === 0) {
+    return null
+  }
+
+  const cueBaseName = path.basename(cuePath, path.extname(cuePath)).trim().toLocaleLowerCase('zh-CN')
+  const matched = audioItems.filter((audio) => {
+    const audioBaseName = path.basename(audio.absolute_path, path.extname(audio.absolute_path)).trim().toLocaleLowerCase('zh-CN')
+    return audioBaseName.length > 0 && audioBaseName === cueBaseName
+  })
+  if (matched.length === 1) {
+    return matched[0]
+  }
+  return null
+}
+
+function parseCueFileRecord(cuePath: string, rawText: string): ParsedCueFileRecord {
+  const lines = rawText.replace(/^\uFEFF/, '').split(/\r\n|\n|\r/)
+  let cueAlbum = ''
+  let cuePerformer = ''
+  let currentFilePath: string | null = cuePath
+  let lineOrder = 0
+  let currentTrack:
+    | {
+        order: number
+        trackNo: number
+        audioPath: string | null
+        title: string
+        performer: string
+        startSec: number | null
+        firstIndexSec: number | null
+      }
+    | null = null
+
+  const parsedTracks: ParsedCueTrackRecord[] = []
+
+  const flushTrack = () => {
+    const resolvedStartSec = currentTrack?.startSec ?? currentTrack?.firstIndexSec ?? null
+    if (!currentTrack || currentTrack.audioPath == null || resolvedStartSec == null) {
+      currentTrack = null
+      return
+    }
+
+    parsedTracks.push({
+      order: currentTrack.order,
+      trackNo: currentTrack.trackNo,
+      audioPath: currentTrack.audioPath,
+      title: currentTrack.title,
+      performer: currentTrack.performer,
+      startSec: resolvedStartSec,
+    })
+    currentTrack = null
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (line.length === 0 || line.startsWith(';') || /^REM\b/i.test(line)) {
+      continue
+    }
+
+    const fileMatch = line.match(/^FILE\s+(?:"([^"]+)"|(.+?))(?:\s+\S+)?$/i)
+    if (fileMatch) {
+      const fileRawPath = (fileMatch[1] ?? fileMatch[2] ?? '').trim()
+      if (fileRawPath.length > 0) {
+        currentFilePath = resolveCueReferencedAudioPath(cuePath, fileRawPath)
+      }
+      continue
+    }
+
+    const trackMatch = line.match(/^TRACK\s+(\d+)\b(?:\s+.+)?$/i)
+    if (trackMatch) {
+      flushTrack()
+      const trackNo = Number(trackMatch[1])
+      if (!Number.isFinite(trackNo) || trackNo <= 0) {
+        continue
+      }
+      currentTrack = {
+        order: lineOrder,
+        trackNo: Math.round(trackNo),
+        audioPath: currentFilePath,
+        title: '',
+        performer: '',
+        startSec: null,
+        firstIndexSec: null,
+      }
+      lineOrder += 1
+      continue
+    }
+
+    const titleMatch = line.match(/^TITLE\s+(.+)$/i)
+    if (titleMatch) {
+      const value = parseCueTextValue(titleMatch[1])
+      if (currentTrack) {
+        currentTrack.title = value
+      } else {
+        cueAlbum = value
+      }
+      continue
+    }
+
+    const performerMatch = line.match(/^PERFORMER\s+(.+)$/i)
+    if (performerMatch) {
+      const value = parseCueTextValue(performerMatch[1])
+      if (currentTrack) {
+        currentTrack.performer = value
+      } else {
+        cuePerformer = value
+      }
+      continue
+    }
+
+    const indexMatch = line.match(/^INDEX\s+(\d+)\s+(\d+:\d{2}:\d{2})(?:\s+.*)?$/i)
+    if (indexMatch && currentTrack) {
+      const indexNo = Number(indexMatch[1])
+      if (!Number.isFinite(indexNo)) {
+        continue
+      }
+      const parsedSec = parseCueTimestampToSec(indexMatch[2])
+      if (parsedSec != null) {
+        if (currentTrack.firstIndexSec == null) {
+          currentTrack.firstIndexSec = parsedSec
+        }
+        if (indexNo === 1) {
+          currentTrack.startSec = parsedSec
+        }
+      }
+    }
+  }
+
+  flushTrack()
+
+  return {
+    album: cueAlbum,
+    performer: cuePerformer,
+    tracks: parsedTracks,
+  }
+}
 
 function normalizeTreeSegment(value: string, fallback: string): string {
   const normalized = value
@@ -351,6 +670,7 @@ export class LibrarySnapshotService {
       imageExtensions: this.options.imageExtensions,
       videoExtensions: this.options.videoExtensions,
       audioExtensions: this.options.audioExtensions,
+      cueExtensions: this.options.cueExtensions,
       archiveExtensions: this.options.archiveExtensions,
       onRecordDiscovered: options?.onFileDiscovered,
     })
@@ -470,6 +790,206 @@ export class LibrarySnapshotService {
       },
       parsedMetadataForUpsert,
     }
+  }
+
+  private async createCueVirtualTracks(
+    cueFile: FileRecord,
+    options: {
+      audioByPath: Map<string, AudioItemDto>
+      musicImportPathContext: MusicImportPathContext
+    },
+  ): Promise<AudioItemDto[]> {
+    const cueRawBuffer = await fs.readFile(cueFile.absolutePath).catch(() => null)
+    if (!cueRawBuffer) {
+      return []
+    }
+
+    const rawCueText = decodeCueTextFromBuffer(cueRawBuffer)
+
+    const parsedCueRecord = parseCueFileRecord(cueFile.absolutePath, rawCueText)
+    if (parsedCueRecord.tracks.length === 0) {
+      const firstLines = rawCueText
+        .split(/\r\n|\n|\r/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .slice(0, 12)
+        .join(' | ')
+      console.warn(`[cue] parsed zero tracks: path=${cueFile.absolutePath}; preview=${firstLines}`)
+      return []
+    }
+
+    const referencedAudioPaths = Array.from(new Set(parsedCueRecord.tracks.map((track) => path.resolve(track.audioPath))))
+    for (const referencedAudioPath of referencedAudioPaths) {
+      const referencedPathKey = normalizeAllowlistKey(referencedAudioPath)
+      if (options.audioByPath.has(referencedPathKey)) {
+        continue
+      }
+
+      const extension = path.extname(referencedAudioPath).toLowerCase()
+      if (!this.options.audioExtensions.has(extension)) {
+        continue
+      }
+
+      const fileStat = await fs.stat(referencedAudioPath).catch(() => null)
+      if (!fileStat || !fileStat.isFile()) {
+        continue
+      }
+
+      const created = await this.createAudioSource(
+        {
+          absolutePath: referencedAudioPath,
+          relativePath: path.basename(referencedAudioPath),
+          extension,
+          sizeBytes: fileStat.size,
+          width: 0,
+          height: 0,
+        },
+        options.musicImportPathContext,
+      ).catch(() => null)
+      if (!created) {
+        continue
+      }
+
+      options.audioByPath.set(referencedPathKey, created.audio)
+    }
+
+    const audioItems = Array.from(options.audioByPath.values())
+    const cueDirectoryPath = path.dirname(cueFile.absolutePath)
+    const cueDirectoryKey = normalizeAllowlistKey(cueDirectoryPath)
+    const cueDirectoryAudios = audioItems.filter((audio) => normalizeAllowlistKey(path.dirname(audio.absolute_path)) === cueDirectoryKey)
+    const cueSubtreeAudios = audioItems.filter((audio) => isPathInsideRoot(cueDirectoryPath, audio.absolute_path))
+    const uniqueCueTrackPathKeyCount = new Set(parsedCueRecord.tracks.map((track) => normalizeAllowlistKey(track.audioPath))).size
+    const isLikelySingleFileCue = uniqueCueTrackPathKeyCount <= 1
+    const singleFileCueFallbackAudio = isLikelySingleFileCue
+      ? (
+          pickSingleFileCueFallbackAudio(cueFile.absolutePath, cueDirectoryAudios.length > 0 ? cueDirectoryAudios : cueSubtreeAudios) ??
+          pickAudioByCueBaseName(cueFile.absolutePath, cueSubtreeAudios.length > 0 ? cueSubtreeAudios : audioItems)
+        )
+      : null
+
+    const cuePathKey = normalizeAllowlistKey(cueFile.absolutePath)
+    const isExplicitMusicFile = options.musicImportPathContext.fileAllowlistKeys.has(cuePathKey)
+    const underMusicDirectory = options.musicImportPathContext.directoryRoots.some((rootPath) => isPathInsideRoot(rootPath, cueFile.absolutePath))
+    const isIsolatedMusicFile = isExplicitMusicFile && !underMusicDirectory
+    const cueTreeBase = isIsolatedMusicFile
+      ? [resolveIsolatedAudioGroup(parsedCueRecord.album)]
+      : toAbsoluteTreePath(cueFile.absolutePath).slice(0, -1)
+    const cueTreeBaseSafe = cueTreeBase.length > 0 ? cueTreeBase : [path.basename(cueFile.absolutePath, path.extname(cueFile.absolutePath))]
+
+    const normalizedTracks = parsedCueRecord.tracks
+      .map((track) => ({
+        ...track,
+        audioPathKey: normalizeAllowlistKey(track.audioPath),
+      }))
+      .sort((left, right) => {
+        if (left.order !== right.order) {
+          return left.order - right.order
+        }
+        if (left.trackNo !== right.trackNo) {
+          return left.trackNo - right.trackNo
+        }
+        return left.audioPath.localeCompare(right.audioPath, 'zh-CN')
+      })
+
+    const cueVirtualTracks: AudioItemDto[] = []
+
+    for (let index = 0; index < normalizedTracks.length; index += 1) {
+      const currentTrack = normalizedTracks[index]
+      let sourceAudio = options.audioByPath.get(currentTrack.audioPathKey)
+      if (!sourceAudio) {
+        const trackBaseName = path.basename(currentTrack.audioPath).trim().toLocaleLowerCase('zh-CN')
+        if (trackBaseName.length > 0) {
+          const matchedInCueDir = cueDirectoryAudios.filter(
+            (audio) => path.basename(audio.absolute_path).toLocaleLowerCase('zh-CN') === trackBaseName,
+          )
+          if (matchedInCueDir.length === 1) {
+            sourceAudio = matchedInCueDir[0]
+          } else if (matchedInCueDir.length === 0) {
+            const matchedGlobal = audioItems.filter(
+              (audio) => path.basename(audio.absolute_path).toLocaleLowerCase('zh-CN') === trackBaseName,
+            )
+            if (matchedGlobal.length === 1) {
+              sourceAudio = matchedGlobal[0]
+            }
+          }
+        }
+      }
+      if (!sourceAudio && singleFileCueFallbackAudio) {
+        sourceAudio = singleFileCueFallbackAudio
+      }
+      if (!sourceAudio) {
+        continue
+      }
+
+      let nextStartSec: number | null = null
+      for (let nextIndex = index + 1; nextIndex < normalizedTracks.length; nextIndex += 1) {
+        const candidateTrack = normalizedTracks[nextIndex]
+        if (candidateTrack.audioPathKey !== currentTrack.audioPathKey) {
+          continue
+        }
+        if (candidateTrack.startSec > currentTrack.startSec + 0.0005) {
+          nextStartSec = candidateTrack.startSec
+          break
+        }
+      }
+
+      const sourceDurationSec = Math.max(0, sourceAudio.duration_sec)
+      const fallbackEndSec = sourceDurationSec > currentTrack.startSec + 0.0005 ? sourceDurationSec : null
+      const rawEndSec = nextStartSec ?? fallbackEndSec
+      const resolvedEndSec = rawEndSec != null && rawEndSec > currentTrack.startSec + 0.0005 ? rawEndSec : null
+      const resolvedDurationSec = resolvedEndSec != null
+        ? Math.max(0, resolvedEndSec - currentTrack.startSec)
+        : Math.max(0, sourceDurationSec - currentTrack.startSec)
+
+      const trackNoLabel = String(currentTrack.trackNo).padStart(2, '0')
+      const cueTitle = currentTrack.title.trim()
+      const sourceTitle = sourceAudio.track_title.trim()
+      const resolvedTrackTitle = cueTitle.length > 0 ? cueTitle : sourceTitle.length > 0 ? sourceTitle : `Track ${trackNoLabel}`
+      const resolvedAuthor =
+        currentTrack.performer.trim().length > 0
+          ? currentTrack.performer.trim()
+          : parsedCueRecord.performer.trim().length > 0
+            ? parsedCueRecord.performer.trim()
+            : sourceAudio.author
+      const resolvedAlbum = parsedCueRecord.album.trim().length > 0 ? parsedCueRecord.album.trim() : sourceAudio.album
+      const cueStartSec = Number(currentTrack.startSec.toFixed(3))
+      const cueEndSec = resolvedEndSec == null ? null : Number(resolvedEndSec.toFixed(3))
+
+      const trackId = makeStableId('aud', `${cueFile.absolutePath}#${currentTrack.order}#${currentTrack.trackNo}#${sourceAudio.absolute_path}`)
+      const cueVirtualAbsolutePath =
+        `cue://${encodeURIComponent(cueFile.absolutePath)}` +
+        `?track=${currentTrack.trackNo}` +
+        `&order=${currentTrack.order}` +
+        `&src=${encodeURIComponent(sourceAudio.absolute_path)}` +
+        `&start=${cueStartSec}` +
+        (cueEndSec == null ? '' : `&end=${cueEndSec}`)
+
+      cueVirtualTracks.push({
+        id: trackId,
+        file_name: path.basename(sourceAudio.absolute_path),
+        absolute_path: cueVirtualAbsolutePath,
+        tree_path: [...cueTreeBaseSafe, `${trackNoLabel} ${resolvedTrackTitle}`],
+        duration_sec: Math.max(0, Math.round(resolvedDurationSec)),
+        size_mb: sourceAudio.size_mb,
+        album: resolvedAlbum,
+        author: resolvedAuthor,
+        track_title: resolvedTrackTitle,
+        series_id: sourceAudio.series_id,
+        cue_source_path: cueFile.absolutePath,
+        cue_track_no: currentTrack.trackNo,
+        cue_start_sec: cueStartSec,
+        cue_end_sec: cueEndSec,
+        media_locator: { ...sourceAudio.media_locator },
+      })
+    }
+
+    if (cueVirtualTracks.length === 0) {
+      console.warn(
+        `[cue] virtual tracks unresolved: path=${cueFile.absolutePath}; parsed=${parsedCueRecord.tracks.length}; inDir=${cueDirectoryAudios.length}; inSubtree=${cueSubtreeAudios.length}; uniqueTrackPaths=${uniqueCueTrackPathKeyCount}; hasSingleFallback=${singleFileCueFallbackAudio ? 'yes' : 'no'}`,
+      )
+    }
+
+    return cueVirtualTracks
   }
 
   private zipNeedsRepackWebp(entries: ZipCentralEntry[]): boolean {
@@ -852,6 +1372,7 @@ export class LibrarySnapshotService {
     const archives: FileRecord[] = []
     const videos: FileRecord[] = []
     const audios: FileRecord[] = []
+    const cues: FileRecord[] = []
 
     for (const file of files) {
       if (this.options.imageExtensions.has(file.extension)) {
@@ -874,6 +1395,11 @@ export class LibrarySnapshotService {
 
       if (this.options.audioExtensions.has(file.extension)) {
         audios.push(file)
+        continue
+      }
+
+      if (this.options.cueExtensions.has(file.extension)) {
+        cues.push(file)
       }
     }
 
@@ -1031,11 +1557,54 @@ export class LibrarySnapshotService {
       .map((result) => result.audio)
       .sort((left, right) => left.absolute_path.localeCompare(right.absolute_path, 'zh-CN'))
 
+    const audioByPath = new Map<string, AudioItemDto>()
+    for (const audio of audioItems) {
+      audioByPath.set(normalizeAllowlistKey(audio.absolute_path), audio)
+    }
+
+    const cueVirtualTrackItems = (
+      await parallelMapLimit(cues, ffprobeConcurrency, async (cueFile) =>
+        this.createCueVirtualTracks(cueFile, {
+          audioByPath,
+          musicImportPathContext: {
+            directoryRoots: musicImportDirectoryRoots,
+            fileAllowlistKeys: musicImportFileAllowlistKeys,
+          },
+        }),
+      )
+    )
+      .flat()
+      .sort((left, right) => {
+        const leftPathKey = left.tree_path.join('/')
+        const rightPathKey = right.tree_path.join('/')
+        const byTreePath = leftPathKey.localeCompare(rightPathKey, 'zh-CN')
+        if (byTreePath !== 0) {
+          return byTreePath
+        }
+        return left.id.localeCompare(right.id, 'zh-CN')
+      })
+
+    const cueBoundSourceAudioPathKeys = new Set(
+      cueVirtualTrackItems
+        .map((audio) => {
+          const locator = audio.media_locator
+          return locator.kind === 'filesystem' ? normalizeAllowlistKey(locator.absolute_path) : null
+        })
+        .filter((value): value is string => value != null),
+    )
+
+    const filteredBaseAudioItems =
+      cueBoundSourceAudioPathKeys.size > 0
+        ? audioItems.filter((audio) => !cueBoundSourceAudioPathKeys.has(normalizeAllowlistKey(audio.absolute_path)))
+        : audioItems
+
+    const allAudioItems = [...filteredBaseAudioItems, ...cueVirtualTrackItems]
+
     const scannedSnapshot = librarySnapshotDtoSchema.parse({
       image_packages: imagePackages,
       image_directories: imageDirectories,
       videos: videoItems,
-      audios: audioItems,
+      audios: allAudioItems,
     })
 
     this.emitRefreshProgress(options, {
@@ -1053,8 +1622,13 @@ export class LibrarySnapshotService {
 
     this.options.database.replaceSnapshot(scannedSnapshot)
 
+    const persistedAudioIdSet = new Set(allAudioItems.map((audio) => audio.id))
+
     for (const result of audioSourceResults) {
       if (!result.parsedMetadataForUpsert) {
+        continue
+      }
+      if (!persistedAudioIdSet.has(result.parsedMetadataForUpsert.audioId)) {
         continue
       }
       this.options.upsertAudioMetadataFromScan(

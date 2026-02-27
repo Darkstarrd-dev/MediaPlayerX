@@ -115,29 +115,12 @@
 }
 
 .music-ctrl-panel-option {
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
   border-radius: var(--mpx-control-radius);
   min-height: 28px;
   padding: 0 10px;
-  background: var(--mpx-player-btn-bg);
-  color: var(--mpx-player-btn-text);
   font-size: 12px;
   text-align: left;
   cursor: pointer;
-}
-
-.music-ctrl-panel-option:hover {
-  background: var(--mpx-player-btn-hover-bg);
-}
-
-.music-ctrl-panel-option:active {
-  background: var(--mpx-player-btn-active-bg);
-  border-color: var(--mpx-player-btn-active-border);
-}
-
-.music-ctrl-panel-option.is-active {
-  background: var(--mpx-player-btn-active-bg);
-  border-color: var(--mpx-player-btn-active-border);
 }
 
 .music-ctrl-volume-range {

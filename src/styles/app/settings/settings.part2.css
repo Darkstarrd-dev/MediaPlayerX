@@ -211,20 +211,10 @@
   margin: 0;
 }
 
-.settings-floating-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
 .settings-inline-input-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
-}
-
-.manage-group-actions {
-  justify-content: flex-start;
 }
 
 .manage-group-dialog {
@@ -233,10 +223,10 @@
 
 .sidebar-rename-dialog {
   --sidebar-rename-mode-col-width: clamp(220px, 28%, 320px);
-  --sidebar-rename-soft-border: #c7d0d8;
-  --sidebar-rename-soft-input-bg: #ecf0f3;
-  --sidebar-rename-soft-input-hover-bg: #e3e9ef;
-  --sidebar-rename-soft-input-focus-bg: #dbe3eb;
+  --sidebar-rename-soft-border: var(--mpx-overlay-soft-border);
+  --sidebar-rename-soft-input-bg: var(--mpx-overlay-soft-bg);
+  --sidebar-rename-soft-input-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --sidebar-rename-soft-input-focus-bg: var(--mpx-overlay-soft-focus-bg);
   width: min(960px, 94vw);
   height: min(760px, 86vh);
   overflow: hidden;
@@ -351,12 +341,7 @@
 }
 
 .sidebar-rename-replace-controls {
-  display: grid;
   grid-template-columns: var(--sidebar-rename-mode-col-width) minmax(0, 1fr) minmax(0, 1fr);
-  border: 1px solid var(--sidebar-rename-soft-border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--sidebar-rename-soft-input-bg);
 }
 
 .sidebar-rename-seamless-control {
@@ -402,15 +387,8 @@
 }
 
 .sidebar-rename-mode-row {
-  display: grid;
   grid-template-columns: var(--sidebar-rename-mode-col-width) minmax(0, 1fr);
   align-items: center;
-  width: 100%;
-  min-height: 44px;
-  border: 1px solid var(--sidebar-rename-soft-border);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--sidebar-rename-soft-input-bg);
 }
 
 .sidebar-rename-mode-cell {

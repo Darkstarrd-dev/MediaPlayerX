@@ -272,9 +272,9 @@ function SidebarRenameDialog({
         </div>
         {batchModeActive ? (
           <>
-            <div className="sidebar-rename-merge-shell">
+            <div className="sidebar-rename-merge-shell mpx-overlay-merged-stack">
               {mode === 'replace' ? (
-                <div className="sidebar-rename-replace-controls" aria-label={modeLabel}>
+                <div className="sidebar-rename-replace-controls mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={modeLabel}>
                   <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
                     <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
                     <select
@@ -308,7 +308,7 @@ function SidebarRenameDialog({
                   />
                 </div>
               ) : (
-                <div className="sidebar-rename-mode-row" aria-label={modeLabel}>
+                <div className="sidebar-rename-mode-row mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={modeLabel}>
                   <label className="sidebar-rename-mode-control sidebar-rename-mode-cell">
                     <span className="sidebar-rename-mode-prefix">{modeLabel}</span>
                     <select
@@ -446,7 +446,7 @@ function SidebarRenameDialog({
                 </div>
               )}
 
-              <div className="sidebar-rename-preview-table" aria-label={previewLabel}>
+              <div className="sidebar-rename-preview-table mpx-overlay-merged-bottom" aria-label={previewLabel}>
                 <div className="sidebar-rename-preview-head">
                   <span>{previewOriginalHeaderLabel}</span>
                   <span aria-hidden="true" />
@@ -518,7 +518,7 @@ function SidebarRenameDialog({
           </>
         ) : (
           <input
-            className="manage-group-name-input"
+            className="mpx-overlay-input mpx-overlay-input-compact"
             aria-label={inputLabel}
             type="text"
             value={value}
@@ -541,11 +541,11 @@ function SidebarRenameDialog({
             autoFocus
           />
         )}
-        <div className="settings-floating-actions manage-group-actions sidebar-rename-footer-actions">
-          <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn" type="button" disabled={pending} onClick={onCancel}>
+        <div className="mpx-overlay-actions mpx-overlay-footer-actions">
+          <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={pending} onClick={onCancel}>
             {cancelLabel}
           </button>
-          <button className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
+          <button className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
             {confirmLabel}
           </button>
         </div>

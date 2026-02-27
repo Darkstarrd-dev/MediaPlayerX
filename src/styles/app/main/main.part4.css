@@ -266,27 +266,10 @@
 }
 
 .video-ctrl-panel-option {
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
   border-radius: var(--mpx-control-radius);
   min-height: 28px;
-  background: var(--mpx-player-btn-bg);
-  color: var(--mpx-player-btn-text);
   font-size: 12px;
   cursor: pointer;
-}
-
-.video-ctrl-panel-option:hover {
-  background: var(--mpx-player-btn-hover-bg);
-}
-
-.video-ctrl-panel-option:active {
-  background: var(--mpx-player-btn-active-bg);
-  border-color: var(--mpx-player-btn-active-border);
-}
-
-.video-ctrl-panel-option.is-active {
-  background: var(--mpx-player-btn-active-bg);
-  border-color: var(--mpx-player-btn-active-border);
 }
 
 .video-action-btn {

@@ -11,6 +11,18 @@ import type {
   ReadClipboardImportPathsResponseDto,
   ReadArchiveLoadStatusResponseDto,
   ReadRuntimeCapabilitiesResponseDto,
+  ReadAudioEngineStateResponseDto,
+  SetAudioEngineModeRequestDto,
+  SetAudioEngineModeResponseDto,
+  ListAudioOutputDevicesResponseDto,
+  SetAudioOutputDeviceRequestDto,
+  SetAudioOutputDeviceResponseDto,
+  SetAudioExclusiveRequestDto,
+  SetAudioExclusiveResponseDto,
+  SetAudioGaplessModeRequestDto,
+  SetAudioGaplessModeResponseDto,
+  SetAudioReplayGainModeRequestDto,
+  SetAudioReplayGainModeResponseDto,
   ReadSubtitleEngineStatusResponseDto,
   ListSubtitleRemoteModelsResponseDto,
   ListSubtitleLocalModelsRequestDto,
@@ -316,6 +328,28 @@ export interface MediaRepository {
   ): Promise<RetryImportTaskResponseDto>
   readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
   readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
+  readAudioEngineState?(options?: RepositoryRequestOptions): Promise<ReadAudioEngineStateResponseDto>
+  setAudioEngineMode?(
+    request: SetAudioEngineModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioEngineModeResponseDto>
+  listAudioOutputDevices?(options?: RepositoryRequestOptions): Promise<ListAudioOutputDevicesResponseDto>
+  setAudioOutputDevice?(
+    request: SetAudioOutputDeviceRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioOutputDeviceResponseDto>
+  setAudioExclusive?(
+    request: SetAudioExclusiveRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioExclusiveResponseDto>
+  setAudioGaplessMode?(
+    request: SetAudioGaplessModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioGaplessModeResponseDto>
+  setAudioReplayGainMode?(
+    request: SetAudioReplayGainModeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetAudioReplayGainModeResponseDto>
   readSubtitleEngineStatus?(options?: RepositoryRequestOptions): Promise<ReadSubtitleEngineStatusResponseDto>
   listSubtitleRemoteModels?(options?: RepositoryRequestOptions): Promise<ListSubtitleRemoteModelsResponseDto>
   listSubtitleLocalModels?(

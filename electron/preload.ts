@@ -42,6 +42,23 @@ import {
   readSubtitlePersistenceWindowRequestSchema,
   readSubtitlePersistenceWindowResponseSchema,
   readRuntimeCapabilitiesResponseSchema,
+  readAudioEngineStateResponseSchema,
+  setAudioEngineModeRequestSchema,
+  setAudioEngineModeResponseSchema,
+  listAudioOutputDevicesResponseSchema,
+  setAudioOutputDeviceRequestSchema,
+  setAudioOutputDeviceResponseSchema,
+  setAudioExclusiveRequestSchema,
+  setAudioExclusiveResponseSchema,
+  setAudioGaplessModeRequestSchema,
+  setAudioGaplessModeResponseSchema,
+  setAudioReplayGainModeRequestSchema,
+  setAudioReplayGainModeResponseSchema,
+  audioEngineActionResponseSchema,
+  audioEngineLoadTrackRequestSchema,
+  audioEngineSetPausedRequestSchema,
+  audioEngineSeekToRequestSchema,
+  audioEngineSetVolumeRequestSchema,
   readRuntimeInfoResponseSchema,
   setRuntimeStoragePathsRequestSchema,
   setRuntimeStoragePathsResponseSchema,
@@ -372,6 +389,63 @@ const backendApi = {
   readRuntimeCapabilities: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readRuntimeCapabilities)
     return readRuntimeCapabilitiesResponseSchema.parse(response)
+  },
+  readAudioEngineState: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAudioEngineState)
+    return readAudioEngineStateResponseSchema.parse(response)
+  },
+  setAudioEngineMode: async (request: unknown) => {
+    const parsed = setAudioEngineModeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioEngineMode, parsed)
+    return setAudioEngineModeResponseSchema.parse(response)
+  },
+  listAudioOutputDevices: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.listAudioOutputDevices)
+    return listAudioOutputDevicesResponseSchema.parse(response)
+  },
+  setAudioOutputDevice: async (request: unknown) => {
+    const parsed = setAudioOutputDeviceRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioOutputDevice, parsed)
+    return setAudioOutputDeviceResponseSchema.parse(response)
+  },
+  setAudioExclusive: async (request: unknown) => {
+    const parsed = setAudioExclusiveRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioExclusive, parsed)
+    return setAudioExclusiveResponseSchema.parse(response)
+  },
+  setAudioGaplessMode: async (request: unknown) => {
+    const parsed = setAudioGaplessModeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioGaplessMode, parsed)
+    return setAudioGaplessModeResponseSchema.parse(response)
+  },
+  setAudioReplayGainMode: async (request: unknown) => {
+    const parsed = setAudioReplayGainModeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioReplayGainMode, parsed)
+    return setAudioReplayGainModeResponseSchema.parse(response)
+  },
+  audioEngineLoadTrack: async (request: unknown) => {
+    const parsed = audioEngineLoadTrackRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.audioEngineLoadTrack, parsed)
+    return audioEngineActionResponseSchema.parse(response)
+  },
+  audioEngineSetPaused: async (request: unknown) => {
+    const parsed = audioEngineSetPausedRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.audioEngineSetPaused, parsed)
+    return audioEngineActionResponseSchema.parse(response)
+  },
+  audioEngineSeekTo: async (request: unknown) => {
+    const parsed = audioEngineSeekToRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.audioEngineSeekTo, parsed)
+    return audioEngineActionResponseSchema.parse(response)
+  },
+  audioEngineSetVolume: async (request: unknown) => {
+    const parsed = audioEngineSetVolumeRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.audioEngineSetVolume, parsed)
+    return audioEngineActionResponseSchema.parse(response)
+  },
+  audioEngineStopPlayback: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.audioEngineStopPlayback)
+    return audioEngineActionResponseSchema.parse(response)
   },
   readSubtitleEngineStatus: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readSubtitleEngineStatus)
