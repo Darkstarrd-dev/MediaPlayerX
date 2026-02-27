@@ -238,6 +238,17 @@
   --mpx-thumb-origin-y: 50%;
 }
 
+.thumb-card,
+.thumb-card-main,
+.thumb-placeholder,
+.thumb-media,
+.thumb-media-image,
+.name-list-row,
+.name-list-row-main {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 [data-slot="fg-main-content-image-grid-card"] {
   border-color: var(
     --mpx-slot-fg-main-content-image-grid-card-border,
@@ -457,6 +468,8 @@
   gap: 10px;
   padding: 2px;
   color: var(--mpx-slot-fg-main-footer-pagination-text, inherit);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .main-footer-pagination .toolbar-icon-btn {

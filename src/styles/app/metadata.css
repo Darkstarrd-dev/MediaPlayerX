@@ -229,6 +229,8 @@
   border-radius: var(--mpx-card-radius);
   background: var(--mpx-bg-elevated);
   padding: 8px 10px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .metadata-rating-clear-zone {
@@ -475,6 +477,18 @@
     color-mix(in srgb, var(--mpx-bg-tooltip) 42%, transparent);
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--mpx-text-inverse) 28%, transparent);
+}
+
+.metadata-image-canvas,
+.metadata-image-media,
+.metadata-image-real {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.metadata-image-caption span {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .metadata-image-real {

@@ -141,6 +141,16 @@ button {
   box-shadow: var(--mpx-control-shadow);
   backdrop-filter: var(--mpx-control-backdrop-filter);
   transition: var(--mpx-control-transition);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 button:hover {

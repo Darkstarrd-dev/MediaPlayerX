@@ -12,6 +12,8 @@
   background: #d1d5db;
   color: var(--mpx-text-2);
   font-weight: 700;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .name-list-body {

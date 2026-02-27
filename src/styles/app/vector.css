@@ -200,6 +200,8 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .feature-rating-group strong {
