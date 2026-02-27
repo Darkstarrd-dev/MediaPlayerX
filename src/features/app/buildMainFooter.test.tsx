@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { AudioItem, ImageItem, ImagePackage } from '../../types'
+import type { AudioItem, ImageItem, ImagePackage, VideoItem } from '../../types'
 import { buildMainFooter } from './buildMainFooter'
 
 const sampleImage: ImageItem = {
@@ -50,6 +50,30 @@ const sampleAudio: AudioItem = {
     extension: '.mp3',
     mediaType: 'audio',
     mimeType: 'audio/mpeg',
+  },
+}
+
+const sampleVideo: VideoItem = {
+  id: 'video-1',
+  fileName: 'video-1.mp4',
+  absolutePath: 'C:/media/video-1.mp4',
+  treePath: ['video-1.mp4'],
+  durationSec: 123,
+  width: 1920,
+  height: 1080,
+  sizeMb: 80,
+  coverColor: '#000',
+  workTitle: 'video-1',
+  circle: 'circle',
+  author: 'author',
+  tags: [],
+  grade: null,
+  mediaLocator: {
+    kind: 'filesystem',
+    absolutePath: 'C:/media/video-1.mp4',
+    extension: '.mp4',
+    mediaType: 'video',
+    mimeType: 'video/mp4',
   },
 }
 
@@ -164,5 +188,27 @@ describe('buildMainFooter', () => {
     const footerMetaSpans = document.querySelectorAll('.main-footer-meta > span')
     expect(footerMetaSpans[0]?.textContent ?? '').toBe('C:/media/audio-1.mp3')
     expect(document.querySelector('.main-footer-pagination')).toBeNull()
+  })
+
+  it('视频节点浏览模式多页时渲染分页控件', () => {
+    const node = buildMainFooter({
+      t,
+      mode: 'video',
+      focusedImage: null,
+      focusedImagePackage: null,
+      focusedVideo: sampleVideo,
+      focusedAudio: null,
+      sidebarFocusedPath: null,
+      nodeBrowseMode: true,
+      normalizedPageIndex: 1,
+      imageTotalPages: 3,
+      onPrevPage: vi.fn(),
+      onNextPage: vi.fn(),
+    })
+
+    render(<div className="main-footer">{node}</div>)
+    expect(document.querySelector('.main-footer-pagination')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '上一页' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '下一页' })).toBeInTheDocument()
   })
 })

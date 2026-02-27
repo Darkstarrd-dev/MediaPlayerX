@@ -49,7 +49,7 @@ export function buildMainFooter({
     primary = focusedAudio.absolutePath
   }
 
-  const showPagination = mode === 'image' && imageTotalPages > 1
+  const showPagination = (mode === 'image' || (mode === 'video' && nodeBrowseMode)) && imageTotalPages > 1
 
   return (
     <>

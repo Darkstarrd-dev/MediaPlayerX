@@ -1,4 +1,9 @@
-import type { FocusedImageRef, ImagePackage, SidebarNode } from "../../types";
+import type {
+  FocusedImageRef,
+  ImagePackage,
+  SidebarNode,
+  VideoItem,
+} from "../../types";
 
 function resolveNodePreviewSourceIds(node: SidebarNode): string[] {
   const sourceIds: string[] = [];
@@ -107,6 +112,40 @@ export function buildNodeBrowseItems({
       coverImageUrl,
     };
   });
+}
+
+interface BuildVideoNodeBrowseItemsParams {
+  nodeBrowseMode: boolean;
+  selectedSidebarNode: SidebarNode | null;
+  videoByIdEffective: Map<string, VideoItem>;
+  videoCoverImageUrlById: Record<string, string>;
+}
+
+export function buildVideoNodeBrowseItems({
+  nodeBrowseMode,
+  selectedSidebarNode,
+  videoByIdEffective,
+  videoCoverImageUrlById,
+}: BuildVideoNodeBrowseItemsParams) {
+  if (!nodeBrowseMode || !selectedSidebarNode) {
+    return [];
+  }
+
+  return selectedSidebarNode.children
+    .filter((child) => Boolean(child.videoId))
+    .map((child) => {
+      const videoId = child.videoId;
+      const video = videoId ? videoByIdEffective.get(videoId) : null;
+      const fallbackLabel =
+        video?.workTitle?.trim() || video?.fileName?.trim() || child.label;
+
+      return {
+        nodeId: child.id,
+        videoId,
+        label: fallbackLabel,
+        coverImageUrl: videoId ? (videoCoverImageUrlById[videoId] ?? null) : null,
+      };
+    });
 }
 
 export function resolveRefsInPageForDisplay(

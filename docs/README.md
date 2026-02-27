@@ -25,6 +25,7 @@
 - 性能实施计划：`thumb_acceleration_implementation_plan.md`
 - 全屏重采样 SSOT 草案：`fullscreen_resampling_ssot_draft.md`
 - 高优化需求项目表：`high-optimization-demand-table.md`
+- 视频节点浏览实现记录：`video-node-browse-implementation-log-2026-02-27.md`
 
 ## SSOT 同步提醒
 

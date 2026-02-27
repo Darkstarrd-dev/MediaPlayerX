@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import type { ImageItem, ImagePackage, SidebarNode } from "../../types";
-import { buildNodeBrowseItems } from "./workspaceImageDerivations";
+import {
+  buildNodeBrowseItems,
+  buildVideoNodeBrowseItems,
+} from "./workspaceImageDerivations";
 
 function createImage(id: string, hidden = false): ImageItem {
   return {
@@ -248,5 +251,50 @@ describe("buildNodeBrowseItems", () => {
     expect(items).toHaveLength(1);
     expect(items[0].imageCount).toBe(2);
     expect(items[0].coverImageUrl).toBe("thumb://dir-first");
+  });
+});
+
+describe("buildVideoNodeBrowseItems", () => {
+  it("仅输出直属视频子节点并映射封面", () => {
+    const selectedSidebarNode: SidebarNode = {
+      id: "folder:Videos",
+      label: "Videos",
+      kind: "folder",
+      pathKey: "Videos",
+      children: [
+        {
+          id: "video:Videos/a.mp4",
+          label: "a.mp4",
+          kind: "video",
+          videoId: "video-a",
+          pathKey: "Videos/a.mp4",
+          children: [],
+        },
+        {
+          id: "folder:Videos/Sub",
+          label: "Videos/Sub",
+          kind: "folder",
+          pathKey: "Videos/Sub",
+          children: [],
+        },
+      ],
+    };
+
+    const items = buildVideoNodeBrowseItems({
+      nodeBrowseMode: true,
+      selectedSidebarNode,
+      videoByIdEffective: new Map(),
+      videoCoverImageUrlById: {
+        "video-a": "cover://video-a",
+      },
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toEqual({
+      nodeId: "video:Videos/a.mp4",
+      videoId: "video-a",
+      label: "a.mp4",
+      coverImageUrl: "cover://video-a",
+    });
   });
 });

@@ -22,6 +22,7 @@
 | `dependency-risk-register.md` | 风险治理 | 依赖风险台账 |
 | `offline-auto-subtitle-implementation-plan.md` | 当前计划 | 离线自动字幕实施计划 |
 | `high-optimization-demand-table.md` | 当前计划 | 系统级高性能/长任务优化需求总表 |
+| `video-node-browse-implementation-log-2026-02-27.md` | 变更记录 | 视频节点浏览两轮实现与验证记录 |
 | `windows-release-signing-runbook.md` | 运行手册 | Windows 签名发布流程 |
 | `Tips.md` | 经验沉淀 | 环境差异与疑难点处理记录 |
 | `开发启动清单.md` | 运行手册 | 新环境启动检查项 |

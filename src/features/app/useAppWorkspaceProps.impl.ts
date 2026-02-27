@@ -17,6 +17,7 @@ import {
 } from "./workspaceSharedUtils";
 import {
   buildNodeBrowseItems,
+  buildVideoNodeBrowseItems,
   resolveRefsInPageForDisplay,
 } from "./workspaceImageDerivations";
 import {
@@ -172,6 +173,7 @@ export function useAppWorkspaceProps({
   focusedAudioSrc,
   videoUrlById,
   audioUrlById,
+  videoCoverImageUrlById,
   subtitleTrackUrl,
   subtitleVisible,
   subtitleLoading,
@@ -314,6 +316,30 @@ export function useAppWorkspaceProps({
   const luxuryWhiteActive = appSettings.styleId.startsWith("soft-skeuomorphic")
     && activePaletteId === "skeuomorphic-luxury-white";
 
+  const videoNodeBrowseMode =
+    mode === "video" &&
+    !manageMode &&
+    !metadataManageMode &&
+    Boolean(
+      selectedSidebarNode &&
+        selectedSidebarNode.kind === "folder" &&
+        selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
+    );
+
+  const videoNodeBrowseItems = buildVideoNodeBrowseItems({
+    nodeBrowseMode: videoNodeBrowseMode,
+    selectedSidebarNode,
+    videoByIdEffective,
+    videoCoverImageUrlById,
+  });
+
+  useEffect(() => {
+    if (!videoNodeBrowseMode) {
+      return;
+    }
+    setVideoPlaying(false);
+  }, [setVideoPlaying, videoNodeBrowseMode]);
+
   const sidebarPanelProps = buildSidebarPanelProps({
     mode,
     sidebarFocus: appSettings.sidebarFocus,
@@ -347,6 +373,7 @@ export function useAppWorkspaceProps({
     searchResultsReadOnly: adReviewResultsMode ? false : searchResultsReadOnly,
     manageMode,
     metadataManageMode,
+    videoNodeBrowseMode,
     metadataManageSelectionMode,
     checkedSidebarNodeIdSet: sidebarCheckedNodeIdSet,
     focusedRef,
@@ -582,7 +609,9 @@ export function useAppWorkspaceProps({
     sourceCoverImageUrlBySourceId,
     thumbnailImageUrlById,
   });
-  const nodeBrowseNodeId = nodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "";
+  const mainNodeBrowseMode = nodeBrowseMode || videoNodeBrowseMode;
+  const mainNodeBrowseItemsLength =
+    mode === "video" ? videoNodeBrowseItems.length : nodeBrowseItems.length;
   const {
     nodeBrowsePageStart,
     nodeBrowsePageSize,
@@ -593,9 +622,10 @@ export function useAppWorkspaceProps({
     onThumbnailWheelTurnPage,
     onThumbnailWheelDeltaPreview,
   } = useWorkspaceNodeBrowsePaging({
-    nodeBrowseMode,
-    nodeBrowseNodeId,
-    nodeBrowseItemsLength: nodeBrowseItems.length,
+    nodeBrowseMode: mainNodeBrowseMode,
+    nodeBrowseNodeId:
+      mainNodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "",
+    nodeBrowseItemsLength: mainNodeBrowseItemsLength,
     pagedPageSize,
     adReviewResultsMode,
     imageTotalPagesForMain,
@@ -907,6 +937,38 @@ export function useAppWorkspaceProps({
       const node = sidebarNodeById.get(nodeId);
       return Boolean(node?.videoId);
     }),
+    nodeBrowseMode: videoNodeBrowseMode,
+    nodeBrowseLabel: videoNodeBrowseMode
+      ? (selectedSidebarNode?.label ?? t("ui.image.nodeBrowseDefaultLabel"))
+      : "",
+    nodeBrowseItems: videoNodeBrowseItems,
+    nodeBrowsePageStart,
+    nodeBrowsePageSize,
+    thumbnailColumns,
+    actualCellWidth,
+    thumbnailGap: actualThumbnailGap,
+    thumbnailScaleLevelCount,
+    displayThumbnailScaleLevel,
+    canThumbnailScaleDown,
+    canThumbnailScaleUp,
+    onThumbnailScaleLevelChange:
+      imageMainSectionHandlers.onThumbnailScaleLevelChange,
+    onPreviewNodeBrowseItem: (nodeId, videoId) => {
+      setSelectedSidebarNodeId(nodeId);
+      setVideoPlaying(false);
+      if (videoId) {
+        selectVideoFromBrowser(videoId, {
+          queueSource: "sidebar",
+          preserveRate: true,
+        });
+      }
+    },
+    onActivateNodeBrowseItem: (nodeId, videoId) => {
+      setSelectedSidebarNodeId(nodeId);
+      if (videoId) {
+        selectVideoFromBrowser(videoId, { play: true, queueSource: "sidebar" });
+      }
+    },
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
     onManageDelete: requestManageDelete,
@@ -1172,7 +1234,7 @@ export function useAppWorkspaceProps({
     sidebarFocusedPath: selectedSidebarNodeId
       ? (effectiveSidebarNodeById.get(selectedSidebarNodeId)?.pathKey ?? null)
       : null,
-    nodeBrowseMode,
+    nodeBrowseMode: mainNodeBrowseMode,
     normalizedPageIndex: normalizedPageIndexForFooterWithPreview,
     imageTotalPages: imageTotalPagesForFooter,
     onPrevPage: onPrevPageForMain,

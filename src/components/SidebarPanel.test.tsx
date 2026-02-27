@@ -850,6 +850,31 @@ describe("SidebarPanel image collapse interactions", () => {
     ).toBeInTheDocument();
   });
 
+  it("视频模式可折叠目录显示直属媒体计数", () => {
+    const videoTree: SidebarNode[] = [
+      {
+        id: "folder:Videos",
+        label: "Videos",
+        kind: "folder",
+        pathKey: "Videos",
+        children: [
+          {
+            id: "video:Videos/clip.mp4",
+            label: "clip.mp4",
+            kind: "video",
+            videoId: "video-1",
+            pathKey: "Videos/clip.mp4",
+            children: [],
+          },
+        ],
+      },
+    ];
+
+    renderVideoSidebar(videoTree);
+
+    expect(screen.getByLabelText("节点 1")).toBeInTheDocument();
+  });
+
   it("视频模式折叠指针仅隐藏直属视频，保留下级指针", () => {
     const videoTree: SidebarNode[] = [
       {

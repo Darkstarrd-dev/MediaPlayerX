@@ -160,6 +160,7 @@ export interface UseAppWorkspacePropsParams {
   focusedAudioSrc: string | null
   videoUrlById: Record<string, string>
   audioUrlById: Record<string, string>
+  videoCoverImageUrlById: Record<string, string>
   subtitleTrackUrl: string | null
   subtitleVisible: boolean
   subtitleLoading: boolean

@@ -55,6 +55,7 @@ interface UseResolvedMediaStateParams {
   focusedVideoCoverImageLocator: MediaLocator | null
   sourceCoverLocators?: Array<{ sourceId: string; locator: MediaLocator }>
   nodeBrowseCoverThumbnailLocators?: Array<{ sourceId: string; imageId: string; locator: MediaLocator }>
+  nodeBrowseVideoCoverLocators?: Array<{ videoId: string; locator: MediaLocator }>
 }
 
 interface UseResolvedMediaStateResult {
@@ -65,6 +66,7 @@ interface UseResolvedMediaStateResult {
   focusedAudioSrc: string | null
   videoUrlById: Record<string, string>
   audioUrlById: Record<string, string>
+  videoCoverImageUrlById: Record<string, string>
   focusedVideoCoverImageSrc: string | null
   sourceCoverImageUrlBySourceId: Record<string, string>
 }
@@ -104,6 +106,7 @@ export function useResolvedMediaState({
   focusedVideoCoverImageLocator,
   sourceCoverLocators = [],
   nodeBrowseCoverThumbnailLocators = [],
+  nodeBrowseVideoCoverLocators = [],
 }: UseResolvedMediaStateParams): UseResolvedMediaStateResult {
   const mediaResolveTargets = useMemo<MediaResolveTarget[]>(() => {
     const targetById = new Map<string, MediaResolveTarget>()
@@ -321,6 +324,17 @@ export function useResolvedMediaState({
       }
     }
 
+    for (const candidate of nodeBrowseVideoCoverLocators) {
+      pushTarget(
+        {
+          targetId: `video-cover:${candidate.videoId}`,
+          locator: candidate.locator,
+          variant: 'original',
+        },
+        true,
+      )
+    }
+
     if (focusedAudio) {
       pushTarget(
         {
@@ -374,6 +388,7 @@ export function useResolvedMediaState({
     thumbnailWarmupRadius,
     thumbnailWarmupConcurrency,
     showNamesOnly,
+    nodeBrowseVideoCoverLocators,
     sourceCoverLocators,
   ])
 
@@ -551,6 +566,7 @@ export function useResolvedMediaState({
     focusedAudioSrc,
     videoUrlById,
     audioUrlById,
+    videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
   }

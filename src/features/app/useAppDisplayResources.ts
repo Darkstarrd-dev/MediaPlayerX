@@ -250,6 +250,34 @@ export function useAppDisplayResources({
     selectedSidebarNode,
   ]);
 
+  const nodeBrowseVideoCoverLocators = useMemo(() => {
+    if (appSettings.mode !== "video" || !selectedSidebarNode) {
+      return [];
+    }
+
+    const next: Array<{ videoId: string; locator: MediaLocator }> = [];
+    const seenVideoIds = new Set<string>();
+    for (const child of selectedSidebarNode.children) {
+      const videoId = child.videoId?.trim() ?? "";
+      if (!videoId || seenVideoIds.has(videoId)) {
+        continue;
+      }
+      const video = videoByIdEffective.get(videoId);
+      if (!video) {
+        continue;
+      }
+      const coverPath = videoCoverImageById[videoId] ?? video.coverImagePath ?? null;
+      const locator = buildCoverImageLocator(coverPath);
+      if (!locator) {
+        continue;
+      }
+      seenVideoIds.add(videoId);
+      next.push({ videoId, locator });
+    }
+
+    return next;
+  }, [appSettings.mode, selectedSidebarNode, videoByIdEffective, videoCoverImageById]);
+
   const { refsInPageBase } = resolveAdReviewPageDerivations({
     adReviewResultsMode,
     orderedRootScopedImageRefs,
@@ -296,6 +324,7 @@ export function useAppDisplayResources({
     focusedAudioSrc,
     videoUrlById,
     audioUrlById,
+    videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
   } = useResolvedMediaState({
@@ -331,6 +360,7 @@ export function useAppDisplayResources({
     focusedVideo,
     focusedAudio,
     focusedVideoCoverImageLocator,
+    nodeBrowseVideoCoverLocators,
     nodeBrowseCoverThumbnailLocators,
     sourceCoverLocators: scopedImageSourcesEffective
       .map((source) => {
@@ -894,6 +924,7 @@ export function useAppDisplayResources({
     focusedAudioSrc,
     videoUrlById,
     audioUrlById,
+    videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     subtitleVisible,

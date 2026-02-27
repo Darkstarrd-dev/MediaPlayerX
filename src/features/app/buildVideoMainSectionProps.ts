@@ -23,6 +23,26 @@ interface BuildVideoMainSectionPropsParams {
   canManageDelete: boolean
   canManageMoveNodes: boolean
   canManageAddToPlaylist: boolean
+  nodeBrowseMode?: boolean
+  nodeBrowseLabel?: string
+  nodeBrowseItems?: Array<{
+    nodeId: string
+    videoId?: string
+    label: string
+    coverImageUrl: string | null
+  }>
+  nodeBrowsePageStart?: number
+  nodeBrowsePageSize?: number
+  thumbnailColumns?: number
+  actualCellWidth?: number
+  thumbnailGap?: number
+  thumbnailScaleLevelCount?: number
+  displayThumbnailScaleLevel?: number
+  canThumbnailScaleDown?: boolean
+  canThumbnailScaleUp?: boolean
+  onThumbnailScaleLevelChange?: (level: number) => void
+  onPreviewNodeBrowseItem?: (nodeId: string, videoId?: string) => void
+  onActivateNodeBrowseItem?: (nodeId: string, videoId?: string) => void
   canManageHide: boolean
   canManageUnhide: boolean
   onManageDelete: () => void
@@ -134,6 +154,21 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     canManageDelete: params.canManageDelete,
     canManageMoveNodes: params.canManageMoveNodes,
     canManageAddToPlaylist: params.canManageAddToPlaylist,
+    nodeBrowseMode: params.nodeBrowseMode ?? false,
+    nodeBrowseLabel: params.nodeBrowseLabel ?? '',
+    nodeBrowseItems: params.nodeBrowseItems ?? [],
+    nodeBrowsePageStart: Math.max(0, Math.floor(params.nodeBrowsePageStart ?? 0)),
+    nodeBrowsePageSize: Math.max(1, Math.floor(params.nodeBrowsePageSize ?? Math.max(1, params.nodeBrowseItems?.length ?? 1))),
+    thumbnailColumns: params.thumbnailColumns ?? 6,
+    actualCellWidth: params.actualCellWidth ?? 160,
+    thumbnailGap: params.thumbnailGap ?? 8,
+    thumbnailScaleLevelCount: params.thumbnailScaleLevelCount ?? 1,
+    displayThumbnailScaleLevel: params.displayThumbnailScaleLevel ?? 1,
+    canThumbnailScaleDown: params.canThumbnailScaleDown ?? false,
+    canThumbnailScaleUp: params.canThumbnailScaleUp ?? false,
+    onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
+    onPreviewNodeBrowseItem: params.onPreviewNodeBrowseItem,
+    onActivateNodeBrowseItem: params.onActivateNodeBrowseItem,
     canManageHide: params.canManageHide,
     canManageUnhide: params.canManageUnhide,
     onManageDelete: params.onManageDelete,
@@ -280,6 +315,14 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
       }
 
       void params.saveVideoCover(params.focusedVideoId, params.videoTime, params.coverColor)
+    },
+    onSaveCoverAtTime: (timeSec: number) => {
+      if (!params.focusedVideoId) {
+        return
+      }
+
+      const normalizedTimeSec = Math.max(0, Number(timeSec.toFixed(3)))
+      void params.saveVideoCover(params.focusedVideoId, normalizedTimeSec, params.coverColor)
     },
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
   }

@@ -4,10 +4,12 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent,
 } from "react";
 
 import { MainUiIcon } from "./MainUiIcon";
 import { MusicControlIcon } from "./MusicControlIcon";
+import { ImageMainScaleControl } from "./ImageMainScaleControl";
 import { SkeuoRunway } from "./primitives/SkeuoRunway";
 import SubtitleCleanupPanel from "./subtitles/SubtitleCleanupPanel";
 import SubtitleOverlay from "./subtitles/SubtitleOverlay";
@@ -40,6 +42,26 @@ interface VideoMainSectionProps {
   canManageDelete: boolean;
   canManageMoveNodes?: boolean;
   canManageAddToPlaylist?: boolean;
+  nodeBrowseMode?: boolean;
+  nodeBrowseLabel?: string;
+  nodeBrowseItems?: Array<{
+    nodeId: string;
+    videoId?: string;
+    label: string;
+    coverImageUrl: string | null;
+  }>;
+  nodeBrowsePageStart?: number;
+  nodeBrowsePageSize?: number;
+  thumbnailColumns?: number;
+  actualCellWidth?: number;
+  thumbnailGap?: number;
+  thumbnailScaleLevelCount?: number;
+  displayThumbnailScaleLevel?: number;
+  canThumbnailScaleDown?: boolean;
+  canThumbnailScaleUp?: boolean;
+  onThumbnailScaleLevelChange?: (level: number) => void;
+  onPreviewNodeBrowseItem?: (nodeId: string, videoId?: string) => void;
+  onActivateNodeBrowseItem?: (nodeId: string, videoId?: string) => void;
   canManageHide: boolean;
   canManageUnhide: boolean;
   onManageDelete: () => void;
@@ -129,6 +151,7 @@ interface VideoMainSectionProps {
   onCycleVideoFitMode: () => void;
   onSetVideoFitMode: (mode: VideoFitMode) => void;
   onSaveCover: () => void;
+  onSaveCoverAtTime?: (timeSec: number) => void;
   onEnterFullscreen: () => void;
 }
 
@@ -144,6 +167,21 @@ function VideoMainSection({
   canManageDelete,
   canManageMoveNodes = false,
   canManageAddToPlaylist = false,
+  nodeBrowseMode = false,
+  nodeBrowseLabel = "",
+  nodeBrowseItems = [],
+  thumbnailColumns = 6,
+  actualCellWidth = 160,
+  thumbnailGap = 8,
+  nodeBrowsePageStart = 0,
+  nodeBrowsePageSize = 1,
+  thumbnailScaleLevelCount = 1,
+  displayThumbnailScaleLevel = 1,
+  canThumbnailScaleDown = false,
+  canThumbnailScaleUp = false,
+  onThumbnailScaleLevelChange,
+  onPreviewNodeBrowseItem,
+  onActivateNodeBrowseItem,
   onManageDelete,
   onManageRename = () => undefined,
   onManageGroup = () => undefined,
@@ -211,6 +249,7 @@ function VideoMainSection({
   onCycleVideoFitMode,
   onSetVideoFitMode,
   onSaveCover,
+  onSaveCoverAtTime = () => undefined,
   onEnterFullscreen,
 }: VideoMainSectionProps) {
   const { t } = useI18n();
@@ -508,6 +547,200 @@ function VideoMainSection({
     };
   }, [autoSubtitleActive, subtitleTrackUrl, subtitleVisible, videoSourceUrl]);
 
+  const [openScalePopover, setOpenScalePopover] = useState(false);
+  const [scaleDraftValue, setScaleDraftValue] = useState(
+    Math.max(1, Math.round(displayThumbnailScaleLevel)),
+  );
+  const scalePopoverHideTimerRef = useRef<number | null>(null);
+  const autoSavedCoverVideoIdSetRef = useRef<Set<string>>(new Set());
+
+  const effectiveNodeBrowsePageSize = Math.max(1, Math.floor(nodeBrowsePageSize));
+  const effectiveNodeBrowsePageStart = Math.max(0, Math.floor(nodeBrowsePageStart));
+  const pagedNodeBrowseItems = nodeBrowseMode
+    ? nodeBrowseItems.slice(
+        effectiveNodeBrowsePageStart,
+        effectiveNodeBrowsePageStart + effectiveNodeBrowsePageSize,
+      )
+    : [];
+
+  const [focusedBrowseIndex, setFocusedBrowseIndex] = useState(0);
+  const browseCardButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    setScaleDraftValue(Math.max(1, Math.round(displayThumbnailScaleLevel)));
+  }, [displayThumbnailScaleLevel]);
+
+  const clearScalePopoverHideTimer = useCallback(() => {
+    if (scalePopoverHideTimerRef.current == null) {
+      return;
+    }
+    window.clearTimeout(scalePopoverHideTimerRef.current);
+    scalePopoverHideTimerRef.current = null;
+  }, []);
+
+  const openScalePopoverByHover = useCallback(() => {
+    clearScalePopoverHideTimer();
+    setOpenScalePopover(true);
+  }, [clearScalePopoverHideTimer]);
+
+  const closeScalePopoverByHover = useCallback(() => {
+    if (popoverDebugPinned) {
+      return;
+    }
+    clearScalePopoverHideTimer();
+    scalePopoverHideTimerRef.current = window.setTimeout(() => {
+      setOpenScalePopover(false);
+      scalePopoverHideTimerRef.current = null;
+    }, 140);
+  }, [clearScalePopoverHideTimer, popoverDebugPinned]);
+
+  const effectiveOpenScalePopover = popoverDebugPinned || openScalePopover;
+
+  useEffect(() => {
+    return () => {
+      clearScalePopoverHideTimer();
+    };
+  }, [clearScalePopoverHideTimer]);
+
+  useEffect(() => {
+    if (pagedNodeBrowseItems.length === 0) {
+      setFocusedBrowseIndex(0);
+      return;
+    }
+    setFocusedBrowseIndex((previous) =>
+      Math.max(0, Math.min(pagedNodeBrowseItems.length - 1, previous)),
+    );
+  }, [pagedNodeBrowseItems.length]);
+
+  const handlePreviewNodeBrowseItem = useCallback(
+    (item: { nodeId: string; videoId?: string }) => {
+      onPreviewNodeBrowseItem?.(item.nodeId, item.videoId);
+    },
+    [onPreviewNodeBrowseItem],
+  );
+
+  const handleActivateNodeBrowseItem = useCallback(
+    (item: { nodeId: string; videoId?: string }) => {
+      onActivateNodeBrowseItem?.(item.nodeId, item.videoId);
+    },
+    [onActivateNodeBrowseItem],
+  );
+
+  const handleNodeBrowseGridKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (!nodeBrowseMode || pagedNodeBrowseItems.length === 0) {
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        const target = pagedNodeBrowseItems[focusedBrowseIndex];
+        if (target) {
+          handleActivateNodeBrowseItem(target);
+        }
+        return;
+      }
+
+      const currentIndex = focusedBrowseIndex;
+      let nextIndex = currentIndex;
+      const stepByRow = Math.max(1, thumbnailColumns);
+      if (event.key === "ArrowRight") {
+        nextIndex = Math.min(pagedNodeBrowseItems.length - 1, currentIndex + 1);
+      } else if (event.key === "ArrowLeft") {
+        nextIndex = Math.max(0, currentIndex - 1);
+      } else if (event.key === "ArrowDown") {
+        nextIndex = Math.min(
+          pagedNodeBrowseItems.length - 1,
+          currentIndex + stepByRow,
+        );
+      } else if (event.key === "ArrowUp") {
+        nextIndex = Math.max(0, currentIndex - stepByRow);
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      if (nextIndex === currentIndex) {
+        return;
+      }
+      setFocusedBrowseIndex(nextIndex);
+      const nextItem = pagedNodeBrowseItems[nextIndex];
+      if (nextItem) {
+        handlePreviewNodeBrowseItem(nextItem);
+      }
+      const targetButton = browseCardButtonRefs.current[nextIndex];
+      targetButton?.focus();
+    },
+    [
+      focusedBrowseIndex,
+      handleActivateNodeBrowseItem,
+      handlePreviewNodeBrowseItem,
+      nodeBrowseMode,
+      pagedNodeBrowseItems,
+      thumbnailColumns,
+    ],
+  );
+
+  useEffect(() => {
+    if (
+      nodeBrowseMode ||
+      !focusedVideo?.id ||
+      !videoSourceUrl ||
+      coverImageUrl ||
+      autoSavedCoverVideoIdSetRef.current.has(focusedVideo.id)
+    ) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    let cancelled = false;
+    const captureAtSec = 0.1;
+    const tryAutoSaveCover = () => {
+      if (cancelled) {
+        return;
+      }
+      autoSavedCoverVideoIdSetRef.current.add(focusedVideo.id);
+      onVideoTimeUpdate(captureAtSec);
+      onSaveCoverAtTime(captureAtSec);
+    };
+
+    const onLoadedData = () => {
+      tryAutoSaveCover();
+    };
+
+    const onSeeked = () => {
+      tryAutoSaveCover();
+    };
+
+    if (video.readyState >= 2) {
+      if (video.currentTime < captureAtSec) {
+        video.currentTime = captureAtSec;
+        video.addEventListener("seeked", onSeeked, { once: true });
+      } else {
+        tryAutoSaveCover();
+      }
+    } else {
+      video.addEventListener("loadeddata", onLoadedData, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("seeked", onSeeked);
+    };
+  }, [
+    coverImageUrl,
+    focusedVideo?.id,
+    nodeBrowseMode,
+    onSaveCoverAtTime,
+    onVideoTimeUpdate,
+    videoSourceUrl,
+  ]);
+
   return (
     <>
       <div className="main-toolbar" data-slot="fg-main-toolbar">
@@ -613,6 +846,22 @@ function VideoMainSection({
             />
             {canJumpToManga || canJumpToMusic ? (
               <div className="toolbar-actions">
+                {nodeBrowseMode ? (
+                  <ImageMainScaleControl
+                    t={t}
+                    openScalePopover={effectiveOpenScalePopover}
+                    canThumbnailScaleDown={canThumbnailScaleDown}
+                    canThumbnailScaleUp={canThumbnailScaleUp}
+                    thumbnailScaleLevelCount={thumbnailScaleLevelCount}
+                    scaleDraftValue={scaleDraftValue}
+                    onOpenByHover={openScalePopoverByHover}
+                    onCloseByHover={closeScalePopoverByHover}
+                    onScaleDraftChange={setScaleDraftValue}
+                    onScaleChange={(level) =>
+                      onThumbnailScaleLevelChange?.(level)
+                    }
+                  />
+                ) : null}
                 {canJumpToManga ? (
                   <button
                     className="toolbar-icon-btn"
@@ -637,124 +886,206 @@ function VideoMainSection({
                 ) : null}
               </div>
             ) : null}
+            {nodeBrowseMode && !canJumpToManga && !canJumpToMusic ? (
+              <div className="toolbar-actions">
+                <ImageMainScaleControl
+                  t={t}
+                  openScalePopover={effectiveOpenScalePopover}
+                  canThumbnailScaleDown={canThumbnailScaleDown}
+                  canThumbnailScaleUp={canThumbnailScaleUp}
+                  thumbnailScaleLevelCount={thumbnailScaleLevelCount}
+                  scaleDraftValue={scaleDraftValue}
+                  onOpenByHover={openScalePopoverByHover}
+                  onCloseByHover={closeScalePopoverByHover}
+                  onScaleDraftChange={setScaleDraftValue}
+                  onScaleChange={(level) => onThumbnailScaleLevelChange?.(level)}
+                />
+              </div>
+            ) : null}
           </>
         )}
       </div>
 
-      <div
-        className="video-preview"
-        data-slot="fg-main-content-video-preview"
-        onPointerDownCapture={onRequestMainFocus}
-      >
+      {nodeBrowseMode ? (
         <div
-          className="video-screen"
-          data-slot="fg-main-content-video-preview-screen"
-          style={{ background: videoScreenBackground }}
+          className="image-grid node-browse-grid mpx-scrollbar-hidden"
+          data-slot="fg-main-content-image-node-grid"
+          onPointerDownCapture={onRequestMainFocus}
+          onKeyDown={handleNodeBrowseGridKeyDown}
+          style={{
+            gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
+            gap: `${thumbnailGap}px`,
+          }}
         >
-          {videoSourceUrl ? (
-            <video
-              ref={handleVideoElementRef}
-              className="video-screen-media"
-              data-slot="fg-main-content-video-preview-media"
-              style={{
-                opacity: showVideoFrame ? 1 : 0,
-                objectFit: videoObjectFit,
-                objectPosition: "center center",
-              }}
-              src={videoSourceUrl}
-              crossOrigin="anonymous"
-              preload="metadata"
-              playsInline
-              onTimeUpdate={() => {
-                const currentTime = videoRef.current?.currentTime ?? 0;
-                if (currentTime > 0.05) {
-                  setHasSeekPreviewCurrentSource(true);
-                }
-                onVideoTimeUpdate(currentTime);
-              }}
-              onLoadedMetadata={() => {
-                const duration = videoRef.current?.duration ?? 0;
-                if (Number.isFinite(duration) && duration > 0) {
-                  onVideoDurationDetected(duration);
-                }
-                const restoreTime = clamp(
-                  clampedTime,
-                  0,
-                  Number.isFinite(duration) && duration > 0
-                    ? duration
-                    : Math.max(0, clampedTime),
-                );
-                if (
-                  restoreTime > 0.05 &&
-                  videoRef.current &&
-                  Math.abs(videoRef.current.currentTime - restoreTime) > 0.05
-                ) {
-                  videoRef.current.currentTime = restoreTime;
-                }
-                if (clampedTime <= 0 && !videoPlaying && !coverImageUrl) {
-                  const video = videoRef.current;
-                  if (video && video.duration > 0) {
-                    video.currentTime = Math.min(0.001, video.duration);
-                  }
-                }
-              }}
-              onSeeked={() => {
-                const currentTime = videoRef.current?.currentTime ?? 0;
-                if (currentTime > 0.05) {
-                  setHasSeekPreviewCurrentSource(true);
-                }
-                onVideoTimeUpdate(currentTime);
-              }}
-              onEnded={() => {
-                onVideoEnded();
-              }}
+          {pagedNodeBrowseItems.map((item, index) => (
+            <div
+              key={item.nodeId}
+              className="thumb-card"
+              data-slot="fg-main-content-image-node-grid-card"
+              style={{ width: `${actualCellWidth}px` }}
             >
-              {!autoSubtitleActive && subtitleTrackUrl ? (
-                <track
-                  default
-                  kind="subtitles"
-                  label={t("ui.media.subtitleTrack")}
-                  src={subtitleTrackUrl}
+              <button
+                ref={(element) => {
+                  browseCardButtonRefs.current[index] = element;
+                }}
+                className="thumb-card-main"
+                type="button"
+                onClick={() => {
+                  setFocusedBrowseIndex(index);
+                  handlePreviewNodeBrowseItem(item);
+                }}
+                onDoubleClick={() => {
+                  setFocusedBrowseIndex(index);
+                  handleActivateNodeBrowseItem(item);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    handleActivateNodeBrowseItem(item);
+                  }
+                }}
+                aria-label={
+                  nodeBrowseLabel
+                    ? `${nodeBrowseLabel} / ${item.label}`
+                    : item.label
+                }
+                aria-pressed={focusedBrowseIndex === index}
+              >
+                <div className="thumb-placeholder" style={{ aspectRatio: "1 / 1" }}>
+                  <div className="thumb-media" style={{ width: "100%", height: "100%" }}>
+                    {item.coverImageUrl ? (
+                      <img
+                        className="thumb-media-image"
+                        src={item.coverImageUrl}
+                        alt={item.label}
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="thumb-media-empty" />
+                    )}
+                  </div>
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div
+            className="video-preview"
+            data-slot="fg-main-content-video-preview"
+            onPointerDownCapture={onRequestMainFocus}
+          >
+            <div
+              className="video-screen"
+              data-slot="fg-main-content-video-preview-screen"
+              style={{ background: videoScreenBackground }}
+            >
+              {videoSourceUrl ? (
+                <video
+                  ref={handleVideoElementRef}
+                  className="video-screen-media"
+                  data-slot="fg-main-content-video-preview-media"
+                  style={{
+                    opacity: showVideoFrame ? 1 : 0,
+                    objectFit: videoObjectFit,
+                    objectPosition: "center center",
+                  }}
+                  src={videoSourceUrl}
+                  crossOrigin="anonymous"
+                  preload="metadata"
+                  playsInline
+                  onTimeUpdate={() => {
+                    const currentTime = videoRef.current?.currentTime ?? 0;
+                    if (currentTime > 0.05) {
+                      setHasSeekPreviewCurrentSource(true);
+                    }
+                    onVideoTimeUpdate(currentTime);
+                  }}
+                  onLoadedMetadata={() => {
+                    const duration = videoRef.current?.duration ?? 0;
+                    if (Number.isFinite(duration) && duration > 0) {
+                      onVideoDurationDetected(duration);
+                    }
+                    const restoreTime = clamp(
+                      clampedTime,
+                      0,
+                      Number.isFinite(duration) && duration > 0
+                        ? duration
+                        : Math.max(0, clampedTime),
+                    );
+                    if (
+                      restoreTime > 0.05 &&
+                      videoRef.current &&
+                      Math.abs(videoRef.current.currentTime - restoreTime) > 0.05
+                    ) {
+                      videoRef.current.currentTime = restoreTime;
+                    }
+                    if (clampedTime <= 0 && !videoPlaying && !coverImageUrl) {
+                      const video = videoRef.current;
+                      if (video && video.duration > 0) {
+                        video.currentTime = Math.min(0.001, video.duration);
+                      }
+                    }
+                  }}
+                  onSeeked={() => {
+                    const currentTime = videoRef.current?.currentTime ?? 0;
+                    if (currentTime > 0.05) {
+                      setHasSeekPreviewCurrentSource(true);
+                    }
+                    onVideoTimeUpdate(currentTime);
+                  }}
+                  onEnded={() => {
+                    onVideoEnded();
+                  }}
+                >
+                  {!autoSubtitleActive && subtitleTrackUrl ? (
+                    <track
+                      default
+                      kind="subtitles"
+                      label={t("ui.media.subtitleTrack")}
+                      src={subtitleTrackUrl}
+                    />
+                  ) : null}
+                </video>
+              ) : null}
+
+              <SubtitleOverlay
+                text={subtitleOverlayText}
+                visible={subtitleVisible}
+                style={subtitleOverlayStyle}
+              />
+
+              {showCover && coverImageUrl ? (
+                <img
+                  className="video-screen-cover-image"
+                  data-slot="fg-main-content-video-preview-cover"
+                  style={{
+                    objectFit: videoObjectFit,
+                    objectPosition: "center center",
+                  }}
+                  src={coverImageUrl}
+                  alt={t("ui.media.videoCoverAlt")}
                 />
               ) : null}
-            </video>
-          ) : null}
 
-          <SubtitleOverlay
-            text={subtitleOverlayText}
-            visible={subtitleVisible}
-            style={subtitleOverlayStyle}
-          />
-
-          {showCover && coverImageUrl ? (
-            <img
-              className="video-screen-cover-image"
-              data-slot="fg-main-content-video-preview-cover"
-              style={{
-                objectFit: videoObjectFit,
-                objectPosition: "center center",
-              }}
-              src={coverImageUrl}
-              alt={t("ui.media.videoCoverAlt")}
-            />
-          ) : null}
-
-          {!videoSourceUrl ? (
-            <div
-              className="video-screen-empty"
-              data-slot="fg-main-content-video-preview-empty"
-            >
-              <span>{t("ui.media.noVideoSource")}</span>
+              {!videoSourceUrl ? (
+                <div
+                  className="video-screen-empty"
+                  data-slot="fg-main-content-video-preview-empty"
+                >
+                  <span>{t("ui.media.noVideoSource")}</span>
+                </div>
+              ) : null}
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
 
-      <div
-        className="video-controls-shell"
-        data-slot="fg-main-content-video-controls"
-        onPointerDownCapture={onRequestMainFocus}
-      >
+          <div
+            className="video-controls-shell"
+            data-slot="fg-main-content-video-controls"
+            onPointerDownCapture={onRequestMainFocus}
+          >
         <div
           className="video-controls-progress"
           data-slot="fg-main-content-video-controls-progress"
@@ -1147,7 +1478,9 @@ function VideoMainSection({
             </div>
           </div>
         </div>
-      </div>
+          </div>
+        </>
+      )}
 
       <SubtitleCleanupPanel
         open={subtitleCleanupPanelOpen}

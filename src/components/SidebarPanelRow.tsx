@@ -38,6 +38,7 @@ interface SidebarPanelRowProps {
   sidebarCountFontSize: number;
   audioPlaylistIds: string[];
   searchResultReadonly: boolean;
+  videoNodeBrowseMode?: boolean;
   suppressManageClickRef: MutableRefObject<boolean>;
   labelTextElementByNodeIdRef: MutableRefObject<Map<string, HTMLSpanElement>>;
   scheduleOverflowMeasure: () => void;
@@ -81,6 +82,7 @@ export function SidebarPanelRow({
   sidebarCountFontSize,
   audioPlaylistIds,
   searchResultReadonly,
+  videoNodeBrowseMode = false,
   suppressManageClickRef,
   labelTextElementByNodeIdRef,
   scheduleOverflowMeasure,
@@ -170,6 +172,10 @@ export function SidebarPanelRow({
       return;
     }
     if (node.videoId) {
+      if (mode === "video" && videoNodeBrowseMode && onSelectVideoAndPlay) {
+        onSelectVideoAndPlay(node.videoId);
+        return;
+      }
       onSelectVideo(node.videoId);
     }
   };
@@ -297,21 +303,23 @@ export function SidebarPanelRow({
           ) : null}
         </span>
 
-        {mode === "image" ? (
+        {mode === "image" || (mode === "video" && imageFolderCollapsible) ? (
           <span
             className="sidebar-counts"
             style={{ fontSize: `${sidebarCountFontSize}px` }}
           >
             <span
               className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
-              aria-label={imageCountLabel}
-              data-tooltip-label={imageCountLabel}
+              aria-label={mode === "image" ? imageCountLabel : t("a11y.sidebar.nodeCount", { count: directMediaChildCount })}
+              data-tooltip-label={mode === "image" ? imageCountLabel : t("a11y.sidebar.nodeCount", { count: directMediaChildCount })}
             >
-              {showProcessingCountPlaceholder
-                ? "..."
-                : hasOwnImages
-                  ? visibleImageCount
-                  : directMediaChildCount}
+              {mode === "image"
+                ? showProcessingCountPlaceholder
+                  ? "..."
+                  : hasOwnImages
+                    ? visibleImageCount
+                    : directMediaChildCount
+                : directMediaChildCount}
             </span>
           </span>
         ) : null}

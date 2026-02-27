@@ -75,6 +75,7 @@ interface SidebarPanelProps {
   sidebarLabelDisplayMode?: SidebarLabelDisplayMode;
   onToggleSidebarLabelDisplayMode?: () => void;
   titleCollapseEnabled?: boolean;
+  videoNodeBrowseMode?: boolean;
 }
 
 function SidebarPanel({
@@ -122,6 +123,7 @@ function SidebarPanel({
   sidebarLabelDisplayMode,
   onToggleSidebarLabelDisplayMode,
   titleCollapseEnabled = true,
+  videoNodeBrowseMode = false,
 }: SidebarPanelProps) {
   const { t } = useI18n();
   const manageStyleEnabled = manageMode || metadataManageMode;
@@ -1458,6 +1460,7 @@ function SidebarPanel({
               sidebarCountFontSize={sidebarCountFontSize}
               audioPlaylistIds={audioPlaylistIds}
               searchResultReadonly={searchResultReadonly}
+              videoNodeBrowseMode={videoNodeBrowseMode}
               suppressManageClickRef={suppressManageClickRef}
               labelTextElementByNodeIdRef={labelTextElementByNodeIdRef}
               scheduleOverflowMeasure={scheduleOverflowMeasure}

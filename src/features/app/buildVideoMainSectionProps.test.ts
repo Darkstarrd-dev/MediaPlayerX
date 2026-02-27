@@ -224,4 +224,123 @@ describe('buildVideoMainSectionProps', () => {
     expect(props.saveSubtitleCleanup).toBe(saveSubtitleCleanup)
     expect(props.onSubtitleCleanupSaved).toBe(onSubtitleCleanupSaved)
   })
+
+  it('透传视频节点浏览参数并触发回调', () => {
+    const onPreviewNodeBrowseItem = vi.fn()
+    const onActivateNodeBrowseItem = vi.fn()
+
+    const props = buildVideoMainSectionProps({
+      manageMode: false,
+      metadataManageMode: false,
+      adReviewPanelOpen: false,
+      sidebarSelectedCount: 0,
+      imageSelectedCount: 0,
+      activeSelectionScope: null,
+      pendingManageAction: false,
+      manageOperationHint: null,
+      canManageDelete: false,
+      canManageMoveNodes: false,
+      canManageAddToPlaylist: false,
+      nodeBrowseMode: true,
+      nodeBrowseLabel: 'Videos',
+      nodeBrowseItems: [
+        {
+          nodeId: 'video:Videos/a.mp4',
+          videoId: 'video-a',
+          label: 'a.mp4',
+          coverImageUrl: 'cover://video-a',
+        },
+      ],
+      thumbnailColumns: 5,
+      actualCellWidth: 140,
+      thumbnailGap: 10,
+      nodeBrowsePageStart: 2,
+      nodeBrowsePageSize: 8,
+      thumbnailScaleLevelCount: 9,
+      displayThumbnailScaleLevel: 4,
+      canThumbnailScaleDown: true,
+      canThumbnailScaleUp: true,
+      onThumbnailScaleLevelChange: vi.fn(),
+      onPreviewNodeBrowseItem,
+      onActivateNodeBrowseItem,
+      canManageHide: false,
+      canManageUnhide: false,
+      onManageDelete: vi.fn(),
+      onManageGroup: vi.fn(),
+      onManageMove: vi.fn(),
+      onManageAddToPlaylist: vi.fn(),
+      onManageHide: vi.fn(),
+      onManageUnhide: vi.fn(),
+      onClearManageSelection: vi.fn(),
+      durationSec: 0,
+      videoTime: 0,
+      videoPlaying: false,
+      videoRate: 1,
+      videoVolume: 50,
+      videoMuted: false,
+      videoFitMode: 'contain',
+      videoLoopMode: 'list',
+      videoLoopModeLabel: 'list',
+      mediaPreloadMemoryBudgetMb: 128,
+      videoPreloadOrderIds: [],
+      videoById: new Map() as unknown as Map<string, never>,
+      videoUrlById: {},
+      videoSourceUrl: null,
+      popoverDebugPinned: false,
+      fullscreenActive: false,
+      active: true,
+      coverColor: '#000000',
+      coverImageUrl: null,
+      focusedVideoId: null,
+      focusedVideo: null,
+      subtitleCleanupLlmEndpoint: '',
+      subtitleCleanupLlmModel: '',
+      subtitleCleanupLlmPrompt: '',
+      onSubtitleCleanupSaved: vi.fn(),
+      onSubtitleCleanupLlmEndpointChange: vi.fn(),
+      onSubtitleCleanupLlmModelChange: vi.fn(),
+      setVideoPlaying: vi.fn(),
+      goPlaylist: vi.fn(),
+      setVideoTime: vi.fn(),
+      setVideoDurationById: vi.fn(),
+      setVideoMuted: vi.fn(),
+      setVideoVolume: vi.fn(),
+      setVideoRate: vi.fn(),
+      setVideoFitMode: vi.fn(),
+      onRequestSidebarLocateFromMain: vi.fn(),
+      onCycleVideoLoopMode: vi.fn(),
+      cycleVideoFitMode: vi.fn(),
+      saveVideoCover: vi.fn(async () => undefined),
+      setFullscreenActiveWithAutoStop: vi.fn(),
+      metadataPending: false,
+      onMetadataSyncName: vi.fn(),
+      canJumpToManga: false,
+      canJumpToMusic: false,
+      onJumpToManga: vi.fn(),
+      onJumpToMusic: vi.fn(),
+      subtitleVisible: false,
+      subtitleTrackUrl: null,
+      subtitleLoading: false,
+      subtitleMessage: null,
+      subtitleOptions: [],
+      selectedSubtitleId: null,
+      autoSubtitleActive: false,
+      liveSubtitleText: null,
+      subtitleOverlayStyle: {},
+      bindVideoElement: vi.fn(),
+      setSubtitleVisible: vi.fn(),
+      selectSubtitleById: vi.fn(async () => undefined),
+      updateSettings: vi.fn(),
+    })
+
+    expect(props.nodeBrowseMode).toBe(true)
+    expect(props.nodeBrowseItems).toHaveLength(1)
+    expect(props.nodeBrowsePageStart).toBe(2)
+    expect(props.nodeBrowsePageSize).toBe(8)
+    expect(props.thumbnailColumns).toBe(5)
+    props.onPreviewNodeBrowseItem?.('video:Videos/a.mp4', 'video-a')
+    props.onActivateNodeBrowseItem?.('video:Videos/a.mp4', 'video-a')
+    expect(onPreviewNodeBrowseItem).toHaveBeenCalledWith('video:Videos/a.mp4', 'video-a')
+    expect(onActivateNodeBrowseItem).toHaveBeenCalledWith('video:Videos/a.mp4', 'video-a')
+  })
 })

@@ -34,6 +34,7 @@ interface BuildSidebarPanelPropsParams {
   searchResultsReadOnly: boolean;
   manageMode: boolean;
   metadataManageMode: boolean;
+  videoNodeBrowseMode?: boolean;
   metadataManageSelectionMode?: "single" | "multiple";
   checkedSidebarNodeIdSet: Set<string>;
   focusedRef: { packageId: string; imageIndex: number } | null;
@@ -98,6 +99,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     searchResultReadonly: params.searchResultsReadOnly,
     manageMode: params.manageMode,
     metadataManageMode: params.metadataManageMode,
+    videoNodeBrowseMode: params.videoNodeBrowseMode ?? false,
     metadataManageSelectionMode,
     checkedSidebarNodeIds: params.checkedSidebarNodeIdSet,
     canGoToFromSearchMode: adReviewResultsMode
