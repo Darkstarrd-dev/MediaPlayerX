@@ -100,6 +100,15 @@ import type {
   ReadAudioTranscodeTaskResponseDto,
   CancelAudioTranscodeTaskRequestDto,
   CancelAudioTranscodeTaskResponseDto,
+  StartVideoTranscodeTaskRequestDto,
+  StartVideoTranscodeTaskResponseDto,
+  EstimateVideoTranscodeOutputSizeRequestDto,
+  EstimateVideoTranscodeOutputSizeResponseDto,
+  ReadVideoTranscodeCapabilitiesResponseDto,
+  ReadVideoTranscodeTaskRequestDto,
+  ReadVideoTranscodeTaskResponseDto,
+  CancelVideoTranscodeTaskRequestDto,
+  CancelVideoTranscodeTaskResponseDto,
   ReadImportTasksResponseDto,
   RetryImportTaskRequestDto,
   RetryImportTaskResponseDto,
@@ -143,373 +152,491 @@ import type {
   WriteAppStateResponseDto,
   UpdatePerformanceConfigRequestDto,
   UpdatePerformanceConfigResponseDto,
-} from '../../../contracts/backend'
+} from "../../../contracts/backend";
 
 export interface RepositoryRequestOptions {
-  signal?: AbortSignal
-  timeoutMs?: number
+  signal?: AbortSignal;
+  timeoutMs?: number;
 }
 
 export interface MediaRepository {
-  getInitialLibrarySnapshot(): LibrarySnapshotDto | null
-  readLibrarySnapshot(options?: RepositoryRequestOptions): Promise<LibrarySnapshotDto>
-  readLibrarySnapshotLite?(options?: RepositoryRequestOptions): Promise<LibrarySnapshotLiteDto>
+  getInitialLibrarySnapshot(): LibrarySnapshotDto | null;
+  readLibrarySnapshot(
+    options?: RepositoryRequestOptions,
+  ): Promise<LibrarySnapshotDto>;
+  readLibrarySnapshotLite?(
+    options?: RepositoryRequestOptions,
+  ): Promise<LibrarySnapshotLiteDto>;
   readImageSidebarTree(
     request: ReadImageSidebarTreeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadImageSidebarTreeResponseDto>
+  ): Promise<ReadImageSidebarTreeResponseDto>;
   readImagePage(
     request: ReadImagePageRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadImagePageResponseDto>
+  ): Promise<ReadImagePageResponseDto>;
   readImageMetadata(
     request: ReadImageMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadImageMetadataResponseDto>
+  ): Promise<ReadImageMetadataResponseDto>;
   resolveMediaResource(
     request: ResolveMediaResourceRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ResolveMediaResourceResponseDto>
+  ): Promise<ResolveMediaResourceResponseDto>;
   writePackageGrade(
     request: WritePackageGradeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WritePackageGradeResponseDto>
+  ): Promise<WritePackageGradeResponseDto>;
   setImageHidden?(
     request: SetImageHiddenRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetImageHiddenResponseDto>
+  ): Promise<SetImageHiddenResponseDto>;
   deleteImageItems?(
     request: DeleteImageItemsRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<DeleteImageItemsResponseDto>
+  ): Promise<DeleteImageItemsResponseDto>;
   deleteSidebarNodes?(
     request: DeleteSidebarNodesRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<DeleteSidebarNodesResponseDto>
+  ): Promise<DeleteSidebarNodesResponseDto>;
   moveSidebarNodes?(
     request: MoveSidebarNodesRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<MoveSidebarNodesResponseDto>
+  ): Promise<MoveSidebarNodesResponseDto>;
   renameSidebarNode?(
     request: RenameSidebarNodeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<RenameSidebarNodeResponseDto>
+  ): Promise<RenameSidebarNodeResponseDto>;
   renameSidebarNodes?(
     request: RenameSidebarNodesRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<RenameSidebarNodesResponseDto>
+  ): Promise<RenameSidebarNodesResponseDto>;
   renameItems?(
     request: RenameItemsRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<RenameItemsResponseDto>
+  ): Promise<RenameItemsResponseDto>;
   startManageAdReview?(
     request: StartManageAdReviewRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartManageAdReviewResponseDto>
+  ): Promise<StartManageAdReviewResponseDto>;
   readManageAdReviewTask?(
     request: ReadManageAdReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadManageAdReviewTaskResponseDto>
+  ): Promise<ReadManageAdReviewTaskResponseDto>;
   pauseManageAdReviewTask?(
     request: PauseManageAdReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PauseManageAdReviewTaskResponseDto>
+  ): Promise<PauseManageAdReviewTaskResponseDto>;
   testAdReviewVisionModel?(
     request: TestAdReviewVisionModelRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<TestAdReviewVisionModelResponseDto>
+  ): Promise<TestAdReviewVisionModelResponseDto>;
   confirmManageAdReviewDelete?(
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ConfirmManageAdReviewDeleteResponseDto>
+  ): Promise<ConfirmManageAdReviewDeleteResponseDto>;
   startManageCoverReview?(
     request: StartManageCoverReviewRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartManageCoverReviewResponseDto>
+  ): Promise<StartManageCoverReviewResponseDto>;
   readManageCoverReviewTask?(
     request: ReadManageCoverReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadManageCoverReviewTaskResponseDto>
+  ): Promise<ReadManageCoverReviewTaskResponseDto>;
   pauseManageCoverReviewTask?(
     request: PauseManageCoverReviewTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PauseManageCoverReviewTaskResponseDto>
+  ): Promise<PauseManageCoverReviewTaskResponseDto>;
   confirmManageCoverReviewHide?(
     request: ConfirmManageCoverReviewHideRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ConfirmManageCoverReviewHideResponseDto>
+  ): Promise<ConfirmManageCoverReviewHideResponseDto>;
   startManageSubtitleCleanup?(
     request: StartManageSubtitleCleanupRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartManageSubtitleCleanupResponseDto>
+  ): Promise<StartManageSubtitleCleanupResponseDto>;
   readManageSubtitleCleanupTask?(
     request: ReadManageSubtitleCleanupTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadManageSubtitleCleanupTaskResponseDto>
+  ): Promise<ReadManageSubtitleCleanupTaskResponseDto>;
   runManageSubtitleCleanup?(
     request: RunManageSubtitleCleanupRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<RunManageSubtitleCleanupResponseDto>
+  ): Promise<RunManageSubtitleCleanupResponseDto>;
   saveManageSubtitleCleanup?(
     request: SaveManageSubtitleCleanupRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SaveManageSubtitleCleanupResponseDto>
+  ): Promise<SaveManageSubtitleCleanupResponseDto>;
   startImageConvertTask?(
     request: StartImageConvertTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartImageConvertTaskResponseDto>
+  ): Promise<StartImageConvertTaskResponseDto>;
   readImageConvertTask?(
     request: ReadImageConvertTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadImageConvertTaskResponseDto>
+  ): Promise<ReadImageConvertTaskResponseDto>;
   cancelImageConvertTask?(
     request: CancelImageConvertTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<CancelImageConvertTaskResponseDto>
+  ): Promise<CancelImageConvertTaskResponseDto>;
   startAudioTranscodeTask?(
     request: StartAudioTranscodeTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartAudioTranscodeTaskResponseDto>
-  readAudioTranscodeCapabilities?(options?: RepositoryRequestOptions): Promise<ReadAudioTranscodeCapabilitiesResponseDto>
+  ): Promise<StartAudioTranscodeTaskResponseDto>;
+  readAudioTranscodeCapabilities?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAudioTranscodeCapabilitiesResponseDto>;
   readAudioTranscodeTask?(
     request: ReadAudioTranscodeTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadAudioTranscodeTaskResponseDto>
+  ): Promise<ReadAudioTranscodeTaskResponseDto>;
   cancelAudioTranscodeTask?(
     request: CancelAudioTranscodeTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<CancelAudioTranscodeTaskResponseDto>
+  ): Promise<CancelAudioTranscodeTaskResponseDto>;
+  startVideoTranscodeTask?(
+    request: StartVideoTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<StartVideoTranscodeTaskResponseDto>;
+  estimateVideoTranscodeOutputSize?(
+    request: EstimateVideoTranscodeOutputSizeRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<EstimateVideoTranscodeOutputSizeResponseDto>;
+  readVideoTranscodeCapabilities?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadVideoTranscodeCapabilitiesResponseDto>;
+  readVideoTranscodeTask?(
+    request: ReadVideoTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadVideoTranscodeTaskResponseDto>;
+  cancelVideoTranscodeTask?(
+    request: CancelVideoTranscodeTaskRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<CancelVideoTranscodeTaskResponseDto>;
   writePackageMetadata?(
     request: WritePackageMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WritePackageMetadataResponseDto>
+  ): Promise<WritePackageMetadataResponseDto>;
   writePackageExternalMetadata?(
     request: WritePackageExternalMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WritePackageExternalMetadataResponseDto>
+  ): Promise<WritePackageExternalMetadataResponseDto>;
   searchExternalMetadata?(
     request: SearchExternalMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SearchExternalMetadataResponseDto>
+  ): Promise<SearchExternalMetadataResponseDto>;
   writeVideoMetadata?(
     request: WriteVideoMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WriteVideoMetadataResponseDto>
+  ): Promise<WriteVideoMetadataResponseDto>;
   writeAudioMetadata?(
     request: WriteAudioMetadataRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WriteAudioMetadataResponseDto>
+  ): Promise<WriteAudioMetadataResponseDto>;
   saveVideoCover(
     request: SaveVideoCoverRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SaveVideoCoverResponseDto>
-  readPlaylist(options?: RepositoryRequestOptions): Promise<ReadPlaylistResponseDto>
+  ): Promise<SaveVideoCoverResponseDto>;
+  readPlaylist(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadPlaylistResponseDto>;
   writePlaylist(
     request: WritePlaylistRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WritePlaylistResponseDto>
+  ): Promise<WritePlaylistResponseDto>;
   listVideoSubtitles?(
     request: ListVideoSubtitlesRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ListVideoSubtitlesResponseDto>
+  ): Promise<ListVideoSubtitlesResponseDto>;
   prepareSubtitleTrack?(
     request: PrepareSubtitleTrackRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PrepareSubtitleTrackResponseDto>
+  ): Promise<PrepareSubtitleTrackResponseDto>;
   readAppState?(
     request: ReadAppStateRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadAppStateResponseDto>
+  ): Promise<ReadAppStateResponseDto>;
   writeAppState?(
     request: WriteAppStateRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<WriteAppStateResponseDto>
+  ): Promise<WriteAppStateResponseDto>;
   pickImportPaths?(
     request: PickImportPathsRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PickImportPathsResponseDto>
+  ): Promise<PickImportPathsResponseDto>;
   pickFilePath?(
     request: PickFilePathRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PickFilePathResponseDto>
+  ): Promise<PickFilePathResponseDto>;
   pickDirectoryPath?(
     request: PickDirectoryPathRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PickDirectoryPathResponseDto>
-  readClipboardImportPaths?(options?: RepositoryRequestOptions): Promise<ReadClipboardImportPathsResponseDto>
+  ): Promise<PickDirectoryPathResponseDto>;
+  readClipboardImportPaths?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadClipboardImportPathsResponseDto>;
   enqueueImportTask(
     request: EnqueueImportTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<EnqueueImportTaskResponseDto>
-  readImportTasks(options?: RepositoryRequestOptions): Promise<ReadImportTasksResponseDto>
+  ): Promise<EnqueueImportTaskResponseDto>;
+  readImportTasks(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadImportTasksResponseDto>;
   retryImportTask(
     request: RetryImportTaskRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<RetryImportTaskResponseDto>
-  readMediaAccessAudit(options?: RepositoryRequestOptions): Promise<MediaAccessAuditResponseDto>
-  readRuntimeCapabilities(options?: RepositoryRequestOptions): Promise<ReadRuntimeCapabilitiesResponseDto>
-  readAudioEngineState?(options?: RepositoryRequestOptions): Promise<ReadAudioEngineStateResponseDto>
+  ): Promise<RetryImportTaskResponseDto>;
+  readMediaAccessAudit(
+    options?: RepositoryRequestOptions,
+  ): Promise<MediaAccessAuditResponseDto>;
+  readRuntimeCapabilities(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadRuntimeCapabilitiesResponseDto>;
+  readAudioEngineState?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAudioEngineStateResponseDto>;
   setAudioEngineMode?(
     request: SetAudioEngineModeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetAudioEngineModeResponseDto>
-  listAudioOutputDevices?(options?: RepositoryRequestOptions): Promise<ListAudioOutputDevicesResponseDto>
+  ): Promise<SetAudioEngineModeResponseDto>;
+  listAudioOutputDevices?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ListAudioOutputDevicesResponseDto>;
   setAudioOutputDevice?(
     request: SetAudioOutputDeviceRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetAudioOutputDeviceResponseDto>
+  ): Promise<SetAudioOutputDeviceResponseDto>;
   setAudioExclusive?(
     request: SetAudioExclusiveRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetAudioExclusiveResponseDto>
+  ): Promise<SetAudioExclusiveResponseDto>;
   setAudioGaplessMode?(
     request: SetAudioGaplessModeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetAudioGaplessModeResponseDto>
+  ): Promise<SetAudioGaplessModeResponseDto>;
   setAudioReplayGainMode?(
     request: SetAudioReplayGainModeRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<SetAudioReplayGainModeResponseDto>
-  readSubtitleEngineStatus?(options?: RepositoryRequestOptions): Promise<ReadSubtitleEngineStatusResponseDto>
-  listSubtitleRemoteModels?(options?: RepositoryRequestOptions): Promise<ListSubtitleRemoteModelsResponseDto>
+  ): Promise<SetAudioReplayGainModeResponseDto>;
+  readSubtitleEngineStatus?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSubtitleEngineStatusResponseDto>;
+  listSubtitleRemoteModels?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ListSubtitleRemoteModelsResponseDto>;
   listSubtitleLocalModels?(
     request: ListSubtitleLocalModelsRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ListSubtitleLocalModelsResponseDto>
+  ): Promise<ListSubtitleLocalModelsResponseDto>;
   startSubtitleModelDownload?(
     request: StartSubtitleModelDownloadRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartSubtitleModelDownloadResponseDto>
+  ): Promise<StartSubtitleModelDownloadResponseDto>;
   cancelSubtitleModelDownload?(
     request: CancelSubtitleModelDownloadRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<CancelSubtitleModelDownloadResponseDto>
-  readSubtitleModelDownloads?(options?: RepositoryRequestOptions): Promise<ReadSubtitleModelDownloadsResponseDto>
+  ): Promise<CancelSubtitleModelDownloadResponseDto>;
+  readSubtitleModelDownloads?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSubtitleModelDownloadsResponseDto>;
   clearSubtitleLocalModel?(
     request: ClearSubtitleLocalModelRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ClearSubtitleLocalModelResponseDto>
+  ): Promise<ClearSubtitleLocalModelResponseDto>;
   startSubtitleSession?(
     request: StartSubtitleSessionRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartSubtitleSessionResponseDto>
+  ): Promise<StartSubtitleSessionResponseDto>;
   stopSubtitleSession?(
     request: StopSubtitleSessionRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StopSubtitleSessionResponseDto>
+  ): Promise<StopSubtitleSessionResponseDto>;
   resetSubtitleSession?(
     request: ResetSubtitleSessionRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ResetSubtitleSessionResponseDto>
-  flushSubtitleSession?(options?: RepositoryRequestOptions): Promise<FlushSubtitleSessionResponseDto>
+  ): Promise<ResetSubtitleSessionResponseDto>;
+  flushSubtitleSession?(
+    options?: RepositoryRequestOptions,
+  ): Promise<FlushSubtitleSessionResponseDto>;
   pushSubtitleAudio?(
     request: PushSubtitleAudioRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<PushSubtitleAudioResponseDto>
+  ): Promise<PushSubtitleAudioResponseDto>;
   startSubtitlePersistence?(
     request: StartSubtitlePersistenceRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<StartSubtitlePersistenceResponseDto>
+  ): Promise<StartSubtitlePersistenceResponseDto>;
   appendSubtitlePersistence?(
     request: AppendSubtitlePersistenceRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<AppendSubtitlePersistenceResponseDto>
+  ): Promise<AppendSubtitlePersistenceResponseDto>;
   readSubtitlePersistenceWindow?(
     request: ReadSubtitlePersistenceWindowRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<ReadSubtitlePersistenceWindowResponseDto>
-  readArchiveLoadStatus?(options?: RepositoryRequestOptions): Promise<ReadArchiveLoadStatusResponseDto>
-  clearDatabase?(options?: RepositoryRequestOptions): Promise<ClearDatabaseResponseDto>
+  ): Promise<ReadSubtitlePersistenceWindowResponseDto>;
+  readArchiveLoadStatus?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadArchiveLoadStatusResponseDto>;
+  clearDatabase?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ClearDatabaseResponseDto>;
   updatePerformanceConfig?(
     request: UpdatePerformanceConfigRequestDto,
     options?: RepositoryRequestOptions,
-  ): Promise<UpdatePerformanceConfigResponseDto>
-  onLibraryChanged?(listener: (payload: { reason: string; updated_at_ms: number }) => void): () => void
+  ): Promise<UpdatePerformanceConfigResponseDto>;
+  onLibraryChanged?(
+    listener: (payload: { reason: string; updated_at_ms: number }) => void,
+  ): () => void;
 }
 
 export interface SynchronousMediaRepository extends MediaRepository {
-  readImageSidebarTreeSync(request: ReadImageSidebarTreeRequestDto): ReadImageSidebarTreeResponseDto
-  readImagePageSync(request: ReadImagePageRequestDto): ReadImagePageResponseDto
-  readImageMetadataSync(request: ReadImageMetadataRequestDto): ReadImageMetadataResponseDto
-  resolveMediaResourceSync(request: ResolveMediaResourceRequestDto): ResolveMediaResourceResponseDto
-  writePackageGradeSync(request: WritePackageGradeRequestDto): WritePackageGradeResponseDto
-  setImageHiddenSync?(request: SetImageHiddenRequestDto): SetImageHiddenResponseDto
-  deleteImageItemsSync?(request: DeleteImageItemsRequestDto): DeleteImageItemsResponseDto
-  deleteSidebarNodesSync?(request: DeleteSidebarNodesRequestDto): DeleteSidebarNodesResponseDto
-  moveSidebarNodesSync?(request: MoveSidebarNodesRequestDto): MoveSidebarNodesResponseDto
-  renameSidebarNodeSync?(request: RenameSidebarNodeRequestDto): RenameSidebarNodeResponseDto
-  renameSidebarNodesSync?(request: RenameSidebarNodesRequestDto): RenameSidebarNodesResponseDto
-  renameItemsSync?(request: RenameItemsRequestDto): RenameItemsResponseDto
-  startManageAdReviewSync?(request: StartManageAdReviewRequestDto): StartManageAdReviewResponseDto
-  readManageAdReviewTaskSync?(request: ReadManageAdReviewTaskRequestDto): ReadManageAdReviewTaskResponseDto
-  pauseManageAdReviewTaskSync?(request: PauseManageAdReviewTaskRequestDto): PauseManageAdReviewTaskResponseDto
-  testAdReviewVisionModelSync?(request: TestAdReviewVisionModelRequestDto): TestAdReviewVisionModelResponseDto
+  readImageSidebarTreeSync(
+    request: ReadImageSidebarTreeRequestDto,
+  ): ReadImageSidebarTreeResponseDto;
+  readImagePageSync(request: ReadImagePageRequestDto): ReadImagePageResponseDto;
+  readImageMetadataSync(
+    request: ReadImageMetadataRequestDto,
+  ): ReadImageMetadataResponseDto;
+  resolveMediaResourceSync(
+    request: ResolveMediaResourceRequestDto,
+  ): ResolveMediaResourceResponseDto;
+  writePackageGradeSync(
+    request: WritePackageGradeRequestDto,
+  ): WritePackageGradeResponseDto;
+  setImageHiddenSync?(
+    request: SetImageHiddenRequestDto,
+  ): SetImageHiddenResponseDto;
+  deleteImageItemsSync?(
+    request: DeleteImageItemsRequestDto,
+  ): DeleteImageItemsResponseDto;
+  deleteSidebarNodesSync?(
+    request: DeleteSidebarNodesRequestDto,
+  ): DeleteSidebarNodesResponseDto;
+  moveSidebarNodesSync?(
+    request: MoveSidebarNodesRequestDto,
+  ): MoveSidebarNodesResponseDto;
+  renameSidebarNodeSync?(
+    request: RenameSidebarNodeRequestDto,
+  ): RenameSidebarNodeResponseDto;
+  renameSidebarNodesSync?(
+    request: RenameSidebarNodesRequestDto,
+  ): RenameSidebarNodesResponseDto;
+  renameItemsSync?(request: RenameItemsRequestDto): RenameItemsResponseDto;
+  startManageAdReviewSync?(
+    request: StartManageAdReviewRequestDto,
+  ): StartManageAdReviewResponseDto;
+  readManageAdReviewTaskSync?(
+    request: ReadManageAdReviewTaskRequestDto,
+  ): ReadManageAdReviewTaskResponseDto;
+  pauseManageAdReviewTaskSync?(
+    request: PauseManageAdReviewTaskRequestDto,
+  ): PauseManageAdReviewTaskResponseDto;
+  testAdReviewVisionModelSync?(
+    request: TestAdReviewVisionModelRequestDto,
+  ): TestAdReviewVisionModelResponseDto;
   confirmManageAdReviewDeleteSync?(
     request: ConfirmManageAdReviewDeleteRequestDto,
-  ): ConfirmManageAdReviewDeleteResponseDto
-  startManageCoverReviewSync?(request: StartManageCoverReviewRequestDto): StartManageCoverReviewResponseDto
+  ): ConfirmManageAdReviewDeleteResponseDto;
+  startManageCoverReviewSync?(
+    request: StartManageCoverReviewRequestDto,
+  ): StartManageCoverReviewResponseDto;
   readManageCoverReviewTaskSync?(
     request: ReadManageCoverReviewTaskRequestDto,
-  ): ReadManageCoverReviewTaskResponseDto
+  ): ReadManageCoverReviewTaskResponseDto;
   pauseManageCoverReviewTaskSync?(
     request: PauseManageCoverReviewTaskRequestDto,
-  ): PauseManageCoverReviewTaskResponseDto
+  ): PauseManageCoverReviewTaskResponseDto;
   confirmManageCoverReviewHideSync?(
     request: ConfirmManageCoverReviewHideRequestDto,
-  ): ConfirmManageCoverReviewHideResponseDto
+  ): ConfirmManageCoverReviewHideResponseDto;
   startManageSubtitleCleanupSync?(
     request: StartManageSubtitleCleanupRequestDto,
-  ): StartManageSubtitleCleanupResponseDto
+  ): StartManageSubtitleCleanupResponseDto;
   readManageSubtitleCleanupTaskSync?(
     request: ReadManageSubtitleCleanupTaskRequestDto,
-  ): ReadManageSubtitleCleanupTaskResponseDto
+  ): ReadManageSubtitleCleanupTaskResponseDto;
   runManageSubtitleCleanupSync?(
     request: RunManageSubtitleCleanupRequestDto,
-  ): RunManageSubtitleCleanupResponseDto
+  ): RunManageSubtitleCleanupResponseDto;
   saveManageSubtitleCleanupSync?(
     request: SaveManageSubtitleCleanupRequestDto,
-  ): SaveManageSubtitleCleanupResponseDto
+  ): SaveManageSubtitleCleanupResponseDto;
   startImageConvertTaskSync?(
     request: StartImageConvertTaskRequestDto,
-  ): StartImageConvertTaskResponseDto
+  ): StartImageConvertTaskResponseDto;
   readImageConvertTaskSync?(
     request: ReadImageConvertTaskRequestDto,
-  ): ReadImageConvertTaskResponseDto
+  ): ReadImageConvertTaskResponseDto;
   cancelImageConvertTaskSync?(
     request: CancelImageConvertTaskRequestDto,
-  ): CancelImageConvertTaskResponseDto
+  ): CancelImageConvertTaskResponseDto;
   startAudioTranscodeTaskSync?(
     request: StartAudioTranscodeTaskRequestDto,
-  ): StartAudioTranscodeTaskResponseDto
-  readAudioTranscodeCapabilitiesSync?(): ReadAudioTranscodeCapabilitiesResponseDto
+  ): StartAudioTranscodeTaskResponseDto;
+  readAudioTranscodeCapabilitiesSync?(): ReadAudioTranscodeCapabilitiesResponseDto;
   readAudioTranscodeTaskSync?(
     request: ReadAudioTranscodeTaskRequestDto,
-  ): ReadAudioTranscodeTaskResponseDto
+  ): ReadAudioTranscodeTaskResponseDto;
   cancelAudioTranscodeTaskSync?(
     request: CancelAudioTranscodeTaskRequestDto,
-  ): CancelAudioTranscodeTaskResponseDto
-  writePackageMetadataSync?(request: WritePackageMetadataRequestDto): WritePackageMetadataResponseDto
+  ): CancelAudioTranscodeTaskResponseDto;
+  startVideoTranscodeTaskSync?(
+    request: StartVideoTranscodeTaskRequestDto,
+  ): StartVideoTranscodeTaskResponseDto;
+  estimateVideoTranscodeOutputSizeSync?(
+    request: EstimateVideoTranscodeOutputSizeRequestDto,
+  ): EstimateVideoTranscodeOutputSizeResponseDto;
+  readVideoTranscodeCapabilitiesSync?(): ReadVideoTranscodeCapabilitiesResponseDto;
+  readVideoTranscodeTaskSync?(
+    request: ReadVideoTranscodeTaskRequestDto,
+  ): ReadVideoTranscodeTaskResponseDto;
+  cancelVideoTranscodeTaskSync?(
+    request: CancelVideoTranscodeTaskRequestDto,
+  ): CancelVideoTranscodeTaskResponseDto;
+  writePackageMetadataSync?(
+    request: WritePackageMetadataRequestDto,
+  ): WritePackageMetadataResponseDto;
   writePackageExternalMetadataSync?(
     request: WritePackageExternalMetadataRequestDto,
-  ): WritePackageExternalMetadataResponseDto
-  searchExternalMetadataSync?(request: SearchExternalMetadataRequestDto): SearchExternalMetadataResponseDto
-  writeVideoMetadataSync?(request: WriteVideoMetadataRequestDto): WriteVideoMetadataResponseDto
-  writeAudioMetadataSync?(request: WriteAudioMetadataRequestDto): WriteAudioMetadataResponseDto
-  saveVideoCoverSync(request: SaveVideoCoverRequestDto): SaveVideoCoverResponseDto
-  readPlaylistSync(): ReadPlaylistResponseDto
-  writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto
-  listVideoSubtitlesSync?(request: ListVideoSubtitlesRequestDto): ListVideoSubtitlesResponseDto
-  prepareSubtitleTrackSync?(request: PrepareSubtitleTrackRequestDto): PrepareSubtitleTrackResponseDto
-  pickImportPathsSync?(request: PickImportPathsRequestDto): PickImportPathsResponseDto
-  pickFilePathSync?(request: PickFilePathRequestDto): PickFilePathResponseDto
-  pickDirectoryPathSync?(request: PickDirectoryPathRequestDto): PickDirectoryPathResponseDto
-  readClipboardImportPathsSync?(): ReadClipboardImportPathsResponseDto
-  enqueueImportTaskSync(request: EnqueueImportTaskRequestDto): EnqueueImportTaskResponseDto
-  readImportTasksSync(): ReadImportTasksResponseDto
-  retryImportTaskSync(request: RetryImportTaskRequestDto): RetryImportTaskResponseDto
-  readMediaAccessAuditSync(): MediaAccessAuditResponseDto
-  readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto
-  clearDatabaseSync?(): ClearDatabaseResponseDto
+  ): WritePackageExternalMetadataResponseDto;
+  searchExternalMetadataSync?(
+    request: SearchExternalMetadataRequestDto,
+  ): SearchExternalMetadataResponseDto;
+  writeVideoMetadataSync?(
+    request: WriteVideoMetadataRequestDto,
+  ): WriteVideoMetadataResponseDto;
+  writeAudioMetadataSync?(
+    request: WriteAudioMetadataRequestDto,
+  ): WriteAudioMetadataResponseDto;
+  saveVideoCoverSync(
+    request: SaveVideoCoverRequestDto,
+  ): SaveVideoCoverResponseDto;
+  readPlaylistSync(): ReadPlaylistResponseDto;
+  writePlaylistSync(request: WritePlaylistRequestDto): WritePlaylistResponseDto;
+  listVideoSubtitlesSync?(
+    request: ListVideoSubtitlesRequestDto,
+  ): ListVideoSubtitlesResponseDto;
+  prepareSubtitleTrackSync?(
+    request: PrepareSubtitleTrackRequestDto,
+  ): PrepareSubtitleTrackResponseDto;
+  pickImportPathsSync?(
+    request: PickImportPathsRequestDto,
+  ): PickImportPathsResponseDto;
+  pickFilePathSync?(request: PickFilePathRequestDto): PickFilePathResponseDto;
+  pickDirectoryPathSync?(
+    request: PickDirectoryPathRequestDto,
+  ): PickDirectoryPathResponseDto;
+  readClipboardImportPathsSync?(): ReadClipboardImportPathsResponseDto;
+  enqueueImportTaskSync(
+    request: EnqueueImportTaskRequestDto,
+  ): EnqueueImportTaskResponseDto;
+  readImportTasksSync(): ReadImportTasksResponseDto;
+  retryImportTaskSync(
+    request: RetryImportTaskRequestDto,
+  ): RetryImportTaskResponseDto;
+  readMediaAccessAuditSync(): MediaAccessAuditResponseDto;
+  readRuntimeCapabilitiesSync(): ReadRuntimeCapabilitiesResponseDto;
+  clearDatabaseSync?(): ClearDatabaseResponseDto;
 }
 
-export type RepositoryMode = 'mock' | 'real'
+export type RepositoryMode = "mock" | "real";

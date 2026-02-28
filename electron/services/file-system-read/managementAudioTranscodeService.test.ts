@@ -72,7 +72,7 @@ async function createAudioSnapshot(
 function createCapabilities(
   rootDir: string,
 ): ReadAudioTranscodeCapabilitiesResponseDto {
-  const defaultOutputDir = path.join(rootDir, ".mediaplayerx", "transcoded");
+  const defaultOutputDir = path.join(rootDir, "transcoded", "audio");
   return {
     enabled: true,
     ffmpeg_available: true,
@@ -234,7 +234,8 @@ describe("ManagementAudioTranscodeService", () => {
     expect(retryRun.failed_count).toBe(0);
     expect(maxRunningCount).toBeLessThanOrEqual(2);
     expect(maxRunningCount).toBeGreaterThan(1);
-    expect(musicImportSources.files.length).toBe(100);
+    expect(musicImportSources.directories).toContain(defaultOutputDir);
+    expect(musicImportSources.files).toHaveLength(0);
     expect(refreshSnapshotFromFilesystem).toHaveBeenCalledTimes(2);
     expect(emitLibraryChanged).toHaveBeenCalledTimes(2);
   });
@@ -301,6 +302,79 @@ describe("ManagementAudioTranscodeService", () => {
     expect(path.resolve(result.output_files[0] ?? "")).toContain(
       path.resolve(capabilities.default_output_dir),
     );
-    expect(musicImportSources.files).toEqual(result.output_files);
+    expect(musicImportSources.directories).toEqual([
+      path.resolve(capabilities.default_output_dir),
+    ]);
+    expect(musicImportSources.files).toEqual([]);
+  });
+
+  it("应将参数覆盖映射为 ffmpeg 参数", async () => {
+    const rootDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-audio-transcode-params-"),
+    );
+    tempRoots.push(rootDir);
+
+    const { snapshot, audioIds } = await createAudioSnapshot(rootDir, 1);
+    const capabilities = createCapabilities(rootDir);
+
+    const service = new ManagementAudioTranscodeService({
+      rootDir,
+      ffmpegBin: "ffmpeg",
+      defaultConcurrency: 1,
+      ensureRuntimeDependencies: vi.fn().mockResolvedValue({
+        ffmpeg: true,
+        ffprobe: true,
+      }),
+      ensureStateLoaded: vi.fn().mockResolvedValue(undefined),
+      ensureSnapshotLoaded: vi.fn().mockResolvedValue(snapshot),
+      refreshSnapshotFromFilesystem: vi.fn().mockResolvedValue(snapshot),
+      syncSnapshotFromDatabase: vi.fn().mockReturnValue(snapshot),
+      buildMediaAccessContext: () => createAudioAccessContext(rootDir),
+      readMusicImportSources: () => ({ directories: [], files: [] }),
+      writeMusicImportSources: vi.fn(),
+      emitLibraryChanged: vi.fn(),
+    });
+
+    vi.spyOn(service, "readAudioTranscodeCapabilities").mockResolvedValue(
+      capabilities,
+    );
+    const servicePrivate = service as unknown as TranscodeServicePrivateApi;
+    const capturedArgs: string[][] = [];
+    vi.spyOn(servicePrivate, "runFfmpeg").mockImplementation(async (args) => {
+      capturedArgs.push([...args]);
+      const outputPath = args[args.length - 1] ?? "";
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
+      await fs.writeFile(outputPath, Buffer.from("transcoded"));
+      return { code: 0, stderr: "" };
+    });
+
+    const result = await service.runAudioTranscodeTask({
+      audio_ids: audioIds,
+      preset: "mp3",
+      overwrite: true,
+      params_override: {
+        vbr_quality: 2,
+        sample_rate_hz: 48_000,
+        channels: 2,
+        metadata_mode: "none",
+        metadata_override: {
+          album: "demo-album",
+        },
+      },
+    });
+
+    expect(result.success_count).toBe(1);
+    const firstArgs = capturedArgs[0] ?? [];
+    expect(firstArgs).toContain("-c:a");
+    expect(firstArgs).toContain("libmp3lame");
+    expect(firstArgs).toContain("-q:a");
+    expect(firstArgs).toContain("2");
+    expect(firstArgs).toContain("-ar");
+    expect(firstArgs).toContain("48000");
+    expect(firstArgs).toContain("-ac");
+    expect(firstArgs).toContain("2");
+    expect(firstArgs).toContain("-metadata");
+    expect(firstArgs).toContain("album=demo-album");
+    expect(firstArgs).not.toContain("-map_metadata");
   });
 });

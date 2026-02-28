@@ -18,6 +18,7 @@ interface BuildVideoMainSectionPropsParams {
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
+  manageSelectedVideoIds: string[]
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean
@@ -150,6 +151,7 @@ export function buildVideoMainSectionProps(params: BuildVideoMainSectionPropsPar
     sidebarSelectedCount: params.sidebarSelectedCount,
     imageSelectedCount: params.imageSelectedCount,
     activeSelectionScope: params.activeSelectionScope,
+    manageSelectedVideoIds: params.manageSelectedVideoIds,
     pendingManageAction: params.pendingManageAction,
     manageOperationHint: params.manageOperationHint,
     canManageDelete: params.canManageDelete,

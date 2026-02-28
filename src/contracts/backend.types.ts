@@ -319,6 +319,75 @@ export type CancelAudioTranscodeTaskRequestDto = Infer<
 export type CancelAudioTranscodeTaskResponseDto = Infer<
   typeof Backend.cancelAudioTranscodeTaskResponseSchema
 >;
+export type VideoTranscodeTaskStatusDto = Infer<
+  typeof Backend.videoTranscodeTaskStatusSchema
+>;
+export type VideoTranscodeContainerDto = Infer<
+  typeof Backend.videoTranscodeContainerSchema
+>;
+export type VideoTranscodeVideoCodecDto = Infer<
+  typeof Backend.videoTranscodeVideoCodecSchema
+>;
+export type VideoTranscodeAudioModeDto = Infer<
+  typeof Backend.videoTranscodeAudioModeSchema
+>;
+export type VideoTranscodeQualityModeDto = Infer<
+  typeof Backend.videoTranscodeQualityModeSchema
+>;
+export type VideoTranscodePresetDto = Infer<
+  typeof Backend.videoTranscodePresetSchema
+>;
+export type VideoTranscodeCapabilityReasonDto = Infer<
+  typeof Backend.videoTranscodeCapabilityReasonSchema
+>;
+export type VideoTranscodeContainerCapabilityDto = Infer<
+  typeof Backend.videoTranscodeContainerCapabilitySchema
+>;
+export type VideoTranscodeCodecCapabilityDto = Infer<
+  typeof Backend.videoTranscodeCodecCapabilitySchema
+>;
+export type VideoTranscodeParamsDto = Infer<
+  typeof Backend.videoTranscodeParamsSchema
+>;
+export type VideoTranscodeTaskDto = Infer<
+  typeof Backend.videoTranscodeTaskSchema
+>;
+export type StartVideoTranscodeTaskRequestDto = Infer<
+  typeof Backend.startVideoTranscodeTaskRequestSchema
+>;
+export type StartVideoTranscodeTaskResponseDto = Infer<
+  typeof Backend.startVideoTranscodeTaskResponseSchema
+>;
+export type ReadVideoTranscodeTaskRequestDto = Infer<
+  typeof Backend.readVideoTranscodeTaskRequestSchema
+>;
+export type ReadVideoTranscodeTaskResponseDto = Infer<
+  typeof Backend.readVideoTranscodeTaskResponseSchema
+>;
+export type CancelVideoTranscodeTaskRequestDto = Infer<
+  typeof Backend.cancelVideoTranscodeTaskRequestSchema
+>;
+export type CancelVideoTranscodeTaskResponseDto = Infer<
+  typeof Backend.cancelVideoTranscodeTaskResponseSchema
+>;
+export type ReadVideoTranscodeCapabilitiesResponseDto = Infer<
+  typeof Backend.readVideoTranscodeCapabilitiesResponseSchema
+>;
+export type EstimateVideoTranscodeOutputSizeRequestDto = Infer<
+  typeof Backend.estimateVideoTranscodeOutputSizeRequestSchema
+>;
+export type EstimateVideoTranscodeOutputSizeResponseDto = Infer<
+  typeof Backend.estimateVideoTranscodeOutputSizeResponseSchema
+>;
+export type EstimateVideoTranscodeMethodDto = Infer<
+  typeof Backend.estimateVideoTranscodeMethodSchema
+>;
+export type EstimateVideoTranscodeConfidenceDto = Infer<
+  typeof Backend.estimateVideoTranscodeConfidenceSchema
+>;
+export type EstimateVideoTranscodeRangeDto = Infer<
+  typeof Backend.estimateVideoTranscodeRangeSchema
+>;
 export type WritePackageMetadataRequestDto = Infer<
   typeof Backend.writePackageMetadataRequestSchema
 >;

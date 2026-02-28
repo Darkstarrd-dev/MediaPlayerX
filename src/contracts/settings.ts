@@ -63,6 +63,51 @@ export const subtitleRenderModeSchema = z.enum(["simple", "advanced"]);
 export const audioEngineModeSchema = z.enum(["chromium", "mpv"]);
 export const audioGaplessModeSchema = z.enum(["no", "weak", "yes"]);
 export const audioReplayGainModeSchema = z.enum(["off", "track", "album"]);
+export const audioTranscodePresetSchema = z.enum([
+  "flac",
+  "alac",
+  "wav",
+  "opus",
+  "aac",
+  "mp3",
+]);
+export const audioTranscodeMetadataModeSchema = z.enum([
+  "copy",
+  "none",
+  "copy_and_override",
+]);
+export const audioTranscodeSampleRateSchema = z.union([
+  z.literal(44_100),
+  z.literal(48_000),
+  z.literal(96_000),
+]);
+export const audioTranscodeChannelsSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+]);
+export const audioTranscodeWavBitDepthSchema = z.union([
+  z.literal(16),
+  z.literal(24),
+]);
+export const audioTranscodeDefaultParamsSchema = z.object({
+  bitrateKbps: z.number().int().min(8).max(1536).nullable().default(null),
+  vbrQuality: z.number().int().min(0).max(9).nullable().default(null),
+  sampleRateHz: audioTranscodeSampleRateSchema.nullable().default(null),
+  channels: audioTranscodeChannelsSchema.nullable().default(null),
+  flacCompressionLevel: z.number().int().min(0).max(12).nullable().default(null),
+  wavBitDepth: audioTranscodeWavBitDepthSchema.nullable().default(null),
+  metadataMode: audioTranscodeMetadataModeSchema.default("copy"),
+  metadataOverrideKey: z.string().max(64).default(""),
+  metadataOverrideValue: z.string().max(256).default(""),
+});
+export const audioTranscodeDefaultsByPresetSchema = z.object({
+  flac: audioTranscodeDefaultParamsSchema,
+  alac: audioTranscodeDefaultParamsSchema,
+  wav: audioTranscodeDefaultParamsSchema,
+  opus: audioTranscodeDefaultParamsSchema,
+  aac: audioTranscodeDefaultParamsSchema,
+  mp3: audioTranscodeDefaultParamsSchema,
+});
 export const subtitleAdvancedVadPresetSchema = z.enum([
   "balanced",
   "conservative",
@@ -142,6 +187,8 @@ export const appSettingsSchema = z.object({
   audioExclusiveFallbackToShared: z.boolean(),
   audioGaplessMode: audioGaplessModeSchema,
   audioReplayGainMode: audioReplayGainModeSchema,
+  audioTranscodeDefaultPreset: audioTranscodePresetSchema,
+  audioTranscodeDefaultsByPreset: audioTranscodeDefaultsByPresetSchema,
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),

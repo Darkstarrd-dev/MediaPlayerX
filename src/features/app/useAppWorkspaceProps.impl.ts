@@ -982,6 +982,17 @@ export function useAppWorkspaceProps({
       imageMainSectionHandlers.onThumbnailWheelSwitchSidebarNode,
   });
 
+  const manageSelectedVideoIds = Array.from(
+    new Set(
+      [
+        ...sidebarCheckedNodeIds
+          .map((nodeId) => sidebarNodeById.get(nodeId)?.videoId ?? null)
+          .filter((videoId): videoId is string => Boolean(videoId)),
+        ...imageCheckedIds.filter((videoId) => videoByIdEffective.has(videoId)),
+      ],
+    ),
+  );
+
   const videoMainSectionProps = buildVideoMainSectionProps({
     manageMode,
     metadataManageMode,
@@ -990,6 +1001,7 @@ export function useAppWorkspaceProps({
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
+    manageSelectedVideoIds,
     pendingManageAction:
       backendWrite.pending.manage || manageAdReview.deletePending,
     manageOperationHint,

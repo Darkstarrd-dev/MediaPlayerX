@@ -13,6 +13,7 @@ import { SkeuoRunway } from "./primitives/SkeuoRunway";
 import SubtitleCleanupPanel from "./subtitles/SubtitleCleanupPanel";
 import SubtitleOverlay from "./subtitles/SubtitleOverlay";
 import { ToolbarTitleMarquee } from "./ToolbarTitleMarquee";
+import { VideoTranscodePanel } from "./VideoTranscodePanel";
 import { VideoControlIcon } from "./VideoControlIcon";
 import { useMediaPreloadWindow } from "./useMediaPreloadWindow";
 import {
@@ -20,6 +21,7 @@ import {
   type VideoNodeBrowseItem,
 } from "./useVideoNodeBrowseController";
 import { useVideoSeekDraft } from "./useVideoSeekDraft";
+import { useVideoTranscodeController } from "./useVideoTranscodeController";
 import { useI18n } from "../i18n/useI18n";
 import type { VideoItem } from "../types";
 import type { VideoFitMode } from "../features/media/videoFitMode";
@@ -45,6 +47,7 @@ interface VideoMainSectionProps {
   sidebarSelectedCount: number;
   imageSelectedCount: number;
   activeSelectionScope: "sidebar" | "image" | null;
+  manageSelectedVideoIds?: string[];
   pendingManageAction: boolean;
   manageOperationHint: string | null;
   canManageDelete: boolean;
@@ -166,6 +169,7 @@ function VideoMainSection({
   sidebarSelectedCount,
   imageSelectedCount,
   activeSelectionScope,
+  manageSelectedVideoIds = [],
   pendingManageAction,
   manageOperationHint,
   canManageDelete,
@@ -274,6 +278,63 @@ function VideoMainSection({
   const [manualSubtitleText, setManualSubtitleText] = useState<string | null>(
     null,
   );
+  const {
+    canManageVideoTranscode,
+    panelOpen: videoTranscodePanelOpen,
+    setPanelOpen: setVideoTranscodePanelOpen,
+    container: videoTranscodeContainer,
+    setContainer: setVideoTranscodeContainer,
+    videoCodec,
+    setVideoCodec,
+    qualityMode: videoTranscodeQualityMode,
+    setQualityMode: setVideoTranscodeQualityMode,
+    crf: videoTranscodeCrf,
+    setCrf: setVideoTranscodeCrf,
+    videoBitrateKbps,
+    setVideoBitrateKbps,
+    encoderPreset: videoTranscodeEncoderPreset,
+    setEncoderPreset: setVideoTranscodeEncoderPreset,
+    encoderPresetOptions: videoTranscodeEncoderPresetOptions,
+    scaleLongEdgePx: videoTranscodeScaleLongEdgePx,
+    setScaleLongEdgePx: setVideoTranscodeScaleLongEdgePx,
+    fps: videoTranscodeFps,
+    setFps: setVideoTranscodeFps,
+    audioMode: videoTranscodeAudioMode,
+    setAudioMode: setVideoTranscodeAudioMode,
+    audioBitrateKbps: videoTranscodeAudioBitrateKbps,
+    setAudioBitrateKbps: setVideoTranscodeAudioBitrateKbps,
+    faststart: videoTranscodeFaststart,
+    setFaststart: setVideoTranscodeFaststart,
+    outputDir: videoTranscodeOutputDir,
+    setOutputDir: setVideoTranscodeOutputDir,
+    pickingOutputDir: videoTranscodePickingOutputDir,
+    overwrite: videoTranscodeOverwrite,
+    setOverwrite: setVideoTranscodeOverwrite,
+    addOutputToSources: videoTranscodeAddOutputToSources,
+    setAddOutputToSources: setVideoTranscodeAddOutputToSources,
+    taskStatus: videoTranscodeTaskStatus,
+    taskProgress: videoTranscodeTaskProgress,
+    taskMessage: videoTranscodeTaskMessage,
+    outputCount: videoTranscodeOutputCount,
+    capabilitiesLoading: videoTranscodeCapabilitiesLoading,
+    capabilities: videoTranscodeCapabilities,
+    confirmDisabledReason: videoTranscodeConfirmDisabledReason,
+    estimateLoading: videoTranscodeEstimateLoading,
+    estimateMessage: videoTranscodeEstimateMessage,
+    estimateResult: videoTranscodeEstimateResult,
+    togglePanel: toggleVideoTranscodePanel,
+    handleConfirm: handleVideoTranscodeConfirm,
+    handleCancel: handleVideoTranscodeCancel,
+    handlePickOutputDir: handleVideoTranscodePickOutputDir,
+  } = useVideoTranscodeController({
+    t,
+    manageMode,
+    pendingManageAction,
+    fullscreenActive,
+    activeSelectionScope,
+    focusedVideoId: focusedVideo?.id ?? null,
+    manageSelectedVideoIds,
+  });
   const handleSeekVideo = useCallback(
     (time: number) => {
       explicitSeekAtMsRef.current = Date.now();
@@ -686,6 +747,16 @@ function VideoMainSection({
                 onClick={onManageDelete}
               >
                 <MainUiIcon name="delete" />
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("ui.media.videoTranscodeTitle")}
+                data-tooltip-label={t("ui.media.videoTranscodeTitle")}
+                disabled={!canManageVideoTranscode || pendingManageAction}
+                onClick={toggleVideoTranscodePanel}
+              >
+                TC
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
@@ -1406,6 +1477,61 @@ function VideoMainSection({
         onClose={() => setSubtitleCleanupPanelOpen(false)}
         onLlmEndpointChange={onSubtitleCleanupLlmEndpointChange}
         onLlmModelChange={onSubtitleCleanupLlmModelChange}
+      />
+      <VideoTranscodePanel
+        open={videoTranscodePanelOpen}
+        fullscreenActive={fullscreenActive}
+        executing={
+          videoTranscodeTaskStatus === "pending" ||
+          videoTranscodeTaskStatus === "running"
+        }
+        container={videoTranscodeContainer}
+        videoCodec={videoCodec}
+        qualityMode={videoTranscodeQualityMode}
+        crf={videoTranscodeCrf}
+        videoBitrateKbps={videoBitrateKbps}
+        encoderPreset={videoTranscodeEncoderPreset}
+        encoderPresetOptions={videoTranscodeEncoderPresetOptions}
+        scaleLongEdgePx={videoTranscodeScaleLongEdgePx}
+        fps={videoTranscodeFps}
+        audioMode={videoTranscodeAudioMode}
+        audioBitrateKbps={videoTranscodeAudioBitrateKbps}
+        faststart={videoTranscodeFaststart}
+        outputDir={videoTranscodeOutputDir}
+        pickingOutputDir={videoTranscodePickingOutputDir}
+        overwrite={videoTranscodeOverwrite}
+        addOutputToSources={videoTranscodeAddOutputToSources}
+        capabilitiesLoading={videoTranscodeCapabilitiesLoading}
+        capabilities={videoTranscodeCapabilities}
+        confirmDisabledReason={videoTranscodeConfirmDisabledReason}
+        estimateLoading={videoTranscodeEstimateLoading}
+        estimateMessage={videoTranscodeEstimateMessage}
+        estimateResult={videoTranscodeEstimateResult}
+        taskStatus={videoTranscodeTaskStatus}
+        taskProgress={videoTranscodeTaskProgress}
+        taskMessage={videoTranscodeTaskMessage}
+        outputCount={videoTranscodeOutputCount}
+        onCloseMask={() => setVideoTranscodePanelOpen(false)}
+        onPanelMouseDown={(event) => {
+          event.stopPropagation();
+        }}
+        onContainerChange={setVideoTranscodeContainer}
+        onVideoCodecChange={setVideoCodec}
+        onQualityModeChange={setVideoTranscodeQualityMode}
+        onCrfChange={setVideoTranscodeCrf}
+        onVideoBitrateKbpsChange={setVideoBitrateKbps}
+        onEncoderPresetChange={setVideoTranscodeEncoderPreset}
+        onScaleLongEdgePxChange={setVideoTranscodeScaleLongEdgePx}
+        onFpsChange={setVideoTranscodeFps}
+        onAudioModeChange={setVideoTranscodeAudioMode}
+        onAudioBitrateKbpsChange={setVideoTranscodeAudioBitrateKbps}
+        onFaststartChange={setVideoTranscodeFaststart}
+        onOutputDirChange={setVideoTranscodeOutputDir}
+        onPickOutputDir={handleVideoTranscodePickOutputDir}
+        onOverwriteChange={setVideoTranscodeOverwrite}
+        onAddOutputToSourcesChange={setVideoTranscodeAddOutputToSources}
+        onConfirm={handleVideoTranscodeConfirm}
+        onCancel={handleVideoTranscodeCancel}
       />
     </>
   );

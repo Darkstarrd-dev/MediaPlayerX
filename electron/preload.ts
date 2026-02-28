@@ -135,6 +135,15 @@ import {
   readAudioTranscodeTaskResponseSchema,
   cancelAudioTranscodeTaskRequestSchema,
   cancelAudioTranscodeTaskResponseSchema,
+  startVideoTranscodeTaskRequestSchema,
+  startVideoTranscodeTaskResponseSchema,
+  estimateVideoTranscodeOutputSizeRequestSchema,
+  estimateVideoTranscodeOutputSizeResponseSchema,
+  readVideoTranscodeCapabilitiesResponseSchema,
+  readVideoTranscodeTaskRequestSchema,
+  readVideoTranscodeTaskResponseSchema,
+  cancelVideoTranscodeTaskRequestSchema,
+  cancelVideoTranscodeTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -440,6 +449,44 @@ const backendApi = {
       parsed,
     );
     return cancelAudioTranscodeTaskResponseSchema.parse(response);
+  },
+  startVideoTranscodeTask: async (request: unknown) => {
+    const parsed = startVideoTranscodeTaskRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.startVideoTranscodeTask,
+      parsed,
+    );
+    return startVideoTranscodeTaskResponseSchema.parse(response);
+  },
+  estimateVideoTranscodeOutputSize: async (request: unknown) => {
+    const parsed = estimateVideoTranscodeOutputSizeRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.estimateVideoTranscodeOutputSize,
+      parsed,
+    );
+    return estimateVideoTranscodeOutputSizeResponseSchema.parse(response);
+  },
+  readVideoTranscodeCapabilities: async () => {
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.readVideoTranscodeCapabilities,
+    );
+    return readVideoTranscodeCapabilitiesResponseSchema.parse(response);
+  },
+  readVideoTranscodeTask: async (request: unknown) => {
+    const parsed = readVideoTranscodeTaskRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.readVideoTranscodeTask,
+      parsed,
+    );
+    return readVideoTranscodeTaskResponseSchema.parse(response);
+  },
+  cancelVideoTranscodeTask: async (request: unknown) => {
+    const parsed = cancelVideoTranscodeTaskRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.cancelVideoTranscodeTask,
+      parsed,
+    );
+    return cancelVideoTranscodeTaskResponseSchema.parse(response);
   },
   writePackageMetadata: async (request: unknown) => {
     const parsed = writePackageMetadataRequestSchema.parse(request);

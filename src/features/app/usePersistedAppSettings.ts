@@ -56,6 +56,8 @@ export function toPersistedAppSettings(
     audioExclusiveFallbackToShared: settings.audioExclusiveFallbackToShared,
     audioGaplessMode: settings.audioGaplessMode,
     audioReplayGainMode: settings.audioReplayGainMode,
+    audioTranscodeDefaultPreset: settings.audioTranscodeDefaultPreset,
+    audioTranscodeDefaultsByPreset: settings.audioTranscodeDefaultsByPreset,
     imageCollapsedFolderNodeIds: settings.imageCollapsedFolderNodeIds,
     videoCollapsedFolderNodeIds: settings.videoCollapsedFolderNodeIds,
     musicCollapsedFolderNodeIds: settings.musicCollapsedFolderNodeIds,

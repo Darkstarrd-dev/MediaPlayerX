@@ -220,7 +220,11 @@ export const imageConvertTaskStatusSchema = z.enum([
   "failed",
 ]);
 export const imageConvertFormatSchema = z.enum(["webp", "jpeg", "png", "avif"]);
-export const imageConvertAdjustModeSchema = z.enum(["basic", "levels", "curve"]);
+export const imageConvertAdjustModeSchema = z.enum([
+  "basic",
+  "levels",
+  "curve",
+]);
 export const imageConvertAdjustProfileSchema = z.object({
   mode: imageConvertAdjustModeSchema,
   brightness: z.number().min(-100).max(100),
@@ -303,6 +307,39 @@ export const audioTranscodePresetCapabilitySchema = z.object({
   reason: audioTranscodePresetCapabilityReasonSchema.nullable(),
 });
 
+export const audioTranscodeMetadataModeSchema = z.enum([
+  "copy",
+  "none",
+  "copy_and_override",
+]);
+
+export const audioTranscodeSampleRateSchema = z.union([
+  z.literal(44_100),
+  z.literal(48_000),
+  z.literal(96_000),
+]);
+
+export const audioTranscodeChannelsSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+]);
+
+export const audioTranscodeWavBitDepthSchema = z.union([
+  z.literal(16),
+  z.literal(24),
+]);
+
+export const audioTranscodeParamsSchema = z.object({
+  bitrate_kbps: z.number().int().min(8).max(1536).optional(),
+  vbr_quality: z.number().int().min(0).max(9).optional(),
+  sample_rate_hz: audioTranscodeSampleRateSchema.optional(),
+  channels: audioTranscodeChannelsSchema.optional(),
+  flac_compression_level: z.number().int().min(0).max(12).optional(),
+  wav_bit_depth: audioTranscodeWavBitDepthSchema.optional(),
+  metadata_mode: audioTranscodeMetadataModeSchema.optional(),
+  metadata_override: z.record(z.string().min(1), z.string()).optional(),
+});
+
 export const readAudioTranscodeCapabilitiesResponseSchema = z.object({
   enabled: z.boolean(),
   ffmpeg_available: z.boolean(),
@@ -338,6 +375,7 @@ export const audioTranscodeTaskSchema = z.object({
 export const startAudioTranscodeTaskRequestSchema = z.object({
   audio_ids: z.array(z.string().min(1)).min(1),
   preset: audioTranscodePresetSchema,
+  params_override: audioTranscodeParamsSchema.optional(),
   output_dir: z.string().min(1).optional(),
   overwrite: z.boolean().optional(),
   copy_metadata: z.boolean().optional(),
@@ -362,4 +400,174 @@ export const cancelAudioTranscodeTaskRequestSchema = z.object({
 
 export const cancelAudioTranscodeTaskResponseSchema = z.object({
   task: audioTranscodeTaskSchema,
+});
+
+export const videoTranscodeTaskStatusSchema = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "cancelled",
+  "failed",
+]);
+
+export const videoTranscodeContainerSchema = z.enum(["mp4", "mkv", "webm"]);
+
+export const videoTranscodeVideoCodecSchema = z.enum([
+  "h264",
+  "h265",
+  "vp9",
+  "av1",
+  "copy",
+]);
+
+export const videoTranscodeAudioModeSchema = z.enum(["copy", "encode", "drop"]);
+
+export const videoTranscodeQualityModeSchema = z.enum([
+  "copy",
+  "crf",
+  "bitrate",
+]);
+
+export const videoTranscodePresetSchema = z.enum([
+  "ultrafast",
+  "superfast",
+  "veryfast",
+  "faster",
+  "fast",
+  "medium",
+  "slow",
+  "slower",
+  "veryslow",
+]);
+
+export const videoTranscodeCapabilityReasonSchema = z.enum([
+  "ffmpeg_unavailable",
+  "encoder_unavailable",
+  "muxer_unavailable",
+]);
+
+export const videoTranscodeContainerCapabilitySchema = z.object({
+  available: z.boolean(),
+  required_muxer: z.string().min(1),
+  reason: videoTranscodeCapabilityReasonSchema.nullable(),
+});
+
+export const videoTranscodeCodecCapabilitySchema = z.object({
+  available: z.boolean(),
+  required_encoder: z.string().min(1),
+  reason: videoTranscodeCapabilityReasonSchema.nullable(),
+});
+
+export const videoTranscodeParamsSchema = z.object({
+  container: videoTranscodeContainerSchema.optional(),
+  video_codec: videoTranscodeVideoCodecSchema.optional(),
+  quality_mode: videoTranscodeQualityModeSchema.optional(),
+  crf: z.number().int().min(0).max(51).optional(),
+  video_bitrate_kbps: z.number().int().min(100).max(200_000).optional(),
+  encoder_preset: videoTranscodePresetSchema.optional(),
+  scale_long_edge_px: z.number().int().min(240).max(7_680).optional(),
+  fps: z.number().min(1).max(240).optional(),
+  audio_mode: videoTranscodeAudioModeSchema.optional(),
+  audio_bitrate_kbps: z.number().int().min(16).max(1_536).optional(),
+  faststart: z.boolean().optional(),
+});
+
+export const videoTranscodeTaskSchema = z.object({
+  task_id: z.string().min(1),
+  status: videoTranscodeTaskStatusSchema,
+  progress: z.number().min(0).max(1),
+  total_count: nonNegativeIntSchema,
+  processed_count: nonNegativeIntSchema,
+  success_count: nonNegativeIntSchema,
+  failed_count: nonNegativeIntSchema,
+  output_files: z.array(z.string().min(1)),
+  message: z.string().min(1).nullable(),
+  error_detail: z.string().min(1).nullable(),
+  created_at_ms: z.number().int().positive(),
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const startVideoTranscodeTaskRequestSchema = z.object({
+  video_ids: z.array(z.string().min(1)).min(1),
+  params_override: videoTranscodeParamsSchema.optional(),
+  output_dir: z.string().min(1).optional(),
+  overwrite: z.boolean().optional(),
+  add_output_to_sources: z.boolean().optional(),
+});
+
+export const startVideoTranscodeTaskResponseSchema = z.object({
+  task: videoTranscodeTaskSchema,
+});
+
+export const readVideoTranscodeTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const readVideoTranscodeTaskResponseSchema = z.object({
+  task: videoTranscodeTaskSchema.nullable(),
+});
+
+export const cancelVideoTranscodeTaskRequestSchema = z.object({
+  task_id: z.string().min(1),
+});
+
+export const cancelVideoTranscodeTaskResponseSchema = z.object({
+  task: videoTranscodeTaskSchema,
+});
+
+export const estimateVideoTranscodeOutputSizeRequestSchema = z.object({
+  video_ids: z.array(z.string().min(1)).min(1),
+  params_override: videoTranscodeParamsSchema.optional(),
+});
+
+export const estimateVideoTranscodeMethodSchema = z.enum([
+  "bitrate_formula",
+  "crf_heuristic",
+]);
+
+export const estimateVideoTranscodeConfidenceSchema = z.enum([
+  "low",
+  "medium",
+  "high",
+]);
+
+export const estimateVideoTranscodeRangeSchema = z.object({
+  low_bytes: nonNegativeIntSchema,
+  high_bytes: nonNegativeIntSchema,
+});
+
+export const estimateVideoTranscodeOutputSizeResponseSchema = z.object({
+  source_total_bytes: nonNegativeIntSchema,
+  estimated_bytes: nonNegativeIntSchema,
+  range: estimateVideoTranscodeRangeSchema.nullable(),
+  method: estimateVideoTranscodeMethodSchema,
+  confidence: estimateVideoTranscodeConfidenceSchema,
+  target_video_count: nonNegativeIntSchema,
+  details: z.object({
+    duration_sec: z.number().min(0),
+    assumed_video_bitrate_kbps: z.number().min(0).nullable(),
+    audio_bitrate_kbps: z.number().min(0).nullable(),
+    overhead_factor: z.number().min(1),
+  }),
+});
+
+export const readVideoTranscodeCapabilitiesResponseSchema = z.object({
+  enabled: z.boolean(),
+  ffmpeg_available: z.boolean(),
+  ffprobe_available: z.boolean(),
+  library_root_dir: z.string().min(1),
+  default_output_dir: z.string().min(1),
+  containers: z.object({
+    mp4: videoTranscodeContainerCapabilitySchema,
+    mkv: videoTranscodeContainerCapabilitySchema,
+    webm: videoTranscodeContainerCapabilitySchema,
+  }),
+  video_codecs: z.object({
+    h264: videoTranscodeCodecCapabilitySchema,
+    h265: videoTranscodeCodecCapabilitySchema,
+    vp9: videoTranscodeCodecCapabilitySchema,
+    av1: videoTranscodeCodecCapabilitySchema,
+    copy: videoTranscodeCodecCapabilitySchema,
+  }),
+  checked_at_ms: z.number().int().positive(),
 });

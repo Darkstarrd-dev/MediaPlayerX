@@ -1,5 +1,11 @@
 import type { ComponentProps } from "react";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/I18nProvider";
@@ -174,7 +180,8 @@ describe("MusicMainSection", () => {
   });
 
   afterEach(() => {
-    delete (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend;
+    delete (window as Window & { mediaPlayerBackend?: unknown })
+      .mediaPlayerBackend;
     vi.restoreAllMocks();
   });
 
@@ -226,9 +233,7 @@ describe("MusicMainSection", () => {
     const onToggleShowNamesOnly = vi.fn();
     renderMusicMainSection({ onToggleShowNamesOnly, showNamesOnly: false });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "切换到纯文件名模式" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "切换到纯文件名模式" }));
     expect(onToggleShowNamesOnly).toHaveBeenCalledTimes(1);
   });
 
@@ -265,7 +270,9 @@ describe("MusicMainSection", () => {
     await waitFor(() => {
       const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
       expect(visualizer.querySelector("canvas")).toBeTruthy();
-      expect(screen.queryByText(/可视化画布未就绪|Visualizer canvas is not ready/)).toBeNull();
+      expect(
+        screen.queryByText(/可视化画布未就绪|Visualizer canvas is not ready/),
+      ).toBeNull();
     });
   });
 
@@ -279,7 +286,9 @@ describe("MusicMainSection", () => {
       onSelectAudioAndPlay,
     });
 
-    fireEvent.doubleClick(screen.getByRole("button", { name: /track-2\.mp3/i }));
+    fireEvent.doubleClick(
+      screen.getByRole("button", { name: /track-2\.mp3/i }),
+    );
 
     expect(onSelectAudioAndPlay).toHaveBeenCalledWith("track-2");
   });
@@ -344,7 +353,11 @@ describe("MusicMainSection", () => {
 
   it("纯文件名模式管理态支持 Shift 区间选择参数透传", () => {
     const onToggleAudioChecked = vi.fn();
-    const audios = [makeAudio("track-1"), makeAudio("track-2"), makeAudio("track-3")];
+    const audios = [
+      makeAudio("track-1"),
+      makeAudio("track-2"),
+      makeAudio("track-3"),
+    ];
     renderMusicMainSection({
       showNamesOnly: true,
       manageMode: true,
@@ -374,14 +387,14 @@ describe("MusicMainSection", () => {
   it("纯文件名模式管理态支持左键拖动经过切换", () => {
     const onToggleAudioChecked = vi.fn();
     const audios = [makeAudio("track-1"), makeAudio("track-2")];
-    const originalElementFromPoint = document.elementFromPoint
+    const originalElementFromPoint = document.elementFromPoint;
     const mockElementFromPoint = vi.fn(() =>
       screen.getByRole("button", { name: /track-2\.mp3/i }),
-    )
+    );
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
       value: mockElementFromPoint,
-    })
+    });
 
     renderMusicMainSection({
       showNamesOnly: true,
@@ -405,17 +418,26 @@ describe("MusicMainSection", () => {
       undefined,
       expect.objectContaining({ orderedIds: ["track-1", "track-2"] }),
     );
-    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(2, "track-2", undefined, undefined);
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(
+      2,
+      "track-2",
+      undefined,
+      undefined,
+    );
 
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
       value: originalElementFromPoint,
-    })
+    });
   });
 
   it("文件管理模式工具栏可全选当前列表项", () => {
     const onToggleAudioChecked = vi.fn();
-    const audios = [makeAudio("track-1"), makeAudio("track-2"), makeAudio("track-3")];
+    const audios = [
+      makeAudio("track-1"),
+      makeAudio("track-2"),
+      makeAudio("track-3"),
+    ];
     renderMusicMainSection({
       showNamesOnly: true,
       manageMode: true,
@@ -507,6 +529,10 @@ describe("MusicMainSection", () => {
     expect(startAudioTranscodeTask).toHaveBeenCalledWith({
       audio_ids: ["track-1"],
       preset: "flac",
+      params_override: {
+        flac_compression_level: 5,
+        metadata_mode: "copy",
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
@@ -575,6 +601,10 @@ describe("MusicMainSection", () => {
     expect(startAudioTranscodeTask).toHaveBeenCalledWith({
       audio_ids: ["track-b"],
       preset: "flac",
+      params_override: {
+        flac_compression_level: 5,
+        metadata_mode: "copy",
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
@@ -644,7 +674,9 @@ describe("MusicMainSection", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("Z:/music/transcoded")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("Z:/music/transcoded"),
+      ).toBeInTheDocument();
     });
 
     await act(async () => {
@@ -654,7 +686,99 @@ describe("MusicMainSection", () => {
     expect(startAudioTranscodeTask).toHaveBeenCalledWith({
       audio_ids: ["track-1"],
       preset: "flac",
+      params_override: {
+        flac_compression_level: 5,
+        metadata_mode: "copy",
+      },
       output_dir: "Z:/music/transcoded",
+      overwrite: false,
+      copy_metadata: true,
+      add_output_to_music_sources: true,
+    });
+  });
+
+  it("应支持参数变更并透传 params_override", async () => {
+    const startAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-with-custom-params",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "started",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    const readAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-with-custom-params",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "running",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      startAudioTranscodeTask,
+      readAudioTranscodeTask,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+    fireEvent.change(screen.getByLabelText("采样率"), {
+      target: { value: "48000" },
+    });
+    fireEvent.change(screen.getByLabelText("声道"), {
+      target: { value: "1" },
+    });
+    fireEvent.change(screen.getByLabelText("FLAC 压缩级别"), {
+      target: { value: "8" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据策略"), {
+      target: { value: "copy_and_override" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据键"), {
+      target: { value: "album" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据值"), {
+      target: { value: "test-album" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "开始" }));
+    });
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledWith({
+      audio_ids: ["track-1"],
+      preset: "flac",
+      params_override: {
+        sample_rate_hz: 48_000,
+        channels: 1,
+        flac_compression_level: 8,
+        metadata_mode: "copy_and_override",
+        metadata_override: {
+          album: "test-album",
+        },
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
@@ -696,22 +820,24 @@ describe("MusicMainSection", () => {
           updated_at_ms: Date.now(),
         },
       });
-    const readAudioTranscodeTask = vi.fn().mockImplementation(async (request: { task_id: string }) => ({
-      task: {
-        task_id: request.task_id,
-        status: "failed",
-        progress: 1,
-        total_count: 1,
-        processed_count: 1,
-        success_count: 0,
-        failed_count: 1,
-        output_files: ["Z:/music/transcoded/track-1.flac"],
-        message: "failed",
-        error_detail: "mock error",
-        created_at_ms: Date.now(),
-        updated_at_ms: Date.now(),
-      },
-    }));
+    const readAudioTranscodeTask = vi
+      .fn()
+      .mockImplementation(async (request: { task_id: string }) => ({
+        task: {
+          task_id: request.task_id,
+          status: "failed",
+          progress: 1,
+          total_count: 1,
+          processed_count: 1,
+          success_count: 0,
+          failed_count: 1,
+          output_files: ["Z:/music/transcoded/track-1.flac"],
+          message: "failed",
+          error_detail: "mock error",
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      }));
 
     (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
       startAudioTranscodeTask,
@@ -727,6 +853,24 @@ describe("MusicMainSection", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "TC" }));
+    fireEvent.change(screen.getByLabelText("采样率"), {
+      target: { value: "44100" },
+    });
+    fireEvent.change(screen.getByLabelText("声道"), {
+      target: { value: "2" },
+    });
+    fireEvent.change(screen.getByLabelText("FLAC 压缩级别"), {
+      target: { value: "7" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据策略"), {
+      target: { value: "copy_and_override" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据键"), {
+      target: { value: "artist" },
+    });
+    fireEvent.change(screen.getByLabelText("元数据值"), {
+      target: { value: "retry-artist" },
+    });
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "开始" }));
@@ -740,14 +884,26 @@ describe("MusicMainSection", () => {
       fireEvent.click(screen.getByRole("button", { name: "重试" }));
     });
 
-    expect(startAudioTranscodeTask).toHaveBeenCalledTimes(2);
-    expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(2, {
+    const expectedRequest = {
       audio_ids: ["track-1"],
       preset: "flac",
+      params_override: {
+        sample_rate_hz: 44_100,
+        channels: 2,
+        flac_compression_level: 7,
+        metadata_mode: "copy_and_override",
+        metadata_override: {
+          artist: "retry-artist",
+        },
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
-    });
+    };
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledTimes(2);
+    expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(1, expectedRequest);
+    expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(2, expectedRequest);
   });
 
   it("应支持一键重试失败项", async () => {
@@ -785,42 +941,44 @@ describe("MusicMainSection", () => {
           updated_at_ms: Date.now(),
         },
       });
-    const readAudioTranscodeTask = vi.fn().mockImplementation(async (request: { task_id: string }) => {
-      if (request.task_id === "audio-transcode-failed-a") {
+    const readAudioTranscodeTask = vi
+      .fn()
+      .mockImplementation(async (request: { task_id: string }) => {
+        if (request.task_id === "audio-transcode-failed-a") {
+          return {
+            task: {
+              task_id: request.task_id,
+              status: "failed",
+              progress: 1,
+              total_count: 2,
+              processed_count: 2,
+              success_count: 1,
+              failed_count: 1,
+              output_files: ["Z:/music/transcoded/track-a.flac"],
+              message: "failed a",
+              error_detail: "mock error a",
+              created_at_ms: Date.now(),
+              updated_at_ms: Date.now(),
+            },
+          };
+        }
         return {
           task: {
             task_id: request.task_id,
-            status: "failed",
-            progress: 1,
+            status: "running",
+            progress: 0,
             total_count: 2,
-            processed_count: 2,
-            success_count: 1,
-            failed_count: 1,
-            output_files: ["Z:/music/transcoded/track-a.flac"],
-            message: "failed a",
-            error_detail: "mock error a",
+            processed_count: 0,
+            success_count: 0,
+            failed_count: 0,
+            output_files: [],
+            message: "running",
+            error_detail: null,
             created_at_ms: Date.now(),
             updated_at_ms: Date.now(),
           },
         };
-      }
-      return {
-        task: {
-          task_id: request.task_id,
-          status: "running",
-          progress: 0,
-          total_count: 2,
-          processed_count: 0,
-          success_count: 0,
-          failed_count: 0,
-          output_files: [],
-          message: "running",
-          error_detail: null,
-          created_at_ms: Date.now(),
-          updated_at_ms: Date.now(),
-        },
-      };
-    });
+      });
 
     (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
       startAudioTranscodeTask,
@@ -836,7 +994,9 @@ describe("MusicMainSection", () => {
       manageSelectedAudioIds: ["track-a", "track-b"],
       focusedAudio: focusAudio,
       audios: [focusAudio],
-      audioPreloadItems: [{ id: focusAudio.id, src: "mock://audio-focus", sizeMb: 6 }],
+      audioPreloadItems: [
+        { id: focusAudio.id, src: "mock://audio-focus", sizeMb: 6 },
+      ],
     });
 
     fireEvent.click(screen.getByRole("button", { name: "TC" }));
@@ -846,7 +1006,9 @@ describe("MusicMainSection", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "重试失败项 (1)" })).toBeEnabled();
+      expect(
+        screen.getByRole("button", { name: "重试失败项 (1)" }),
+      ).toBeEnabled();
     });
 
     await act(async () => {
@@ -857,6 +1019,10 @@ describe("MusicMainSection", () => {
     expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(2, {
       audio_ids: ["track-a", "track-b"],
       preset: "flac",
+      params_override: {
+        flac_compression_level: 5,
+        metadata_mode: "copy",
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
@@ -917,6 +1083,10 @@ describe("MusicMainSection", () => {
     expect(startAudioTranscodeTask).toHaveBeenCalledWith({
       audio_ids: ["track-1"],
       preset: "flac",
+      params_override: {
+        flac_compression_level: 5,
+        metadata_mode: "copy",
+      },
       overwrite: false,
       copy_metadata: true,
       add_output_to_music_sources: true,
@@ -993,7 +1163,9 @@ describe("MusicMainSection", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "取消任务" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "取消任务" }),
+      ).toBeInTheDocument();
     });
 
     await act(async () => {
@@ -1014,12 +1186,42 @@ describe("MusicMainSection", () => {
       library_root_dir: "C:/media/library",
       default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
       presets: {
-        flac: { available: false, required_encoder: "flac", required_muxer: "flac", reason: "ffmpeg_unavailable" },
-        alac: { available: false, required_encoder: "alac", required_muxer: "ipod/mp4", reason: "ffmpeg_unavailable" },
-        wav: { available: false, required_encoder: "pcm_s16le", required_muxer: "wav", reason: "ffmpeg_unavailable" },
-        opus: { available: false, required_encoder: "libopus", required_muxer: "opus", reason: "ffmpeg_unavailable" },
-        aac: { available: false, required_encoder: "aac", required_muxer: "ipod/mp4", reason: "ffmpeg_unavailable" },
-        mp3: { available: false, required_encoder: "libmp3lame", required_muxer: "mp3", reason: "ffmpeg_unavailable" },
+        flac: {
+          available: false,
+          required_encoder: "flac",
+          required_muxer: "flac",
+          reason: "ffmpeg_unavailable",
+        },
+        alac: {
+          available: false,
+          required_encoder: "alac",
+          required_muxer: "ipod/mp4",
+          reason: "ffmpeg_unavailable",
+        },
+        wav: {
+          available: false,
+          required_encoder: "pcm_s16le",
+          required_muxer: "wav",
+          reason: "ffmpeg_unavailable",
+        },
+        opus: {
+          available: false,
+          required_encoder: "libopus",
+          required_muxer: "opus",
+          reason: "ffmpeg_unavailable",
+        },
+        aac: {
+          available: false,
+          required_encoder: "aac",
+          required_muxer: "ipod/mp4",
+          reason: "ffmpeg_unavailable",
+        },
+        mp3: {
+          available: false,
+          required_encoder: "libmp3lame",
+          required_muxer: "mp3",
+          reason: "ffmpeg_unavailable",
+        },
       },
       checked_at_ms: Date.now(),
     });
@@ -1057,12 +1259,42 @@ describe("MusicMainSection", () => {
       library_root_dir: "C:/media/library",
       default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
       presets: {
-        flac: { available: true, required_encoder: "flac", required_muxer: "flac", reason: null },
-        alac: { available: true, required_encoder: "alac", required_muxer: "ipod/mp4", reason: null },
-        wav: { available: true, required_encoder: "pcm_s16le", required_muxer: "wav", reason: null },
-        opus: { available: true, required_encoder: "libopus", required_muxer: "opus", reason: null },
-        aac: { available: true, required_encoder: "aac", required_muxer: "ipod/mp4", reason: null },
-        mp3: { available: true, required_encoder: "libmp3lame", required_muxer: "mp3", reason: null },
+        flac: {
+          available: true,
+          required_encoder: "flac",
+          required_muxer: "flac",
+          reason: null,
+        },
+        alac: {
+          available: true,
+          required_encoder: "alac",
+          required_muxer: "ipod/mp4",
+          reason: null,
+        },
+        wav: {
+          available: true,
+          required_encoder: "pcm_s16le",
+          required_muxer: "wav",
+          reason: null,
+        },
+        opus: {
+          available: true,
+          required_encoder: "libopus",
+          required_muxer: "opus",
+          reason: null,
+        },
+        aac: {
+          available: true,
+          required_encoder: "aac",
+          required_muxer: "ipod/mp4",
+          reason: null,
+        },
+        mp3: {
+          available: true,
+          required_encoder: "libmp3lame",
+          required_muxer: "mp3",
+          reason: null,
+        },
       },
       checked_at_ms: Date.now(),
     });
@@ -1084,7 +1316,9 @@ describe("MusicMainSection", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("默认输出目录：C:/media/library/.mediaplayerx/transcoded"),
+        screen.getByText(
+          "默认输出目录：C:/media/library/.mediaplayerx/transcoded",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -1097,12 +1331,42 @@ describe("MusicMainSection", () => {
       library_root_dir: "C:/media/library",
       default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
       presets: {
-        flac: { available: false, required_encoder: "flac", required_muxer: "flac", reason: "muxer_unavailable" },
-        alac: { available: false, required_encoder: "alac", required_muxer: "ipod/mp4", reason: "muxer_unavailable" },
-        wav: { available: false, required_encoder: "pcm_s16le", required_muxer: "wav", reason: "muxer_unavailable" },
-        opus: { available: false, required_encoder: "libopus", required_muxer: "opus", reason: "muxer_unavailable" },
-        aac: { available: false, required_encoder: "aac", required_muxer: "ipod/mp4", reason: "muxer_unavailable" },
-        mp3: { available: false, required_encoder: "libmp3lame", required_muxer: "mp3", reason: "muxer_unavailable" },
+        flac: {
+          available: false,
+          required_encoder: "flac",
+          required_muxer: "flac",
+          reason: "muxer_unavailable",
+        },
+        alac: {
+          available: false,
+          required_encoder: "alac",
+          required_muxer: "ipod/mp4",
+          reason: "muxer_unavailable",
+        },
+        wav: {
+          available: false,
+          required_encoder: "pcm_s16le",
+          required_muxer: "wav",
+          reason: "muxer_unavailable",
+        },
+        opus: {
+          available: false,
+          required_encoder: "libopus",
+          required_muxer: "opus",
+          reason: "muxer_unavailable",
+        },
+        aac: {
+          available: false,
+          required_encoder: "aac",
+          required_muxer: "ipod/mp4",
+          reason: "muxer_unavailable",
+        },
+        mp3: {
+          available: false,
+          required_encoder: "libmp3lame",
+          required_muxer: "mp3",
+          reason: "muxer_unavailable",
+        },
       },
       checked_at_ms: Date.now(),
     });
@@ -1371,8 +1635,14 @@ describe("MusicMainSection", () => {
   });
 
   it("全屏时窗口尺寸变化会同步更新音乐控制条宽度变量", () => {
-    const widthDescriptor = Object.getOwnPropertyDescriptor(window, "innerWidth");
-    const heightDescriptor = Object.getOwnPropertyDescriptor(window, "innerHeight");
+    const widthDescriptor = Object.getOwnPropertyDescriptor(
+      window,
+      "innerWidth",
+    );
+    const heightDescriptor = Object.getOwnPropertyDescriptor(
+      window,
+      "innerHeight",
+    );
 
     try {
       setWindowViewport(1280, 720);
@@ -1427,18 +1697,10 @@ describe("MusicMainSection", () => {
     expect(
       screen.getByRole("button", { name: "Starfield" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Galaxy" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Escape" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Tissue" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Orbs" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Galaxy" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Escape" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tissue" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Orbs" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Simple Pan" }),
     ).toBeInTheDocument();
@@ -1455,24 +1717,12 @@ describe("MusicMainSection", () => {
     fireEvent.mouseLeave(controlsShell);
 
     expect(screen.queryByRole("button", { name: "Default" })).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Starfield" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Galaxy" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Escape" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Tissue" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Orbs" }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: "Simple Pan" }),
-    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "Starfield" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Galaxy" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Escape" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Tissue" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Orbs" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Simple Pan" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Fungi" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Nebula" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Rain Drips" })).toBeNull();

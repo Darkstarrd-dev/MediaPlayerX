@@ -47,6 +47,8 @@ export function useAppSettingsStore() {
       audioExclusiveFallbackToShared: state.audioExclusiveFallbackToShared,
       audioGaplessMode: state.audioGaplessMode,
       audioReplayGainMode: state.audioReplayGainMode,
+      audioTranscodeDefaultPreset: state.audioTranscodeDefaultPreset,
+      audioTranscodeDefaultsByPreset: state.audioTranscodeDefaultsByPreset,
       imageCollapsedFolderNodeIds: state.imageCollapsedFolderNodeIds,
       videoCollapsedFolderNodeIds: state.videoCollapsedFolderNodeIds,
       musicCollapsedFolderNodeIds: state.musicCollapsedFolderNodeIds,

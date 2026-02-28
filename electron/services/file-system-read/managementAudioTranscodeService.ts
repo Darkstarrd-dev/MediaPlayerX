@@ -45,6 +45,10 @@ interface RunAudioTranscodeTaskResult {
   first_error_detail: string | null;
 }
 
+type AudioTranscodeParamsOverride = NonNullable<
+  StartAudioTranscodeTaskRequestDto["params_override"]
+>;
+
 interface ManagementAudioTranscodeServiceDependencies {
   rootDir: string;
   ffmpegBin: string;
@@ -84,16 +88,12 @@ const PRESET_EXTENSION: Record<
   mp3: ".mp3",
 };
 
-const PRESET_CODEC_ARGS: Record<
-  StartAudioTranscodeTaskRequestDto["preset"],
-  string[]
+const PRESET_DEFAULT_BITRATE_KBPS: Partial<
+  Record<StartAudioTranscodeTaskRequestDto["preset"], number>
 > = {
-  flac: ["-c:a", "flac"],
-  alac: ["-c:a", "alac"],
-  wav: ["-c:a", "pcm_s16le"],
-  opus: ["-c:a", "libopus", "-b:a", "160k"],
-  aac: ["-c:a", "aac", "-b:a", "256k"],
-  mp3: ["-c:a", "libmp3lame", "-b:a", "320k"],
+  opus: 160,
+  aac: 256,
+  mp3: 320,
 };
 
 const PRESET_REQUIRED_ENCODER: Record<AudioTranscodePresetDto, string> = {
@@ -122,8 +122,8 @@ export class ManagementAudioTranscodeService {
   private static readonly ENCODER_CACHE_TTL_MS = 30_000;
 
   private static readonly DEFAULT_TRANSCODE_OUTPUT_RELATIVE_PATH = path.join(
-    ".mediaplayerx",
     "transcoded",
+    "audio",
   );
 
   private encoderCache: {
@@ -167,6 +167,137 @@ export class ManagementAudioTranscodeService {
     if (options.isCancelled?.() || options.signal?.aborted) {
       throw new AudioTranscodeCancelledError();
     }
+  }
+
+  private resolveParamsOverride(
+    request: StartAudioTranscodeTaskRequestDto,
+  ): AudioTranscodeParamsOverride {
+    return request.params_override ?? {};
+  }
+
+  private validateParamsOverride(
+    request: StartAudioTranscodeTaskRequestDto,
+    capabilities: { encoders: Set<string>; muxers: Set<string> } | null,
+  ): void {
+    const params = this.resolveParamsOverride(request);
+    if (
+      typeof params.flac_compression_level === "number" &&
+      request.preset !== "flac"
+    ) {
+      throw new Error(
+        "audio transcode failed: flac_compression_level only supports flac preset",
+      );
+    }
+    if (typeof params.wav_bit_depth === "number" && request.preset !== "wav") {
+      throw new Error(
+        "audio transcode failed: wav_bit_depth only supports wav preset",
+      );
+    }
+    if (typeof params.vbr_quality === "number" && request.preset !== "mp3") {
+      throw new Error(
+        "audio transcode failed: vbr_quality only supports mp3 preset",
+      );
+    }
+    if (
+      typeof params.bitrate_kbps === "number" &&
+      request.preset !== "opus" &&
+      request.preset !== "aac" &&
+      request.preset !== "mp3"
+    ) {
+      throw new Error(
+        "audio transcode failed: bitrate_kbps only supports opus/aac/mp3 presets",
+      );
+    }
+    if (
+      request.preset === "wav" &&
+      params.wav_bit_depth === 24 &&
+      capabilities &&
+      !capabilities.encoders.has("pcm_s24le")
+    ) {
+      throw new Error(
+        "audio transcode failed: wav 24-bit unavailable (missing encoder pcm_s24le)",
+      );
+    }
+  }
+
+  private buildCodecArgs(
+    request: StartAudioTranscodeTaskRequestDto,
+  ): string[] {
+    const params = this.resolveParamsOverride(request);
+    const args: string[] = [];
+    if (request.preset === "flac") {
+      args.push("-c:a", "flac");
+      if (typeof params.flac_compression_level === "number") {
+        args.push("-compression_level", String(params.flac_compression_level));
+      }
+    } else if (request.preset === "alac") {
+      args.push("-c:a", "alac");
+    } else if (request.preset === "wav") {
+      args.push(
+        "-c:a",
+        params.wav_bit_depth === 24 ? "pcm_s24le" : "pcm_s16le",
+      );
+    } else if (request.preset === "opus") {
+      const bitrateKbps =
+        typeof params.bitrate_kbps === "number"
+          ? params.bitrate_kbps
+          : (PRESET_DEFAULT_BITRATE_KBPS.opus ?? 160);
+      args.push("-c:a", "libopus", "-b:a", `${bitrateKbps}k`);
+    } else if (request.preset === "aac") {
+      const bitrateKbps =
+        typeof params.bitrate_kbps === "number"
+          ? params.bitrate_kbps
+          : (PRESET_DEFAULT_BITRATE_KBPS.aac ?? 256);
+      args.push("-c:a", "aac", "-b:a", `${bitrateKbps}k`);
+    } else {
+      args.push("-c:a", "libmp3lame");
+      if (typeof params.vbr_quality === "number") {
+        args.push("-q:a", String(params.vbr_quality));
+      } else {
+        const bitrateKbps =
+          typeof params.bitrate_kbps === "number"
+            ? params.bitrate_kbps
+            : (PRESET_DEFAULT_BITRATE_KBPS.mp3 ?? 320);
+        args.push("-b:a", `${bitrateKbps}k`);
+      }
+    }
+
+    if (typeof params.sample_rate_hz === "number") {
+      args.push("-ar", String(params.sample_rate_hz));
+    }
+    if (typeof params.channels === "number") {
+      args.push("-ac", String(params.channels));
+    }
+    return args;
+  }
+
+  private resolveMetadataWriteArgs(
+    request: StartAudioTranscodeTaskRequestDto,
+  ): {
+    copyMetadata: boolean;
+    metadataArgs: string[];
+  } {
+    const params = this.resolveParamsOverride(request);
+    const metadataMode = params.metadata_mode;
+    const copyMetadata =
+      metadataMode === "none"
+        ? false
+        : metadataMode === "copy" || metadataMode === "copy_and_override"
+          ? true
+          : request.copy_metadata !== false;
+    const metadataArgs: string[] = [];
+    const overrides = params.metadata_override ?? {};
+    for (const [key, value] of Object.entries(overrides)) {
+      const normalizedKey = key.trim();
+      if (!normalizedKey) {
+        continue;
+      }
+      metadataArgs.push("-metadata", `${normalizedKey}=${value}`);
+    }
+    return {
+      copyMetadata,
+      metadataArgs,
+    };
   }
 
   private async runFfmpeg(
@@ -263,27 +394,36 @@ export class ManagementAudioTranscodeService {
     );
   }
 
-  private async addOutputFilesToMusicImportSources(
+  private async addOutputDirectoriesToMusicImportSources(
     outputFiles: string[],
   ): Promise<void> {
     if (outputFiles.length <= 0) {
       return;
     }
+
     const current = this.dependencies.readMusicImportSources();
+    const directoryKeyToPath = new Map<string, string>();
     const fileKeyToPath = new Map<string, string>();
-    for (const value of current.files) {
-      fileKeyToPath.set(
-        normalizeAllowlistKey(path.resolve(value)),
-        path.resolve(value),
-      );
+    for (const value of current.directories) {
+      const resolved = path.resolve(value);
+      directoryKeyToPath.set(normalizeAllowlistKey(resolved), resolved);
     }
-    for (const value of outputFiles) {
+    for (const value of current.files) {
       const resolved = path.resolve(value);
       fileKeyToPath.set(normalizeAllowlistKey(resolved), resolved);
     }
+
+    for (const value of outputFiles) {
+      const outputDirectory = path.dirname(path.resolve(value));
+      directoryKeyToPath.set(
+        normalizeAllowlistKey(outputDirectory),
+        outputDirectory,
+      );
+    }
+
     this.dependencies.writeMusicImportSources({
-      directories: Array.from(
-        new Set(current.directories.map((value) => path.resolve(value))),
+      directories: Array.from(directoryKeyToPath.values()).sort((left, right) =>
+        left.localeCompare(right, "zh-CN"),
       ),
       files: Array.from(fileKeyToPath.values()).sort((left, right) =>
         left.localeCompare(right, "zh-CN"),
@@ -584,6 +724,7 @@ export class ManagementAudioTranscodeService {
   ): Promise<RunAudioTranscodeTaskResult> {
     await this.dependencies.ensureStateLoaded();
     const capabilities = await this.readAudioTranscodeCapabilities();
+    const paramsOverride = this.resolveParamsOverride(request);
     if (!capabilities.ffmpeg_available) {
       throw new Error("audio transcode failed: ffmpeg unavailable");
     }
@@ -598,6 +739,13 @@ export class ManagementAudioTranscodeService {
         `audio transcode failed: preset ${request.preset} unavailable (missing encoder ${presetCapability.required_encoder})`,
       );
     }
+    const codecCapabilities =
+      typeof paramsOverride.wav_bit_depth === "number" ||
+      typeof paramsOverride.vbr_quality === "number" ||
+      typeof paramsOverride.bitrate_kbps === "number"
+        ? await this.readCachedFfmpegCodecCapabilities().catch(() => null)
+        : null;
+    this.validateParamsOverride(request, codecCapabilities);
 
     const snapshot = await this.dependencies.ensureSnapshotLoaded();
     const mediaAccessContext = this.dependencies.buildMediaAccessContext();
@@ -705,7 +853,8 @@ export class ManagementAudioTranscodeService {
         "-i",
         sourcePath,
       ];
-      if (request.copy_metadata !== false) {
+      const metadataOptions = this.resolveMetadataWriteArgs(request);
+      if (metadataOptions.copyMetadata) {
         args.push("-map_metadata", "0");
       }
       if (segment.startSec != null) {
@@ -714,7 +863,8 @@ export class ManagementAudioTranscodeService {
       if (segment.endSec != null) {
         args.push("-to", segment.endSec.toFixed(3));
       }
-      args.push(...PRESET_CODEC_ARGS[request.preset]);
+      args.push(...this.buildCodecArgs(request));
+      args.push(...metadataOptions.metadataArgs);
       args.push(outputPath);
 
       try {
@@ -775,7 +925,7 @@ export class ManagementAudioTranscodeService {
 
     if (successCount > 0) {
       if (request.add_output_to_music_sources !== false) {
-        await this.addOutputFilesToMusicImportSources(outputFiles);
+        await this.addOutputDirectoriesToMusicImportSources(outputFiles);
       }
       if (this.dependencies.refreshSnapshotFromFilesystem) {
         await this.dependencies.refreshSnapshotFromFilesystem({ force: true });

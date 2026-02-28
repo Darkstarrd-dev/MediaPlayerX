@@ -141,6 +141,15 @@ import type {
   ReadAudioTranscodeTaskResponseDto,
   CancelAudioTranscodeTaskRequestDto,
   CancelAudioTranscodeTaskResponseDto,
+  StartVideoTranscodeTaskRequestDto,
+  StartVideoTranscodeTaskResponseDto,
+  EstimateVideoTranscodeOutputSizeRequestDto,
+  EstimateVideoTranscodeOutputSizeResponseDto,
+  ReadVideoTranscodeCapabilitiesResponseDto,
+  ReadVideoTranscodeTaskRequestDto,
+  ReadVideoTranscodeTaskResponseDto,
+  CancelVideoTranscodeTaskRequestDto,
+  CancelVideoTranscodeTaskResponseDto,
   SetImageHiddenRequestDto,
   SetImageHiddenResponseDto,
   DeleteImageItemsRequestDto,
@@ -264,6 +273,19 @@ interface MediaPlayerBackendApi {
   cancelAudioTranscodeTask?: (
     request: CancelAudioTranscodeTaskRequestDto,
   ) => Promise<CancelAudioTranscodeTaskResponseDto>;
+  startVideoTranscodeTask?: (
+    request: StartVideoTranscodeTaskRequestDto,
+  ) => Promise<StartVideoTranscodeTaskResponseDto>;
+  estimateVideoTranscodeOutputSize?: (
+    request: EstimateVideoTranscodeOutputSizeRequestDto,
+  ) => Promise<EstimateVideoTranscodeOutputSizeResponseDto>;
+  readVideoTranscodeCapabilities?: () => Promise<ReadVideoTranscodeCapabilitiesResponseDto>;
+  readVideoTranscodeTask?: (
+    request: ReadVideoTranscodeTaskRequestDto,
+  ) => Promise<ReadVideoTranscodeTaskResponseDto>;
+  cancelVideoTranscodeTask?: (
+    request: CancelVideoTranscodeTaskRequestDto,
+  ) => Promise<CancelVideoTranscodeTaskResponseDto>;
   writePackageMetadata?: (
     request: WritePackageMetadataRequestDto,
   ) => Promise<WritePackageMetadataResponseDto>;

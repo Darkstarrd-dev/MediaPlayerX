@@ -96,6 +96,15 @@ import {
   type ReadAudioTranscodeTaskResponseDto,
   type CancelAudioTranscodeTaskRequestDto,
   type CancelAudioTranscodeTaskResponseDto,
+  type StartVideoTranscodeTaskRequestDto,
+  type StartVideoTranscodeTaskResponseDto,
+  type EstimateVideoTranscodeOutputSizeRequestDto,
+  type EstimateVideoTranscodeOutputSizeResponseDto,
+  type ReadVideoTranscodeCapabilitiesResponseDto,
+  type ReadVideoTranscodeTaskRequestDto,
+  type ReadVideoTranscodeTaskResponseDto,
+  type CancelVideoTranscodeTaskRequestDto,
+  type CancelVideoTranscodeTaskResponseDto,
   type AudioItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
@@ -1367,6 +1376,29 @@ export class FileSystemMediaReadService {
     request: CancelAudioTranscodeTaskRequestDto,
   ): Promise<CancelAudioTranscodeTaskResponseDto> {
     return this.managementHandlers.cancelAudioTranscodeTask(request);
+  }
+  async startVideoTranscodeTask(
+    request: StartVideoTranscodeTaskRequestDto,
+  ): Promise<StartVideoTranscodeTaskResponseDto> {
+    return this.managementHandlers.startVideoTranscodeTask(request);
+  }
+  async readVideoTranscodeCapabilities(): Promise<ReadVideoTranscodeCapabilitiesResponseDto> {
+    return this.managementHandlers.readVideoTranscodeCapabilities();
+  }
+  async estimateVideoTranscodeOutputSize(
+    request: EstimateVideoTranscodeOutputSizeRequestDto,
+  ): Promise<EstimateVideoTranscodeOutputSizeResponseDto> {
+    return this.managementHandlers.estimateVideoTranscodeOutputSize(request);
+  }
+  async readVideoTranscodeTask(
+    request: ReadVideoTranscodeTaskRequestDto,
+  ): Promise<ReadVideoTranscodeTaskResponseDto> {
+    return this.managementHandlers.readVideoTranscodeTask(request);
+  }
+  async cancelVideoTranscodeTask(
+    request: CancelVideoTranscodeTaskRequestDto,
+  ): Promise<CancelVideoTranscodeTaskResponseDto> {
+    return this.managementHandlers.cancelVideoTranscodeTask(request);
   }
   async writePackageMetadata(
     request: WritePackageMetadataRequestDto,

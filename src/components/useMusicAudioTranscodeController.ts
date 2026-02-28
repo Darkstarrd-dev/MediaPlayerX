@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useShallow } from "zustand/react/shallow"
 
+import type { AppSettings } from "../contracts/settings"
 import type {
   AudioTranscodeTaskDto,
   ReadAudioTranscodeCapabilitiesResponseDto,
   StartAudioTranscodeTaskRequestDto,
 } from "../contracts/backend"
 import type { TranslateFn } from "../i18n/context"
+import { useUiStore } from "../store/useUiStore"
 
 export interface MusicAudioTranscodeTaskHistoryItem {
   taskId: string
@@ -34,6 +37,35 @@ const AUDIO_TRANSCODE_PRESET_ORDER: StartAudioTranscodeTaskRequestDto["preset"][
   "aac",
   "mp3",
 ]
+
+type AudioTranscodePreset = StartAudioTranscodeTaskRequestDto["preset"]
+type AudioTranscodeDefaultParams = AppSettings["audioTranscodeDefaultsByPreset"][AudioTranscodePreset]
+type AudioTranscodeDefaultsByPreset = AppSettings["audioTranscodeDefaultsByPreset"]
+
+const EMPTY_AUDIO_TRANSCODE_DEFAULT_PARAMS: AudioTranscodeDefaultParams = {
+  bitrateKbps: null,
+  vbrQuality: null,
+  sampleRateHz: null,
+  channels: null,
+  flacCompressionLevel: null,
+  wavBitDepth: null,
+  metadataMode: "copy",
+  metadataOverrideKey: "",
+  metadataOverrideValue: "",
+}
+
+function cloneAudioTranscodeDefaultsByPreset(
+  source: AudioTranscodeDefaultsByPreset,
+): AudioTranscodeDefaultsByPreset {
+  return {
+    flac: { ...source.flac },
+    alac: { ...source.alac },
+    wav: { ...source.wav },
+    opus: { ...source.opus },
+    aac: { ...source.aac },
+    mp3: { ...source.mp3 },
+  }
+}
 
 function normalizeFsPathForCompare(rawPath: string): string {
   const normalized = rawPath
@@ -67,9 +99,23 @@ export function useMusicAudioTranscodeController({
 }: MusicAudioTranscodeControllerOptions) {
   const audioTranscodePollTimerRef = useRef<number | null>(null)
   const audioTranscodeRequestByTaskIdRef = useRef<Map<string, StartAudioTranscodeTaskRequestDto>>(new Map())
+  const {
+    audioTranscodeDefaultPreset,
+    audioTranscodeDefaultsByPreset,
+    updateSettings,
+  } = useUiStore(
+    useShallow((state) => ({
+      audioTranscodeDefaultPreset: state.audioTranscodeDefaultPreset,
+      audioTranscodeDefaultsByPreset: state.audioTranscodeDefaultsByPreset,
+      updateSettings: state.updateSettings,
+    })),
+  )
 
   const [audioTranscodePanelOpen, setAudioTranscodePanelOpen] = useState(false)
-  const [audioTranscodePreset, setAudioTranscodePreset] = useState<StartAudioTranscodeTaskRequestDto["preset"]>("flac")
+  const [audioTranscodePreset, setAudioTranscodePreset] = useState<AudioTranscodePreset>(audioTranscodeDefaultPreset)
+  const [audioTranscodeDefaultsByPresetDraft, setAudioTranscodeDefaultsByPresetDraft] = useState<AudioTranscodeDefaultsByPreset>(
+    () => cloneAudioTranscodeDefaultsByPreset(audioTranscodeDefaultsByPreset),
+  )
   const [audioTranscodeOutputDir, setAudioTranscodeOutputDir] = useState("")
   const [audioTranscodePickingOutputDir, setAudioTranscodePickingOutputDir] = useState(false)
   const [audioTranscodeOverwrite, setAudioTranscodeOverwrite] = useState(false)
@@ -97,6 +143,75 @@ export function useMusicAudioTranscodeController({
   const audioTranscodeTaskHistoryView = useMemo(
     () => [...audioTranscodeTaskHistory].sort((left, right) => right.updatedAtMs - left.updatedAtMs).slice(0, 6),
     [audioTranscodeTaskHistory],
+  )
+
+  useEffect(() => {
+    setAudioTranscodePreset(audioTranscodeDefaultPreset)
+  }, [audioTranscodeDefaultPreset])
+
+  useEffect(() => {
+    setAudioTranscodeDefaultsByPresetDraft(
+      cloneAudioTranscodeDefaultsByPreset(audioTranscodeDefaultsByPreset),
+    )
+  }, [audioTranscodeDefaultsByPreset])
+
+  const audioTranscodeActiveDefaults = useMemo(() => {
+    return (
+      audioTranscodeDefaultsByPresetDraft[audioTranscodePreset] ??
+      EMPTY_AUDIO_TRANSCODE_DEFAULT_PARAMS
+    )
+  }, [audioTranscodeDefaultsByPresetDraft, audioTranscodePreset])
+
+  const updateAudioTranscodeActiveDefaults = useCallback(
+    (patch: Partial<AudioTranscodeDefaultParams>) => {
+      setAudioTranscodeDefaultsByPresetDraft((previous) => ({
+        ...previous,
+        [audioTranscodePreset]: {
+          ...(previous[audioTranscodePreset] ?? EMPTY_AUDIO_TRANSCODE_DEFAULT_PARAMS),
+          ...patch,
+        },
+      }))
+    },
+    [audioTranscodePreset],
+  )
+
+  const buildAudioTranscodeParamsOverride = useCallback(
+    (preset: AudioTranscodePreset) => {
+      const defaults =
+        audioTranscodeDefaultsByPresetDraft[preset] ??
+        EMPTY_AUDIO_TRANSCODE_DEFAULT_PARAMS
+      const params: NonNullable<StartAudioTranscodeTaskRequestDto["params_override"]> = {}
+      if (typeof defaults.bitrateKbps === "number") {
+        params.bitrate_kbps = defaults.bitrateKbps
+      }
+      if (typeof defaults.vbrQuality === "number") {
+        params.vbr_quality = defaults.vbrQuality
+      }
+      if (typeof defaults.sampleRateHz === "number") {
+        params.sample_rate_hz = defaults.sampleRateHz
+      }
+      if (typeof defaults.channels === "number") {
+        params.channels = defaults.channels
+      }
+      if (typeof defaults.flacCompressionLevel === "number") {
+        params.flac_compression_level = defaults.flacCompressionLevel
+      }
+      if (typeof defaults.wavBitDepth === "number") {
+        params.wav_bit_depth = defaults.wavBitDepth
+      }
+      params.metadata_mode = defaults.metadataMode
+      const metadataOverrideKey = defaults.metadataOverrideKey.trim()
+      if (
+        defaults.metadataMode === "copy_and_override" &&
+        metadataOverrideKey.length > 0
+      ) {
+        params.metadata_override = {
+          [metadataOverrideKey]: defaults.metadataOverrideValue,
+        }
+      }
+      return params
+    },
+    [audioTranscodeDefaultsByPresetDraft],
   )
 
   const resolveAudioTranscodeErrorMessage = useCallback((rawMessage: string | null | undefined) => {
@@ -454,6 +569,7 @@ export function useMusicAudioTranscodeController({
     const request: StartAudioTranscodeTaskRequestDto = {
       audio_ids: targetAudioIds,
       preset: audioTranscodePreset,
+      params_override: buildAudioTranscodeParamsOverride(audioTranscodePreset),
       overwrite: audioTranscodeOverwrite,
       copy_metadata: audioTranscodeCopyMetadata,
       add_output_to_music_sources: audioTranscodeAddOutputToMusicSources,
@@ -466,10 +582,11 @@ export function useMusicAudioTranscodeController({
     await executeAudioTranscodeTask(request)
   }, [
     audioTranscodeAddOutputToMusicSources,
+    audioTranscodePreset,
+    buildAudioTranscodeParamsOverride,
     audioTranscodeCopyMetadata,
     audioTranscodeOutputDir,
     audioTranscodeOverwrite,
-    audioTranscodePreset,
     executeAudioTranscodeTask,
     resolveAudioTranscodeTargetIds,
     t,
@@ -512,6 +629,7 @@ export function useMusicAudioTranscodeController({
     const request: StartAudioTranscodeTaskRequestDto = {
       audio_ids: retryAudioIds,
       preset: audioTranscodePreset,
+      params_override: buildAudioTranscodeParamsOverride(audioTranscodePreset),
       overwrite: audioTranscodeOverwrite,
       copy_metadata: audioTranscodeCopyMetadata,
       add_output_to_music_sources: audioTranscodeAddOutputToMusicSources,
@@ -531,6 +649,7 @@ export function useMusicAudioTranscodeController({
     audioTranscodePickingOutputDir,
     audioTranscodePreset,
     audioTranscodeTaskHistory,
+    buildAudioTranscodeParamsOverride,
     executeAudioTranscodeTask,
     t,
   ])
@@ -548,6 +667,29 @@ export function useMusicAudioTranscodeController({
     }
 
     setAudioTranscodePreset(previousRequest.preset)
+    if (previousRequest.params_override) {
+      setAudioTranscodeDefaultsByPresetDraft((previous) => ({
+        ...previous,
+        [previousRequest.preset]: {
+          ...(previous[previousRequest.preset] ?? EMPTY_AUDIO_TRANSCODE_DEFAULT_PARAMS),
+          bitrateKbps: previousRequest.params_override?.bitrate_kbps ?? null,
+          vbrQuality: previousRequest.params_override?.vbr_quality ?? null,
+          sampleRateHz: previousRequest.params_override?.sample_rate_hz ?? null,
+          channels: previousRequest.params_override?.channels ?? null,
+          flacCompressionLevel:
+            previousRequest.params_override?.flac_compression_level ?? null,
+          wavBitDepth: previousRequest.params_override?.wav_bit_depth ?? null,
+          metadataMode:
+            previousRequest.params_override?.metadata_mode ?? "copy",
+          metadataOverrideKey:
+            Object.keys(previousRequest.params_override?.metadata_override ?? {})[0] ??
+            "",
+          metadataOverrideValue:
+            Object.values(previousRequest.params_override?.metadata_override ?? {})[0] ??
+            "",
+        },
+      }))
+    }
     setAudioTranscodeOutputDir(previousRequest.output_dir ?? "")
     setAudioTranscodeOverwrite(Boolean(previousRequest.overwrite))
     setAudioTranscodeCopyMetadata(previousRequest.copy_metadata ?? true)
@@ -628,12 +770,103 @@ export function useMusicAudioTranscodeController({
     upsertAudioTranscodeTaskHistory,
   ])
 
+  const setAudioTranscodeBitrateKbps = useCallback(
+    (value: number | null) => {
+      updateAudioTranscodeActiveDefaults({ bitrateKbps: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeVbrQuality = useCallback(
+    (value: number | null) => {
+      updateAudioTranscodeActiveDefaults({ vbrQuality: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeSampleRateHz = useCallback(
+    (value: 44_100 | 48_000 | 96_000 | null) => {
+      updateAudioTranscodeActiveDefaults({ sampleRateHz: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeChannels = useCallback(
+    (value: 1 | 2 | null) => {
+      updateAudioTranscodeActiveDefaults({ channels: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeFlacCompressionLevel = useCallback(
+    (value: number | null) => {
+      updateAudioTranscodeActiveDefaults({ flacCompressionLevel: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeWavBitDepth = useCallback(
+    (value: 16 | 24 | null) => {
+      updateAudioTranscodeActiveDefaults({ wavBitDepth: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeMetadataMode = useCallback(
+    (value: AudioTranscodeDefaultParams["metadataMode"]) => {
+      updateAudioTranscodeActiveDefaults({ metadataMode: value })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeMetadataOverrideKey = useCallback(
+    (value: string) => {
+      updateAudioTranscodeActiveDefaults({
+        metadataOverrideKey: value.slice(0, 64),
+      })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const setAudioTranscodeMetadataOverrideValue = useCallback(
+    (value: string) => {
+      updateAudioTranscodeActiveDefaults({
+        metadataOverrideValue: value.slice(0, 256),
+      })
+    },
+    [updateAudioTranscodeActiveDefaults],
+  )
+
+  const handleAudioTranscodeSaveDefaults = useCallback(() => {
+    updateSettings({
+      audioTranscodeDefaultPreset: audioTranscodePreset,
+      audioTranscodeDefaultsByPreset: cloneAudioTranscodeDefaultsByPreset(
+        audioTranscodeDefaultsByPresetDraft,
+      ),
+    })
+  }, [
+    audioTranscodeDefaultPreset,
+    audioTranscodeDefaultsByPresetDraft,
+    audioTranscodePreset,
+    updateSettings,
+  ])
+
   return {
     canManageAudioTranscode,
     audioTranscodePanelOpen,
     setAudioTranscodePanelOpen,
     audioTranscodePreset,
     setAudioTranscodePreset,
+    audioTranscodeActiveDefaults,
+    setAudioTranscodeBitrateKbps,
+    setAudioTranscodeVbrQuality,
+    setAudioTranscodeSampleRateHz,
+    setAudioTranscodeChannels,
+    setAudioTranscodeFlacCompressionLevel,
+    setAudioTranscodeWavBitDepth,
+    setAudioTranscodeMetadataMode,
+    setAudioTranscodeMetadataOverrideKey,
+    setAudioTranscodeMetadataOverrideValue,
     audioTranscodeOutputDir,
     setAudioTranscodeOutputDir,
     audioTranscodePickingOutputDir,
@@ -659,6 +892,7 @@ export function useMusicAudioTranscodeController({
     handleAudioTranscodeRetryFailedTasks,
     handleAudioTranscodeClearTaskHistory,
     handleAudioTranscodePickOutputDir,
+    handleAudioTranscodeSaveDefaults,
     handleAudioTranscodeCancel,
   }
 }

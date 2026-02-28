@@ -468,6 +468,16 @@ function MusicMainSection({
     setAudioTranscodePanelOpen,
     audioTranscodePreset,
     setAudioTranscodePreset,
+    audioTranscodeActiveDefaults,
+    setAudioTranscodeBitrateKbps,
+    setAudioTranscodeVbrQuality,
+    setAudioTranscodeSampleRateHz,
+    setAudioTranscodeChannels,
+    setAudioTranscodeFlacCompressionLevel,
+    setAudioTranscodeWavBitDepth,
+    setAudioTranscodeMetadataMode,
+    setAudioTranscodeMetadataOverrideKey,
+    setAudioTranscodeMetadataOverrideValue,
     audioTranscodeOutputDir,
     setAudioTranscodeOutputDir,
     audioTranscodePickingOutputDir,
@@ -493,6 +503,7 @@ function MusicMainSection({
     handleAudioTranscodeRetryFailedTasks,
     handleAudioTranscodeClearTaskHistory,
     handleAudioTranscodePickOutputDir,
+    handleAudioTranscodeSaveDefaults,
     handleAudioTranscodeCancel,
   } = useMusicAudioTranscodeController({
     t,
@@ -1314,6 +1325,7 @@ function MusicMainSection({
       fullscreenActive={fullscreenActive}
       executing={audioTranscodeExecuting}
       preset={audioTranscodePreset}
+      activeDefaults={audioTranscodeActiveDefaults}
       outputDir={audioTranscodeOutputDir}
       pickingOutputDir={audioTranscodePickingOutputDir}
       overwrite={audioTranscodeOverwrite}
@@ -1335,6 +1347,15 @@ function MusicMainSection({
         event.stopPropagation()
       }}
       onPresetChange={setAudioTranscodePreset}
+      onBitrateKbpsChange={setAudioTranscodeBitrateKbps}
+      onVbrQualityChange={setAudioTranscodeVbrQuality}
+      onSampleRateHzChange={setAudioTranscodeSampleRateHz}
+      onChannelsChange={setAudioTranscodeChannels}
+      onFlacCompressionLevelChange={setAudioTranscodeFlacCompressionLevel}
+      onWavBitDepthChange={setAudioTranscodeWavBitDepth}
+      onMetadataModeChange={setAudioTranscodeMetadataMode}
+      onMetadataOverrideKeyChange={setAudioTranscodeMetadataOverrideKey}
+      onMetadataOverrideValueChange={setAudioTranscodeMetadataOverrideValue}
       onOutputDirChange={setAudioTranscodeOutputDir}
       onPickOutputDir={handleAudioTranscodePickOutputDir}
       onOverwriteChange={setAudioTranscodeOverwrite}
@@ -1343,6 +1364,7 @@ function MusicMainSection({
       onRetryTask={handleAudioTranscodeRetry}
       onRetryFailedTasks={handleAudioTranscodeRetryFailedTasks}
       onClearTaskHistory={handleAudioTranscodeClearTaskHistory}
+      onSaveDefaults={handleAudioTranscodeSaveDefaults}
       onConfirm={handleAudioTranscodeConfirm}
       onCancel={handleAudioTranscodeCancel}
     />

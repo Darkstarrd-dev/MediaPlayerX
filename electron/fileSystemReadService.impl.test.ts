@@ -439,7 +439,9 @@ describe("FileSystemMediaReadService", () => {
   });
 
   it("可输出音频转码能力矩阵并包含预设可用性", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-audio-transcode-cap-"));
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-audio-transcode-cap-"),
+    );
     createdRoots.push(root);
 
     await writeTinyPng(path.join(root, "sample.png"));
@@ -453,10 +455,44 @@ describe("FileSystemMediaReadService", () => {
     expect(typeof capabilities.ffprobe_available).toBe("boolean");
     expect(typeof capabilities.library_root_dir).toBe("string");
     expect(typeof capabilities.default_output_dir).toBe("string");
-    expect(capabilities.default_output_dir.replace(/\\/g, "/").endsWith("/.mediaplayerx/transcoded")).toBe(true);
+    expect(
+      capabilities.default_output_dir
+        .replace(/\\/g, "/")
+        .endsWith("/transcoded/audio"),
+    ).toBe(true);
     expect(typeof capabilities.presets.flac.available).toBe("boolean");
     expect(typeof capabilities.presets.mp3.required_encoder).toBe("string");
     expect(typeof capabilities.presets.mp3.required_muxer).toBe("string");
+  });
+
+  it("可输出视频转码能力矩阵并包含容器/编码器可用性", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-video-transcode-cap-"),
+    );
+    createdRoots.push(root);
+
+    await writeTinyPng(path.join(root, "sample.png"));
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+
+    const capabilities = await service.readVideoTranscodeCapabilities();
+    expect(typeof capabilities.enabled).toBe("boolean");
+    expect(typeof capabilities.ffmpeg_available).toBe("boolean");
+    expect(typeof capabilities.ffprobe_available).toBe("boolean");
+    expect(typeof capabilities.library_root_dir).toBe("string");
+    expect(typeof capabilities.default_output_dir).toBe("string");
+    expect(
+      capabilities.default_output_dir
+        .replace(/\\/g, "/")
+        .endsWith("/transcoded/video"),
+    ).toBe(true);
+    expect(typeof capabilities.containers.mp4.available).toBe("boolean");
+    expect(typeof capabilities.containers.mp4.required_muxer).toBe("string");
+    expect(typeof capabilities.video_codecs.h264.available).toBe("boolean");
+    expect(typeof capabilities.video_codecs.h264.required_encoder).toBe(
+      "string",
+    );
   });
 
   it("写链路可持久化评分与封面，失败时由调用端回滚", async () => {
@@ -674,14 +710,18 @@ describe("FileSystemMediaReadService", () => {
       });
 
       expect(updated.package.external_metadata?.source_site).toBe("nhentai");
-      expect(updated.package.external_metadata?.source_remote_id).toBe("474755");
+      expect(updated.package.external_metadata?.source_remote_id).toBe(
+        "474755",
+      );
       expect(updated.package.external_metadata?.title).toBe(
         "Jotaika Kishi Belveed / Feminized Knight Belveed",
       );
       expect(updated.package.external_metadata?.title_jpn).toBe(
         "女体化騎士ベルウィード",
       );
-      expect(updated.package.external_metadata?.group_name_jpn).toBe("天路あや");
+      expect(updated.package.external_metadata?.group_name_jpn).toBe(
+        "天路あや",
+      );
       expect(updated.package.external_metadata?.artist).toBe("tenro aya");
       expect(updated.package.external_metadata?.favorited).toBe("2141");
       expect(updated.package.source_cover).toBeNull();
@@ -695,7 +735,9 @@ describe("FileSystemMediaReadService", () => {
       expect(refreshedSource?.external_metadata?.title_jpn).toBe(
         "女体化騎士ベルウィード",
       );
-      expect(refreshedSource?.external_metadata?.group_name_jpn).toBe("天路あや");
+      expect(refreshedSource?.external_metadata?.group_name_jpn).toBe(
+        "天路あや",
+      );
       expect(refreshedSource?.external_metadata?.artist).toBe("tenro aya");
       expect(refreshedSource?.external_metadata?.posted).toBe("2023-09-24");
       expect(refreshedSource?.external_metadata?.favorited).toBe("2141");
@@ -789,7 +831,10 @@ describe("FileSystemMediaReadService", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-prune-guard-"));
     createdRoots.push(root);
 
-    await writeBinary(path.join(root, "gallery", "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(
+      path.join(root, "gallery", "a.jpg"),
+      [0xff, 0xd8, 0xff, 0xd9],
+    );
 
     const service = new FileSystemMediaReadService(root);
     createdServices.push(service);
@@ -823,12 +868,23 @@ describe("FileSystemMediaReadService", () => {
   });
 
   it("同一批目录多轮 replace 重命名后不应丢失 sidebar 节点", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-rename-replace-loop-"));
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-rename-replace-loop-"),
+    );
     createdRoots.push(root);
 
-    await writeBinary(path.join(root, "set demo A", "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
-    await writeBinary(path.join(root, "set B", "b.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
-    await writeBinary(path.join(root, "set demo C", "c.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(
+      path.join(root, "set demo A", "a.jpg"),
+      [0xff, 0xd8, 0xff, 0xd9],
+    );
+    await writeBinary(
+      path.join(root, "set B", "b.jpg"),
+      [0xff, 0xd8, 0xff, 0xd9],
+    );
+    await writeBinary(
+      path.join(root, "set demo C", "c.jpg"),
+      [0xff, 0xd8, 0xff, 0xd9],
+    );
 
     const service = new FileSystemMediaReadService(root);
     createdServices.push(service);
@@ -867,10 +923,12 @@ describe("FileSystemMediaReadService", () => {
     const secondSnapshotBase = await service.readLibrarySnapshot();
     expect(secondSnapshotBase.image_directories).toHaveLength(3);
 
-    const secondTargets = secondSnapshotBase.image_directories.map((source) => ({
-      kind: "sidebar-node" as const,
-      node_id: `package:${source.tree_path.join("/")}`,
-    }));
+    const secondTargets = secondSnapshotBase.image_directories.map(
+      (source) => ({
+        kind: "sidebar-node" as const,
+        node_id: `package:${source.tree_path.join("/")}`,
+      }),
+    );
 
     const secondRename = await service.renameItems({
       targets: secondTargets,
@@ -884,7 +942,9 @@ describe("FileSystemMediaReadService", () => {
     expect(secondRename.failed).toEqual([]);
     expect(secondRename.renamed_count).toBe(0);
     expect(
-      secondRename.results.every((item) => item.reason === "replace-target-not-found"),
+      secondRename.results.every(
+        (item) => item.reason === "replace-target-not-found",
+      ),
     ).toBe(true);
 
     const sidebar = await service.readImageSidebarTree({
@@ -898,13 +958,19 @@ describe("FileSystemMediaReadService", () => {
       .sort((left, right) => left.localeCompare(right, "zh-CN"));
     expect(labels).toEqual(["set A", "set B", "set C"]);
 
-    await expect(fs.stat(path.join(root, "set A", "a.jpg"))).resolves.toMatchObject({
+    await expect(
+      fs.stat(path.join(root, "set A", "a.jpg")),
+    ).resolves.toMatchObject({
       isFile: expect.any(Function),
     });
-    await expect(fs.stat(path.join(root, "set B", "b.jpg"))).resolves.toMatchObject({
+    await expect(
+      fs.stat(path.join(root, "set B", "b.jpg")),
+    ).resolves.toMatchObject({
       isFile: expect.any(Function),
     });
-    await expect(fs.stat(path.join(root, "set C", "c.jpg"))).resolves.toMatchObject({
+    await expect(
+      fs.stat(path.join(root, "set C", "c.jpg")),
+    ).resolves.toMatchObject({
       isFile: expect.any(Function),
     });
   });
@@ -1108,5 +1174,4 @@ describe("FileSystemMediaReadService", () => {
       ).length;
     expect(importedImageCountAfterSecondImport).toBe(2);
   });
-
 });

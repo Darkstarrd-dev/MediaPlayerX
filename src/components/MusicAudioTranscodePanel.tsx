@@ -1,5 +1,6 @@
 import { useMemo, useState, type MouseEvent } from "react";
 
+import type { AppSettings } from "../contracts/settings";
 import type {
   ReadAudioTranscodeCapabilitiesResponseDto,
   StartAudioTranscodeTaskRequestDto,
@@ -8,6 +9,8 @@ import { useI18n } from "../i18n/useI18n";
 import { MainUiIcon } from "./MainUiIcon";
 
 type AudioTranscodePreset = StartAudioTranscodeTaskRequestDto["preset"];
+type AudioTranscodeDefaultParams =
+  AppSettings["audioTranscodeDefaultsByPreset"][AudioTranscodePreset];
 type AudioTranscodePresetCapabilities =
   ReadAudioTranscodeCapabilitiesResponseDto["presets"];
 type AudioTranscodeTaskStatus =
@@ -31,6 +34,7 @@ interface MusicAudioTranscodePanelProps {
   fullscreenActive: boolean;
   executing: boolean;
   preset: AudioTranscodePreset;
+  activeDefaults: AudioTranscodeDefaultParams;
   outputDir: string;
   pickingOutputDir: boolean;
   overwrite: boolean;
@@ -48,6 +52,15 @@ interface MusicAudioTranscodePanelProps {
   onCloseMask: () => void;
   onPanelMouseDown: (event: MouseEvent<HTMLElement>) => void;
   onPresetChange: (value: AudioTranscodePreset) => void;
+  onBitrateKbpsChange: (value: number | null) => void;
+  onVbrQualityChange: (value: number | null) => void;
+  onSampleRateHzChange: (value: 44_100 | 48_000 | 96_000 | null) => void;
+  onChannelsChange: (value: 1 | 2 | null) => void;
+  onFlacCompressionLevelChange: (value: number | null) => void;
+  onWavBitDepthChange: (value: 16 | 24 | null) => void;
+  onMetadataModeChange: (value: "copy" | "none" | "copy_and_override") => void;
+  onMetadataOverrideKeyChange: (value: string) => void;
+  onMetadataOverrideValueChange: (value: string) => void;
   onOutputDirChange: (value: string) => void;
   onPickOutputDir: () => void | Promise<void>;
   onOverwriteChange: (value: boolean) => void;
@@ -56,6 +69,7 @@ interface MusicAudioTranscodePanelProps {
   onRetryTask: (taskId: string) => void | Promise<void>;
   onRetryFailedTasks: () => void | Promise<void>;
   onClearTaskHistory: () => void;
+  onSaveDefaults: () => void;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void | Promise<void>;
 }
@@ -65,6 +79,7 @@ export function MusicAudioTranscodePanel({
   fullscreenActive,
   executing,
   preset,
+  activeDefaults,
   outputDir,
   pickingOutputDir,
   overwrite,
@@ -82,6 +97,15 @@ export function MusicAudioTranscodePanel({
   onCloseMask,
   onPanelMouseDown,
   onPresetChange,
+  onBitrateKbpsChange,
+  onVbrQualityChange,
+  onSampleRateHzChange,
+  onChannelsChange,
+  onFlacCompressionLevelChange,
+  onWavBitDepthChange,
+  onMetadataModeChange,
+  onMetadataOverrideKeyChange,
+  onMetadataOverrideValueChange,
   onOutputDirChange,
   onPickOutputDir,
   onOverwriteChange,
@@ -90,6 +114,7 @@ export function MusicAudioTranscodePanel({
   onRetryTask,
   onRetryFailedTasks,
   onClearTaskHistory,
+  onSaveDefaults,
   onConfirm,
   onCancel,
 }: MusicAudioTranscodePanelProps) {
@@ -172,37 +197,49 @@ export function MusicAudioTranscodePanel({
               >
                 <option
                   value="flac"
-                  disabled={Boolean(capabilities && !capabilities.flac.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.flac.available,
+                  )}
                 >
                   FLAC
                 </option>
                 <option
                   value="alac"
-                  disabled={Boolean(capabilities && !capabilities.alac.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.alac.available,
+                  )}
                 >
                   ALAC
                 </option>
                 <option
                   value="wav"
-                  disabled={Boolean(capabilities && !capabilities.wav.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.wav.available,
+                  )}
                 >
                   WAV
                 </option>
                 <option
                   value="opus"
-                  disabled={Boolean(capabilities && !capabilities.opus.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.opus.available,
+                  )}
                 >
                   Opus
                 </option>
                 <option
                   value="aac"
-                  disabled={Boolean(capabilities && !capabilities.aac.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.aac.available,
+                  )}
                 >
                   AAC
                 </option>
                 <option
                   value="mp3"
-                  disabled={Boolean(capabilities && !capabilities.mp3.available)}
+                  disabled={Boolean(
+                    capabilities && !capabilities.mp3.available,
+                  )}
                 >
                   MP3
                 </option>
@@ -211,7 +248,9 @@ export function MusicAudioTranscodePanel({
             <input
               className="sidebar-rename-seamless-control music-audio-transcode-output-input"
               type="text"
-              placeholder={t("ui.music.audioTranscodeOutputDirectoryPlaceholder")}
+              placeholder={t(
+                "ui.music.audioTranscodeOutputDirectoryPlaceholder",
+              )}
               value={outputDir}
               disabled={executing}
               onChange={(event) => onOutputDirChange(event.target.value)}
@@ -235,126 +274,326 @@ export function MusicAudioTranscodePanel({
               {t("ui.common.clear")}
             </button>
           </div>
-        {capabilitiesLoading ? (
-          <p className="mpx-overlay-caption">
-            {t("ui.music.audioTranscodeCapabilityLoading")}
-          </p>
-        ) : null}
-        {!capabilitiesLoading && selectedPresetCapability?.available === false ? (
-          <p className="mpx-overlay-caption">
-            {selectedPresetCapability.reason === "muxer_unavailable"
-              ? t("ui.music.audioTranscodePresetMuxerUnavailable", {
-                  muxer: selectedPresetCapability.required_muxer,
-                })
-              : t("ui.music.audioTranscodePresetUnavailable", {
-                  encoder: selectedPresetCapability.required_encoder,
-                })}
-          </p>
-        ) : null}
-        {confirmDisabledReason ? (
-          <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
-        ) : null}
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>{t("ui.music.audioTranscodeOverwrite")}</span>
-          <input
-            type="checkbox"
-            checked={overwrite}
-            disabled={executing}
-            onChange={(event) => onOverwriteChange(event.target.checked)}
-          />
-        </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>{t("ui.music.audioTranscodeCopyMetadata")}</span>
-          <input
-            type="checkbox"
-            checked={copyMetadata}
-            disabled={executing}
-            onChange={(event) => onCopyMetadataChange(event.target.checked)}
-          />
-        </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>{t("ui.music.audioTranscodeAddOutputToSources")}</span>
-          <input
-            type="checkbox"
-            checked={addOutputToMusicSources}
-            disabled={executing}
-            onChange={(event) =>
-              onAddOutputToMusicSourcesChange(event.target.checked)
-            }
-          />
-        </label>
-        {taskStatus && taskStatusLabel ? (
-          <p className="main-toolbar-hint">
-            {`${t("ui.music.audioTranscodeTaskSummary", {
-              status: taskStatusLabel,
-              progress: Math.round(taskProgress * 100),
-              count: outputCount,
-            })}${taskMessage ? ` | ${taskMessage}` : ""}`}
-          </p>
-        ) : null}
-        {taskHistory.length > 0 ? (
+          {capabilitiesLoading ? (
+            <p className="mpx-overlay-caption">
+              {t("ui.music.audioTranscodeCapabilityLoading")}
+            </p>
+          ) : null}
+          {!capabilitiesLoading &&
+          selectedPresetCapability?.available === false ? (
+            <p className="mpx-overlay-caption">
+              {selectedPresetCapability.reason === "muxer_unavailable"
+                ? t("ui.music.audioTranscodePresetMuxerUnavailable", {
+                    muxer: selectedPresetCapability.required_muxer,
+                  })
+                : t("ui.music.audioTranscodePresetUnavailable", {
+                    encoder: selectedPresetCapability.required_encoder,
+                  })}
+            </p>
+          ) : null}
+          {confirmDisabledReason ? (
+            <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
+          ) : null}
           <section className="mpx-overlay-section">
             <div className="mpx-overlay-actions mpx-overlay-actions-start">
               <p className="mpx-overlay-caption">
-                {t("ui.music.audioTranscodeHistoryTitle")}
+                {t("ui.music.audioTranscodeParameterSection")}
               </p>
               <button
                 type="button"
                 disabled={executing}
-                onClick={() => {
-                  setHistoryFailedOnly((value) => !value);
-                }}
+                onClick={onSaveDefaults}
               >
-                {historyFailedOnly
-                  ? t("ui.music.audioTranscodeHistoryShowAll")
-                  : t("ui.music.audioTranscodeHistoryShowFailedOnly")}
-              </button>
-              <button
-                type="button"
-                disabled={executing || failedTaskCount <= 0}
-                onClick={() => void onRetryFailedTasks()}
-              >
-                {t("ui.music.audioTranscodeRetryFailedTasks", {
-                  count: failedTaskCount,
-                })}
+                {t("ui.music.audioTranscodeSaveDefaults")}
               </button>
             </div>
-            <ul className="mpx-overlay-list-surface mpx-overlay-scroll-list">
-              {filteredTaskHistory.map((task) => {
-                const status = t(`ui.music.audioTranscodeStatus.${task.status}`);
-                return (
-                  <li key={task.taskId}>
-                    <div className="mpx-overlay-actions mpx-overlay-actions-start">
-                      <span className="mpx-overlay-list-item-truncate">
-                        {t("ui.music.audioTranscodeHistoryItem", {
-                          id: task.taskId.slice(0, 8),
-                          status,
-                          progress: Math.round(task.progress * 100),
-                          count: task.outputCount,
-                        })}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={executing || task.status !== "failed"}
-                        onClick={() => void onRetryTask(task.taskId)}
-                      >
-                        {t("ui.common.retry")}
-                      </button>
-                    </div>
-                    {task.message ? (
-                      <p className="mpx-overlay-caption">{task.message}</p>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-            {filteredTaskHistory.length <= 0 ? (
-              <p className="mpx-overlay-caption">
-                {t("ui.music.audioTranscodeNoFailedTaskInHistory")}
-              </p>
+            {preset === "opus" || preset === "aac" || preset === "mp3" ? (
+              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <span>{t("ui.music.audioTranscodeBitrateKbps")}</span>
+                <input
+                  type="number"
+                  min={8}
+                  max={1536}
+                  step={1}
+                  value={activeDefaults.bitrateKbps ?? ""}
+                  disabled={
+                    executing ||
+                    (preset === "mp3" &&
+                      typeof activeDefaults.vbrQuality === "number")
+                  }
+                  onChange={(event) => {
+                    const rawValue = event.target.value.trim();
+                    onBitrateKbpsChange(
+                      rawValue.length > 0 ? Number(rawValue) : null,
+                    );
+                  }}
+                />
+              </label>
+            ) : null}
+            {preset === "mp3" ? (
+              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <span>{t("ui.music.audioTranscodeVbrQuality")}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={9}
+                  step={1}
+                  value={activeDefaults.vbrQuality ?? ""}
+                  disabled={executing}
+                  onChange={(event) => {
+                    const rawValue = event.target.value.trim();
+                    onVbrQualityChange(
+                      rawValue.length > 0 ? Number(rawValue) : null,
+                    );
+                  }}
+                />
+              </label>
+            ) : null}
+            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <span>{t("ui.music.audioTranscodeSampleRate")}</span>
+              <select
+                value={
+                  activeDefaults.sampleRateHz == null
+                    ? "source"
+                    : String(activeDefaults.sampleRateHz)
+                }
+                disabled={executing}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  onSampleRateHzChange(
+                    value === "source"
+                      ? null
+                      : (Number(value) as 44_100 | 48_000 | 96_000),
+                  );
+                }}
+              >
+                <option value="source">
+                  {t("ui.music.audioTranscodeFollowSource")}
+                </option>
+                <option value="44100">44.1 kHz</option>
+                <option value="48000">48 kHz</option>
+                <option value="96000">96 kHz</option>
+              </select>
+            </label>
+            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <span>{t("ui.music.audioTranscodeChannels")}</span>
+              <select
+                value={
+                  activeDefaults.channels == null
+                    ? "source"
+                    : String(activeDefaults.channels)
+                }
+                disabled={executing}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  onChannelsChange(
+                    value === "source" ? null : (Number(value) as 1 | 2),
+                  );
+                }}
+              >
+                <option value="source">
+                  {t("ui.music.audioTranscodeFollowSource")}
+                </option>
+                <option value="1">{t("ui.music.audioTranscodeMono")}</option>
+                <option value="2">{t("ui.music.audioTranscodeStereo")}</option>
+              </select>
+            </label>
+            {preset === "flac" ? (
+              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <span>{t("ui.music.audioTranscodeFlacCompressionLevel")}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={12}
+                  step={1}
+                  value={activeDefaults.flacCompressionLevel ?? ""}
+                  disabled={executing}
+                  onChange={(event) => {
+                    const rawValue = event.target.value.trim();
+                    onFlacCompressionLevelChange(
+                      rawValue.length > 0 ? Number(rawValue) : null,
+                    );
+                  }}
+                />
+              </label>
+            ) : null}
+            {preset === "wav" ? (
+              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <span>{t("ui.music.audioTranscodeWavBitDepth")}</span>
+                <select
+                  value={
+                    activeDefaults.wavBitDepth == null
+                      ? "source"
+                      : String(activeDefaults.wavBitDepth)
+                  }
+                  disabled={executing}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    onWavBitDepthChange(
+                      value === "source" ? null : (Number(value) as 16 | 24),
+                    );
+                  }}
+                >
+                  <option value="source">
+                    {t("ui.music.audioTranscodeFollowSource")}
+                  </option>
+                  <option value="16">16-bit</option>
+                  <option value="24">24-bit</option>
+                </select>
+              </label>
+            ) : null}
+            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <span>{t("ui.music.audioTranscodeMetadataMode")}</span>
+              <select
+                value={activeDefaults.metadataMode}
+                disabled={executing}
+                onChange={(event) =>
+                  onMetadataModeChange(
+                    event.target.value as "copy" | "none" | "copy_and_override",
+                  )
+                }
+              >
+                <option value="copy">
+                  {t("ui.music.audioTranscodeMetadataModeCopy")}
+                </option>
+                <option value="none">
+                  {t("ui.music.audioTranscodeMetadataModeNone")}
+                </option>
+                <option value="copy_and_override">
+                  {t("ui.music.audioTranscodeMetadataModeCopyAndOverride")}
+                </option>
+              </select>
+            </label>
+            {activeDefaults.metadataMode === "copy_and_override" ? (
+              <>
+                <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.music.audioTranscodeMetadataKey")}</span>
+                  <input
+                    type="text"
+                    value={activeDefaults.metadataOverrideKey}
+                    disabled={executing}
+                    onChange={(event) =>
+                      onMetadataOverrideKeyChange(event.target.value)
+                    }
+                  />
+                </label>
+                <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.music.audioTranscodeMetadataValue")}</span>
+                  <input
+                    type="text"
+                    value={activeDefaults.metadataOverrideValue}
+                    disabled={executing}
+                    onChange={(event) =>
+                      onMetadataOverrideValueChange(event.target.value)
+                    }
+                  />
+                </label>
+              </>
             ) : null}
           </section>
-        ) : null}
+          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <span>{t("ui.music.audioTranscodeOverwrite")}</span>
+            <input
+              type="checkbox"
+              checked={overwrite}
+              disabled={executing}
+              onChange={(event) => onOverwriteChange(event.target.checked)}
+            />
+          </label>
+          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <span>{t("ui.music.audioTranscodeCopyMetadata")}</span>
+            <input
+              type="checkbox"
+              checked={copyMetadata}
+              disabled={executing}
+              onChange={(event) => onCopyMetadataChange(event.target.checked)}
+            />
+          </label>
+          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <span>{t("ui.music.audioTranscodeAddOutputToSources")}</span>
+            <input
+              type="checkbox"
+              checked={addOutputToMusicSources}
+              disabled={executing}
+              onChange={(event) =>
+                onAddOutputToMusicSourcesChange(event.target.checked)
+              }
+            />
+          </label>
+          {taskStatus && taskStatusLabel ? (
+            <p className="main-toolbar-hint">
+              {`${t("ui.music.audioTranscodeTaskSummary", {
+                status: taskStatusLabel,
+                progress: Math.round(taskProgress * 100),
+                count: outputCount,
+              })}${taskMessage ? ` | ${taskMessage}` : ""}`}
+            </p>
+          ) : null}
+          {taskHistory.length > 0 ? (
+            <section className="mpx-overlay-section">
+              <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                <p className="mpx-overlay-caption">
+                  {t("ui.music.audioTranscodeHistoryTitle")}
+                </p>
+                <button
+                  type="button"
+                  disabled={executing}
+                  onClick={() => {
+                    setHistoryFailedOnly((value) => !value);
+                  }}
+                >
+                  {historyFailedOnly
+                    ? t("ui.music.audioTranscodeHistoryShowAll")
+                    : t("ui.music.audioTranscodeHistoryShowFailedOnly")}
+                </button>
+                <button
+                  type="button"
+                  disabled={executing || failedTaskCount <= 0}
+                  onClick={() => void onRetryFailedTasks()}
+                >
+                  {t("ui.music.audioTranscodeRetryFailedTasks", {
+                    count: failedTaskCount,
+                  })}
+                </button>
+              </div>
+              <ul className="mpx-overlay-list-surface mpx-overlay-scroll-list">
+                {filteredTaskHistory.map((task) => {
+                  const status = t(
+                    `ui.music.audioTranscodeStatus.${task.status}`,
+                  );
+                  return (
+                    <li key={task.taskId}>
+                      <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                        <span className="mpx-overlay-list-item-truncate">
+                          {t("ui.music.audioTranscodeHistoryItem", {
+                            id: task.taskId.slice(0, 8),
+                            status,
+                            progress: Math.round(task.progress * 100),
+                            count: task.outputCount,
+                          })}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={executing || task.status !== "failed"}
+                          onClick={() => void onRetryTask(task.taskId)}
+                        >
+                          {t("ui.common.retry")}
+                        </button>
+                      </div>
+                      {task.message ? (
+                        <p className="mpx-overlay-caption">{task.message}</p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+              {filteredTaskHistory.length <= 0 ? (
+                <p className="mpx-overlay-caption">
+                  {t("ui.music.audioTranscodeNoFailedTaskInHistory")}
+                </p>
+              ) : null}
+            </section>
+          ) : null}
         </div>
         <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
           <button
@@ -372,6 +611,15 @@ export function MusicAudioTranscodePanel({
             onClick={onClearTaskHistory}
           >
             {t("ui.common.clear")}
+          </button>
+          <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+            type="button"
+            onClick={() => void onCancel()}
+          >
+            {executing
+              ? t("ui.music.audioTranscodeCancelTask")
+              : t("ui.music.audioTranscodeClose")}
           </button>
         </div>
       </section>

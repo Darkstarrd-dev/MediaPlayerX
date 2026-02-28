@@ -144,6 +144,15 @@ import {
   readAudioTranscodeTaskResponseSchema,
   cancelAudioTranscodeTaskRequestSchema,
   cancelAudioTranscodeTaskResponseSchema,
+  startVideoTranscodeTaskRequestSchema,
+  startVideoTranscodeTaskResponseSchema,
+  estimateVideoTranscodeOutputSizeRequestSchema,
+  estimateVideoTranscodeOutputSizeResponseSchema,
+  readVideoTranscodeCapabilitiesResponseSchema,
+  readVideoTranscodeTaskRequestSchema,
+  readVideoTranscodeTaskResponseSchema,
+  cancelVideoTranscodeTaskRequestSchema,
+  cancelVideoTranscodeTaskResponseSchema,
   saveVideoCoverRequestSchema,
   saveVideoCoverResponseSchema,
   retryImportTaskRequestSchema,
@@ -714,6 +723,40 @@ export function registerBackendIpcHandlers(): void {
     cancelAudioTranscodeTaskRequestSchema,
     cancelAudioTranscodeTaskResponseSchema,
     (request) => ensureService().cancelAudioTranscodeTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.startVideoTranscodeTask,
+    startVideoTranscodeTaskRequestSchema,
+    startVideoTranscodeTaskResponseSchema,
+    (request) => ensureService().startVideoTranscodeTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.estimateVideoTranscodeOutputSize,
+    estimateVideoTranscodeOutputSizeRequestSchema,
+    estimateVideoTranscodeOutputSizeResponseSchema,
+    (request) => ensureService().estimateVideoTranscodeOutputSize(request),
+  );
+
+  registerIpcQuery(
+    BACKEND_CHANNELS.readVideoTranscodeCapabilities,
+    readVideoTranscodeCapabilitiesResponseSchema,
+    () => ensureService().readVideoTranscodeCapabilities(),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.readVideoTranscodeTask,
+    readVideoTranscodeTaskRequestSchema,
+    readVideoTranscodeTaskResponseSchema,
+    (request) => ensureService().readVideoTranscodeTask(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.cancelVideoTranscodeTask,
+    cancelVideoTranscodeTaskRequestSchema,
+    cancelVideoTranscodeTaskResponseSchema,
+    (request) => ensureService().cancelVideoTranscodeTask(request),
   );
 
   registerIpcCommand(
@@ -1512,4 +1555,3 @@ function resolveSenderUrl(
 
   return "";
 }
-

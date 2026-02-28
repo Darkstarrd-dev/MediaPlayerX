@@ -16,7 +16,14 @@ const mockState = vi.hoisted(() => {
 
   const moveSidebarNodes = vi.fn();
   const startAudioTranscodeTask = vi.fn();
+  const readAudioTranscodeTask = vi.fn();
+  const cancelAudioTranscodeTask = vi.fn();
   const readAudioTranscodeCapabilities = vi.fn();
+  const startVideoTranscodeTask = vi.fn();
+  const estimateVideoTranscodeOutputSize = vi.fn();
+  const readVideoTranscodeTask = vi.fn();
+  const cancelVideoTranscodeTask = vi.fn();
+  const readVideoTranscodeCapabilities = vi.fn();
   const resolveMpvBinPathFromDirectory = vi.fn();
   const resolveFfmpegBinPath = vi.fn();
   const resolveFfprobeBinPath = vi.fn();
@@ -43,7 +50,14 @@ const mockState = vi.hoisted(() => {
   const service = {
     moveSidebarNodes,
     startAudioTranscodeTask,
+    readAudioTranscodeTask,
+    cancelAudioTranscodeTask,
     readAudioTranscodeCapabilities,
+    startVideoTranscodeTask,
+    estimateVideoTranscodeOutputSize,
+    readVideoTranscodeTask,
+    cancelVideoTranscodeTask,
+    readVideoTranscodeCapabilities,
     readState: readAudioEngineState,
     overrideMpvBinPath,
     overrideAudioTranscodeRuntimeBins,
@@ -62,7 +76,14 @@ const mockState = vi.hoisted(() => {
     ipcHandle,
     moveSidebarNodes,
     startAudioTranscodeTask,
+    readAudioTranscodeTask,
+    cancelAudioTranscodeTask,
     readAudioTranscodeCapabilities,
+    startVideoTranscodeTask,
+    estimateVideoTranscodeOutputSize,
+    readVideoTranscodeTask,
+    cancelVideoTranscodeTask,
+    readVideoTranscodeCapabilities,
     resolveMpvBinPathFromDirectory,
     resolveFfmpegBinPath,
     resolveFfprobeBinPath,
@@ -575,6 +596,309 @@ describe("registerBackendIpcHandlers.readAudioTranscodeCapabilities", () => {
   });
 });
 
+describe("registerBackendIpcHandlers.startVideoTranscodeTask", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.startVideoTranscodeTask.mockReset();
+    mockState.estimateVideoTranscodeOutputSize.mockReset();
+    mockState.fileSystemServiceConstructor.mockClear();
+  });
+
+  it("应通过 schema 校验并转发到 service", async () => {
+    mockState.startVideoTranscodeTask.mockResolvedValue({
+      task: {
+        task_id: "video-transcode-1",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "started",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.startVideoTranscodeTask,
+    );
+    if (!handler) {
+      throw new Error("startVideoTranscodeTask handler missing");
+    }
+
+    const request = {
+      video_ids: ["video-1"],
+      params_override: {
+        container: "mp4",
+      },
+    };
+    const response = await handler({}, request);
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1);
+    expect(mockState.startVideoTranscodeTask).toHaveBeenCalledWith(request);
+    expect(response).toEqual(
+      expect.objectContaining({
+        task: expect.objectContaining({
+          task_id: "video-transcode-1",
+        }),
+      }),
+    );
+  });
+
+  it("非法请求应抛出 ZodError 且不触发 service 调用", async () => {
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.startVideoTranscodeTask,
+    );
+    if (!handler) {
+      throw new Error("startVideoTranscodeTask handler missing");
+    }
+
+    await expect(
+      handler(
+        {},
+        {
+          video_ids: [],
+        },
+      ),
+    ).rejects.toMatchObject({
+      name: "ZodError",
+    });
+
+    expect(mockState.fileSystemServiceConstructor).not.toHaveBeenCalled();
+    expect(mockState.startVideoTranscodeTask).not.toHaveBeenCalled();
+  });
+});
+
+describe("registerBackendIpcHandlers.estimateVideoTranscodeOutputSize", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.estimateVideoTranscodeOutputSize.mockReset();
+    mockState.fileSystemServiceConstructor.mockClear();
+  });
+
+  it("应通过 schema 校验并转发估算请求", async () => {
+    mockState.estimateVideoTranscodeOutputSize.mockResolvedValue({
+      source_total_bytes: 512_000_000,
+      estimated_bytes: 250_000_000,
+      range: {
+        low_bytes: 210_000_000,
+        high_bytes: 300_000_000,
+      },
+      method: "bitrate_formula",
+      confidence: "high",
+      target_video_count: 2,
+      details: {
+        duration_sec: 180,
+        assumed_video_bitrate_kbps: 9800,
+        audio_bitrate_kbps: 128,
+        overhead_factor: 1.03,
+      },
+    });
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.estimateVideoTranscodeOutputSize,
+    );
+    if (!handler) {
+      throw new Error("estimateVideoTranscodeOutputSize handler missing");
+    }
+
+    const request = {
+      video_ids: ["video-1", "video-2"],
+      params_override: {
+        quality_mode: "bitrate",
+        video_bitrate_kbps: 9500,
+      },
+    };
+    const response = await handler({}, request);
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1);
+    expect(mockState.estimateVideoTranscodeOutputSize).toHaveBeenCalledWith(
+      request,
+    );
+    expect(response).toEqual(
+      expect.objectContaining({
+        method: "bitrate_formula",
+        confidence: "high",
+      }),
+    );
+  });
+});
+
+describe("registerBackendIpcHandlers.readVideoTranscodeCapabilities", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.readVideoTranscodeCapabilities.mockReset();
+    mockState.fileSystemServiceConstructor.mockClear();
+  });
+
+  it("应通过 schema 校验并返回能力快照", async () => {
+    mockState.readVideoTranscodeCapabilities.mockResolvedValue({
+      enabled: true,
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      library_root_dir: "C:/media/library",
+      default_output_dir: "C:/media/library/transcoded/video",
+      containers: {
+        mp4: { available: true, required_muxer: "mp4", reason: null },
+        mkv: { available: true, required_muxer: "matroska", reason: null },
+        webm: {
+          available: false,
+          required_muxer: "webm",
+          reason: "muxer_unavailable",
+        },
+      },
+      video_codecs: {
+        h264: { available: true, required_encoder: "libx264", reason: null },
+        h265: {
+          available: false,
+          required_encoder: "libx265",
+          reason: "encoder_unavailable",
+        },
+        vp9: {
+          available: true,
+          required_encoder: "libvpx-vp9",
+          reason: null,
+        },
+        av1: {
+          available: true,
+          required_encoder: "libaom-av1",
+          reason: null,
+        },
+        copy: { available: true, required_encoder: "copy", reason: null },
+      },
+      checked_at_ms: Date.now(),
+    });
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.readVideoTranscodeCapabilities,
+    );
+    if (!handler) {
+      throw new Error("readVideoTranscodeCapabilities handler missing");
+    }
+
+    const response = await handler({}, undefined);
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1);
+    expect(mockState.readVideoTranscodeCapabilities).toHaveBeenCalledWith();
+    expect(response).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        video_codecs: expect.objectContaining({
+          h264: expect.objectContaining({ available: true }),
+        }),
+      }),
+    );
+  });
+});
+
+describe("registerBackendIpcHandlers.readVideoTranscodeTask", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.readVideoTranscodeTask.mockReset();
+    mockState.fileSystemServiceConstructor.mockClear();
+  });
+
+  it("应通过 schema 校验并返回任务快照", async () => {
+    mockState.readVideoTranscodeTask.mockResolvedValue({
+      task: {
+        task_id: "video-transcode-1",
+        status: "running",
+        progress: 0.5,
+        total_count: 2,
+        processed_count: 1,
+        success_count: 1,
+        failed_count: 0,
+        output_files: ["C:/out/a.mp4"],
+        message: "running",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.readVideoTranscodeTask,
+    );
+    if (!handler) {
+      throw new Error("readVideoTranscodeTask handler missing");
+    }
+
+    const request = { task_id: "video-transcode-1" };
+    const response = await handler({}, request);
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1);
+    expect(mockState.readVideoTranscodeTask).toHaveBeenCalledWith(request);
+    expect(response).toEqual(
+      expect.objectContaining({
+        task: expect.objectContaining({
+          task_id: "video-transcode-1",
+        }),
+      }),
+    );
+  });
+});
+
+describe("registerBackendIpcHandlers.cancelVideoTranscodeTask", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.cancelVideoTranscodeTask.mockReset();
+    mockState.fileSystemServiceConstructor.mockClear();
+  });
+
+  it("应通过 schema 校验并转发取消请求", async () => {
+    mockState.cancelVideoTranscodeTask.mockResolvedValue({
+      task: {
+        task_id: "video-transcode-1",
+        status: "cancelled",
+        progress: 0.5,
+        total_count: 2,
+        processed_count: 1,
+        success_count: 1,
+        failed_count: 0,
+        output_files: ["C:/out/a.mp4"],
+        message: "cancelled",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(
+      BACKEND_CHANNELS.cancelVideoTranscodeTask,
+    );
+    if (!handler) {
+      throw new Error("cancelVideoTranscodeTask handler missing");
+    }
+
+    const request = { task_id: "video-transcode-1" };
+    const response = await handler({}, request);
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1);
+    expect(mockState.cancelVideoTranscodeTask).toHaveBeenCalledWith(request);
+    expect(response).toEqual(
+      expect.objectContaining({
+        task: expect.objectContaining({
+          status: "cancelled",
+        }),
+      }),
+    );
+  });
+});
+
 describe("registerBackendIpcHandlers.verifyAudioEngineMpvBin", () => {
   beforeEach(() => {
     mockState.handlers.clear();
@@ -856,7 +1180,8 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
       },
       clearStorageData: mockState.externalAuthClearStorageData,
       flushStorageData: mockState.externalAuthFlushStorageData,
-      setPermissionRequestHandler: mockState.externalAuthSetPermissionRequestHandler,
+      setPermissionRequestHandler:
+        mockState.externalAuthSetPermissionRequestHandler,
     });
   });
 
@@ -881,9 +1206,9 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
     expect(mockState.sessionFromPartition).toHaveBeenCalledWith(
       "persist:ext-auth:ehentai",
     );
-    expect(mockState.externalAuthSetPermissionRequestHandler).toHaveBeenCalledTimes(
-      1,
-    );
+    expect(
+      mockState.externalAuthSetPermissionRequestHandler,
+    ).toHaveBeenCalledTimes(1);
     expect(mockState.externalAuthCookiesGet).toHaveBeenCalledWith({
       url: "https://e-hentai.org/",
     });

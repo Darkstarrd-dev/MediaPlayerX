@@ -291,6 +291,73 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.media.subtitleCleanupFailed": "Failed",
   "ui.media.subtitleCleanupUnsupported":
     "Subtitle cleanup is not supported by current backend",
+  "ui.media.videoTranscodeDialog": "Video transcode",
+  "ui.media.videoTranscodeTitle": "Video transcode",
+  "ui.media.videoTranscodeContainer": "Container",
+  "ui.media.videoTranscodeCodec": "Video codec",
+  "ui.media.videoTranscodeCopyStream": "Copy stream",
+  "ui.media.videoTranscodeQualityMode": "Quality mode",
+  "ui.media.videoTranscodeQualityCopy": "Copy",
+  "ui.media.videoTranscodeQualityBitrate": "Bitrate",
+  "ui.media.videoTranscodeVideoBitrateKbps": "Video bitrate (kbps)",
+  "ui.media.videoTranscodeEncoderPreset": "Encoder preset",
+  "ui.media.videoTranscodeScaleLongEdge": "Long edge (px)",
+  "ui.media.videoTranscodeFps": "FPS",
+  "ui.media.videoTranscodeAudioMode": "Audio mode",
+  "ui.media.videoTranscodeAudioCopy": "Copy",
+  "ui.media.videoTranscodeAudioEncode": "Encode",
+  "ui.media.videoTranscodeAudioDrop": "Drop",
+  "ui.media.videoTranscodeAudioBitrateKbps": "Audio bitrate (kbps)",
+  "ui.media.videoTranscodeFaststart": "Faststart",
+  "ui.media.videoTranscodeOutputDirectoryPlaceholder":
+    "Output directory (empty to use default)",
+  "ui.media.videoTranscodePickingOutputDirectory": "Picking...",
+  "ui.media.videoTranscodePickOutputDirectory": "Pick directory",
+  "ui.media.videoTranscodeOverwrite": "Overwrite existing files",
+  "ui.media.videoTranscodeAddOutputToSources": "Add outputs to library",
+  "ui.media.videoTranscodeCapabilityLoading":
+    "Reading transcode capabilities...",
+  "ui.media.videoTranscodeCapabilityFfmpegUnavailable":
+    "ffmpeg is unavailable, video transcode cannot run",
+  "ui.media.videoTranscodeContainerUnavailable":
+    "Container unavailable: missing muxer {{muxer}}",
+  "ui.media.videoTranscodeCodecUnavailable":
+    "Codec unavailable: missing encoder {{encoder}}",
+  "ui.media.videoTranscodeCapabilityReadFailed":
+    "Failed to read transcode capabilities: {{message}}",
+  "ui.media.videoTranscodeNoTarget": "Please select at least one video",
+  "ui.media.videoTranscodeEstimateUnsupported":
+    "Current backend does not support size estimation",
+  "ui.media.videoTranscodeEstimateFailed":
+    "Size estimation failed: {{message}}",
+  "ui.media.videoTranscodeBackendUnavailable":
+    "Current backend does not support video transcode",
+  "ui.media.videoTranscodeMissingTaskId":
+    "Start failed: backend returned no task id",
+  "ui.media.videoTranscodePickOutputDirectoryUnsupported":
+    "Current backend does not support picking directories",
+  "ui.media.videoTranscodePickOutputDirectoryTitle":
+    "Pick video transcode output directory",
+  "ui.media.videoTranscodePickOutputDirectoryFailed":
+    "Failed to pick output directory: {{message}}",
+  "ui.media.videoTranscodeEstimateTitle": "Size estimate",
+  "ui.media.videoTranscodeEstimateSourceSize": "Source size: {{value}}",
+  "ui.media.videoTranscodeEstimateOutputSize": "Estimated output: {{value}}",
+  "ui.media.videoTranscodeEstimateRange": "Estimated range: {{low}} ~ {{high}}",
+  "ui.media.videoTranscodeEstimateCompressRatio":
+    "Estimated compression: {{ratio}}%",
+  "ui.media.videoTranscodeEstimateMethod":
+    "Method: {{method}} (confidence {{confidence}})",
+  "ui.media.videoTranscodeTaskSummary":
+    "Status {{status}} | Progress {{progress}}% | Outputs {{count}}",
+  "ui.media.videoTranscodeStatus.pending": "Pending",
+  "ui.media.videoTranscodeStatus.running": "Running",
+  "ui.media.videoTranscodeStatus.completed": "Completed",
+  "ui.media.videoTranscodeStatus.cancelled": "Cancelled",
+  "ui.media.videoTranscodeStatus.failed": "Failed",
+  "ui.media.videoTranscodeStart": "Start",
+  "ui.media.videoTranscodeCancelTask": "Cancel task",
+  "ui.media.videoTranscodeClose": "Close",
   "ui.media.autoSubtitleLanguageAuto": "Auto",
   "ui.media.autoSubtitleLanguageZh": "Chinese",
   "ui.media.autoSubtitleLanguageEn": "English",
@@ -409,6 +476,23 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Preset unavailable: missing encoder {{encoder}}",
   "ui.music.audioTranscodePresetMuxerUnavailable":
     "Preset unavailable: missing muxer {{muxer}}",
+  "ui.music.audioTranscodeParameterSection": "Parameters",
+  "ui.music.audioTranscodeSaveDefaults": "Save as default",
+  "ui.music.audioTranscodeBitrateKbps": "Bitrate (kbps)",
+  "ui.music.audioTranscodeVbrQuality": "VBR quality (0-9)",
+  "ui.music.audioTranscodeSampleRate": "Sample rate",
+  "ui.music.audioTranscodeChannels": "Channels",
+  "ui.music.audioTranscodeFollowSource": "Follow source",
+  "ui.music.audioTranscodeMono": "Mono",
+  "ui.music.audioTranscodeStereo": "Stereo",
+  "ui.music.audioTranscodeFlacCompressionLevel": "FLAC compression level",
+  "ui.music.audioTranscodeWavBitDepth": "WAV bit depth",
+  "ui.music.audioTranscodeMetadataMode": "Metadata mode",
+  "ui.music.audioTranscodeMetadataModeCopy": "Copy",
+  "ui.music.audioTranscodeMetadataModeNone": "None",
+  "ui.music.audioTranscodeMetadataModeCopyAndOverride": "Copy and override",
+  "ui.music.audioTranscodeMetadataKey": "Metadata key",
+  "ui.music.audioTranscodeMetadataValue": "Metadata value",
   "ui.music.audioTranscodeCapabilityReadFailed":
     "Failed to read transcode capabilities: {{message}}",
   "ui.music.audioTranscodeDefaultOutputDirectoryHint":

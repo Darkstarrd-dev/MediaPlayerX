@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { VideoItem } from '../types'
@@ -204,5 +204,150 @@ describe('VideoMainSection 节点浏览交互', () => {
 
     unmount()
     expect(onGridElementChange.mock.calls.at(-1)?.[0]).toBeNull()
+  })
+
+  it('管理模式打开视频转码面板后应按已选视频触发体积预估', async () => {
+    const readVideoTranscodeCapabilities = vi.fn().mockResolvedValue({
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      containers: {
+        mp4: { available: true, required_muxer: 'mp4' },
+        mkv: { available: true, required_muxer: 'matroska' },
+        webm: { available: true, required_muxer: 'webm' },
+      },
+      video_codecs: {
+        h264: { available: true, required_encoder: 'libx264' },
+        h265: { available: true, required_encoder: 'libx265' },
+        vp9: { available: true, required_encoder: 'libvpx-vp9' },
+        av1: { available: true, required_encoder: 'libaom-av1' },
+        copy: { available: true, required_encoder: 'copy' },
+      },
+      checked_at_ms: Date.now(),
+    })
+    const estimateVideoTranscodeOutputSize = vi.fn().mockResolvedValue({
+      source_total_bytes: 1024,
+      estimated_bytes: 512,
+      method: 'crf_heuristic',
+      confidence: 'medium',
+      range: { low_bytes: 480, high_bytes: 560 },
+      details: { video_ids: ['video-a', 'video-b'] },
+    })
+
+    ;(window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      readVideoTranscodeCapabilities,
+      estimateVideoTranscodeOutputSize,
+    } as unknown as NonNullable<Window['mediaPlayerBackend']>
+
+    render(
+      <VideoMainSection
+        {...buildProps({
+          manageMode: true,
+          activeSelectionScope: 'sidebar',
+          sidebarSelectedCount: 2,
+          manageSelectedVideoIds: ['video-a', 'video-b'],
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '视频转码' }))
+
+    await waitFor(() => {
+      expect(estimateVideoTranscodeOutputSize).toHaveBeenCalledWith({
+        video_ids: ['video-a', 'video-b'],
+        params_override: {
+          container: 'mp4',
+          video_codec: 'h264',
+          quality_mode: 'crf',
+          crf: 23,
+          encoder_preset: 'medium',
+          audio_mode: 'copy',
+          faststart: true,
+        },
+      })
+    })
+  })
+
+  it('视频转码开始时应提交管理模式视频ID与默认参数', async () => {
+    const readVideoTranscodeCapabilities = vi.fn().mockResolvedValue({
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      containers: {
+        mp4: { available: true, required_muxer: 'mp4' },
+        mkv: { available: true, required_muxer: 'matroska' },
+        webm: { available: true, required_muxer: 'webm' },
+      },
+      video_codecs: {
+        h264: { available: true, required_encoder: 'libx264' },
+        h265: { available: true, required_encoder: 'libx265' },
+        vp9: { available: true, required_encoder: 'libvpx-vp9' },
+        av1: { available: true, required_encoder: 'libaom-av1' },
+        copy: { available: true, required_encoder: 'copy' },
+      },
+      checked_at_ms: Date.now(),
+    })
+    const startVideoTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: 'video-transcode-1',
+        status: 'pending',
+        progress: 0,
+        total_count: 2,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: null,
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    })
+
+    ;(window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      readVideoTranscodeCapabilities,
+      estimateVideoTranscodeOutputSize: vi.fn().mockResolvedValue({
+        source_total_bytes: 1024,
+        estimated_bytes: 512,
+        method: 'crf_heuristic',
+        confidence: 'medium',
+        range: null,
+        details: {},
+      }),
+      startVideoTranscodeTask,
+    } as unknown as NonNullable<Window['mediaPlayerBackend']>
+
+    render(
+      <VideoMainSection
+        {...buildProps({
+          manageMode: true,
+          activeSelectionScope: 'sidebar',
+          sidebarSelectedCount: 2,
+          manageSelectedVideoIds: ['video-a', 'video-b'],
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '视频转码' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '开始' })).toBeEnabled()
+    })
+    fireEvent.click(screen.getByRole('button', { name: '开始' }))
+
+    await waitFor(() => {
+      expect(startVideoTranscodeTask).toHaveBeenCalledWith({
+        video_ids: ['video-a', 'video-b'],
+        params_override: {
+          container: 'mp4',
+          video_codec: 'h264',
+          quality_mode: 'crf',
+          crf: 23,
+          encoder_preset: 'medium',
+          audio_mode: 'copy',
+          faststart: true,
+        },
+        overwrite: false,
+        add_output_to_sources: true,
+      })
+    })
   })
 })
