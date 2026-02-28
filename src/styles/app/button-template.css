@@ -412,7 +412,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ) {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
@@ -424,7 +424,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):not(:disabled):hover {
   background: var(--mpx-btn-template-hover) !important;
@@ -434,7 +434,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):not(:disabled):active {
   background: var(--mpx-btn-template-active) !important;
@@ -444,7 +444,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ).is-active {
   color: var(--mpx-btn-template-text-active) !important;
@@ -452,7 +452,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 )[aria-pressed='true'] {
   background: var(--mpx-btn-template-pressed) !important;
@@ -464,7 +464,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ).is-active[aria-pressed='true'] {
   color: var(--mpx-btn-template-text-merged) !important;
@@ -472,7 +472,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):disabled {
   opacity: 0.56;
@@ -493,7 +493,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):focus,
 :is(
@@ -509,7 +509,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):focus-visible {
   outline: none !important;
@@ -528,7 +528,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 ):focus-visible:not([aria-pressed='true']) {
   border-color: var(--mpx-btn-template-border) !important;
@@ -548,7 +548,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 )[aria-pressed='true']:focus,
 :is(
@@ -564,7 +564,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn),
+  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
   .meta-tabs button
 )[aria-pressed='true']:focus-visible {
   border-color: var(--mpx-btn-template-border) !important;

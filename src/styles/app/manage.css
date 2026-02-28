@@ -627,33 +627,67 @@
   background: var(--metadata-fetch-soft-input-bg);
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn {
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn {
+  --mpx-overlay-cell-btn-hover-bg: var(--metadata-fetch-soft-input-hover-bg);
+  --mpx-overlay-cell-btn-active-bg: var(--metadata-fetch-soft-input-focus-bg);
+  --mpx-overlay-cell-btn-pressed-bg: var(--metadata-fetch-soft-input-focus-bg);
+  --mpx-overlay-cell-btn-pressed-weight: 600;
   width: 44px;
   height: 44px;
   border-right: 1px solid var(--metadata-fetch-soft-border);
-  color: var(--mpx-text-1);
+  border-radius: 0 !important;
+  background: var(--metadata-fetch-soft-input-bg) !important;
+  color: var(--mpx-text-1) !important;
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn:last-child {
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn:last-child {
   border-right: 0;
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn:hover {
-  color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1));
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn:hover {
+  color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1)) !important;
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn:active {
-  color: var(--mpx-text-1);
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn:active {
+  color: var(--mpx-text-1) !important;
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn.is-active {
-  color: var(--mpx-text-1);
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn.is-active,
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn[aria-pressed='true'] {
+  color: var(--mpx-text-1) !important;
   font-weight: 600;
-  background: var(--metadata-fetch-soft-input-focus-bg);
+  background: var(--metadata-fetch-soft-input-focus-bg) !important;
 }
 
-.metadata-fetch-search-row .metadata-fetch-mode-btn:focus-visible {
-  color: var(--mpx-text-1);
+.metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn:focus-visible {
+  color: var(--mpx-text-1) !important;
+}
+
+.metadata-fetch-source-actions {
+  gap: 0;
+  height: 100%;
+  align-items: stretch;
+}
+
+.metadata-fetch-source-head .metadata-fetch-source-actions > button.mpx-overlay-cell-btn {
+  --mpx-overlay-cell-btn-hover-bg: var(--metadata-fetch-soft-input-hover-bg);
+  --mpx-overlay-cell-btn-active-bg: var(--metadata-fetch-soft-input-focus-bg);
+  --mpx-overlay-cell-btn-pressed-bg: var(--metadata-fetch-soft-input-focus-bg);
+  width: 44px;
+  min-width: 44px;
+  height: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0 !important;
+  border-right: 1px solid var(--metadata-fetch-soft-border) !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  background: var(--metadata-fetch-soft-input-bg) !important;
+  color: var(--mpx-text-1) !important;
+}
+
+.metadata-fetch-source-head .metadata-fetch-source-actions > button.mpx-overlay-cell-btn:last-child {
+  border-right: 0 !important;
 }
 
 .metadata-fetch-search-row .metadata-fetch-seamless-control {

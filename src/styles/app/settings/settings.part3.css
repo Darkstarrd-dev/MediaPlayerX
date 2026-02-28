@@ -144,6 +144,9 @@
 }
 
 .sidebar-rename-preview-source-btn {
+  --mpx-overlay-cell-btn-hover-bg: var(--sidebar-rename-soft-input-hover-bg);
+  --mpx-overlay-cell-btn-active-bg: var(--sidebar-rename-soft-input-focus-bg);
+  --mpx-overlay-cell-btn-pressed-bg: var(--sidebar-rename-soft-input-focus-bg);
   appearance: none;
   border: 0;
   border-radius: 0;
@@ -158,29 +161,7 @@
   color: inherit;
   font: inherit;
   line-height: inherit;
-  box-shadow: none;
-  backdrop-filter: none;
-  transform: none;
-  transition: color 160ms ease, background-color 160ms ease;
   cursor: pointer;
-}
-
-.sidebar-rename-preview-source-btn:hover {
-  color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1));
-  background: var(--sidebar-rename-soft-input-hover-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.sidebar-rename-preview-source-btn:active {
-  background: var(--sidebar-rename-soft-input-focus-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.sidebar-rename-preview-source-btn:focus-visible {
-  outline: 1px solid color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2));
-  outline-offset: -2px;
 }
 
 .sidebar-rename-preview-row.is-changed {
@@ -290,4 +271,3 @@
     height: 38px;
   }
 }
-

@@ -78,6 +78,9 @@
 }
 
 .name-list-row-main {
+  --mpx-overlay-cell-btn-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-overlay-cell-btn-active-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-overlay-cell-btn-pressed-bg: var(--mpx-overlay-soft-focus-bg);
   appearance: none;
   border: 0;
   padding: 9px 12px;
@@ -100,25 +103,6 @@
   backdrop-filter: none;
   transform: none;
   transition: color 160ms ease, background-color 160ms ease;
-}
-
-.name-list-row-main:hover {
-  color: color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1));
-  background: var(--mpx-overlay-soft-hover-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.name-list-row-main:active {
-  background: var(--mpx-overlay-soft-focus-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.name-list-row-main:focus,
-.name-list-row-main:focus-visible {
-  outline: none;
-  box-shadow: none;
 }
 
 [data-slot="fg-main-content-image-name-list-label"] {

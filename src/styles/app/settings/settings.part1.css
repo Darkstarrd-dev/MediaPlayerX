@@ -308,6 +308,60 @@
   transition: background-color 160ms ease, color 160ms ease;
 }
 
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  font: inherit;
+  line-height: inherit;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn:hover {
+  color: var(
+    --mpx-overlay-cell-btn-hover-color,
+    color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1))
+  ) !important;
+  background: var(
+    --mpx-overlay-cell-btn-hover-bg,
+    var(--mpx-overlay-soft-hover-bg)
+  ) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn:active {
+  color: var(--mpx-overlay-cell-btn-active-color, inherit) !important;
+  background: var(
+    --mpx-overlay-cell-btn-active-bg,
+    var(--mpx-overlay-soft-focus-bg)
+  ) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn[aria-pressed='true'] {
+  color: var(--mpx-overlay-cell-btn-pressed-color, var(--mpx-text-1)) !important;
+  font-weight: var(--mpx-overlay-cell-btn-pressed-weight, 600);
+  background: var(
+    --mpx-overlay-cell-btn-pressed-bg,
+    var(--mpx-overlay-soft-focus-bg)
+  ) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2));
+  outline-offset: -2px;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 .mpx-overlay-seamless-btn:hover,
 .mpx-overlay-seamless-btn:active,
 .mpx-overlay-seamless-btn:focus-visible {

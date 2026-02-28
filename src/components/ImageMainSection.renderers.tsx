@@ -212,8 +212,9 @@ export function renderImageMainContent({
                 data-slot="fg-main-content-image-name-list-row"
               >
                 <button
-                  className="name-list-row-main"
+                  className="name-list-row-main mpx-overlay-cell-btn"
                   type="button"
+                  aria-pressed={manageMode ? isChecked : undefined}
                   onClick={
                     !manageMode
                       ? () =>

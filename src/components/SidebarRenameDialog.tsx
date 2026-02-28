@@ -472,13 +472,15 @@ function SidebarRenameDialog({
                   {previewRowsForRender.map((row) => {
                     const failed = Boolean(row.reason && row.reason !== 'unchanged')
                     const unchanged = row.reason === 'unchanged'
+                    const sourceNameApplied = mode === 'replace' ? replaceFrom === row.sourceName : numberBase === row.sourceName
                     return (
                       <div key={row.nodeId} className={`sidebar-rename-preview-row ${failed ? 'is-failed' : ''} ${unchanged ? 'is-unchanged' : 'is-changed'}`}>
                         {mode === 'replace' || mode === 'numbering' ? (
                           <button
-                            className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn"
+                            className="sidebar-rename-preview-cell sidebar-rename-preview-source-btn mpx-overlay-cell-btn"
                             type="button"
                             disabled={pending}
+                            aria-pressed={sourceNameApplied}
                             data-tooltip-label={`${applyFromSourceLabel}: ${row.sourceName}`}
                             onClick={() => {
                               if (mode === 'replace') {

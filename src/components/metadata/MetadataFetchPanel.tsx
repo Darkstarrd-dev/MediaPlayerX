@@ -531,13 +531,13 @@ function MetadataFetchPanel({
         <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden mpx-overlay-merged-stack">
           <div className="metadata-fetch-search-row mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={t('ui.metadata.fetchSearchParams')}>
             <div className="metadata-fetch-source-group" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
-              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('nhentai')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} aria-pressed={sourceMode === 'nhentai'} onClick={() => setSourceMode('nhentai')}>
                 N
               </button>
-              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'ehentai' ? 'is-active' : ''}`} onClick={() => setSourceMode('ehentai')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn ${sourceMode === 'ehentai' ? 'is-active' : ''}`} aria-pressed={sourceMode === 'ehentai'} onClick={() => setSourceMode('ehentai')}>
                 E
               </button>
-              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn ${sourceMode === 'all' ? 'is-active' : ''}`} onClick={() => setSourceMode('all')}>
+              <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn ${sourceMode === 'all' ? 'is-active' : ''}`} aria-pressed={sourceMode === 'all'} onClick={() => setSourceMode('all')}>
                 A
               </button>
             </div>
@@ -625,9 +625,9 @@ function MetadataFetchPanel({
                   <header className="metadata-fetch-source-head">
                     <strong>{getSourceLabel(source)}</strong>
                     <span>{t('ui.metadata.fetchSourceResultCount', { count: list.length })}</span>
-                    <div className="mpx-overlay-actions mpx-overlay-actions-inline-end mpx-overlay-inline-icon-actions">
+                    <div className="mpx-overlay-actions mpx-overlay-actions-inline-end mpx-overlay-inline-icon-actions metadata-fetch-source-actions">
                       <button
-                        className="feature-action-btn main-icon-square-btn"
+                        className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                         type="button"
                         aria-label={t('a11y.common.prevPage')}
                         data-tooltip-label={t('tip.common.prevPage')}
@@ -639,7 +639,7 @@ function MetadataFetchPanel({
                         <MainUiIcon name="prev" />
                       </button>
                       <button
-                        className="feature-action-btn main-icon-square-btn"
+                        className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                         type="button"
                         aria-label={t('a11y.common.nextPage')}
                         data-tooltip-label={t('tip.common.nextPage')}
@@ -651,7 +651,7 @@ function MetadataFetchPanel({
                         <MainUiIcon name="next" />
                       </button>
                       <button
-                        className="feature-action-btn main-icon-square-btn"
+                        className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                         type="button"
                         aria-label={t('a11y.common.parse')}
                         data-tooltip-label={t('tip.common.parse')}
@@ -664,7 +664,7 @@ function MetadataFetchPanel({
                         <MainUiIcon name="parse" />
                       </button>
                       <button
-                        className="feature-action-btn main-icon-square-btn"
+                        className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                         type="button"
                         aria-label={saving && selectedSource === source ? t('a11y.common.saving') : t('a11y.common.save')}
                         data-tooltip-label={saving && selectedSource === source ? t('tip.common.saving') : t('tip.common.save')}
