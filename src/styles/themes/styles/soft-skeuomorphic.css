@@ -1,11 +1,9 @@
 :root[data-mpx-style^="soft-skeuomorphic"] {
   --mpx-layout-padding: 10px;
   --mpx-splitter-width: 14px;
-  --mpx-bg-body: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
-    var(--mpx-palette-base)
-  );
+  --mpx-bg-body: linear-gradient(160deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
+      var(--mpx-palette-base));
 
   --mpx-panel-radius: 16px;
   --mpx-panel-border-width: 1px;
@@ -89,22 +87,18 @@
   --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);
   --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 6px);
 
-  --mpx-splitter-track-bg: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
-    color-mix(in srgb, var(--mpx-palette-surface) 14%, transparent)
-  );
+  --mpx-splitter-track-bg: linear-gradient(180deg,
+      color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+      color-mix(in srgb, var(--mpx-palette-surface) 14%, transparent));
   --mpx-splitter-handle-bg: color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent);
   --mpx-splitter-handle-hover-bg: color-mix(in srgb, var(--mpx-palette-accent-raw) 44%, transparent);
 
   --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 82%, var(--mpx-palette-base));
   --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
   --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent);
-  --mpx-header-bg: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
-    color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base))
-  );
+  --mpx-header-bg: linear-gradient(145deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
+      color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base)));
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
@@ -154,8 +148,8 @@
   --mpx-panel-radius: 18px;
   --mpx-header-radius: 16px;
   --mpx-card-radius: 13px;
-  --mpx-panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.02);
-  --mpx-header-shadow: 0 8px 24px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.02);
+  --mpx-panel-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
+  --mpx-header-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
   --mpx-card-shadow: 0 10px 20px color-mix(in srgb, var(--mpx-palette-shadow-color) 88%, transparent),
     -3px -3px 8px color-mix(in srgb, var(--mpx-palette-surface) 95%, var(--mpx-bg-elevated));
   --mpx-control-shadow: 4px 4px 12px color-mix(in srgb, var(--mpx-palette-shadow-color) 95%, transparent),
@@ -164,10 +158,10 @@
     -5px -5px 15px color-mix(in srgb, var(--mpx-palette-surface) 99%, var(--mpx-bg-elevated));
   --mpx-control-active-shadow: inset 3px 3px 7px color-mix(in srgb, var(--mpx-palette-shadow-color) 97%, transparent),
     inset -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
-  --mpx-main-bg: linear-gradient(160deg, #ffffff 0%, #f7f7f6 40%, #efefea 100%);
-  --mpx-sidebar-bg: linear-gradient(160deg, #ffffff 0%, #f7f7f6 40%, #efefea 100%);
-  --mpx-metadata-bg: linear-gradient(160deg, #ffffff 0%, #f7f7f6 40%, #efefea 100%);
-  --mpx-header-bg: linear-gradient(160deg, #ffffff 0%, #f7f7f6 40%, #efefea 100%);
+  --mpx-main-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-sidebar-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-metadata-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-header-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
   --mpx-border-1: #e5e4e0;
   --mpx-header-border-color: #e5e4e0;
   --mpx-sidebar-border-color: #e5e4e0;
@@ -177,36 +171,28 @@
   --mpx-main-shadow: var(--mpx-panel-shadow);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
 
-  --mpx-control-panel-bg: linear-gradient(160deg, #ffffff 0%, #f7f7f6 40%, #efefea 100%);
+  --mpx-control-panel-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
   --mpx-control-panel-border: #e5e4e0;
-  --mpx-control-panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.02);
+  --mpx-control-panel-shadow: 0 10px 30px color-mix(in srgb, var(--mpx-palette-shadow-color) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
   --mpx-control-well-bg: color-mix(in srgb, var(--mpx-palette-surface) 94%, var(--mpx-palette-base));
   --mpx-control-well-shadow: inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
     inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
     0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff);
-  --mpx-player-progress-fill: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--mpx-palette-accent-raw) 62%, #e2c48e),
-    color-mix(in srgb, var(--mpx-palette-accent-raw) 82%, #9f7a45)
-  );
-  --mpx-player-progress-thumb-core: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--mpx-palette-surface) 76%, #d7dce3),
-    #ffffff 50%,
-    color-mix(in srgb, var(--mpx-palette-base) 66%, #c5cad4)
-  );
-  --mpx-player-progress-thumb-ring: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28),
-    color-mix(in srgb, var(--mpx-palette-accent-raw) 42%, #f3e5ab),
-    color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28)
-  );
-  --mpx-player-secondary-btn-bg: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--mpx-palette-surface) 95%, #ffffff),
-    color-mix(in srgb, var(--mpx-palette-base) 64%, #dfe3eb)
-  );
+  --mpx-player-progress-fill: linear-gradient(90deg,
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 62%, #e2c48e),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 82%, #9f7a45));
+  --mpx-player-progress-thumb-core: linear-gradient(135deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 76%, #d7dce3),
+      #ffffff 50%,
+      color-mix(in srgb, var(--mpx-palette-base) 66%, #c5cad4));
+  --mpx-player-progress-thumb-ring: linear-gradient(90deg,
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 42%, #f3e5ab),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28));
+  --mpx-player-secondary-btn-bg: linear-gradient(145deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 95%, #ffffff),
+      color-mix(in srgb, var(--mpx-palette-base) 64%, #dfe3eb));
   --mpx-player-secondary-btn-border: color-mix(in srgb, var(--mpx-palette-text-raw) 18%, var(--mpx-palette-surface));
   --mpx-player-secondary-btn-shadow: inset 1px 1px 2px color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff),
     inset -1px -1px 2px color-mix(in srgb, var(--mpx-palette-text-raw) 4%, transparent),
@@ -215,7 +201,7 @@
     inset -1px -1px 2px color-mix(in srgb, var(--mpx-palette-surface) 94%, #ffffff);
 
   --mpx-runway-groove-bg: #e2e3e6;
-  --mpx-runway-groove-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 1);
+  --mpx-runway-groove-shadow: inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1);
   --mpx-runway-fill-gold: linear-gradient(90deg, #cba468 0%, #b5853b 100%);
   --mpx-runway-fill-graphite: linear-gradient(90deg, #9ca3af 0%, #4b5563 55%, #374151 100%);
   --mpx-runway-fill-shadow-gold: inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(0, 0, 0, 0.1);

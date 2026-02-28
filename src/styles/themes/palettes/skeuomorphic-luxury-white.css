@@ -39,7 +39,7 @@
 
   --mpx-text-1: #30271d;
   --mpx-text-2: #4a3e31;
-  --mpx-text-3: #88745d;
+  --mpx-text-3: #7a6549;
   --mpx-text-heading: #241d16;
   --mpx-text-inverse: #fffdf9;
 
@@ -56,8 +56,8 @@
   --mpx-input-text: #33281d;
   --mpx-input-focus-bg: #fffcf7;
   --mpx-input-focus-border: #8a6a3b;
-  --mpx-input-readonly-bg: #f6efe2;
-  --mpx-input-readonly-text: #7d6850;
+  --mpx-input-readonly-bg: #f5f2ec;
+  --mpx-input-readonly-text: #6e5b42;
   --mpx-input-readonly-border: #d7c6ac;
 
   --mpx-btn-primary-bg: #8a6a3b;
@@ -75,20 +75,20 @@
   --mpx-btn-template-text-pressed: #555555;
   --mpx-btn-template-text-merged: #0f172a;
   --mpx-btn-template-shadow-idle:
-    0 4px 6px rgba(0, 0, 0, 0.12),
+    0 4px 6px rgba(116, 88, 50, 0.14),
     inset 0 2px 1px rgba(255, 255, 255, 0.9),
-    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+    inset 0 -2px 1px rgba(116, 88, 50, 0.08);
   --mpx-btn-template-shadow-hover:
-    0 6px 10px rgba(0, 0, 0, 0.15),
+    0 6px 10px rgba(116, 88, 50, 0.17),
     inset 0 2px 1px rgba(255, 255, 255, 1),
-    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+    inset 0 -2px 1px rgba(116, 88, 50, 0.08);
   --mpx-btn-template-shadow-active:
-    0 1px 2px rgba(0, 0, 0, 0.1),
-    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(116, 88, 50, 0.12),
+    inset 0 2px 4px rgba(116, 88, 50, 0.17),
     inset 0 -1px 1px rgba(255, 255, 255, 0.5);
   --mpx-btn-template-shadow-pressed:
     0 1px 1px rgba(255, 255, 255, 0.8),
-    inset 0 4px 8px rgba(0, 0, 0, 0.25),
+    inset 0 4px 8px rgba(116, 88, 50, 0.28),
     inset 0 -2px 2px rgba(255, 255, 255, 0.7);
   --mpx-btn-template-transform-hover: translateY(-1px);
   --mpx-btn-template-transform-active: translateY(2px);
@@ -166,14 +166,12 @@
   --mpx-player-btn-muted-text: #9b8465;
   --mpx-random-sheen-duration: 1.9s;
   --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  --mpx-random-sheen-overlay: linear-gradient(
-    115deg,
-    transparent 45%,
-    rgba(255, 255, 255, 0.6) 48%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.6) 52%,
-    transparent 55%
-  );
+  --mpx-random-sheen-overlay: linear-gradient(115deg,
+      transparent 45%,
+      rgba(255, 255, 255, 0.6) 48%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.6) 52%,
+      transparent 55%);
   --mpx-random-sheen-blend-mode: overlay;
   --mpx-random-sheen-start-translate: -42%;
   --mpx-random-sheen-end-translate: 42%;
@@ -188,4 +186,25 @@
 
   --mpx-shadow-panel: 0 16px 34px rgba(116, 88, 50, 0.24);
   --mpx-shadow-popover: 0 14px 30px rgba(116, 88, 50, 0.22);
+
+  /* A3: overlay-soft 暖中性覆写（覆盖 contract.css 冷蓝灰默认值） */
+  --mpx-overlay-soft-border: #d2cfc8;
+  --mpx-overlay-soft-bg: #f4f2ee;
+  --mpx-overlay-soft-hover-bg: #edeae5;
+  --mpx-overlay-soft-focus-bg: #e6e3dd;
+  --mpx-overlay-soft-head-bg: #e8e6e1;
+  --mpx-overlay-soft-head-divider: #d4d0c9;
+  --mpx-overlay-soft-row-divider: #e1ded8;
+
+  /* sidebar scrollbar 暖中性覆写（覆盖 style 层冷蓝灰值） */
+  --mpx-sidebar-tree-scrollbar-track-bg: #edebe7;
+  --mpx-sidebar-tree-scrollbar-color-track: #edebe7;
+  --mpx-sidebar-tree-scrollbar-color-thumb: #d5d2cc;
+  --mpx-sidebar-tree-scrollbar-thumb-bg: #d5d2cc;
+  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: #cecac3;
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: #c5c1b9;
+  --mpx-sidebar-tree-scrollbar-track-shadow: inset 1px 1px 2px #dbd8d2, inset -1px -1px 2px #ffffff;
+  --mpx-sidebar-tree-scrollbar-thumb-border-color: rgba(237, 235, 231, 0.96);
+  --mpx-sidebar-tree-scrollbar-thumb-shadow: 1px 1px 2px rgba(200, 196, 188, 0.62), -1px -1px 2px rgba(255, 255, 255, 0.76);
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px rgba(186, 182, 174, 0.78);
 }
