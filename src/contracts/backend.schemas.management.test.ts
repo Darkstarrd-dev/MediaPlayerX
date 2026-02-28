@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   startAudioTranscodeTaskRequestSchema,
+  readAudioTranscodeCapabilitiesResponseSchema,
   audioTranscodeTaskSchema,
   readAudioTranscodeTaskResponseSchema,
 } from './backend.schemas.management'
@@ -46,5 +47,33 @@ describe('backend.schemas.management audio transcode contracts', () => {
 
     const response = readAudioTranscodeTaskResponseSchema.parse({ task })
     expect(response.task?.output_files.length).toBe(2)
+  })
+
+  it('readAudioTranscodeCapabilitiesResponseSchema 应校验预设能力矩阵', () => {
+    const parsed = readAudioTranscodeCapabilitiesResponseSchema.parse({
+      enabled: true,
+      ffmpeg_available: true,
+      ffprobe_available: false,
+      presets: {
+        flac: { available: true, required_encoder: 'flac', reason: null },
+        alac: { available: true, required_encoder: 'alac', reason: null },
+        wav: { available: true, required_encoder: 'pcm_s16le', reason: null },
+        opus: {
+          available: false,
+          required_encoder: 'libopus',
+          reason: 'encoder_unavailable',
+        },
+        aac: { available: true, required_encoder: 'aac', reason: null },
+        mp3: {
+          available: false,
+          required_encoder: 'libmp3lame',
+          reason: 'encoder_unavailable',
+        },
+      },
+      checked_at_ms: Date.now(),
+    })
+
+    expect(parsed.presets.flac.available).toBe(true)
+    expect(parsed.presets.mp3.reason).toBe('encoder_unavailable')
   })
 })

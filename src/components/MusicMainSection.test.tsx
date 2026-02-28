@@ -702,6 +702,48 @@ describe("MusicMainSection", () => {
     });
   });
 
+  it("转码能力显示 ffmpeg 不可用时应禁用开始按钮", async () => {
+    const startAudioTranscodeTask = vi.fn();
+    const readAudioTranscodeCapabilities = vi.fn().mockResolvedValue({
+      enabled: false,
+      ffmpeg_available: false,
+      ffprobe_available: false,
+      presets: {
+        flac: { available: false, required_encoder: "flac", reason: "ffmpeg_unavailable" },
+        alac: { available: false, required_encoder: "alac", reason: "ffmpeg_unavailable" },
+        wav: { available: false, required_encoder: "pcm_s16le", reason: "ffmpeg_unavailable" },
+        opus: { available: false, required_encoder: "libopus", reason: "ffmpeg_unavailable" },
+        aac: { available: false, required_encoder: "aac", reason: "ffmpeg_unavailable" },
+        mp3: { available: false, required_encoder: "libmp3lame", reason: "ffmpeg_unavailable" },
+      },
+      checked_at_ms: Date.now(),
+    });
+
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      startAudioTranscodeTask,
+      readAudioTranscodeCapabilities,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("当前环境缺少 ffmpeg，音频转码不可用"),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: "开始" })).toBeDisabled();
+    expect(startAudioTranscodeTask).not.toHaveBeenCalled();
+  });
+
   it("单曲循环在播放结束后会从头继续播放", () => {
     const { container } = renderMusicMainSection({
       musicLoopMode: "single",

@@ -438,6 +438,23 @@ describe("FileSystemMediaReadService", () => {
     ).toBe(true);
   });
 
+  it("可输出音频转码能力矩阵并包含预设可用性", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-audio-transcode-cap-"));
+    createdRoots.push(root);
+
+    await writeTinyPng(path.join(root, "sample.png"));
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+
+    const capabilities = await service.readAudioTranscodeCapabilities();
+    expect(typeof capabilities.enabled).toBe("boolean");
+    expect(typeof capabilities.ffmpeg_available).toBe("boolean");
+    expect(typeof capabilities.ffprobe_available).toBe("boolean");
+    expect(typeof capabilities.presets.flac.available).toBe("boolean");
+    expect(typeof capabilities.presets.mp3.required_encoder).toBe("string");
+  });
+
   it("写链路可持久化评分与封面，失败时由调用端回滚", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-write-chain-"));
     createdRoots.push(root);

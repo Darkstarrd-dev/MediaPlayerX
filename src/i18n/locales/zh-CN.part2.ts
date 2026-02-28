@@ -331,6 +331,11 @@ export const zhCnCatalogPart2 = {
   "ui.music.audioTranscodePickOutputDirectoryTitle": "选择转码输出目录",
   "ui.music.audioTranscodePickOutputDirectoryUnsupported": "当前后端不支持目录选择",
   "ui.music.audioTranscodePickOutputDirectoryFailed": "选择输出目录失败：{{message}}",
+  "ui.music.audioTranscodeCapabilityLoading": "正在读取转码能力...",
+  "ui.music.audioTranscodeCapabilityFfmpegUnavailable": "当前环境缺少 ffmpeg，音频转码不可用",
+  "ui.music.audioTranscodeCapabilityNoPresetAvailable": "当前 ffmpeg 未检测到可用音频编码器",
+  "ui.music.audioTranscodePresetUnavailable": "当前预设不可用：缺少编码器 {{encoder}}",
+  "ui.music.audioTranscodeCapabilityReadFailed": "读取转码能力失败：{{message}}",
   "ui.music.visualizerInitErrorMarker": "可视化渲染器初始化失败",
   "ui.music.runtimeCanvasNotReady":
     "可视化画布未就绪（canvasRef.current 为空）",

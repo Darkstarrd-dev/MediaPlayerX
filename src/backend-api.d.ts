@@ -128,6 +128,7 @@ import type {
   CancelImageConvertTaskResponseDto,
   StartAudioTranscodeTaskRequestDto,
   StartAudioTranscodeTaskResponseDto,
+  ReadAudioTranscodeCapabilitiesResponseDto,
   ReadAudioTranscodeTaskRequestDto,
   ReadAudioTranscodeTaskResponseDto,
   CancelAudioTranscodeTaskRequestDto,
@@ -218,6 +219,7 @@ interface MediaPlayerBackendApi {
   startAudioTranscodeTask?: (
     request: StartAudioTranscodeTaskRequestDto,
   ) => Promise<StartAudioTranscodeTaskResponseDto>
+  readAudioTranscodeCapabilities?: () => Promise<ReadAudioTranscodeCapabilitiesResponseDto>
   readAudioTranscodeTask?: (
     request: ReadAudioTranscodeTaskRequestDto,
   ) => Promise<ReadAudioTranscodeTaskResponseDto>

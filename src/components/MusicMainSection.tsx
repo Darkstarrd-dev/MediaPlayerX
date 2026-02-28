@@ -13,7 +13,11 @@ import {
   emitMusicPlaybackState,
   onMusicPlaybackControl,
 } from '../features/media/musicPlaybackBridge'
-import type { AudioTranscodeTaskDto, StartAudioTranscodeTaskRequestDto } from '../contracts/backend'
+import type {
+  AudioTranscodeTaskDto,
+  ReadAudioTranscodeCapabilitiesResponseDto,
+  StartAudioTranscodeTaskRequestDto,
+} from '../contracts/backend'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp } from '../utils/ui'
@@ -26,6 +30,15 @@ interface AudioTranscodeTaskHistoryItem {
   message: string | null
   updatedAtMs: number
 }
+
+const AUDIO_TRANSCODE_PRESET_ORDER: StartAudioTranscodeTaskRequestDto['preset'][] = [
+  'flac',
+  'alac',
+  'wav',
+  'opus',
+  'aac',
+  'mp3',
+]
 
 function MusicMainSection({
   active,
@@ -137,6 +150,8 @@ function MusicMainSection({
   const [audioTranscodeTaskMessage, setAudioTranscodeTaskMessage] = useState<string | null>(null)
   const [audioTranscodeOutputCount, setAudioTranscodeOutputCount] = useState(0)
   const [audioTranscodeTaskHistory, setAudioTranscodeTaskHistory] = useState<AudioTranscodeTaskHistoryItem[]>([])
+  const [audioTranscodeCapabilitiesLoading, setAudioTranscodeCapabilitiesLoading] = useState(false)
+  const [audioTranscodeCapabilities, setAudioTranscodeCapabilities] = useState<ReadAudioTranscodeCapabilitiesResponseDto | null>(null)
   const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
@@ -152,6 +167,10 @@ function MusicMainSection({
     ? Math.max(0, cueEndSec - cueStartSec)
     : Math.max(0, focusedAudio?.durationSec ?? 0)
   const hasCueSegment = cueStartSec > 0 || cueEndSec != null
+  const focusedAudioMediaLocatorAbsolutePath =
+    focusedAudio?.mediaLocator.kind === 'filesystem'
+      ? focusedAudio.mediaLocator.absolutePath
+      : null
   const focusedAudioExtension = focusedAudio?.mediaLocator.kind === 'filesystem' ? focusedAudio.mediaLocator.extension.toLowerCase() : ''
   const requiresEnhancedModeInChromium =
     (focusedAudioExtension === '.ape' ||
@@ -348,6 +367,34 @@ function MusicMainSection({
   const audioTranscodeTaskHistoryView = useMemo(
     () => [...audioTranscodeTaskHistory].sort((left, right) => right.updatedAtMs - left.updatedAtMs).slice(0, 6),
     [audioTranscodeTaskHistory],
+  )
+  const resolveAudioTranscodeCapabilityBlockReason = useCallback((preset: StartAudioTranscodeTaskRequestDto['preset']) => {
+    if (audioTranscodeCapabilitiesLoading) {
+      return t('ui.music.audioTranscodeCapabilityLoading')
+    }
+
+    const capabilities = audioTranscodeCapabilities
+    if (!capabilities) {
+      return null
+    }
+    if (!capabilities.ffmpeg_available) {
+      return t('ui.music.audioTranscodeCapabilityFfmpegUnavailable')
+    }
+
+    const presetCapability = capabilities.presets[preset]
+    if (!presetCapability.available) {
+      return t('ui.music.audioTranscodePresetUnavailable', {
+        encoder: presetCapability.required_encoder,
+      })
+    }
+    if (!capabilities.enabled) {
+      return t('ui.music.audioTranscodeCapabilityNoPresetAvailable')
+    }
+    return null
+  }, [audioTranscodeCapabilities, audioTranscodeCapabilitiesLoading, t])
+  const audioTranscodeConfirmDisabledReason = useMemo(
+    () => resolveAudioTranscodeCapabilityBlockReason(audioTranscodePreset),
+    [audioTranscodePreset, resolveAudioTranscodeCapabilityBlockReason],
   )
 
   const resolveAudioTranscodeTaskProgress = useCallback((task: AudioTranscodeTaskDto) => {
@@ -739,10 +786,7 @@ function MusicMainSection({
       start_sec?: number
       end_sec?: number
     } = {
-      file_path:
-        focusedAudio.mediaLocator.kind === 'filesystem'
-          ? focusedAudio.mediaLocator.absolutePath
-          : focusedAudio.absolutePath,
+      file_path: focusedAudioMediaLocatorAbsolutePath ?? focusedAudio.absolutePath,
     }
 
     if (typeof pendingStartSec === 'number' && Number.isFinite(pendingStartSec) && pendingStartSec > 0.05) {
@@ -756,7 +800,16 @@ function MusicMainSection({
     }
 
     void backendApi.audioEngineLoadTrack(request).catch(() => undefined)
-  }, [audioEngineMode, focusedAudio?.absolutePath, focusedAudio?.id, focusedAudio?.mediaLocator.kind, focusedAudioSrc])
+  }, [
+    audioEngineMode,
+    cueEndSec,
+    cueStartSec,
+    focusedAudio?.absolutePath,
+    focusedAudio?.id,
+    focusedAudio?.mediaLocator.kind,
+    focusedAudioMediaLocatorAbsolutePath,
+    focusedAudioSrc,
+  ])
 
   useEffect(() => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
@@ -982,6 +1035,66 @@ function MusicMainSection({
   }, [fullscreenActive])
 
   useEffect(() => {
+    if (!audioTranscodePanelOpen) {
+      return
+    }
+
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    const readAudioTranscodeCapabilities = backendApi?.readAudioTranscodeCapabilities
+    if (typeof readAudioTranscodeCapabilities !== 'function') {
+      setAudioTranscodeCapabilities(null)
+      setAudioTranscodeCapabilitiesLoading(false)
+      return
+    }
+
+    let active = true
+    setAudioTranscodeCapabilitiesLoading(true)
+    void readAudioTranscodeCapabilities()
+      .then((response) => {
+        if (!active) {
+          return
+        }
+        setAudioTranscodeCapabilities(response)
+      })
+      .catch((error) => {
+        if (!active) {
+          return
+        }
+        const reason = error instanceof Error && error.message ? error.message : String(error)
+        setAudioTranscodeCapabilities(null)
+        setAudioTranscodeTaskStatus('failed')
+        setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeCapabilityReadFailed', { message: reason }))
+      })
+      .finally(() => {
+        if (!active) {
+          return
+        }
+        setAudioTranscodeCapabilitiesLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [audioTranscodePanelOpen, t])
+
+  useEffect(() => {
+    if (!audioTranscodeCapabilities) {
+      return
+    }
+    const currentPresetCapability = audioTranscodeCapabilities.presets[audioTranscodePreset]
+    if (currentPresetCapability.available) {
+      return
+    }
+    const firstAvailablePreset = AUDIO_TRANSCODE_PRESET_ORDER.find((preset) =>
+      audioTranscodeCapabilities.presets[preset].available,
+    )
+    if (!firstAvailablePreset) {
+      return
+    }
+    setAudioTranscodePreset(firstAvailablePreset)
+  }, [audioTranscodeCapabilities, audioTranscodePreset])
+
+  useEffect(() => {
     if (!audioTranscodeTaskId || !audioTranscodeExecuting) {
       clearAudioTranscodePollTimer()
       return
@@ -1076,6 +1189,13 @@ function MusicMainSection({
   }
 
   const executeAudioTranscodeTask = useCallback(async (request: StartAudioTranscodeTaskRequestDto) => {
+    const capabilityBlockedReason = resolveAudioTranscodeCapabilityBlockReason(request.preset)
+    if (capabilityBlockedReason) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(capabilityBlockedReason)
+      return
+    }
+
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
     const startAudioTranscodeTask = backendApi?.startAudioTranscodeTask
     if (typeof startAudioTranscodeTask !== 'function') {
@@ -1111,7 +1231,7 @@ function MusicMainSection({
       setAudioTranscodeTaskStatus('failed')
       setAudioTranscodeTaskMessage(reason)
     }
-  }, [applyAudioTranscodeTaskSnapshot, t, upsertAudioTranscodeTaskHistory])
+  }, [applyAudioTranscodeTaskSnapshot, resolveAudioTranscodeCapabilityBlockReason, t, upsertAudioTranscodeTaskHistory])
 
   const handleAudioTranscodeConfirm = async () => {
     const targetAudioIds = resolveAudioTranscodeTargetIds()
@@ -1459,6 +1579,9 @@ function MusicMainSection({
       overwrite={audioTranscodeOverwrite}
       copyMetadata={audioTranscodeCopyMetadata}
       addOutputToMusicSources={audioTranscodeAddOutputToMusicSources}
+      capabilitiesLoading={audioTranscodeCapabilitiesLoading}
+      capabilities={audioTranscodeCapabilities?.presets ?? null}
+      confirmDisabledReason={audioTranscodeConfirmDisabledReason}
       taskStatus={audioTranscodeTaskStatus}
       taskProgress={audioTranscodeTaskProgress}
       taskMessage={audioTranscodeTaskMessage}

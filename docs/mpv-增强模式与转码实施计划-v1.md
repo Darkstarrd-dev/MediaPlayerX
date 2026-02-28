@@ -400,6 +400,11 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - 2026-02-28：已补充 `verifyAudioEngineMpvBin` 主进程单测：
   - 覆盖“目录命中 mpv -> 设置 `MPX_MPV_BIN` + 调用控制器覆盖路径 + 返回刷新状态”。
   - 覆盖“目录未命中 mpv -> 返回失败且不触发控制器覆盖路径”。
+- 2026-02-28：已完成 P2 转码能力探测与灰度首版（ffmpeg/encoder）：
+  - 新增 `readAudioTranscodeCapabilities` IPC 与 DTO，返回 `ffmpeg/ffprobe` 可用性和各预设编码器可用矩阵。
+  - `ManagementAudioTranscodeService` 新增 `ffmpeg -encoders` 探测与 30s 缓存；任务启动前会校验预设可用性，不可用时快速失败。
+  - 音乐页 `TC` 面板已接入能力读取：可显示“ffmpeg 不可用/预设缺编码器”提示，并对不可用预设与“开始”按钮做禁用灰度。
+  - 已补充合约与 IPC 单测覆盖（management schema / registerBackendIpcHandlers / MusicMainSection）。
 
 ### P3：硬化与发布（1~2 周）
 

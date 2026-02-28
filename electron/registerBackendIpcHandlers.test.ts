@@ -8,6 +8,7 @@ const mockState = vi.hoisted(() => {
 
   const moveSidebarNodes = vi.fn()
   const startAudioTranscodeTask = vi.fn()
+  const readAudioTranscodeCapabilities = vi.fn()
   const resolveMpvBinPathFromDirectory = vi.fn()
   const readAudioEngineState = vi.fn()
   const overrideMpvBinPath = vi.fn()
@@ -17,6 +18,7 @@ const mockState = vi.hoisted(() => {
   const service = {
     moveSidebarNodes,
     startAudioTranscodeTask,
+    readAudioTranscodeCapabilities,
     readState: readAudioEngineState,
     overrideMpvBinPath,
     onLibraryChanged,
@@ -32,6 +34,7 @@ const mockState = vi.hoisted(() => {
     ipcHandle,
     moveSidebarNodes,
     startAudioTranscodeTask,
+    readAudioTranscodeCapabilities,
     resolveMpvBinPathFromDirectory,
     readAudioEngineState,
     overrideMpvBinPath,
@@ -195,6 +198,7 @@ describe('registerBackendIpcHandlers.moveSidebarNodes', () => {
     mockState.ipcHandle.mockClear()
     mockState.moveSidebarNodes.mockReset()
     mockState.startAudioTranscodeTask.mockReset()
+    mockState.readAudioTranscodeCapabilities.mockReset()
     mockState.resolveMpvBinPathFromDirectory.mockReset()
     mockState.readAudioEngineState.mockReset()
     mockState.overrideMpvBinPath.mockReset()
@@ -311,6 +315,7 @@ describe('registerBackendIpcHandlers.startAudioTranscodeTask', () => {
     mockState.handlers.clear()
     mockState.ipcHandle.mockClear()
     mockState.startAudioTranscodeTask.mockReset()
+    mockState.readAudioTranscodeCapabilities.mockReset()
     mockState.fileSystemServiceConstructor.mockClear()
     mockState.resolveMpvBinPathFromDirectory.mockReset()
     mockState.readAudioEngineState.mockReset()
@@ -390,6 +395,71 @@ describe('registerBackendIpcHandlers.startAudioTranscodeTask', () => {
 
     expect(mockState.fileSystemServiceConstructor).not.toHaveBeenCalled()
     expect(mockState.startAudioTranscodeTask).not.toHaveBeenCalled()
+  })
+})
+
+describe('registerBackendIpcHandlers.readAudioTranscodeCapabilities', () => {
+  beforeEach(() => {
+    mockState.handlers.clear()
+    mockState.ipcHandle.mockClear()
+    mockState.readAudioTranscodeCapabilities.mockReset()
+    mockState.fileSystemServiceConstructor.mockClear()
+    mockState.resolveMpvBinPathFromDirectory.mockReset()
+    mockState.readAudioEngineState.mockReset()
+    mockState.overrideMpvBinPath.mockReset()
+    mockState.readAudioEngineState.mockReturnValue({
+      mode: 'chromium',
+      desiredMode: 'chromium',
+      mpvAvailable: false,
+      mpvBinPath: null,
+      usingFallback: false,
+      lastError: null,
+      activeDeviceId: null,
+      exclusiveEnabled: false,
+      gaplessMode: 'weak',
+      replayGainMode: 'off',
+      updatedAtMs: Date.now(),
+    })
+  })
+
+  it('应通过 schema 校验并返回能力快照', async () => {
+    mockState.readAudioTranscodeCapabilities.mockResolvedValue({
+      enabled: true,
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      presets: {
+        flac: { available: true, required_encoder: 'flac', reason: null },
+        alac: { available: true, required_encoder: 'alac', reason: null },
+        wav: { available: true, required_encoder: 'pcm_s16le', reason: null },
+        opus: { available: false, required_encoder: 'libopus', reason: 'encoder_unavailable' },
+        aac: { available: true, required_encoder: 'aac', reason: null },
+        mp3: { available: false, required_encoder: 'libmp3lame', reason: 'encoder_unavailable' },
+      },
+      checked_at_ms: Date.now(),
+    })
+
+    registerBackendIpcHandlers()
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.readAudioTranscodeCapabilities)
+    if (!handler) {
+      throw new Error('readAudioTranscodeCapabilities handler missing')
+    }
+
+    const response = await handler({}, undefined)
+
+    expect(mockState.fileSystemServiceConstructor).toHaveBeenCalledTimes(1)
+    expect(mockState.readAudioTranscodeCapabilities).toHaveBeenCalledWith()
+    expect(response).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        presets: expect.objectContaining({
+          flac: expect.objectContaining({ available: true }),
+          mp3: expect.objectContaining({
+            available: false,
+            reason: 'encoder_unavailable',
+          }),
+        }),
+      }),
+    )
   })
 })
 

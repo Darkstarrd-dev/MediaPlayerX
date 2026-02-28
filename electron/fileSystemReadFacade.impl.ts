@@ -91,10 +91,12 @@ import {
   type CancelImageConvertTaskResponseDto,
   type StartAudioTranscodeTaskRequestDto,
   type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeCapabilitiesResponseDto,
   type ReadAudioTranscodeTaskRequestDto,
   type ReadAudioTranscodeTaskResponseDto,
   type CancelAudioTranscodeTaskRequestDto,
   type CancelAudioTranscodeTaskResponseDto,
+  type AudioItemDto,
   type WritePlaylistRequestDto,
   type WritePlaylistResponseDto,
   type WritePackageMetadataRequestDto,
@@ -917,7 +919,7 @@ export class FileSystemMediaReadService {
     }
   }
 
-  private resolveAudioExistencePaths(audio: LibrarySnapshotDto["audios"][number]): {
+  private resolveAudioExistencePaths(audio: AudioItemDto): {
     checkPaths: string[];
     importCleanupPaths: string[];
   } {
@@ -1253,6 +1255,7 @@ export class FileSystemMediaReadService {
   async readImageConvertTask(request: ReadImageConvertTaskRequestDto): Promise<ReadImageConvertTaskResponseDto> { return this.managementHandlers.readImageConvertTask(request); }
   async cancelImageConvertTask(request: CancelImageConvertTaskRequestDto): Promise<CancelImageConvertTaskResponseDto> { return this.managementHandlers.cancelImageConvertTask(request); }
   async startAudioTranscodeTask(request: StartAudioTranscodeTaskRequestDto): Promise<StartAudioTranscodeTaskResponseDto> { return this.managementHandlers.startAudioTranscodeTask(request); }
+  async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> { return this.managementHandlers.readAudioTranscodeCapabilities(); }
   async readAudioTranscodeTask(request: ReadAudioTranscodeTaskRequestDto): Promise<ReadAudioTranscodeTaskResponseDto> { return this.managementHandlers.readAudioTranscodeTask(request); }
   async cancelAudioTranscodeTask(request: CancelAudioTranscodeTaskRequestDto): Promise<CancelAudioTranscodeTaskResponseDto> { return this.managementHandlers.cancelAudioTranscodeTask(request); }
   async writePackageMetadata(request: WritePackageMetadataRequestDto): Promise<WritePackageMetadataResponseDto> { return this.libraryHandlers.writePackageMetadata(request); }

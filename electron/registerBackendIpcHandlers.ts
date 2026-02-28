@@ -135,6 +135,7 @@ import {
   cancelImageConvertTaskResponseSchema,
   startAudioTranscodeTaskRequestSchema,
   startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeCapabilitiesResponseSchema,
   readAudioTranscodeTaskRequestSchema,
   readAudioTranscodeTaskResponseSchema,
   cancelAudioTranscodeTaskRequestSchema,
@@ -648,6 +649,12 @@ export function registerBackendIpcHandlers(): void {
     startAudioTranscodeTaskRequestSchema,
     startAudioTranscodeTaskResponseSchema,
     (request) => ensureService().startAudioTranscodeTask(request),
+  );
+
+  registerIpcQuery(
+    BACKEND_CHANNELS.readAudioTranscodeCapabilities,
+    readAudioTranscodeCapabilitiesResponseSchema,
+    () => ensureService().readAudioTranscodeCapabilities(),
   );
 
   registerIpcCommand(

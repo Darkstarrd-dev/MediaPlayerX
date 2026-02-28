@@ -268,6 +268,15 @@ export type AudioTranscodeTaskStatusDto = Infer<
 export type AudioTranscodePresetDto = Infer<
   typeof Backend.audioTranscodePresetSchema
 >;
+export type AudioTranscodePresetCapabilityReasonDto = Infer<
+  typeof Backend.audioTranscodePresetCapabilityReasonSchema
+>;
+export type AudioTranscodePresetCapabilityDto = Infer<
+  typeof Backend.audioTranscodePresetCapabilitySchema
+>;
+export type ReadAudioTranscodeCapabilitiesResponseDto = Infer<
+  typeof Backend.readAudioTranscodeCapabilitiesResponseSchema
+>;
 export type AudioTranscodeTaskDto = Infer<
   typeof Backend.audioTranscodeTaskSchema
 >;

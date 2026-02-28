@@ -89,6 +89,7 @@ import {
   readImageConvertTaskResponseSchema,
   cancelImageConvertTaskResponseSchema,
   startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeCapabilitiesResponseSchema,
   readAudioTranscodeTaskResponseSchema,
   cancelAudioTranscodeTaskResponseSchema,
   readAppStateResponseSchema,
@@ -225,6 +226,7 @@ import {
   type CancelImageConvertTaskResponseDto,
   type StartAudioTranscodeTaskRequestDto,
   type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeCapabilitiesResponseDto,
   type ReadAudioTranscodeTaskRequestDto,
   type ReadAudioTranscodeTaskResponseDto,
   type CancelAudioTranscodeTaskRequestDto,
@@ -565,6 +567,15 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(startAudioTranscodeTask(request), options)
     return startAudioTranscodeTaskResponseSchema.parse(response)
+  }
+
+  async readAudioTranscodeCapabilities(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
+    const readAudioTranscodeCapabilities = requireBackendMethod('readAudioTranscodeCapabilities')
+
+    const response = await withAbort(readAudioTranscodeCapabilities(), options)
+    return readAudioTranscodeCapabilitiesResponseSchema.parse(response)
   }
 
   async readAudioTranscodeTask(

@@ -30,6 +30,7 @@ export const BACKEND_CHANNELS = {
   readImageConvertTask: 'backend:readImageConvertTask',
   cancelImageConvertTask: 'backend:cancelImageConvertTask',
   startAudioTranscodeTask: 'backend:startAudioTranscodeTask',
+  readAudioTranscodeCapabilities: 'backend:readAudioTranscodeCapabilities',
   readAudioTranscodeTask: 'backend:readAudioTranscodeTask',
   cancelAudioTranscodeTask: 'backend:cancelAudioTranscodeTask',
   testAdReviewVisionModel: 'backend:testAdReviewVisionModel',

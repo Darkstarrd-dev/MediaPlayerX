@@ -95,6 +95,7 @@ import type {
   CancelImageConvertTaskResponseDto,
   StartAudioTranscodeTaskRequestDto,
   StartAudioTranscodeTaskResponseDto,
+  ReadAudioTranscodeCapabilitiesResponseDto,
   ReadAudioTranscodeTaskRequestDto,
   ReadAudioTranscodeTaskResponseDto,
   CancelAudioTranscodeTaskRequestDto,
@@ -269,6 +270,7 @@ export interface MediaRepository {
     request: StartAudioTranscodeTaskRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<StartAudioTranscodeTaskResponseDto>
+  readAudioTranscodeCapabilities?(options?: RepositoryRequestOptions): Promise<ReadAudioTranscodeCapabilitiesResponseDto>
   readAudioTranscodeTask?(
     request: ReadAudioTranscodeTaskRequestDto,
     options?: RepositoryRequestOptions,
@@ -479,6 +481,7 @@ export interface SynchronousMediaRepository extends MediaRepository {
   startAudioTranscodeTaskSync?(
     request: StartAudioTranscodeTaskRequestDto,
   ): StartAudioTranscodeTaskResponseDto
+  readAudioTranscodeCapabilitiesSync?(): ReadAudioTranscodeCapabilitiesResponseDto
   readAudioTranscodeTaskSync?(
     request: ReadAudioTranscodeTaskRequestDto,
   ): ReadAudioTranscodeTaskResponseDto

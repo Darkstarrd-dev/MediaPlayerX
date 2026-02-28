@@ -49,6 +49,7 @@ import {
   type AudioTranscodeTaskDto,
   type StartAudioTranscodeTaskRequestDto,
   type StartAudioTranscodeTaskResponseDto,
+  type ReadAudioTranscodeCapabilitiesResponseDto,
   type ReadAudioTranscodeTaskRequestDto,
   type ReadAudioTranscodeTaskResponseDto,
   type CancelAudioTranscodeTaskRequestDto,
@@ -437,6 +438,10 @@ export class FileSystemManagementHandlers {
     })
     this.executeAudioTranscodeTask(taskId, request)
     return { task }
+  }
+
+  async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
+    return this.context.managementMutationService.readAudioTranscodeCapabilities()
   }
 
   async readAudioTranscodeTask(

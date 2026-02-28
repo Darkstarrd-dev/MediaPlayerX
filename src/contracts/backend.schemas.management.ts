@@ -290,6 +290,32 @@ export const audioTranscodePresetSchema = z.enum([
   "mp3",
 ]);
 
+export const audioTranscodePresetCapabilityReasonSchema = z.enum([
+  "ffmpeg_unavailable",
+  "encoder_unavailable",
+]);
+
+export const audioTranscodePresetCapabilitySchema = z.object({
+  available: z.boolean(),
+  required_encoder: z.string().min(1),
+  reason: audioTranscodePresetCapabilityReasonSchema.nullable(),
+});
+
+export const readAudioTranscodeCapabilitiesResponseSchema = z.object({
+  enabled: z.boolean(),
+  ffmpeg_available: z.boolean(),
+  ffprobe_available: z.boolean(),
+  presets: z.object({
+    flac: audioTranscodePresetCapabilitySchema,
+    alac: audioTranscodePresetCapabilitySchema,
+    wav: audioTranscodePresetCapabilitySchema,
+    opus: audioTranscodePresetCapabilitySchema,
+    aac: audioTranscodePresetCapabilitySchema,
+    mp3: audioTranscodePresetCapabilitySchema,
+  }),
+  checked_at_ms: z.number().int().positive(),
+});
+
 export const audioTranscodeTaskSchema = z.object({
   task_id: z.string().min(1),
   status: audioTranscodeTaskStatusSchema,

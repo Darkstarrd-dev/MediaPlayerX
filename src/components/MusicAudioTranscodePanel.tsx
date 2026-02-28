@@ -1,9 +1,14 @@
 import { useMemo, useState, type MouseEvent } from "react";
 
-import type { StartAudioTranscodeTaskRequestDto } from "../contracts/backend";
+import type {
+  ReadAudioTranscodeCapabilitiesResponseDto,
+  StartAudioTranscodeTaskRequestDto,
+} from "../contracts/backend";
 import { useI18n } from "../i18n/useI18n";
 
 type AudioTranscodePreset = StartAudioTranscodeTaskRequestDto["preset"];
+type AudioTranscodePresetCapabilities =
+  ReadAudioTranscodeCapabilitiesResponseDto["presets"];
 type AudioTranscodeTaskStatus =
   | "pending"
   | "running"
@@ -30,6 +35,9 @@ interface MusicAudioTranscodePanelProps {
   overwrite: boolean;
   copyMetadata: boolean;
   addOutputToMusicSources: boolean;
+  capabilitiesLoading: boolean;
+  capabilities: AudioTranscodePresetCapabilities | null;
+  confirmDisabledReason: string | null;
   taskStatus: AudioTranscodeTaskStatus;
   taskProgress: number;
   taskMessage: string | null;
@@ -60,6 +68,9 @@ export function MusicAudioTranscodePanel({
   overwrite,
   copyMetadata,
   addOutputToMusicSources,
+  capabilitiesLoading,
+  capabilities,
+  confirmDisabledReason,
   taskStatus,
   taskProgress,
   taskMessage,
@@ -81,6 +92,7 @@ export function MusicAudioTranscodePanel({
 }: MusicAudioTranscodePanelProps) {
   const { t } = useI18n();
   const [historyFailedOnly, setHistoryFailedOnly] = useState(false);
+  const selectedPresetCapability = capabilities?.[preset] ?? null;
   const taskStatusLabel = taskStatus
     ? t(`ui.music.audioTranscodeStatus.${taskStatus}`)
     : null;
@@ -124,19 +136,64 @@ export function MusicAudioTranscodePanel({
           <span>{t("ui.music.audioTranscodePreset")}</span>
           <select
             value={preset}
-            disabled={executing}
+            disabled={executing || capabilitiesLoading}
             onChange={(event) =>
               onPresetChange(event.target.value as AudioTranscodePreset)
             }
           >
-            <option value="flac">FLAC</option>
-            <option value="alac">ALAC</option>
-            <option value="wav">WAV</option>
-            <option value="opus">Opus</option>
-            <option value="aac">AAC</option>
-            <option value="mp3">MP3</option>
+            <option
+              value="flac"
+              disabled={Boolean(capabilities && !capabilities.flac.available)}
+            >
+              FLAC
+            </option>
+            <option
+              value="alac"
+              disabled={Boolean(capabilities && !capabilities.alac.available)}
+            >
+              ALAC
+            </option>
+            <option
+              value="wav"
+              disabled={Boolean(capabilities && !capabilities.wav.available)}
+            >
+              WAV
+            </option>
+            <option
+              value="opus"
+              disabled={Boolean(capabilities && !capabilities.opus.available)}
+            >
+              Opus
+            </option>
+            <option
+              value="aac"
+              disabled={Boolean(capabilities && !capabilities.aac.available)}
+            >
+              AAC
+            </option>
+            <option
+              value="mp3"
+              disabled={Boolean(capabilities && !capabilities.mp3.available)}
+            >
+              MP3
+            </option>
           </select>
         </label>
+        {capabilitiesLoading ? (
+          <p className="mpx-overlay-caption">
+            {t("ui.music.audioTranscodeCapabilityLoading")}
+          </p>
+        ) : null}
+        {!capabilitiesLoading && selectedPresetCapability?.available === false ? (
+          <p className="mpx-overlay-caption">
+            {t("ui.music.audioTranscodePresetUnavailable", {
+              encoder: selectedPresetCapability.required_encoder,
+            })}
+          </p>
+        ) : null}
+        {confirmDisabledReason ? (
+          <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
+        ) : null}
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>{t("ui.music.audioTranscodeOutputDirectory")}</span>
           <input
@@ -269,7 +326,7 @@ export function MusicAudioTranscodePanel({
         <div className="mpx-overlay-actions mpx-overlay-actions-start">
           <button
             type="button"
-            disabled={executing}
+            disabled={executing || Boolean(confirmDisabledReason)}
             onClick={() => void onConfirm()}
           >
             {t("ui.music.audioTranscodeStart")}

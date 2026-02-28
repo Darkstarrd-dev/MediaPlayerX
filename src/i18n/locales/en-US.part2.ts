@@ -388,6 +388,11 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.music.audioTranscodePickOutputDirectoryTitle": "Choose transcode output directory",
   "ui.music.audioTranscodePickOutputDirectoryUnsupported": "Directory picker is not supported by current backend",
   "ui.music.audioTranscodePickOutputDirectoryFailed": "Failed to choose output directory: {{message}}",
+  "ui.music.audioTranscodeCapabilityLoading": "Reading transcode capabilities...",
+  "ui.music.audioTranscodeCapabilityFfmpegUnavailable": "ffmpeg is unavailable in current runtime, audio transcode is disabled",
+  "ui.music.audioTranscodeCapabilityNoPresetAvailable": "No supported audio encoder is detected in current ffmpeg build",
+  "ui.music.audioTranscodePresetUnavailable": "Preset unavailable: missing encoder {{encoder}}",
+  "ui.music.audioTranscodeCapabilityReadFailed": "Failed to read transcode capabilities: {{message}}",
   "ui.music.visualizerInitErrorMarker":
     "Visualizer renderer initialization failed",
   "ui.music.runtimeCanvasNotReady":

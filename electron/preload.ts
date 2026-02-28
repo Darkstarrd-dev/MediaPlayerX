@@ -128,6 +128,7 @@ import {
   cancelImageConvertTaskResponseSchema,
   startAudioTranscodeTaskRequestSchema,
   startAudioTranscodeTaskResponseSchema,
+  readAudioTranscodeCapabilitiesResponseSchema,
   readAudioTranscodeTaskRequestSchema,
   readAudioTranscodeTaskResponseSchema,
   cancelAudioTranscodeTaskRequestSchema,
@@ -314,6 +315,10 @@ const backendApi = {
     const parsed = startAudioTranscodeTaskRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.startAudioTranscodeTask, parsed)
     return startAudioTranscodeTaskResponseSchema.parse(response)
+  },
+  readAudioTranscodeCapabilities: async () => {
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.readAudioTranscodeCapabilities)
+    return readAudioTranscodeCapabilitiesResponseSchema.parse(response)
   },
   readAudioTranscodeTask: async (request: unknown) => {
     const parsed = readAudioTranscodeTaskRequestSchema.parse(request)

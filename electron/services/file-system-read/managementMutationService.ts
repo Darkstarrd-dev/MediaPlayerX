@@ -16,6 +16,7 @@ import {
   type SetImageHiddenResponseDto,
   type StartImageConvertTaskRequestDto,
   type StartAudioTranscodeTaskRequestDto,
+  type ReadAudioTranscodeCapabilitiesResponseDto,
   type DeleteSidebarNodesRequestDto,
   type DeleteSidebarNodesResponseDto,
 } from "../../../src/contracts/backend";
@@ -226,6 +227,10 @@ export class ManagementMutationService {
     options: RunAudioTranscodeTaskOptions = {},
   ): Promise<RunAudioTranscodeTaskResult> {
     return await this.audioTranscodeService.runAudioTranscodeTask(request, options);
+  }
+
+  async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
+    return await this.audioTranscodeService.readAudioTranscodeCapabilities();
   }
 
   async setImageHidden(

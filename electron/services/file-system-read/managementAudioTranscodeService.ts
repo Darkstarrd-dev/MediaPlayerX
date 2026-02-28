@@ -3,7 +3,10 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 
 import {
+  type AudioItemDto,
+  type AudioTranscodePresetDto,
   type LibrarySnapshotDto,
+  type ReadAudioTranscodeCapabilitiesResponseDto,
   type StartAudioTranscodeTaskRequestDto,
 } from "../../../src/contracts/backend";
 import {
@@ -44,7 +47,7 @@ interface RunAudioTranscodeTaskResult {
 
 interface ManagementAudioTranscodeServiceDependencies {
   ffmpegBin: string;
-  ensureRuntimeDependencies: () => Promise<{ ffmpeg: boolean }>;
+  ensureRuntimeDependencies: () => Promise<{ ffmpeg: boolean; ffprobe: boolean }>;
   ensureStateLoaded: () => Promise<void>;
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
@@ -87,7 +90,29 @@ const PRESET_CODEC_ARGS: Record<
   mp3: ["-c:a", "libmp3lame", "-b:a", "320k"],
 };
 
+const PRESET_REQUIRED_ENCODER: Record<AudioTranscodePresetDto, string> = {
+  flac: "flac",
+  alac: "alac",
+  wav: "pcm_s16le",
+  opus: "libopus",
+  aac: "aac",
+  mp3: "libmp3lame",
+};
+
+type FilesystemAudioItem = AudioItemDto & {
+  media_locator: Extract<AudioItemDto["media_locator"], { kind: "filesystem" }>;
+};
+
 export class ManagementAudioTranscodeService {
+  private static readonly ENCODER_CACHE_TTL_MS = 30_000;
+
+  private encoderCache: {
+    expiresAtMs: number;
+    encoders: Set<string>;
+  } | null = null;
+
+  private encoderLoadingPromise: Promise<Set<string>> | null = null;
+
   constructor(
     private readonly dependencies: ManagementAudioTranscodeServiceDependencies,
   ) {}
@@ -146,7 +171,7 @@ export class ManagementAudioTranscodeService {
     });
   }
 
-  private computeSegmentRange(audio: LibrarySnapshotDto["audios"][number]): {
+  private computeSegmentRange(audio: AudioItemDto): {
     startSec: number | null;
     endSec: number | null;
   } {
@@ -171,7 +196,7 @@ export class ManagementAudioTranscodeService {
     sourcePath: string,
     outputDir: string,
     preset: StartAudioTranscodeTaskRequestDto["preset"],
-    audio: LibrarySnapshotDto["audios"][number],
+    audio: AudioItemDto,
   ): string {
     const sourceBaseName = path.basename(sourcePath, path.extname(sourcePath));
     const cueSuffix =
@@ -205,34 +230,227 @@ export class ManagementAudioTranscodeService {
     });
   }
 
+  private async runFfmpegEncoderProbe(): Promise<Set<string>> {
+    return await new Promise((resolve, reject) => {
+      const child = spawn(this.dependencies.ffmpegBin, ["-hide_banner", "-encoders"], {
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+
+      child.stdout.on("data", (chunk) => {
+        stdout += String(chunk);
+      });
+      child.stderr.on("data", (chunk) => {
+        stderr += String(chunk);
+      });
+
+      child.on("error", (error) => {
+        reject(error);
+      });
+
+      child.on("close", (code) => {
+        if ((code ?? -1) !== 0) {
+          reject(new Error(stderr.trim() || `ffmpeg encoder probe exited with code ${code ?? -1}`));
+          return;
+        }
+
+        const output = `${stdout}\n${stderr}`;
+        const encoders = new Set<string>();
+        for (const line of output.split(/\r?\n/)) {
+          const matched = line.match(/^\s*[A-Z.]{6}\s+([^\s]+)\s+/);
+          if (!matched) {
+            continue;
+          }
+          encoders.add(matched[1].toLowerCase());
+        }
+        resolve(encoders);
+      });
+    });
+  }
+
+  private async readCachedFfmpegEncoders(): Promise<Set<string>> {
+    const now = Date.now();
+    if (this.encoderCache && this.encoderCache.expiresAtMs > now) {
+      return this.encoderCache.encoders;
+    }
+
+    if (!this.encoderLoadingPromise) {
+      this.encoderLoadingPromise = this.runFfmpegEncoderProbe().finally(() => {
+        this.encoderLoadingPromise = null;
+      });
+    }
+
+    const encoders = await this.encoderLoadingPromise;
+    this.encoderCache = {
+      expiresAtMs: now + ManagementAudioTranscodeService.ENCODER_CACHE_TTL_MS,
+      encoders,
+    };
+    return encoders;
+  }
+
+  private buildUnavailablePresetCapabilities(
+    reason: "ffmpeg_unavailable" | "encoder_unavailable",
+  ): ReadAudioTranscodeCapabilitiesResponseDto["presets"] {
+    return {
+      flac: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.flac,
+        reason,
+      },
+      alac: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.alac,
+        reason,
+      },
+      wav: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.wav,
+        reason,
+      },
+      opus: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.opus,
+        reason,
+      },
+      aac: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.aac,
+        reason,
+      },
+      mp3: {
+        available: false,
+        required_encoder: PRESET_REQUIRED_ENCODER.mp3,
+        reason,
+      },
+    };
+  }
+
+  private buildPresetCapabilitiesFromEncoders(
+    encoders: Set<string>,
+  ): ReadAudioTranscodeCapabilitiesResponseDto["presets"] {
+    return {
+      flac: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.flac),
+        required_encoder: PRESET_REQUIRED_ENCODER.flac,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.flac)
+          ? null
+          : "encoder_unavailable",
+      },
+      alac: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.alac),
+        required_encoder: PRESET_REQUIRED_ENCODER.alac,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.alac)
+          ? null
+          : "encoder_unavailable",
+      },
+      wav: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.wav),
+        required_encoder: PRESET_REQUIRED_ENCODER.wav,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.wav)
+          ? null
+          : "encoder_unavailable",
+      },
+      opus: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.opus),
+        required_encoder: PRESET_REQUIRED_ENCODER.opus,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.opus)
+          ? null
+          : "encoder_unavailable",
+      },
+      aac: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.aac),
+        required_encoder: PRESET_REQUIRED_ENCODER.aac,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.aac)
+          ? null
+          : "encoder_unavailable",
+      },
+      mp3: {
+        available: encoders.has(PRESET_REQUIRED_ENCODER.mp3),
+        required_encoder: PRESET_REQUIRED_ENCODER.mp3,
+        reason: encoders.has(PRESET_REQUIRED_ENCODER.mp3)
+          ? null
+          : "encoder_unavailable",
+      },
+    };
+  }
+
+  async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
+    const runtimeDependencies = await this.dependencies.ensureRuntimeDependencies();
+    const checkedAtMs = Date.now();
+    if (!runtimeDependencies.ffmpeg) {
+      return {
+        enabled: false,
+        ffmpeg_available: false,
+        ffprobe_available: runtimeDependencies.ffprobe,
+        presets: this.buildUnavailablePresetCapabilities("ffmpeg_unavailable"),
+        checked_at_ms: checkedAtMs,
+      };
+    }
+
+    let presets: ReadAudioTranscodeCapabilitiesResponseDto["presets"];
+    try {
+      const encoders = await this.readCachedFfmpegEncoders();
+      presets = this.buildPresetCapabilitiesFromEncoders(encoders);
+    } catch {
+      presets = this.buildUnavailablePresetCapabilities("encoder_unavailable");
+    }
+
+    const enabled =
+      presets.flac.available ||
+      presets.alac.available ||
+      presets.wav.available ||
+      presets.opus.available ||
+      presets.aac.available ||
+      presets.mp3.available;
+    return {
+      enabled,
+      ffmpeg_available: runtimeDependencies.ffmpeg,
+      ffprobe_available: runtimeDependencies.ffprobe,
+      presets,
+      checked_at_ms: checkedAtMs,
+    };
+  }
+
   async runAudioTranscodeTask(
     request: StartAudioTranscodeTaskRequestDto,
     options: RunAudioTranscodeTaskOptions = {},
   ): Promise<RunAudioTranscodeTaskResult> {
     await this.dependencies.ensureStateLoaded();
-    const runtimeDependencies = await this.dependencies.ensureRuntimeDependencies();
-    if (!runtimeDependencies.ffmpeg) {
+    const capabilities = await this.readAudioTranscodeCapabilities();
+    if (!capabilities.ffmpeg_available) {
       throw new Error("audio transcode failed: ffmpeg unavailable");
+    }
+    const presetCapability = capabilities.presets[request.preset];
+    if (!presetCapability.available) {
+      throw new Error(
+        `audio transcode failed: preset ${request.preset} unavailable (missing encoder ${presetCapability.required_encoder})`,
+      );
     }
 
     const snapshot = await this.dependencies.ensureSnapshotLoaded();
     const mediaAccessContext = this.dependencies.buildMediaAccessContext();
-    const audioById = new Map((snapshot.audios ?? []).map((audio) => [audio.id, audio]));
+    const audioById = new Map<string, AudioItemDto>(
+      (snapshot.audios ?? []).map((audio) => [audio.id, audio]),
+    );
     const normalizedAudioIds = Array.from(
       new Set(request.audio_ids.map((value) => value.trim()).filter(Boolean)),
     );
 
-    const selectedAudios = normalizedAudioIds
-      .map((audioId) => audioById.get(audioId) ?? null)
-      .filter((audio): audio is NonNullable<typeof audio> => audio != null)
-      .filter(
-        (audio) =>
-          audio.media_locator.kind === "filesystem" &&
-          isPathAllowlisted(
-            path.resolve(audio.media_locator.absolute_path),
-            mediaAccessContext,
-          ),
-      );
+    const selectedAudios: FilesystemAudioItem[] = [];
+    for (const audioId of normalizedAudioIds) {
+      const audio = audioById.get(audioId);
+      if (!audio || audio.media_locator.kind !== "filesystem") {
+        continue;
+      }
+      const filesystemAudio = audio as FilesystemAudioItem;
+      const sourcePath = path.resolve(filesystemAudio.media_locator.absolute_path);
+      if (!isPathAllowlisted(sourcePath, mediaAccessContext)) {
+        continue;
+      }
+      selectedAudios.push(filesystemAudio);
+    }
 
     if (selectedAudios.length <= 0) {
       throw new Error("audio transcode failed: no valid audio selected");
