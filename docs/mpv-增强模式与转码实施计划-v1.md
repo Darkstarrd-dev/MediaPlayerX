@@ -426,7 +426,7 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 
 目标：发布可维护、可排障版本。
 
-- [ ] 崩溃恢复：mpv 异常退出自动拉起（次数限制 + 熔断 + 诊断日志）。
+- [x] 崩溃恢复：mpv 异常退出自动拉起（次数限制 + 熔断 + 诊断日志）。
 - [ ] 性能：事件节流、UI 渲染负载控制、转码并发默认值与资源治理联动。
 - [ ] 文档与发布说明：已知限制、回退路径、FAQ、许可证与源码提供方式。
 - [ ] 全量回归与长稳测试。
@@ -434,6 +434,13 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 验收：
 
 - [ ] `npm run quality:ci`、`npm run build:electron` 全绿。
+
+阶段进展记录：
+
+- 2026-02-28：已完成 mpv 崩溃恢复首版（自动拉起 + 熔断）：
+  - `AudioEngineController` 新增异常退出滑动窗口计数与熔断保护（60s 窗口内超过阈值后回退兼容模式并提示冷却时间）。
+  - 非熔断场景下，mpv 异常退出将自动重建引擎并重应用 Gapless/ReplayGain/设备/独占配置。
+  - 新增 `audioEngineController.test.ts` 覆盖“异常退出自动拉起”与“连续崩溃触发熔断”场景。
 
 ---
 

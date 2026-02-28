@@ -58,7 +58,19 @@ interface AudioEngineActionResult {
   message: string | null
 }
 
+interface MpvProcessExitPayload {
+  code: number | null
+  signal: NodeJS.Signals | null
+  unexpected: boolean
+}
+
 export class AudioEngineController {
+  private static readonly MPV_RESTART_WINDOW_MS = 60_000
+
+  private static readonly MPV_RESTART_MAX_ATTEMPTS = 3
+
+  private static readonly MPV_RESTART_CIRCUIT_BREAKER_MS = 120_000
+
   private readonly mpvEngine = new MpvEngine()
 
   private mpvBinPath: string | null
@@ -80,6 +92,12 @@ export class AudioEngineController {
   private gaplessMode: AudioGaplessMode = 'weak'
 
   private replayGainMode: AudioReplayGainMode = 'off'
+
+  private mpvUnexpectedExitAtMs: number[] = []
+
+  private mpvRestartCircuitBreakerUntilMs = 0
+
+  private mpvRestartInFlight = false
 
   constructor(options: AudioEngineControllerOptions = {}) {
     this.mpvBinPath = resolveMpvBinPath(options.projectRoot)
@@ -109,6 +127,7 @@ export class AudioEngineController {
       this.usingFallback = false
       this.lastError = null
       this.mode = 'chromium'
+      this.maybeResetMpvRestartGuard()
       await this.mpvEngine.dispose()
       this.activeDeviceId = null
       this.exclusiveEnabled = false
@@ -127,24 +146,24 @@ export class AudioEngineController {
       return this.readState()
     }
 
+    const now = Date.now()
+    if (this.isMpvRestartCircuitOpen(now)) {
+      const remainSec = Math.max(1, Math.ceil((this.mpvRestartCircuitBreakerUntilMs - now) / 1000))
+      await this.mpvEngine.dispose()
+      this.mode = 'chromium'
+      this.usingFallback = true
+      this.lastError = `mpv 自动恢复已熔断，请 ${remainSec} 秒后重试增强模式`
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
+      this.updatedAtMs = Date.now()
+      return this.readState()
+    }
+
     try {
       await this.mpvEngine.dispose()
-      await this.mpvEngine.initialize({
-        mpvBinPath: this.mpvBinPath,
-        extraArgs: ['--no-config', '--ao=wasapi', '--msg-level=all=warn'],
-        onProcessExit: ({ code, signal, unexpected }) => {
-          if (!unexpected) {
-            return
-          }
-          this.mode = 'chromium'
-          this.usingFallback = true
-          this.lastError = `mpv 进程异常退出，已回退到兼容模式 (code=${code ?? 'null'}, signal=${signal ?? 'null'})`
-          this.activeDeviceId = null
-          this.exclusiveEnabled = false
-          this.updatedAtMs = Date.now()
-        },
-      })
+      await this.initializeMpvEngine()
       await this.applyPlaybackTuning()
+      this.maybeResetMpvRestartGuard()
       this.mode = 'mpv'
       this.usingFallback = false
       this.lastError = null
@@ -163,6 +182,7 @@ export class AudioEngineController {
 
   async overrideMpvBinPath(nextPath: string | null): Promise<AudioEngineStateSnapshot> {
     this.mpvBinPath = nextPath
+    this.maybeResetMpvRestartGuard()
     this.updatedAtMs = Date.now()
 
     if (this.desiredMode === 'mpv') {
@@ -572,5 +592,104 @@ export class AudioEngineController {
   private async applyPlaybackTuning(): Promise<void> {
     await this.mpvEngine.setGaplessMode(this.gaplessMode)
     await this.mpvEngine.setReplayGainMode(this.resolveMpvReplayGainMode(this.replayGainMode))
+    if (this.activeDeviceId) {
+      await this.mpvEngine.setAudioDevice(this.activeDeviceId)
+    }
+    if (this.exclusiveEnabled) {
+      await this.mpvEngine.setAudioExclusive(true)
+    }
+  }
+
+  private async initializeMpvEngine(): Promise<void> {
+    if (!this.mpvBinPath) {
+      throw new Error('未找到 mpv 可执行文件，无法初始化增强模式')
+    }
+
+    await this.mpvEngine.initialize({
+      mpvBinPath: this.mpvBinPath,
+      extraArgs: ['--no-config', '--ao=wasapi', '--msg-level=all=warn'],
+      onProcessExit: (payload) => {
+        if (!payload.unexpected) {
+          return
+        }
+        queueMicrotask(() => {
+          void this.handleUnexpectedMpvExit(payload)
+        })
+      },
+    })
+  }
+
+  private isMpvRestartCircuitOpen(now: number): boolean {
+    return this.mpvRestartCircuitBreakerUntilMs > now
+  }
+
+  private recordUnexpectedMpvExit(now: number): number {
+    const windowStart = now - AudioEngineController.MPV_RESTART_WINDOW_MS
+    this.mpvUnexpectedExitAtMs = this.mpvUnexpectedExitAtMs.filter((ts) => ts >= windowStart)
+    this.mpvUnexpectedExitAtMs.push(now)
+    return this.mpvUnexpectedExitAtMs.length
+  }
+
+  private maybeResetMpvRestartGuard(): void {
+    this.mpvUnexpectedExitAtMs = []
+    this.mpvRestartCircuitBreakerUntilMs = 0
+    this.mpvRestartInFlight = false
+  }
+
+  private async handleUnexpectedMpvExit(payload: MpvProcessExitPayload): Promise<void> {
+    if (this.desiredMode !== 'mpv') {
+      return
+    }
+    if (!this.mpvBinPath) {
+      this.mode = 'chromium'
+      this.usingFallback = true
+      this.lastError = 'mpv 进程异常退出且路径不可用，已回退到兼容模式'
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
+      this.updatedAtMs = Date.now()
+      return
+    }
+    if (this.mpvRestartInFlight) {
+      return
+    }
+
+    const now = Date.now()
+    const restartCount = this.recordUnexpectedMpvExit(now)
+    if (restartCount > AudioEngineController.MPV_RESTART_MAX_ATTEMPTS) {
+      this.mode = 'chromium'
+      this.usingFallback = true
+      this.mpvRestartCircuitBreakerUntilMs =
+        now + AudioEngineController.MPV_RESTART_CIRCUIT_BREAKER_MS
+      const remainSec = Math.max(
+        1,
+        Math.ceil(AudioEngineController.MPV_RESTART_CIRCUIT_BREAKER_MS / 1000),
+      )
+      this.lastError =
+        `mpv 异常退出过于频繁，已熔断并回退兼容模式，请 ${remainSec} 秒后重试 (code=${payload.code ?? 'null'}, signal=${payload.signal ?? 'null'})`
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
+      this.updatedAtMs = Date.now()
+      return
+    }
+
+    this.mpvRestartInFlight = true
+    try {
+      await this.initializeMpvEngine()
+      await this.applyPlaybackTuning()
+      this.mode = 'mpv'
+      this.usingFallback = false
+      this.lastError =
+        `mpv 进程异常退出，已自动拉起 (${restartCount}/${AudioEngineController.MPV_RESTART_MAX_ATTEMPTS})`
+    } catch (error) {
+      this.mode = 'chromium'
+      this.usingFallback = true
+      this.lastError =
+        `mpv 自动拉起失败，已回退兼容模式：${error instanceof Error ? error.message : String(error)}`
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
+    } finally {
+      this.mpvRestartInFlight = false
+      this.updatedAtMs = Date.now()
+    }
   }
 }

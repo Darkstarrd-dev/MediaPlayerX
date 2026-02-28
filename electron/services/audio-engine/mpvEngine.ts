@@ -83,7 +83,13 @@ export class MpvEngine {
       extraArgs: options.extraArgs,
       cwd: options.cwd,
       env: options.env,
-      onProcessExit: options.onProcessExit,
+      onProcessExit: (payload) => {
+        this.started = false
+        this.analysisFilterReady = false
+        this.previousAudioLevel = 0
+        this.beatCooldownFrames = 0
+        options.onProcessExit?.(payload)
+      },
     })
     this.started = true
     this.analysisFilterReady = false
