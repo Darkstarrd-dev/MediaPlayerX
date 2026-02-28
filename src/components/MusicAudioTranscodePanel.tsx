@@ -5,6 +5,7 @@ import type {
   StartAudioTranscodeTaskRequestDto,
 } from "../contracts/backend";
 import { useI18n } from "../i18n/useI18n";
+import { MainUiIcon } from "./MainUiIcon";
 
 type AudioTranscodePreset = StartAudioTranscodeTaskRequestDto["preset"];
 type AudioTranscodePresetCapabilities =
@@ -98,6 +99,8 @@ export function MusicAudioTranscodePanel({
   const taskStatusLabel = taskStatus
     ? t(`ui.music.audioTranscodeStatus.${taskStatus}`)
     : null;
+  const closeA11yLabel = t("a11y.common.close");
+  const closeTooltipLabel = t("tip.common.close");
   const failedTaskCount = useMemo(
     () => taskHistory.filter((task) => task.status === "failed").length,
     [taskHistory],
@@ -128,59 +131,110 @@ export function MusicAudioTranscodePanel({
       }}
     >
       <section
-        className="settings-floating-panel main-toolbar-image-convert-panel main-toolbar-image-convert-dialog"
+        className="settings-floating-panel manage-group-dialog music-audio-transcode-dialog"
         onMouseDown={onPanelMouseDown}
       >
-        <h3 className="main-toolbar-image-convert-title">
-          {t("ui.music.audioTranscodeTitle")}
-        </h3>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>{t("ui.music.audioTranscodePreset")}</span>
-          <select
-            value={preset}
-            disabled={executing || capabilitiesLoading}
-            onChange={(event) =>
-              onPresetChange(event.target.value as AudioTranscodePreset)
-            }
+        <div className="music-audio-transcode-header">
+          <h3 className="main-toolbar-image-convert-title sidebar-rename-title">
+            {t("ui.music.audioTranscodeTitle")}
+          </h3>
+          {outputPolicyHint ? (
+            <p className="mpx-overlay-caption music-audio-transcode-header-caption">
+              {outputPolicyHint}
+            </p>
+          ) : null}
+          <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn"
+            type="button"
+            aria-label={closeA11yLabel}
+            data-tooltip-label={closeTooltipLabel}
+            onClick={() => void onCancel()}
           >
-            <option
-              value="flac"
-              disabled={Boolean(capabilities && !capabilities.flac.available)}
+            <MainUiIcon name="close" />
+          </button>
+        </div>
+        <div className="music-audio-transcode-body">
+          <div
+            className="music-audio-transcode-path-row mpx-overlay-seamless-row"
+            aria-label={t("ui.music.audioTranscodeOutputDirectory")}
+          >
+            <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
+              <span className="sidebar-rename-mode-prefix">
+                {t("ui.music.audioTranscodePreset")}
+              </span>
+              <select
+                className="sidebar-rename-mode-select"
+                value={preset}
+                disabled={executing || capabilitiesLoading}
+                onChange={(event) =>
+                  onPresetChange(event.target.value as AudioTranscodePreset)
+                }
+              >
+                <option
+                  value="flac"
+                  disabled={Boolean(capabilities && !capabilities.flac.available)}
+                >
+                  FLAC
+                </option>
+                <option
+                  value="alac"
+                  disabled={Boolean(capabilities && !capabilities.alac.available)}
+                >
+                  ALAC
+                </option>
+                <option
+                  value="wav"
+                  disabled={Boolean(capabilities && !capabilities.wav.available)}
+                >
+                  WAV
+                </option>
+                <option
+                  value="opus"
+                  disabled={Boolean(capabilities && !capabilities.opus.available)}
+                >
+                  Opus
+                </option>
+                <option
+                  value="aac"
+                  disabled={Boolean(capabilities && !capabilities.aac.available)}
+                >
+                  AAC
+                </option>
+                <option
+                  value="mp3"
+                  disabled={Boolean(capabilities && !capabilities.mp3.available)}
+                >
+                  MP3
+                </option>
+              </select>
+            </label>
+            <input
+              className="sidebar-rename-seamless-control music-audio-transcode-output-input"
+              type="text"
+              placeholder={t("ui.music.audioTranscodeOutputDirectoryPlaceholder")}
+              value={outputDir}
+              disabled={executing}
+              onChange={(event) => onOutputDirChange(event.target.value)}
+            />
+            <button
+              className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+              type="button"
+              disabled={executing || pickingOutputDir}
+              onClick={() => void onPickOutputDir()}
             >
-              FLAC
-            </option>
-            <option
-              value="alac"
-              disabled={Boolean(capabilities && !capabilities.alac.available)}
+              {pickingOutputDir
+                ? t("ui.music.audioTranscodePickingOutputDirectory")
+                : t("ui.music.audioTranscodePickOutputDirectory")}
+            </button>
+            <button
+              className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+              type="button"
+              disabled={executing || outputDir.trim().length <= 0}
+              onClick={() => onOutputDirChange("")}
             >
-              ALAC
-            </option>
-            <option
-              value="wav"
-              disabled={Boolean(capabilities && !capabilities.wav.available)}
-            >
-              WAV
-            </option>
-            <option
-              value="opus"
-              disabled={Boolean(capabilities && !capabilities.opus.available)}
-            >
-              Opus
-            </option>
-            <option
-              value="aac"
-              disabled={Boolean(capabilities && !capabilities.aac.available)}
-            >
-              AAC
-            </option>
-            <option
-              value="mp3"
-              disabled={Boolean(capabilities && !capabilities.mp3.available)}
-            >
-              MP3
-            </option>
-          </select>
-        </label>
+              {t("ui.common.clear")}
+            </button>
+          </div>
         {capabilitiesLoading ? (
           <p className="mpx-overlay-caption">
             {t("ui.music.audioTranscodeCapabilityLoading")}
@@ -199,37 +253,6 @@ export function MusicAudioTranscodePanel({
         ) : null}
         {confirmDisabledReason ? (
           <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
-        ) : null}
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>{t("ui.music.audioTranscodeOutputDirectory")}</span>
-          <input
-            type="text"
-            placeholder={t("ui.music.audioTranscodeOutputDirectoryPlaceholder")}
-            value={outputDir}
-            disabled={executing}
-            onChange={(event) => onOutputDirChange(event.target.value)}
-          />
-        </label>
-        <div className="mpx-overlay-actions mpx-overlay-actions-start">
-          <button
-            type="button"
-            disabled={executing || pickingOutputDir}
-            onClick={() => void onPickOutputDir()}
-          >
-            {pickingOutputDir
-              ? t("ui.music.audioTranscodePickingOutputDirectory")
-              : t("ui.music.audioTranscodePickOutputDirectory")}
-          </button>
-          <button
-            type="button"
-            disabled={executing || outputDir.trim().length <= 0}
-            onClick={() => onOutputDirChange("")}
-          >
-            {t("ui.common.clear")}
-          </button>
-        </div>
-        {outputPolicyHint ? (
-          <p className="mpx-overlay-caption">{outputPolicyHint}</p>
         ) : null}
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>{t("ui.music.audioTranscodeOverwrite")}</span>
@@ -332,20 +355,18 @@ export function MusicAudioTranscodePanel({
             ) : null}
           </section>
         ) : null}
-        <div className="mpx-overlay-actions mpx-overlay-actions-start">
+        </div>
+        <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
           <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
             type="button"
             disabled={executing || Boolean(confirmDisabledReason)}
             onClick={() => void onConfirm()}
           >
             {t("ui.music.audioTranscodeStart")}
           </button>
-          <button type="button" onClick={() => void onCancel()}>
-            {executing
-              ? t("ui.music.audioTranscodeCancelTask")
-              : t("ui.music.audioTranscodeClose")}
-          </button>
           <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
             type="button"
             disabled={executing || taskHistory.length <= 0}
             onClick={onClearTaskHistory}

@@ -270,4 +270,26 @@
     font-size: 18px;
     height: 38px;
   }
+
+  .music-audio-transcode-dialog {
+    width: min(960px, 96vw);
+    height: min(760px, 90vh);
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .music-audio-transcode-path-row {
+    grid-template-columns: 1fr;
+  }
+
+  .music-audio-transcode-path-row > .sidebar-rename-seamless-control,
+  .music-audio-transcode-path-row > .sidebar-rename-mode-control,
+  .music-audio-transcode-path-row > .mpx-overlay-seamless-cell {
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--mpx-border-2) 88%, transparent);
+  }
+
+  .music-audio-transcode-path-row > :last-child {
+    border-bottom: 0;
+  }
 }

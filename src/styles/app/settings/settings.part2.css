@@ -173,6 +173,11 @@
   color: var(--mpx-slot-fg-main-toolbar-image-rs-panel-text, inherit);
 }
 
+[data-slot='fg-main-toolbar-music-transcode-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-music-transcode-panel-text, inherit);
+}
+
 [data-slot='fg-main-toolbar-image-metadata-fetch-panel'] {
   background: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
   color: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-text, inherit);
@@ -251,6 +256,137 @@
     --mpx-slot-fg-main-content-music-controls-shader-pop-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
   );
+}
+
+.music-audio-transcode-dialog {
+  --sidebar-rename-mode-col-width: clamp(220px, 28%, 320px);
+  --sidebar-rename-soft-border: var(--mpx-overlay-soft-border);
+  --sidebar-rename-soft-input-bg: var(--mpx-overlay-soft-bg);
+  --sidebar-rename-soft-input-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --sidebar-rename-soft-input-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  width: min(960px, 94vw);
+  height: min(760px, 86vh);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 26px;
+  border-color: var(
+    --mpx-slot-fg-main-content-music-controls-shader-pop-border,
+    var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
+  );
+  border-radius: 26px;
+  background: var(
+    --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
+  );
+  color: var(
+    --mpx-slot-fg-main-content-music-controls-shader-pop-text,
+    var(--mpx-player-hud-text)
+  );
+  box-shadow: var(
+    --mpx-slot-fg-main-content-music-controls-shader-pop-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
+  );
+}
+
+.music-audio-transcode-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.music-audio-transcode-header-caption {
+  margin: 0;
+  min-width: 0;
+  flex: 1;
+  padding-left: 2ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-audio-transcode-header > .feature-action-btn {
+  margin-left: auto;
+  align-self: center;
+}
+
+.music-audio-transcode-body {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.music-audio-transcode-path-row {
+  grid-template-columns: var(--sidebar-rename-mode-col-width) minmax(0, 1fr) auto auto;
+}
+
+.music-audio-transcode-path-row > * {
+  align-self: stretch;
+  margin: 0;
+  box-shadow: none !important;
+}
+
+.music-audio-transcode-output-input {
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid var(--sidebar-rename-soft-border);
+  border-radius: 0;
+  background: var(--sidebar-rename-soft-input-bg);
+  box-shadow: none !important;
+}
+
+.music-audio-transcode-output-input::placeholder {
+  color: var(--mpx-text-2);
+}
+
+.music-audio-transcode-dialog .sidebar-rename-mode-select {
+  box-shadow: none !important;
+}
+
+button.music-audio-transcode-seamless-btn {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  white-space: nowrap;
+  color: var(--mpx-text-1) !important;
+  box-shadow: none !important;
+}
+
+button.music-audio-transcode-seamless-btn:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.music-audio-transcode-dialog .sidebar-rename-g2-btn {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-slot-fg-header-g2-mode-image-border, var(--mpx-border-2));
+  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
+  background: var(--mpx-slot-fg-header-g2-mode-image-bg, var(--mpx-bg-elevated));
+  color: var(--mpx-slot-fg-header-g2-mode-image-text, var(--mpx-text-1));
+  box-shadow: var(--mpx-header-btn-shadow);
+  transition: var(--mpx-control-transition);
+}
+
+.music-audio-transcode-dialog .sidebar-rename-g2-btn:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+}
+
+.music-audio-transcode-dialog .sidebar-rename-g2-btn:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+}
+
+.music-audio-transcode-footer-actions {
+  justify-content: flex-start;
 }
 
 .sidebar-rename-title {

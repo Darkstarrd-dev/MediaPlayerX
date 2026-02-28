@@ -103,6 +103,13 @@
   box-shadow: var(--mpx-overlay-surface-shadow);
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-toolbar-music-transcode-panel"] .music-audio-transcode-dialog {
+  border-color: var(--mpx-overlay-surface-border);
+  background: var(--mpx-overlay-surface-bg);
+  color: #4c4033;
+  box-shadow: var(--mpx-overlay-surface-shadow);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls-shader-pop"].music-ctrl-panel.is-shader[hidden] {
   display: none;
 }
