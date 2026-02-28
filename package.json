@@ -36,7 +36,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "i18n:check": "node scripts/i18n-check.mjs",
-    "quality:ci": "npm run format:check && npm run lint && npm run build && npx vitest run && npm run test:coverage && npm audit --audit-level=high && npx --yes jscpd src electron --config .jscpd.json --silent",
+    "security:audit": "npm audit --audit-level=high",
+    "quality:ci": "npm run format:check && npm run lint && npm run build && npx vitest run && npm run test:coverage && npm run security:audit && npx --yes jscpd src electron --config .jscpd.json --silent",
     "baseline:verify-clean": "node scripts/verify-clean-worktree.mjs"
   },
   "dependencies": {
@@ -78,7 +79,7 @@
     "vitest": "^4.0.18"
   },
   "overrides": {
-    "minimatch": "10.2.1"
+    "minimatch": "10.2.4"
   },
   "build": {
     "appId": "com.darkstarrd.mediaplayerx",

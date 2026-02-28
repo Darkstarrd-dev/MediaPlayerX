@@ -23,6 +23,13 @@ import {
   type SidebarLabelDisplayMode,
   type VisibleSidebarRow,
 } from "./sidebarPanelTreeUtils";
+import {
+  areSidebarParentNodesCollapsed,
+  buildSidebarNodeMap,
+  EMPTY_SIDEBAR_PARENT_NAVIGATION,
+  resolveSidebarParentNavigation,
+  toggleSidebarParentCollapsedNodes,
+} from "./sidebarPanelNavigationHelpers";
 
 interface SidebarPanelProps {
   mode: BrowserMode;
@@ -295,32 +302,13 @@ function SidebarPanel({
       return new Map<string, SidebarNode>();
     }
 
-    const map = new Map<string, SidebarNode>();
-    const walk = (nodes: SidebarNode[]) => {
-      for (const node of nodes) {
-        map.set(node.id, node);
-        if (node.children.length > 0) {
-          walk(node.children);
-        }
-      }
-    };
-    walk(imageTreeNodes);
-    return map;
+    return buildSidebarNodeMap(imageTreeNodes);
   }, [imageTreeNodes, mode]);
 
-  const activeNodeById = useMemo(() => {
-    const map = new Map<string, SidebarNode>();
-    const walk = (nodes: SidebarNode[]) => {
-      for (const node of nodes) {
-        map.set(node.id, node);
-        if (node.children.length > 0) {
-          walk(node.children);
-        }
-      }
-    };
-    walk(activeTreeNodes);
-    return map;
-  }, [activeTreeNodes]);
+  const activeNodeById = useMemo(
+    () => buildSidebarNodeMap(activeTreeNodes),
+    [activeTreeNodes],
+  );
 
   const imagePackageParentNodeIds = useMemo(
     () =>
@@ -366,61 +354,22 @@ function SidebarPanel({
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
       return false;
     }
-    return imagePackageParentNodeIds.every((nodeId) =>
-      collapsedImageFolderNodeIds.has(nodeId),
+    return areSidebarParentNodesCollapsed(
+      imagePackageParentNodeIds,
+      collapsedImageFolderNodeIds,
     );
   }, [collapsedImageFolderNodeIds, imagePackageParentNodeIds, mode]);
 
   const imageParentNavigation = useMemo(() => {
     if (mode !== "image" || imagePackageParentNodeIds.length === 0) {
-      return {
-        previousNodeId: null as string | null,
-        nextNodeId: null as string | null,
-      };
+      return EMPTY_SIDEBAR_PARENT_NAVIGATION;
     }
 
-    const selectedTargetIndex = selectedSidebarNodeId
-      ? imagePackageParentNodeIds.indexOf(selectedSidebarNodeId)
-      : -1;
-    if (selectedTargetIndex >= 0) {
-      return {
-        previousNodeId:
-          imagePackageParentNodeIds[selectedTargetIndex - 1] ?? null,
-        nextNodeId: imagePackageParentNodeIds[selectedTargetIndex + 1] ?? null,
-      };
-    }
-
-    const selectedOrder = selectedSidebarNodeId
-      ? imageNodeOrderIndexById.get(selectedSidebarNodeId)
-      : undefined;
-    if (selectedOrder === undefined) {
-      return {
-        previousNodeId: null,
-        nextNodeId: imagePackageParentNodeIds[0] ?? null,
-      };
-    }
-
-    let previousNodeId: string | null = null;
-    let nextNodeId: string | null = null;
-    for (const targetNodeId of imagePackageParentNodeIds) {
-      const targetOrder = imageNodeOrderIndexById.get(targetNodeId);
-      if (targetOrder === undefined) {
-        continue;
-      }
-      if (targetOrder < selectedOrder) {
-        previousNodeId = targetNodeId;
-        continue;
-      }
-      if (targetOrder > selectedOrder) {
-        nextNodeId = targetNodeId;
-        break;
-      }
-    }
-
-    return {
-      previousNodeId,
-      nextNodeId,
-    };
+    return resolveSidebarParentNavigation(
+      imagePackageParentNodeIds,
+      imageNodeOrderIndexById,
+      selectedSidebarNodeId,
+    );
   }, [
     imageNodeOrderIndexById,
     imagePackageParentNodeIds,
@@ -430,53 +379,14 @@ function SidebarPanel({
 
   const videoParentNavigation = useMemo(() => {
     if (mode !== "video" || videoParentNodeIds.length === 0) {
-      return {
-        previousNodeId: null as string | null,
-        nextNodeId: null as string | null,
-      };
+      return EMPTY_SIDEBAR_PARENT_NAVIGATION;
     }
 
-    const selectedTargetIndex = selectedSidebarNodeId
-      ? videoParentNodeIds.indexOf(selectedSidebarNodeId)
-      : -1;
-    if (selectedTargetIndex >= 0) {
-      return {
-        previousNodeId: videoParentNodeIds[selectedTargetIndex - 1] ?? null,
-        nextNodeId: videoParentNodeIds[selectedTargetIndex + 1] ?? null,
-      };
-    }
-
-    const selectedOrder = selectedSidebarNodeId
-      ? videoNodeOrderIndexById.get(selectedSidebarNodeId)
-      : undefined;
-    if (selectedOrder === undefined) {
-      return {
-        previousNodeId: null,
-        nextNodeId: videoParentNodeIds[0] ?? null,
-      };
-    }
-
-    let previousNodeId: string | null = null;
-    let nextNodeId: string | null = null;
-    for (const targetNodeId of videoParentNodeIds) {
-      const targetOrder = videoNodeOrderIndexById.get(targetNodeId);
-      if (targetOrder === undefined) {
-        continue;
-      }
-      if (targetOrder < selectedOrder) {
-        previousNodeId = targetNodeId;
-        continue;
-      }
-      if (targetOrder > selectedOrder) {
-        nextNodeId = targetNodeId;
-        break;
-      }
-    }
-
-    return {
-      previousNodeId,
-      nextNodeId,
-    };
+    return resolveSidebarParentNavigation(
+      videoParentNodeIds,
+      videoNodeOrderIndexById,
+      selectedSidebarNodeId,
+    );
   }, [
     mode,
     selectedSidebarNodeId,
@@ -488,60 +398,22 @@ function SidebarPanel({
     if (mode !== "video" || videoParentNodeIds.length === 0) {
       return false;
     }
-    return videoParentNodeIds.every((nodeId) =>
-      collapsedImageFolderNodeIds.has(nodeId),
+    return areSidebarParentNodesCollapsed(
+      videoParentNodeIds,
+      collapsedImageFolderNodeIds,
     );
   }, [collapsedImageFolderNodeIds, mode, videoParentNodeIds]);
 
   const audioParentNavigation = useMemo(() => {
     if (mode !== "music" || audioParentNodeIds.length === 0) {
-      return {
-        previousNodeId: null as string | null,
-        nextNodeId: null as string | null,
-      };
+      return EMPTY_SIDEBAR_PARENT_NAVIGATION;
     }
 
-    const selectedTargetIndex = selectedSidebarNodeId
-      ? audioParentNodeIds.indexOf(selectedSidebarNodeId)
-      : -1;
-    if (selectedTargetIndex >= 0) {
-      return {
-        previousNodeId: audioParentNodeIds[selectedTargetIndex - 1] ?? null,
-        nextNodeId: audioParentNodeIds[selectedTargetIndex + 1] ?? null,
-      };
-    }
-
-    const selectedOrder = selectedSidebarNodeId
-      ? audioNodeOrderIndexById.get(selectedSidebarNodeId)
-      : undefined;
-    if (selectedOrder === undefined) {
-      return {
-        previousNodeId: null,
-        nextNodeId: audioParentNodeIds[0] ?? null,
-      };
-    }
-
-    let previousNodeId: string | null = null;
-    let nextNodeId: string | null = null;
-    for (const targetNodeId of audioParentNodeIds) {
-      const targetOrder = audioNodeOrderIndexById.get(targetNodeId);
-      if (targetOrder === undefined) {
-        continue;
-      }
-      if (targetOrder < selectedOrder) {
-        previousNodeId = targetNodeId;
-        continue;
-      }
-      if (targetOrder > selectedOrder) {
-        nextNodeId = targetNodeId;
-        break;
-      }
-    }
-
-    return {
-      previousNodeId,
-      nextNodeId,
-    };
+    return resolveSidebarParentNavigation(
+      audioParentNodeIds,
+      audioNodeOrderIndexById,
+      selectedSidebarNodeId,
+    );
   }, [
     audioNodeOrderIndexById,
     audioParentNodeIds,
@@ -553,8 +425,9 @@ function SidebarPanel({
     if (mode !== "music" || audioParentNodeIds.length === 0) {
       return false;
     }
-    return audioParentNodeIds.every((nodeId) =>
-      collapsedImageFolderNodeIds.has(nodeId),
+    return areSidebarParentNodesCollapsed(
+      audioParentNodeIds,
+      collapsedImageFolderNodeIds,
     );
   }, [audioParentNodeIds, collapsedImageFolderNodeIds, mode]);
 
@@ -667,27 +540,11 @@ function SidebarPanel({
 
     suppressAutoExpandAncestorFoldersRef.current = true;
     updateCollapsedImageFolderNodeIds((previous) => {
-      const next = new Set(previous);
-      if (allImagePackageParentsCollapsed) {
-        let changed = false;
-        for (const nodeId of imagePackageParentNodeIds) {
-          if (!next.delete(nodeId)) {
-            continue;
-          }
-          changed = true;
-        }
-        return changed ? next : previous;
-      }
-
-      let changed = false;
-      for (const nodeId of imagePackageParentNodeIds) {
-        if (next.has(nodeId)) {
-          continue;
-        }
-        next.add(nodeId);
-        changed = true;
-      }
-      return changed ? next : previous;
+      return toggleSidebarParentCollapsedNodes(
+        previous,
+        imagePackageParentNodeIds,
+        allImagePackageParentsCollapsed,
+      );
     });
 
     requestAnimationFrame(() => {
@@ -707,27 +564,11 @@ function SidebarPanel({
 
     suppressAutoExpandAncestorFoldersRef.current = true;
     updateCollapsedImageFolderNodeIds((previous) => {
-      const next = new Set(previous);
-      if (allVideoParentsCollapsed) {
-        let changed = false;
-        for (const nodeId of videoParentNodeIds) {
-          if (!next.delete(nodeId)) {
-            continue;
-          }
-          changed = true;
-        }
-        return changed ? next : previous;
-      }
-
-      let changed = false;
-      for (const nodeId of videoParentNodeIds) {
-        if (next.has(nodeId)) {
-          continue;
-        }
-        next.add(nodeId);
-        changed = true;
-      }
-      return changed ? next : previous;
+      return toggleSidebarParentCollapsedNodes(
+        previous,
+        videoParentNodeIds,
+        allVideoParentsCollapsed,
+      );
     });
 
     requestAnimationFrame(() => {
@@ -747,27 +588,11 @@ function SidebarPanel({
 
     suppressAutoExpandAncestorFoldersRef.current = true;
     updateCollapsedImageFolderNodeIds((previous) => {
-      const next = new Set(previous);
-      if (allAudioParentsCollapsed) {
-        let changed = false;
-        for (const nodeId of audioParentNodeIds) {
-          if (!next.delete(nodeId)) {
-            continue;
-          }
-          changed = true;
-        }
-        return changed ? next : previous;
-      }
-
-      let changed = false;
-      for (const nodeId of audioParentNodeIds) {
-        if (next.has(nodeId)) {
-          continue;
-        }
-        next.add(nodeId);
-        changed = true;
-      }
-      return changed ? next : previous;
+      return toggleSidebarParentCollapsedNodes(
+        previous,
+        audioParentNodeIds,
+        allAudioParentsCollapsed,
+      );
     });
 
     requestAnimationFrame(() => {
