@@ -101,7 +101,6 @@ interface BuildImageMainSectionPropsParams {
   metadataFetchDefaultText: string
   metadataFetchTargets: MetadataFetchTarget[]
   metadataProxyServer: string
-  metadataEhentaiCookies: string
   onMetadataSyncName: () => void
   onToggleMetadataManageSelectionMode?: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
@@ -297,7 +296,6 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataFetchDefaultText: params.metadataFetchDefaultText,
     metadataFetchTargets: params.metadataFetchTargets,
     metadataProxyServer: params.metadataProxyServer,
-    metadataEhentaiCookies: params.metadataEhentaiCookies,
     onMetadataSyncName: params.onMetadataSyncName,
     onToggleMetadataManageSelectionMode: params.onToggleMetadataManageSelectionMode,
     onMetadataSaveParsed: params.onMetadataSaveParsed,

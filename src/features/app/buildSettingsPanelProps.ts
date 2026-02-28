@@ -88,7 +88,6 @@ interface BuildSettingsPanelPropsParams {
   fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
   fullscreenDownsamplingKernel: AppSettings["fullscreenDownsamplingKernel"];
   proxyServer: string;
-  ehentaiCookies: string;
   ehentaiAuthState: "connected" | "disconnected" | "error";
   ehentaiAuthConnected: boolean;
   ehentaiAuthMessage: string | null;
@@ -223,7 +222,6 @@ export function buildSettingsPanelProps(
     fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel: params.fullscreenDownsamplingKernel,
     proxyServer: params.proxyServer,
-    ehentaiCookies: params.ehentaiCookies,
     ehentaiAuthState: params.ehentaiAuthState,
     ehentaiAuthConnected: params.ehentaiAuthConnected,
     ehentaiAuthMessage: params.ehentaiAuthMessage,
@@ -453,8 +451,6 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenDownsamplingKernel: value }),
     onProxyServerChange: (value) =>
       params.updateSettings({ proxyServer: value }),
-    onEhentaiCookiesChange: (value) =>
-      params.updateSettings({ ehentaiCookies: value }),
     onRefreshEhentaiAuthStatus: params.refreshEhentaiAuthStatus,
     onConnectEhentaiAuth: params.connectEhentaiAuth,
     onDisconnectEhentaiAuth: params.disconnectEhentaiAuth,

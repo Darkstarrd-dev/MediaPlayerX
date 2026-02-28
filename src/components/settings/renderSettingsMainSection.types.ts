@@ -71,7 +71,6 @@ export interface RenderSettingsMainSectionParams {
   fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   fullscreenDownsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   proxyServer: string;
-  ehentaiCookies: string;
   ehentaiAuthState: "connected" | "disconnected" | "error";
   ehentaiAuthConnected: boolean;
   ehentaiAuthMessage: string | null;
@@ -277,7 +276,6 @@ export interface RenderSettingsMainSectionParams {
     value: "lanczos3" | "mitchell" | "nearest" | "cubic",
   ) => void;
   onProxyServerChange: (value: string) => void;
-  onEhentaiCookiesChange: (value: string) => void;
   onRefreshEhentaiAuthStatus: () => void;
   onConnectEhentaiAuth: () => void;
   onDisconnectEhentaiAuth: () => void;

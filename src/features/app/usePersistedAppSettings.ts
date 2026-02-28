@@ -93,7 +93,6 @@ export function toPersistedAppSettings(
     musicVisualizerShaderSettingsById:
       settings.musicVisualizerShaderSettingsById,
     proxyServer: settings.proxyServer,
-    ehentaiCookies: settings.ehentaiCookies,
     subtitleFeatureEnabled: settings.subtitleFeatureEnabled,
     subtitleRenderMode: settings.subtitleRenderMode,
     subtitleAdvancedVadPreset: settings.subtitleAdvancedVadPreset,

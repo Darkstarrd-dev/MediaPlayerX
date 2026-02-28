@@ -55,7 +55,6 @@ describe('MetadataFetchPanel', () => {
             },
           ]}
           proxyServer=""
-          ehentaiCookies=""
           metadataPending={false}
           onClose={onClose}
           onSaveParsedMetadataToTarget={onSaveParsedMetadataToTarget}
@@ -148,7 +147,6 @@ describe('MetadataFetchPanel', () => {
           { packageId: 'pkg-2', label: 'pkg-2', defaultText: 'kw-2' },
         ]}
         proxyServer=""
-        ehentaiCookies=""
         metadataPending={false}
         onClose={vi.fn()}
         onSaveParsedMetadataToTarget={onSaveParsedMetadataToTarget}
@@ -225,7 +223,6 @@ describe('MetadataFetchPanel', () => {
         open={true}
         targets={[{ packageId: 'pkg-1', label: 'pkg-1', defaultText: 'kw-1' }]}
         proxyServer=""
-        ehentaiCookies=""
         metadataPending={false}
         onClose={vi.fn()}
         onSaveParsedMetadataToTarget={vi.fn().mockResolvedValue(undefined)}
@@ -248,7 +245,6 @@ describe('MetadataFetchPanel', () => {
         open={true}
         targets={[{ packageId: 'pkg-1', label: 'pkg-1-new', defaultText: 'kw-reset' }]}
         proxyServer=""
-        ehentaiCookies=""
         metadataPending={false}
         onClose={vi.fn()}
         onSaveParsedMetadataToTarget={vi.fn().mockResolvedValue(undefined)}

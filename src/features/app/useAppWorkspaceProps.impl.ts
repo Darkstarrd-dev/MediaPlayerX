@@ -512,7 +512,6 @@ export function useAppWorkspaceProps({
     targetPackageName: metadataImagePackageEffective?.packageName ?? "",
     targetPackageLabel: metadataImagePackageEffective?.displayName ?? "-",
     proxyServer: appSettings.proxyServer,
-    ehentaiCookies: appSettings.ehentaiCookies,
   });
 
   const enableLoadingSkeleton = benchSettings.enabled
@@ -925,7 +924,6 @@ export function useAppWorkspaceProps({
     metadataFetchDefaultText: metadataManagementPanelProps.defaultFetchText,
     metadataFetchTargets,
     metadataProxyServer: appSettings.proxyServer,
-    metadataEhentaiCookies: appSettings.ehentaiCookies,
     onMetadataSyncName: applyMetadataSyncName,
     onToggleMetadataManageSelectionMode: toggleMetadataManageSelectionMode,
     onMetadataSaveParsed: saveParsedMetadata,

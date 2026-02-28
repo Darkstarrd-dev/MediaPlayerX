@@ -145,7 +145,11 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
 
   const settings = getBenchSettings()
   const repository = useMemo(
-    () => buildFakeRepository({ minDelayMs: domConfig.minDelayMs, maxDelayMs: domConfig.maxDelayMs }),
+    () =>
+      buildFakeRepository({
+        minDelayMs: domConfig.minDelayMs,
+        maxDelayMs: domConfig.maxDelayMs,
+      }),
     [domConfig.maxDelayMs, domConfig.minDelayMs],
   )
 
@@ -153,7 +157,10 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
   const packageById = useMemo(() => new Map<string, ImagePackage>([[pkg.id, pkg]]), [pkg])
 
   const refsInPage = useMemo<FocusedImageRef[]>(() => {
-    return pkg.images.map((_img, imageIndex) => ({ packageId: pkg.id, imageIndex }))
+    return pkg.images.map((_img, imageIndex) => ({
+      packageId: pkg.id,
+      imageIndex,
+    }))
   }, [pkg.id, pkg.images])
 
   const targets = useMemo(() => {
@@ -239,7 +246,12 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
 
   if (finished) {
     return (
-      <div style={{ padding: 16, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}>
+      <div
+        style={{
+          padding: 16,
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+      >
         <strong>DOM Bench 已完成</strong>
       </div>
     )
@@ -247,7 +259,13 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
 
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: 12, borderBottom: '1px solid #ddd', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}>
+      <div
+        style={{
+          padding: 12,
+          borderBottom: '1px solid #ddd',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+      >
         <div>{`DOM Bench | candidate=${settings.candidateId ?? '-'} | target=${domConfig.targetCount} | resolved=${Object.keys(imageUrlById).length}`}</div>
       </div>
 
@@ -309,7 +327,6 @@ function DomBenchRunner({ config }: DomBenchRunnerProps) {
             metadataTargetPackageLabel={pkg.displayName}
             metadataFetchDefaultText={pkg.packageName}
             metadataProxyServer={''}
-            metadataEhentaiCookies={''}
             onMetadataSyncName={() => undefined}
             onMetadataSaveParsed={async () => undefined}
           />

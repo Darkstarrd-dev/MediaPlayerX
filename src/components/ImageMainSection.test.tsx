@@ -137,7 +137,6 @@ function renderImageMainSection() {
       metadataTargetPackageLabel={basePackage.displayName}
       metadataFetchDefaultText={basePackage.packageName}
       metadataProxyServer={''}
-      metadataEhentaiCookies={''}
       onMetadataSyncName={vi.fn()}
       onMetadataSaveParsed={async () => undefined}
       manageMode={false}
@@ -202,7 +201,6 @@ function renderNodeBrowseSection() {
       metadataTargetPackageLabel={basePackage.displayName}
       metadataFetchDefaultText={basePackage.packageName}
       metadataProxyServer={''}
-      metadataEhentaiCookies={''}
       onMetadataSyncName={vi.fn()}
       onMetadataSaveParsed={async () => undefined}
       manageMode={false}
@@ -248,9 +246,7 @@ function renderNodeBrowseSection() {
   )
 }
 
-function createManageImageConvertProps(
-  overrides: Partial<ImageMainSectionProps> = {},
-): ImageMainSectionProps {
+function createManageImageConvertProps(overrides: Partial<ImageMainSectionProps> = {}): ImageMainSectionProps {
   const defaultProps: ImageMainSectionProps = {
     vectorMode: false,
     showNamesOnly: false,
@@ -282,7 +278,6 @@ function createManageImageConvertProps(
     metadataTargetPackageLabel: packageWithImages.displayName,
     metadataFetchDefaultText: packageWithImages.packageName,
     metadataProxyServer: '',
-    metadataEhentaiCookies: '',
     onMetadataSyncName: vi.fn(),
     onMetadataSaveParsed: async () => undefined,
     manageMode: true,
@@ -376,7 +371,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={basePackage.displayName}
         metadataFetchDefaultText={basePackage.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -441,14 +435,10 @@ describe('ImageMainSection layout', () => {
       />,
     )
 
-    const cards = document.querySelectorAll(
-      '[data-slot="fg-main-content-image-node-grid-card"]',
-    )
+    const cards = document.querySelectorAll('[data-slot="fg-main-content-image-node-grid-card"]')
     expect(cards).toHaveLength(1)
 
-    const cardButton = document.querySelector(
-      '[data-slot="fg-main-content-image-node-grid-card"] .thumb-card-main',
-    ) as HTMLButtonElement | null
+    const cardButton = document.querySelector('[data-slot="fg-main-content-image-node-grid-card"] .thumb-card-main') as HTMLButtonElement | null
     expect(cardButton).not.toBeNull()
 
     fireEvent.click(cardButton as HTMLButtonElement)
@@ -493,7 +483,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithImages.displayName}
         metadataFetchDefaultText={packageWithImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -559,7 +548,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithImages.displayName}
         metadataFetchDefaultText={packageWithImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -642,7 +630,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithMoreImages.displayName}
         metadataFetchDefaultText={packageWithMoreImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -711,7 +698,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithMoreImages.displayName}
         metadataFetchDefaultText={packageWithMoreImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -785,7 +771,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithMoreImages.displayName}
         metadataFetchDefaultText={packageWithMoreImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -861,7 +846,6 @@ describe('ImageMainSection layout', () => {
       metadataTargetPackageLabel: packageWithImages.displayName,
       metadataFetchDefaultText: packageWithImages.packageName,
       metadataProxyServer: '',
-      metadataEhentaiCookies: '',
       onMetadataSyncName: vi.fn(),
       onMetadataSaveParsed: async () => undefined,
       manageMode: false,
@@ -1007,5 +991,4 @@ describe('ImageMainSection layout', () => {
       }),
     )
   })
-
 })

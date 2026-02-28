@@ -84,7 +84,6 @@ export function useAppSettingsStore() {
       musicVisualizerShaderSettingsById:
         state.musicVisualizerShaderSettingsById,
       proxyServer: state.proxyServer,
-      ehentaiCookies: state.ehentaiCookies,
       subtitleFeatureEnabled: state.subtitleFeatureEnabled,
       subtitleRenderMode: state.subtitleRenderMode,
       subtitleAdvancedVadPreset: state.subtitleAdvancedVadPreset,

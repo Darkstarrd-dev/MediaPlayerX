@@ -178,7 +178,6 @@ export const appSettingsSchema = z.object({
   musicVisualizerRenderer: musicVisualizerRendererSchema,
   musicVisualizerShaderSettingsById: musicVisualizerShaderSettingsByIdSchema,
   proxyServer: z.string().max(512),
-  ehentaiCookies: z.string().max(4096),
   subtitleFeatureEnabled: z.boolean(),
   subtitleRenderMode: subtitleRenderModeSchema.default("advanced"),
   subtitleAdvancedVadPreset:

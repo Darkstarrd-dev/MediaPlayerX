@@ -49,7 +49,6 @@ interface ImageMainSectionContentAreaProps {
   metadataFetchOpen: boolean;
   effectiveMetadataFetchTargets: NonNullable<ImageMainSectionProps["metadataFetchTargets"]>;
   metadataProxyServer: ImageMainSectionProps["metadataProxyServer"];
-  metadataEhentaiCookies: ImageMainSectionProps["metadataEhentaiCookies"];
   metadataPending: boolean;
   setMetadataFetchOpen: (open: boolean) => void;
   handleSaveParsedMetadataByPackageId: (
@@ -70,7 +69,6 @@ export function ImageMainSectionContentArea({
   metadataFetchOpen,
   effectiveMetadataFetchTargets,
   metadataProxyServer,
-  metadataEhentaiCookies,
   metadataPending,
   setMetadataFetchOpen,
   handleSaveParsedMetadataByPackageId,
@@ -118,7 +116,6 @@ export function ImageMainSectionContentArea({
         open={metadataFetchOpen}
         targets={effectiveMetadataFetchTargets}
         proxyServer={metadataProxyServer}
-        ehentaiCookies={metadataEhentaiCookies}
         metadataPending={metadataPending}
         onClose={() => setMetadataFetchOpen(false)}
         onSaveParsedMetadataToTarget={handleSaveParsedMetadataByPackageId}

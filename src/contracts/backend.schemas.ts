@@ -489,7 +489,6 @@ export const searchExternalMetadataRequestSchema = z.object({
   input_id: z.string().optional(),
   source: z.enum(["nhentai", "ehentai"]).optional(),
   proxy_server: z.string().optional(),
-  ehentai_cookies: z.string().optional(),
 });
 
 export const externalAuthProviderSchema = z.enum(["ehentai"]);

@@ -632,7 +632,6 @@ export function useAppTopLayerState({
     fullscreenUpsamplingKernel: appSettings.fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel: appSettings.fullscreenDownsamplingKernel,
     proxyServer: appSettings.proxyServer,
-    ehentaiCookies: appSettings.ehentaiCookies,
     ehentaiAuthState: ehentaiAuthStatus?.state ?? "disconnected",
     ehentaiAuthConnected: ehentaiAuthStatus?.connected ?? false,
     ehentaiAuthMessage: ehentaiAuthStatus?.message ?? null,

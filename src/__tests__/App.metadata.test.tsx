@@ -242,13 +242,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     async () => {
       render(<App />);
 
-      await click(screen.getByRole("button", { name: "设置" }));
-      await click(screen.getByRole("button", { name: "数据库设置" }));
-      fireEvent.change(screen.getByLabelText("E-Hentai Cookies"), {
-        target: { value: "ipb_member_id=123; ipb_pass_hash=abc" },
-      });
-      await click(screen.getByRole("button", { name: "关闭" }));
-
       await click(getMetadataManageModeButton());
       await click(screen.getByRole("button", { name: "获取元数据" }));
 
@@ -313,7 +306,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
         expect.objectContaining({
           source: "ehentai",
           input_id: "1919810",
-          ehentai_cookies: "ipb_member_id=123; ipb_pass_hash=abc",
         }),
       );
 

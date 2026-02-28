@@ -53,7 +53,6 @@ describe("buildSettingsPanelProps", () => {
       fullscreenUpsamplingKernel: "lanczos3",
       fullscreenDownsamplingKernel: "lanczos3",
       proxyServer: "",
-      ehentaiCookies: "",
       ehentaiAuthState: "disconnected",
       ehentaiAuthConnected: false,
       ehentaiAuthMessage: null,

@@ -38,7 +38,7 @@ interface SearchContext {
   nhClient: AxiosInstance
   ehClient: AxiosInstance
   proxyServer?: string
-  ehentaiAuthSource: 'default' | 'request' | 'session'
+  ehentaiAuthSource: 'default' | 'session'
 }
 
 interface SourceSearchDebugStep {
@@ -77,8 +77,8 @@ export class MetadataScraperService {
 
     const input = parseInput(inputRaw)
     const sessionCookieHeader = await this.resolveEhentaiSessionCookieHeader()
-    const ehentaiCookies = buildEhentaiCookieHeader(request.ehentai_cookies, sessionCookieHeader)
-    const ehentaiAuthSource = resolveEhentaiAuthSource(request.ehentai_cookies, sessionCookieHeader)
+    const ehentaiCookies = buildEhentaiCookieHeader(sessionCookieHeader)
+    const ehentaiAuthSource = resolveEhentaiAuthSource(sessionCookieHeader)
     const proxyCandidates = resolveProxyCandidates(request.proxy_server, this.defaultProxyServer)
 
     if (source === 'nhentai') {
@@ -126,7 +126,7 @@ export class MetadataScraperService {
     source: MetadataSource,
     input: ParsedInput,
     ehentaiCookies: string,
-    ehentaiAuthSource: 'default' | 'request' | 'session',
+    ehentaiAuthSource: 'default' | 'session',
     proxyCandidates: Array<string | undefined>,
   ): Promise<SearchExternalMetadataResponseDto> {
     let lastResponse: SearchExternalMetadataResponseDto | null = null
@@ -157,7 +157,7 @@ export class MetadataScraperService {
     input: ParsedInput,
     proxyServer: string | undefined,
     ehentaiCookies: string,
-    ehentaiAuthSource: 'default' | 'request' | 'session',
+    ehentaiAuthSource: 'default' | 'session',
   ): SearchContext {
     return {
       input,
@@ -444,12 +444,9 @@ function createHttpClient(proxyServer: string | undefined, headerOptions?: HttpC
   })
 }
 
-function buildEhentaiCookieHeader(rawCookies: string | undefined, sessionCookies?: string | null): string {
+function buildEhentaiCookieHeader(sessionCookies?: string | null): string {
   const merged = new Map<string, string>()
   for (const [key, value] of parseCookieMap(DEFAULT_EHENTAI_COOKIES)) {
-    merged.set(key, value)
-  }
-  for (const [key, value] of parseCookieMap(rawCookies ?? '')) {
     merged.set(key, value)
   }
   for (const [key, value] of parseCookieMap(sessionCookies ?? '')) {
@@ -460,15 +457,9 @@ function buildEhentaiCookieHeader(rawCookies: string | undefined, sessionCookies
     .join('; ')
 }
 
-function resolveEhentaiAuthSource(
-  rawCookies: string | undefined,
-  sessionCookies: string | null,
-): 'default' | 'request' | 'session' {
+function resolveEhentaiAuthSource(sessionCookies: string | null): 'default' | 'session' {
   if (sessionCookies && sessionCookies.trim().length > 0) {
     return 'session'
-  }
-  if (rawCookies && rawCookies.trim().length > 0) {
-    return 'request'
   }
   return 'default'
 }

@@ -65,9 +65,7 @@ const packageWithImages: ImagePackage = {
   ],
 }
 
-function createManageImageConvertProps(
-  overrides: Partial<ImageMainSectionProps> = {},
-): ImageMainSectionProps {
+function createManageImageConvertProps(overrides: Partial<ImageMainSectionProps> = {}): ImageMainSectionProps {
   const defaultProps: ImageMainSectionProps = {
     vectorMode: false,
     showNamesOnly: false,
@@ -99,7 +97,6 @@ function createManageImageConvertProps(
     metadataTargetPackageLabel: packageWithImages.displayName,
     metadataFetchDefaultText: packageWithImages.packageName,
     metadataProxyServer: '',
-    metadataEhentaiCookies: '',
     onMetadataSyncName: vi.fn(),
     onMetadataSaveParsed: async () => undefined,
     manageMode: true,
@@ -180,7 +177,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithImages.displayName}
         metadataFetchDefaultText={packageWithImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -227,7 +223,6 @@ describe('ImageMainSection layout', () => {
     vi.useRealTimers()
   })
 
-
   it('多次快速滚轮聚合为单次 delta', () => {
     vi.useFakeTimers()
     const refsInPage = [{ packageId: packageWithImages.id, imageIndex: 0 }]
@@ -265,7 +260,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={packageWithImages.displayName}
         metadataFetchDefaultText={packageWithImages.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -315,7 +309,6 @@ describe('ImageMainSection layout', () => {
     vi.useRealTimers()
   })
 
-
   it('节点浏览网格滚轮同样触发翻页与 sidebar 切换', () => {
     vi.useFakeTimers()
     const onThumbnailWheelTurnPage = vi.fn()
@@ -353,7 +346,6 @@ describe('ImageMainSection layout', () => {
         metadataTargetPackageLabel={basePackage.displayName}
         metadataFetchDefaultText={basePackage.packageName}
         metadataProxyServer={''}
-        metadataEhentaiCookies={''}
         onMetadataSyncName={vi.fn()}
         onMetadataSaveParsed={async () => undefined}
         manageMode={false}
@@ -421,7 +413,6 @@ describe('ImageMainSection RS execution', () => {
     document.documentElement.dataset.mpxImageConvertExecuting = '0'
   })
 
-
   it('点击确定后应锁定 RS 交互并写入执行态 dataset', async () => {
     const onStartImageConvertTask = vi.fn(async () => ({
       task: {
@@ -440,11 +431,7 @@ describe('ImageMainSection RS execution', () => {
       })),
     } as unknown as typeof window.mediaPlayerBackend
 
-    render(
-      <ImageMainSection
-        {...createManageImageConvertProps({ onStartImageConvertTask })}
-      />,
-    )
+    render(<ImageMainSection {...createManageImageConvertProps({ onStartImageConvertTask })} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'RS' }))
     fireEvent.click(screen.getByRole('button', { name: '确定' }))
@@ -477,13 +464,10 @@ describe('ImageMainSection RS execution', () => {
     expect(screen.getByRole('button', { name: 'RS' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '预览' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '确定' })).toBeDisabled()
-    const scaleSlider = document.querySelector(
-      '.main-toolbar-image-convert-panel input[type="range"]',
-    ) as HTMLInputElement | null
+    const scaleSlider = document.querySelector('.main-toolbar-image-convert-panel input[type="range"]') as HTMLInputElement | null
     expect(scaleSlider).not.toBeNull()
     expect(scaleSlider?.disabled).toBe(true)
   })
-
 
   it('最长边有值时应携带 longest_edge_px 参数', async () => {
     const onStartImageConvertTask = vi.fn(async () => ({
@@ -541,7 +525,6 @@ describe('ImageMainSection RS execution', () => {
     })
   })
 
-
   it('执行中点击取消应调用后端 cancel 并清理执行态', async () => {
     const cancelImageConvertTask = vi.fn(async () => ({
       task: {
@@ -591,7 +574,6 @@ describe('ImageMainSection RS execution', () => {
     })
   })
 
-
   it('非执行态点击取消应关闭 panel，预览态下不渲染 RS 弹层', async () => {
     const onCancelImageConvertPreview = vi.fn()
 
@@ -626,5 +608,4 @@ describe('ImageMainSection RS execution', () => {
     fireEvent.click(screen.getByRole('button', { name: 'RS' }))
     expect(document.querySelector('.main-toolbar-image-convert-panel')).toBeNull()
   })
-
 })

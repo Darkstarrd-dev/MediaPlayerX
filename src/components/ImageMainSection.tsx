@@ -184,7 +184,6 @@ function ImageMainSection({
   metadataFetchDefaultText = "",
   metadataFetchTargets = [],
   metadataProxyServer,
-  metadataEhentaiCookies,
   onMetadataSyncName,
   onToggleMetadataManageSelectionMode = () => undefined,
   onMetadataSaveParsed,
@@ -1390,7 +1389,6 @@ function ImageMainSection({
         metadataFetchOpen={metadataFetchOpen}
         effectiveMetadataFetchTargets={effectiveMetadataFetchTargets}
         metadataProxyServer={metadataProxyServer}
-        metadataEhentaiCookies={metadataEhentaiCookies}
         metadataPending={metadataPending}
         setMetadataFetchOpen={setMetadataFetchOpen}
         handleSaveParsedMetadataByPackageId={handleSaveParsedMetadataByPackageId}

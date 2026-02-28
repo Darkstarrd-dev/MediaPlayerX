@@ -5,9 +5,11 @@ import {
   dialog,
   ipcMain,
   shell,
+  type IpcMainInvokeEvent,
 } from "electron";
 import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
   clearDatabaseResponseSchema,
@@ -210,6 +212,7 @@ import {
   resolveFfprobeBinPathFromDirectory,
   resolveMpvBinPathFromDirectory,
 } from "./runtimeBinaryPaths";
+import { resolveRendererEntry } from "./mainPaths";
 
 interface IpcBreakdownEntry {
   timestamp: string;
@@ -219,6 +222,11 @@ interface IpcBreakdownEntry {
   json_serialize_proxy_ms: number | null;
   payload_bytes: number | null;
   request_id: number;
+}
+
+interface TrustedRendererSenderRule {
+  allowedOrigin: string | null;
+  allowedFileBase: string | null;
 }
 
 function resolveIpcBreakdownLogPath(): string | null {
@@ -280,6 +288,7 @@ export function registerBackendIpcHandlers(): void {
     runtimeStoragePaths.thumbnail_cache_dir,
   );
   const allowedExternalUrlHosts = getAllowedExternalUrlHosts();
+  const trustedRendererSenderRule = resolveTrustedRendererSenderRule();
   let service: FileSystemMediaReadService | null = null;
   const externalAuthSessionManager = new ExternalAuthSessionManager();
   const metadataScraper = new MetadataScraperService({
@@ -455,6 +464,20 @@ export function registerBackendIpcHandlers(): void {
           ? {}
           : payload;
       const request = requestSchema.parse(normalizedPayload);
+      const response = await action(request);
+      return responseSchema.parse(response);
+    });
+  };
+
+  const registerTrustedIpcCommand = <TRequest, TResponse>(
+    channel: string,
+    requestSchema: ParseSchema<TRequest>,
+    responseSchema: ParseSchema<TResponse>,
+    action: (request: TRequest) => Promise<unknown> | unknown,
+  ): void => {
+    ipcMain.handle(channel, async (event, payload: unknown) => {
+      assertTrustedRendererSender(event, channel, trustedRendererSenderRule);
+      const request = requestSchema.parse(payload);
       const response = await action(request);
       return responseSchema.parse(response);
     });
@@ -714,21 +737,21 @@ export function registerBackendIpcHandlers(): void {
     (request) => metadataScraper.search(request),
   );
 
-  registerIpcCommand(
+  registerTrustedIpcCommand(
     BACKEND_CHANNELS.externalAuthConnect,
     externalAuthConnectRequestSchema,
     externalAuthConnectResponseSchema,
     (request) => externalAuthSessionManager.connect(request.provider),
   );
 
-  registerIpcCommand(
+  registerTrustedIpcCommand(
     BACKEND_CHANNELS.externalAuthDisconnect,
     externalAuthDisconnectRequestSchema,
     externalAuthDisconnectResponseSchema,
     (request) => externalAuthSessionManager.disconnect(request.provider),
   );
 
-  registerIpcCommand(
+  registerTrustedIpcCommand(
     BACKEND_CHANNELS.externalAuthStatus,
     externalAuthStatusRequestSchema,
     externalAuthStatusResponseSchema,
@@ -1427,3 +1450,66 @@ export function registerBackendIpcHandlers(): void {
     },
   );
 }
+
+function resolveTrustedRendererSenderRule(): TrustedRendererSenderRule {
+  const entry = resolveRendererEntry();
+  if (entry.type === "url") {
+    return {
+      allowedOrigin: new URL(entry.value).origin,
+      allowedFileBase: null,
+    };
+  }
+
+  const fileUrl = pathToFileURL(entry.value);
+  fileUrl.search = "";
+  fileUrl.hash = "";
+  return {
+    allowedOrigin: null,
+    allowedFileBase: fileUrl.toString(),
+  };
+}
+
+function assertTrustedRendererSender(
+  event: Pick<IpcMainInvokeEvent, "sender" | "senderFrame">,
+  channel: string,
+  rule: TrustedRendererSenderRule,
+): void {
+  const senderUrl = resolveSenderUrl(event);
+  if (!senderUrl) {
+    throw new Error(`Untrusted IPC sender: ${channel}`);
+  }
+
+  if (rule.allowedOrigin) {
+    try {
+      if (new URL(senderUrl).origin === rule.allowedOrigin) {
+        return;
+      }
+    } catch {
+      // fallthrough
+    }
+    throw new Error(`Untrusted IPC sender: ${channel}`);
+  }
+
+  if (rule.allowedFileBase && senderUrl.startsWith(rule.allowedFileBase)) {
+    return;
+  }
+
+  throw new Error(`Untrusted IPC sender: ${channel}`);
+}
+
+function resolveSenderUrl(
+  event: Pick<IpcMainInvokeEvent, "sender" | "senderFrame">,
+): string {
+  const frameUrl = event.senderFrame?.url?.trim();
+  if (frameUrl) {
+    return frameUrl;
+  }
+
+  const senderUrl = event.sender.getURL().trim();
+  if (senderUrl) {
+    return senderUrl;
+  }
+
+  return "";
+}
+

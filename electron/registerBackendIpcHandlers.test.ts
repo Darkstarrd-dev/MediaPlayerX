@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockState = vi.hoisted(() => {
   const handlers = new Map<
@@ -836,7 +836,13 @@ describe("registerBackendIpcHandlers.verifyAudioTranscodeFfmpegBin", () => {
 });
 
 describe("registerBackendIpcHandlers.externalAuthStatus", () => {
+  const trustedEvent = {
+    senderFrame: { url: "http://localhost:5173/" },
+    sender: { getURL: vi.fn(() => "http://localhost:5173/") },
+  };
+
   beforeEach(() => {
+    process.env.VITE_DEV_SERVER_URL = "http://localhost:5173";
     mockState.handlers.clear();
     mockState.ipcHandle.mockClear();
     mockState.sessionFromPartition.mockReset();
@@ -854,6 +860,10 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
     });
   });
 
+  afterEach(() => {
+    delete process.env.VITE_DEV_SERVER_URL;
+  });
+
   it("已命中必需 cookie 时应返回 connected", async () => {
     mockState.externalAuthCookiesGet.mockResolvedValue([
       { name: "ipb_member_id" },
@@ -866,7 +876,7 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
       throw new Error("externalAuthStatus handler missing");
     }
 
-    const response = await handler({}, { provider: "ehentai" });
+    const response = await handler(trustedEvent, { provider: "ehentai" });
 
     expect(mockState.sessionFromPartition).toHaveBeenCalledWith(
       "persist:ext-auth:ehentai",
@@ -897,7 +907,7 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
       throw new Error("externalAuthStatus handler missing");
     }
 
-    const response = await handler({}, { provider: "ehentai" });
+    const response = await handler(trustedEvent, { provider: "ehentai" });
 
     expect(response).toEqual(
       expect.objectContaining({
@@ -906,5 +916,23 @@ describe("registerBackendIpcHandlers.externalAuthStatus", () => {
         connected: false,
       }),
     );
+  });
+
+  it("未受信任 sender 应拒绝调用", async () => {
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.externalAuthStatus);
+    if (!handler) {
+      throw new Error("externalAuthStatus handler missing");
+    }
+
+    await expect(
+      handler(
+        {
+          senderFrame: { url: "https://malicious.example/" },
+          sender: { getURL: () => "https://malicious.example/" },
+        },
+        { provider: "ehentai" },
+      ),
+    ).rejects.toThrow("Untrusted IPC sender");
   });
 });

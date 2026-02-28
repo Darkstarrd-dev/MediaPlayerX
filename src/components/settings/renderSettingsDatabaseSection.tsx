@@ -19,7 +19,6 @@ export function renderSettingsDatabaseSection({
     runtimePathUpdatePending,
     runtimePathUpdateMessage,
     proxyServer,
-    ehentaiCookies,
     ehentaiAuthState,
     ehentaiAuthConnected,
     ehentaiAuthMessage,
@@ -30,7 +29,6 @@ export function renderSettingsDatabaseSection({
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onProxyServerChange,
-    onEhentaiCookiesChange,
     onRefreshEhentaiAuthStatus,
     onConnectEhentaiAuth,
     onDisconnectEhentaiAuth,
@@ -120,15 +118,6 @@ export function renderSettingsDatabaseSection({
             value={proxyServer}
             placeholder={t("ui.settings.proxyServerPlaceholder")}
             onChange={(event) => onProxyServerChange(event.target.value)}
-          />
-        </label>
-        <label data-tooltip-label={settingsTip("ehentaiCookies")}>
-          {t("ui.settings.ehentaiCookiesLabel")}
-          <input
-            type="text"
-            value={ehentaiCookies}
-            placeholder={t("ui.settings.ehentaiCookiesPlaceholder")}
-            onChange={(event) => onEhentaiCookiesChange(event.target.value)}
           />
         </label>
       </fieldset>

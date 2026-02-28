@@ -390,8 +390,6 @@ export const zhCnCatalogPart1 = {
     "缩略图缓存目录；迁移后可降低系统盘占用。",
   "ui.settings.tooltip.proxyServer":
     "配置网络请求代理（如 HTTP/SOCKS）；用于模型下载与外部请求。",
-  "ui.settings.tooltip.ehentaiCookies":
-    "配置 e-hentai 访问所需 Cookie，用于受限内容请求。",
   "ui.settings.tooltip.ehentaiAuth":
     "通过内置浏览器登录 e-hentai 账户，自动维护会话，无需手动粘贴 Cookie。",
   "ui.settings.tooltip.offlineSubtitleVadPreset":
@@ -677,12 +675,9 @@ export const zhCnCatalogPart1 = {
     "用于元数据抓取链路，支持 socks5:// 与 http(s)://。",
   "ui.settings.proxyServerLabel": "代理服务器",
   "ui.settings.proxyServerPlaceholder": "例如 socks5://127.0.0.1:2080",
-  "ui.settings.ehentaiCookiesLabel": "E-Hentai Cookies",
-  "ui.settings.ehentaiCookiesPlaceholder":
-    "例如 ipb_member_id=xxx; ipb_pass_hash=xxx",
   "ui.settings.ehentaiAuthLegend": "E-Hentai 账户连接",
   "ui.settings.ehentaiAuthHint":
-    "建议优先使用网页登录会话。兼容模式仍可填写 Cookies，后续版本将移除。",
+    "使用网页登录会话进行鉴权，不再支持手动 Cookies。",
   "ui.settings.ehentaiAuthChecking": "正在检查登录状态...",
   "ui.settings.ehentaiAuthConnected": "已连接",
   "ui.settings.ehentaiAuthDisconnected": "未连接",

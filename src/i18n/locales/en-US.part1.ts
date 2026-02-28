@@ -409,8 +409,6 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Thumbnail cache directory. Moving it can reduce system drive usage.",
   "ui.settings.tooltip.proxyServer":
     "Configure request proxy (HTTP/SOCKS) for model downloads and external requests.",
-  "ui.settings.tooltip.ehentaiCookies":
-    "Configure Cookie required for restricted e-hentai access.",
   "ui.settings.tooltip.ehentaiAuth":
     "Sign in through built-in browser and keep session automatically, no manual Cookie paste needed.",
   "ui.settings.tooltip.offlineSubtitleVadPreset":
@@ -721,12 +719,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Used for metadata fetch flow; supports socks5:// and http(s)://.",
   "ui.settings.proxyServerLabel": "Proxy server",
   "ui.settings.proxyServerPlaceholder": "e.g. socks5://127.0.0.1:2080",
-  "ui.settings.ehentaiCookiesLabel": "E-Hentai Cookies",
-  "ui.settings.ehentaiCookiesPlaceholder":
-    "e.g. ipb_member_id=xxx; ipb_pass_hash=xxx",
   "ui.settings.ehentaiAuthLegend": "E-Hentai Account Connection",
   "ui.settings.ehentaiAuthHint":
-    "Web sign-in is recommended. Compatibility Cookie input is still available and will be removed later.",
+    "Authentication now uses web sign-in session only; manual Cookie input is no longer supported.",
   "ui.settings.ehentaiAuthChecking": "Checking sign-in status...",
   "ui.settings.ehentaiAuthConnected": "Connected",
   "ui.settings.ehentaiAuthDisconnected": "Disconnected",

@@ -13,7 +13,6 @@ interface MetadataFetchPanelProps {
   open: boolean
   targets: MetadataFetchTarget[]
   proxyServer: string
-  ehentaiCookies: string
   metadataPending: boolean
   onClose: () => void
   onSaveParsedMetadataToTarget: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
@@ -196,7 +195,6 @@ function MetadataFetchPanel({
   open,
   targets,
   proxyServer,
-  ehentaiCookies,
   metadataPending,
   onClose,
   onSaveParsedMetadataToTarget,
@@ -324,7 +322,6 @@ function MetadataFetchPanel({
   const runSearch = async () => {
     const api = window.mediaPlayerBackend
     const searchExternalMetadata = api?.searchExternalMetadata
-    const ehentaiCookieText = ehentaiCookies.trim()
     const targetSources: MetadataSource[] = sourceMode === 'all' ? SOURCE_KEYS : [sourceMode]
     const runToken = runTokenRef.current + 1
     runTokenRef.current = runToken
@@ -349,7 +346,6 @@ function MetadataFetchPanel({
         const buildRequestPayload = (source: MetadataSource) => ({
           ...requestBase,
           source,
-          ...(source === 'ehentai' && ehentaiCookieText ? { ehentai_cookies: ehentaiCookieText } : {}),
         })
 
         if (!searchExternalMetadata) {

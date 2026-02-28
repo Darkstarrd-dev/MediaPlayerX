@@ -66,6 +66,14 @@ module.exports = {
   compression: 'maximum',
   removePackageScripts: true,
   asar: true,
+  electronFuses: {
+    runAsNode: false,
+    enableCookieEncryption: true,
+    enableNodeOptionsEnvironmentVariable: false,
+    enableNodeCliInspectArguments: false,
+    enableEmbeddedAsarIntegrityValidation: true,
+    onlyLoadAppFromAsar: true,
+  },
   electronLanguages: ['en-US', 'zh-CN'],
   directories: {
     output: 'release',

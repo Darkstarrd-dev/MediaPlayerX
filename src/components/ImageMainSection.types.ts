@@ -68,7 +68,6 @@ export interface ImageMainSectionProps {
   metadataFetchDefaultText?: string;
   metadataFetchTargets?: MetadataFetchTarget[];
   metadataProxyServer: string;
-  metadataEhentaiCookies: string;
   onMetadataSyncName: () => void;
   onToggleMetadataManageSelectionMode?: () => void;
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>;
