@@ -27,6 +27,18 @@ const mockState = vi.hoisted(() => {
   const overrideAudioTranscodeRuntimeBins = vi.fn();
   const onLibraryChanged = vi.fn();
   const dispose = vi.fn();
+  const externalAuthCookiesGet = vi.fn();
+  const externalAuthClearStorageData = vi.fn();
+  const externalAuthFlushStorageData = vi.fn();
+  const externalAuthSetPermissionRequestHandler = vi.fn();
+  const sessionFromPartition = vi.fn(() => ({
+    cookies: {
+      get: externalAuthCookiesGet,
+    },
+    clearStorageData: externalAuthClearStorageData,
+    flushStorageData: externalAuthFlushStorageData,
+    setPermissionRequestHandler: externalAuthSetPermissionRequestHandler,
+  }));
 
   const service = {
     moveSidebarNodes,
@@ -61,6 +73,11 @@ const mockState = vi.hoisted(() => {
     overrideAudioTranscodeRuntimeBins,
     onLibraryChanged,
     dispose,
+    externalAuthCookiesGet,
+    externalAuthClearStorageData,
+    externalAuthFlushStorageData,
+    externalAuthSetPermissionRequestHandler,
+    sessionFromPartition,
     service,
     fileSystemServiceConstructor,
   };
@@ -100,6 +117,9 @@ vi.mock("electron", () => {
     },
     shell: {
       openExternal: vi.fn(async () => undefined),
+    },
+    session: {
+      fromPartition: mockState.sessionFromPartition,
     },
   };
 });
@@ -810,6 +830,80 @@ describe("registerBackendIpcHandlers.verifyAudioTranscodeFfmpegBin", () => {
         ok: false,
         ffmpeg_bin_path: null,
         ffprobe_bin_path: "C:/Tools/ffmpeg/ffprobe.exe",
+      }),
+    );
+  });
+});
+
+describe("registerBackendIpcHandlers.externalAuthStatus", () => {
+  beforeEach(() => {
+    mockState.handlers.clear();
+    mockState.ipcHandle.mockClear();
+    mockState.sessionFromPartition.mockReset();
+    mockState.externalAuthCookiesGet.mockReset();
+    mockState.externalAuthClearStorageData.mockReset();
+    mockState.externalAuthFlushStorageData.mockReset();
+    mockState.externalAuthSetPermissionRequestHandler.mockReset();
+    mockState.sessionFromPartition.mockReturnValue({
+      cookies: {
+        get: mockState.externalAuthCookiesGet,
+      },
+      clearStorageData: mockState.externalAuthClearStorageData,
+      flushStorageData: mockState.externalAuthFlushStorageData,
+      setPermissionRequestHandler: mockState.externalAuthSetPermissionRequestHandler,
+    });
+  });
+
+  it("已命中必需 cookie 时应返回 connected", async () => {
+    mockState.externalAuthCookiesGet.mockResolvedValue([
+      { name: "ipb_member_id" },
+      { name: "ipb_pass_hash" },
+    ]);
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.externalAuthStatus);
+    if (!handler) {
+      throw new Error("externalAuthStatus handler missing");
+    }
+
+    const response = await handler({}, { provider: "ehentai" });
+
+    expect(mockState.sessionFromPartition).toHaveBeenCalledWith(
+      "persist:ext-auth:ehentai",
+    );
+    expect(mockState.externalAuthSetPermissionRequestHandler).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(mockState.externalAuthCookiesGet).toHaveBeenCalledWith({
+      url: "https://e-hentai.org/",
+    });
+    expect(response).toEqual(
+      expect.objectContaining({
+        provider: "ehentai",
+        state: "connected",
+        connected: true,
+      }),
+    );
+  });
+
+  it("缺少必需 cookie 时应返回 disconnected", async () => {
+    mockState.externalAuthCookiesGet.mockResolvedValue([
+      { name: "ipb_member_id" },
+    ]);
+
+    registerBackendIpcHandlers();
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.externalAuthStatus);
+    if (!handler) {
+      throw new Error("externalAuthStatus handler missing");
+    }
+
+    const response = await handler({}, { provider: "ehentai" });
+
+    expect(response).toEqual(
+      expect.objectContaining({
+        provider: "ehentai",
+        state: "disconnected",
+        connected: false,
       }),
     );
   });

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useI18n } from '../../i18n/useI18n'
+import type { ExternalAuthStatusResponseDto } from '../../contracts/backend'
 import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
 import type { MediaRepository } from '../backend/repository'
 import type { RuntimeInfoDiagnosticsResult } from './useRuntimeInfoDiagnostics'
@@ -29,9 +30,16 @@ interface TopLayerSettingsActionsResult {
   adReviewVisionSaveMessage: string | null
   runtimePathUpdatePending: boolean
   runtimePathUpdateMessage: string | null
+  ehentaiAuthStatus: ExternalAuthStatusResponseDto | null
+  ehentaiAuthChecking: boolean
+  ehentaiAuthConnectPending: boolean
+  ehentaiAuthDisconnectPending: boolean
   applyElectronNativeChromeEnabled: (value: boolean) => void
   testAdReviewVisionModel: () => Promise<void>
   saveAdReviewVisionModel: () => Promise<void>
+  refreshEhentaiAuthStatus: () => Promise<void>
+  connectEhentaiAuth: () => Promise<void>
+  disconnectEhentaiAuth: () => Promise<void>
   pickDatabaseDirectoryPath: () => Promise<void>
   pickThumbnailCacheDirectoryPath: () => Promise<void>
   pickSubtitleModelDirectoryPath: () => Promise<void>
@@ -93,6 +101,10 @@ export function useTopLayerSettingsActions({
   const [adReviewVisionSaveMessage, setAdReviewVisionSaveMessage] = useState<string | null>(null)
   const [runtimePathUpdatePending, setRuntimePathUpdatePending] = useState(false)
   const [runtimePathUpdateMessage, setRuntimePathUpdateMessage] = useState<string | null>(null)
+  const [ehentaiAuthStatus, setEhentaiAuthStatus] = useState<ExternalAuthStatusResponseDto | null>(null)
+  const [ehentaiAuthChecking, setEhentaiAuthChecking] = useState(false)
+  const [ehentaiAuthConnectPending, setEhentaiAuthConnectPending] = useState(false)
+  const [ehentaiAuthDisconnectPending, setEhentaiAuthDisconnectPending] = useState(false)
   const [subtitleModelsLoading, setSubtitleModelsLoading] = useState(false)
   const [subtitleModelsError, setSubtitleModelsError] = useState<string | null>(null)
   const [subtitleModelsStatus, setSubtitleModelsStatus] = useState<string | null>(null)
@@ -242,6 +254,125 @@ export function useTopLayerSettingsActions({
       setAdReviewVisionSavePending(false)
     }
   }, [adReviewVisionEndpoint, adReviewVisionModel, adReviewVisionVerified, appSettings, mediaRepository, t, updateSettings])
+
+  const refreshEhentaiAuthStatus = useCallback(async () => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (!backendApi?.externalAuthStatus) {
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthUnsupported'),
+        checked_at_ms: Date.now(),
+      })
+      return
+    }
+
+    setEhentaiAuthChecking(true)
+    try {
+      const response = await backendApi.externalAuthStatus({ provider: 'ehentai' })
+      setEhentaiAuthStatus(response)
+    } catch (error) {
+      const message = toErrorDetailWithCode(error, t)
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthCheckFailed', { message }),
+        checked_at_ms: Date.now(),
+      })
+    } finally {
+      setEhentaiAuthChecking(false)
+    }
+  }, [t])
+
+  const connectEhentaiAuth = useCallback(async () => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (!backendApi?.externalAuthConnect) {
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthUnsupported'),
+        checked_at_ms: Date.now(),
+      })
+      return
+    }
+
+    setEhentaiAuthConnectPending(true)
+    try {
+      const response = await backendApi.externalAuthConnect({ provider: 'ehentai' })
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: response.connected ? 'connected' : 'disconnected',
+        connected: response.connected,
+        message:
+          response.message ??
+          (response.connected
+            ? t('ui.settings.ehentaiAuthConnected')
+            : t('ui.settings.ehentaiAuthConnectOpened')),
+        checked_at_ms: response.checked_at_ms,
+      })
+      await refreshEhentaiAuthStatus()
+    } catch (error) {
+      const message = toErrorDetailWithCode(error, t)
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthConnectFailed', { message }),
+        checked_at_ms: Date.now(),
+      })
+    } finally {
+      setEhentaiAuthConnectPending(false)
+    }
+  }, [refreshEhentaiAuthStatus, t])
+
+  const disconnectEhentaiAuth = useCallback(async () => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (!backendApi?.externalAuthDisconnect) {
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthUnsupported'),
+        checked_at_ms: Date.now(),
+      })
+      return
+    }
+
+    setEhentaiAuthDisconnectPending(true)
+    try {
+      const response = await backendApi.externalAuthDisconnect({ provider: 'ehentai' })
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: response.disconnected ? 'disconnected' : 'error',
+        connected: !response.disconnected,
+        message:
+          response.message ??
+          (response.disconnected
+            ? t('ui.settings.ehentaiAuthDisconnected')
+            : t('ui.settings.ehentaiAuthDisconnectFailedDefault')),
+        checked_at_ms: response.checked_at_ms,
+      })
+      await refreshEhentaiAuthStatus()
+    } catch (error) {
+      const message = toErrorDetailWithCode(error, t)
+      setEhentaiAuthStatus({
+        provider: 'ehentai',
+        state: 'error',
+        connected: false,
+        message: t('ui.settings.ehentaiAuthDisconnectFailed', { message }),
+        checked_at_ms: Date.now(),
+      })
+    } finally {
+      setEhentaiAuthDisconnectPending(false)
+    }
+  }, [refreshEhentaiAuthStatus, t])
+
+  useEffect(() => {
+    void refreshEhentaiAuthStatus()
+  }, [refreshEhentaiAuthStatus])
 
   const applyRuntimeStoragePaths = useCallback(
     async (patch: { database_dir?: string; thumbnail_cache_dir?: string }) => {
@@ -630,9 +761,16 @@ export function useTopLayerSettingsActions({
     adReviewVisionSaveMessage,
     runtimePathUpdatePending,
     runtimePathUpdateMessage,
+    ehentaiAuthStatus,
+    ehentaiAuthChecking,
+    ehentaiAuthConnectPending,
+    ehentaiAuthDisconnectPending,
     applyElectronNativeChromeEnabled,
     testAdReviewVisionModel,
     saveAdReviewVisionModel,
+    refreshEhentaiAuthStatus,
+    connectEhentaiAuth,
+    disconnectEhentaiAuth,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
     pickSubtitleModelDirectoryPath,

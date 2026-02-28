@@ -411,6 +411,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Configure request proxy (HTTP/SOCKS) for model downloads and external requests.",
   "ui.settings.tooltip.ehentaiCookies":
     "Configure Cookie required for restricted e-hentai access.",
+  "ui.settings.tooltip.ehentaiAuth":
+    "Sign in through built-in browser and keep session automatically, no manual Cookie paste needed.",
   "ui.settings.tooltip.offlineSubtitleVadPreset":
     "Choose VAD preset to balance segmentation sensitivity and stability.",
   "ui.settings.tooltip.offlineSubtitleVadThreshold":
@@ -722,6 +724,26 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.ehentaiCookiesLabel": "E-Hentai Cookies",
   "ui.settings.ehentaiCookiesPlaceholder":
     "e.g. ipb_member_id=xxx; ipb_pass_hash=xxx",
+  "ui.settings.ehentaiAuthLegend": "E-Hentai Account Connection",
+  "ui.settings.ehentaiAuthHint":
+    "Web sign-in is recommended. Compatibility Cookie input is still available and will be removed later.",
+  "ui.settings.ehentaiAuthChecking": "Checking sign-in status...",
+  "ui.settings.ehentaiAuthConnected": "Connected",
+  "ui.settings.ehentaiAuthDisconnected": "Disconnected",
+  "ui.settings.ehentaiAuthConnectAction": "Connect account",
+  "ui.settings.ehentaiAuthDisconnectAction": "Disconnect and clear",
+  "ui.settings.ehentaiAuthRefreshAction": "Refresh status",
+  "ui.settings.ehentaiAuthConnecting": "Opening sign-in page...",
+  "ui.settings.ehentaiAuthDisconnecting": "Disconnecting...",
+  "ui.settings.ehentaiAuthUnsupported":
+    "Current backend does not support account connection",
+  "ui.settings.ehentaiAuthCheckFailed": "Status check failed: {{message}}",
+  "ui.settings.ehentaiAuthConnectOpened":
+    "Sign-in window opened. Complete sign-in and click Refresh Status.",
+  "ui.settings.ehentaiAuthConnectFailed": "Connect failed: {{message}}",
+  "ui.settings.ehentaiAuthDisconnectFailed": "Disconnect failed: {{message}}",
+  "ui.settings.ehentaiAuthDisconnectFailedDefault":
+    "Disconnect did not complete, please retry",
   "ui.settings.backendError.library": "Data snapshot",
   "ui.settings.backendError.sidebar": "Sidebar tree",
   "ui.settings.backendError.page": "Main paged list",

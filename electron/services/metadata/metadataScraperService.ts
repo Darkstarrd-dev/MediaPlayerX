@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import { load as loadHtml } from 'cheerio'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { SocksProxyAgent } from 'socks-proxy-agent'
+import type { ExternalAuthSessionManager } from '../auth/externalAuthSessionManager'
 
 import type {
   SearchExternalMetadataRequestDto,
@@ -27,6 +28,7 @@ interface ParsedInput {
 
 interface MetadataScraperServiceOptions {
   defaultProxyServer?: string
+  externalAuthSessionManager?: ExternalAuthSessionManager
 }
 
 type MetadataSource = 'nhentai' | 'ehentai'
@@ -36,6 +38,7 @@ interface SearchContext {
   nhClient: AxiosInstance
   ehClient: AxiosInstance
   proxyServer?: string
+  ehentaiAuthSource: 'default' | 'request' | 'session'
 }
 
 interface SourceSearchDebugStep {
@@ -58,9 +61,11 @@ interface SourceSearchDebug {
 
 export class MetadataScraperService {
   private readonly defaultProxyServer: string
+  private readonly externalAuthSessionManager: ExternalAuthSessionManager | null
 
   constructor(options?: MetadataScraperServiceOptions) {
     this.defaultProxyServer = options?.defaultProxyServer?.trim() ?? ''
+    this.externalAuthSessionManager = options?.externalAuthSessionManager ?? null
   }
 
   async search(request: SearchExternalMetadataRequestDto): Promise<SearchExternalMetadataResponseDto> {
@@ -71,19 +76,45 @@ export class MetadataScraperService {
     }
 
     const input = parseInput(inputRaw)
-    const ehentaiCookies = buildEhentaiCookieHeader(request.ehentai_cookies)
+    const sessionCookieHeader = await this.resolveEhentaiSessionCookieHeader()
+    const ehentaiCookies = buildEhentaiCookieHeader(request.ehentai_cookies, sessionCookieHeader)
+    const ehentaiAuthSource = resolveEhentaiAuthSource(request.ehentai_cookies, sessionCookieHeader)
     const proxyCandidates = resolveProxyCandidates(request.proxy_server, this.defaultProxyServer)
 
     if (source === 'nhentai') {
-      return this.searchBySourceWithProxyFallback('nhentai', input, ehentaiCookies, proxyCandidates)
+      return this.searchBySourceWithProxyFallback(
+        'nhentai',
+        input,
+        ehentaiCookies,
+        ehentaiAuthSource,
+        proxyCandidates,
+      )
     }
     if (source === 'ehentai') {
-      return this.searchBySourceWithProxyFallback('ehentai', input, ehentaiCookies, proxyCandidates)
+      return this.searchBySourceWithProxyFallback(
+        'ehentai',
+        input,
+        ehentaiCookies,
+        ehentaiAuthSource,
+        proxyCandidates,
+      )
     }
 
     const [nhResponse, ehResponse] = await Promise.all([
-      this.searchBySourceWithProxyFallback('nhentai', input, ehentaiCookies, proxyCandidates),
-      this.searchBySourceWithProxyFallback('ehentai', input, ehentaiCookies, proxyCandidates),
+      this.searchBySourceWithProxyFallback(
+        'nhentai',
+        input,
+        ehentaiCookies,
+        ehentaiAuthSource,
+        proxyCandidates,
+      ),
+      this.searchBySourceWithProxyFallback(
+        'ehentai',
+        input,
+        ehentaiCookies,
+        ehentaiAuthSource,
+        proxyCandidates,
+      ),
     ])
 
     return {
@@ -95,13 +126,19 @@ export class MetadataScraperService {
     source: MetadataSource,
     input: ParsedInput,
     ehentaiCookies: string,
+    ehentaiAuthSource: 'default' | 'request' | 'session',
     proxyCandidates: Array<string | undefined>,
   ): Promise<SearchExternalMetadataResponseDto> {
     let lastResponse: SearchExternalMetadataResponseDto | null = null
 
     for (let index = 0; index < proxyCandidates.length; index += 1) {
       const proxyServer = proxyCandidates[index]
-      const context = this.createSearchContext(input, proxyServer, ehentaiCookies)
+      const context = this.createSearchContext(
+        input,
+        proxyServer,
+        ehentaiCookies,
+        ehentaiAuthSource,
+      )
       const response = await this.searchBySource(context, source)
       lastResponse = response
 
@@ -120,10 +157,12 @@ export class MetadataScraperService {
     input: ParsedInput,
     proxyServer: string | undefined,
     ehentaiCookies: string,
+    ehentaiAuthSource: 'default' | 'request' | 'session',
   ): SearchContext {
     return {
       input,
       proxyServer,
+      ehentaiAuthSource,
       nhClient: createHttpClient(proxyServer),
       ehClient: createHttpClient(proxyServer, {
         cookie: ehentaiCookies,
@@ -144,6 +183,8 @@ export class MetadataScraperService {
         source,
         input: context.input,
         proxy_server: context.proxyServer ?? '(direct)',
+        ehentai_auth_source:
+          source === 'ehentai' ? context.ehentaiAuthSource : undefined,
       },
     })
 
@@ -342,6 +383,28 @@ export class MetadataScraperService {
       token,
     }
   }
+
+  private async resolveEhentaiSessionCookieHeader(): Promise<string | null> {
+    if (!this.externalAuthSessionManager) {
+      return null
+    }
+
+    const status = await this.externalAuthSessionManager.getStatus('ehentai')
+    if (!status.connected) {
+      return null
+    }
+
+    const ses = this.externalAuthSessionManager.getProviderSession('ehentai')
+    const cookies = await ses.cookies.get({
+      url: 'https://e-hentai.org/',
+    })
+    const header = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ')
+      .trim()
+
+    return header.length > 0 ? header : null
+  }
 }
 
 interface HttpClientHeaderOptions {
@@ -381,7 +444,7 @@ function createHttpClient(proxyServer: string | undefined, headerOptions?: HttpC
   })
 }
 
-function buildEhentaiCookieHeader(rawCookies: string | undefined): string {
+function buildEhentaiCookieHeader(rawCookies: string | undefined, sessionCookies?: string | null): string {
   const merged = new Map<string, string>()
   for (const [key, value] of parseCookieMap(DEFAULT_EHENTAI_COOKIES)) {
     merged.set(key, value)
@@ -389,9 +452,25 @@ function buildEhentaiCookieHeader(rawCookies: string | undefined): string {
   for (const [key, value] of parseCookieMap(rawCookies ?? '')) {
     merged.set(key, value)
   }
+  for (const [key, value] of parseCookieMap(sessionCookies ?? '')) {
+    merged.set(key, value)
+  }
   return Array.from(merged.entries())
     .map(([key, value]) => `${key}=${value}`)
     .join('; ')
+}
+
+function resolveEhentaiAuthSource(
+  rawCookies: string | undefined,
+  sessionCookies: string | null,
+): 'default' | 'request' | 'session' {
+  if (sessionCookies && sessionCookies.trim().length > 0) {
+    return 'session'
+  }
+  if (rawCookies && rawCookies.trim().length > 0) {
+    return 'request'
+  }
+  return 'default'
 }
 
 function parseCookieMap(rawCookies: string): Map<string, string> {

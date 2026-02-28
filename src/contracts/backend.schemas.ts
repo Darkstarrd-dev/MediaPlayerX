@@ -67,6 +67,11 @@ export {
   audioTranscodePresetSchema,
   audioTranscodePresetCapabilityReasonSchema,
   audioTranscodePresetCapabilitySchema,
+  audioTranscodeMetadataModeSchema,
+  audioTranscodeSampleRateSchema,
+  audioTranscodeChannelsSchema,
+  audioTranscodeWavBitDepthSchema,
+  audioTranscodeParamsSchema,
   readAudioTranscodeCapabilitiesResponseSchema,
   audioTranscodeTaskSchema,
   startAudioTranscodeTaskRequestSchema,
@@ -485,6 +490,43 @@ export const searchExternalMetadataRequestSchema = z.object({
   source: z.enum(["nhentai", "ehentai"]).optional(),
   proxy_server: z.string().optional(),
   ehentai_cookies: z.string().optional(),
+});
+
+export const externalAuthProviderSchema = z.enum(["ehentai"]);
+
+export const externalAuthStatusRequestSchema = z.object({
+  provider: externalAuthProviderSchema,
+});
+
+export const externalAuthStatusResponseSchema = z.object({
+  provider: externalAuthProviderSchema,
+  state: z.enum(["connected", "disconnected", "error"]),
+  connected: z.boolean(),
+  message: z.string().min(1).nullable(),
+  checked_at_ms: z.number().int().nonnegative(),
+});
+
+export const externalAuthConnectRequestSchema = z.object({
+  provider: externalAuthProviderSchema,
+});
+
+export const externalAuthConnectResponseSchema = z.object({
+  provider: externalAuthProviderSchema,
+  opened: z.boolean(),
+  connected: z.boolean(),
+  message: z.string().min(1).nullable(),
+  checked_at_ms: z.number().int().nonnegative(),
+});
+
+export const externalAuthDisconnectRequestSchema = z.object({
+  provider: externalAuthProviderSchema,
+});
+
+export const externalAuthDisconnectResponseSchema = z.object({
+  provider: externalAuthProviderSchema,
+  disconnected: z.boolean(),
+  message: z.string().min(1).nullable(),
+  checked_at_ms: z.number().int().nonnegative(),
 });
 
 export const searchExternalMetadataDebugStepSchema = z.object({

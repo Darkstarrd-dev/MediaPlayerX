@@ -154,6 +154,12 @@ import {
   writePackageExternalMetadataResponseSchema,
   searchExternalMetadataRequestSchema,
   searchExternalMetadataResponseSchema,
+  externalAuthConnectRequestSchema,
+  externalAuthConnectResponseSchema,
+  externalAuthDisconnectRequestSchema,
+  externalAuthDisconnectResponseSchema,
+  externalAuthStatusRequestSchema,
+  externalAuthStatusResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writeAudioMetadataRequestSchema,
@@ -186,6 +192,7 @@ import { registerMediaProtocolHandler } from "./registerMediaProtocolHandler";
 import { registerResolveMediaResourceHandler } from "./registerResolveMediaResourceHandler";
 import { updateRuntimeStoragePaths } from "./runtimeStorageUpdate";
 import { MetadataScraperService } from "./services/metadata/metadataScraperService";
+import { ExternalAuthSessionManager } from "./services/auth/externalAuthSessionManager";
 import {
   GLOBAL_CPU_TOKEN_LIMIT,
   GLOBAL_GPU_TOKEN_LIMIT,
@@ -274,8 +281,10 @@ export function registerBackendIpcHandlers(): void {
   );
   const allowedExternalUrlHosts = getAllowedExternalUrlHosts();
   let service: FileSystemMediaReadService | null = null;
+  const externalAuthSessionManager = new ExternalAuthSessionManager();
   const metadataScraper = new MetadataScraperService({
     defaultProxyServer: process.env.MEDIA_PLAYERX_PROXY_SERVER,
+    externalAuthSessionManager,
   });
   const audioEngineController = new AudioEngineController({
     projectRoot: process.cwd(),
@@ -703,6 +712,27 @@ export function registerBackendIpcHandlers(): void {
     searchExternalMetadataRequestSchema,
     searchExternalMetadataResponseSchema,
     (request) => metadataScraper.search(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.externalAuthConnect,
+    externalAuthConnectRequestSchema,
+    externalAuthConnectResponseSchema,
+    (request) => externalAuthSessionManager.connect(request.provider),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.externalAuthDisconnect,
+    externalAuthDisconnectRequestSchema,
+    externalAuthDisconnectResponseSchema,
+    (request) => externalAuthSessionManager.disconnect(request.provider),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.externalAuthStatus,
+    externalAuthStatusRequestSchema,
+    externalAuthStatusResponseSchema,
+    (request) => externalAuthSessionManager.getStatus(request.provider),
   );
 
   registerIpcCommand(

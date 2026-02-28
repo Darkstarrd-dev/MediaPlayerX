@@ -280,6 +280,21 @@ export type AudioTranscodePresetCapabilityReasonDto = Infer<
 export type AudioTranscodePresetCapabilityDto = Infer<
   typeof Backend.audioTranscodePresetCapabilitySchema
 >;
+export type AudioTranscodeMetadataModeDto = Infer<
+  typeof Backend.audioTranscodeMetadataModeSchema
+>;
+export type AudioTranscodeSampleRateDto = Infer<
+  typeof Backend.audioTranscodeSampleRateSchema
+>;
+export type AudioTranscodeChannelsDto = Infer<
+  typeof Backend.audioTranscodeChannelsSchema
+>;
+export type AudioTranscodeWavBitDepthDto = Infer<
+  typeof Backend.audioTranscodeWavBitDepthSchema
+>;
+export type AudioTranscodeParamsDto = Infer<
+  typeof Backend.audioTranscodeParamsSchema
+>;
 export type ReadAudioTranscodeCapabilitiesResponseDto = Infer<
   typeof Backend.readAudioTranscodeCapabilitiesResponseSchema
 >;
@@ -318,6 +333,27 @@ export type WritePackageExternalMetadataResponseDto = Infer<
 >;
 export type SearchExternalMetadataRequestDto = Infer<
   typeof Backend.searchExternalMetadataRequestSchema
+>;
+export type ExternalAuthProviderDto = Infer<
+  typeof Backend.externalAuthProviderSchema
+>;
+export type ExternalAuthStatusRequestDto = Infer<
+  typeof Backend.externalAuthStatusRequestSchema
+>;
+export type ExternalAuthStatusResponseDto = Infer<
+  typeof Backend.externalAuthStatusResponseSchema
+>;
+export type ExternalAuthConnectRequestDto = Infer<
+  typeof Backend.externalAuthConnectRequestSchema
+>;
+export type ExternalAuthConnectResponseDto = Infer<
+  typeof Backend.externalAuthConnectResponseSchema
+>;
+export type ExternalAuthDisconnectRequestDto = Infer<
+  typeof Backend.externalAuthDisconnectRequestSchema
+>;
+export type ExternalAuthDisconnectResponseDto = Infer<
+  typeof Backend.externalAuthDisconnectResponseSchema
 >;
 export type ExternalMetadataResultItemDto = Infer<
   typeof Backend.externalMetadataResultItemSchema

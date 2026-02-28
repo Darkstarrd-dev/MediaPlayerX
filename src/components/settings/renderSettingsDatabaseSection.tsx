@@ -20,11 +20,20 @@ export function renderSettingsDatabaseSection({
     runtimePathUpdateMessage,
     proxyServer,
     ehentaiCookies,
+    ehentaiAuthState,
+    ehentaiAuthConnected,
+    ehentaiAuthMessage,
+    ehentaiAuthChecking,
+    ehentaiAuthConnectPending,
+    ehentaiAuthDisconnectPending,
     onClearDatabase,
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onProxyServerChange,
     onEhentaiCookiesChange,
+    onRefreshEhentaiAuthStatus,
+    onConnectEhentaiAuth,
+    onDisconnectEhentaiAuth,
   } = params;
 
   const databasePath = runtimeInfo?.database_path ?? "";
@@ -122,6 +131,52 @@ export function renderSettingsDatabaseSection({
             onChange={(event) => onEhentaiCookiesChange(event.target.value)}
           />
         </label>
+      </fieldset>
+
+      <fieldset className="settings-subsection">
+        <legend>{t("ui.settings.ehentaiAuthLegend")}</legend>
+        <p className="settings-placeholder">{t("ui.settings.ehentaiAuthHint")}</p>
+        <p
+          className={`settings-test-status ${
+            ehentaiAuthConnected
+              ? "is-ok"
+              : ehentaiAuthState === "error"
+                ? ""
+                : "is-pending"
+          }`}
+        >
+          {ehentaiAuthChecking
+            ? t("ui.settings.ehentaiAuthChecking")
+            : ehentaiAuthMessage ??
+              (ehentaiAuthConnected
+                ? t("ui.settings.ehentaiAuthConnected")
+                : t("ui.settings.ehentaiAuthDisconnected"))}
+        </p>
+        <div className="settings-runtime-actions">
+          <button
+            type="button"
+            disabled={ehentaiAuthConnectPending}
+            onClick={onConnectEhentaiAuth}
+          >
+            {ehentaiAuthConnectPending
+              ? t("ui.settings.ehentaiAuthConnecting")
+              : t("ui.settings.ehentaiAuthConnectAction")}
+          </button>
+          <button
+            type="button"
+            disabled={ehentaiAuthDisconnectPending}
+            onClick={onDisconnectEhentaiAuth}
+          >
+            {ehentaiAuthDisconnectPending
+              ? t("ui.settings.ehentaiAuthDisconnecting")
+              : t("ui.settings.ehentaiAuthDisconnectAction")}
+          </button>
+          <button type="button" disabled={ehentaiAuthChecking} onClick={onRefreshEhentaiAuthStatus}>
+            {ehentaiAuthChecking
+              ? t("ui.settings.ehentaiAuthChecking")
+              : t("ui.settings.ehentaiAuthRefreshAction")}
+          </button>
+        </div>
       </fieldset>
     </div>
   );

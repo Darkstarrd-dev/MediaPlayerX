@@ -54,6 +54,12 @@ describe("buildSettingsPanelProps", () => {
       fullscreenDownsamplingKernel: "lanczos3",
       proxyServer: "",
       ehentaiCookies: "",
+      ehentaiAuthState: "disconnected",
+      ehentaiAuthConnected: false,
+      ehentaiAuthMessage: null,
+      ehentaiAuthChecking: false,
+      ehentaiAuthConnectPending: false,
+      ehentaiAuthDisconnectPending: false,
       subtitleFeatureEnabled: false,
       subtitleRenderMode: "advanced",
       subtitleAdvancedVadPreset: "balanced",
@@ -135,6 +141,9 @@ describe("buildSettingsPanelProps", () => {
       cancelSubtitleModelDownload: vi.fn(),
       openSubtitleModelPage: vi.fn(),
       openAdReviewDeleteOverlayDebug: vi.fn(),
+      refreshEhentaiAuthStatus: vi.fn(),
+      connectEhentaiAuth: vi.fn(),
+      disconnectEhentaiAuth: vi.fn(),
     });
 
     expect(props.thumbnailWidth).toBe(512);

@@ -392,6 +392,8 @@ export const zhCnCatalogPart1 = {
     "配置网络请求代理（如 HTTP/SOCKS）；用于模型下载与外部请求。",
   "ui.settings.tooltip.ehentaiCookies":
     "配置 e-hentai 访问所需 Cookie，用于受限内容请求。",
+  "ui.settings.tooltip.ehentaiAuth":
+    "通过内置浏览器登录 e-hentai 账户，自动维护会话，无需手动粘贴 Cookie。",
   "ui.settings.tooltip.offlineSubtitleVadPreset":
     "选择 VAD 预设以平衡断句敏感度与稳定性。",
   "ui.settings.tooltip.offlineSubtitleVadThreshold":
@@ -678,6 +680,24 @@ export const zhCnCatalogPart1 = {
   "ui.settings.ehentaiCookiesLabel": "E-Hentai Cookies",
   "ui.settings.ehentaiCookiesPlaceholder":
     "例如 ipb_member_id=xxx; ipb_pass_hash=xxx",
+  "ui.settings.ehentaiAuthLegend": "E-Hentai 账户连接",
+  "ui.settings.ehentaiAuthHint":
+    "建议优先使用网页登录会话。兼容模式仍可填写 Cookies，后续版本将移除。",
+  "ui.settings.ehentaiAuthChecking": "正在检查登录状态...",
+  "ui.settings.ehentaiAuthConnected": "已连接",
+  "ui.settings.ehentaiAuthDisconnected": "未连接",
+  "ui.settings.ehentaiAuthConnectAction": "连接账户",
+  "ui.settings.ehentaiAuthDisconnectAction": "断开并清理",
+  "ui.settings.ehentaiAuthRefreshAction": "刷新状态",
+  "ui.settings.ehentaiAuthConnecting": "打开登录页中...",
+  "ui.settings.ehentaiAuthDisconnecting": "断开中...",
+  "ui.settings.ehentaiAuthUnsupported": "当前后端不支持账户连接",
+  "ui.settings.ehentaiAuthCheckFailed": "登录状态检查失败：{{message}}",
+  "ui.settings.ehentaiAuthConnectOpened":
+    "登录窗口已打开，请完成登录后点击“刷新状态”",
+  "ui.settings.ehentaiAuthConnectFailed": "连接账户失败：{{message}}",
+  "ui.settings.ehentaiAuthDisconnectFailed": "断开账户失败：{{message}}",
+  "ui.settings.ehentaiAuthDisconnectFailedDefault": "断开未完成，请重试",
   "ui.settings.backendError.library": "数据快照",
   "ui.settings.backendError.sidebar": "Sidebar 目录树",
   "ui.settings.backendError.page": "Main 分页列表",

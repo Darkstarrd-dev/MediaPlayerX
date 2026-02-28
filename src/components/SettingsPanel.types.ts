@@ -51,6 +51,12 @@ export interface SettingsPanelProps {
   fullscreenDownsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   proxyServer: string;
   ehentaiCookies: string;
+  ehentaiAuthState: "connected" | "disconnected" | "error";
+  ehentaiAuthConnected: boolean;
+  ehentaiAuthMessage: string | null;
+  ehentaiAuthChecking: boolean;
+  ehentaiAuthConnectPending: boolean;
+  ehentaiAuthDisconnectPending: boolean;
   subtitleFeatureEnabled: boolean;
   subtitleRenderMode: "simple" | "advanced";
   subtitleAdvancedVadPreset: "balanced" | "conservative" | "aggressive";
@@ -194,6 +200,9 @@ export interface SettingsPanelProps {
   ) => void;
   onProxyServerChange: (value: string) => void;
   onEhentaiCookiesChange: (value: string) => void;
+  onRefreshEhentaiAuthStatus: () => void;
+  onConnectEhentaiAuth: () => void;
+  onDisconnectEhentaiAuth: () => void;
   onSubtitleFeatureEnabledChange: (value: boolean) => void;
   onSubtitleRenderModeChange: (value: "simple" | "advanced") => void;
   onSubtitleAdvancedVadPresetChange: (

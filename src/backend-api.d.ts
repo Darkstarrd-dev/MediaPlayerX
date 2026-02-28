@@ -92,6 +92,12 @@ import type {
   WritePackageExternalMetadataResponseDto,
   SearchExternalMetadataRequestDto,
   SearchExternalMetadataResponseDto,
+  ExternalAuthConnectRequestDto,
+  ExternalAuthConnectResponseDto,
+  ExternalAuthDisconnectRequestDto,
+  ExternalAuthDisconnectResponseDto,
+  ExternalAuthStatusRequestDto,
+  ExternalAuthStatusResponseDto,
   WriteVideoMetadataRequestDto,
   WriteVideoMetadataResponseDto,
   WriteAudioMetadataRequestDto,
@@ -267,6 +273,15 @@ interface MediaPlayerBackendApi {
   searchExternalMetadata?: (
     request: SearchExternalMetadataRequestDto,
   ) => Promise<SearchExternalMetadataResponseDto>;
+  externalAuthConnect?: (
+    request: ExternalAuthConnectRequestDto,
+  ) => Promise<ExternalAuthConnectResponseDto>;
+  externalAuthDisconnect?: (
+    request: ExternalAuthDisconnectRequestDto,
+  ) => Promise<ExternalAuthDisconnectResponseDto>;
+  externalAuthStatus?: (
+    request: ExternalAuthStatusRequestDto,
+  ) => Promise<ExternalAuthStatusResponseDto>;
   writeVideoMetadata?: (
     request: WriteVideoMetadataRequestDto,
   ) => Promise<WriteVideoMetadataResponseDto>;

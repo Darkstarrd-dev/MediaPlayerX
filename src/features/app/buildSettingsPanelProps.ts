@@ -89,6 +89,12 @@ interface BuildSettingsPanelPropsParams {
   fullscreenDownsamplingKernel: AppSettings["fullscreenDownsamplingKernel"];
   proxyServer: string;
   ehentaiCookies: string;
+  ehentaiAuthState: "connected" | "disconnected" | "error";
+  ehentaiAuthConnected: boolean;
+  ehentaiAuthMessage: string | null;
+  ehentaiAuthChecking: boolean;
+  ehentaiAuthConnectPending: boolean;
+  ehentaiAuthDisconnectPending: boolean;
   subtitleFeatureEnabled: boolean;
   subtitleRenderMode: "simple" | "advanced";
   subtitleAdvancedVadPreset: "balanced" | "conservative" | "aggressive";
@@ -167,6 +173,9 @@ interface BuildSettingsPanelPropsParams {
   cancelSubtitleModelDownload: () => void;
   openSubtitleModelPage: () => void;
   openAdReviewDeleteOverlayDebug: () => void;
+  refreshEhentaiAuthStatus: () => void;
+  connectEhentaiAuth: () => void;
+  disconnectEhentaiAuth: () => void;
 }
 
 export function buildSettingsPanelProps(
@@ -215,6 +224,12 @@ export function buildSettingsPanelProps(
     fullscreenDownsamplingKernel: params.fullscreenDownsamplingKernel,
     proxyServer: params.proxyServer,
     ehentaiCookies: params.ehentaiCookies,
+    ehentaiAuthState: params.ehentaiAuthState,
+    ehentaiAuthConnected: params.ehentaiAuthConnected,
+    ehentaiAuthMessage: params.ehentaiAuthMessage,
+    ehentaiAuthChecking: params.ehentaiAuthChecking,
+    ehentaiAuthConnectPending: params.ehentaiAuthConnectPending,
+    ehentaiAuthDisconnectPending: params.ehentaiAuthDisconnectPending,
     subtitleFeatureEnabled: params.subtitleFeatureEnabled,
     subtitleRenderMode: params.subtitleRenderMode,
     subtitleAdvancedVadPreset: params.subtitleAdvancedVadPreset,
@@ -440,6 +455,9 @@ export function buildSettingsPanelProps(
       params.updateSettings({ proxyServer: value }),
     onEhentaiCookiesChange: (value) =>
       params.updateSettings({ ehentaiCookies: value }),
+    onRefreshEhentaiAuthStatus: params.refreshEhentaiAuthStatus,
+    onConnectEhentaiAuth: params.connectEhentaiAuth,
+    onDisconnectEhentaiAuth: params.disconnectEhentaiAuth,
     onSubtitleFeatureEnabledChange: (value) =>
       params.updateSettings({ subtitleFeatureEnabled: value }),
     onSubtitleRenderModeChange: (value) =>

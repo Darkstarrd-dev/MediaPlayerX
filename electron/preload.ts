@@ -147,6 +147,12 @@ import {
   writePackageExternalMetadataResponseSchema,
   searchExternalMetadataRequestSchema,
   searchExternalMetadataResponseSchema,
+  externalAuthConnectRequestSchema,
+  externalAuthConnectResponseSchema,
+  externalAuthDisconnectRequestSchema,
+  externalAuthDisconnectResponseSchema,
+  externalAuthStatusRequestSchema,
+  externalAuthStatusResponseSchema,
   writeVideoMetadataRequestSchema,
   writeVideoMetadataResponseSchema,
   writeAudioMetadataRequestSchema,
@@ -458,6 +464,30 @@ const backendApi = {
       parsed,
     );
     return searchExternalMetadataResponseSchema.parse(response);
+  },
+  externalAuthConnect: async (request: unknown) => {
+    const parsed = externalAuthConnectRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.externalAuthConnect,
+      parsed,
+    );
+    return externalAuthConnectResponseSchema.parse(response);
+  },
+  externalAuthDisconnect: async (request: unknown) => {
+    const parsed = externalAuthDisconnectRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.externalAuthDisconnect,
+      parsed,
+    );
+    return externalAuthDisconnectResponseSchema.parse(response);
+  },
+  externalAuthStatus: async (request: unknown) => {
+    const parsed = externalAuthStatusRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.externalAuthStatus,
+      parsed,
+    );
+    return externalAuthStatusResponseSchema.parse(response);
   },
   writeVideoMetadata: async (request: unknown) => {
     const parsed = writeVideoMetadataRequestSchema.parse(request);
