@@ -13,6 +13,17 @@ const bundledMpvDir = (() => {
   return fs.existsSync(defaultDir) ? defaultDir : null
 })()
 
+const bundledFfmpegDir = (() => {
+  const raw = String(process.env.MPX_FFMPEG_DIR ?? '').trim()
+  if (raw) {
+    const resolved = path.resolve(raw)
+    return fs.existsSync(resolved) ? resolved : null
+  }
+
+  const defaultDir = path.resolve('vendor', 'ffmpeg', 'win32-x64')
+  return fs.existsSync(defaultDir) ? defaultDir : null
+})()
+
 const offlineSubtitleComponentDir = (() => {
   const raw = String(process.env.MPX_OFFLINE_SUBTITLE_COMPONENT_DIR ?? '').trim()
   if (!raw) {
@@ -29,6 +40,14 @@ if (bundledMpvDir) {
   extraResources.push({
     from: bundledMpvDir,
     to: 'vendor/mpv',
+    filter: ['**/*'],
+  })
+}
+
+if (bundledFfmpegDir) {
+  extraResources.push({
+    from: bundledFfmpegDir,
+    to: 'vendor/ffmpeg',
     filter: ['**/*'],
   })
 }

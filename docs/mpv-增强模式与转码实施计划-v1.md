@@ -405,6 +405,10 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - `ManagementAudioTranscodeService` 新增 `ffmpeg -encoders` 探测与 30s 缓存；任务启动前会校验预设可用性，不可用时快速失败。
   - 音乐页 `TC` 面板已接入能力读取：可显示“ffmpeg 不可用/预设缺编码器”提示，并对不可用预设与“开始”按钮做禁用灰度。
   - 已补充合约与 IPC 单测覆盖（management schema / registerBackendIpcHandlers / MusicMainSection）。
+- 2026-02-28：已完成 P2 二进制寻址与打包入口（ffmpeg/ffprobe）：
+  - `runtimeBinaryPaths` 新增 `resolveFfmpegBinPath/resolveFfprobeBinPath`，支持 `MPX_*` 与 `MEDIA_PLAYERX_*` 环境变量 override。
+  - `fileSystemReadFacadeConfig` 改为优先使用运行时 resolver，再回退 `ffmpeg/ffprobe` 系统命令。
+  - `electron-builder` 新增 `MPX_FFMPEG_DIR` 与默认 `vendor/ffmpeg/win32-x64` 资源复制到 `resources/vendor/ffmpeg`。
 
 ### P3：硬化与发布（1~2 周）
 

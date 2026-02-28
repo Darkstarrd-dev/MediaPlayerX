@@ -10,6 +10,8 @@ const mockState = vi.hoisted(() => {
   const startAudioTranscodeTask = vi.fn()
   const readAudioTranscodeCapabilities = vi.fn()
   const resolveMpvBinPathFromDirectory = vi.fn()
+  const resolveFfmpegBinPath = vi.fn()
+  const resolveFfprobeBinPath = vi.fn()
   const readAudioEngineState = vi.fn()
   const overrideMpvBinPath = vi.fn()
   const onLibraryChanged = vi.fn()
@@ -36,6 +38,8 @@ const mockState = vi.hoisted(() => {
     startAudioTranscodeTask,
     readAudioTranscodeCapabilities,
     resolveMpvBinPathFromDirectory,
+    resolveFfmpegBinPath,
+    resolveFfprobeBinPath,
     readAudioEngineState,
     overrideMpvBinPath,
     onLibraryChanged,
@@ -104,6 +108,8 @@ vi.mock('./registerResolveMediaResourceHandler', () => {
 vi.mock('./runtimeBinaryPaths', () => {
   return {
     resolveMpvBinPathFromDirectory: mockState.resolveMpvBinPathFromDirectory,
+    resolveFfmpegBinPath: mockState.resolveFfmpegBinPath,
+    resolveFfprobeBinPath: mockState.resolveFfprobeBinPath,
   }
 })
 

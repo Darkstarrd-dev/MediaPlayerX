@@ -1,3 +1,5 @@
+import { resolveFfmpegBinPath, resolveFfprobeBinPath } from '../../runtimeBinaryPaths'
+
 function resolveConcurrency(rawValue: string | undefined, fallback: number, max: number): number {
   const parsed = Number(rawValue)
   if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -47,9 +49,9 @@ export const ZIP_COMPRESSION_DEFLATE = 8
  */
 export const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000
 
-export const FFMPEG_BIN = process.env.MEDIA_PLAYERX_FFMPEG_BIN ?? 'ffmpeg'
+export const FFMPEG_BIN = resolveFfmpegBinPath(process.cwd()) ?? 'ffmpeg'
 
-export const FFPROBE_BIN = process.env.MEDIA_PLAYERX_FFPROBE_BIN ?? 'ffprobe'
+export const FFPROBE_BIN = resolveFfprobeBinPath(process.cwd()) ?? 'ffprobe'
 
 export const ARCHIVE_NORMALIZE_DIR_NAME = '.mediaplayerx/normalized-archives'
 
