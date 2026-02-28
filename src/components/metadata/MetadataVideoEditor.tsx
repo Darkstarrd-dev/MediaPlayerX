@@ -9,7 +9,6 @@ import {
 import type { VideoItem } from "../../types";
 import { useI18n } from "../../i18n/useI18n";
 import { MainUiIcon } from "../MainUiIcon";
-import { VideoControlIcon } from "../VideoControlIcon";
 import { MetadataPlaylistItem } from "./MetadataPlaylistItem";
 import { MetadataRatingGroup } from "./MetadataRatingGroup";
 
@@ -33,7 +32,6 @@ interface MetadataVideoEditorProps {
   selectedVideoId: string;
   dragVideoId: string | null;
   videoById: Map<string, VideoItem>;
-  onMetadataTabChange: (tab: "info" | "playlist") => void;
   onVideoWorkTitleDraftChange: (value: string) => void;
   onVideoWorkTitleJpnDraftChange: (value: string) => void;
   onVideoSeriesIdDraftChange: (value: string) => void;
@@ -124,7 +122,6 @@ export function MetadataVideoEditor({
   selectedVideoId,
   dragVideoId,
   videoById,
-  onMetadataTabChange,
   onVideoWorkTitleDraftChange,
   onVideoWorkTitleJpnDraftChange,
   onVideoSeriesIdDraftChange,
@@ -312,39 +309,16 @@ export function MetadataVideoEditor({
 
   return (
     <div className="metadata-content metadata-video-content">
-      <div
-        className="meta-tabs"
-        role="group"
-        aria-label={`${t("ui.metadata.videoInfoTab")} / ${t("ui.metadata.playlistTab")}`}
-      >
-        <button
-          className={`main-icon-square-btn ${metadataTab === "playlist" ? "is-active" : ""}`}
-          type="button"
-          aria-label={
-            metadataTab === "info"
-              ? t("ui.metadata.playlistTab")
-              : t("ui.metadata.videoInfoTab")
-          }
-          aria-pressed={metadataTab === "playlist"}
-          data-tooltip-label={
-            metadataTab === "info"
-              ? t("ui.metadata.playlistTab")
-              : t("ui.metadata.videoInfoTab")
-          }
-          onClick={() =>
-            onMetadataTabChange(metadataTab === "info" ? "playlist" : "info")
-          }
-        >
-          {metadataTab === "info" ? (
-            <MainUiIcon name="videoInfo" />
-          ) : (
-            <VideoControlIcon className="main-ui-icon" name="playlist" />
-          )}
-        </button>
-        {metadataTab === "playlist" ? (
-          <>
+      {metadataTab === "playlist" ? (
+        <div className="metadata-video-playlist-shell">
+          <div
+            className="meta-tabs"
+            role="group"
+            aria-label={t("ui.metadata.playlistTab")}
+          >
             <div className="metadata-playlist-save-row">
               <select
+                className="metadata-playlist-select mpx-overlay-seamless-cell"
                 value={selectedSavedPlaylist}
                 disabled={savedPlaylistEntries.length === 0}
                 onChange={(event) => {
@@ -369,7 +343,7 @@ export function MetadataVideoEditor({
               </select>
               <button
                 type="button"
-                className="main-icon-square-btn"
+                className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
                 aria-label={t("ui.metadata.createPlaylist")}
                 data-tooltip-label={t("ui.metadata.createPlaylist")}
                 onClick={() => {
@@ -380,7 +354,7 @@ export function MetadataVideoEditor({
                 <MainUiIcon name="playlistAdd" />
               </button>
               <button
-                className="main-icon-square-btn"
+                className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
                 type="button"
                 aria-label={t("ui.metadata.savePlaylist")}
                 data-tooltip-label={t("ui.metadata.savePlaylist")}
@@ -393,7 +367,7 @@ export function MetadataVideoEditor({
               </button>
               <button
                 type="button"
-                className="main-icon-square-btn"
+                className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
                 aria-label={t("ui.metadata.deleteSavedPlaylist")}
                 data-tooltip-label={t("ui.metadata.deleteSavedPlaylist")}
                 disabled={!canDeleteSelectedSavedPlaylist}
@@ -408,9 +382,64 @@ export function MetadataVideoEditor({
                 <MainUiIcon name="delete" />
               </button>
             </div>
-          </>
-        ) : null}
-      </div>
+          </div>
+
+          <div className="metadata-music-playlist mpx-scroll-area">
+            {playlistIds.length === 0 ? (
+              <p className="metadata-empty-tip">{t("ui.metadata.noPlaylistEntries")}</p>
+            ) : null}
+            {playlistIds.map((videoId, index) => {
+              const video = videoById.get(videoId);
+              if (!video) {
+                return null;
+              }
+
+              return (
+                <div
+                  key={videoId}
+                  className="metadata-playlist-row"
+                  draggable
+                  onDragStart={() => onDragStart(videoId)}
+                  onDragEnd={onDragEnd}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    if (!dragVideoId || dragVideoId === videoId) {
+                      return;
+                    }
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    const placement =
+                      event.clientY - bounds.top > bounds.height / 2
+                        ? "after"
+                        : "before";
+                    onDropToVideo(videoId, placement);
+                  }}
+                  onDrop={() => {
+                    onDragEnd();
+                  }}
+                >
+                  <MetadataPlaylistItem
+                    mediaId={videoId}
+                    title={video.fileName}
+                    index={index + 1}
+                    durationSec={video.durationSec}
+                    active={selectedVideoId === videoId}
+                    onSelect={onSelectVideo}
+                    onSelectAndPlay={onSelectVideoAndPlay}
+                    onDelete={onRemoveVideoFromPlaylist}
+                    buttonRef={(element) => {
+                      if (element) {
+                        playlistItemButtonByIdRef.current.set(videoId, element);
+                        return;
+                      }
+                      playlistItemButtonByIdRef.current.delete(videoId);
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {playlistNameDialogMode ? (
         <div
@@ -506,7 +535,7 @@ export function MetadataVideoEditor({
                     </p>
                     <button
                       type="button"
-                      className="metadata-lang-toggle-btn"
+                      className="metadata-lang-toggle-btn feature-action-btn"
                       onClick={() => {
                         if (!hasDualWorkTitle) {
                           return;
@@ -617,7 +646,7 @@ export function MetadataVideoEditor({
                     </p>
                     <button
                       type="button"
-                      className="metadata-lang-toggle-btn"
+                      className="metadata-lang-toggle-btn feature-action-btn"
                       onClick={() => {
                         if (!hasDualCircle) {
                           return;
@@ -676,7 +705,7 @@ export function MetadataVideoEditor({
                     </p>
                     <button
                       type="button"
-                      className="metadata-lang-toggle-btn"
+                      className="metadata-lang-toggle-btn feature-action-btn"
                       onClick={() => {
                         if (!hasDualAuthor) {
                           return;
@@ -738,62 +767,6 @@ export function MetadataVideoEditor({
         </div>
       ) : null}
 
-      {metadataTab === "playlist" ? (
-        <div className="metadata-music-playlist mpx-scroll-area">
-          {playlistIds.length === 0 ? (
-            <p className="metadata-empty-tip">{t("ui.metadata.noPlaylistEntries")}</p>
-          ) : null}
-          {playlistIds.map((videoId, index) => {
-            const video = videoById.get(videoId);
-            if (!video) {
-              return null;
-            }
-
-            return (
-              <div
-                key={videoId}
-                className="metadata-playlist-row"
-                draggable
-                onDragStart={() => onDragStart(videoId)}
-                onDragEnd={onDragEnd}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  if (!dragVideoId || dragVideoId === videoId) {
-                    return;
-                  }
-                  const bounds = event.currentTarget.getBoundingClientRect();
-                  const placement =
-                    event.clientY - bounds.top > bounds.height / 2
-                      ? "after"
-                      : "before";
-                  onDropToVideo(videoId, placement);
-                }}
-                onDrop={() => {
-                  onDragEnd();
-                }}
-              >
-                <MetadataPlaylistItem
-                  mediaId={videoId}
-                  title={video.fileName}
-                  index={index + 1}
-                  durationSec={video.durationSec}
-                  active={selectedVideoId === videoId}
-                  onSelect={onSelectVideo}
-                  onSelectAndPlay={onSelectVideoAndPlay}
-                  onDelete={onRemoveVideoFromPlaylist}
-                  buttonRef={(element) => {
-                    if (element) {
-                      playlistItemButtonByIdRef.current.set(videoId, element);
-                      return;
-                    }
-                    playlistItemButtonByIdRef.current.delete(videoId);
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
     </div>
   );
 }

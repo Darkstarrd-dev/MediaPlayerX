@@ -142,7 +142,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-booklet-bindings,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .feature-tag-picker-panel,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist-item {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
   border-color: color-mix(in srgb, var(--mpx-border-1) 90%, var(--mpx-palette-accent-raw) 10%);
   box-shadow: var(--mpx-card-shadow);
 }

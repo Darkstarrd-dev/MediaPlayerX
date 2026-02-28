@@ -413,7 +413,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ) {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
   background: var(--mpx-btn-template-base) !important;
@@ -425,7 +425,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):not(:disabled):hover {
   background: var(--mpx-btn-template-hover) !important;
   box-shadow: var(--mpx-btn-template-shadow-hover) !important;
@@ -435,7 +435,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):not(:disabled):active {
   background: var(--mpx-btn-template-active) !important;
   box-shadow: var(--mpx-btn-template-shadow-active) !important;
@@ -445,7 +445,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ).is-active {
   color: var(--mpx-btn-template-text-active) !important;
 }
@@ -453,7 +453,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 )[aria-pressed='true'] {
   background: var(--mpx-btn-template-pressed) !important;
   border-color: var(--mpx-btn-template-border) !important;
@@ -465,7 +465,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ).is-active[aria-pressed='true'] {
   color: var(--mpx-btn-template-text-merged) !important;
 }
@@ -473,7 +473,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 :is(
   button.main-icon-square-btn,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):disabled {
   opacity: 0.56;
   color: var(--mpx-btn-template-text-disabled) !important;
@@ -494,7 +494,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.main-icon-square-btn,
   .mode-switch > button,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus,
 :is(
   button.feature-action-btn,
@@ -510,7 +510,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.main-icon-square-btn,
   .mode-switch > button,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus-visible {
   outline: none !important;
 }
@@ -529,7 +529,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.main-icon-square-btn,
   .mode-switch > button,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus-visible:not([aria-pressed='true']) {
   border-color: var(--mpx-btn-template-border) !important;
   box-shadow: var(--mpx-btn-template-shadow-hover) !important;
@@ -549,7 +549,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.main-icon-square-btn,
   .mode-switch > button,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 )[aria-pressed='true']:focus,
 :is(
   button.feature-action-btn,
@@ -565,7 +565,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.main-icon-square-btn,
   .mode-switch > button,
   .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button
+  .meta-tabs button:not(.mpx-overlay-cell-btn)
 )[aria-pressed='true']:focus-visible {
   border-color: var(--mpx-btn-template-border) !important;
   box-shadow: var(--mpx-btn-template-shadow-pressed) !important;

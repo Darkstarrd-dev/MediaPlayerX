@@ -2,7 +2,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-booklet-bindings,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .feature-tag-picker-panel,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
   border-color: color-mix(in srgb, var(--mpx-border-1) 86%, var(--mpx-palette-accent-raw) 14%);
   box-shadow: var(--mpx-card-shadow);
 }
@@ -448,7 +448,7 @@
   background: #f2d796;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
   --mpx-sidebar-marker-width: 12px;
   --mpx-sidebar-marker-gap: 6px;
   position: relative;
@@ -463,7 +463,7 @@
   transition: filter 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item::before {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn)::before {
   content: "";
   position: absolute;
   left: -1px;
@@ -476,32 +476,32 @@
   pointer-events: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:hover {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn):hover {
   filter: brightness(0.97);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:active {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn):active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow));
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item.is-active {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn).is-active {
   border-color: #bcc1c9;
   background: linear-gradient(135deg, #e4e6ea, #c8ccd3);
   box-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item.is-active::before,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:focus-visible::before {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn).is-active::before,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn):focus-visible::before {
   opacity: 1;
   background: #8c939e;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:focus-visible {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn):focus-visible {
   outline: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item .metadata-music-playlist-title {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) .metadata-music-playlist-title {
   display: block;
   line-height: 30px;
 }

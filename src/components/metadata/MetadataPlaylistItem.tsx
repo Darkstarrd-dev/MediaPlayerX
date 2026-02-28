@@ -19,8 +19,11 @@ function formatPlaylistIndex(index: number): string {
   return String(Math.max(1, index)).padStart(2, '0')
 }
 
-function formatDurationMinutes(durationSec: number): number {
-  return Math.max(0, Math.round(Math.max(0, durationSec) / 60))
+function formatDurationLabel(durationSec: number): string {
+  const totalSeconds = Math.max(0, Math.round(Math.max(0, durationSec)))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
 export function MetadataPlaylistItem({
@@ -48,7 +51,7 @@ export function MetadataPlaylistItem({
   })
   const marqueeActive = focused && overflowing
   const indexLabel = formatPlaylistIndex(index)
-  const durationMinutes = formatDurationMinutes(durationSec)
+  const durationLabel = formatDurationLabel(durationSec)
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (event.key !== 'Delete' || !onDelete) {
@@ -62,7 +65,7 @@ export function MetadataPlaylistItem({
   return (
     <button
       ref={buttonRef}
-      className={`metadata-music-playlist-item ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
+      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
       type="button"
       aria-keyshortcuts={onDelete ? 'Delete' : undefined}
       onClick={() => onSelect(mediaId)}
@@ -92,10 +95,10 @@ export function MetadataPlaylistItem({
       </span>
 
       <span
-        className="sidebar-count sidebar-count-images metadata-music-playlist-duration"
-        data-tooltip-label={`${durationMinutes} min`}
+        className="metadata-music-playlist-duration"
+        data-tooltip-label={durationLabel}
       >
-        {durationMinutes}
+        {durationLabel}
       </span>
     </button>
   )
