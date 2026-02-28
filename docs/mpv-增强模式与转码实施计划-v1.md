@@ -381,6 +381,10 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 - 2026-02-28：已完成 P2 音乐页首版 UI 收口验证：
   - 新增用例覆盖“无侧栏选中时回退焦点曲目发起转码”，补齐目标解析回退路径回归保护。
   - 已通过 `npx vitest run src/components/MusicMainSection.test.tsx` 与 `npm run build`。
+- 2026-02-28：已完成 P2 音乐页输出目录选择增强：
+  - 转码面板新增“选择目录/清空”操作，调用 `pickDirectoryPath` 后可自动回填 `output_dir`。
+  - 面板文案与任务状态提示已接入 i18n（zh-CN / en-US）。
+  - 新增用例覆盖“选择输出目录后发起转码请求”链路。
 
 ### P3：硬化与发布（1~2 周）
 

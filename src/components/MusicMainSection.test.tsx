@@ -278,6 +278,86 @@ describe("MusicMainSection", () => {
     });
   });
 
+  it("应支持选择输出目录并带入转码请求", async () => {
+    const pickDirectoryPath = vi.fn().mockResolvedValue({
+      canceled: false,
+      path: "Z:/music/transcoded",
+    });
+    const startAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-with-output-dir",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "started",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    const readAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-with-output-dir",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "running",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      pickDirectoryPath,
+      startAudioTranscodeTask,
+      readAudioTranscodeTask,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "选择目录" }));
+    });
+
+    expect(pickDirectoryPath).toHaveBeenCalledWith({
+      title: "选择转码输出目录",
+      default_path: undefined,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Z:/music/transcoded")).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "开始" }));
+    });
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledWith({
+      audio_ids: ["track-1"],
+      preset: "flac",
+      output_dir: "Z:/music/transcoded",
+      overwrite: false,
+      copy_metadata: true,
+      add_output_to_music_sources: true,
+    });
+  });
+
   it("无侧栏选中时应回退当前焦点曲目发起转码", async () => {
     const startAudioTranscodeTask = vi.fn().mockResolvedValue({
       task: {

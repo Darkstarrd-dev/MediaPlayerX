@@ -115,6 +115,7 @@ function MusicMainSection({
   const [audioTranscodePanelOpen, setAudioTranscodePanelOpen] = useState(false)
   const [audioTranscodePreset, setAudioTranscodePreset] = useState<StartAudioTranscodeTaskRequestDto['preset']>('flac')
   const [audioTranscodeOutputDir, setAudioTranscodeOutputDir] = useState('')
+  const [audioTranscodePickingOutputDir, setAudioTranscodePickingOutputDir] = useState(false)
   const [audioTranscodeOverwrite, setAudioTranscodeOverwrite] = useState(false)
   const [audioTranscodeCopyMetadata, setAudioTranscodeCopyMetadata] = useState(true)
   const [audioTranscodeAddOutputToMusicSources, setAudioTranscodeAddOutputToMusicSources] = useState(true)
@@ -1035,7 +1036,7 @@ function MusicMainSection({
     const targetAudioIds = resolveAudioTranscodeTargetIds()
     if (targetAudioIds.length <= 0) {
       setAudioTranscodeTaskStatus('failed')
-      setAudioTranscodeTaskMessage('未找到可转码的音频')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeNoTarget'))
       return
     }
 
@@ -1043,7 +1044,7 @@ function MusicMainSection({
     const startAudioTranscodeTask = backendApi?.startAudioTranscodeTask
     if (typeof startAudioTranscodeTask !== 'function') {
       setAudioTranscodeTaskStatus('failed')
-      setAudioTranscodeTaskMessage('后端未提供音频转码接口')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeBackendUnavailable'))
       return
     }
 
@@ -1069,7 +1070,7 @@ function MusicMainSection({
       const task = response.task
       if (!task?.task_id) {
         setAudioTranscodeTaskStatus('failed')
-        setAudioTranscodeTaskMessage('missing task id')
+        setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeMissingTaskId'))
         return
       }
       setAudioTranscodeTaskId(task.task_id)
@@ -1081,6 +1082,38 @@ function MusicMainSection({
       const reason = error instanceof Error && error.message ? error.message : String(error)
       setAudioTranscodeTaskStatus('failed')
       setAudioTranscodeTaskMessage(reason)
+    }
+  }
+
+  const handleAudioTranscodePickOutputDir = async () => {
+    if (audioTranscodeExecuting || audioTranscodePickingOutputDir) {
+      return
+    }
+
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    const pickDirectoryPath = backendApi?.pickDirectoryPath
+    if (typeof pickDirectoryPath !== 'function') {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodePickOutputDirectoryUnsupported'))
+      return
+    }
+
+    setAudioTranscodePickingOutputDir(true)
+    try {
+      const response = await pickDirectoryPath({
+        title: t('ui.music.audioTranscodePickOutputDirectoryTitle'),
+        default_path: audioTranscodeOutputDir.trim() || undefined,
+      })
+      const pickedPath = response.path?.trim() ?? ''
+      if (!response.canceled && pickedPath.length > 0) {
+        setAudioTranscodeOutputDir(pickedPath)
+      }
+    } catch (error) {
+      const reason = error instanceof Error && error.message ? error.message : String(error)
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodePickOutputDirectoryFailed', { message: reason }))
+    } finally {
+      setAudioTranscodePickingOutputDir(false)
     }
   }
 
@@ -1289,6 +1322,7 @@ function MusicMainSection({
       executing={audioTranscodeExecuting}
       preset={audioTranscodePreset}
       outputDir={audioTranscodeOutputDir}
+      pickingOutputDir={audioTranscodePickingOutputDir}
       overwrite={audioTranscodeOverwrite}
       copyMetadata={audioTranscodeCopyMetadata}
       addOutputToMusicSources={audioTranscodeAddOutputToMusicSources}
@@ -1304,6 +1338,7 @@ function MusicMainSection({
       }}
       onPresetChange={setAudioTranscodePreset}
       onOutputDirChange={setAudioTranscodeOutputDir}
+      onPickOutputDir={handleAudioTranscodePickOutputDir}
       onOverwriteChange={setAudioTranscodeOverwrite}
       onCopyMetadataChange={setAudioTranscodeCopyMetadata}
       onAddOutputToMusicSourcesChange={setAudioTranscodeAddOutputToMusicSources}

@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 
 import type { StartAudioTranscodeTaskRequestDto } from "../contracts/backend";
+import { useI18n } from "../i18n/useI18n";
 
 type AudioTranscodePreset = StartAudioTranscodeTaskRequestDto["preset"];
 type AudioTranscodeTaskStatus =
@@ -17,6 +18,7 @@ interface MusicAudioTranscodePanelProps {
   executing: boolean;
   preset: AudioTranscodePreset;
   outputDir: string;
+  pickingOutputDir: boolean;
   overwrite: boolean;
   copyMetadata: boolean;
   addOutputToMusicSources: boolean;
@@ -28,6 +30,7 @@ interface MusicAudioTranscodePanelProps {
   onPanelMouseDown: (event: MouseEvent<HTMLElement>) => void;
   onPresetChange: (value: AudioTranscodePreset) => void;
   onOutputDirChange: (value: string) => void;
+  onPickOutputDir: () => void | Promise<void>;
   onOverwriteChange: (value: boolean) => void;
   onCopyMetadataChange: (value: boolean) => void;
   onAddOutputToMusicSourcesChange: (value: boolean) => void;
@@ -41,6 +44,7 @@ export function MusicAudioTranscodePanel({
   executing,
   preset,
   outputDir,
+  pickingOutputDir,
   overwrite,
   copyMetadata,
   addOutputToMusicSources,
@@ -52,15 +56,22 @@ export function MusicAudioTranscodePanel({
   onPanelMouseDown,
   onPresetChange,
   onOutputDirChange,
+  onPickOutputDir,
   onOverwriteChange,
   onCopyMetadataChange,
   onAddOutputToMusicSourcesChange,
   onConfirm,
   onCancel,
 }: MusicAudioTranscodePanelProps) {
+  const { t } = useI18n();
+
   if (!open || fullscreenActive) {
     return null;
   }
+
+  const taskStatusLabel = taskStatus
+    ? t(`ui.music.audioTranscodeStatus.${taskStatus}`)
+    : null;
 
   return (
     <div
@@ -68,7 +79,7 @@ export function MusicAudioTranscodePanel({
       data-slot="fg-main-toolbar-music-transcode-panel"
       role="dialog"
       aria-modal="true"
-      aria-label="音频转码设置"
+      aria-label={t("ui.music.audioTranscodeDialog")}
       onMouseDown={(event) => {
         if (event.target !== event.currentTarget || executing) {
           return;
@@ -80,9 +91,11 @@ export function MusicAudioTranscodePanel({
         className="settings-floating-panel main-toolbar-image-convert-panel main-toolbar-image-convert-dialog"
         onMouseDown={onPanelMouseDown}
       >
-        <h3 className="main-toolbar-image-convert-title">音频转码</h3>
+        <h3 className="main-toolbar-image-convert-title">
+          {t("ui.music.audioTranscodeTitle")}
+        </h3>
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>预设</span>
+          <span>{t("ui.music.audioTranscodePreset")}</span>
           <select
             value={preset}
             disabled={executing}
@@ -99,17 +112,35 @@ export function MusicAudioTranscodePanel({
           </select>
         </label>
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>输出目录</span>
+          <span>{t("ui.music.audioTranscodeOutputDirectory")}</span>
           <input
             type="text"
-            placeholder="留空=源文件目录"
+            placeholder={t("ui.music.audioTranscodeOutputDirectoryPlaceholder")}
             value={outputDir}
             disabled={executing}
             onChange={(event) => onOutputDirChange(event.target.value)}
           />
         </label>
+        <div className="mpx-overlay-actions mpx-overlay-actions-start">
+          <button
+            type="button"
+            disabled={executing || pickingOutputDir}
+            onClick={() => void onPickOutputDir()}
+          >
+            {pickingOutputDir
+              ? t("ui.music.audioTranscodePickingOutputDirectory")
+              : t("ui.music.audioTranscodePickOutputDirectory")}
+          </button>
+          <button
+            type="button"
+            disabled={executing || outputDir.trim().length <= 0}
+            onClick={() => onOutputDirChange("")}
+          >
+            {t("ui.common.clear")}
+          </button>
+        </div>
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>覆盖已有文件</span>
+          <span>{t("ui.music.audioTranscodeOverwrite")}</span>
           <input
             type="checkbox"
             checked={overwrite}
@@ -118,7 +149,7 @@ export function MusicAudioTranscodePanel({
           />
         </label>
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>复制元数据</span>
+          <span>{t("ui.music.audioTranscodeCopyMetadata")}</span>
           <input
             type="checkbox"
             checked={copyMetadata}
@@ -127,7 +158,7 @@ export function MusicAudioTranscodePanel({
           />
         </label>
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
-          <span>输出自动纳入音乐源</span>
+          <span>{t("ui.music.audioTranscodeAddOutputToSources")}</span>
           <input
             type="checkbox"
             checked={addOutputToMusicSources}
@@ -137,9 +168,13 @@ export function MusicAudioTranscodePanel({
             }
           />
         </label>
-        {taskStatus ? (
+        {taskStatus && taskStatusLabel ? (
           <p className="main-toolbar-hint">
-            {`转码 ${taskStatus} ${Math.round(taskProgress * 100)}% | 输出 ${outputCount} 个${taskMessage ? ` | ${taskMessage}` : ""}`}
+            {`${t("ui.music.audioTranscodeTaskSummary", {
+              status: taskStatusLabel,
+              progress: Math.round(taskProgress * 100),
+              count: outputCount,
+            })}${taskMessage ? ` | ${taskMessage}` : ""}`}
           </p>
         ) : null}
         <div className="mpx-overlay-actions mpx-overlay-actions-start">
@@ -148,10 +183,12 @@ export function MusicAudioTranscodePanel({
             disabled={executing}
             onClick={() => void onConfirm()}
           >
-            开始
+            {t("ui.music.audioTranscodeStart")}
           </button>
           <button type="button" onClick={() => void onCancel()}>
-            {executing ? "取消任务" : "关闭"}
+            {executing
+              ? t("ui.music.audioTranscodeCancelTask")
+              : t("ui.music.audioTranscodeClose")}
           </button>
         </div>
       </section>
