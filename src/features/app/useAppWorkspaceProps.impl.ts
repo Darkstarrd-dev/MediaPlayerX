@@ -1153,6 +1153,7 @@ export function useAppWorkspaceProps({
     metadataManageMode,
     metadataManageSelectionMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
+    sidebarCheckedNodeIds,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
     pendingManageAction:

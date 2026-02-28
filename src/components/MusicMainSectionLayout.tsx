@@ -19,12 +19,15 @@ interface MusicMainSectionLayoutProps {
   manageOperationHint: string | null;
   canManageDelete: boolean;
   canManageMoveNodes: boolean;
+  canManageAudioTranscode: boolean;
+  audioTranscodePanelOpen: boolean;
   canJumpToManga: boolean;
   canJumpToAnimation: boolean;
   canJumpToCover: boolean;
   canJumpToBooklet: boolean;
   onManageDelete: () => void;
   onManageGroup: () => void;
+  onToggleAudioTranscodePanel: () => void;
   onToggleMetadataManageSelectionMode: () => void;
   onJumpToManga: () => void;
   onJumpToAnimation: () => void;
@@ -34,6 +37,7 @@ interface MusicMainSectionLayoutProps {
   fullscreenActive: boolean;
   visualizerPane: ReactNode;
   musicControlsShell: ReactNode;
+  audioTranscodePanel: ReactNode;
 }
 
 function resolveManageSummary(
@@ -65,12 +69,15 @@ export function MusicMainSectionLayout({
   manageOperationHint,
   canManageDelete,
   canManageMoveNodes,
+  canManageAudioTranscode,
+  audioTranscodePanelOpen,
   canJumpToManga,
   canJumpToAnimation,
   canJumpToCover,
   canJumpToBooklet,
   onManageDelete,
   onManageGroup,
+  onToggleAudioTranscodePanel,
   onToggleMetadataManageSelectionMode,
   onJumpToManga,
   onJumpToAnimation,
@@ -80,6 +87,7 @@ export function MusicMainSectionLayout({
   fullscreenActive,
   visualizerPane,
   musicControlsShell,
+  audioTranscodePanel,
 }: MusicMainSectionLayoutProps) {
   if (!active) {
     return null;
@@ -110,6 +118,16 @@ export function MusicMainSectionLayout({
                 <MainUiIcon name="organize" />
               </button>
               <button
+                className={`feature-action-btn main-icon-square-btn ${audioTranscodePanelOpen ? "is-active" : ""}`}
+                type="button"
+                aria-label="TC"
+                data-tooltip-label="TC"
+                disabled={!canManageAudioTranscode || pendingManageAction}
+                onClick={onToggleAudioTranscodePanel}
+              >
+                <span aria-hidden="true">TC</span>
+              </button>
+              <button
                 className="vector-search-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.delete")}
@@ -122,6 +140,7 @@ export function MusicMainSectionLayout({
               {manageOperationHint ? (
                 <span className="main-toolbar-hint">{manageOperationHint}</span>
               ) : null}
+              {audioTranscodePanel}
             </div>
             <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
               {manageSummary}

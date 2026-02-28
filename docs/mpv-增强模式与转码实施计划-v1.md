@@ -375,6 +375,12 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - 新增音频转码任务 DTO 与 IPC（`start/read/cancelAudioTranscodeTask`）。
   - 主进程新增 `ManagementAudioTranscodeService`，支持按音频条目批量转码（FLAC/ALAC/WAV/Opus/AAC/MP3）、CUE 分轨区间转码、任务取消与失败回收。
   - 转码成功输出可写回 `music_import_sources` 并触发快照刷新，确保后续可入库可见。
+- 2026-02-28：已完成 P2 音乐页首版 UI 接线：
+  - 管理模式新增 `TC` 转码入口与浮层面板（预设、输出目录、覆盖/元数据/自动入源开关）。
+  - 已接入任务启动/轮询/取消与进度展示；默认使用“选中侧栏音频集合”，无选中时回退当前焦点曲目。
+- 2026-02-28：已完成 P2 音乐页首版 UI 收口验证：
+  - 新增用例覆盖“无侧栏选中时回退焦点曲目发起转码”，补齐目标解析回退路径回归保护。
+  - 已通过 `npx vitest run src/components/MusicMainSection.test.tsx` 与 `npm run build`。
 
 ### P3：硬化与发布（1~2 周）
 

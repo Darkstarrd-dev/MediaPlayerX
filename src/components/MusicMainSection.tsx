@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { MusicMainSectionControlsShell } from './MusicMainSectionControlsShell'
 import { MusicMainSectionLayout } from './MusicMainSectionLayout'
 import type { MusicMainSectionProps, MusicPopoverKey } from './MusicMainSection.types'
+import { MusicAudioTranscodePanel } from './MusicAudioTranscodePanel'
 import { resolveFullscreenControlsWidth } from './fullscreen/controlsWidth'
 import { useFullscreenWindowViewport } from './fullscreen/useFullscreenWindowViewport'
 import { resolveMusicToolbarSummary } from './musicMainSectionUtils'
@@ -12,6 +13,7 @@ import {
   emitMusicPlaybackState,
   onMusicPlaybackControl,
 } from '../features/media/musicPlaybackBridge'
+import type { StartAudioTranscodeTaskRequestDto } from '../contracts/backend'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp } from '../utils/ui'
@@ -26,6 +28,7 @@ function MusicMainSection({
   sidebarSelectedCount,
   imageSelectedCount,
   activeSelectionScope,
+  manageSelectedAudioIds = [],
   pendingManageAction,
   manageOperationHint,
   canManageDelete,
@@ -81,6 +84,7 @@ function MusicMainSection({
   const lastPlayRequestNonceRef = useRef(playRequestNonce)
   const visualizerActivateRafRef = useRef<number | null>(null)
   const visualizerActivateRaf2Ref = useRef<number | null>(null)
+  const audioTranscodePollTimerRef = useRef<number | null>(null)
   const suppressNativePlaybackEventsRef = useRef(false)
   const suppressNativePlaybackTimerRef = useRef<number | null>(null)
   const modeTransitionInProgressRef = useRef(false)
@@ -108,6 +112,19 @@ function MusicMainSection({
     audioBeat: number
   } | null>(null)
   const [audioEngineMode, setAudioEngineMode] = useState<'chromium' | 'mpv'>('chromium')
+  const [audioTranscodePanelOpen, setAudioTranscodePanelOpen] = useState(false)
+  const [audioTranscodePreset, setAudioTranscodePreset] = useState<StartAudioTranscodeTaskRequestDto['preset']>('flac')
+  const [audioTranscodeOutputDir, setAudioTranscodeOutputDir] = useState('')
+  const [audioTranscodeOverwrite, setAudioTranscodeOverwrite] = useState(false)
+  const [audioTranscodeCopyMetadata, setAudioTranscodeCopyMetadata] = useState(true)
+  const [audioTranscodeAddOutputToMusicSources, setAudioTranscodeAddOutputToMusicSources] = useState(true)
+  const [audioTranscodeTaskId, setAudioTranscodeTaskId] = useState<string | null>(null)
+  const [audioTranscodeTaskStatus, setAudioTranscodeTaskStatus] = useState<
+    'pending' | 'running' | 'completed' | 'cancelled' | 'failed' | null
+  >(null)
+  const [audioTranscodeTaskProgress, setAudioTranscodeTaskProgress] = useState(0)
+  const [audioTranscodeTaskMessage, setAudioTranscodeTaskMessage] = useState<string | null>(null)
+  const [audioTranscodeOutputCount, setAudioTranscodeOutputCount] = useState(0)
   const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
@@ -310,6 +327,47 @@ function MusicMainSection({
     [focusedAudio, t],
   )
   const musicToolbarTitle = t('ui.music.trackCountSummary', { summary: toolbarSummary, count: audios.length })
+  const audioTranscodeExecuting =
+    audioTranscodeTaskStatus === 'pending' ||
+    audioTranscodeTaskStatus === 'running'
+  const canManageAudioTranscode =
+    manageMode &&
+    (manageSelectedAudioIds.length > 0 || Boolean(focusedAudio?.id))
+
+  const clearAudioTranscodePollTimer = useCallback(() => {
+    if (audioTranscodePollTimerRef.current != null) {
+      window.clearInterval(audioTranscodePollTimerRef.current)
+      audioTranscodePollTimerRef.current = null
+    }
+  }, [])
+
+  const stopAudioTranscodeExecution = useCallback(() => {
+    clearAudioTranscodePollTimer()
+    setAudioTranscodeTaskId(null)
+    setAudioTranscodeTaskStatus(null)
+    setAudioTranscodeTaskProgress(0)
+    setAudioTranscodeTaskMessage(null)
+    setAudioTranscodeOutputCount(0)
+  }, [clearAudioTranscodePollTimer])
+
+  const resolveAudioTranscodeTargetIds = useCallback((): string[] => {
+    if (
+      manageMode &&
+      activeSelectionScope === 'sidebar' &&
+      manageSelectedAudioIds.length > 0
+    ) {
+      return Array.from(new Set(manageSelectedAudioIds))
+    }
+    if (focusedAudio?.id) {
+      return [focusedAudio.id]
+    }
+    return []
+  }, [
+    activeSelectionScope,
+    focusedAudio?.id,
+    manageMode,
+    manageSelectedAudioIds,
+  ])
 
   const layeredBackgroundShaderLabel = useMemo(() => {
     return MUSIC_VISUALIZER_SHADERS.find((shader) => shader.id === musicVisualizerLayeredBackgroundShaderId)?.label ?? t('ui.music.backgroundShaderUnselected')
@@ -865,6 +923,69 @@ function MusicMainSection({
   }, [audioPlaying, resumeAudioAnalyser])
 
   useEffect(() => {
+    if (!manageMode) {
+      setAudioTranscodePanelOpen(false)
+    }
+  }, [manageMode])
+
+  useEffect(() => {
+    if (fullscreenActive) {
+      setAudioTranscodePanelOpen(false)
+    }
+  }, [fullscreenActive])
+
+  useEffect(() => {
+    if (!audioTranscodeTaskId || !audioTranscodeExecuting) {
+      clearAudioTranscodePollTimer()
+      return
+    }
+
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    const readAudioTranscodeTask = backendApi?.readAudioTranscodeTask
+    if (typeof readAudioTranscodeTask !== 'function') {
+      return
+    }
+
+    const pollTask = () => {
+      void readAudioTranscodeTask({ task_id: audioTranscodeTaskId }).then((response) => {
+        const task = response.task
+        if (!task) {
+          return
+        }
+        const nextStatus = task.status ?? 'running'
+        const progress = task.total_count > 0
+          ? Math.max(0, Math.min(1, task.processed_count / task.total_count))
+          : Math.max(0, Math.min(1, task.progress ?? 0))
+        setAudioTranscodeTaskStatus(nextStatus)
+        setAudioTranscodeTaskProgress(progress)
+        setAudioTranscodeTaskMessage(task.message ?? null)
+        setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
+
+        if (nextStatus === 'completed' || nextStatus === 'cancelled' || nextStatus === 'failed') {
+          clearAudioTranscodePollTimer()
+        }
+      }).catch(() => undefined)
+    }
+
+    pollTask()
+    clearAudioTranscodePollTimer()
+    audioTranscodePollTimerRef.current = window.setInterval(pollTask, 350)
+    return () => {
+      clearAudioTranscodePollTimer()
+    }
+  }, [
+    audioTranscodeExecuting,
+    audioTranscodeTaskId,
+    clearAudioTranscodePollTimer,
+  ])
+
+  useEffect(() => {
+    return () => {
+      clearAudioTranscodePollTimer()
+    }
+  }, [clearAudioTranscodePollTimer])
+
+  useEffect(() => {
     emitMusicPlaybackState({ playing: audioPlaying })
   }, [audioPlaying])
 
@@ -901,6 +1022,79 @@ function MusicMainSection({
       return
     }
     setOpenPopover(null)
+  }
+
+  const toggleAudioTranscodePanel = () => {
+    if (!canManageAudioTranscode || pendingManageAction || audioTranscodeExecuting) {
+      return
+    }
+    setAudioTranscodePanelOpen((value) => !value)
+  }
+
+  const handleAudioTranscodeConfirm = async () => {
+    const targetAudioIds = resolveAudioTranscodeTargetIds()
+    if (targetAudioIds.length <= 0) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage('未找到可转码的音频')
+      return
+    }
+
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    const startAudioTranscodeTask = backendApi?.startAudioTranscodeTask
+    if (typeof startAudioTranscodeTask !== 'function') {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage('后端未提供音频转码接口')
+      return
+    }
+
+    setAudioTranscodeTaskStatus('pending')
+    setAudioTranscodeTaskProgress(0)
+    setAudioTranscodeTaskMessage(null)
+    setAudioTranscodeOutputCount(0)
+
+    const request: StartAudioTranscodeTaskRequestDto = {
+      audio_ids: targetAudioIds,
+      preset: audioTranscodePreset,
+      overwrite: audioTranscodeOverwrite,
+      copy_metadata: audioTranscodeCopyMetadata,
+      add_output_to_music_sources: audioTranscodeAddOutputToMusicSources,
+    }
+    const outputDir = audioTranscodeOutputDir.trim()
+    if (outputDir.length > 0) {
+      request.output_dir = outputDir
+    }
+
+    try {
+      const response = await startAudioTranscodeTask(request)
+      const task = response.task
+      if (!task?.task_id) {
+        setAudioTranscodeTaskStatus('failed')
+        setAudioTranscodeTaskMessage('missing task id')
+        return
+      }
+      setAudioTranscodeTaskId(task.task_id)
+      setAudioTranscodeTaskStatus(task.status ?? 'running')
+      setAudioTranscodeTaskProgress(0)
+      setAudioTranscodeTaskMessage(task.message ?? null)
+      setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
+    } catch (error) {
+      const reason = error instanceof Error && error.message ? error.message : String(error)
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(reason)
+    }
+  }
+
+  const handleAudioTranscodeCancel = async () => {
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioTranscodeExecuting && audioTranscodeTaskId && typeof backendApi?.cancelAudioTranscodeTask === 'function') {
+      try {
+        await backendApi.cancelAudioTranscodeTask({ task_id: audioTranscodeTaskId })
+      } catch {
+        // ignore cancel error and close panel anyway
+      }
+    }
+    stopAudioTranscodeExecution()
+    setAudioTranscodePanelOpen(false)
   }
 
   useMediaPreloadWindow({
@@ -1088,6 +1282,36 @@ function MusicMainSection({
   const volumeTooltip = t('tip.music.volumeAdjust', { status: musicVolumeTooltipStatus })
   const playTooltip = audioPlaying ? t('tip.music.pauseTrack') : t('tip.music.playTrack')
 
+  const audioTranscodePanel = (
+    <MusicAudioTranscodePanel
+      open={audioTranscodePanelOpen}
+      fullscreenActive={fullscreenActive}
+      executing={audioTranscodeExecuting}
+      preset={audioTranscodePreset}
+      outputDir={audioTranscodeOutputDir}
+      overwrite={audioTranscodeOverwrite}
+      copyMetadata={audioTranscodeCopyMetadata}
+      addOutputToMusicSources={audioTranscodeAddOutputToMusicSources}
+      taskStatus={audioTranscodeTaskStatus}
+      taskProgress={audioTranscodeTaskProgress}
+      taskMessage={audioTranscodeTaskMessage}
+      outputCount={audioTranscodeOutputCount}
+      onCloseMask={() => {
+        setAudioTranscodePanelOpen(false)
+      }}
+      onPanelMouseDown={(event) => {
+        event.stopPropagation()
+      }}
+      onPresetChange={setAudioTranscodePreset}
+      onOutputDirChange={setAudioTranscodeOutputDir}
+      onOverwriteChange={setAudioTranscodeOverwrite}
+      onCopyMetadataChange={setAudioTranscodeCopyMetadata}
+      onAddOutputToMusicSourcesChange={setAudioTranscodeAddOutputToMusicSources}
+      onConfirm={handleAudioTranscodeConfirm}
+      onCancel={handleAudioTranscodeCancel}
+    />
+  )
+
   const musicControlsShell = (
     <MusicMainSectionControlsShell
       t={t}
@@ -1233,12 +1457,15 @@ function MusicMainSection({
         manageOperationHint={manageOperationHint}
         canManageDelete={canManageDelete}
         canManageMoveNodes={canManageMoveNodes}
+        canManageAudioTranscode={canManageAudioTranscode}
+        audioTranscodePanelOpen={audioTranscodePanelOpen}
         canJumpToManga={canJumpToManga}
         canJumpToAnimation={canJumpToAnimation}
         canJumpToCover={canJumpToCover}
         canJumpToBooklet={canJumpToBooklet}
         onManageDelete={onManageDelete}
         onManageGroup={onManageGroup}
+        onToggleAudioTranscodePanel={toggleAudioTranscodePanel}
         onToggleMetadataManageSelectionMode={onToggleMetadataManageSelectionMode}
         onJumpToManga={onJumpToManga}
         onJumpToAnimation={onJumpToAnimation}
@@ -1248,6 +1475,7 @@ function MusicMainSection({
         fullscreenActive={fullscreenActive}
         visualizerPane={visualizerPane}
         musicControlsShell={musicControlsShell}
+        audioTranscodePanel={audioTranscodePanel}
       />
 
       <audio

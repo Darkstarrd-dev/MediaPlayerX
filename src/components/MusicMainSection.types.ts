@@ -13,6 +13,7 @@ export interface MusicMainSectionProps {
   sidebarSelectedCount: number
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
+  manageSelectedAudioIds?: string[]
   pendingManageAction: boolean
   manageOperationHint: string | null
   canManageDelete: boolean

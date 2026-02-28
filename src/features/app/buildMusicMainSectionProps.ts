@@ -16,6 +16,7 @@ interface BuildMusicMainSectionPropsParams {
   metadataManageMode: boolean
   metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
+  sidebarCheckedNodeIds: string[]
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
   pendingManageAction: boolean
@@ -140,6 +141,35 @@ function resolveScopedPlaybackOrder(params: {
   return filtered.length > 0 ? filtered : libraryPlaybackOrder
 }
 
+function resolveManageSelectedAudioIds(params: {
+  sidebarCheckedNodeIds: string[]
+  audiosForSidebar: AudioItem[]
+}): string[] {
+  const selectedFolderKeys = Array.from(new Set(
+    params.sidebarCheckedNodeIds
+      .filter((nodeId) => nodeId.startsWith('audio:'))
+      .map((nodeId) => nodeId.slice('audio:'.length).trim())
+      .filter(Boolean),
+  ))
+
+  if (selectedFolderKeys.length <= 0) {
+    return []
+  }
+
+  const selectedAudioIds = new Set<string>()
+  for (const audio of params.audiosForSidebar) {
+    const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
+    for (const selectedFolderKey of selectedFolderKeys) {
+      if (folderPath === selectedFolderKey || folderPath.startsWith(`${selectedFolderKey}/`)) {
+        selectedAudioIds.add(audio.id)
+        break
+      }
+    }
+  }
+
+  return Array.from(selectedAudioIds)
+}
+
 export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsParams) {
   const defaultShaderId = resolveDefaultMusicVisualizerShader()?.id ?? 'mcs-szb'
   const selectedShaderId = params.musicVisualizerSelectedShaderId.trim().slice(0, 64) || defaultShaderId
@@ -199,6 +229,10 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
   }
 
   const currentLoopModeLabel = resolveMusicLoopModeLabel(params.musicLoopMode, params.musicLoopModeLabels)
+  const manageSelectedAudioIds = resolveManageSelectedAudioIds({
+    sidebarCheckedNodeIds: params.sidebarCheckedNodeIds,
+    audiosForSidebar: params.audiosForSidebar,
+  })
 
   return {
     active: params.mode === 'music',
@@ -208,6 +242,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     metadataManageMode: params.metadataManageMode,
     metadataManageSelectionMode: params.metadataManageSelectionMode ?? 'multiple',
     sidebarSelectedCount: params.sidebarSelectedCount,
+    manageSelectedAudioIds,
     imageSelectedCount: params.imageSelectedCount,
     activeSelectionScope: params.activeSelectionScope,
     pendingManageAction: params.pendingManageAction,
