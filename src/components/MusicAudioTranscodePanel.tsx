@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 
 import type { StartAudioTranscodeTaskRequestDto } from "../contracts/backend";
 import { useI18n } from "../i18n/useI18n";
@@ -11,6 +11,14 @@ type AudioTranscodeTaskStatus =
   | "cancelled"
   | "failed"
   | null;
+
+interface AudioTranscodeTaskHistoryItem {
+  taskId: string;
+  status: Exclude<AudioTranscodeTaskStatus, null>;
+  progress: number;
+  outputCount: number;
+  message: string | null;
+}
 
 interface MusicAudioTranscodePanelProps {
   open: boolean;
@@ -26,6 +34,7 @@ interface MusicAudioTranscodePanelProps {
   taskProgress: number;
   taskMessage: string | null;
   outputCount: number;
+  taskHistory: AudioTranscodeTaskHistoryItem[];
   onCloseMask: () => void;
   onPanelMouseDown: (event: MouseEvent<HTMLElement>) => void;
   onPresetChange: (value: AudioTranscodePreset) => void;
@@ -34,6 +43,9 @@ interface MusicAudioTranscodePanelProps {
   onOverwriteChange: (value: boolean) => void;
   onCopyMetadataChange: (value: boolean) => void;
   onAddOutputToMusicSourcesChange: (value: boolean) => void;
+  onRetryTask: (taskId: string) => void | Promise<void>;
+  onRetryFailedTasks: () => void | Promise<void>;
+  onClearTaskHistory: () => void;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void | Promise<void>;
 }
@@ -52,6 +64,7 @@ export function MusicAudioTranscodePanel({
   taskProgress,
   taskMessage,
   outputCount,
+  taskHistory,
   onCloseMask,
   onPanelMouseDown,
   onPresetChange,
@@ -60,18 +73,31 @@ export function MusicAudioTranscodePanel({
   onOverwriteChange,
   onCopyMetadataChange,
   onAddOutputToMusicSourcesChange,
+  onRetryTask,
+  onRetryFailedTasks,
+  onClearTaskHistory,
   onConfirm,
   onCancel,
 }: MusicAudioTranscodePanelProps) {
   const { t } = useI18n();
+  const [historyFailedOnly, setHistoryFailedOnly] = useState(false);
+  const taskStatusLabel = taskStatus
+    ? t(`ui.music.audioTranscodeStatus.${taskStatus}`)
+    : null;
+  const failedTaskCount = useMemo(
+    () => taskHistory.filter((task) => task.status === "failed").length,
+    [taskHistory],
+  );
+  const filteredTaskHistory = useMemo(() => {
+    if (!historyFailedOnly) {
+      return taskHistory;
+    }
+    return taskHistory.filter((task) => task.status === "failed");
+  }, [historyFailedOnly, taskHistory]);
 
   if (!open || fullscreenActive) {
     return null;
   }
-
-  const taskStatusLabel = taskStatus
-    ? t(`ui.music.audioTranscodeStatus.${taskStatus}`)
-    : null;
 
   return (
     <div
@@ -177,6 +203,69 @@ export function MusicAudioTranscodePanel({
             })}${taskMessage ? ` | ${taskMessage}` : ""}`}
           </p>
         ) : null}
+        {taskHistory.length > 0 ? (
+          <section className="mpx-overlay-section">
+            <div className="mpx-overlay-actions mpx-overlay-actions-start">
+              <p className="mpx-overlay-caption">
+                {t("ui.music.audioTranscodeHistoryTitle")}
+              </p>
+              <button
+                type="button"
+                disabled={executing}
+                onClick={() => {
+                  setHistoryFailedOnly((value) => !value);
+                }}
+              >
+                {historyFailedOnly
+                  ? t("ui.music.audioTranscodeHistoryShowAll")
+                  : t("ui.music.audioTranscodeHistoryShowFailedOnly")}
+              </button>
+              <button
+                type="button"
+                disabled={executing || failedTaskCount <= 0}
+                onClick={() => void onRetryFailedTasks()}
+              >
+                {t("ui.music.audioTranscodeRetryFailedTasks", {
+                  count: failedTaskCount,
+                })}
+              </button>
+            </div>
+            <ul className="mpx-overlay-list-surface mpx-overlay-scroll-list">
+              {filteredTaskHistory.map((task) => {
+                const status = t(`ui.music.audioTranscodeStatus.${task.status}`);
+                return (
+                  <li key={task.taskId}>
+                    <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                      <span className="mpx-overlay-list-item-truncate">
+                        {t("ui.music.audioTranscodeHistoryItem", {
+                          id: task.taskId.slice(0, 8),
+                          status,
+                          progress: Math.round(task.progress * 100),
+                          count: task.outputCount,
+                        })}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={executing || task.status !== "failed"}
+                        onClick={() => void onRetryTask(task.taskId)}
+                      >
+                        {t("ui.common.retry")}
+                      </button>
+                    </div>
+                    {task.message ? (
+                      <p className="mpx-overlay-caption">{task.message}</p>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+            {filteredTaskHistory.length <= 0 ? (
+              <p className="mpx-overlay-caption">
+                {t("ui.music.audioTranscodeNoFailedTaskInHistory")}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
         <div className="mpx-overlay-actions mpx-overlay-actions-start">
           <button
             type="button"
@@ -189,6 +278,13 @@ export function MusicAudioTranscodePanel({
             {executing
               ? t("ui.music.audioTranscodeCancelTask")
               : t("ui.music.audioTranscodeClose")}
+          </button>
+          <button
+            type="button"
+            disabled={executing || taskHistory.length <= 0}
+            onClick={onClearTaskHistory}
+          >
+            {t("ui.common.clear")}
           </button>
         </div>
       </section>

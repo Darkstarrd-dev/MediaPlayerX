@@ -557,6 +557,12 @@ export type SetAudioEngineModeRequestDto = Infer<
 export type SetAudioEngineModeResponseDto = Infer<
   typeof Backend.setAudioEngineModeResponseSchema
 >;
+export type VerifyAudioEngineMpvBinRequestDto = Infer<
+  typeof Backend.verifyAudioEngineMpvBinRequestSchema
+>;
+export type VerifyAudioEngineMpvBinResponseDto = Infer<
+  typeof Backend.verifyAudioEngineMpvBinResponseSchema
+>;
 export type ListAudioOutputDevicesResponseDto = Infer<
   typeof Backend.listAudioOutputDevicesResponseSchema
 >;

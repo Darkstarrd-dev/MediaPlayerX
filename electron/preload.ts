@@ -45,6 +45,8 @@ import {
   readAudioEngineStateResponseSchema,
   setAudioEngineModeRequestSchema,
   setAudioEngineModeResponseSchema,
+  verifyAudioEngineMpvBinRequestSchema,
+  verifyAudioEngineMpvBinResponseSchema,
   listAudioOutputDevicesResponseSchema,
   setAudioOutputDeviceRequestSchema,
   setAudioOutputDeviceResponseSchema,
@@ -429,6 +431,11 @@ const backendApi = {
     const parsed = setAudioEngineModeRequestSchema.parse(request)
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.setAudioEngineMode, parsed)
     return setAudioEngineModeResponseSchema.parse(response)
+  },
+  verifyAudioEngineMpvBin: async (request: unknown) => {
+    const parsed = verifyAudioEngineMpvBinRequestSchema.parse(request)
+    const response = await ipcRenderer.invoke(BACKEND_CHANNELS.verifyAudioEngineMpvBin, parsed)
+    return verifyAudioEngineMpvBinResponseSchema.parse(response)
   },
   listAudioOutputDevices: async () => {
     const response = await ipcRenderer.invoke(BACKEND_CHANNELS.listAudioOutputDevices)

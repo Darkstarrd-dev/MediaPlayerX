@@ -53,6 +53,8 @@ import {
   readAudioEngineStateResponseSchema,
   setAudioEngineModeRequestSchema,
   setAudioEngineModeResponseSchema,
+  verifyAudioEngineMpvBinRequestSchema,
+  verifyAudioEngineMpvBinResponseSchema,
   listAudioOutputDevicesResponseSchema,
   setAudioOutputDeviceRequestSchema,
   setAudioOutputDeviceResponseSchema,
@@ -193,6 +195,7 @@ import {
 import { SubtitleSessionManager } from "./subtitles/subtitleSession";
 import { resolveBenchMode } from "./mainBenchRuntime";
 import { AudioEngineController } from "./services/audio-engine/audioEngineController";
+import { resolveMpvBinPathFromDirectory } from "./runtimeBinaryPaths";
 
 interface IpcBreakdownEntry {
   timestamp: string;
@@ -264,6 +267,21 @@ export function registerBackendIpcHandlers(): void {
   });
   const audioEngineController = new AudioEngineController({
     projectRoot: process.cwd(),
+  });
+  const toAudioEngineStateDto = (
+    snapshot: ReturnType<typeof audioEngineController.readState>,
+  ) => ({
+    mode: snapshot.mode,
+    desired_mode: snapshot.desiredMode,
+    mpv_available: snapshot.mpvAvailable,
+    mpv_bin_path: snapshot.mpvBinPath,
+    using_fallback: snapshot.usingFallback,
+    last_error: snapshot.lastError,
+    active_device_id: snapshot.activeDeviceId,
+    exclusive_enabled: snapshot.exclusiveEnabled,
+    gapless_mode: snapshot.gaplessMode,
+    replaygain_mode: snapshot.replayGainMode,
+    updated_at_ms: snapshot.updatedAtMs,
   });
   app.once("before-quit", () => {
     void audioEngineController.setMode("chromium").catch(() => {
@@ -1010,19 +1028,7 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.readAudioEngineState, async () => {
     const snapshot = audioEngineController.readState();
-    return readAudioEngineStateResponseSchema.parse({
-      mode: snapshot.mode,
-      desired_mode: snapshot.desiredMode,
-      mpv_available: snapshot.mpvAvailable,
-      mpv_bin_path: snapshot.mpvBinPath,
-      using_fallback: snapshot.usingFallback,
-      last_error: snapshot.lastError,
-      active_device_id: snapshot.activeDeviceId,
-      exclusive_enabled: snapshot.exclusiveEnabled,
-      gapless_mode: snapshot.gaplessMode,
-      replaygain_mode: snapshot.replayGainMode,
-      updated_at_ms: snapshot.updatedAtMs,
-    });
+    return readAudioEngineStateResponseSchema.parse(toAudioEngineStateDto(snapshot));
   });
 
   ipcMain.handle(BACKEND_CHANNELS.readAudioEnginePlaybackStatus, async () => {
@@ -1059,18 +1065,38 @@ export function registerBackendIpcHandlers(): void {
     async (_event, payload: unknown) => {
       const request = setAudioEngineModeRequestSchema.parse(payload);
       const snapshot = await audioEngineController.setMode(request.mode);
-      return setAudioEngineModeResponseSchema.parse({
-        mode: snapshot.mode,
-        desired_mode: snapshot.desiredMode,
-        mpv_available: snapshot.mpvAvailable,
-        mpv_bin_path: snapshot.mpvBinPath,
-        using_fallback: snapshot.usingFallback,
-        last_error: snapshot.lastError,
-        active_device_id: snapshot.activeDeviceId,
-        exclusive_enabled: snapshot.exclusiveEnabled,
-        gapless_mode: snapshot.gaplessMode,
-        replaygain_mode: snapshot.replayGainMode,
-        updated_at_ms: snapshot.updatedAtMs,
+      return setAudioEngineModeResponseSchema.parse(toAudioEngineStateDto(snapshot));
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.verifyAudioEngineMpvBin,
+    async (_event, payload: unknown) => {
+      const request = verifyAudioEngineMpvBinRequestSchema.parse(payload);
+      const resolvedMpvBinPath = resolveMpvBinPathFromDirectory(
+        request.directory_path,
+      );
+
+      if (!resolvedMpvBinPath) {
+        return verifyAudioEngineMpvBinResponseSchema.parse({
+          ok: false,
+          env_key: "MPX_MPV_BIN",
+          mpv_bin_path: null,
+          message: `目录下未找到 mpv 可执行文件：${request.directory_path}`,
+          state: toAudioEngineStateDto(audioEngineController.readState()),
+        });
+      }
+
+      process.env.MPX_MPV_BIN = resolvedMpvBinPath;
+      const snapshot = await audioEngineController.overrideMpvBinPath(
+        resolvedMpvBinPath,
+      );
+      return verifyAudioEngineMpvBinResponseSchema.parse({
+        ok: true,
+        env_key: "MPX_MPV_BIN",
+        mpv_bin_path: resolvedMpvBinPath,
+        message: `已设置 MPX_MPV_BIN=${resolvedMpvBinPath}`,
+        state: toAudioEngineStateDto(snapshot),
       });
     },
   );

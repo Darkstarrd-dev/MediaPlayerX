@@ -53,6 +53,7 @@ export const BACKEND_CHANNELS = {
   readRuntimeCapabilities: 'backend:readRuntimeCapabilities',
   readAudioEngineState: 'backend:readAudioEngineState',
   setAudioEngineMode: 'backend:setAudioEngineMode',
+  verifyAudioEngineMpvBin: 'backend:verifyAudioEngineMpvBin',
   listAudioOutputDevices: 'backend:listAudioOutputDevices',
   setAudioOutputDevice: 'backend:setAudioOutputDevice',
   setAudioExclusive: 'backend:setAudioExclusive',

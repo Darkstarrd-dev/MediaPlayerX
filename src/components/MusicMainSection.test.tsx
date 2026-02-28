@@ -358,6 +358,208 @@ describe("MusicMainSection", () => {
     });
   });
 
+  it("应支持按历史任务重试转码", async () => {
+    const startAudioTranscodeTask = vi
+      .fn()
+      .mockResolvedValueOnce({
+        task: {
+          task_id: "audio-transcode-retry-1",
+          status: "running",
+          progress: 0,
+          total_count: 1,
+          processed_count: 0,
+          success_count: 0,
+          failed_count: 0,
+          output_files: [],
+          message: "started",
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      })
+      .mockResolvedValueOnce({
+        task: {
+          task_id: "audio-transcode-retry-2",
+          status: "running",
+          progress: 0,
+          total_count: 1,
+          processed_count: 0,
+          success_count: 0,
+          failed_count: 0,
+          output_files: [],
+          message: "restarted",
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      });
+    const readAudioTranscodeTask = vi.fn().mockImplementation(async (request: { task_id: string }) => ({
+      task: {
+        task_id: request.task_id,
+        status: "failed",
+        progress: 1,
+        total_count: 1,
+        processed_count: 1,
+        success_count: 0,
+        failed_count: 1,
+        output_files: ["Z:/music/transcoded/track-1.flac"],
+        message: "failed",
+        error_detail: "mock error",
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    }));
+
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      startAudioTranscodeTask,
+      readAudioTranscodeTask,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "开始" }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "重试" })).toBeEnabled();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "重试" }));
+    });
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledTimes(2);
+    expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(2, {
+      audio_ids: ["track-1"],
+      preset: "flac",
+      overwrite: false,
+      copy_metadata: true,
+      add_output_to_music_sources: true,
+    });
+  });
+
+  it("应支持一键重试失败项", async () => {
+    const startAudioTranscodeTask = vi
+      .fn()
+      .mockResolvedValueOnce({
+        task: {
+          task_id: "audio-transcode-failed-a",
+          status: "running",
+          progress: 0,
+          total_count: 2,
+          processed_count: 0,
+          success_count: 0,
+          failed_count: 0,
+          output_files: [],
+          message: "started",
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      })
+      .mockResolvedValueOnce({
+        task: {
+          task_id: "audio-transcode-retry-failed-all",
+          status: "running",
+          progress: 0,
+          total_count: 2,
+          processed_count: 0,
+          success_count: 0,
+          failed_count: 0,
+          output_files: [],
+          message: "started",
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      });
+    const readAudioTranscodeTask = vi.fn().mockImplementation(async (request: { task_id: string }) => {
+      if (request.task_id === "audio-transcode-failed-a") {
+        return {
+          task: {
+            task_id: request.task_id,
+            status: "failed",
+            progress: 1,
+            total_count: 2,
+            processed_count: 2,
+            success_count: 1,
+            failed_count: 1,
+            output_files: ["Z:/music/transcoded/track-a.flac"],
+            message: "failed a",
+            error_detail: "mock error a",
+            created_at_ms: Date.now(),
+            updated_at_ms: Date.now(),
+          },
+        };
+      }
+      return {
+        task: {
+          task_id: request.task_id,
+          status: "running",
+          progress: 0,
+          total_count: 2,
+          processed_count: 0,
+          success_count: 0,
+          failed_count: 0,
+          output_files: [],
+          message: "running",
+          error_detail: null,
+          created_at_ms: Date.now(),
+          updated_at_ms: Date.now(),
+        },
+      };
+    });
+
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      startAudioTranscodeTask,
+      readAudioTranscodeTask,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    const focusAudio = makeAudio("track-focus");
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-a", "track-b"],
+      focusedAudio: focusAudio,
+      audios: [focusAudio],
+      audioPreloadItems: [{ id: focusAudio.id, src: "mock://audio-focus", sizeMb: 6 }],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "开始" }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "重试失败项 (1)" })).toBeEnabled();
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "重试失败项 (1)" }));
+    });
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledTimes(2);
+    expect(startAudioTranscodeTask).toHaveBeenNthCalledWith(2, {
+      audio_ids: ["track-a", "track-b"],
+      preset: "flac",
+      overwrite: false,
+      copy_metadata: true,
+      add_output_to_music_sources: true,
+    });
+  });
+
   it("无侧栏选中时应回退当前焦点曲目发起转码", async () => {
     const startAudioTranscodeTask = vi.fn().mockResolvedValue({
       task: {

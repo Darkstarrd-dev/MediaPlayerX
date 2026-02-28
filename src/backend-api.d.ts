@@ -17,6 +17,8 @@ import type {
   ReadAudioEngineAnalysisFrameResponseDto,
   SetAudioEngineModeRequestDto,
   SetAudioEngineModeResponseDto,
+  VerifyAudioEngineMpvBinRequestDto,
+  VerifyAudioEngineMpvBinResponseDto,
   ListAudioOutputDevicesResponseDto,
   SetAudioOutputDeviceRequestDto,
   SetAudioOutputDeviceResponseDto,
@@ -250,6 +252,9 @@ interface MediaPlayerBackendApi {
   readAudioEnginePlaybackStatus?: () => Promise<ReadAudioEnginePlaybackStatusResponseDto>
   readAudioEngineAnalysisFrame?: () => Promise<ReadAudioEngineAnalysisFrameResponseDto>
   setAudioEngineMode?: (request: SetAudioEngineModeRequestDto) => Promise<SetAudioEngineModeResponseDto>
+  verifyAudioEngineMpvBin?: (
+    request: VerifyAudioEngineMpvBinRequestDto,
+  ) => Promise<VerifyAudioEngineMpvBinResponseDto>
   listAudioOutputDevices?: () => Promise<ListAudioOutputDevicesResponseDto>
   setAudioOutputDevice?: (
     request: SetAudioOutputDeviceRequestDto,

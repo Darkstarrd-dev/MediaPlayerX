@@ -1161,6 +1161,18 @@ export const setAudioEngineModeRequestSchema = z.object({
 export const setAudioEngineModeResponseSchema =
   readAudioEngineStateResponseSchema;
 
+export const verifyAudioEngineMpvBinRequestSchema = z.object({
+  directory_path: z.string().min(1),
+});
+
+export const verifyAudioEngineMpvBinResponseSchema = z.object({
+  ok: z.boolean(),
+  env_key: z.literal("MPX_MPV_BIN"),
+  mpv_bin_path: z.string().min(1).nullable(),
+  message: z.string().nullable(),
+  state: readAudioEngineStateResponseSchema,
+});
+
 export const listAudioOutputDevicesResponseSchema = z.object({
   devices: z.array(audioOutputDeviceSchema),
   active_device_id: z.string().min(1).nullable(),

@@ -181,6 +181,9 @@ export interface RenderSettingsMainSectionParams {
   audioEngineUsingFallback: boolean;
   audioEngineMpvAvailable: boolean;
   audioEngineMpvBinPath: string | null;
+  mpvBinDirectoryDraft: string;
+  mpvBinVerifyPending: boolean;
+  mpvBinVerifyMessage: string | null;
   audioEngineActiveDeviceId: string | null;
   audioEngineExclusiveEnabled: boolean;
   audioEngineGaplessMode: AudioGaplessModeDto;
@@ -329,6 +332,9 @@ export interface RenderSettingsMainSectionParams {
   onRefreshPreferenceDebug: () => void;
   onRefreshAudioEngineState: () => void;
   onRefreshAudioOutputDevices: () => void;
+  onMpvBinDirectoryDraftChange: (value: string) => void;
+  onPickMpvBinDirectory: () => void;
+  onVerifyMpvBinDirectory: () => void;
   onAudioEngineModeChange: (mode: AudioEngineModeDto) => void;
   onAudioOutputDeviceChange: (deviceId: string) => void;
   onAudioExclusiveChange: (enabled: boolean) => void;

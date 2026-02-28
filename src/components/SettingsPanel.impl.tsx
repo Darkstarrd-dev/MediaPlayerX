@@ -293,10 +293,16 @@ function SettingsPanel({
     audioEngineUpdating,
     audioEngineError,
     audioEngineState,
+    mpvBinDirectoryDraft,
+    mpvBinVerifyPending,
+    mpvBinVerifyMessage,
     audioOutputDevicesLoading,
     audioOutputDevices,
     refreshAudioEngineState,
     refreshAudioOutputDevices,
+    setMpvBinDirectoryDraft,
+    pickMpvBinDirectory,
+    verifyMpvBinDirectory,
     setAudioEngineMode,
     setAudioOutputDevice,
     setAudioExclusive,
@@ -970,6 +976,9 @@ function SettingsPanel({
     audioEngineUsingFallback: audioEngineState?.using_fallback ?? false,
     audioEngineMpvAvailable: audioEngineState?.mpv_available ?? false,
     audioEngineMpvBinPath: audioEngineState?.mpv_bin_path ?? null,
+    mpvBinDirectoryDraft,
+    mpvBinVerifyPending,
+    mpvBinVerifyMessage,
     audioEngineActiveDeviceId: audioEngineState?.active_device_id ?? null,
     audioEngineExclusiveEnabled: audioEngineState?.exclusive_enabled ?? false,
     audioEngineGaplessMode: audioEngineState?.gapless_mode ?? "weak",
@@ -1086,6 +1095,13 @@ function SettingsPanel({
     onRefreshPreferenceDebug: refreshPreferenceDebug,
     onRefreshAudioEngineState: refreshAudioEngineState,
     onRefreshAudioOutputDevices: refreshAudioOutputDevices,
+    onMpvBinDirectoryDraftChange: setMpvBinDirectoryDraft,
+    onPickMpvBinDirectory: () => {
+      void pickMpvBinDirectory();
+    },
+    onVerifyMpvBinDirectory: () => {
+      void verifyMpvBinDirectory();
+    },
     onAudioEngineModeChange: (mode) => {
       void setAudioEngineMode(mode);
     },

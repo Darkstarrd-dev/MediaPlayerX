@@ -61,7 +61,7 @@ interface AudioEngineActionResult {
 export class AudioEngineController {
   private readonly mpvEngine = new MpvEngine()
 
-  private readonly mpvBinPath: string | null
+  private mpvBinPath: string | null
 
   private mode: AudioEngineMode = 'chromium'
 
@@ -117,14 +117,18 @@ export class AudioEngineController {
     }
 
     if (!this.mpvBinPath) {
+      await this.mpvEngine.dispose()
       this.mode = 'chromium'
       this.usingFallback = true
       this.lastError = '未找到 mpv 可执行文件，已回退到兼容模式'
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
       this.updatedAtMs = Date.now()
       return this.readState()
     }
 
     try {
+      await this.mpvEngine.dispose()
       await this.mpvEngine.initialize({
         mpvBinPath: this.mpvBinPath,
         extraArgs: ['--no-config', '--ao=wasapi', '--msg-level=all=warn'],
@@ -149,9 +153,24 @@ export class AudioEngineController {
       this.usingFallback = true
       this.lastError = error instanceof Error ? error.message : String(error)
       await this.mpvEngine.dispose()
+      this.activeDeviceId = null
+      this.exclusiveEnabled = false
     }
 
     this.updatedAtMs = Date.now()
+    return this.readState()
+  }
+
+  async overrideMpvBinPath(nextPath: string | null): Promise<AudioEngineStateSnapshot> {
+    this.mpvBinPath = nextPath
+    this.updatedAtMs = Date.now()
+
+    if (this.desiredMode === 'mpv') {
+      return this.setMode('mpv')
+    }
+
+    this.usingFallback = false
+    this.lastError = null
     return this.readState()
   }
 

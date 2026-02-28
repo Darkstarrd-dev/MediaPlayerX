@@ -31,6 +31,9 @@ interface RenderSettingsSystemSectionParams {
   audioEngineUsingFallback: RenderSettingsMainSectionParams["audioEngineUsingFallback"];
   audioEngineMpvAvailable: RenderSettingsMainSectionParams["audioEngineMpvAvailable"];
   audioEngineMpvBinPath: RenderSettingsMainSectionParams["audioEngineMpvBinPath"];
+  mpvBinDirectoryDraft: RenderSettingsMainSectionParams["mpvBinDirectoryDraft"];
+  mpvBinVerifyPending: RenderSettingsMainSectionParams["mpvBinVerifyPending"];
+  mpvBinVerifyMessage: RenderSettingsMainSectionParams["mpvBinVerifyMessage"];
   audioEngineActiveDeviceId: RenderSettingsMainSectionParams["audioEngineActiveDeviceId"];
   audioEngineExclusiveEnabled: RenderSettingsMainSectionParams["audioEngineExclusiveEnabled"];
   audioEngineGaplessMode: RenderSettingsMainSectionParams["audioEngineGaplessMode"];
@@ -39,6 +42,9 @@ interface RenderSettingsSystemSectionParams {
   audioOutputDevices: RenderSettingsMainSectionParams["audioOutputDevices"];
   onRefreshAudioEngineState: RenderSettingsMainSectionParams["onRefreshAudioEngineState"];
   onRefreshAudioOutputDevices: RenderSettingsMainSectionParams["onRefreshAudioOutputDevices"];
+  onMpvBinDirectoryDraftChange: RenderSettingsMainSectionParams["onMpvBinDirectoryDraftChange"];
+  onPickMpvBinDirectory: RenderSettingsMainSectionParams["onPickMpvBinDirectory"];
+  onVerifyMpvBinDirectory: RenderSettingsMainSectionParams["onVerifyMpvBinDirectory"];
   onAudioEngineModeChange: RenderSettingsMainSectionParams["onAudioEngineModeChange"];
   onAudioOutputDeviceChange: RenderSettingsMainSectionParams["onAudioOutputDeviceChange"];
   onAudioExclusiveChange: RenderSettingsMainSectionParams["onAudioExclusiveChange"];
@@ -140,6 +146,34 @@ export function renderSettingsSystemSection(
           </button>
         </div>
         <label>
+          MPX_MPV_BIN 目录
+          <input
+            type="text"
+            value={params.mpvBinDirectoryDraft}
+            placeholder="例如：C:\\Tools\\mpv"
+            disabled={params.audioEngineUpdating || params.mpvBinVerifyPending}
+            onChange={(event) =>
+              params.onMpvBinDirectoryDraftChange(event.target.value)
+            }
+          />
+        </label>
+        <div className="settings-runtime-actions">
+          <button
+            type="button"
+            disabled={params.audioEngineUpdating || params.mpvBinVerifyPending}
+            onClick={params.onPickMpvBinDirectory}
+          >
+            选择目录
+          </button>
+          <button
+            type="button"
+            disabled={params.audioEngineUpdating || params.mpvBinVerifyPending}
+            onClick={params.onVerifyMpvBinDirectory}
+          >
+            {params.mpvBinVerifyPending ? "验证中..." : "验证 MPX_MPV_BIN"}
+          </button>
+        </div>
+        <label>
           音频模式
           <select
             value={params.audioEngineDesiredMode}
@@ -217,6 +251,9 @@ export function renderSettingsSystemSection(
         </label>
         {params.audioEngineError ? (
           <p className="settings-danger-text">{params.audioEngineError}</p>
+        ) : null}
+        {params.mpvBinVerifyMessage ? (
+          <p className="settings-placeholder">{params.mpvBinVerifyMessage}</p>
         ) : null}
       </fieldset>
 

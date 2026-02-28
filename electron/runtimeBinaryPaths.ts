@@ -4,6 +4,10 @@ import path from 'node:path'
 
 const MPV_ENV_KEYS = ['MPX_MPV_BIN', 'MEDIA_PLAYERX_MPV_BIN'] as const
 
+function resolveMpvExecutableName(): string {
+  return process.platform === 'win32' ? 'mpv.exe' : 'mpv'
+}
+
 function resolveExistingAbsolutePath(rawValue: string | undefined): string | null {
   const value = (rawValue ?? '').trim()
   if (!value) {
@@ -11,13 +15,21 @@ function resolveExistingAbsolutePath(rawValue: string | undefined): string | nul
   }
 
   const resolved = path.resolve(value)
-  return fs.existsSync(resolved) ? resolved : null
+  if (!fs.existsSync(resolved)) {
+    return null
+  }
+
+  try {
+    return fs.statSync(resolved).isFile() ? resolved : null
+  } catch {
+    return null
+  }
 }
 
 function resolvePackagedMpvPath(): string | null {
   const candidates = [
-    path.join(process.resourcesPath, 'vendor', 'mpv', 'mpv.exe'),
-    path.join(process.resourcesPath, 'vendor', 'mpv', 'win32-x64', 'mpv.exe'),
+    path.join(process.resourcesPath, 'vendor', 'mpv', resolveMpvExecutableName()),
+    path.join(process.resourcesPath, 'vendor', 'mpv', 'win32-x64', resolveMpvExecutableName()),
   ]
 
   for (const candidate of candidates) {
@@ -27,6 +39,29 @@ function resolvePackagedMpvPath(): string | null {
   }
 
   return null
+}
+
+export function resolveMpvBinPathFromDirectory(directoryPath: string): string | null {
+  const normalized = directoryPath.trim()
+  if (!normalized) {
+    return null
+  }
+
+  const resolvedDir = path.resolve(normalized)
+  if (!fs.existsSync(resolvedDir)) {
+    return null
+  }
+
+  const candidate = path.join(resolvedDir, resolveMpvExecutableName())
+  if (!fs.existsSync(candidate)) {
+    return null
+  }
+
+  try {
+    return fs.statSync(candidate).isFile() ? candidate : null
+  } catch {
+    return null
+  }
 }
 
 export function resolveMpvBinPath(projectRoot: string = process.cwd()): string | null {
@@ -41,6 +76,6 @@ export function resolveMpvBinPath(projectRoot: string = process.cwd()): string |
     return resolvePackagedMpvPath()
   }
 
-  const devCandidate = path.resolve(projectRoot, 'vendor', 'mpv', 'win32-x64', 'mpv.exe')
+  const devCandidate = path.resolve(projectRoot, 'vendor', 'mpv', 'win32-x64', resolveMpvExecutableName())
   return fs.existsSync(devCandidate) ? devCandidate : null
 }

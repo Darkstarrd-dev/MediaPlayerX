@@ -8,12 +8,17 @@ const mockState = vi.hoisted(() => {
 
   const moveSidebarNodes = vi.fn()
   const startAudioTranscodeTask = vi.fn()
+  const resolveMpvBinPathFromDirectory = vi.fn()
+  const readAudioEngineState = vi.fn()
+  const overrideMpvBinPath = vi.fn()
   const onLibraryChanged = vi.fn()
   const dispose = vi.fn()
 
   const service = {
     moveSidebarNodes,
     startAudioTranscodeTask,
+    readState: readAudioEngineState,
+    overrideMpvBinPath,
     onLibraryChanged,
     dispose,
   }
@@ -27,6 +32,9 @@ const mockState = vi.hoisted(() => {
     ipcHandle,
     moveSidebarNodes,
     startAudioTranscodeTask,
+    resolveMpvBinPathFromDirectory,
+    readAudioEngineState,
+    overrideMpvBinPath,
     onLibraryChanged,
     dispose,
     service,
@@ -90,6 +98,94 @@ vi.mock('./registerResolveMediaResourceHandler', () => {
   }
 })
 
+vi.mock('./runtimeBinaryPaths', () => {
+  return {
+    resolveMpvBinPathFromDirectory: mockState.resolveMpvBinPathFromDirectory,
+  }
+})
+
+vi.mock('./services/audio-engine/audioEngineController', () => {
+  return {
+    AudioEngineController: vi.fn(function MockAudioEngineController() {
+      return {
+        readState: mockState.readAudioEngineState,
+        overrideMpvBinPath: mockState.overrideMpvBinPath,
+        setMode: vi.fn(async () => mockState.readAudioEngineState()),
+        readPlaybackStatus: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          loaded: false,
+          paused: null,
+          timeSec: null,
+          durationSec: null,
+          message: null,
+          updatedAtMs: Date.now(),
+        })),
+        readAnalysisFrame: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          loaded: false,
+          audioLevel: 0,
+          audioBeat: 0,
+          frequencyBins: [],
+          waveformBins: [],
+          message: null,
+          updatedAtMs: Date.now(),
+        })),
+        listAudioDevices: vi.fn(async () => ({
+          devices: [],
+          activeDeviceId: null,
+        })),
+        setAudioDevice: vi.fn(async () => ({
+          ok: false,
+          activeDeviceId: null,
+          message: null,
+        })),
+        setAudioExclusive: vi.fn(async () => ({
+          ok: false,
+          enabled: false,
+          message: null,
+        })),
+        setGaplessMode: vi.fn(async () => ({
+          ok: true,
+          mode: 'weak',
+          message: null,
+        })),
+        setReplayGainMode: vi.fn(async () => ({
+          ok: true,
+          mode: 'off',
+          message: null,
+        })),
+        loadTrack: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          message: null,
+        })),
+        setPaused: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          message: null,
+        })),
+        seekToSec: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          message: null,
+        })),
+        setVolume: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          message: null,
+        })),
+        stopPlayback: vi.fn(async () => ({
+          ok: true,
+          mode: 'chromium',
+          message: null,
+        })),
+      }
+    }),
+  }
+})
+
 import { BACKEND_CHANNELS } from './channels'
 import { registerBackendIpcHandlers } from './registerBackendIpcHandlers'
 
@@ -99,7 +195,23 @@ describe('registerBackendIpcHandlers.moveSidebarNodes', () => {
     mockState.ipcHandle.mockClear()
     mockState.moveSidebarNodes.mockReset()
     mockState.startAudioTranscodeTask.mockReset()
+    mockState.resolveMpvBinPathFromDirectory.mockReset()
+    mockState.readAudioEngineState.mockReset()
+    mockState.overrideMpvBinPath.mockReset()
     mockState.fileSystemServiceConstructor.mockClear()
+    mockState.readAudioEngineState.mockReturnValue({
+      mode: 'chromium',
+      desiredMode: 'chromium',
+      mpvAvailable: false,
+      mpvBinPath: null,
+      usingFallback: false,
+      lastError: null,
+      activeDeviceId: null,
+      exclusiveEnabled: false,
+      gaplessMode: 'weak',
+      replayGainMode: 'off',
+      updatedAtMs: Date.now(),
+    })
   })
 
   it('使用 request/response schema 校验并转发到 service', async () => {
@@ -200,6 +312,22 @@ describe('registerBackendIpcHandlers.startAudioTranscodeTask', () => {
     mockState.ipcHandle.mockClear()
     mockState.startAudioTranscodeTask.mockReset()
     mockState.fileSystemServiceConstructor.mockClear()
+    mockState.resolveMpvBinPathFromDirectory.mockReset()
+    mockState.readAudioEngineState.mockReset()
+    mockState.overrideMpvBinPath.mockReset()
+    mockState.readAudioEngineState.mockReturnValue({
+      mode: 'chromium',
+      desiredMode: 'chromium',
+      mpvAvailable: false,
+      mpvBinPath: null,
+      usingFallback: false,
+      lastError: null,
+      activeDeviceId: null,
+      exclusiveEnabled: false,
+      gaplessMode: 'weak',
+      replayGainMode: 'off',
+      updatedAtMs: Date.now(),
+    })
   })
 
   it('应通过 schema 校验并转发到 service', async () => {
@@ -262,5 +390,97 @@ describe('registerBackendIpcHandlers.startAudioTranscodeTask', () => {
 
     expect(mockState.fileSystemServiceConstructor).not.toHaveBeenCalled()
     expect(mockState.startAudioTranscodeTask).not.toHaveBeenCalled()
+  })
+})
+
+describe('registerBackendIpcHandlers.verifyAudioEngineMpvBin', () => {
+  beforeEach(() => {
+    mockState.handlers.clear()
+    mockState.ipcHandle.mockClear()
+    mockState.resolveMpvBinPathFromDirectory.mockReset()
+    mockState.readAudioEngineState.mockReset()
+    mockState.overrideMpvBinPath.mockReset()
+    delete process.env.MPX_MPV_BIN
+    mockState.readAudioEngineState.mockReturnValue({
+      mode: 'chromium',
+      desiredMode: 'chromium',
+      mpvAvailable: false,
+      mpvBinPath: null,
+      usingFallback: false,
+      lastError: null,
+      activeDeviceId: null,
+      exclusiveEnabled: false,
+      gaplessMode: 'weak',
+      replayGainMode: 'off',
+      updatedAtMs: Date.now(),
+    })
+  })
+
+  it('目录包含 mpv 时应设置环境变量并刷新状态', async () => {
+    const mpvBinPath = 'C:/Tools/mpv/mpv.exe'
+    mockState.resolveMpvBinPathFromDirectory.mockReturnValue(mpvBinPath)
+    mockState.overrideMpvBinPath.mockResolvedValue({
+      mode: 'mpv',
+      desiredMode: 'mpv',
+      mpvAvailable: true,
+      mpvBinPath,
+      usingFallback: false,
+      lastError: null,
+      activeDeviceId: null,
+      exclusiveEnabled: false,
+      gaplessMode: 'weak',
+      replayGainMode: 'off',
+      updatedAtMs: Date.now(),
+    })
+
+    registerBackendIpcHandlers()
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.verifyAudioEngineMpvBin)
+    if (!handler) {
+      throw new Error('verifyAudioEngineMpvBin handler missing')
+    }
+
+    const response = await handler({}, { directory_path: 'C:/Tools/mpv' })
+
+    expect(mockState.resolveMpvBinPathFromDirectory).toHaveBeenCalledWith('C:/Tools/mpv')
+    expect(mockState.overrideMpvBinPath).toHaveBeenCalledWith(mpvBinPath)
+    expect(process.env.MPX_MPV_BIN).toBe(mpvBinPath)
+    expect(response).toEqual(
+      expect.objectContaining({
+        ok: true,
+        env_key: 'MPX_MPV_BIN',
+        mpv_bin_path: mpvBinPath,
+        state: expect.objectContaining({
+          mode: 'mpv',
+          mpv_bin_path: mpvBinPath,
+        }),
+      }),
+    )
+  })
+
+  it('目录不包含 mpv 时应返回失败且不覆盖控制器路径', async () => {
+    mockState.resolveMpvBinPathFromDirectory.mockReturnValue(null)
+
+    registerBackendIpcHandlers()
+    const handler = mockState.handlers.get(BACKEND_CHANNELS.verifyAudioEngineMpvBin)
+    if (!handler) {
+      throw new Error('verifyAudioEngineMpvBin handler missing')
+    }
+
+    const response = await handler({}, { directory_path: 'C:/missing-mpv' })
+
+    expect(mockState.resolveMpvBinPathFromDirectory).toHaveBeenCalledWith('C:/missing-mpv')
+    expect(mockState.overrideMpvBinPath).not.toHaveBeenCalled()
+    expect(process.env.MPX_MPV_BIN).toBeUndefined()
+    expect(response).toEqual(
+      expect.objectContaining({
+        ok: false,
+        env_key: 'MPX_MPV_BIN',
+        mpv_bin_path: null,
+        state: expect.objectContaining({
+          mode: 'chromium',
+          mpv_available: false,
+        }),
+      }),
+    )
   })
 })

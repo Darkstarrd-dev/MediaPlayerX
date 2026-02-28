@@ -13,10 +13,19 @@ import {
   emitMusicPlaybackState,
   onMusicPlaybackControl,
 } from '../features/media/musicPlaybackBridge'
-import type { StartAudioTranscodeTaskRequestDto } from '../contracts/backend'
+import type { AudioTranscodeTaskDto, StartAudioTranscodeTaskRequestDto } from '../contracts/backend'
 import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from '../features/music-visualizer/shaderRegistry'
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp } from '../utils/ui'
+
+interface AudioTranscodeTaskHistoryItem {
+  taskId: string
+  status: AudioTranscodeTaskDto['status']
+  progress: number
+  outputCount: number
+  message: string | null
+  updatedAtMs: number
+}
 
 function MusicMainSection({
   active,
@@ -85,6 +94,7 @@ function MusicMainSection({
   const visualizerActivateRafRef = useRef<number | null>(null)
   const visualizerActivateRaf2Ref = useRef<number | null>(null)
   const audioTranscodePollTimerRef = useRef<number | null>(null)
+  const audioTranscodeRequestByTaskIdRef = useRef<Map<string, StartAudioTranscodeTaskRequestDto>>(new Map())
   const suppressNativePlaybackEventsRef = useRef(false)
   const suppressNativePlaybackTimerRef = useRef<number | null>(null)
   const modeTransitionInProgressRef = useRef(false)
@@ -126,6 +136,7 @@ function MusicMainSection({
   const [audioTranscodeTaskProgress, setAudioTranscodeTaskProgress] = useState(0)
   const [audioTranscodeTaskMessage, setAudioTranscodeTaskMessage] = useState<string | null>(null)
   const [audioTranscodeOutputCount, setAudioTranscodeOutputCount] = useState(0)
+  const [audioTranscodeTaskHistory, setAudioTranscodeTaskHistory] = useState<AudioTranscodeTaskHistoryItem[]>([])
   const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
@@ -334,6 +345,41 @@ function MusicMainSection({
   const canManageAudioTranscode =
     manageMode &&
     (manageSelectedAudioIds.length > 0 || Boolean(focusedAudio?.id))
+  const audioTranscodeTaskHistoryView = useMemo(
+    () => [...audioTranscodeTaskHistory].sort((left, right) => right.updatedAtMs - left.updatedAtMs).slice(0, 6),
+    [audioTranscodeTaskHistory],
+  )
+
+  const resolveAudioTranscodeTaskProgress = useCallback((task: AudioTranscodeTaskDto) => {
+    return task.total_count > 0
+      ? Math.max(0, Math.min(1, task.processed_count / task.total_count))
+      : Math.max(0, Math.min(1, task.progress ?? 0))
+  }, [])
+
+  const applyAudioTranscodeTaskSnapshot = useCallback((task: AudioTranscodeTaskDto) => {
+    const progress = resolveAudioTranscodeTaskProgress(task)
+    setAudioTranscodeTaskStatus(task.status)
+    setAudioTranscodeTaskProgress(progress)
+    setAudioTranscodeTaskMessage(task.message ?? null)
+    setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
+  }, [resolveAudioTranscodeTaskProgress])
+
+  const upsertAudioTranscodeTaskHistory = useCallback((task: AudioTranscodeTaskDto) => {
+    const progress = resolveAudioTranscodeTaskProgress(task)
+    const nextItem: AudioTranscodeTaskHistoryItem = {
+      taskId: task.task_id,
+      status: task.status,
+      progress,
+      outputCount: task.output_files?.length ?? 0,
+      message: task.message ?? null,
+      updatedAtMs: task.updated_at_ms,
+    }
+
+    setAudioTranscodeTaskHistory((previous) => {
+      const deduped = previous.filter((item) => item.taskId !== task.task_id)
+      return [nextItem, ...deduped].slice(0, 16)
+    })
+  }, [resolveAudioTranscodeTaskProgress])
 
   const clearAudioTranscodePollTimer = useCallback(() => {
     if (audioTranscodePollTimerRef.current != null) {
@@ -954,13 +1000,8 @@ function MusicMainSection({
           return
         }
         const nextStatus = task.status ?? 'running'
-        const progress = task.total_count > 0
-          ? Math.max(0, Math.min(1, task.processed_count / task.total_count))
-          : Math.max(0, Math.min(1, task.progress ?? 0))
-        setAudioTranscodeTaskStatus(nextStatus)
-        setAudioTranscodeTaskProgress(progress)
-        setAudioTranscodeTaskMessage(task.message ?? null)
-        setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
+        applyAudioTranscodeTaskSnapshot(task)
+        upsertAudioTranscodeTaskHistory(task)
 
         if (nextStatus === 'completed' || nextStatus === 'cancelled' || nextStatus === 'failed') {
           clearAudioTranscodePollTimer()
@@ -975,9 +1016,11 @@ function MusicMainSection({
       clearAudioTranscodePollTimer()
     }
   }, [
+    applyAudioTranscodeTaskSnapshot,
     audioTranscodeExecuting,
     audioTranscodeTaskId,
     clearAudioTranscodePollTimer,
+    upsertAudioTranscodeTaskHistory,
   ])
 
   useEffect(() => {
@@ -1032,14 +1075,7 @@ function MusicMainSection({
     setAudioTranscodePanelOpen((value) => !value)
   }
 
-  const handleAudioTranscodeConfirm = async () => {
-    const targetAudioIds = resolveAudioTranscodeTargetIds()
-    if (targetAudioIds.length <= 0) {
-      setAudioTranscodeTaskStatus('failed')
-      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeNoTarget'))
-      return
-    }
-
+  const executeAudioTranscodeTask = useCallback(async (request: StartAudioTranscodeTaskRequestDto) => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
     const startAudioTranscodeTask = backendApi?.startAudioTranscodeTask
     if (typeof startAudioTranscodeTask !== 'function') {
@@ -1053,6 +1089,38 @@ function MusicMainSection({
     setAudioTranscodeTaskMessage(null)
     setAudioTranscodeOutputCount(0)
 
+    try {
+      const response = await startAudioTranscodeTask(request)
+      const task = response.task
+      if (!task?.task_id) {
+        setAudioTranscodeTaskStatus('failed')
+        setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeMissingTaskId'))
+        return
+      }
+
+      const requestForStore: StartAudioTranscodeTaskRequestDto = {
+        ...request,
+        audio_ids: [...request.audio_ids],
+      }
+      audioTranscodeRequestByTaskIdRef.current.set(task.task_id, requestForStore)
+      setAudioTranscodeTaskId(task.task_id)
+      applyAudioTranscodeTaskSnapshot(task)
+      upsertAudioTranscodeTaskHistory(task)
+    } catch (error) {
+      const reason = error instanceof Error && error.message ? error.message : String(error)
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(reason)
+    }
+  }, [applyAudioTranscodeTaskSnapshot, t, upsertAudioTranscodeTaskHistory])
+
+  const handleAudioTranscodeConfirm = async () => {
+    const targetAudioIds = resolveAudioTranscodeTargetIds()
+    if (targetAudioIds.length <= 0) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeNoTarget'))
+      return
+    }
+
     const request: StartAudioTranscodeTaskRequestDto = {
       audio_ids: targetAudioIds,
       preset: audioTranscodePreset,
@@ -1065,24 +1133,86 @@ function MusicMainSection({
       request.output_dir = outputDir
     }
 
-    try {
-      const response = await startAudioTranscodeTask(request)
-      const task = response.task
-      if (!task?.task_id) {
-        setAudioTranscodeTaskStatus('failed')
-        setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeMissingTaskId'))
-        return
-      }
-      setAudioTranscodeTaskId(task.task_id)
-      setAudioTranscodeTaskStatus(task.status ?? 'running')
-      setAudioTranscodeTaskProgress(0)
-      setAudioTranscodeTaskMessage(task.message ?? null)
-      setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
-    } catch (error) {
-      const reason = error instanceof Error && error.message ? error.message : String(error)
-      setAudioTranscodeTaskStatus('failed')
-      setAudioTranscodeTaskMessage(reason)
+    await executeAudioTranscodeTask(request)
+  }
+
+  const handleAudioTranscodeRetryFailedTasks = async () => {
+    if (audioTranscodeExecuting || audioTranscodePickingOutputDir) {
+      return
     }
+
+    const failedTaskIds = audioTranscodeTaskHistory
+      .filter((task) => task.status === 'failed')
+      .map((task) => task.taskId)
+    if (failedTaskIds.length <= 0) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeNoFailedTaskInHistory'))
+      return
+    }
+
+    const mergedAudioIds = new Set<string>()
+    for (const taskId of failedTaskIds) {
+      const request = audioTranscodeRequestByTaskIdRef.current.get(taskId)
+      if (!request?.audio_ids) {
+        continue
+      }
+      for (const audioId of request.audio_ids) {
+        if (audioId.trim().length > 0) {
+          mergedAudioIds.add(audioId)
+        }
+      }
+    }
+
+    const retryAudioIds = Array.from(mergedAudioIds)
+    if (retryAudioIds.length <= 0) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeRetryFailedTaskTargetsMissing'))
+      return
+    }
+
+    const request: StartAudioTranscodeTaskRequestDto = {
+      audio_ids: retryAudioIds,
+      preset: audioTranscodePreset,
+      overwrite: audioTranscodeOverwrite,
+      copy_metadata: audioTranscodeCopyMetadata,
+      add_output_to_music_sources: audioTranscodeAddOutputToMusicSources,
+    }
+    const outputDir = audioTranscodeOutputDir.trim()
+    if (outputDir.length > 0) {
+      request.output_dir = outputDir
+    }
+
+    await executeAudioTranscodeTask(request)
+  }
+
+  const handleAudioTranscodeRetry = async (taskId: string) => {
+    if (audioTranscodeExecuting || audioTranscodePickingOutputDir) {
+      return
+    }
+
+    const previousRequest = audioTranscodeRequestByTaskIdRef.current.get(taskId)
+    if (!previousRequest) {
+      setAudioTranscodeTaskStatus('failed')
+      setAudioTranscodeTaskMessage(t('ui.music.audioTranscodeRetryRequestMissing'))
+      return
+    }
+
+    setAudioTranscodePreset(previousRequest.preset)
+    setAudioTranscodeOutputDir(previousRequest.output_dir ?? '')
+    setAudioTranscodeOverwrite(Boolean(previousRequest.overwrite))
+    setAudioTranscodeCopyMetadata(previousRequest.copy_metadata ?? true)
+    setAudioTranscodeAddOutputToMusicSources(previousRequest.add_output_to_music_sources ?? true)
+
+    const retryRequest: StartAudioTranscodeTaskRequestDto = {
+      ...previousRequest,
+      audio_ids: [...previousRequest.audio_ids],
+    }
+    await executeAudioTranscodeTask(retryRequest)
+  }
+
+  const handleAudioTranscodeClearTaskHistory = () => {
+    setAudioTranscodeTaskHistory([])
+    audioTranscodeRequestByTaskIdRef.current.clear()
   }
 
   const handleAudioTranscodePickOutputDir = async () => {
@@ -1121,7 +1251,10 @@ function MusicMainSection({
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
     if (audioTranscodeExecuting && audioTranscodeTaskId && typeof backendApi?.cancelAudioTranscodeTask === 'function') {
       try {
-        await backendApi.cancelAudioTranscodeTask({ task_id: audioTranscodeTaskId })
+        const response = await backendApi.cancelAudioTranscodeTask({ task_id: audioTranscodeTaskId })
+        if (response.task) {
+          upsertAudioTranscodeTaskHistory(response.task)
+        }
       } catch {
         // ignore cancel error and close panel anyway
       }
@@ -1330,6 +1463,7 @@ function MusicMainSection({
       taskProgress={audioTranscodeTaskProgress}
       taskMessage={audioTranscodeTaskMessage}
       outputCount={audioTranscodeOutputCount}
+      taskHistory={audioTranscodeTaskHistoryView}
       onCloseMask={() => {
         setAudioTranscodePanelOpen(false)
       }}
@@ -1342,6 +1476,9 @@ function MusicMainSection({
       onOverwriteChange={setAudioTranscodeOverwrite}
       onCopyMetadataChange={setAudioTranscodeCopyMetadata}
       onAddOutputToMusicSourcesChange={setAudioTranscodeAddOutputToMusicSources}
+      onRetryTask={handleAudioTranscodeRetry}
+      onRetryFailedTasks={handleAudioTranscodeRetryFailedTasks}
+      onClearTaskHistory={handleAudioTranscodeClearTaskHistory}
       onConfirm={handleAudioTranscodeConfirm}
       onCancel={handleAudioTranscodeCancel}
     />

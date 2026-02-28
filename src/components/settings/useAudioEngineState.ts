@@ -19,10 +19,16 @@ interface UseAudioEngineStateResult {
   audioEngineUpdating: boolean
   audioEngineError: string | null
   audioEngineState: ReadAudioEngineStateResponseDto | null
+  mpvBinDirectoryDraft: string
+  mpvBinVerifyPending: boolean
+  mpvBinVerifyMessage: string | null
   audioOutputDevicesLoading: boolean
   audioOutputDevices: AudioOutputDeviceDto[]
   refreshAudioEngineState: () => void
   refreshAudioOutputDevices: () => void
+  setMpvBinDirectoryDraft: (value: string) => void
+  pickMpvBinDirectory: () => Promise<void>
+  verifyMpvBinDirectory: () => Promise<void>
   setAudioEngineMode: (mode: AudioEngineModeDto) => Promise<void>
   setAudioOutputDevice: (deviceId: string) => Promise<void>
   setAudioExclusive: (enabled: boolean) => Promise<void>
@@ -52,6 +58,9 @@ export function useAudioEngineState({
   const [audioEngineError, setAudioEngineError] = useState<string | null>(null)
   const [audioEngineState, setAudioEngineState] =
     useState<ReadAudioEngineStateResponseDto | null>(null)
+  const [mpvBinDirectoryDraft, setMpvBinDirectoryDraft] = useState('')
+  const [mpvBinVerifyPending, setMpvBinVerifyPending] = useState(false)
+  const [mpvBinVerifyMessage, setMpvBinVerifyMessage] = useState<string | null>(null)
   const [audioOutputDevicesLoading, setAudioOutputDevicesLoading] = useState(false)
   const [audioOutputDevices, setAudioOutputDevices] = useState<AudioOutputDeviceDto[]>([])
   const [stateRefreshNonce, setStateRefreshNonce] = useState(0)
@@ -64,6 +73,27 @@ export function useAudioEngineState({
   const refreshAudioOutputDevices = useCallback(() => {
     setDevicesRefreshNonce((value) => value + 1)
   }, [])
+
+  useEffect(() => {
+    const mpvBinPath = audioEngineState?.mpv_bin_path?.trim() ?? ''
+    if (!mpvBinPath) {
+      return
+    }
+
+    const normalized = mpvBinPath.replace(/[\\/]+$/, '')
+    const separatorIndex = Math.max(
+      normalized.lastIndexOf('/'),
+      normalized.lastIndexOf('\\'),
+    )
+    if (separatorIndex <= 0) {
+      return
+    }
+
+    const directoryPath = normalized.slice(0, separatorIndex)
+    setMpvBinDirectoryDraft((previous) =>
+      previous.trim().length > 0 ? previous : directoryPath,
+    )
+  }, [audioEngineState?.mpv_bin_path])
 
   useEffect(() => {
     if (!settingsOpen || activeSection !== 'system') {
@@ -180,6 +210,73 @@ export function useAudioEngineState({
     }
   }, [refreshAudioOutputDevices])
 
+  const pickMpvBinDirectory = useCallback(async () => {
+    const backendApi =
+      typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (!backendApi || typeof backendApi.pickDirectoryPath !== 'function') {
+      setMpvBinVerifyMessage('当前运行环境不支持目录选择')
+      return
+    }
+
+    try {
+      const response = await backendApi.pickDirectoryPath({
+        title: '选择 MPV 可执行文件目录 (MPX_MPV_BIN)',
+        default_path: mpvBinDirectoryDraft.trim() || undefined,
+      })
+      const pickedPath = response.path?.trim() ?? ''
+      if (!response.canceled && pickedPath) {
+        setMpvBinDirectoryDraft(pickedPath)
+        setMpvBinVerifyMessage(null)
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : '选择 MPV 目录失败'
+      setMpvBinVerifyMessage(message)
+    }
+  }, [mpvBinDirectoryDraft])
+
+  const verifyMpvBinDirectory = useCallback(async () => {
+    const backendApi =
+      typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (!backendApi || typeof backendApi.verifyAudioEngineMpvBin !== 'function') {
+      setMpvBinVerifyMessage('当前运行环境不支持 MPX_MPV_BIN 验证')
+      return
+    }
+
+    const directoryPath = mpvBinDirectoryDraft.trim()
+    if (!directoryPath) {
+      setMpvBinVerifyMessage('请先选择 MPV 目录')
+      return
+    }
+
+    setMpvBinVerifyPending(true)
+    setMpvBinVerifyMessage(null)
+    try {
+      const response = await backendApi.verifyAudioEngineMpvBin({
+        directory_path: directoryPath,
+      })
+      setAudioEngineState(response.state)
+      publishAudioEngineMode(response.state.mode)
+      if (response.ok) {
+        setAudioEngineError(null)
+      } else if (response.message) {
+        setAudioEngineError(response.message)
+      }
+      setMpvBinVerifyMessage(response.message ?? (response.ok ? '验证成功' : '验证失败'))
+      refreshAudioOutputDevices()
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : '验证 MPX_MPV_BIN 失败'
+      setMpvBinVerifyMessage(message)
+    } finally {
+      setMpvBinVerifyPending(false)
+    }
+  }, [mpvBinDirectoryDraft, refreshAudioOutputDevices])
+
   const setAudioOutputDevice = useCallback(async (deviceId: string) => {
     const backendApi =
       typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
@@ -295,10 +392,16 @@ export function useAudioEngineState({
     audioEngineUpdating,
     audioEngineError,
     audioEngineState,
+    mpvBinDirectoryDraft,
+    mpvBinVerifyPending,
+    mpvBinVerifyMessage,
     audioOutputDevicesLoading,
     audioOutputDevices,
     refreshAudioEngineState,
     refreshAudioOutputDevices,
+    setMpvBinDirectoryDraft,
+    pickMpvBinDirectory,
+    verifyMpvBinDirectory,
     setAudioEngineMode,
     setAudioOutputDevice,
     setAudioExclusive,
