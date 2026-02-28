@@ -25,6 +25,7 @@
 - 性能实施计划：`thumb_acceleration_implementation_plan.md`
 - 音频增强与转码计划：`mpv-增强模式与转码实施计划-v1.md`
 - 音频增强发布说明：`audio-enhanced-mode-release-notes-v1.md`
+- 音频增强长稳测试手册：`audio-enhanced-mode-longrun-test-runbook-v1.md`
 - 音频增强专家咨询申请：`mpv-增强模式专家咨询申请-2026-02-27.md`
 - 全屏重采样 SSOT 草案：`fullscreen_resampling_ssot_draft.md`
 - 高优化需求项目表：`high-optimization-demand-table.md`

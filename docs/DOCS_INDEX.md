@@ -23,6 +23,7 @@
 | `offline-auto-subtitle-implementation-plan.md` | 当前计划 | 离线自动字幕实施计划 |
 | `mpv-增强模式与转码实施计划-v1.md` | 当前计划 | 音频增强模式（mpv）与转码实施路线 |
 | `audio-enhanced-mode-release-notes-v1.md` | 运行手册 | 音频增强模式已知限制、回退路径与发布说明 |
+| `audio-enhanced-mode-longrun-test-runbook-v1.md` | 运行手册 | 音频增强模式长稳测试流程、脚本与回填模板 |
 | `mpv-增强模式专家咨询申请-2026-02-27.md` | 当前计划 | 音频双引擎切换阻塞问题专家咨询申请 |
 | `high-optimization-demand-table.md` | 当前计划 | 系统级高性能/长任务优化需求总表 |
 | `windows-release-signing-runbook.md` | 运行手册 | Windows 签名发布流程 |
