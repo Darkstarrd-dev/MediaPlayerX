@@ -6,6 +6,11 @@ interface UseManageSelectionParams {
   sidebarDescendantNodeIdsById?: ReadonlyMap<string, string[]>
 }
 
+interface ToggleImageCheckedOptions {
+  shiftKey?: boolean
+  orderedIds?: readonly string[]
+}
+
 export function useManageSelection({
   flatSidebarNodeIds,
   validImageIdSet,
@@ -14,6 +19,7 @@ export function useManageSelection({
   const [sidebarCheckedNodeIds, setSidebarCheckedNodeIds] = useState<string[]>([])
   const [sidebarAnchorNodeId, setSidebarAnchorNodeId] = useState<string | null>(null)
   const [imageCheckedIds, setImageCheckedIds] = useState<string[]>([])
+  const [imageAnchorId, setImageAnchorId] = useState<string | null>(null)
 
   const sidebarCheckedNodeIdSet = useMemo(() => new Set(sidebarCheckedNodeIds), [sidebarCheckedNodeIds])
   const imageCheckedIdSet = useMemo(() => new Set(imageCheckedIds), [imageCheckedIds])
@@ -28,6 +34,7 @@ export function useManageSelection({
 
   const clearImageSelections = useCallback(() => {
     setImageCheckedIds([])
+    setImageAnchorId(null)
   }, [])
 
   const clearAllSelections = useCallback(() => {
@@ -58,6 +65,7 @@ export function useManageSelection({
       }
       return next
     })
+    setImageAnchorId((previous) => (previous && validImageIdSet.has(previous) ? previous : null))
   }, [validImageIdSet])
 
   const toggleSidebarNodeChecked = useCallback(
@@ -125,27 +133,60 @@ export function useManageSelection({
     [sidebarDescendantNodeIdsById],
   )
 
-  const toggleImageChecked = useCallback((imageId: string, checked?: boolean) => {
-    setSidebarCheckedNodeIds([])
-    setSidebarAnchorNodeId(null)
+  const toggleImageChecked = useCallback(
+    (imageId: string, checked?: boolean, options?: ToggleImageCheckedOptions) => {
+      setSidebarCheckedNodeIds([])
+      setSidebarAnchorNodeId(null)
 
-    setImageCheckedIds((previous) => {
-      const next = new Set(previous)
-      const shouldCheck = typeof checked === 'boolean' ? checked : !next.has(imageId)
+      const orderedIds = options?.orderedIds
+      const shiftKey = Boolean(options?.shiftKey)
+      const canApplyShiftRange =
+        shiftKey &&
+        imageAnchorId &&
+        Array.isArray(orderedIds) &&
+        orderedIds.length > 0 &&
+        orderedIds.includes(imageAnchorId) &&
+        orderedIds.includes(imageId)
 
-      if (shouldCheck) {
-        next.add(imageId)
-      } else {
-        next.delete(imageId)
+      setImageCheckedIds((previous) => {
+        const next = new Set(previous)
+
+        if (canApplyShiftRange && imageAnchorId && orderedIds) {
+          const startIndex = orderedIds.indexOf(imageAnchorId)
+          const endIndex = orderedIds.indexOf(imageId)
+          if (startIndex >= 0 && endIndex >= 0) {
+            const [from, to] = startIndex <= endIndex ? [startIndex, endIndex] : [endIndex, startIndex]
+            for (let index = from; index <= to; index += 1) {
+              const rangeImageId = orderedIds[index]
+              if (rangeImageId) {
+                next.add(rangeImageId)
+              }
+            }
+            return Array.from(next)
+          }
+        }
+
+        const shouldCheck = typeof checked === 'boolean' ? checked : !next.has(imageId)
+        if (shouldCheck) {
+          next.add(imageId)
+        } else {
+          next.delete(imageId)
+        }
+        return Array.from(next)
+      })
+
+      if (!canApplyShiftRange) {
+        setImageAnchorId(imageId)
       }
-      return Array.from(next)
-    })
-  }, [])
+    },
+    [imageAnchorId],
+  )
 
   const replaceImageCheckedIds = useCallback((imageIds: string[], append = false) => {
     const normalized = Array.from(new Set(imageIds.map((value) => value.trim()).filter(Boolean)))
     setSidebarCheckedNodeIds([])
     setSidebarAnchorNodeId(null)
+    setImageAnchorId(null)
 
     if (append) {
       setImageCheckedIds((previous) => Array.from(new Set([...previous, ...normalized])))

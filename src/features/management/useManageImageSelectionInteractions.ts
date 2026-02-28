@@ -10,7 +10,11 @@ interface MarqueeRect {
 interface UseManageImageSelectionInteractionsParams {
   manageMode: boolean
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
-  onToggleImageChecked: (imageId: string, checked?: boolean) => void
+  onToggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void
   onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => void
   focusOnFirstToggle?: boolean
 }
@@ -191,7 +195,14 @@ export function useManageImageSelectionInteractions({
       }
 
       const toggledImageIds = new Set<string>()
-      const toggleFromCard = (card: HTMLElement | null, focusImage: boolean) => {
+      const orderedImageIds = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[data-manage-image-id]'))
+        .map((card) => card.dataset.manageImageId)
+        .filter((imageId): imageId is string => Boolean(imageId))
+      const toggleFromCard = (
+        card: HTMLElement | null,
+        focusImage: boolean,
+        options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+      ) => {
         if (!card) {
           return
         }
@@ -202,7 +213,7 @@ export function useManageImageSelectionInteractions({
         }
 
         toggledImageIds.add(imageId)
-        onToggleImageChecked(imageId)
+        onToggleImageChecked(imageId, undefined, options)
 
         if (!focusImage) {
           return
@@ -225,7 +236,10 @@ export function useManageImageSelectionInteractions({
 
       event.preventDefault()
       detachDragToggleListeners()
-      toggleFromCard(firstCard, focusOnFirstToggle)
+      toggleFromCard(firstCard, focusOnFirstToggle, {
+        shiftKey: event.shiftKey,
+        orderedIds: orderedImageIds,
+      })
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         const card = findCardFromElement(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY))

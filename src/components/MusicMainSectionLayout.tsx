@@ -17,16 +17,21 @@ interface MusicMainSectionLayoutProps {
   activeSelectionScope: "sidebar" | "image" | null;
   pendingManageAction: boolean;
   manageOperationHint: string | null;
+  showNamesOnly: boolean;
   canManageDelete: boolean;
   canManageMoveNodes: boolean;
   canManageAudioTranscode: boolean;
   audioTranscodePanelOpen: boolean;
+  hasManageSelectableAudios: boolean;
+  allManageSelectableAudiosChecked: boolean;
   canJumpToManga: boolean;
   canJumpToAnimation: boolean;
   canJumpToCover: boolean;
   canJumpToBooklet: boolean;
   onManageDelete: () => void;
   onManageGroup: () => void;
+  onToggleManageSelectAllAudios: () => void;
+  onToggleShowNamesOnly: () => void;
   onToggleAudioTranscodePanel: () => void;
   onToggleMetadataManageSelectionMode: () => void;
   onJumpToManga: () => void;
@@ -67,16 +72,21 @@ export function MusicMainSectionLayout({
   activeSelectionScope,
   pendingManageAction,
   manageOperationHint,
+  showNamesOnly,
   canManageDelete,
   canManageMoveNodes,
   canManageAudioTranscode,
   audioTranscodePanelOpen,
+  hasManageSelectableAudios,
+  allManageSelectableAudiosChecked,
   canJumpToManga,
   canJumpToAnimation,
   canJumpToCover,
   canJumpToBooklet,
   onManageDelete,
   onManageGroup,
+  onToggleManageSelectAllAudios,
+  onToggleShowNamesOnly,
   onToggleAudioTranscodePanel,
   onToggleMetadataManageSelectionMode,
   onJumpToManga,
@@ -107,6 +117,24 @@ export function MusicMainSectionLayout({
           <>
             <span hidden data-slot="fg-main-toolbar-state-manage" />
             <div className="toolbar-actions toolbar-actions-manage">
+              <button
+                className="feature-action-btn main-icon-square-btn"
+                type="button"
+                aria-label={
+                  allManageSelectableAudiosChecked
+                    ? t("a11y.common.clearSelection")
+                    : t("a11y.media.selectAllPage")
+                }
+                data-tooltip-label={
+                  allManageSelectableAudiosChecked
+                    ? t("tip.common.clearSelection")
+                    : t("tip.media.selectAllPage")
+                }
+                disabled={!hasManageSelectableAudios || pendingManageAction}
+                onClick={onToggleManageSelectAllAudios}
+              >
+                <MainUiIcon name={allManageSelectableAudiosChecked ? "unselectAll" : "selectAll"} />
+              </button>
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -169,6 +197,25 @@ export function MusicMainSectionLayout({
           <>
             <span hidden data-slot="fg-main-toolbar-state-normal" />
             <ToolbarTitleMarquee text={musicToolbarTitle} />
+            <div className="toolbar-actions">
+              <button
+                className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
+                type="button"
+                aria-label={
+                  showNamesOnly
+                    ? t("a11y.music.switchToPreviewMode")
+                    : t("a11y.music.switchToNamesMode")
+                }
+                data-tooltip-label={
+                  showNamesOnly
+                    ? t("tip.music.switchToPreviewMode")
+                    : t("tip.music.switchToNamesMode")
+                }
+                onClick={onToggleShowNamesOnly}
+              >
+                <MainUiIcon name={showNamesOnly ? "thumbnail" : "fileList"} />
+              </button>
+            </div>
             {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
               <div className="toolbar-actions">
                 {canJumpToCover ? (

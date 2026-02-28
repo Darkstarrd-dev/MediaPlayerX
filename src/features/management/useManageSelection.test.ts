@@ -75,6 +75,47 @@ describe('useManageSelection', () => {
     expect(result.current.imageCheckedIds).toEqual(['img-1', 'img-2', 'img-3'])
   })
 
+  it('支持图片 Shift 区间追加选择', () => {
+    const flatSidebarNodeIds: string[] = []
+    const orderedIds = ['img-1', 'img-2', 'img-3', 'img-4']
+    const { result } = renderHook(() =>
+      useManageSelection({
+        flatSidebarNodeIds,
+      }),
+    )
+
+    act(() => {
+      result.current.toggleImageChecked('img-1', undefined, { orderedIds })
+    })
+
+    act(() => {
+      result.current.toggleImageChecked('img-4', undefined, { shiftKey: true, orderedIds })
+    })
+
+    expect(result.current.imageCheckedIds).toEqual(['img-1', 'img-2', 'img-3', 'img-4'])
+  })
+
+  it('图片 Shift 区间不可用时回退到普通切换并更新锚点', () => {
+    const flatSidebarNodeIds: string[] = []
+    const orderedIds = ['img-1', 'img-2', 'img-3']
+    const { result } = renderHook(() =>
+      useManageSelection({
+        flatSidebarNodeIds,
+      }),
+    )
+
+    act(() => {
+      result.current.toggleImageChecked('img-1', undefined, { orderedIds })
+      result.current.toggleImageChecked('img-3', undefined, {
+        shiftKey: true,
+        orderedIds: ['img-x', 'img-y'],
+      })
+      result.current.toggleImageChecked('img-2', undefined, { shiftKey: true, orderedIds })
+    })
+
+    expect(result.current.imageCheckedIds).toEqual(['img-1', 'img-3', 'img-2'])
+  })
+
   it('选中父节点会级联选中子节点，再次点击父节点会取消整组', () => {
     const flatSidebarNodeIds = ['folder:parent', 'folder:child-1', 'folder:child-2']
     const sidebarDescendantNodeIdsById = new Map([

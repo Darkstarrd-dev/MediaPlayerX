@@ -12,6 +12,7 @@ export interface MusicMainSectionProps {
   metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   imageSelectedCount: number
+  checkedAudioIds?: ReadonlySet<string>
   activeSelectionScope: 'sidebar' | 'image' | null
   manageSelectedAudioIds?: string[]
   pendingManageAction: boolean
@@ -41,6 +42,7 @@ export interface MusicMainSectionProps {
   musicLoopModeLabel: string
   canPrevAudio: boolean
   canNextAudio: boolean
+  showNamesOnly: boolean
   fullscreenActive: boolean
   popoverDebugPinned: boolean
   paletteMode?: 'day' | 'night'
@@ -59,4 +61,11 @@ export interface MusicMainSectionProps {
   onPrevAudio: () => void
   onNextAudio: () => void
   onCycleMusicLoopMode: () => void
+  onToggleShowNamesOnly: () => void
+  onSelectAudio: (audioId: string) => void
+  onToggleAudioChecked: (
+    audioId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void
 }

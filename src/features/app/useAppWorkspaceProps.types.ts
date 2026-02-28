@@ -142,7 +142,11 @@ export interface UseAppWorkspacePropsParams {
   setVectorFocusIndex: Dispatch<SetStateAction<number>>
   setImageFocus: (packageId: string, imageIndex: number) => void
   requestImageSidebarLocateFromMain: () => void
-  toggleImageChecked: (imageId: string, checked?: boolean) => void
+  toggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void
   replaceImageCheckedIds: (ids: string[], append?: boolean) => void
   goPrevPage: () => void
   goNextPage: () => void

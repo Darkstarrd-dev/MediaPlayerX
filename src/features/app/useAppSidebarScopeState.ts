@@ -124,7 +124,11 @@ interface UseAppSidebarScopeStateResult {
   clearAllSelections: () => void;
   toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void;
   checkSidebarNode: (nodeId: string) => void;
-  toggleImageChecked: (imageId: string, checked?: boolean) => void;
+  toggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void;
   replaceImageCheckedIds: (ids: string[], append?: boolean) => void;
   orderedRootScopedPackages: ImagePackage[];
   orderedRootScopedImageRefs: FocusedImageRef[];
@@ -250,6 +254,10 @@ export function useAppSidebarScopeState({
     [scopedImageSourcesEffective],
   );
   const validImageIdSet = useMemo(() => {
+    if (isMusicMode) {
+      return new Set(audiosEffective.map((audio) => audio.id));
+    }
+
     if (!isImageMode) {
       return new Set<string>();
     }
@@ -261,7 +269,7 @@ export function useAppSidebarScopeState({
       }
     }
     return next;
-  }, [isImageMode, scopedImageSourcesEffective]);
+  }, [audiosEffective, isImageMode, isMusicMode, scopedImageSourcesEffective]);
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],

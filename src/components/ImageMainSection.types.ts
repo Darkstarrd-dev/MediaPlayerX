@@ -110,7 +110,11 @@ export interface ImageMainSectionProps {
   adReviewCandidateImageIds?: ReadonlySet<string>;
   adReviewResultsMode?: boolean;
   adReviewGroupByPackageRows?: boolean;
-  onToggleImageChecked: (imageId: string, checked?: boolean) => void;
+  onToggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void;
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void;
   onManageDelete: () => void;
   onManageRename?: () => void;

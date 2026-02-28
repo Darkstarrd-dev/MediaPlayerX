@@ -67,6 +67,8 @@ function createMusicMainSectionProps(
     musicLoopModeLabel: "全曲库循环",
     canPrevAudio: false,
     canNextAudio: true,
+    checkedAudioIds: new Set<string>(),
+    showNamesOnly: false,
     fullscreenActive: false,
     popoverDebugPinned: false,
     onToggleFullscreen: vi.fn(),
@@ -130,6 +132,9 @@ function createMusicMainSectionProps(
     onPrevAudio: vi.fn(),
     onNextAudio: vi.fn(),
     onCycleMusicLoopMode: vi.fn(),
+    onToggleShowNamesOnly: vi.fn(),
+    onSelectAudio: vi.fn(),
+    onToggleAudioChecked: vi.fn(),
     ...overrides,
     musicVisualizerSelectedShaderId:
       overrides.musicVisualizerSelectedShaderId ?? "default",
@@ -216,6 +221,186 @@ describe("MusicMainSection", () => {
     expect(onCycleMusicLoopMode).toHaveBeenCalledTimes(1);
   });
 
+  it("音乐工具栏切换按钮可触发预览/纯文件名模式切换", () => {
+    const onToggleShowNamesOnly = vi.fn();
+    renderMusicMainSection({ onToggleShowNamesOnly, showNamesOnly: false });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "切换到纯文件名模式" }),
+    );
+    expect(onToggleShowNamesOnly).toHaveBeenCalledTimes(1);
+  });
+
+  it("预览/纯文件名来回切换后可视化应正常挂载", async () => {
+    const baseProps = createMusicMainSectionProps({ showNamesOnly: true });
+    const { rerender } = render(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} showNamesOnly={false} />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
+      expect(visualizer.querySelector("canvas")).toBeTruthy();
+    });
+
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} showNamesOnly={true} />
+      </I18nProvider>,
+    );
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} showNamesOnly={false} />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
+      expect(visualizer.querySelector("canvas")).toBeTruthy();
+      expect(screen.queryByText(/可视化画布未就绪|Visualizer canvas is not ready/)).toBeNull();
+    });
+  });
+
+  it("纯文件名模式管理态点击曲目应切换选中", () => {
+    const onToggleAudioChecked = vi.fn();
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      onToggleAudioChecked,
+    });
+
+    fireEvent.mouseDown(screen.getByRole("button", { name: /track-1\.mp3/i }), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseUp(window);
+    expect(onToggleAudioChecked).toHaveBeenCalledWith(
+      "track-1",
+      undefined,
+      expect.objectContaining({
+        shiftKey: false,
+        orderedIds: ["track-1"],
+      }),
+    );
+  });
+
+  it("纯文件名模式管理态支持 Shift 区间选择参数透传", () => {
+    const onToggleAudioChecked = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2"), makeAudio("track-3")];
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      audios,
+      focusedAudio: audios[0],
+      onToggleAudioChecked,
+    });
+
+    fireEvent.mouseDown(screen.getByRole("button", { name: /track-3\.mp3/i }), {
+      button: 0,
+      shiftKey: true,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseUp(window);
+
+    expect(onToggleAudioChecked).toHaveBeenCalledWith(
+      "track-3",
+      undefined,
+      expect.objectContaining({
+        shiftKey: true,
+        orderedIds: ["track-1", "track-2", "track-3"],
+      }),
+    );
+  });
+
+  it("纯文件名模式管理态支持左键拖动经过切换", () => {
+    const onToggleAudioChecked = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2")];
+    const originalElementFromPoint = document.elementFromPoint
+    const mockElementFromPoint = vi.fn(() =>
+      screen.getByRole("button", { name: /track-2\.mp3/i }),
+    )
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: mockElementFromPoint,
+    })
+
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      audios,
+      focusedAudio: audios[0],
+      onToggleAudioChecked,
+    });
+
+    fireEvent.mouseDown(screen.getByRole("button", { name: /track-1\.mp3/i }), {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+    });
+    fireEvent.mouseMove(window, { buttons: 1, clientX: 12, clientY: 12 });
+    fireEvent.mouseUp(window);
+
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(
+      1,
+      "track-1",
+      undefined,
+      expect.objectContaining({ orderedIds: ["track-1", "track-2"] }),
+    );
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(2, "track-2", undefined, undefined);
+
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: originalElementFromPoint,
+    })
+  });
+
+  it("文件管理模式工具栏可全选当前列表项", () => {
+    const onToggleAudioChecked = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2"), makeAudio("track-3")];
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      audios,
+      focusedAudio: audios[0],
+      onToggleAudioChecked,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "全选当前页" }));
+
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(1, "track-1", true);
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(2, "track-2", true);
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(3, "track-3", true);
+  });
+
+  it("文件管理模式工具栏可取消全选当前列表项", () => {
+    const onToggleAudioChecked = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2")];
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      audios,
+      focusedAudio: audios[0],
+      checkedAudioIds: new Set(["track-1", "track-2"]),
+      imageSelectedCount: 2,
+      activeSelectionScope: "image",
+      onToggleAudioChecked,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /清.*选/ }));
+
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(1, "track-1", false);
+    expect(onToggleAudioChecked).toHaveBeenNthCalledWith(2, "track-2", false);
+  });
+
   it("管理模式下应可打开 TC 面板并发起转码任务", async () => {
     const startAudioTranscodeTask = vi.fn().mockResolvedValue({
       task: {
@@ -271,6 +456,74 @@ describe("MusicMainSection", () => {
 
     expect(startAudioTranscodeTask).toHaveBeenCalledWith({
       audio_ids: ["track-1"],
+      preset: "flac",
+      overwrite: false,
+      copy_metadata: true,
+      add_output_to_music_sources: true,
+    });
+  });
+
+  it("主区域选中曲目时应按 image scope 目标发起转码", async () => {
+    const startAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-image-scope",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "started",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    const readAudioTranscodeTask = vi.fn().mockResolvedValue({
+      task: {
+        task_id: "audio-transcode-image-scope",
+        status: "running",
+        progress: 0,
+        total_count: 1,
+        processed_count: 0,
+        success_count: 0,
+        failed_count: 0,
+        output_files: [],
+        message: "running",
+        error_detail: null,
+        created_at_ms: Date.now(),
+        updated_at_ms: Date.now(),
+      },
+    });
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      startAudioTranscodeTask,
+      readAudioTranscodeTask,
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    const audioA = makeAudio("track-a");
+    const audioB = makeAudio("track-b");
+    renderMusicMainSection({
+      showNamesOnly: true,
+      manageMode: true,
+      activeSelectionScope: "image",
+      imageSelectedCount: 1,
+      manageSelectedAudioIds: ["track-b"],
+      focusedAudio: audioA,
+      audios: [audioA, audioB],
+      audioPreloadItems: [
+        { id: audioA.id, src: "mock://audio-a", sizeMb: 6 },
+        { id: audioB.id, src: "mock://audio-b", sizeMb: 6 },
+      ],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "开始" }));
+    });
+
+    expect(startAudioTranscodeTask).toHaveBeenCalledWith({
+      audio_ids: ["track-b"],
       preset: "flac",
       overwrite: false,
       copy_metadata: true,
@@ -965,6 +1218,34 @@ describe("MusicMainSection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "全屏" }));
     expect(onToggleFullscreen).toHaveBeenCalledTimes(1);
+  });
+
+  it("预览模式切换全屏再退出后可视化画布应保持可用", async () => {
+    const baseProps = createMusicMainSectionProps({ showNamesOnly: false });
+    const { rerender } = render(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} fullscreenActive={false} />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} fullscreenActive={true} />
+      </I18nProvider>,
+    );
+    rerender(
+      <I18nProvider>
+        <MusicMainSection {...baseProps} fullscreenActive={false} />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      const visualizer = screen.getByLabelText(/music visualizer|音乐可视化/);
+      expect(visualizer.querySelector("canvas")).toBeTruthy();
+      expect(
+        screen.queryByText(/可视化画布未就绪|Visualizer canvas is not ready/),
+      ).toBeNull();
+    });
   });
 
   it("工具栏封面按钮可触发跳转", () => {

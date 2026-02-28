@@ -17,6 +17,7 @@ interface BuildMusicMainSectionPropsParams {
   metadataManageSelectionMode?: 'single' | 'multiple'
   sidebarSelectedCount: number
   sidebarCheckedNodeIds: string[]
+  imageCheckedIds: string[]
   imageSelectedCount: number
   activeSelectionScope: 'sidebar' | 'image' | null
   pendingManageAction: boolean
@@ -45,6 +46,11 @@ interface BuildMusicMainSectionPropsParams {
   musicLoopModeLabels: Record<MusicLoopMode, string>
   audioByIdEffective: Map<string, AudioItem>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
+  toggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void
   setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
   setFullscreenActiveWithAutoStop: (value: boolean) => void
   musicVisualizerSelectedShaderId: string
@@ -58,6 +64,7 @@ interface BuildMusicMainSectionPropsParams {
   musicVisualizerShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById']
   mediaPreloadMemoryBudgetMb: number
   fullscreenVideoControlsMaxWidth: number
+  showNamesOnly: boolean
   updateSettings: (patch: Partial<AppSettings>) => void
   onToggleMetadataManageSelectionMode?: () => void
 }
@@ -143,7 +150,9 @@ function resolveScopedPlaybackOrder(params: {
 
 function resolveManageSelectedAudioIds(params: {
   sidebarCheckedNodeIds: string[]
+  imageCheckedIds: string[]
   audiosForSidebar: AudioItem[]
+  audioById: Map<string, AudioItem>
 }): string[] {
   const selectedFolderKeys = Array.from(new Set(
     params.sidebarCheckedNodeIds
@@ -152,18 +161,22 @@ function resolveManageSelectedAudioIds(params: {
       .filter(Boolean),
   ))
 
-  if (selectedFolderKeys.length <= 0) {
-    return []
+  const selectedAudioIds = new Set<string>()
+  if (selectedFolderKeys.length > 0) {
+    for (const audio of params.audiosForSidebar) {
+      const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
+      for (const selectedFolderKey of selectedFolderKeys) {
+        if (folderPath === selectedFolderKey || folderPath.startsWith(`${selectedFolderKey}/`)) {
+          selectedAudioIds.add(audio.id)
+          break
+        }
+      }
+    }
   }
 
-  const selectedAudioIds = new Set<string>()
-  for (const audio of params.audiosForSidebar) {
-    const folderPath = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1)).join('/')
-    for (const selectedFolderKey of selectedFolderKeys) {
-      if (folderPath === selectedFolderKey || folderPath.startsWith(`${selectedFolderKey}/`)) {
-        selectedAudioIds.add(audio.id)
-        break
-      }
+  for (const checkedAudioId of params.imageCheckedIds) {
+    if (params.audioById.has(checkedAudioId)) {
+      selectedAudioIds.add(checkedAudioId)
     }
   }
 
@@ -231,7 +244,9 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
   const currentLoopModeLabel = resolveMusicLoopModeLabel(params.musicLoopMode, params.musicLoopModeLabels)
   const manageSelectedAudioIds = resolveManageSelectedAudioIds({
     sidebarCheckedNodeIds: params.sidebarCheckedNodeIds,
+    imageCheckedIds: params.imageCheckedIds,
     audiosForSidebar: params.audiosForSidebar,
+    audioById: params.audioByIdEffective,
   })
 
   return {
@@ -244,6 +259,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     sidebarSelectedCount: params.sidebarSelectedCount,
     manageSelectedAudioIds,
     imageSelectedCount: params.imageSelectedCount,
+    checkedAudioIds: new Set(params.imageCheckedIds),
     activeSelectionScope: params.activeSelectionScope,
     pendingManageAction: params.pendingManageAction,
     manageOperationHint: params.manageOperationHint,
@@ -267,6 +283,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     focusedAudioSrc: params.focusedAudioSrc,
     mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
+    showNamesOnly: params.showNamesOnly,
     audioPreloadItems: params.audioSidebarOrderedIds
       .map((audioId) => {
         const audio = params.audioByIdEffective.get(audioId)
@@ -314,6 +331,26 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
         : MUSIC_LOOP_MODE_ORDER.length - 1
       const nextMode = MUSIC_LOOP_MODE_ORDER[nextIndex] ?? 'library'
       params.setMusicLoopMode(nextMode)
+    },
+    onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
+    onSelectAudio: (audioId: string) => {
+      if (!params.audioByIdEffective.has(audioId)) {
+        return
+      }
+      if (audioId !== params.selectedAudioId) {
+        params.setSelectedAudioId(audioId)
+      }
+      params.updateSettings({ sidebarFocus: 'main' })
+    },
+    onToggleAudioChecked: (
+      audioId: string,
+      checked?: boolean,
+      options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+    ) => {
+      if (!params.audioByIdEffective.has(audioId)) {
+        return
+      }
+      params.toggleImageChecked(audioId, checked, options)
     },
     onMusicVisualizerSelectedShaderIdChange: (value: string) => {
       const nextShaderId = value.trim().slice(0, 64)

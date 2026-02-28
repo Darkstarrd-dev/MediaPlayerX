@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react'
 import { MusicMainSectionControlsShell } from './MusicMainSectionControlsShell'
 import { MusicMainSectionLayout } from './MusicMainSectionLayout'
 import type { MusicMainSectionProps, MusicPopoverKey } from './MusicMainSection.types'
@@ -18,6 +18,16 @@ import { MUSIC_VISUALIZER_SHADERS, resolveDefaultMusicVisualizerShader, resolveM
 import { useMusicVisualizerRuntime } from '../features/music-visualizer/useMusicVisualizerRuntime'
 import { clamp } from '../utils/ui'
 
+function formatAudioDurationLabel(durationSec: number): string {
+  if (!Number.isFinite(durationSec) || durationSec <= 0) {
+    return '--:--'
+  }
+  const totalSeconds = Math.max(0, Math.floor(durationSec))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
 function MusicMainSection({
   active,
   interruptByVideoPlayback,
@@ -27,6 +37,7 @@ function MusicMainSection({
   metadataManageSelectionMode = 'multiple',
   sidebarSelectedCount,
   imageSelectedCount,
+  checkedAudioIds,
   activeSelectionScope,
   manageSelectedAudioIds = [],
   pendingManageAction,
@@ -54,6 +65,7 @@ function MusicMainSection({
   musicLoopModeLabel,
   canPrevAudio,
   canNextAudio,
+  showNamesOnly,
   fullscreenActive,
   popoverDebugPinned,
   paletteMode = 'day',
@@ -69,6 +81,9 @@ function MusicMainSection({
   onPrevAudio,
   onNextAudio,
   onCycleMusicLoopMode,
+  onToggleShowNamesOnly,
+  onSelectAudio,
+  onToggleAudioChecked,
 }: MusicMainSectionProps) {
   const AUDIO_ENGINE_MODE_CHANGED_EVENT = 'mpx:audio-engine-mode-changed'
   const { t } = useI18n()
@@ -76,6 +91,33 @@ function MusicMainSection({
     metadataManageSelectionMode === 'single'
       ? t('a11y.metadata.switchToMultipleSelectMode')
       : t('a11y.metadata.switchToSingleSelectMode')
+  const checkedAudioIdSet = checkedAudioIds ?? new Set<string>()
+  const manageSelectableAudioIds = useMemo(() => audios.map((audio) => audio.id), [audios])
+  const allManageSelectableAudiosChecked =
+    manageSelectableAudioIds.length > 0
+    && manageSelectableAudioIds.every((audioId) => checkedAudioIdSet.has(audioId))
+
+  const toggleManageSelectAllAudios = useCallback(() => {
+    if (manageSelectableAudioIds.length === 0) {
+      return
+    }
+
+    if (allManageSelectableAudiosChecked) {
+      for (const audioId of manageSelectableAudioIds) {
+        if (checkedAudioIdSet.has(audioId)) {
+          onToggleAudioChecked(audioId, false)
+        }
+      }
+      return
+    }
+
+    for (const audioId of manageSelectableAudioIds) {
+      if (!checkedAudioIdSet.has(audioId)) {
+        onToggleAudioChecked(audioId, true)
+      }
+    }
+  }, [allManageSelectableAudiosChecked, checkedAudioIdSet, manageSelectableAudioIds, onToggleAudioChecked])
+  const visualizerVisible = fullscreenActive || !showNamesOnly
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const visualizerGpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const visualizerCpuCanvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -88,8 +130,13 @@ function MusicMainSection({
   const suppressNativePlaybackTimerRef = useRef<number | null>(null)
   const modeTransitionInProgressRef = useRef(false)
   const modeTransitionReconcileTimerRef = useRef<number | null>(null)
+  const previousFullscreenActiveRef = useRef(fullscreenActive)
+  const fullscreenToggleGuardUntilRef = useRef(0)
+  const fullscreenToggleWasPlayingRef = useRef(false)
   const audioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const pendingMpvResumeStartSecRef = useRef<number | null>(null)
+  const nameListDragToggleCleanupRef = useRef<(() => void) | null>(null)
+  const suppressManageNameListClickRef = useRef(false)
   const [openPopover, setOpenPopover] = useState<MusicPopoverKey | null>(null)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioVolume, setAudioVolume] = useState(60)
@@ -114,9 +161,103 @@ function MusicMainSection({
   const previousAudioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const visualizerRecoveryRef = useRef({ windowStartedAt: 0, attempts: 0 })
 
+  const detachNameListDragToggleListeners = useCallback(() => {
+    const cleanup = nameListDragToggleCleanupRef.current
+    if (cleanup) {
+      nameListDragToggleCleanupRef.current = null
+      cleanup()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!manageMode) {
+      detachNameListDragToggleListeners()
+    }
+
+    return () => {
+      detachNameListDragToggleListeners()
+    }
+  }, [detachNameListDragToggleListeners, manageMode])
+
+  const startNameListDragToggle = useCallback((event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!manageMode || event.button !== 0) {
+      return
+    }
+
+    const target = event.target
+    if (!(target instanceof Element)) {
+      return
+    }
+
+    const findRowFromElement = (element: Element | null): HTMLElement | null => {
+      if (!(element instanceof Element)) {
+        return null
+      }
+      return element.closest<HTMLElement>('[data-manage-image-id]')
+    }
+
+    const firstRow = findRowFromElement(target)
+    if (!firstRow) {
+      return
+    }
+
+    event.preventDefault()
+    suppressManageNameListClickRef.current = true
+    detachNameListDragToggleListeners()
+
+    const orderedAudioIds = audios.map((audio) => audio.id)
+    const toggledAudioIds = new Set<string>()
+    const toggleFromRow = (
+      row: HTMLElement | null,
+      options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+    ) => {
+      if (!row) {
+        return
+      }
+      const audioId = row.dataset.manageImageId
+      if (!audioId || toggledAudioIds.has(audioId)) {
+        return
+      }
+      toggledAudioIds.add(audioId)
+      onToggleAudioChecked(audioId, undefined, options)
+    }
+
+    toggleFromRow(firstRow, { shiftKey: event.shiftKey, orderedIds: orderedAudioIds })
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if ((moveEvent.buttons & 1) !== 1) {
+        detachNameListDragToggleListeners()
+        return
+      }
+      const row = findRowFromElement(document.elementFromPoint(moveEvent.clientX, moveEvent.clientY))
+      toggleFromRow(row)
+    }
+
+    const onMouseUp = () => {
+      detachNameListDragToggleListeners()
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    nameListDragToggleCleanupRef.current = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [audios, detachNameListDragToggleListeners, manageMode, onToggleAudioChecked])
+
   useEffect(() => {
     audioEngineModeRef.current = audioEngineMode
   }, [audioEngineMode])
+
+  useEffect(() => {
+    const previous = previousFullscreenActiveRef.current
+    if (previous === fullscreenActive) {
+      return
+    }
+    previousFullscreenActiveRef.current = fullscreenActive
+    fullscreenToggleWasPlayingRef.current = audioPlaying
+    fullscreenToggleGuardUntilRef.current = Date.now() + 1200
+  }, [audioPlaying, fullscreenActive])
 
   const cueStartSec = Math.max(0, focusedAudio?.cueStartSec ?? 0)
   const cueEndSec = typeof focusedAudio?.cueEndSec === 'number' && focusedAudio.cueEndSec > cueStartSec
@@ -206,7 +347,7 @@ function MusicMainSection({
       visualizerActivateRaf2Ref.current = null
     }
 
-    if (!active) {
+    if (!active || !visualizerVisible) {
       setVisualizerRuntimeActive(false)
       return
     }
@@ -230,7 +371,7 @@ function MusicMainSection({
         visualizerActivateRaf2Ref.current = null
       }
     }
-  }, [active, fullscreenActive])
+  }, [active, fullscreenActive, visualizerVisible])
 
   useEffect(() => {
     if (!active || !fullscreenActive || typeof document === 'undefined') {
@@ -258,7 +399,7 @@ function MusicMainSection({
     cpuCanvasRef: visualizerCpuCanvasRef,
     audioRef,
     canvasInstanceVersion: visualizerCanvasVersion,
-    active: visualizerRuntimeActive && !hasNoLayerEnabled,
+    active: visualizerRuntimeActive && !hasNoLayerEnabled && visualizerVisible,
     disableAudioAnalyser: audioEngineMode === 'mpv',
     externalAudioFrame: audioEngineMode === 'mpv' ? visualizerExternalAudioFrame : null,
     playbackPaused: !audioPlaying,
@@ -452,7 +593,7 @@ function MusicMainSection({
         },
       }))
     }).catch(() => undefined)
-  }, [AUDIO_ENGINE_MODE_CHANGED_EVENT])
+  }, [AUDIO_ENGINE_MODE_CHANGED_EVENT, setAudioPlaying])
 
   const toggleAudioPlayback = useCallback(() => {
     if (audioEngineMode === 'mpv') {
@@ -505,6 +646,7 @@ function MusicMainSection({
     focusedAudioSrc,
     requiresEnhancedModeInChromium,
     resumeAudioAnalyser,
+    setAudioPlaying,
     suggestEnhancedModeForUnsupported,
   ])
 
@@ -527,7 +669,7 @@ function MusicMainSection({
     if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineStopPlayback === 'function') {
       void backendApi.audioEngineStopPlayback().catch(() => undefined)
     }
-  }, [audioEngineMode])
+  }, [audioEngineMode, setAudioPlaying, setAudioTime])
 
   useEffect(() => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
@@ -785,7 +927,13 @@ function MusicMainSection({
           return
         }
 
+        const withinFullscreenToggleGuard = Date.now() <= fullscreenToggleGuardUntilRef.current
+        const fullscreenToggleWasPlaying = fullscreenToggleWasPlayingRef.current
+
         if (!response.loaded) {
+          if (withinFullscreenToggleGuard && fullscreenToggleWasPlaying) {
+            return
+          }
           if (audioSeekDraftTime == null) {
             setAudioTime(0)
           }
@@ -794,6 +942,9 @@ function MusicMainSection({
         }
 
         if (typeof response.paused === 'boolean') {
+          if (withinFullscreenToggleGuard && fullscreenToggleWasPlaying && response.paused) {
+            return
+          }
           setAudioPlaying(!response.paused)
         }
 
@@ -1314,6 +1465,58 @@ function MusicMainSection({
     </div>
   )
 
+  const namesOnlyPane = (
+    <div
+      className={`name-list music-name-list${manageMode ? ' is-manage' : ''}`}
+      data-slot="fg-main-content-music-name-list"
+      aria-label={t('a11y.music.playlist')}
+    >
+      <div className="name-list-header">
+        <span>{t('ui.metadata.fileName')}</span>
+        <span>{t('ui.music.duration')}</span>
+        <span>{t('ui.image.fileSize')}</span>
+      </div>
+      <div
+        className="name-list-body mpx-scroll-area"
+        onMouseDown={manageMode ? startNameListDragToggle : undefined}
+      >
+        {audios.map((audio) => {
+          const isFocused = focusedAudio?.id === audio.id
+          const isChecked = checkedAudioIdSet.has(audio.id)
+          return (
+            <div
+              key={audio.id}
+              data-manage-image-id={audio.id}
+              className={`name-list-row ${manageMode ? 'is-manage' : ''} ${manageMode && isChecked ? 'is-selected' : ''} ${isFocused ? 'is-focused' : ''}`}
+              data-slot="fg-main-content-music-name-list-row"
+            >
+              <button
+                className="name-list-row-main mpx-overlay-cell-btn"
+                type="button"
+                aria-pressed={manageMode ? isChecked : undefined}
+                onClick={() => {
+                  if (manageMode) {
+                    if (suppressManageNameListClickRef.current) {
+                      suppressManageNameListClickRef.current = false
+                      return
+                    }
+                    onToggleAudioChecked(audio.id)
+                    return
+                  }
+                  onSelectAudio(audio.id)
+                }}
+              >
+                <span className="name-list-row-label">{audio.fileName}</span>
+                <span>{formatAudioDurationLabel(audio.durationSec)}</span>
+                <span>{`${Math.max(0, Math.round(audio.sizeMb * 1024))}KB`}</span>
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
   return (
     <>
       <MusicMainSectionLayout
@@ -1328,16 +1531,21 @@ function MusicMainSection({
         activeSelectionScope={activeSelectionScope}
         pendingManageAction={pendingManageAction}
         manageOperationHint={manageOperationHint}
+        showNamesOnly={showNamesOnly}
         canManageDelete={canManageDelete}
         canManageMoveNodes={canManageMoveNodes}
         canManageAudioTranscode={canManageAudioTranscode}
         audioTranscodePanelOpen={audioTranscodePanelOpen}
+        hasManageSelectableAudios={manageSelectableAudioIds.length > 0}
+        allManageSelectableAudiosChecked={allManageSelectableAudiosChecked}
         canJumpToManga={canJumpToManga}
         canJumpToAnimation={canJumpToAnimation}
         canJumpToCover={canJumpToCover}
         canJumpToBooklet={canJumpToBooklet}
         onManageDelete={onManageDelete}
         onManageGroup={onManageGroup}
+        onToggleManageSelectAllAudios={toggleManageSelectAllAudios}
+        onToggleShowNamesOnly={onToggleShowNamesOnly}
         onToggleAudioTranscodePanel={toggleAudioTranscodePanel}
         onToggleMetadataManageSelectionMode={onToggleMetadataManageSelectionMode}
         onJumpToManga={onJumpToManga}
@@ -1346,7 +1554,7 @@ function MusicMainSection({
         onJumpToBooklet={onJumpToBooklet}
         musicToolbarTitle={musicToolbarTitle}
         fullscreenActive={fullscreenActive}
-        visualizerPane={visualizerPane}
+        visualizerPane={showNamesOnly && !fullscreenActive ? namesOnlyPane : visualizerPane}
         musicControlsShell={musicControlsShell}
         audioTranscodePanel={audioTranscodePanel}
       />

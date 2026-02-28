@@ -106,7 +106,11 @@ interface BuildImageMainSectionPropsParams {
   onToggleMetadataManageSelectionMode?: () => void
   onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
   onMetadataSaveParsedByPackageId: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
-  onToggleImageChecked: (imageId: string, checked?: boolean) => void
+  onToggleImageChecked: (
+    imageId: string,
+    checked?: boolean,
+    options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
+  ) => void
   onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
   onManageDelete: () => void
   onManageRename: () => void

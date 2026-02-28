@@ -968,4 +968,44 @@ describe('ImageMainSection layout', () => {
     }
   })
 
+  it('纯文件名模式管理态支持 Shift 区间选择参数透传', () => {
+    const onToggleImageChecked = vi.fn()
+    render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          showNamesOnly: true,
+          onToggleImageChecked,
+          visibleImageRefs: [
+            { packageId: packageWithImages.id, imageIndex: 0 },
+            { packageId: packageWithImages.id, imageIndex: 1 },
+          ],
+          refsInPage: [
+            { packageId: packageWithImages.id, imageIndex: 0 },
+            { packageId: packageWithImages.id, imageIndex: 1 },
+          ],
+        })}
+      />,
+    )
+
+    const nameListButtons = document.querySelectorAll('.name-list-row-main')
+    expect(nameListButtons.length).toBeGreaterThanOrEqual(2)
+
+    fireEvent.mouseDown(nameListButtons[1] as HTMLButtonElement, {
+      button: 0,
+      shiftKey: true,
+      clientX: 10,
+      clientY: 10,
+    })
+    fireEvent.mouseUp(window)
+
+    expect(onToggleImageChecked).toHaveBeenCalledWith(
+      'img-2',
+      undefined,
+      expect.objectContaining({
+        shiftKey: true,
+        orderedIds: ['img-1', 'img-2'],
+      }),
+    )
+  })
+
 })
