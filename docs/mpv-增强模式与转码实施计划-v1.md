@@ -409,6 +409,10 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - `runtimeBinaryPaths` 新增 `resolveFfmpegBinPath/resolveFfprobeBinPath`，支持 `MPX_*` 与 `MEDIA_PLAYERX_*` 环境变量 override。
   - `fileSystemReadFacadeConfig` 改为优先使用运行时 resolver，再回退 `ffmpeg/ffprobe` 系统命令。
   - `electron-builder` 新增 `MPX_FFMPEG_DIR` 与默认 `vendor/ffmpeg/win32-x64` 资源复制到 `resources/vendor/ffmpeg`。
+- 2026-02-28：已完成 P2 扩展格式首轮接入（导入侧 + 兼容模式提示）：
+  - 音乐导入白名单新增 `dsf/dff/iso`（含文件选择过滤器）。
+  - MIME 识别补充 `dsf/dff/iso`，减少探测链路中的“未知类型”歧义。
+  - 兼容模式下新增 `dsf/dff/iso` 的增强模式切换提示，避免 Chromium 侧静默不可播放。
 
 ### P3：硬化与发布（1~2 周）
 

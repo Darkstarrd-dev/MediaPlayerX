@@ -296,6 +296,15 @@ export function detectMimeTypeByExtension(
     if (lowerExt === '.shn') {
       return 'audio/x-shorten'
     }
+    if (lowerExt === '.dsf') {
+      return 'audio/x-dsf'
+    }
+    if (lowerExt === '.dff') {
+      return 'audio/x-dff'
+    }
+    if (lowerExt === '.iso') {
+      return 'application/x-iso9660-image'
+    }
     return 'application/octet-stream'
   }
 

@@ -177,7 +177,10 @@ function MusicMainSection({
       focusedAudioExtension === '.wv' ||
       focusedAudioExtension === '.tta' ||
       focusedAudioExtension === '.tak' ||
-      focusedAudioExtension === '.shn') ||
+      focusedAudioExtension === '.shn' ||
+      focusedAudioExtension === '.dsf' ||
+      focusedAudioExtension === '.dff' ||
+      focusedAudioExtension === '.iso') ||
     (typeof focusedAudioSrc === 'string' && focusedAudioSrc.startsWith('data:application/octet-stream;base64,'))
 
   const suppressNativePlaybackEventsFor = useCallback((ms: number) => {

@@ -26,6 +26,9 @@ export const AUDIO_EXTENSIONS = new Set([
   '.tta',
   '.tak',
   '.shn',
+  '.dsf',
+  '.dff',
+  '.iso',
 ])
 
 export const CUE_EXTENSIONS = new Set(['.cue'])
