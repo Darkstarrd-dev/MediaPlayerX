@@ -139,6 +139,7 @@ import {
   ARCHIVE_NORMALIZE_RECHECK_MS,
   ARCHIVE_SCAN_CONCURRENCY,
   AUDIO_TRANSCODE_CONCURRENCY,
+  VIDEO_TRANSCODE_CONCURRENCY,
   AUDIO_EXTENSIONS,
   COLOR_PALETTE,
   CUE_EXTENSIONS,
@@ -436,6 +437,7 @@ export class FileSystemMediaReadService {
       withArchiveWriteLock: (archivePath, task) =>
         this.archivePathLockService.withWriteLock(archivePath, task),
       audioTranscodeConcurrency: AUDIO_TRANSCODE_CONCURRENCY,
+      videoTranscodeConcurrency: VIDEO_TRANSCODE_CONCURRENCY,
       runWithCpuToken: (taskName, task) =>
         this.taskResourceGovernor.runWithCpuToken(taskName, task),
     });

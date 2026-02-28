@@ -322,10 +322,12 @@ function VideoMainSection({
     estimateLoading: videoTranscodeEstimateLoading,
     estimateMessage: videoTranscodeEstimateMessage,
     estimateResult: videoTranscodeEstimateResult,
+    canOpenOutputDirectory: canOpenVideoTranscodeOutputDirectory,
     togglePanel: toggleVideoTranscodePanel,
     handleConfirm: handleVideoTranscodeConfirm,
     handleCancel: handleVideoTranscodeCancel,
     handlePickOutputDir: handleVideoTranscodePickOutputDir,
+    handleOpenOutputDir: handleVideoTranscodeOpenOutputDir,
   } = useVideoTranscodeController({
     t,
     manageMode,
@@ -772,7 +774,10 @@ function VideoMainSection({
                 <span className="main-toolbar-hint">{manageOperationHint}</span>
               ) : null}
             </div>
-            <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
+            <strong
+              className="main-toolbar-summary"
+              data-tooltip-label={manageSummary}
+            >
               {manageSummary}
             </strong>
           </>
@@ -868,7 +873,9 @@ function VideoMainSection({
                   onOpenByHover={openScalePopoverByHover}
                   onCloseByHover={closeScalePopoverByHover}
                   onScaleDraftChange={setScaleDraftValue}
-                  onScaleChange={(level) => onThumbnailScaleLevelChange?.(level)}
+                  onScaleChange={(level) =>
+                    onThumbnailScaleLevelChange?.(level)
+                  }
                 />
               </div>
             ) : null}
@@ -922,8 +929,14 @@ function VideoMainSection({
                 }
                 aria-pressed={focusedBrowseIndex === index}
               >
-                <div className="thumb-placeholder" style={{ aspectRatio: "1 / 1" }}>
-                  <div className="thumb-media" style={{ width: "100%", height: "100%" }}>
+                <div
+                  className="thumb-placeholder"
+                  style={{ aspectRatio: "1 / 1" }}
+                >
+                  <div
+                    className="thumb-media"
+                    style={{ width: "100%", height: "100%" }}
+                  >
                     {item.coverImageUrl ? (
                       <img
                         className="thumb-media-image"
@@ -989,7 +1002,8 @@ function VideoMainSection({
                     if (
                       restoreTime > 0.05 &&
                       videoRef.current &&
-                      Math.abs(videoRef.current.currentTime - restoreTime) > 0.05
+                      Math.abs(videoRef.current.currentTime - restoreTime) >
+                        0.05
                     ) {
                       videoRef.current.currentTime = restoreTime;
                     }
@@ -1057,405 +1071,417 @@ function VideoMainSection({
             data-slot="fg-main-content-video-controls"
             onPointerDownCapture={onRequestMainFocus}
           >
-        <div
-          className="video-controls-progress"
-          data-slot="fg-main-content-video-controls-progress"
-        >
-          <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
-          <SkeuoRunway
-            ariaLabel={t("a11y.media.progress")}
-            preset="progress"
-            max={durationSec}
-            min={0}
-            rangePercent={progressPercent}
-            step={0.1}
-            value={displayTime}
-            onChange={(event) => {
-              setHasSeekPreviewCurrentSource(true);
-              const nextTime = clamp(
-                Number(event.target.value),
-                0,
-                Math.max(0, durationSec),
-              );
-              setSeekDraftTime(nextTime);
-              previewSeekDuringDrag(nextTime);
-            }}
-            onMouseUp={(event) =>
-              commitSeekDraftAndBlurWithLocate(event.currentTarget)
-            }
-            onTouchEnd={(event) =>
-              commitSeekDraftAndBlurWithLocate(event.currentTarget)
-            }
-            onBlur={commitSeekDraftWithLocate}
-            onKeyUp={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                commitSeekDraftWithLocate();
-              }
-            }}
-          />
-        </div>
-
-        <div className="video-controls-row video-controls">
-          <div
-            className="video-controls-group is-left mpx-skeuo-well"
-            data-slot="fg-main-content-video-controls-left"
-          >
-            {fullscreenActive ? (
-              <button
-                aria-label={t("a11y.media.dualModeFullscreenOnly")}
-                className="video-action-btn video-action-dual"
-                data-tooltip-label={t("tip.media.dualModeInFullscreen")}
-                type="button"
-              >
-                <VideoControlIcon name="dual" />
-              </button>
-            ) : null}
-
             <div
-              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "fit" ? "is-open" : ""}`}
-              onMouseEnter={() => setOpenPopover("fit")}
-              onMouseLeave={closePopover}
+              className="video-controls-progress"
+              data-slot="fg-main-content-video-controls-progress"
             >
-              <button
-                aria-controls="video-main-popover-fit"
-                aria-expanded={popoverDebugPinned || openPopover === "fit"}
-                aria-pressed={popoverDebugPinned || openPopover === "fit"}
-                aria-haspopup="dialog"
-                className="video-action-btn video-action-fit"
-                aria-label={videoFitLabel}
-                data-tooltip-label={videoFitLabel}
-                type="button"
-                onClick={onCycleVideoFitMode}
-              >
-                <VideoControlIcon name="aspect" />
-              </button>
-              <div
-                className="video-ctrl-panel is-fit"
-                data-slot="fg-main-content-video-controls-fit-pop"
-                hidden={!popoverDebugPinned && openPopover !== "fit"}
-                id="video-main-popover-fit"
-                role="dialog"
-              >
-                <div className="video-ctrl-panel-options">
-                  {[
-                    {
-                      label: t("a11y.media.videoFitContain"),
-                      mode: "contain" as const,
-                    },
-                    {
-                      label: t("a11y.media.videoFitFill"),
-                      mode: "fill" as const,
-                    },
-                    {
-                      label: t("a11y.media.videoFitOriginal"),
-                      mode: "original" as const,
-                    },
-                  ].map((option) => (
-                    <button
-                      aria-pressed={videoFitMode === option.mode}
-                      className={`video-ctrl-panel-option ${videoFitMode === option.mode ? "is-active" : ""}`}
-                      key={option.mode}
-                      type="button"
-                      onClick={() => {
-                        onSetVideoFitMode(option.mode);
-                        closePopover();
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "subtitle" ? "is-open" : ""}`}
-              onMouseEnter={() => {
-                if (subtitlePanelHasContent) {
-                  setOpenPopover("subtitle");
+              <span className="video-progress-time">{`${formatSeconds(displayTime)} / ${formatSeconds(durationSec)}`}</span>
+              <SkeuoRunway
+                ariaLabel={t("a11y.media.progress")}
+                preset="progress"
+                max={durationSec}
+                min={0}
+                rangePercent={progressPercent}
+                step={0.1}
+                value={displayTime}
+                onChange={(event) => {
+                  setHasSeekPreviewCurrentSource(true);
+                  const nextTime = clamp(
+                    Number(event.target.value),
+                    0,
+                    Math.max(0, durationSec),
+                  );
+                  setSeekDraftTime(nextTime);
+                  previewSeekDuringDrag(nextTime);
+                }}
+                onMouseUp={(event) =>
+                  commitSeekDraftAndBlurWithLocate(event.currentTarget)
                 }
-              }}
-              onMouseLeave={closePopover}
-            >
-              <button
-                aria-controls="video-main-popover-subtitle"
-                aria-expanded={popoverDebugPinned || openPopover === "subtitle"}
-                aria-pressed={popoverDebugPinned || openPopover === "subtitle"}
-                aria-haspopup="dialog"
-                className="video-action-btn video-action-subtitle"
-                aria-label={subtitleToggleLabel}
-                data-tooltip-label={subtitleToggleLabel}
-                type="button"
-                onClick={onToggleSubtitle}
-              >
-                <VideoControlIcon name="subtitle" />
-              </button>
-              <div
-                className="video-ctrl-panel"
-                data-slot="fg-main-content-video-controls-subtitle-pop"
-                hidden={
-                  !popoverDebugPinned &&
-                  (openPopover !== "subtitle" || !subtitlePanelHasContent)
+                onTouchEnd={(event) =>
+                  commitSeekDraftAndBlurWithLocate(event.currentTarget)
                 }
-                id="video-main-popover-subtitle"
-                role="dialog"
-              >
-                {subtitleLoading ? (
-                  <span className="video-ctrl-panel-note">
-                    {t("ui.common.loading")}
-                  </span>
-                ) : null}
-                {subtitlePanelContentText ? (
-                  <span className="video-ctrl-panel-note">
-                    {subtitlePanelContentText}
-                  </span>
-                ) : null}
-                <div className="video-ctrl-panel-options">
-                  {subtitleOptions.map((option) => (
-                    <button
-                      aria-pressed={selectedSubtitleId === option.id}
-                      className={`video-ctrl-panel-option ${selectedSubtitleId === option.id ? "is-active" : ""}`}
-                      key={option.id}
-                      type="button"
-                      onClick={() => {
-                        onSelectSubtitle(option.id);
-                        closePopover();
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                onBlur={commitSeekDraftWithLocate}
+                onKeyUp={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    commitSeekDraftWithLocate();
+                  }
+                }}
+              />
             </div>
 
-            <div
-              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "speed" ? "is-open" : ""}`}
-              onMouseEnter={() => setOpenPopover("speed")}
-              onMouseLeave={closePopover}
-            >
-              <button
-                aria-controls="video-main-popover-speed"
-                aria-expanded={popoverDebugPinned || openPopover === "speed"}
-                aria-pressed={popoverDebugPinned || openPopover === "speed"}
-                aria-haspopup="dialog"
-                className="video-action-btn video-action-speed"
-                aria-label={t("a11y.media.playbackRate", {
-                  rate: videoRate.toFixed(2),
-                })}
-                data-tooltip-label={t("a11y.media.playbackRate", {
-                  rate: videoRate.toFixed(2),
-                })}
-                type="button"
-              >
-                <VideoControlIcon name="speed" />
-              </button>
+            <div className="video-controls-row video-controls">
               <div
-                className="video-ctrl-panel is-speed"
-                data-slot="fg-main-content-video-controls-speed-pop"
-                hidden={!popoverDebugPinned && openPopover !== "speed"}
-                id="video-main-popover-speed"
-                role="dialog"
+                className="video-controls-group is-left mpx-skeuo-well"
+                data-slot="fg-main-content-video-controls-left"
               >
-                <div className="video-ctrl-panel-options">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(
-                    (rate) => (
-                      <button
-                        aria-pressed={Math.abs(videoRate - rate) < 0.01}
-                        className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? "is-active" : ""}`}
-                        key={rate}
-                        type="button"
-                        onClick={() => {
-                          onChangeRate(rate);
-                          closePopover();
-                        }}
-                      >
-                        {`${rate}x`}
-                      </button>
-                    ),
-                  )}
+                {fullscreenActive ? (
+                  <button
+                    aria-label={t("a11y.media.dualModeFullscreenOnly")}
+                    className="video-action-btn video-action-dual"
+                    data-tooltip-label={t("tip.media.dualModeInFullscreen")}
+                    type="button"
+                  >
+                    <VideoControlIcon name="dual" />
+                  </button>
+                ) : null}
+
+                <div
+                  className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "fit" ? "is-open" : ""}`}
+                  onMouseEnter={() => setOpenPopover("fit")}
+                  onMouseLeave={closePopover}
+                >
+                  <button
+                    aria-controls="video-main-popover-fit"
+                    aria-expanded={popoverDebugPinned || openPopover === "fit"}
+                    aria-pressed={popoverDebugPinned || openPopover === "fit"}
+                    aria-haspopup="dialog"
+                    className="video-action-btn video-action-fit"
+                    aria-label={videoFitLabel}
+                    data-tooltip-label={videoFitLabel}
+                    type="button"
+                    onClick={onCycleVideoFitMode}
+                  >
+                    <VideoControlIcon name="aspect" />
+                  </button>
+                  <div
+                    className="video-ctrl-panel is-fit"
+                    data-slot="fg-main-content-video-controls-fit-pop"
+                    hidden={!popoverDebugPinned && openPopover !== "fit"}
+                    id="video-main-popover-fit"
+                    role="dialog"
+                  >
+                    <div className="video-ctrl-panel-options">
+                      {[
+                        {
+                          label: t("a11y.media.videoFitContain"),
+                          mode: "contain" as const,
+                        },
+                        {
+                          label: t("a11y.media.videoFitFill"),
+                          mode: "fill" as const,
+                        },
+                        {
+                          label: t("a11y.media.videoFitOriginal"),
+                          mode: "original" as const,
+                        },
+                      ].map((option) => (
+                        <button
+                          aria-pressed={videoFitMode === option.mode}
+                          className={`video-ctrl-panel-option ${videoFitMode === option.mode ? "is-active" : ""}`}
+                          key={option.mode}
+                          type="button"
+                          onClick={() => {
+                            onSetVideoFitMode(option.mode);
+                            closePopover();
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
+                <div
+                  className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "subtitle" ? "is-open" : ""}`}
+                  onMouseEnter={() => {
+                    if (subtitlePanelHasContent) {
+                      setOpenPopover("subtitle");
+                    }
+                  }}
+                  onMouseLeave={closePopover}
+                >
+                  <button
+                    aria-controls="video-main-popover-subtitle"
+                    aria-expanded={
+                      popoverDebugPinned || openPopover === "subtitle"
+                    }
+                    aria-pressed={
+                      popoverDebugPinned || openPopover === "subtitle"
+                    }
+                    aria-haspopup="dialog"
+                    className="video-action-btn video-action-subtitle"
+                    aria-label={subtitleToggleLabel}
+                    data-tooltip-label={subtitleToggleLabel}
+                    type="button"
+                    onClick={onToggleSubtitle}
+                  >
+                    <VideoControlIcon name="subtitle" />
+                  </button>
+                  <div
+                    className="video-ctrl-panel"
+                    data-slot="fg-main-content-video-controls-subtitle-pop"
+                    hidden={
+                      !popoverDebugPinned &&
+                      (openPopover !== "subtitle" || !subtitlePanelHasContent)
+                    }
+                    id="video-main-popover-subtitle"
+                    role="dialog"
+                  >
+                    {subtitleLoading ? (
+                      <span className="video-ctrl-panel-note">
+                        {t("ui.common.loading")}
+                      </span>
+                    ) : null}
+                    {subtitlePanelContentText ? (
+                      <span className="video-ctrl-panel-note">
+                        {subtitlePanelContentText}
+                      </span>
+                    ) : null}
+                    <div className="video-ctrl-panel-options">
+                      {subtitleOptions.map((option) => (
+                        <button
+                          aria-pressed={selectedSubtitleId === option.id}
+                          className={`video-ctrl-panel-option ${selectedSubtitleId === option.id ? "is-active" : ""}`}
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            onSelectSubtitle(option.id);
+                            closePopover();
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "speed" ? "is-open" : ""}`}
+                  onMouseEnter={() => setOpenPopover("speed")}
+                  onMouseLeave={closePopover}
+                >
+                  <button
+                    aria-controls="video-main-popover-speed"
+                    aria-expanded={
+                      popoverDebugPinned || openPopover === "speed"
+                    }
+                    aria-pressed={popoverDebugPinned || openPopover === "speed"}
+                    aria-haspopup="dialog"
+                    className="video-action-btn video-action-speed"
+                    aria-label={t("a11y.media.playbackRate", {
+                      rate: videoRate.toFixed(2),
+                    })}
+                    data-tooltip-label={t("a11y.media.playbackRate", {
+                      rate: videoRate.toFixed(2),
+                    })}
+                    type="button"
+                  >
+                    <VideoControlIcon name="speed" />
+                  </button>
+                  <div
+                    className="video-ctrl-panel is-speed"
+                    data-slot="fg-main-content-video-controls-speed-pop"
+                    hidden={!popoverDebugPinned && openPopover !== "speed"}
+                    id="video-main-popover-speed"
+                    role="dialog"
+                  >
+                    <div className="video-ctrl-panel-options">
+                      {[
+                        0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                      ].map((rate) => (
+                        <button
+                          aria-pressed={Math.abs(videoRate - rate) < 0.01}
+                          className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? "is-active" : ""}`}
+                          key={rate}
+                          type="button"
+                          onClick={() => {
+                            onChangeRate(rate);
+                            closePopover();
+                          }}
+                        >
+                          {`${rate}x`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  aria-label={t("a11y.media.hotkeyFullscreen")}
+                  className="video-action-btn video-action-fullscreen video-fullscreen-btn"
+                  data-tooltip-label={t("a11y.media.hotkeyFullscreen")}
+                  type="button"
+                  onClick={onEnterFullscreen}
+                >
+                  <VideoControlIcon name="fullscreenExpand" />
+                </button>
               </div>
-            </div>
 
-            <button
-              aria-label={t("a11y.media.hotkeyFullscreen")}
-              className="video-action-btn video-action-fullscreen video-fullscreen-btn"
-              data-tooltip-label={t("a11y.media.hotkeyFullscreen")}
-              type="button"
-              onClick={onEnterFullscreen}
-            >
-              <VideoControlIcon name="fullscreenExpand" />
-            </button>
-          </div>
-
-          <div
-            className="video-controls-group is-center"
-            data-slot="fg-main-content-video-controls-center"
-          >
-            <button
-              aria-label={t("a11y.media.prev")}
-              className="video-action-btn video-action-prev"
-              data-tooltip-label={t("a11y.media.prev")}
-              type="button"
-              onClick={onPrevVideo}
-            >
-              <VideoControlIcon name="prev" />
-            </button>
-            <button
-              aria-label={
-                videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
-              }
-              className="video-action-btn video-action-play"
-              data-tooltip-label={
-                videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
-              }
-              type="button"
-              onClick={handleTogglePlayback}
-            >
-              <VideoControlIcon name={videoPlaying ? "pause" : "play"} />
-            </button>
-            <button
-              aria-label={t("a11y.media.stop")}
-              className="video-action-btn video-action-stop"
-              data-tooltip-label={t("a11y.media.stop")}
-              type="button"
-              onClick={handleStopPlayback}
-            >
-              <VideoControlIcon name="stop" />
-            </button>
-            <button
-              aria-label={t("a11y.media.next")}
-              className="video-action-btn video-action-next"
-              data-tooltip-label={t("a11y.media.next")}
-              type="button"
-              onClick={onNextVideo}
-            >
-              <VideoControlIcon name="next" />
-            </button>
-          </div>
-
-          <div
-            className="video-controls-group is-right mpx-skeuo-well"
-            data-slot="fg-main-content-video-controls-right"
-          >
-            <button
-              aria-label={t("a11y.media.saveAsCover")}
-              className="video-action-btn video-action-save-cover"
-              data-tooltip-label={t("a11y.media.saveAsCover")}
-              type="button"
-              onClick={onSaveCover}
-            >
-              <VideoControlIcon name="camera" />
-            </button>
-
-            {fullscreenActive ? (
               <div
-                className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "playlist" ? "is-open" : ""}`}
-                onMouseEnter={() => setOpenPopover("playlist")}
-                onMouseLeave={closePopover}
+                className="video-controls-group is-center"
+                data-slot="fg-main-content-video-controls-center"
               >
                 <button
-                  aria-controls="video-main-popover-playlist"
-                  aria-expanded={
-                    popoverDebugPinned || openPopover === "playlist"
-                  }
-                  aria-pressed={
-                    popoverDebugPinned || openPopover === "playlist"
-                  }
-                  aria-haspopup="dialog"
-                  aria-label={t("a11y.media.playlistFullscreenOnly")}
-                  className="video-action-btn video-action-playlist"
-                  data-tooltip-label={t("tip.media.playlistInFullscreen")}
+                  aria-label={t("a11y.media.prev")}
+                  className="video-action-btn video-action-prev"
+                  data-tooltip-label={t("a11y.media.prev")}
                   type="button"
+                  onClick={onPrevVideo}
                 >
-                  <VideoControlIcon name="playlist" />
+                  <VideoControlIcon name="prev" />
                 </button>
-                <div
-                  className="video-ctrl-panel"
-                  data-slot="fg-main-content-video-controls-playlist-pop"
-                  hidden={!popoverDebugPinned && openPopover !== "playlist"}
-                  id="video-main-popover-playlist"
-                  role="dialog"
+                <button
+                  aria-label={
+                    videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
+                  }
+                  className="video-action-btn video-action-play"
+                  data-tooltip-label={
+                    videoPlaying ? t("a11y.media.pause") : t("a11y.media.play")
+                  }
+                  type="button"
+                  onClick={handleTogglePlayback}
                 >
-                  <span className="video-ctrl-panel-title">
-                    {t("ui.media.playlist")}
-                  </span>
-                  <span className="video-ctrl-panel-note">
-                    {t("ui.media.playlistFullscreenHint")}
-                  </span>
-                </div>
+                  <VideoControlIcon name={videoPlaying ? "pause" : "play"} />
+                </button>
+                <button
+                  aria-label={t("a11y.media.stop")}
+                  className="video-action-btn video-action-stop"
+                  data-tooltip-label={t("a11y.media.stop")}
+                  type="button"
+                  onClick={handleStopPlayback}
+                >
+                  <VideoControlIcon name="stop" />
+                </button>
+                <button
+                  aria-label={t("a11y.media.next")}
+                  className="video-action-btn video-action-next"
+                  data-tooltip-label={t("a11y.media.next")}
+                  type="button"
+                  onClick={onNextVideo}
+                >
+                  <VideoControlIcon name="next" />
+                </button>
               </div>
-            ) : null}
 
-            <button
-              aria-label={t("a11y.media.videoLoopMode", {
-                label: videoLoopModeLabel,
-              })}
-              className="video-action-btn video-action-loop-mode"
-              data-tooltip-label={t("tip.media.videoLoopMode", {
-                label: videoLoopModeLabel,
-              })}
-              type="button"
-              onClick={onCycleVideoLoopMode}
-            >
-              <MusicControlIcon
-                className="video-action-icon"
-                name={videoLoopMode === "single" ? "repeatOne" : "repeatAlbum"}
-              />
-            </button>
-
-            <div
-              className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "volume" ? "is-open" : ""}`}
-              onMouseEnter={() => setOpenPopover("volume")}
-              onMouseLeave={closePopover}
-            >
-              <button
-                aria-controls="video-main-popover-volume"
-                aria-expanded={popoverDebugPinned || openPopover === "volume"}
-                aria-pressed={popoverDebugPinned || openPopover === "volume"}
-                aria-haspopup="dialog"
-                className="video-action-btn video-action-mute"
-                aria-label={
-                  videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
-                }
-                data-tooltip-label={
-                  videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
-                }
-                type="button"
-                onClick={onToggleMute}
-              >
-                <VideoControlIcon
-                  name={videoMuted ? "volumeMuted" : "volume"}
-                />
-              </button>
               <div
-                className="video-ctrl-panel is-volume"
-                data-slot="fg-main-content-video-controls-volume-pop"
-                hidden={!popoverDebugPinned && openPopover !== "volume"}
-                id="video-main-popover-volume"
-                role="dialog"
+                className="video-controls-group is-right mpx-skeuo-well"
+                data-slot="fg-main-content-video-controls-right"
               >
-                <div className="mpx-runway-axis is-vertical">
-                  <SkeuoRunway
-                    ariaLabel={t("a11y.media.volumeSlider")}
-                    orientation="vertical"
-                    preset="control"
-                    inputClassName="video-ctrl-volume-range"
-                    max={100}
-                    min={0}
-                    rangePercent={volumePercent}
-                    step={1}
-                    value={videoMuted ? 0 : videoVolume}
-                    onChange={(event) =>
-                      onChangeVolume(Number(event.target.value))
+                <button
+                  aria-label={t("a11y.media.saveAsCover")}
+                  className="video-action-btn video-action-save-cover"
+                  data-tooltip-label={t("a11y.media.saveAsCover")}
+                  type="button"
+                  onClick={onSaveCover}
+                >
+                  <VideoControlIcon name="camera" />
+                </button>
+
+                {fullscreenActive ? (
+                  <div
+                    className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "playlist" ? "is-open" : ""}`}
+                    onMouseEnter={() => setOpenPopover("playlist")}
+                    onMouseLeave={closePopover}
+                  >
+                    <button
+                      aria-controls="video-main-popover-playlist"
+                      aria-expanded={
+                        popoverDebugPinned || openPopover === "playlist"
+                      }
+                      aria-pressed={
+                        popoverDebugPinned || openPopover === "playlist"
+                      }
+                      aria-haspopup="dialog"
+                      aria-label={t("a11y.media.playlistFullscreenOnly")}
+                      className="video-action-btn video-action-playlist"
+                      data-tooltip-label={t("tip.media.playlistInFullscreen")}
+                      type="button"
+                    >
+                      <VideoControlIcon name="playlist" />
+                    </button>
+                    <div
+                      className="video-ctrl-panel"
+                      data-slot="fg-main-content-video-controls-playlist-pop"
+                      hidden={!popoverDebugPinned && openPopover !== "playlist"}
+                      id="video-main-popover-playlist"
+                      role="dialog"
+                    >
+                      <span className="video-ctrl-panel-title">
+                        {t("ui.media.playlist")}
+                      </span>
+                      <span className="video-ctrl-panel-note">
+                        {t("ui.media.playlistFullscreenHint")}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
+
+                <button
+                  aria-label={t("a11y.media.videoLoopMode", {
+                    label: videoLoopModeLabel,
+                  })}
+                  className="video-action-btn video-action-loop-mode"
+                  data-tooltip-label={t("tip.media.videoLoopMode", {
+                    label: videoLoopModeLabel,
+                  })}
+                  type="button"
+                  onClick={onCycleVideoLoopMode}
+                >
+                  <MusicControlIcon
+                    className="video-action-icon"
+                    name={
+                      videoLoopMode === "single" ? "repeatOne" : "repeatAlbum"
                     }
                   />
+                </button>
+
+                <div
+                  className={`video-ctrl-popover ${popoverDebugPinned || openPopover === "volume" ? "is-open" : ""}`}
+                  onMouseEnter={() => setOpenPopover("volume")}
+                  onMouseLeave={closePopover}
+                >
+                  <button
+                    aria-controls="video-main-popover-volume"
+                    aria-expanded={
+                      popoverDebugPinned || openPopover === "volume"
+                    }
+                    aria-pressed={
+                      popoverDebugPinned || openPopover === "volume"
+                    }
+                    aria-haspopup="dialog"
+                    className="video-action-btn video-action-mute"
+                    aria-label={
+                      videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
+                    }
+                    data-tooltip-label={
+                      videoMuted ? t("a11y.media.unmute") : t("a11y.media.mute")
+                    }
+                    type="button"
+                    onClick={onToggleMute}
+                  >
+                    <VideoControlIcon
+                      name={videoMuted ? "volumeMuted" : "volume"}
+                    />
+                  </button>
+                  <div
+                    className="video-ctrl-panel is-volume"
+                    data-slot="fg-main-content-video-controls-volume-pop"
+                    hidden={!popoverDebugPinned && openPopover !== "volume"}
+                    id="video-main-popover-volume"
+                    role="dialog"
+                  >
+                    <div className="mpx-runway-axis is-vertical">
+                      <SkeuoRunway
+                        ariaLabel={t("a11y.media.volumeSlider")}
+                        orientation="vertical"
+                        preset="control"
+                        inputClassName="video-ctrl-volume-range"
+                        max={100}
+                        min={0}
+                        rangePercent={volumePercent}
+                        step={1}
+                        value={videoMuted ? 0 : videoVolume}
+                        onChange={(event) =>
+                          onChangeVolume(Number(event.target.value))
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
           </div>
         </>
       )}
@@ -1507,6 +1533,7 @@ function VideoMainSection({
         estimateLoading={videoTranscodeEstimateLoading}
         estimateMessage={videoTranscodeEstimateMessage}
         estimateResult={videoTranscodeEstimateResult}
+        canOpenOutputDirectory={canOpenVideoTranscodeOutputDirectory}
         taskStatus={videoTranscodeTaskStatus}
         taskProgress={videoTranscodeTaskProgress}
         taskMessage={videoTranscodeTaskMessage}
@@ -1532,6 +1559,7 @@ function VideoMainSection({
         onAddOutputToSourcesChange={setVideoTranscodeAddOutputToSources}
         onConfirm={handleVideoTranscodeConfirm}
         onCancel={handleVideoTranscodeCancel}
+        onOpenOutputDirectory={handleVideoTranscodeOpenOutputDir}
       />
     </>
   );

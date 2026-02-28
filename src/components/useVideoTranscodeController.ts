@@ -19,7 +19,9 @@ interface VideoTranscodeControllerOptions {
 }
 
 type VideoTranscodePreset = NonNullable<
-  NonNullable<StartVideoTranscodeTaskRequestDto["params_override"]>["encoder_preset"]
+  NonNullable<
+    StartVideoTranscodeTaskRequestDto["params_override"]
+  >["encoder_preset"]
 >;
 
 const VIDEO_TRANSCODE_PRESETS: VideoTranscodePreset[] = [
@@ -33,6 +35,53 @@ const VIDEO_TRANSCODE_PRESETS: VideoTranscodePreset[] = [
   "slower",
   "veryslow",
 ];
+
+function formatBytesForHint(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  return `${value.toFixed(unitIndex <= 1 ? 0 : 2)} ${units[unitIndex]}`;
+}
+
+function resolveParentDirectory(filePath: string): string | null {
+  const normalized = filePath.trim().replace(/[\\/]+$/, "");
+  if (!normalized) {
+    return null;
+  }
+  const separatorIndex = Math.max(
+    normalized.lastIndexOf("/"),
+    normalized.lastIndexOf("\\"),
+  );
+  if (separatorIndex <= 0) {
+    return null;
+  }
+  const parent = normalized.slice(0, separatorIndex);
+  if (/^[A-Za-z]:$/.test(parent)) {
+    return `${parent}\\`;
+  }
+  return parent;
+}
+
+function toFileUrl(pathValue: string): string {
+  const normalized = pathValue.trim().replace(/\\/g, "/");
+  if (/^[A-Za-z]:\//.test(normalized)) {
+    return `file:///${encodeURI(normalized)}`;
+  }
+  if (normalized.startsWith("//")) {
+    return `file:${encodeURI(normalized)}`;
+  }
+  if (normalized.startsWith("/")) {
+    return `file://${encodeURI(normalized)}`;
+  }
+  return `file:///${encodeURI(normalized)}`;
+}
 
 export function useVideoTranscodeController({
   t,
@@ -56,9 +105,8 @@ export function useVideoTranscodeController({
   );
   const [crf, setCrf] = useState(23);
   const [videoBitrateKbps, setVideoBitrateKbps] = useState<number | null>(null);
-  const [encoderPreset, setEncoderPreset] = useState<VideoTranscodePreset>(
-    "medium",
-  );
+  const [encoderPreset, setEncoderPreset] =
+    useState<VideoTranscodePreset>("medium");
   const [scaleLongEdgePx, setScaleLongEdgePx] = useState<number | null>(null);
   const [fps, setFps] = useState<number | null>(null);
   const [audioMode, setAudioMode] = useState<"copy" | "encode" | "drop">(
@@ -72,9 +120,9 @@ export function useVideoTranscodeController({
   const [addOutputToSources, setAddOutputToSources] = useState(true);
 
   const [taskId, setTaskId] = useState<string | null>(null);
-  const [taskStatus, setTaskStatus] = useState<VideoTranscodeTaskDto["status"] | null>(
-    null,
-  );
+  const [taskStatus, setTaskStatus] = useState<
+    VideoTranscodeTaskDto["status"] | null
+  >(null);
   const [taskProgress, setTaskProgress] = useState(0);
   const [taskMessage, setTaskMessage] = useState<string | null>(null);
   const [outputCount, setOutputCount] = useState(0);
@@ -97,10 +145,60 @@ export function useVideoTranscodeController({
   const [estimateMessage, setEstimateMessage] = useState<string | null>(null);
   const [estimateResult, setEstimateResult] =
     useState<EstimateVideoTranscodeOutputSizeResponseDto | null>(null);
+  const [lastOutputDirectory, setLastOutputDirectory] = useState<string | null>(
+    null,
+  );
 
   const canManageVideoTranscode =
-    manageMode && (manageSelectedVideoIds.length > 0 || Boolean(focusedVideoId));
+    manageMode &&
+    (manageSelectedVideoIds.length > 0 || Boolean(focusedVideoId));
   const executing = taskStatus === "pending" || taskStatus === "running";
+
+  const formatTaskErrorMessage = useCallback(
+    (rawMessage: string): string => {
+      const normalized = rawMessage.trim();
+      if (!normalized) {
+        return t("ui.common.unknown");
+      }
+      if (normalized.includes("ffmpeg unavailable")) {
+        return t("ui.media.videoTranscodeCapabilityFfmpegUnavailable");
+      }
+      if (normalized.includes("no valid video selected")) {
+        return t("ui.media.videoTranscodeNoTarget");
+      }
+      if (normalized.includes("destination already exists")) {
+        return t("ui.media.videoTranscodeDestinationExists");
+      }
+      if (normalized.includes("output directory outside allowlist")) {
+        return t("ui.media.videoTranscodeOutputOutsideAllowlist");
+      }
+      const diskSpaceMatch = normalized.match(
+        /insufficient_disk_space\(required=(\d+),available=(\d+)\)/,
+      );
+      if (diskSpaceMatch) {
+        const required = Number(diskSpaceMatch[1]);
+        const available = Number(diskSpaceMatch[2]);
+        return t("ui.media.videoTranscodeDiskSpaceInsufficient", {
+          required: formatBytesForHint(required),
+          available: formatBytesForHint(available),
+        });
+      }
+      if (normalized.includes("ffmpeg_disk_full")) {
+        return t("ui.media.videoTranscodeErrorDiskFull");
+      }
+      if (normalized.includes("ffmpeg_permission_denied")) {
+        return t("ui.media.videoTranscodeErrorPermissionDenied");
+      }
+      if (normalized.includes("ffmpeg_encoder_missing")) {
+        return t("ui.media.videoTranscodeErrorEncoderMissing");
+      }
+      if (normalized.includes("ffmpeg_invalid_argument")) {
+        return t("ui.media.videoTranscodeErrorInvalidArgument");
+      }
+      return normalized;
+    },
+    [t],
+  );
 
   const clearTaskPollTimer = useCallback(() => {
     if (taskPollTimerRef.current != null) {
@@ -119,7 +217,8 @@ export function useVideoTranscodeController({
   const resolveTargetVideoIds = useCallback((): string[] => {
     if (
       manageMode &&
-      (activeSelectionScope === "sidebar" || activeSelectionScope === "image") &&
+      (activeSelectionScope === "sidebar" ||
+        activeSelectionScope === "image") &&
       manageSelectedVideoIds.length > 0
     ) {
       return Array.from(new Set(manageSelectedVideoIds));
@@ -136,7 +235,9 @@ export function useVideoTranscodeController({
   ]);
 
   const buildParamsOverride = useCallback(() => {
-    const params: NonNullable<StartVideoTranscodeTaskRequestDto["params_override"]> = {
+    const params: NonNullable<
+      StartVideoTranscodeTaskRequestDto["params_override"]
+    > = {
       container,
       video_codec: videoCodec,
       quality_mode: qualityMode,
@@ -176,23 +277,40 @@ export function useVideoTranscodeController({
     videoCodec,
   ]);
 
-  const applyTaskSnapshot = useCallback((task: VideoTranscodeTaskDto) => {
-    setTaskStatus(task.status);
-    setTaskProgress(Math.max(0, Math.min(1, task.progress ?? 0)));
-    setTaskMessage(task.status === "failed" ? task.error_detail ?? task.message : null);
-    setOutputCount(task.output_files?.length ?? 0);
-    setTaskHistory((previous) => {
-      const nextItem = {
-        taskId: task.task_id,
-        status: task.status,
-        progress: Math.max(0, Math.min(1, task.progress ?? 0)),
-        outputCount: task.output_files?.length ?? 0,
-        message: task.status === "failed" ? task.error_detail ?? task.message : null,
-        updatedAtMs: task.updated_at_ms,
-      };
-      return [nextItem, ...previous.filter((item) => item.taskId !== task.task_id)].slice(0, 16);
-    });
-  }, []);
+  const applyTaskSnapshot = useCallback(
+    (task: VideoTranscodeTaskDto) => {
+      const resolvedErrorMessage =
+        task.status === "failed"
+          ? formatTaskErrorMessage(task.error_detail ?? task.message ?? "")
+          : null;
+      const firstOutputFile = task.output_files?.[0]?.trim() ?? "";
+      if (firstOutputFile) {
+        const parentDirectory = resolveParentDirectory(firstOutputFile);
+        if (parentDirectory) {
+          setLastOutputDirectory(parentDirectory);
+        }
+      }
+      setTaskStatus(task.status);
+      setTaskProgress(Math.max(0, Math.min(1, task.progress ?? 0)));
+      setTaskMessage(resolvedErrorMessage);
+      setOutputCount(task.output_files?.length ?? 0);
+      setTaskHistory((previous) => {
+        const nextItem = {
+          taskId: task.task_id,
+          status: task.status,
+          progress: Math.max(0, Math.min(1, task.progress ?? 0)),
+          outputCount: task.output_files?.length ?? 0,
+          message: resolvedErrorMessage,
+          updatedAtMs: task.updated_at_ms,
+        };
+        return [
+          nextItem,
+          ...previous.filter((item) => item.taskId !== task.task_id),
+        ].slice(0, 16);
+      });
+    },
+    [formatTaskErrorMessage],
+  );
 
   const confirmDisabledReason = useMemo(() => {
     if (capabilitiesLoading) {
@@ -229,8 +347,10 @@ export function useVideoTranscodeController({
     if (!panelOpen) {
       return;
     }
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
-    const readVideoTranscodeCapabilities = backendApi?.readVideoTranscodeCapabilities;
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const readVideoTranscodeCapabilities =
+      backendApi?.readVideoTranscodeCapabilities;
     if (typeof readVideoTranscodeCapabilities !== "function") {
       return;
     }
@@ -247,9 +367,16 @@ export function useVideoTranscodeController({
         if (!active) {
           return;
         }
-        const reason = error instanceof Error && error.message ? error.message : String(error);
+        const reason =
+          error instanceof Error && error.message
+            ? error.message
+            : String(error);
         setTaskStatus("failed");
-        setTaskMessage(t("ui.media.videoTranscodeCapabilityReadFailed", { message: reason }));
+        setTaskMessage(
+          t("ui.media.videoTranscodeCapabilityReadFailed", {
+            message: formatTaskErrorMessage(reason),
+          }),
+        );
       })
       .finally(() => {
         if (active) {
@@ -259,14 +386,15 @@ export function useVideoTranscodeController({
     return () => {
       active = false;
     };
-  }, [panelOpen, t]);
+  }, [formatTaskErrorMessage, panelOpen, t]);
 
   useEffect(() => {
     if (!taskId || !executing) {
       clearTaskPollTimer();
       return;
     }
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
     const readVideoTranscodeTask = backendApi?.readVideoTranscodeTask;
     if (typeof readVideoTranscodeTask !== "function") {
       return;
@@ -313,7 +441,8 @@ export function useVideoTranscodeController({
       clearEstimateDebounceTimer();
       return;
     }
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
     const estimate = backendApi?.estimateVideoTranscodeOutputSize;
     if (typeof estimate !== "function") {
       setEstimateMessage(t("ui.media.videoTranscodeEstimateUnsupported"));
@@ -331,10 +460,15 @@ export function useVideoTranscodeController({
           setEstimateResult(response);
         })
         .catch((error) => {
-          const reason = error instanceof Error && error.message ? error.message : String(error);
+          const reason =
+            error instanceof Error && error.message
+              ? error.message
+              : String(error);
           setEstimateResult(null);
           setEstimateMessage(
-            t("ui.media.videoTranscodeEstimateFailed", { message: reason }),
+            t("ui.media.videoTranscodeEstimateFailed", {
+              message: formatTaskErrorMessage(reason),
+            }),
           );
         })
         .finally(() => {
@@ -352,8 +486,23 @@ export function useVideoTranscodeController({
     qualityMode,
     resolveTargetVideoIds,
     t,
+    formatTaskErrorMessage,
     videoCodec,
   ]);
+
+  const effectiveOutputDirectory = useMemo(() => {
+    const manualOutputDir = outputDir.trim();
+    if (manualOutputDir) {
+      return manualOutputDir;
+    }
+    if (lastOutputDirectory?.trim()) {
+      return lastOutputDirectory.trim();
+    }
+    const fallbackOutputDir = capabilities?.default_output_dir?.trim() ?? "";
+    return fallbackOutputDir;
+  }, [capabilities?.default_output_dir, lastOutputDirectory, outputDir]);
+
+  const canOpenOutputDirectory = effectiveOutputDirectory.length > 0;
 
   const togglePanel = useCallback(() => {
     if (!canManageVideoTranscode || pendingManageAction || executing) {
@@ -374,7 +523,8 @@ export function useVideoTranscodeController({
       setTaskMessage(confirmDisabledReason);
       return;
     }
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
     const startVideoTranscodeTask = backendApi?.startVideoTranscodeTask;
     if (typeof startVideoTranscodeTask !== "function") {
       setTaskStatus("failed");
@@ -407,9 +557,10 @@ export function useVideoTranscodeController({
       setTaskId(response.task.task_id);
       applyTaskSnapshot(response.task);
     } catch (error) {
-      const reason = error instanceof Error && error.message ? error.message : String(error);
+      const reason =
+        error instanceof Error && error.message ? error.message : String(error);
       setTaskStatus("failed");
-      setTaskMessage(reason);
+      setTaskMessage(formatTaskErrorMessage(reason));
     }
   }, [
     addOutputToSources,
@@ -420,13 +571,21 @@ export function useVideoTranscodeController({
     overwrite,
     resolveTargetVideoIds,
     t,
+    formatTaskErrorMessage,
   ]);
 
   const handleCancel = useCallback(async () => {
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
-    if (executing && taskId && typeof backendApi?.cancelVideoTranscodeTask === "function") {
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    if (
+      executing &&
+      taskId &&
+      typeof backendApi?.cancelVideoTranscodeTask === "function"
+    ) {
       try {
-        const response = await backendApi.cancelVideoTranscodeTask({ task_id: taskId });
+        const response = await backendApi.cancelVideoTranscodeTask({
+          task_id: taskId,
+        });
         if (response.task) {
           applyTaskSnapshot(response.task);
         }
@@ -443,10 +602,13 @@ export function useVideoTranscodeController({
     if (executing || pickingOutputDir) {
       return;
     }
-    const backendApi = typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
     if (typeof backendApi?.pickDirectoryPath !== "function") {
       setTaskStatus("failed");
-      setTaskMessage(t("ui.media.videoTranscodePickOutputDirectoryUnsupported"));
+      setTaskMessage(
+        t("ui.media.videoTranscodePickOutputDirectoryUnsupported"),
+      );
       return;
     }
     setPickingOutputDir(true);
@@ -460,13 +622,58 @@ export function useVideoTranscodeController({
         setOutputDir(picked);
       }
     } catch (error) {
-      const reason = error instanceof Error && error.message ? error.message : String(error);
+      const reason =
+        error instanceof Error && error.message ? error.message : String(error);
       setTaskStatus("failed");
-      setTaskMessage(t("ui.media.videoTranscodePickOutputDirectoryFailed", { message: reason }));
+      setTaskMessage(
+        t("ui.media.videoTranscodePickOutputDirectoryFailed", {
+          message: formatTaskErrorMessage(reason),
+        }),
+      );
     } finally {
       setPickingOutputDir(false);
     }
-  }, [executing, outputDir, pickingOutputDir, t]);
+  }, [executing, outputDir, pickingOutputDir, t, formatTaskErrorMessage]);
+
+  const handleOpenOutputDir = useCallback(async () => {
+    if (!effectiveOutputDirectory) {
+      setTaskStatus("failed");
+      setTaskMessage(t("ui.media.videoTranscodeOpenOutputDirectoryNoTarget"));
+      return;
+    }
+    const backendApi =
+      typeof window !== "undefined" ? window.mediaPlayerBackend : undefined;
+    const openExternalUrl = backendApi?.openExternalUrl;
+    if (typeof openExternalUrl !== "function") {
+      setTaskStatus("failed");
+      setTaskMessage(
+        t("ui.media.videoTranscodeOpenOutputDirectoryUnsupported"),
+      );
+      return;
+    }
+    try {
+      const response = await openExternalUrl({
+        url: toFileUrl(effectiveOutputDirectory),
+      });
+      if (!response.ok) {
+        setTaskStatus("failed");
+        setTaskMessage(
+          t("ui.media.videoTranscodeOpenOutputDirectoryFailed", {
+            message: t("ui.common.unknown"),
+          }),
+        );
+      }
+    } catch (error) {
+      const reason =
+        error instanceof Error && error.message ? error.message : String(error);
+      setTaskStatus("failed");
+      setTaskMessage(
+        t("ui.media.videoTranscodeOpenOutputDirectoryFailed", {
+          message: formatTaskErrorMessage(reason),
+        }),
+      );
+    }
+  }, [effectiveOutputDirectory, formatTaskErrorMessage, t]);
 
   useEffect(() => {
     return () => {
@@ -520,9 +727,11 @@ export function useVideoTranscodeController({
     estimateLoading,
     estimateMessage,
     estimateResult,
+    canOpenOutputDirectory,
     togglePanel,
     handleConfirm,
     handleCancel,
     handlePickOutputDir,
+    handleOpenOutputDir,
   };
 }

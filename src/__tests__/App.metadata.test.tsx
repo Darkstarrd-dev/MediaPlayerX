@@ -653,9 +653,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
           screen.getByRole("button", { name: "漫画版" }),
         ).toBeInTheDocument();
       });
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
       expect(
         screen.queryAllByRole("button", { name: "scene_motion.mp4" }),
       ).toHaveLength(0);
@@ -681,9 +679,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
           screen.getByRole("button", { name: "动画版" }),
         ).toBeInTheDocument();
       });
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
       expect(
         screen.queryAllByRole("button", { name: /forest_pack\.zip/ }),
       ).toHaveLength(0);
@@ -743,9 +739,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
           screen.getByRole("button", { name: "漫画版" }),
         ).toBeInTheDocument();
       });
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
 
       await click(screen.getByRole("button", { name: "漫画版" }));
 
@@ -754,9 +748,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
           screen.getByRole("button", { name: "动画版" }),
         ).toBeInTheDocument();
       });
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
     },
     uiLongTestTimeoutMs,
   );

@@ -256,31 +256,59 @@ export const zhCnCatalogPart2 = {
   "ui.media.videoTranscodeAudioDrop": "移除",
   "ui.media.videoTranscodeAudioBitrateKbps": "音频码率(kbps)",
   "ui.media.videoTranscodeFaststart": "Faststart",
-  "ui.media.videoTranscodeOutputDirectoryPlaceholder": "输出目录（留空则使用默认目录）",
+  "ui.media.videoTranscodeOutputDirectoryPlaceholder":
+    "输出目录（留空则使用默认目录）",
   "ui.media.videoTranscodePickingOutputDirectory": "选择中...",
   "ui.media.videoTranscodePickOutputDirectory": "选择目录",
   "ui.media.videoTranscodeOverwrite": "覆盖同名文件",
   "ui.media.videoTranscodeAddOutputToSources": "完成后加入媒体库",
   "ui.media.videoTranscodeCapabilityLoading": "正在读取转码能力...",
-  "ui.media.videoTranscodeCapabilityFfmpegUnavailable": "当前环境缺少 ffmpeg，视频转码不可用",
-  "ui.media.videoTranscodeContainerUnavailable": "当前容器不可用：缺少封装器 {{muxer}}",
-  "ui.media.videoTranscodeCodecUnavailable": "当前编码器不可用：缺少编码器 {{encoder}}",
-  "ui.media.videoTranscodeCapabilityReadFailed": "读取转码能力失败：{{message}}",
+  "ui.media.videoTranscodeCapabilityFfmpegUnavailable":
+    "当前环境缺少 ffmpeg，视频转码不可用",
+  "ui.media.videoTranscodeContainerUnavailable":
+    "当前容器不可用：缺少封装器 {{muxer}}",
+  "ui.media.videoTranscodeCodecUnavailable":
+    "当前编码器不可用：缺少编码器 {{encoder}}",
+  "ui.media.videoTranscodeCapabilityReadFailed":
+    "读取转码能力失败：{{message}}",
   "ui.media.videoTranscodeNoTarget": "请先选择至少一个视频",
   "ui.media.videoTranscodeEstimateUnsupported": "当前后端不支持体积预估",
   "ui.media.videoTranscodeEstimateFailed": "体积预估失败：{{message}}",
   "ui.media.videoTranscodeBackendUnavailable": "当前后端不支持视频转码",
   "ui.media.videoTranscodeMissingTaskId": "启动失败：后端未返回任务ID",
-  "ui.media.videoTranscodePickOutputDirectoryUnsupported": "当前后端不支持选择目录",
+  "ui.media.videoTranscodePickOutputDirectoryUnsupported":
+    "当前后端不支持选择目录",
   "ui.media.videoTranscodePickOutputDirectoryTitle": "选择视频转码输出目录",
-  "ui.media.videoTranscodePickOutputDirectoryFailed": "选择目录失败：{{message}}",
+  "ui.media.videoTranscodePickOutputDirectoryFailed":
+    "选择目录失败：{{message}}",
+  "ui.media.videoTranscodeOpenOutputDirectory": "打开输出目录",
+  "ui.media.videoTranscodeOpenOutputDirectoryUnsupported":
+    "当前后端不支持打开输出目录",
+  "ui.media.videoTranscodeOpenOutputDirectoryNoTarget":
+    "当前没有可打开的输出目录",
+  "ui.media.videoTranscodeOpenOutputDirectoryFailed":
+    "打开输出目录失败：{{message}}",
+  "ui.media.videoTranscodeDestinationExists":
+    "输出文件已存在，请启用覆盖或更换目录",
+  "ui.media.videoTranscodeOutputOutsideAllowlist": "输出目录不在允许访问范围内",
+  "ui.media.videoTranscodeDiskSpaceInsufficient":
+    "磁盘空间不足：需要 {{required}}，可用 {{available}}",
+  "ui.media.videoTranscodeErrorDiskFull": "转码失败：磁盘空间不足",
+  "ui.media.videoTranscodeErrorPermissionDenied":
+    "转码失败：目标目录无写入权限",
+  "ui.media.videoTranscodeErrorEncoderMissing":
+    "转码失败：当前 ffmpeg 缺少所需编码器",
+  "ui.media.videoTranscodeErrorInvalidArgument":
+    "转码失败：参数无效，请检查参数配置",
   "ui.media.videoTranscodeEstimateTitle": "体积预估",
   "ui.media.videoTranscodeEstimateSourceSize": "源文件总大小：{{value}}",
   "ui.media.videoTranscodeEstimateOutputSize": "预计输出大小：{{value}}",
   "ui.media.videoTranscodeEstimateRange": "预计范围：{{low}} ~ {{high}}",
   "ui.media.videoTranscodeEstimateCompressRatio": "预计压缩率：{{ratio}}%",
-  "ui.media.videoTranscodeEstimateMethod": "估算方法：{{method}}（置信度 {{confidence}}）",
-  "ui.media.videoTranscodeTaskSummary": "状态 {{status}} | 进度 {{progress}}% | 输出 {{count}}",
+  "ui.media.videoTranscodeEstimateMethod":
+    "估算方法：{{method}}（置信度 {{confidence}}）",
+  "ui.media.videoTranscodeTaskSummary":
+    "状态 {{status}} | 进度 {{progress}}% | 输出 {{count}}",
   "ui.media.videoTranscodeStatus.pending": "排队中",
   "ui.media.videoTranscodeStatus.running": "执行中",
   "ui.media.videoTranscodeStatus.completed": "已完成",

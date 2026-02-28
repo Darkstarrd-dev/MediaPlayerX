@@ -144,6 +144,15 @@ export const AUDIO_TRANSCODE_CONCURRENCY = resolveConcurrency(
   2,
 );
 
+export const VIDEO_TRANSCODE_CONCURRENCY = resolveConcurrency(
+  resolveFirstEnvValue(
+    "MPX_VIDEO_TRANSCODE_CONCURRENCY",
+    "MEDIA_PLAYERX_VIDEO_TRANSCODE_CONCURRENCY",
+  ),
+  1,
+  2,
+);
+
 export const IMAGE_EXTENSIONS_FOR_WEBP_CONVERT = new Set([
   ".jpg",
   ".jpeg",

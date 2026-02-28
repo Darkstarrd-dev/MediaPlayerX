@@ -19,11 +19,15 @@ interface VideoTranscodePanelProps {
   crf: number;
   videoBitrateKbps: number | null;
   encoderPreset: NonNullable<
-    NonNullable<StartVideoTranscodeTaskRequestDto["params_override"]>["encoder_preset"]
+    NonNullable<
+      StartVideoTranscodeTaskRequestDto["params_override"]
+    >["encoder_preset"]
   >;
   encoderPresetOptions: Array<
     NonNullable<
-      NonNullable<StartVideoTranscodeTaskRequestDto["params_override"]>["encoder_preset"]
+      NonNullable<
+        StartVideoTranscodeTaskRequestDto["params_override"]
+      >["encoder_preset"]
     >
   >;
   scaleLongEdgePx: number | null;
@@ -41,6 +45,7 @@ interface VideoTranscodePanelProps {
   estimateLoading: boolean;
   estimateMessage: string | null;
   estimateResult: EstimateVideoTranscodeOutputSizeResponseDto | null;
+  canOpenOutputDirectory: boolean;
   taskStatus: VideoTranscodeTaskDto["status"] | null;
   taskProgress: number;
   taskMessage: string | null;
@@ -54,7 +59,9 @@ interface VideoTranscodePanelProps {
   onVideoBitrateKbpsChange: (value: number | null) => void;
   onEncoderPresetChange: (
     value: NonNullable<
-      NonNullable<StartVideoTranscodeTaskRequestDto["params_override"]>["encoder_preset"]
+      NonNullable<
+        StartVideoTranscodeTaskRequestDto["params_override"]
+      >["encoder_preset"]
     >,
   ) => void;
   onScaleLongEdgePxChange: (value: number | null) => void;
@@ -68,6 +75,7 @@ interface VideoTranscodePanelProps {
   onAddOutputToSourcesChange: (value: boolean) => void;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void | Promise<void>;
+  onOpenOutputDirectory: () => void | Promise<void>;
 }
 
 function formatBytes(bytes: number): string {
@@ -110,6 +118,7 @@ export function VideoTranscodePanel({
   estimateLoading,
   estimateMessage,
   estimateResult,
+  canOpenOutputDirectory,
   taskStatus,
   taskProgress,
   taskMessage,
@@ -133,6 +142,7 @@ export function VideoTranscodePanel({
   onAddOutputToSourcesChange,
   onConfirm,
   onCancel,
+  onOpenOutputDirectory,
 }: VideoTranscodePanelProps) {
   const { t } = useI18n();
 
@@ -148,7 +158,10 @@ export function VideoTranscodePanel({
   const estimatedBytes = estimateResult?.estimated_bytes ?? 0;
   const compressRatio =
     sourceBytes > 0
-      ? Math.max(0, Math.min(100, ((sourceBytes - estimatedBytes) / sourceBytes) * 100))
+      ? Math.max(
+          0,
+          Math.min(100, ((sourceBytes - estimatedBytes) / sourceBytes) * 100),
+        )
       : 0;
 
   return (
@@ -191,12 +204,35 @@ export function VideoTranscodePanel({
                 value={container}
                 disabled={executing || capabilitiesLoading}
                 onChange={(event) =>
-                  onContainerChange(event.target.value as "mp4" | "mkv" | "webm")
+                  onContainerChange(
+                    event.target.value as "mp4" | "mkv" | "webm",
+                  )
                 }
               >
-                <option value="mp4" disabled={Boolean(capabilities && !capabilities.containers.mp4.available)}>MP4</option>
-                <option value="mkv" disabled={Boolean(capabilities && !capabilities.containers.mkv.available)}>MKV</option>
-                <option value="webm" disabled={Boolean(capabilities && !capabilities.containers.webm.available)}>WebM</option>
+                <option
+                  value="mp4"
+                  disabled={Boolean(
+                    capabilities && !capabilities.containers.mp4.available,
+                  )}
+                >
+                  MP4
+                </option>
+                <option
+                  value="mkv"
+                  disabled={Boolean(
+                    capabilities && !capabilities.containers.mkv.available,
+                  )}
+                >
+                  MKV
+                </option>
+                <option
+                  value="webm"
+                  disabled={Boolean(
+                    capabilities && !capabilities.containers.webm.available,
+                  )}
+                >
+                  WebM
+                </option>
               </select>
             </label>
             <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
@@ -205,14 +241,56 @@ export function VideoTranscodePanel({
                 value={videoCodec}
                 disabled={executing || capabilitiesLoading}
                 onChange={(event) =>
-                  onVideoCodecChange(event.target.value as "h264" | "h265" | "vp9" | "av1" | "copy")
+                  onVideoCodecChange(
+                    event.target.value as
+                      | "h264"
+                      | "h265"
+                      | "vp9"
+                      | "av1"
+                      | "copy",
+                  )
                 }
               >
-                <option value="h264" disabled={Boolean(capabilities && !capabilities.video_codecs.h264.available)}>H.264</option>
-                <option value="h265" disabled={Boolean(capabilities && !capabilities.video_codecs.h265.available)}>H.265</option>
-                <option value="vp9" disabled={Boolean(capabilities && !capabilities.video_codecs.vp9.available)}>VP9</option>
-                <option value="av1" disabled={Boolean(capabilities && !capabilities.video_codecs.av1.available)}>AV1</option>
-                <option value="copy" disabled={Boolean(capabilities && !capabilities.video_codecs.copy.available)}>{t("ui.media.videoTranscodeCopyStream")}</option>
+                <option
+                  value="h264"
+                  disabled={Boolean(
+                    capabilities && !capabilities.video_codecs.h264.available,
+                  )}
+                >
+                  H.264
+                </option>
+                <option
+                  value="h265"
+                  disabled={Boolean(
+                    capabilities && !capabilities.video_codecs.h265.available,
+                  )}
+                >
+                  H.265
+                </option>
+                <option
+                  value="vp9"
+                  disabled={Boolean(
+                    capabilities && !capabilities.video_codecs.vp9.available,
+                  )}
+                >
+                  VP9
+                </option>
+                <option
+                  value="av1"
+                  disabled={Boolean(
+                    capabilities && !capabilities.video_codecs.av1.available,
+                  )}
+                >
+                  AV1
+                </option>
+                <option
+                  value="copy"
+                  disabled={Boolean(
+                    capabilities && !capabilities.video_codecs.copy.available,
+                  )}
+                >
+                  {t("ui.media.videoTranscodeCopyStream")}
+                </option>
               </select>
             </label>
             <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
@@ -221,12 +299,18 @@ export function VideoTranscodePanel({
                 value={qualityMode}
                 disabled={executing}
                 onChange={(event) =>
-                  onQualityModeChange(event.target.value as "copy" | "crf" | "bitrate")
+                  onQualityModeChange(
+                    event.target.value as "copy" | "crf" | "bitrate",
+                  )
                 }
               >
-                <option value="copy">{t("ui.media.videoTranscodeQualityCopy")}</option>
+                <option value="copy">
+                  {t("ui.media.videoTranscodeQualityCopy")}
+                </option>
                 <option value="crf">CRF</option>
-                <option value="bitrate">{t("ui.media.videoTranscodeQualityBitrate")}</option>
+                <option value="bitrate">
+                  {t("ui.media.videoTranscodeQualityBitrate")}
+                </option>
               </select>
             </label>
             {qualityMode === "crf" ? (
@@ -264,7 +348,9 @@ export function VideoTranscodePanel({
               <span>{t("ui.media.videoTranscodeEncoderPreset")}</span>
               <select
                 value={encoderPreset}
-                disabled={executing || (videoCodec !== "h264" && videoCodec !== "h265")}
+                disabled={
+                  executing || (videoCodec !== "h264" && videoCodec !== "h265")
+                }
                 onChange={(event) =>
                   onEncoderPresetChange(
                     event.target.value as NonNullable<
@@ -318,12 +404,20 @@ export function VideoTranscodePanel({
                 value={audioMode}
                 disabled={executing}
                 onChange={(event) =>
-                  onAudioModeChange(event.target.value as "copy" | "encode" | "drop")
+                  onAudioModeChange(
+                    event.target.value as "copy" | "encode" | "drop",
+                  )
                 }
               >
-                <option value="copy">{t("ui.media.videoTranscodeAudioCopy")}</option>
-                <option value="encode">{t("ui.media.videoTranscodeAudioEncode")}</option>
-                <option value="drop">{t("ui.media.videoTranscodeAudioDrop")}</option>
+                <option value="copy">
+                  {t("ui.media.videoTranscodeAudioCopy")}
+                </option>
+                <option value="encode">
+                  {t("ui.media.videoTranscodeAudioEncode")}
+                </option>
+                <option value="drop">
+                  {t("ui.media.videoTranscodeAudioDrop")}
+                </option>
               </select>
             </label>
             {audioMode === "encode" ? (
@@ -360,7 +454,9 @@ export function VideoTranscodePanel({
               type="text"
               value={outputDir}
               disabled={executing}
-              placeholder={t("ui.media.videoTranscodeOutputDirectoryPlaceholder")}
+              placeholder={t(
+                "ui.media.videoTranscodeOutputDirectoryPlaceholder",
+              )}
               onChange={(event) => onOutputDirChange(event.target.value)}
             />
             <button
@@ -399,19 +495,25 @@ export function VideoTranscodePanel({
               type="checkbox"
               checked={addOutputToSources}
               disabled={executing}
-              onChange={(event) => onAddOutputToSourcesChange(event.target.checked)}
+              onChange={(event) =>
+                onAddOutputToSourcesChange(event.target.checked)
+              }
             />
           </label>
 
           {capabilitiesLoading ? (
-            <p className="mpx-overlay-caption">{t("ui.media.videoTranscodeCapabilityLoading")}</p>
+            <p className="mpx-overlay-caption">
+              {t("ui.media.videoTranscodeCapabilityLoading")}
+            </p>
           ) : null}
           {confirmDisabledReason ? (
             <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
           ) : null}
 
           <section className="mpx-overlay-section">
-            <p className="mpx-overlay-caption">{t("ui.media.videoTranscodeEstimateTitle")}</p>
+            <p className="mpx-overlay-caption">
+              {t("ui.media.videoTranscodeEstimateTitle")}
+            </p>
             {estimateLoading ? (
               <p className="mpx-overlay-caption">{t("ui.common.loading")}</p>
             ) : null}
@@ -465,6 +567,14 @@ export function VideoTranscodePanel({
         </div>
 
         <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
+          <button
+            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+            type="button"
+            disabled={executing || !canOpenOutputDirectory}
+            onClick={() => void onOpenOutputDirectory()}
+          >
+            {t("ui.media.videoTranscodeOpenOutputDirectory")}
+          </button>
           <button
             className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
             type="button"

@@ -172,4 +172,92 @@ describe("ManagementVideoTranscodeService", () => {
     expect(firstArgs).toContain("aac");
     expect(progressPayloads.some((item) => item.progress > 0)).toBe(true);
   });
+
+  it("磁盘空间不足时应在转码前失败", async () => {
+    const rootDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-video-transcode-disk-"),
+    );
+    tempRoots.push(rootDir);
+
+    const { snapshot, videoIds } = await createVideoSnapshot(rootDir);
+    const capabilities = createCapabilities(rootDir);
+    const service = new ManagementVideoTranscodeService({
+      rootDir,
+      ffmpegBin: "ffmpeg",
+      defaultConcurrency: 1,
+      ensureRuntimeDependencies: vi.fn().mockResolvedValue({
+        ffmpeg: true,
+        ffprobe: true,
+      }),
+      ensureStateLoaded: vi.fn().mockResolvedValue(undefined),
+      ensureSnapshotLoaded: vi
+        .fn()
+        .mockResolvedValue({ videos: snapshot.videos ?? [] }),
+      buildMediaAccessContext: () => createVideoAccessContext(rootDir),
+    });
+
+    vi.spyOn(service, "readVideoTranscodeCapabilities").mockResolvedValue(
+      capabilities,
+    );
+    vi.spyOn(
+      service as unknown as {
+        readAvailableDiskBytes: (targetDir: string) => Promise<number | null>;
+      },
+      "readAvailableDiskBytes",
+    ).mockResolvedValue(1);
+
+    await expect(
+      service.runVideoTranscodeTask({
+        video_ids: videoIds,
+        params_override: {
+          quality_mode: "bitrate",
+          video_bitrate_kbps: 2_000,
+          audio_mode: "encode",
+          audio_bitrate_kbps: 192,
+        },
+      }),
+    ).rejects.toThrow(/insufficient_disk_space/);
+  });
+
+  it("ffmpeg 失败应归因为可读错误码", async () => {
+    const rootDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-video-transcode-error-"),
+    );
+    tempRoots.push(rootDir);
+
+    const { snapshot, videoIds } = await createVideoSnapshot(rootDir);
+    const capabilities = createCapabilities(rootDir);
+    const service = new ManagementVideoTranscodeService({
+      rootDir,
+      ffmpegBin: "ffmpeg",
+      defaultConcurrency: 1,
+      ensureRuntimeDependencies: vi.fn().mockResolvedValue({
+        ffmpeg: true,
+        ffprobe: true,
+      }),
+      ensureStateLoaded: vi.fn().mockResolvedValue(undefined),
+      ensureSnapshotLoaded: vi
+        .fn()
+        .mockResolvedValue({ videos: snapshot.videos ?? [] }),
+      buildMediaAccessContext: () => createVideoAccessContext(rootDir),
+    });
+
+    vi.spyOn(service, "readVideoTranscodeCapabilities").mockResolvedValue(
+      capabilities,
+    );
+    const servicePrivate =
+      service as unknown as VideoTranscodeServicePrivateApi;
+    vi.spyOn(servicePrivate, "runFfmpegWithProgress").mockResolvedValue({
+      code: 1,
+      stderr: "Permission denied",
+    });
+
+    const result = await service.runVideoTranscodeTask({
+      video_ids: videoIds,
+      overwrite: true,
+    });
+
+    expect(result.failed_count).toBe(1);
+    expect(result.first_error_detail).toContain("ffmpeg_permission_denied");
+  });
 });

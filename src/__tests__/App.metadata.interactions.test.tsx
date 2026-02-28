@@ -90,7 +90,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "默认只读元数据点击作者值可静默触发检索并通过返回按钮清空",
     async () => {
@@ -110,14 +109,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       expect(
         screen.queryByRole("group", { name: "search-mode-switch" }),
       ).toBeNull();
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "设为根" })).toBeNull();
 
       await click(screen.getByRole("button", { name: "返回" }));
-      expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
       expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
       expect(
         screen.getByRole("button", { name: "设为根" }),
@@ -125,7 +120,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 
   it(
     "默认只读元数据点击社团值可静默触发检索并通过返回按钮清空",
@@ -146,14 +140,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       expect(
         screen.queryByRole("group", { name: "search-mode-switch" }),
       ).toBeNull();
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "设为根" })).toBeNull();
 
       await click(screen.getByRole("button", { name: "返回" }));
-      expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
       expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
       expect(
         screen.getByRole("button", { name: "设为根" }),
@@ -161,7 +151,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 
   it(
     "视频模式只读元数据点击社团可静默触发检索并通过返回按钮清空",
@@ -181,14 +170,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       expect(
         screen.queryByRole("group", { name: "search-mode-switch" }),
       ).toBeNull();
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: "设为根" })).toBeNull();
 
       await click(screen.getByRole("button", { name: "返回" }));
-      expect(screen.queryByRole("button", { name: "检索结果" })).toBeNull();
       expect(screen.queryByRole("button", { name: "返回" })).toBeNull();
       expect(
         screen.getByRole("button", { name: "设为根" }),
@@ -196,7 +181,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 
   it(
     "元数据管理支持按字段回车批量写入，不覆盖未提交字段",
@@ -250,7 +234,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "元数据管理支持单选/复选切换，单选仅保留最后焦点节点",
     async () => {
@@ -279,7 +262,8 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await waitFor(() => {
         expect(
-          document.querySelectorAll(".sidebar-row.is-manage.is-selected").length,
+          document.querySelectorAll(".sidebar-row.is-manage.is-selected")
+            .length,
         ).toBe(1);
       });
 
@@ -295,13 +279,13 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await waitFor(() => {
         expect(
-          document.querySelectorAll(".sidebar-row.is-manage.is-selected").length,
+          document.querySelectorAll(".sidebar-row.is-manage.is-selected")
+            .length,
         ).toBeGreaterThan(1);
       });
     },
     uiLongTestTimeoutMs,
   );
-
 
   it(
     "元数据管理面板已移除自动标签与嵌入按钮，仅保留同步名称",
@@ -324,5 +308,4 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 });

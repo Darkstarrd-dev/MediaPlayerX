@@ -67,6 +67,15 @@ import {
 } from "../../src/contracts/backend";
 import { FileSystemFacadeContext } from "./types";
 
+interface VideoTranscodeProgressPayload {
+  progress: number;
+  total_count: number;
+  processed_count: number;
+  success_count: number;
+  failed_count: number;
+  message: string;
+}
+
 export class FileSystemManagementHandlers {
   private readonly imageConvertTasks = new Map<string, ImageConvertTaskDto>();
   private readonly imageConvertTaskRuntime = new Map<
@@ -93,8 +102,13 @@ export class FileSystemManagementHandlers {
     {
       cancelRequested: boolean;
       abortController: AbortController;
+      lastProgressCommittedAtMs: number;
+      pendingProgress: VideoTranscodeProgressPayload | null;
+      progressFlushTimer: NodeJS.Timeout | null;
     }
   >();
+
+  private static readonly VIDEO_TRANSCODE_PROGRESS_THROTTLE_MS = 320;
 
   constructor(private context: FileSystemFacadeContext) {}
 
@@ -323,6 +337,75 @@ export class FileSystemManagementHandlers {
     return nextTask;
   }
 
+  private applyVideoTranscodeTaskProgress(
+    taskId: string,
+    payload: VideoTranscodeProgressPayload,
+  ): void {
+    this.updateVideoTranscodeTask(taskId, (task) => ({
+      ...task,
+      status: "running",
+      progress: Math.max(0, Math.min(1, payload.progress)),
+      total_count: payload.total_count,
+      processed_count: payload.processed_count,
+      success_count: payload.success_count,
+      failed_count: payload.failed_count,
+      message: payload.message,
+      updated_at_ms: Date.now(),
+    }));
+  }
+
+  private flushPendingVideoTranscodeProgress(taskId: string): void {
+    const runtime = this.videoTranscodeTaskRuntime.get(taskId);
+    if (!runtime) {
+      return;
+    }
+    if (runtime.progressFlushTimer) {
+      clearTimeout(runtime.progressFlushTimer);
+      runtime.progressFlushTimer = null;
+    }
+    if (!runtime.pendingProgress) {
+      return;
+    }
+    const pending = runtime.pendingProgress;
+    runtime.pendingProgress = null;
+    runtime.lastProgressCommittedAtMs = Date.now();
+    this.applyVideoTranscodeTaskProgress(taskId, pending);
+  }
+
+  private scheduleVideoTranscodeProgress(
+    taskId: string,
+    payload: VideoTranscodeProgressPayload,
+  ): void {
+    const runtime = this.videoTranscodeTaskRuntime.get(taskId);
+    if (!runtime) {
+      return;
+    }
+    runtime.pendingProgress = payload;
+    const now = Date.now();
+    const elapsed = now - runtime.lastProgressCommittedAtMs;
+    const throttleMs =
+      FileSystemManagementHandlers.VIDEO_TRANSCODE_PROGRESS_THROTTLE_MS;
+
+    if (elapsed >= throttleMs && !runtime.progressFlushTimer) {
+      this.flushPendingVideoTranscodeProgress(taskId);
+      return;
+    }
+
+    if (runtime.progressFlushTimer) {
+      return;
+    }
+
+    const delayMs = Math.max(0, throttleMs - elapsed);
+    runtime.progressFlushTimer = setTimeout(() => {
+      const nextRuntime = this.videoTranscodeTaskRuntime.get(taskId);
+      if (!nextRuntime) {
+        return;
+      }
+      nextRuntime.progressFlushTimer = null;
+      this.flushPendingVideoTranscodeProgress(taskId);
+    }, delayMs);
+  }
+
   private executeVideoTranscodeTask(
     taskId: string,
     request: StartVideoTranscodeTaskRequestDto,
@@ -337,20 +420,11 @@ export class FileSystemManagementHandlers {
         isCancelled: () => runtime.cancelRequested,
         signal: runtime.abortController.signal,
         onProgress: (payload) => {
-          this.updateVideoTranscodeTask(taskId, (task) => ({
-            ...task,
-            status: "running",
-            progress: Math.max(0, Math.min(1, payload.progress)),
-            total_count: payload.total_count,
-            processed_count: payload.processed_count,
-            success_count: payload.success_count,
-            failed_count: payload.failed_count,
-            message: payload.message,
-            updated_at_ms: Date.now(),
-          }));
+          this.scheduleVideoTranscodeProgress(taskId, payload);
         },
       })
       .then((result) => {
+        this.flushPendingVideoTranscodeProgress(taskId);
         const nextStatus = runtime.cancelRequested
           ? "cancelled"
           : result.failed_count > 0
@@ -376,6 +450,7 @@ export class FileSystemManagementHandlers {
         }));
       })
       .catch((error) => {
+        this.flushPendingVideoTranscodeProgress(taskId);
         const cancelled =
           runtime.cancelRequested || this.isVideoTranscodeCancelledError(error);
         const reason =
@@ -393,6 +468,10 @@ export class FileSystemManagementHandlers {
         }));
       })
       .finally(() => {
+        const latestRuntime = this.videoTranscodeTaskRuntime.get(taskId);
+        if (latestRuntime?.progressFlushTimer) {
+          clearTimeout(latestRuntime.progressFlushTimer);
+        }
         this.videoTranscodeTaskRuntime.delete(taskId);
       });
   }
@@ -689,6 +768,9 @@ export class FileSystemManagementHandlers {
     this.videoTranscodeTaskRuntime.set(taskId, {
       cancelRequested: false,
       abortController: new AbortController(),
+      lastProgressCommittedAtMs: 0,
+      pendingProgress: null,
+      progressFlushTimer: null,
     });
     this.executeVideoTranscodeTask(taskId, request);
     return { task };

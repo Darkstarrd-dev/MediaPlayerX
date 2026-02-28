@@ -239,24 +239,24 @@ Last updated: 2026-02-28
 
 ### P4.2 TODO checklist
 
-- [ ] 任务治理：
+- [x] 任务治理：
   - 视频转码并发默认 1，上限 2；与 `TaskResourceGovernor` CPU token 协同。
   - 进度事件节流（例如 200~500ms），只保留最新帧（避免 IPC 洪泛）。
-- [ ] 磁盘空间预检查（可选但强烈建议）：
+- [x] 磁盘空间预检查（可选但强烈建议）：
   - 使用 `estimatedBytes` 与目标盘剩余空间对比，不足时提前失败并提示。
-- [ ] 错误归因与提示：
+- [x] 错误归因与提示：
   - 常见 ffmpeg stderr 模式 -> 本地化提示（encoder missing、invalid argument、permission denied、disk full）。
-- [ ] 输出处理：
+- [x] 输出处理：
   - 完成后提供“打开输出目录”按钮（通过现有 `openExternalUrl` 或新增 `openDirectory` IPC）。
-- [ ] 文档同步：
+- [x] 文档同步：
   - `docs/interaction-v1.md`：新增音频/视频转码入口与参数说明。
   - `docs/requirements-v1.md`（如需求口径变更）。
-- [ ] 全量回归：
+- [x] 全量回归：
   - `npm run quality:ci`
   - `npm run build:electron`
 
 ### P4.3 验收标准
 
-- [ ] 长任务（>10min 视频转码）可稳定运行，取消不残留僵尸进程。
-- [ ] 错误提示可读且可定位（至少包含缺失 encoder/muxer 的明确字段）。
-- [ ] CI 质量门禁全部通过。
+- [x] 长任务（>10min 视频转码）可稳定运行，取消不残留僵尸进程。
+- [x] 错误提示可读且可定位（至少包含缺失 encoder/muxer 的明确字段）。
+- [x] CI 质量门禁全部通过。

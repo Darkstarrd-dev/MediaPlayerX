@@ -340,6 +340,26 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Pick video transcode output directory",
   "ui.media.videoTranscodePickOutputDirectoryFailed":
     "Failed to pick output directory: {{message}}",
+  "ui.media.videoTranscodeOpenOutputDirectory": "Open output directory",
+  "ui.media.videoTranscodeOpenOutputDirectoryUnsupported":
+    "Current backend does not support opening output directory",
+  "ui.media.videoTranscodeOpenOutputDirectoryNoTarget":
+    "No output directory is available",
+  "ui.media.videoTranscodeOpenOutputDirectoryFailed":
+    "Failed to open output directory: {{message}}",
+  "ui.media.videoTranscodeDestinationExists":
+    "Output file already exists, enable overwrite or change directory",
+  "ui.media.videoTranscodeOutputOutsideAllowlist":
+    "Output directory is outside allowed locations",
+  "ui.media.videoTranscodeDiskSpaceInsufficient":
+    "Insufficient disk space: required {{required}}, available {{available}}",
+  "ui.media.videoTranscodeErrorDiskFull": "Transcode failed: disk is full",
+  "ui.media.videoTranscodeErrorPermissionDenied":
+    "Transcode failed: no write permission on output directory",
+  "ui.media.videoTranscodeErrorEncoderMissing":
+    "Transcode failed: required encoder is missing in ffmpeg",
+  "ui.media.videoTranscodeErrorInvalidArgument":
+    "Transcode failed: invalid arguments, please check settings",
   "ui.media.videoTranscodeEstimateTitle": "Size estimate",
   "ui.media.videoTranscodeEstimateSourceSize": "Source size: {{value}}",
   "ui.media.videoTranscodeEstimateOutputSize": "Estimated output: {{value}}",

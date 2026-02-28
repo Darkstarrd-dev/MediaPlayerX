@@ -237,6 +237,197 @@ export class ManagementVideoTranscodeService {
     return Math.max(0, Math.floor(seconds * 1000));
   }
 
+  private resolveSelectedFilesystemVideos(
+    videoIds: string[],
+    snapshotVideos: VideoItemDto[],
+    mediaAccessContext: MediaAccessGuardContext,
+  ): FilesystemVideoItem[] {
+    const videoById = new Map<string, VideoItemDto>(
+      snapshotVideos.map((video) => [video.id, video]),
+    );
+    const selectedVideos: FilesystemVideoItem[] = [];
+    for (const videoId of videoIds) {
+      const video = videoById.get(videoId);
+      if (!video || video.media_locator.kind !== "filesystem") {
+        continue;
+      }
+      const sourcePath = path.resolve(video.media_locator.absolute_path);
+      if (!isPathAllowlisted(sourcePath, mediaAccessContext)) {
+        continue;
+      }
+      selectedVideos.push(video as FilesystemVideoItem);
+    }
+    return selectedVideos;
+  }
+
+  private estimateOutputSizeFromVideos(
+    selectedVideos: FilesystemVideoItem[],
+    params: VideoTranscodeParams,
+  ): EstimateVideoTranscodeOutputSizeResponseDto {
+    const audioMode = params.audio_mode ?? "copy";
+    const qualityMode = params.quality_mode ?? "crf";
+    const codec = params.video_codec ?? "h264";
+
+    let sourceTotalBytes = 0;
+    let totalDurationSec = 0;
+    for (const video of selectedVideos) {
+      const sizeBytes = Math.max(0, Math.round(video.size_mb * 1024 * 1024));
+      sourceTotalBytes += sizeBytes;
+      totalDurationSec += Math.max(0, Number(video.duration_sec) || 0);
+    }
+
+    const safeDurationSec = Math.max(1, totalDurationSec);
+    const sourceTotalKbps = (sourceTotalBytes * 8) / safeDurationSec / 1000;
+    const estimatedSourceAudioKbps =
+      audioMode === "drop"
+        ? 0
+        : Math.max(64, Math.min(320, sourceTotalKbps * 0.12));
+    const sourceVideoKbps = Math.max(
+      100,
+      sourceTotalKbps - estimatedSourceAudioKbps,
+    );
+
+    const explicitAudioKbps =
+      audioMode === "drop"
+        ? 0
+        : audioMode === "encode"
+          ? Math.max(16, params.audio_bitrate_kbps ?? 128)
+          : estimatedSourceAudioKbps;
+
+    const overheadFactor = 1.03;
+    let estimatedVideoKbps = sourceVideoKbps;
+    let method: EstimateVideoTranscodeOutputSizeResponseDto["method"] =
+      "crf_heuristic";
+    let confidence: EstimateVideoTranscodeOutputSizeResponseDto["confidence"] =
+      "medium";
+    let rangeFactorLow = 0.65;
+    let rangeFactorHigh = 1.35;
+
+    if (qualityMode === "copy" || codec === "copy") {
+      method = "bitrate_formula";
+      confidence = "high";
+      estimatedVideoKbps = sourceVideoKbps;
+      rangeFactorLow = 0.95;
+      rangeFactorHigh = 1.08;
+    } else if (
+      qualityMode === "bitrate" &&
+      typeof params.video_bitrate_kbps === "number"
+    ) {
+      method = "bitrate_formula";
+      confidence = "high";
+      estimatedVideoKbps = Math.max(100, params.video_bitrate_kbps);
+      rangeFactorLow = 0.92;
+      rangeFactorHigh = 1.08;
+    } else {
+      const codecEfficiency =
+        codec === "h265"
+          ? 0.68
+          : codec === "vp9"
+            ? 0.6
+            : codec === "av1"
+              ? 0.52
+              : 0.9;
+      const crf = typeof params.crf === "number" ? params.crf : 23;
+      const crfFactor = Math.pow(2, (23 - crf) / 6);
+      estimatedVideoKbps = Math.max(
+        100,
+        Math.min(
+          sourceVideoKbps * 1.3,
+          sourceVideoKbps * codecEfficiency * crfFactor,
+        ),
+      );
+    }
+
+    const estimatedBytes = Math.max(
+      0,
+      Math.round(
+        ((estimatedVideoKbps + explicitAudioKbps) *
+          1000 *
+          safeDurationSec *
+          overheadFactor) /
+          8,
+      ),
+    );
+    const lowBytes = Math.max(0, Math.round(estimatedBytes * rangeFactorLow));
+    const highBytes = Math.max(
+      lowBytes,
+      Math.round(estimatedBytes * rangeFactorHigh),
+    );
+
+    return {
+      source_total_bytes: sourceTotalBytes,
+      estimated_bytes: estimatedBytes,
+      range: {
+        low_bytes: lowBytes,
+        high_bytes: highBytes,
+      },
+      method,
+      confidence,
+      target_video_count: selectedVideos.length,
+      details: {
+        duration_sec: safeDurationSec,
+        assumed_video_bitrate_kbps: Number(estimatedVideoKbps.toFixed(2)),
+        audio_bitrate_kbps:
+          audioMode === "drop" ? 0 : Number(explicitAudioKbps.toFixed(2)),
+        overhead_factor: overheadFactor,
+      },
+    };
+  }
+
+  private async readAvailableDiskBytes(
+    targetDir: string,
+  ): Promise<number | null> {
+    if (typeof fs.statfs !== "function") {
+      return null;
+    }
+    try {
+      const stats = await fs.statfs(targetDir);
+      const blockSize = Number(stats.bsize);
+      const availableBlocks = Number(stats.bavail);
+      if (!Number.isFinite(blockSize) || !Number.isFinite(availableBlocks)) {
+        return null;
+      }
+      return Math.max(0, Math.floor(blockSize * availableBlocks));
+    } catch {
+      return null;
+    }
+  }
+
+  private classifyFfmpegFailure(
+    stderr: string,
+  ):
+    | "ffmpeg_disk_full"
+    | "ffmpeg_permission_denied"
+    | "ffmpeg_encoder_missing"
+    | "ffmpeg_invalid_argument"
+    | null {
+    if (/No space left on device|not enough space on the disk/i.test(stderr)) {
+      return "ffmpeg_disk_full";
+    }
+    if (/Permission denied|Access is denied/i.test(stderr)) {
+      return "ffmpeg_permission_denied";
+    }
+    if (/Unknown encoder|Encoder .* not found/i.test(stderr)) {
+      return "ffmpeg_encoder_missing";
+    }
+    if (/Invalid argument/i.test(stderr)) {
+      return "ffmpeg_invalid_argument";
+    }
+    return null;
+  }
+
+  private buildFfmpegFailureMessage(code: number, stderr: string): string {
+    const normalizedStderr = stderr.replace(/\s+/g, " ").trim();
+    const classified = this.classifyFfmpegFailure(normalizedStderr);
+    if (classified) {
+      return `video transcode failed: ${classified} (code ${code})`;
+    }
+    if (!normalizedStderr) {
+      return `video transcode failed: ffmpeg_exit_${code}`;
+    }
+    return `video transcode failed: ffmpeg_exit_${code}: ${normalizedStderr.slice(0, 256)}`;
+  }
+
   private async runFfmpegWithProgress(
     args: string[],
     options: RunVideoTranscodeTaskOptions,
@@ -679,26 +870,15 @@ export class ManagementVideoTranscodeService {
     }
 
     const snapshot = await this.dependencies.ensureSnapshotLoaded();
-    const videoById = new Map<string, VideoItemDto>(
-      (snapshot.videos ?? []).map((video) => [video.id, video]),
-    );
     const mediaAccessContext = this.dependencies.buildMediaAccessContext();
     const normalizedVideoIds = Array.from(
       new Set(request.video_ids.map((value) => value.trim()).filter(Boolean)),
     );
-
-    const selectedVideos: FilesystemVideoItem[] = [];
-    for (const videoId of normalizedVideoIds) {
-      const video = videoById.get(videoId);
-      if (!video || video.media_locator.kind !== "filesystem") {
-        continue;
-      }
-      const sourcePath = path.resolve(video.media_locator.absolute_path);
-      if (!isPathAllowlisted(sourcePath, mediaAccessContext)) {
-        continue;
-      }
-      selectedVideos.push(video as FilesystemVideoItem);
-    }
+    const selectedVideos = this.resolveSelectedFilesystemVideos(
+      normalizedVideoIds,
+      snapshot.videos ?? [],
+      mediaAccessContext,
+    );
     if (selectedVideos.length <= 0) {
       throw new Error("video transcode failed: no valid video selected");
     }
@@ -710,6 +890,23 @@ export class ManagementVideoTranscodeService {
         : capabilities.default_output_dir,
     );
     await fs.mkdir(resolvedOutputDir, { recursive: true });
+
+    const preflightEstimate = this.estimateOutputSizeFromVideos(
+      selectedVideos,
+      params,
+    );
+    const requiredBytes =
+      preflightEstimate.range?.high_bytes ?? preflightEstimate.estimated_bytes;
+    const availableBytes = await this.readAvailableDiskBytes(resolvedOutputDir);
+    if (
+      availableBytes != null &&
+      requiredBytes > 0 &&
+      availableBytes < requiredBytes
+    ) {
+      throw new Error(
+        `video transcode failed: insufficient_disk_space(required=${requiredBytes},available=${availableBytes})`,
+      );
+    }
 
     let processedCount = 0;
     let successCount = 0;
@@ -816,7 +1013,7 @@ export class ManagementVideoTranscodeService {
           : await run();
         if (result.code !== 0) {
           throw new Error(
-            result.stderr.trim() || `ffmpeg exited with code ${result.code}`,
+            this.buildFfmpegFailureMessage(result.code, result.stderr),
           );
         }
         outputFiles.push(outputPath);
@@ -881,128 +1078,26 @@ export class ManagementVideoTranscodeService {
   ): Promise<EstimateVideoTranscodeOutputSizeResponseDto> {
     await this.dependencies.ensureStateLoaded();
     const snapshot = await this.dependencies.ensureSnapshotLoaded();
-    const videoById = new Map<string, VideoItemDto>(
-      (snapshot.videos ?? []).map((video) => [video.id, video]),
-    );
     const mediaAccessContext = this.dependencies.buildMediaAccessContext();
     const normalizedVideoIds = Array.from(
       new Set(request.video_ids.map((value) => value.trim()).filter(Boolean)),
     );
-
-    const selectedVideos: FilesystemVideoItem[] = [];
-    for (const videoId of normalizedVideoIds) {
-      const video = videoById.get(videoId);
-      if (!video || video.media_locator.kind !== "filesystem") {
-        continue;
-      }
-      const sourcePath = path.resolve(video.media_locator.absolute_path);
-      if (!isPathAllowlisted(sourcePath, mediaAccessContext)) {
-        continue;
-      }
-      selectedVideos.push(video as FilesystemVideoItem);
-    }
+    const selectedVideos = this.resolveSelectedFilesystemVideos(
+      normalizedVideoIds,
+      snapshot.videos ?? [],
+      mediaAccessContext,
+    );
 
     if (selectedVideos.length <= 0) {
-      throw new Error("video transcode estimate failed: no valid video selected");
+      throw new Error(
+        "video transcode estimate failed: no valid video selected",
+      );
     }
 
     const params = this.resolveParamsOverride({
       video_ids: request.video_ids,
       params_override: request.params_override,
     });
-    const audioMode = params.audio_mode ?? "copy";
-    const qualityMode = params.quality_mode ?? "crf";
-    const codec = params.video_codec ?? "h264";
-
-    let sourceTotalBytes = 0;
-    let totalDurationSec = 0;
-    for (const video of selectedVideos) {
-      const sizeBytes = Math.max(0, Math.round(video.size_mb * 1024 * 1024));
-      sourceTotalBytes += sizeBytes;
-      totalDurationSec += Math.max(0, Number(video.duration_sec) || 0);
-    }
-
-    const safeDurationSec = Math.max(1, totalDurationSec);
-    const sourceTotalKbps = (sourceTotalBytes * 8) / safeDurationSec / 1000;
-    const estimatedSourceAudioKbps =
-      audioMode === "drop" ? 0 : Math.max(64, Math.min(320, sourceTotalKbps * 0.12));
-    const sourceVideoKbps = Math.max(100, sourceTotalKbps - estimatedSourceAudioKbps);
-
-    const explicitAudioKbps =
-      audioMode === "drop"
-        ? 0
-        : audioMode === "encode"
-          ? Math.max(16, params.audio_bitrate_kbps ?? 128)
-          : estimatedSourceAudioKbps;
-
-    const overheadFactor = 1.03;
-    let estimatedVideoKbps = sourceVideoKbps;
-    let method: EstimateVideoTranscodeOutputSizeResponseDto["method"] =
-      "crf_heuristic";
-    let confidence: EstimateVideoTranscodeOutputSizeResponseDto["confidence"] =
-      "medium";
-    let rangeFactorLow = 0.65;
-    let rangeFactorHigh = 1.35;
-
-    if (qualityMode === "copy" || codec === "copy") {
-      method = "bitrate_formula";
-      confidence = "high";
-      estimatedVideoKbps = sourceVideoKbps;
-      rangeFactorLow = 0.95;
-      rangeFactorHigh = 1.08;
-    } else if (
-      qualityMode === "bitrate" &&
-      typeof params.video_bitrate_kbps === "number"
-    ) {
-      method = "bitrate_formula";
-      confidence = "high";
-      estimatedVideoKbps = Math.max(100, params.video_bitrate_kbps);
-      rangeFactorLow = 0.92;
-      rangeFactorHigh = 1.08;
-    } else {
-      const codecEfficiency =
-        codec === "h265"
-          ? 0.68
-          : codec === "vp9"
-            ? 0.6
-            : codec === "av1"
-              ? 0.52
-              : 0.9;
-      const crf = typeof params.crf === "number" ? params.crf : 23;
-      const crfFactor = Math.pow(2, (23 - crf) / 6);
-      estimatedVideoKbps = Math.max(
-        100,
-        Math.min(sourceVideoKbps * 1.3, sourceVideoKbps * codecEfficiency * crfFactor),
-      );
-    }
-
-    const estimatedBytes = Math.max(
-      0,
-      Math.round(
-        ((estimatedVideoKbps + explicitAudioKbps) * 1000 * safeDurationSec * overheadFactor) /
-          8,
-      ),
-    );
-    const lowBytes = Math.max(0, Math.round(estimatedBytes * rangeFactorLow));
-    const highBytes = Math.max(lowBytes, Math.round(estimatedBytes * rangeFactorHigh));
-
-    return {
-      source_total_bytes: sourceTotalBytes,
-      estimated_bytes: estimatedBytes,
-      range: {
-        low_bytes: lowBytes,
-        high_bytes: highBytes,
-      },
-      method,
-      confidence,
-      target_video_count: selectedVideos.length,
-      details: {
-        duration_sec: safeDurationSec,
-        assumed_video_bitrate_kbps: Number(estimatedVideoKbps.toFixed(2)),
-        audio_bitrate_kbps:
-          audioMode === "drop" ? 0 : Number(explicitAudioKbps.toFixed(2)),
-        overhead_factor: overheadFactor,
-      },
-    };
+    return this.estimateOutputSizeFromVideos(selectedVideos, params);
   }
 }

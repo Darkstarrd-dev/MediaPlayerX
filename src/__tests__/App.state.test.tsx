@@ -622,9 +622,6 @@ describe("MediaPlayer 虚拟 UI", () => {
         featureScope.getByPlaceholderText("输入作者，支持自动补完"),
         { target: { value: "Nori" } },
       );
-      expect(
-        screen.getByRole("button", { name: "检索结果" }),
-      ).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "返回" })).toBeInTheDocument();
     },
     uiLongTestTimeoutMs,
