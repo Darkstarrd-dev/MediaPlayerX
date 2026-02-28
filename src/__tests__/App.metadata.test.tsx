@@ -299,9 +299,9 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       const dialog = screen.getByRole("dialog", { name: "获取元数据" });
       const scope = within(dialog);
 
-      await click(scope.getByRole("button", { name: "EH" }));
+      await click(scope.getByRole("button", { name: "E" }));
 
-      const idInput = scope.getByLabelText("检索ID") as HTMLInputElement;
+      const idInput = scope.getByPlaceholderText("检索ID") as HTMLInputElement;
       fireEvent.change(idInput, { target: { value: "1919810" } });
       await keyDown(idInput, { key: "Enter", code: "Enter" });
 
@@ -693,7 +693,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
         screen.getByRole("button", { name: "检索结果" }),
       ).toBeInTheDocument();
       expect(
-        screen.queryAllByRole("button", { name: "forest_pack.zip" }),
+        screen.queryAllByRole("button", { name: /forest_pack\.zip/ }),
       ).toHaveLength(0);
 
       await waitFor(() => {
@@ -710,7 +710,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     async () => {
       render(<App />);
 
-      await click(screen.getByRole("button", { name: "forest_pack.zip" }));
+      await click(screen.getByRole("button", { name: /forest_pack\.zip/ }));
 
       await waitFor(() => {
         expect(screen.queryByRole("button", { name: "动画版" })).toBeNull();
@@ -718,7 +718,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await click(screen.getByRole("button", { name: "视频模式" }));
       await click(
-        screen.getAllByRole("button", { name: "scene_motion.mp4" })[0],
+        screen.getAllByRole("button", { name: /scene_motion\.mp4/ })[0],
       );
 
       await waitFor(() => {
@@ -966,5 +966,4 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 });

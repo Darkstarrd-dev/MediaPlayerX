@@ -64,7 +64,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     await flushUiUpdates();
 
     expect(
-      screen.getByRole("button", { name: "forest_pack.zip" }),
+      screen.getByRole("button", { name: /forest_pack\.zip/ }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "森林图集" })).toBeNull();
   });
@@ -118,7 +118,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     await flushUiUpdates();
 
     const sidebarNodeButton = screen.getByRole("button", {
-      name: "forest_pack.zip",
+      name: /forest_pack\.zip/,
     });
     await click(sidebarNodeButton);
     await keyDown(sidebarNodeButton, { key: "r", code: "KeyR" });
@@ -141,7 +141,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       await flushUiUpdates();
 
       const sidebarNodeButton = screen.getByRole("button", {
-        name: "forest_pack.zip",
+        name: /forest_pack\.zip/,
       });
       await click(sidebarNodeButton);
       await keyDown(sidebarNodeButton, { key: "Delete", code: "Delete" });
@@ -806,5 +806,4 @@ describe("MediaPlayer 虚拟 UI", () => {
       screen.queryByText(/第\s+\d+\s+\/\s+\d+\s+页/),
     ).not.toBeInTheDocument();
   });
-
 });

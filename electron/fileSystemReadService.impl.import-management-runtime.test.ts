@@ -47,202 +47,207 @@ describe("FileSystemMediaReadService", () => {
   it(
     "音乐导入仅支持音频文件，非音频任务会失败",
     async () => {
-    const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-reject-"),
-    );
-    const outsideRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-reject-source-"),
-    );
-    createdRoots.push(root);
-    createdRoots.push(outsideRoot);
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-reject-"),
+      );
+      const outsideRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-reject-source-"),
+      );
+      createdRoots.push(root);
+      createdRoots.push(outsideRoot);
 
-    const outsideImagePath = path.join(outsideRoot, "incoming", "cover.jpg");
-    await writeBinary(outsideImagePath, [0xff, 0xd8, 0xff, 0xd9]);
+      const outsideImagePath = path.join(outsideRoot, "incoming", "cover.jpg");
+      await writeBinary(outsideImagePath, [0xff, 0xd8, 0xff, 0xd9]);
 
-    const service = new FileSystemMediaReadService(root);
-    createdServices.push(service);
+      const service = new FileSystemMediaReadService(root);
+      createdServices.push(service);
 
-    const queued = await service.enqueueImportTask({
-      source: "dialog-files-music",
-      paths: [outsideImagePath],
-    });
-    const done = await waitForImportTaskDone(service, queued.task.task_id);
-    expect(done.status).toBe("failed");
+      const queued = await service.enqueueImportTask({
+        source: "dialog-files-music",
+        paths: [outsideImagePath],
+      });
+      const done = await waitForImportTaskDone(service, queued.task.task_id);
+      expect(done.status).toBe("failed");
 
-    const tasks = await service.readImportTasks();
-    const finalTask = tasks.tasks.find(
-      (task) => task.task_id === queued.task.task_id,
-    );
-    expect(finalTask).toBeTruthy();
-    expect(finalTask?.error_detail).toContain("音乐导入仅支持音频文件");
+      const tasks = await service.readImportTasks();
+      const finalTask = tasks.tasks.find(
+        (task) => task.task_id === queued.task.task_id,
+      );
+      expect(finalTask).toBeTruthy();
+      expect(finalTask?.error_detail).toContain(
+        "音乐导入仅支持音频或 CUE 文件",
+      );
 
-    const snapshot = await service.readLibrarySnapshot();
-    expect(snapshot.audios ?? []).toHaveLength(0);
+      const snapshot = await service.readLibrarySnapshot();
+      expect(snapshot.audios ?? []).toHaveLength(0);
     },
     ioHeavyTestTimeoutMs,
   );
-
 
   it(
     "音乐文件导入会写入 music_import_sources，并将孤立文件按专辑或 unknown artist 分组",
     async () => {
-    const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-file-"),
-    );
-    const outsideRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-file-source-"),
-    );
-    createdRoots.push(root);
-    createdRoots.push(outsideRoot);
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-file-"),
+      );
+      const outsideRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-file-source-"),
+      );
+      createdRoots.push(root);
+      createdRoots.push(outsideRoot);
 
-    const outsideAudioPath = path.join(
-      outsideRoot,
-      "incoming",
-      "single-track.mp3",
-    );
-    await writeBinary(outsideAudioPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
+      const outsideAudioPath = path.join(
+        outsideRoot,
+        "incoming",
+        "single-track.mp3",
+      );
+      await writeBinary(outsideAudioPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
 
-    const service = new FileSystemMediaReadService(root);
-    createdServices.push(service);
+      const service = new FileSystemMediaReadService(root);
+      createdServices.push(service);
 
-    await enqueueImportAndWait(service, "dialog-files-music", [
-      outsideAudioPath,
-    ]);
+      await enqueueImportAndWait(service, "dialog-files-music", [
+        outsideAudioPath,
+      ]);
 
-    const snapshot = await service.readLibrarySnapshot();
-    const importedAudio = snapshot.audios?.find(
-      (item) =>
-        path.resolve(item.absolute_path) === path.resolve(outsideAudioPath),
-    );
-    expect(importedAudio).toBeTruthy();
-    if (!importedAudio) {
-      throw new Error("imported audio not found");
-    }
-    expect(importedAudio.tree_path).toEqual([
-      "unknown artist",
-      path.basename(outsideAudioPath),
-    ]);
+      const snapshot = await service.readLibrarySnapshot();
+      const importedAudio = snapshot.audios?.find(
+        (item) =>
+          path.resolve(item.absolute_path) === path.resolve(outsideAudioPath),
+      );
+      expect(importedAudio).toBeTruthy();
+      if (!importedAudio) {
+        throw new Error("imported audio not found");
+      }
+      expect(importedAudio.tree_path).toEqual([
+        "unknown artist",
+        path.basename(outsideAudioPath),
+      ]);
 
-    const storedMusicSources = await service.readAppState({
-      state_key: "music_import_sources_v1",
-      fallback_json: JSON.stringify({ directories: [], files: [] }),
-    });
-    const parsedMusicSources = JSON.parse(storedMusicSources.state_json) as {
-      directories?: string[];
-      files?: string[];
-    };
-    const containsImportedAudio = (parsedMusicSources.files ?? []).some(
-      (item) => path.resolve(item) === path.resolve(outsideAudioPath),
-    );
-    expect(containsImportedAudio).toBe(true);
+      const storedMusicSources = await service.readAppState({
+        state_key: "music_import_sources_v1",
+        fallback_json: JSON.stringify({ directories: [], files: [] }),
+      });
+      const parsedMusicSources = JSON.parse(storedMusicSources.state_json) as {
+        directories?: string[];
+        files?: string[];
+      };
+      const containsImportedAudio = (parsedMusicSources.files ?? []).some(
+        (item) => path.resolve(item) === path.resolve(outsideAudioPath),
+      );
+      expect(containsImportedAudio).toBe(true);
 
-    await service.writeAudioMetadata({
-      audio_id: importedAudio.id,
-      album: "Album Group A",
-    });
-    service.invalidateCache();
+      await service.writeAudioMetadata({
+        audio_id: importedAudio.id,
+        album: "Album Group A",
+      });
+      service.invalidateCache();
 
-    const refreshedSnapshot = await service.readLibrarySnapshot();
-    const refreshedAudio = refreshedSnapshot.audios?.find(
-      (item) => item.id === importedAudio.id,
-    );
-    expect(refreshedAudio).toBeTruthy();
-    expect(refreshedAudio?.tree_path).toEqual([
-      "Album Group A",
-      path.basename(outsideAudioPath),
-    ]);
+      const refreshedSnapshot = await service.readLibrarySnapshot();
+      const refreshedAudio = refreshedSnapshot.audios?.find(
+        (item) => item.id === importedAudio.id,
+      );
+      expect(refreshedAudio).toBeTruthy();
+      expect(refreshedAudio?.tree_path).toEqual([
+        "Album Group A",
+        path.basename(outsideAudioPath),
+      ]);
     },
     ioHeavyTestTimeoutMs,
   );
-
 
   it(
     "音乐文件夹含音频与图片时，图片目录统一归入 CD Booklet 树根",
     async () => {
-    const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-booklet-"),
-    );
-    createdRoots.push(root);
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-booklet-"),
+      );
+      createdRoots.push(root);
 
-    const albumRoot = path.join(root, "albums", "sample-album");
-    const trackPath = path.join(albumRoot, "track-01.mp3");
-    const coverPath = path.join(albumRoot, "cover.png");
-    const bookletPath = path.join(albumRoot, "booklet", "page-01.png");
-    await writeBinary(trackPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
-    await writeTinyPng(coverPath);
-    await writeTinyPng(bookletPath);
+      const albumRoot = path.join(root, "albums", "sample-album");
+      const trackPath = path.join(albumRoot, "track-01.mp3");
+      const coverPath = path.join(albumRoot, "cover.png");
+      const bookletPath = path.join(albumRoot, "booklet", "page-01.png");
+      await writeBinary(trackPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
+      await writeTinyPng(coverPath);
+      await writeTinyPng(bookletPath);
 
-    const service = new FileSystemMediaReadService(root);
-    createdServices.push(service);
+      const service = new FileSystemMediaReadService(root);
+      createdServices.push(service);
 
-    await enqueueImportAndWait(service, "dialog-folders-music", [albumRoot]);
-    const snapshot = await service.readLibrarySnapshot();
+      await enqueueImportAndWait(service, "dialog-folders-music", [albumRoot]);
+      const snapshot = await service.readLibrarySnapshot();
 
-    const imageSourcesInAlbumRoot = snapshot.image_directories.filter(
-      (source) =>
-        path.resolve(source.absolute_path).startsWith(path.resolve(albumRoot)),
-    );
-    expect(imageSourcesInAlbumRoot.length).toBeGreaterThan(0);
-    expect(
-      imageSourcesInAlbumRoot.every(
-        (source) => source.tree_path[0] === "CD Booklet",
-      ),
-    ).toBe(true);
+      const imageSourcesInAlbumRoot = snapshot.image_directories.filter(
+        (source) =>
+          path
+            .resolve(source.absolute_path)
+            .startsWith(path.resolve(albumRoot)),
+      );
+      expect(imageSourcesInAlbumRoot.length).toBeGreaterThan(0);
+      expect(
+        imageSourcesInAlbumRoot.every(
+          (source) => source.tree_path[0] === "CD Booklet",
+        ),
+      ).toBe(true);
 
-    const importedAudio = snapshot.audios?.find(
-      (audio) => path.resolve(audio.absolute_path) === path.resolve(trackPath),
-    );
-    expect(importedAudio).toBeTruthy();
+      const importedAudio = snapshot.audios?.find(
+        (audio) =>
+          path.resolve(audio.absolute_path) === path.resolve(trackPath),
+      );
+      expect(importedAudio).toBeTruthy();
     },
     ioHeavyTestTimeoutMs,
   );
-
 
   it(
     "磁盘文件缺失触发自动清理时会同步移除 music_import_sources",
     async () => {
-    const root = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-prune-"),
-    );
-    const outsideRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), "mpx-import-music-prune-source-"),
-    );
-    createdRoots.push(root);
-    createdRoots.push(outsideRoot);
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-prune-"),
+      );
+      const outsideRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-import-music-prune-source-"),
+      );
+      createdRoots.push(root);
+      createdRoots.push(outsideRoot);
 
-    const outsideAudioPath = path.join(outsideRoot, "incoming", "to-prune.mp3");
-    await writeBinary(outsideAudioPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
+      const outsideAudioPath = path.join(
+        outsideRoot,
+        "incoming",
+        "to-prune.mp3",
+      );
+      await writeBinary(outsideAudioPath, [0x49, 0x44, 0x33, 0x03, 0x00, 0x00]);
 
-    const service = new FileSystemMediaReadService(root);
-    createdServices.push(service);
-    await enqueueImportAndWait(service, "dialog-files-music", [
-      outsideAudioPath,
-    ]);
+      const service = new FileSystemMediaReadService(root);
+      createdServices.push(service);
+      await enqueueImportAndWait(service, "dialog-files-music", [
+        outsideAudioPath,
+      ]);
 
-    await fs.rm(outsideAudioPath, { force: true });
-    const snapshotAfterPrune = await service.readLibrarySnapshot();
-    const stillHasAudio = (snapshotAfterPrune.audios ?? []).some(
-      (item) =>
-        path.resolve(item.absolute_path) === path.resolve(outsideAudioPath),
-    );
-    expect(stillHasAudio).toBe(false);
+      await fs.rm(outsideAudioPath, { force: true });
+      const snapshotAfterPrune = await service.readLibrarySnapshot();
+      const stillHasAudio = (snapshotAfterPrune.audios ?? []).some(
+        (item) =>
+          path.resolve(item.absolute_path) === path.resolve(outsideAudioPath),
+      );
+      expect(stillHasAudio).toBe(false);
 
-    const storedMusicSources = await service.readAppState({
-      state_key: "music_import_sources_v1",
-      fallback_json: JSON.stringify({ directories: [], files: [] }),
-    });
-    const parsedMusicSources = JSON.parse(storedMusicSources.state_json) as {
-      directories?: string[];
-      files?: string[];
-    };
-    const stillHasSourcePath = (parsedMusicSources.files ?? []).some(
-      (item) => path.resolve(item) === path.resolve(outsideAudioPath),
-    );
-    expect(stillHasSourcePath).toBe(false);
+      const storedMusicSources = await service.readAppState({
+        state_key: "music_import_sources_v1",
+        fallback_json: JSON.stringify({ directories: [], files: [] }),
+      });
+      const parsedMusicSources = JSON.parse(storedMusicSources.state_json) as {
+        directories?: string[];
+        files?: string[];
+      };
+      const stillHasSourcePath = (parsedMusicSources.files ?? []).some(
+        (item) => path.resolve(item) === path.resolve(outsideAudioPath),
+      );
+      expect(stillHasSourcePath).toBe(false);
     },
     ioHeavyTestTimeoutMs,
   );
-
 
   it("写入偏好指标 app_state 后会更新快照并广播变更", async () => {
     const root = await fs.mkdtemp(
@@ -261,7 +266,9 @@ describe("FileSystemMediaReadService", () => {
 
     const before = await service.readLibrarySnapshot();
     const source = before.image_directories.find(
-      (item) => path.resolve(item.absolute_path) === path.resolve(path.dirname(imagePath)),
+      (item) =>
+        path.resolve(item.absolute_path) ===
+        path.resolve(path.dirname(imagePath)),
     );
     const video = before.videos.find(
       (item) => path.resolve(item.absolute_path) === path.resolve(videoPath),
@@ -286,7 +293,8 @@ describe("FileSystemMediaReadService", () => {
             event_count: 1,
             pages_read: 1,
             total_pages: source.images.length,
-            completion_ratio: source.images.length > 0 ? 1 / source.images.length : 0,
+            completion_ratio:
+              source.images.length > 0 ? 1 / source.images.length : 0,
             last_event_time_ms: 1_739_000_000_000,
           },
         },
@@ -305,7 +313,9 @@ describe("FileSystemMediaReadService", () => {
     const after = await service.readLibrarySnapshot();
     unsubscribe();
 
-    const sourceAfter = after.image_directories.find((item) => item.id === source.id);
+    const sourceAfter = after.image_directories.find(
+      (item) => item.id === source.id,
+    );
     const videoAfter = after.videos.find((item) => item.id === video.id);
     expect(sourceAfter?.preference_metrics).toMatchObject({
       event_count: 1,
@@ -317,10 +327,11 @@ describe("FileSystemMediaReadService", () => {
       watch_seconds: 22.5,
     });
     expect(
-      changedEvents.some((payload) => payload.reason === "write-preference-metrics"),
+      changedEvents.some(
+        (payload) => payload.reason === "write-preference-metrics",
+      ),
     ).toBe(true);
   });
-
 
   it("视频短停留会话会入库并标记 is_noise", async () => {
     const root = await fs.mkdtemp(
@@ -413,7 +424,6 @@ describe("FileSystemMediaReadService", () => {
       db.close();
     }
   });
-
 
   it("runtime checkpoint 会先落入 runtime 表并在会话结束后清理", async () => {
     const root = await fs.mkdtemp(
@@ -527,7 +537,6 @@ describe("FileSystemMediaReadService", () => {
     }
   });
 
-
   it("runtime-only 写入不会覆盖 app_state 中已存在的聚合缓存", async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-preference-runtime-keep-metrics-"),
@@ -609,7 +618,6 @@ describe("FileSystemMediaReadService", () => {
     expect(parsed.image_by_source_id?.[source.id]?.event_count).toBe(1);
   });
 
-
   it("连续写入偏好 app_state 时会保留图片与视频最近会话历史", async () => {
     const root = await fs.mkdtemp(
       path.join(os.tmpdir(), "mpx-preference-state-history-"),
@@ -628,7 +636,8 @@ describe("FileSystemMediaReadService", () => {
     const snapshot = await service.readLibrarySnapshot();
     const source = snapshot.image_directories.find(
       (item) =>
-        path.resolve(item.absolute_path) === path.resolve(path.dirname(imagePath)),
+        path.resolve(item.absolute_path) ===
+        path.resolve(path.dirname(imagePath)),
     );
     const video = snapshot.videos.find(
       (item) => path.resolve(item.absolute_path) === path.resolve(videoPath),
@@ -731,14 +740,12 @@ describe("FileSystemMediaReadService", () => {
       (sessionId) => sessionId === "vid-history-1",
     ).length;
 
-    expect(parsedState.image_session_events?.map((item) => item.session_id)).toContain(
-      "img-history-1",
-    );
-    expect(parsedState.video_session_events?.map((item) => item.session_id)).toContain(
-      "vid-history-1",
-    );
+    expect(
+      parsedState.image_session_events?.map((item) => item.session_id),
+    ).toContain("img-history-1");
+    expect(
+      parsedState.video_session_events?.map((item) => item.session_id),
+    ).toContain("vid-history-1");
     expect(duplicateVideoSessionCount).toBe(1);
   });
-
-
 });

@@ -438,7 +438,9 @@ describe("MetadataPanel video playlist controls", () => {
       />,
     );
 
-    const firstButton = screen.getByRole("button", { name: videoA.fileName });
+    const firstButton = screen.getByRole("button", {
+      name: new RegExp(videoA.fileName),
+    });
     expect(document.activeElement).toBe(firstButton);
 
     rerender(
@@ -458,7 +460,9 @@ describe("MetadataPanel video playlist controls", () => {
       />,
     );
 
-    const secondButton = screen.getByRole("button", { name: videoB.fileName });
+    const secondButton = screen.getByRole("button", {
+      name: new RegExp(videoB.fileName),
+    });
     expect(document.activeElement).toBe(secondButton);
   });
 });
