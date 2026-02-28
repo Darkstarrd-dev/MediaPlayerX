@@ -207,6 +207,14 @@ interface UseMusicVisualizerRuntimeResult {
   resumeAudioAnalyser: () => Promise<void>
 }
 
+interface VisualizerContinuitySnapshot {
+  playbackResetNonce: number
+  compositeModeCode: number
+  shaderId: string
+  shaderFrame: number
+  shaderTimeSec: number
+}
+
 function resolveRenderSize(containerWidth: number, containerHeight: number, targetLongEdgePx: number): { width: number; height: number } {
   const clampedLongEdge = Math.max(MIN_RENDER_LONG_EDGE, Math.min(MAX_RENDER_LONG_EDGE, Math.round(targetLongEdgePx)))
   const longestEdge = Math.max(containerWidth, containerHeight, 1)
@@ -486,6 +494,7 @@ export function useMusicVisualizerRuntime({
     layeredForegroundScale,
     paletteMode,
   })
+  const continuityRef = useRef<VisualizerContinuitySnapshot | null>(null)
 
   useEffect(() => {
     runtimeSettingsRef.current = {
@@ -554,7 +563,6 @@ export function useMusicVisualizerRuntime({
 
   useEffect(() => {
     if (!active) {
-      audioAnalyserRef.current?.suspend()
       setStats(null)
       setActiveBackend(null)
       setRuntimeError(null)
@@ -670,11 +678,19 @@ export function useMusicVisualizerRuntime({
 
     const renderCanvas = renderer.backend === 'gpu' ? gpuCanvas : cpuCanvas
 
+    const continuitySnapshot = continuityRef.current
+    const shouldResumeContinuity =
+      continuitySnapshot != null &&
+      continuitySnapshot.playbackResetNonce === runtimeSettingsRef.current.playbackResetNonce &&
+      continuitySnapshot.compositeModeCode === compositeModeCode &&
+      continuitySnapshot.shaderId === shader.id
+    const resumeSnapshot = shouldResumeContinuity ? continuitySnapshot : null
+
     const audioAnalyser = audioAnalyserRef.current
     let disposed = false
     let animationFrameId = 0
-    let shaderFrame = 0
-    let shaderTimeSec = 0
+    let shaderFrame = resumeSnapshot?.shaderFrame ?? 0
+    let shaderTimeSec = resumeSnapshot?.shaderTimeSec ?? 0
     let lastFrameAt = performance.now()
     let lastShaderTickAt = lastFrameAt
     let lastPlaybackResetNonce = runtimeSettingsRef.current.playbackResetNonce
@@ -881,6 +897,13 @@ export function useMusicVisualizerRuntime({
     return () => {
       disposed = true
       window.cancelAnimationFrame(animationFrameId)
+      continuityRef.current = {
+        playbackResetNonce: runtimeSettingsRef.current.playbackResetNonce,
+        compositeModeCode,
+        shaderId: shader.id,
+        shaderFrame,
+        shaderTimeSec,
+      }
       renderer?.dispose()
     }
   }, [
@@ -894,6 +917,13 @@ export function useMusicVisualizerRuntime({
     shader,
     t,
   ])
+
+  useEffect(() => {
+    if (active || !playbackPaused) {
+      return
+    }
+    audioAnalyserRef.current?.suspend()
+  }, [active, playbackPaused])
 
   return {
     stats,

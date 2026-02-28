@@ -91,7 +91,7 @@ function MusicMainSection({
     metadataManageSelectionMode === 'single'
       ? t('a11y.metadata.switchToMultipleSelectMode')
       : t('a11y.metadata.switchToSingleSelectMode')
-  const checkedAudioIdSet = checkedAudioIds ?? new Set<string>()
+  const checkedAudioIdSet = useMemo(() => checkedAudioIds ?? new Set<string>(), [checkedAudioIds])
   const manageSelectableAudioIds = useMemo(() => audios.map((audio) => audio.id), [audios])
   const allManageSelectableAudiosChecked =
     manageSelectableAudioIds.length > 0

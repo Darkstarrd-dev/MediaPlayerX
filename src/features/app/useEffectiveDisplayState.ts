@@ -35,6 +35,7 @@ interface UseEffectiveDisplayStateParams {
   currentGrade: number | null
   selectedVideoId: string
   selectedAudioId: string
+  audioById: ReadonlyMap<string, AudioItem>
   videosForSidebar: VideoItem[]
   audiosForSidebar: AudioItem[]
   videoDurationById: Record<string, number>
@@ -81,6 +82,7 @@ export function useEffectiveDisplayState({
   currentGrade,
   selectedVideoId,
   selectedAudioId,
+  audioById,
   videosForSidebar,
   audiosForSidebar,
   videoDurationById,
@@ -181,7 +183,11 @@ export function useEffectiveDisplayState({
   )
 
   const focusedVideo = scopedVideoById.get(selectedVideoId) ?? videosForSidebar[0] ?? null
-  const focusedAudio = scopedAudioById.get(selectedAudioId) ?? audiosForSidebar[0] ?? null
+  const focusedAudio =
+    audioById.get(selectedAudioId) ??
+    scopedAudioById.get(selectedAudioId) ??
+    audiosForSidebar[0] ??
+    null
   const focusedVideoDurationSec = focusedVideo
     ? Math.max(0, videoDurationById[focusedVideo.id] ?? focusedVideo.durationSec)
     : 0

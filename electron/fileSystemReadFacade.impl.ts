@@ -521,6 +521,19 @@ export class FileSystemMediaReadService {
     void this.scheduleStartupTempCleanup();
   }
 
+  overrideAudioTranscodeRuntimeBins(options: {
+    ffmpegBinPath: string;
+    ffprobeBinPath: string;
+  }): void {
+    this.managementMutationService.overrideAudioTranscodeFfmpegBinPath(
+      options.ffmpegBinPath,
+    );
+    this.runtimeDependencyService.overrideBinaryPaths(
+      options.ffmpegBinPath,
+      options.ffprobeBinPath,
+    );
+  }
+
   onLibraryChanged(listener: LibraryChangedListener): () => void {
     return this.eventBus.on("libraryChanged", listener);
   }

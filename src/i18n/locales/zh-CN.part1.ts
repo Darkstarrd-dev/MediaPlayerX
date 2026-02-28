@@ -42,7 +42,8 @@ export const zhCnCatalogPart1 = {
     "主区焦点下复制当前媒体到剪贴板（图片模式复制当前图片原图，视频模式复制当前帧）。",
   "ui.help.image.keyboard.enterFullscreen": "进入全屏。",
   "ui.help.image.keyboard.toggleFullscreen": "切换全屏。",
-  "ui.help.image.keyboard.toggleWindowFullscreen": "切换窗口全屏（仅非媒体全屏时生效）。",
+  "ui.help.image.keyboard.toggleWindowFullscreen":
+    "切换窗口全屏（仅非媒体全屏时生效）。",
   "ui.help.image.keyboard.focusSwitch": "切换 Sidebar / 主区焦点。",
   "ui.help.image.keyboard.fixedModeSwitchShortcut": "F1 / F2 / F3",
   "ui.help.image.keyboard.modeSwitchF1F3":
@@ -172,6 +173,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.panel": "设置面板",
   "ui.settings.sectionLayout": "界面设置",
   "ui.settings.sectionPerformance": "高级分页",
+  "ui.settings.sectionAudio": "音频设置",
   "ui.settings.sectionModel": "AI模型设置",
   "ui.settings.sectionDebug": "调试",
   "ui.settings.sectionShortcuts": "快捷键设置",
@@ -320,71 +322,127 @@ export const zhCnCatalogPart1 = {
   "ui.settings.fullscreenVideoControlsMaxWidthScale":
     "全屏视频控件最大宽度系数 {{scale}}（{{px}}px）",
   "ui.settings.mediaPreloadMemoryBudgetMb": "媒体预读取内存预算 {{value}}MB",
-  "ui.settings.tooltip.uiLocale": "设置界面语言；选择“跟随系统”会在启动时按系统语言自动切换。",
-  "ui.settings.tooltip.style": "切换整套主题风格（Style），会联动可选的日间/夜间 Palette 列表。",
-  "ui.settings.tooltip.paletteDay": "设置日间模式默认 Palette；仅在日间主题激活时生效。",
-  "ui.settings.tooltip.paletteNight": "设置夜间模式默认 Palette；仅在夜间主题激活时生效。",
-  "ui.settings.tooltip.backdropOpacity": "调整设置面板遮罩透明度，数值越高背景越暗。",
-  "ui.settings.tooltip.thumbnailGap": "控制缩略图之间的间距，影响单位屏可见数量与密度。",
-  "ui.settings.tooltip.thumbnailQuality": "控制缩略图编码质量；越高画质越好，体积和生成耗时也更高。",
-  "ui.settings.tooltip.thumbnailResolution": "控制缩略图目标宽度；越大越清晰，但会增加显存/内存与解码开销。",
-  "ui.settings.tooltip.thumbnailAdaptiveResolution": "启用后缩略图分辨率按实际显示尺寸自动缩放（乘以设备 DPR），密集布局下可大幅提升生成速度。关闭时始终使用固定缩略图宽度。",
-  "ui.settings.tooltip.thumbnailGenerationConcurrency": "控制缩略图生成并发任务数；过高可能与前台渲染抢占资源。",
-  "ui.settings.tooltip.thumbnailResolveConcurrency": "控制缩略图 URL 解析并发；过高会增加 I/O 压力。",
-  "ui.settings.tooltip.thumbnailQueueSize": "缩略图生成任务队列容量。队列满时丢弃最旧任务（前端自动重试）。增大可减少快速翻页时的丢弃率，但消耗更多内存。",
-  "ui.settings.tooltip.cpuTokenLimit": "全局 CPU 密集任务并发数。增大可加速缩略图生成和全屏重采样，但与导入任务竞争 CPU 资源。",
-  "ui.settings.tooltip.performancePreset": "一键应用适合特定硬件配置的性能参数组合。选择后立即覆写当前值，不保存预设名。",
-  "ui.settings.tooltip.layoutLocked": "锁定主界面分栏比例，避免拖拽导致布局被意外修改。",
-  "ui.settings.tooltip.headerHeight": "调整 Header 高度，影响顶部工具栏可用空间。",
-  "ui.settings.tooltip.settingsFontScale": "调整设置面板字体大小，影响可读性与信息密度。",
-  "ui.settings.tooltip.sidebarRatio": "调整侧栏占比；数值越大，内容区可用宽度越小。",
-  "ui.settings.tooltip.sidebarMinWidth": "设置侧栏最小宽度，避免内容被过度压缩。",
+  "ui.settings.tooltip.uiLocale":
+    "设置界面语言；选择“跟随系统”会在启动时按系统语言自动切换。",
+  "ui.settings.tooltip.style":
+    "切换整套主题风格（Style），会联动可选的日间/夜间 Palette 列表。",
+  "ui.settings.tooltip.paletteDay":
+    "设置日间模式默认 Palette；仅在日间主题激活时生效。",
+  "ui.settings.tooltip.paletteNight":
+    "设置夜间模式默认 Palette；仅在夜间主题激活时生效。",
+  "ui.settings.tooltip.backdropOpacity":
+    "调整设置面板遮罩透明度，数值越高背景越暗。",
+  "ui.settings.tooltip.thumbnailGap":
+    "控制缩略图之间的间距，影响单位屏可见数量与密度。",
+  "ui.settings.tooltip.thumbnailQuality":
+    "控制缩略图编码质量；越高画质越好，体积和生成耗时也更高。",
+  "ui.settings.tooltip.thumbnailResolution":
+    "控制缩略图目标宽度；越大越清晰，但会增加显存/内存与解码开销。",
+  "ui.settings.tooltip.thumbnailAdaptiveResolution":
+    "启用后缩略图分辨率按实际显示尺寸自动缩放（乘以设备 DPR），密集布局下可大幅提升生成速度。关闭时始终使用固定缩略图宽度。",
+  "ui.settings.tooltip.thumbnailGenerationConcurrency":
+    "控制缩略图生成并发任务数；过高可能与前台渲染抢占资源。",
+  "ui.settings.tooltip.thumbnailResolveConcurrency":
+    "控制缩略图 URL 解析并发；过高会增加 I/O 压力。",
+  "ui.settings.tooltip.thumbnailQueueSize":
+    "缩略图生成任务队列容量。队列满时丢弃最旧任务（前端自动重试）。增大可减少快速翻页时的丢弃率，但消耗更多内存。",
+  "ui.settings.tooltip.cpuTokenLimit":
+    "全局 CPU 密集任务并发数。增大可加速缩略图生成和全屏重采样，但与导入任务竞争 CPU 资源。",
+  "ui.settings.tooltip.performancePreset":
+    "一键应用适合特定硬件配置的性能参数组合。选择后立即覆写当前值，不保存预设名。",
+  "ui.settings.tooltip.layoutLocked":
+    "锁定主界面分栏比例，避免拖拽导致布局被意外修改。",
+  "ui.settings.tooltip.headerHeight":
+    "调整 Header 高度，影响顶部工具栏可用空间。",
+  "ui.settings.tooltip.settingsFontScale":
+    "调整设置面板字体大小，影响可读性与信息密度。",
+  "ui.settings.tooltip.sidebarRatio":
+    "调整侧栏占比；数值越大，内容区可用宽度越小。",
+  "ui.settings.tooltip.sidebarMinWidth":
+    "设置侧栏最小宽度，避免内容被过度压缩。",
   "ui.settings.tooltip.sidebarFontScale": "调整侧栏主文本字号。",
-  "ui.settings.tooltip.sidebarCountFontScale": "调整侧栏计数字号，用于平衡可读性与视觉噪声。",
-  "ui.settings.tooltip.sidebarIndentScale": "调整目录树缩进间距，影响层级辨识度。",
-  "ui.settings.tooltip.sidebarVerticalGapScale": "调整目录项上下间距，影响列表紧凑程度。",
+  "ui.settings.tooltip.sidebarCountFontScale":
+    "调整侧栏计数字号，用于平衡可读性与视觉噪声。",
+  "ui.settings.tooltip.sidebarIndentScale":
+    "调整目录树缩进间距，影响层级辨识度。",
+  "ui.settings.tooltip.sidebarVerticalGapScale":
+    "调整目录项上下间距，影响列表紧凑程度。",
   "ui.settings.tooltip.metadataPanelRatio": "调整右侧元数据面板宽度占比。",
-  "ui.settings.tooltip.workspaceBottomPanelHeightScale": "调整底部检索/管理容器高度。",
-  "ui.settings.tooltip.fullscreenVideoControlsMaxWidthScale": "限制全屏视频控件最大宽度，防止超宽布局下控件过散。",
-  "ui.settings.tooltip.mediaPreloadMemoryBudgetMb": "限制媒体预读取内存预算；越高切换更平滑，但内存占用更大。",
-  "ui.settings.tooltip.thumbnailWarmupRadius": "预热当前页相邻页面缩略图范围，减少翻页后首帧等待。",
-  "ui.settings.tooltip.thumbnailWarmupConcurrency": "预热批量级别（不是线程数）；越高预热更快，但更容易抢占前台资源。",
-  "ui.settings.tooltip.fullscreenPrefetchRadius": "进入全屏后预取相邻媒体的深度；越大切换更顺滑但内存占用更高。",
-  "ui.settings.tooltip.fullscreenDecodeCacheSize": "全屏解码缓存上限；值越大命中率越高，但内存占用显著上升。",
-  "ui.settings.tooltip.databaseReset": "清空媒体库数据库并重建索引；会移除本地缓存的库状态。",
-  "ui.settings.tooltip.sqlDatabasePath": "当前 SQLite 数据库目录；用于迁移数据盘或排查存储路径。",
-  "ui.settings.tooltip.thumbnailCacheDirectory": "缩略图缓存目录；迁移后可降低系统盘占用。",
-  "ui.settings.tooltip.proxyServer": "配置网络请求代理（如 HTTP/SOCKS）；用于模型下载与外部请求。",
-  "ui.settings.tooltip.ehentaiCookies": "配置 e-hentai 访问所需 Cookie，用于受限内容请求。",
-  "ui.settings.tooltip.offlineSubtitleVadPreset": "选择 VAD 预设以平衡断句敏感度与稳定性。",
-  "ui.settings.tooltip.offlineSubtitleVadThreshold": "VAD 判定阈值；越低越容易判为语音，越高越保守。",
-  "ui.settings.tooltip.offlineSubtitleVadMinSilenceSec": "最小静音时长；用于判定是否切分为新句。",
-  "ui.settings.tooltip.offlineSubtitleVadMinSpeechSec": "最小语音时长；低于该值的片段会被抑制。",
-  "ui.settings.tooltip.offlineSubtitleVadMaxSpeechSec": "单段语音最长时长；超出后会强制切分。",
-  "ui.settings.tooltip.offlineSubtitleSpeakerThreshold": "说话人相似度阈值；越高越严格区分不同说话人。",
-  "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold": "有效播放速率阈值；超过后可跳过不可靠片段。",
-  "ui.settings.tooltip.offlineSubtitleLanguage": "设置语音识别目标语言；自动模式会先做语言判断。",
+  "ui.settings.tooltip.workspaceBottomPanelHeightScale":
+    "调整底部检索/管理容器高度。",
+  "ui.settings.tooltip.fullscreenVideoControlsMaxWidthScale":
+    "限制全屏视频控件最大宽度，防止超宽布局下控件过散。",
+  "ui.settings.tooltip.mediaPreloadMemoryBudgetMb":
+    "限制媒体预读取内存预算；越高切换更平滑，但内存占用更大。",
+  "ui.settings.tooltip.thumbnailWarmupRadius":
+    "预热当前页相邻页面缩略图范围，减少翻页后首帧等待。",
+  "ui.settings.tooltip.thumbnailWarmupConcurrency":
+    "预热批量级别（不是线程数）；越高预热更快，但更容易抢占前台资源。",
+  "ui.settings.tooltip.fullscreenPrefetchRadius":
+    "进入全屏后预取相邻媒体的深度；越大切换更顺滑但内存占用更高。",
+  "ui.settings.tooltip.fullscreenDecodeCacheSize":
+    "全屏解码缓存上限；值越大命中率越高，但内存占用显著上升。",
+  "ui.settings.tooltip.databaseReset":
+    "清空媒体库数据库并重建索引；会移除本地缓存的库状态。",
+  "ui.settings.tooltip.sqlDatabasePath":
+    "当前 SQLite 数据库目录；用于迁移数据盘或排查存储路径。",
+  "ui.settings.tooltip.thumbnailCacheDirectory":
+    "缩略图缓存目录；迁移后可降低系统盘占用。",
+  "ui.settings.tooltip.proxyServer":
+    "配置网络请求代理（如 HTTP/SOCKS）；用于模型下载与外部请求。",
+  "ui.settings.tooltip.ehentaiCookies":
+    "配置 e-hentai 访问所需 Cookie，用于受限内容请求。",
+  "ui.settings.tooltip.offlineSubtitleVadPreset":
+    "选择 VAD 预设以平衡断句敏感度与稳定性。",
+  "ui.settings.tooltip.offlineSubtitleVadThreshold":
+    "VAD 判定阈值；越低越容易判为语音，越高越保守。",
+  "ui.settings.tooltip.offlineSubtitleVadMinSilenceSec":
+    "最小静音时长；用于判定是否切分为新句。",
+  "ui.settings.tooltip.offlineSubtitleVadMinSpeechSec":
+    "最小语音时长；低于该值的片段会被抑制。",
+  "ui.settings.tooltip.offlineSubtitleVadMaxSpeechSec":
+    "单段语音最长时长；超出后会强制切分。",
+  "ui.settings.tooltip.offlineSubtitleSpeakerThreshold":
+    "说话人相似度阈值；越高越严格区分不同说话人。",
+  "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold":
+    "有效播放速率阈值；超过后可跳过不可靠片段。",
+  "ui.settings.tooltip.offlineSubtitleLanguage":
+    "设置语音识别目标语言；自动模式会先做语言判断。",
   "ui.settings.tooltip.offlineSubtitleModelProfile":
     "选择离线字幕模型方案：Current 保持现有稳定链路，FunASR-Nano 使用独立调试链路。",
-  "ui.settings.tooltip.offlineSubtitleModelDir": "离线字幕模型存储目录；需包含可识别的模型文件。",
-  "ui.settings.tooltip.offlineSubtitleOffsetY": "调整字幕垂直位置，避免遮挡主体画面。",
-  "ui.settings.tooltip.offlineSubtitleTextFillMode": "设置字幕文字填充方式：纯色或渐变。",
+  "ui.settings.tooltip.offlineSubtitleModelDir":
+    "离线字幕模型存储目录；需包含可识别的模型文件。",
+  "ui.settings.tooltip.offlineSubtitleOffsetY":
+    "调整字幕垂直位置，避免遮挡主体画面。",
+  "ui.settings.tooltip.offlineSubtitleTextFillMode":
+    "设置字幕文字填充方式：纯色或渐变。",
   "ui.settings.tooltip.offlineSubtitleTextColor": "纯色模式下的字幕文字颜色。",
-  "ui.settings.tooltip.offlineSubtitleGradientStartColor": "渐变字幕的起始颜色。",
+  "ui.settings.tooltip.offlineSubtitleGradientStartColor":
+    "渐变字幕的起始颜色。",
   "ui.settings.tooltip.offlineSubtitleGradientEndColor": "渐变字幕的结束颜色。",
   "ui.settings.tooltip.offlineSubtitleGradientDirection": "设置字幕渐变方向。",
-  "ui.settings.tooltip.offlineSubtitleGradientCurve": "设置渐变曲线插值方式，影响过渡观感。",
-  "ui.settings.tooltip.offlineSubtitleStrokeColor": "设置字幕描边颜色以提升对比度。",
-  "ui.settings.tooltip.offlineSubtitleStrokeWidth": "设置字幕描边宽度，增强复杂背景可读性。",
-  "ui.settings.tooltip.offlineSubtitleFontSize": "设置字幕字号，平衡可读性与遮挡面积。",
-  "ui.settings.tooltip.offlineSubtitleMaxLineChars": "限制单行最大字符数，超出后自动换行。",
-  "ui.settings.tooltip.offlineSubtitleStrokeShadowColor": "设置描边阴影颜色，增强边缘分离感。",
-  "ui.settings.tooltip.offlineSubtitleStrokeShadowRadius": "设置描边阴影扩散半径。",
+  "ui.settings.tooltip.offlineSubtitleGradientCurve":
+    "设置渐变曲线插值方式，影响过渡观感。",
+  "ui.settings.tooltip.offlineSubtitleStrokeColor":
+    "设置字幕描边颜色以提升对比度。",
+  "ui.settings.tooltip.offlineSubtitleStrokeWidth":
+    "设置字幕描边宽度，增强复杂背景可读性。",
+  "ui.settings.tooltip.offlineSubtitleFontSize":
+    "设置字幕字号，平衡可读性与遮挡面积。",
+  "ui.settings.tooltip.offlineSubtitleMaxLineChars":
+    "限制单行最大字符数，超出后自动换行。",
+  "ui.settings.tooltip.offlineSubtitleStrokeShadowColor":
+    "设置描边阴影颜色，增强边缘分离感。",
+  "ui.settings.tooltip.offlineSubtitleStrokeShadowRadius":
+    "设置描边阴影扩散半径。",
   "ui.settings.tooltip.adReviewVisionEndpoint": "广告审核视觉模型接口地址。",
   "ui.settings.tooltip.adReviewVisionModel": "广告审核使用的视觉模型标识。",
-  "ui.settings.tooltip.subtitleCleanupLlmEndpoint": "字幕清洗任务使用的 LLM 接口地址。",
-  "ui.settings.tooltip.subtitleCleanupLlmModel": "字幕清洗任务使用的 LLM 模型标识。",
-  "ui.settings.tooltip.subtitleCleanupLlmPrompt": "字幕清洗提示词模板，决定清洗策略与输出风格。",
+  "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
+    "字幕清洗任务使用的 LLM 接口地址。",
+  "ui.settings.tooltip.subtitleCleanupLlmModel":
+    "字幕清洗任务使用的 LLM 模型标识。",
+  "ui.settings.tooltip.subtitleCleanupLlmPrompt":
+    "字幕清洗提示词模板，决定清洗策略与输出风格。",
   "ui.settings.runtimeDiagnosticsLegend": "运行时诊断",
   "ui.settings.runtimeDiagnosticsHint":
     "用于排查 EXE 与 dev:desktop 的后端桥接与数据路径差异。",
@@ -433,8 +491,10 @@ export const zhCnCatalogPart1 = {
   "ui.settings.preferenceDebugVideoAggregateCount": "视频聚合条目数",
   "ui.settings.preferenceDebugImageSessionCount": "最近上报图片会话数",
   "ui.settings.preferenceDebugVideoSessionCount": "最近上报视频会话数",
-  "ui.settings.preferenceDebugImageSessionsLatest": "最近图片会话事件（最新 8 条）",
-  "ui.settings.preferenceDebugVideoSessionsLatest": "最近视频会话事件（最新 8 条）",
+  "ui.settings.preferenceDebugImageSessionsLatest":
+    "最近图片会话事件（最新 8 条）",
+  "ui.settings.preferenceDebugVideoSessionsLatest":
+    "最近视频会话事件（最新 8 条）",
   "ui.error.codeTag": "错误码 {{code}}",
   "ui.error.unknown": "未知错误",
   "ui.settings.mediaCapabilitySupported":
@@ -738,8 +798,10 @@ export const zhCnCatalogPart1 = {
   "ui.sidebar.renameDialogRemoveEndPlaceholder": "结束位置",
   "ui.sidebar.renameDialogRemoveHeadPlaceholder": "从头移除",
   "ui.sidebar.renameDialogRemoveTailPlaceholder": "从尾移除",
-  "ui.sidebar.renameDialogRemoveRangeHint": "区间移除（按名称字符位置，1-based，含首尾）",
-  "ui.sidebar.renameDialogRemoveEdgesHint": "额外移除（从头往后 / 从尾往前，单位：字符）",
+  "ui.sidebar.renameDialogRemoveRangeHint":
+    "区间移除（按名称字符位置，1-based，含首尾）",
+  "ui.sidebar.renameDialogRemoveEdgesHint":
+    "额外移除（从头往后 / 从尾往前，单位：字符）",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "元数据模板",
   "ui.sidebar.renameDialogPreviewLabel": "预览",
   "ui.sidebar.renameDialogPreviewOriginalHeader": "原始名称",

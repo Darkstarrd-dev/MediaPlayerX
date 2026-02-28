@@ -47,7 +47,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "When main area is focused, copy current media to clipboard (image mode copies current original image, video mode copies current frame).",
   "ui.help.image.keyboard.enterFullscreen": "Enter fullscreen.",
   "ui.help.image.keyboard.toggleFullscreen": "Toggle fullscreen.",
-  "ui.help.image.keyboard.toggleWindowFullscreen": "Toggle window fullscreen (only when media fullscreen is inactive).",
+  "ui.help.image.keyboard.toggleWindowFullscreen":
+    "Toggle window fullscreen (only when media fullscreen is inactive).",
   "ui.help.image.keyboard.focusSwitch":
     "Switch focus between sidebar and main.",
   "ui.help.image.keyboard.fixedModeSwitchShortcut": "F1 / F2 / F3",
@@ -185,6 +186,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.panel": "Settings Panel",
   "ui.settings.sectionLayout": "Layout",
   "ui.settings.sectionPerformance": "Advanced Paging",
+  "ui.settings.sectionAudio": "Audio",
   "ui.settings.sectionModel": "AI Model",
   "ui.settings.sectionDebug": "Debug",
   "ui.settings.sectionShortcuts": "Shortcuts",
@@ -338,71 +340,133 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Fullscreen video controls max width scale {{scale}} ({{px}}px)",
   "ui.settings.mediaPreloadMemoryBudgetMb":
     "Media preload memory budget {{value}}MB",
-  "ui.settings.tooltip.uiLocale": "Set UI language. \"Follow system\" applies system language on startup.",
-  "ui.settings.tooltip.style": "Switch the full theme style set (Style), including available day/night palette options.",
-  "ui.settings.tooltip.paletteDay": "Set default day-mode palette. Effective when day palette is active.",
-  "ui.settings.tooltip.paletteNight": "Set default night-mode palette. Effective when night palette is active.",
-  "ui.settings.tooltip.backdropOpacity": "Adjust settings panel backdrop opacity; higher values darken the background.",
-  "ui.settings.tooltip.thumbnailGap": "Control spacing between thumbnails, affecting density and visible count per screen.",
-  "ui.settings.tooltip.thumbnailQuality": "Control thumbnail encoding quality. Higher means better quality but larger size and slower generation.",
-  "ui.settings.tooltip.thumbnailResolution": "Control target thumbnail width. Larger values improve clarity but increase memory/decode cost.",
-  "ui.settings.tooltip.thumbnailAdaptiveResolution": "Scale thumbnail resolution to match actual display size (multiplied by device DPR). Significantly faster in dense grid layouts. When off, uses fixed thumbnail width.",
-  "ui.settings.tooltip.thumbnailGenerationConcurrency": "Control concurrent thumbnail generation tasks. Too high may compete with foreground rendering.",
-  "ui.settings.tooltip.thumbnailResolveConcurrency": "Control concurrent thumbnail URL resolving. Too high increases I/O pressure.",
-  "ui.settings.tooltip.thumbnailQueueSize": "Thumbnail generation task queue capacity. When full, oldest tasks are dropped (frontend retries automatically). Increase to reduce drops during fast scrolling, but uses more memory.",
-  "ui.settings.tooltip.cpuTokenLimit": "Global CPU-intensive task concurrency. Increase to speed up thumbnail generation and fullscreen resampling, but competes with import tasks for CPU.",
-  "ui.settings.tooltip.performancePreset": "Apply a pre-tuned parameter set for specific hardware profiles. Immediately overwrites current values; the preset name itself is not saved.",
-  "ui.settings.tooltip.layoutLocked": "Lock main layout ratios to prevent accidental changes by dragging.",
-  "ui.settings.tooltip.headerHeight": "Adjust header height and available top toolbar space.",
-  "ui.settings.tooltip.settingsFontScale": "Adjust settings panel font size for readability vs density.",
-  "ui.settings.tooltip.sidebarRatio": "Adjust sidebar ratio. Larger values reduce main content width.",
-  "ui.settings.tooltip.sidebarMinWidth": "Set minimum sidebar width to avoid over-compression.",
+  "ui.settings.tooltip.uiLocale":
+    'Set UI language. "Follow system" applies system language on startup.',
+  "ui.settings.tooltip.style":
+    "Switch the full theme style set (Style), including available day/night palette options.",
+  "ui.settings.tooltip.paletteDay":
+    "Set default day-mode palette. Effective when day palette is active.",
+  "ui.settings.tooltip.paletteNight":
+    "Set default night-mode palette. Effective when night palette is active.",
+  "ui.settings.tooltip.backdropOpacity":
+    "Adjust settings panel backdrop opacity; higher values darken the background.",
+  "ui.settings.tooltip.thumbnailGap":
+    "Control spacing between thumbnails, affecting density and visible count per screen.",
+  "ui.settings.tooltip.thumbnailQuality":
+    "Control thumbnail encoding quality. Higher means better quality but larger size and slower generation.",
+  "ui.settings.tooltip.thumbnailResolution":
+    "Control target thumbnail width. Larger values improve clarity but increase memory/decode cost.",
+  "ui.settings.tooltip.thumbnailAdaptiveResolution":
+    "Scale thumbnail resolution to match actual display size (multiplied by device DPR). Significantly faster in dense grid layouts. When off, uses fixed thumbnail width.",
+  "ui.settings.tooltip.thumbnailGenerationConcurrency":
+    "Control concurrent thumbnail generation tasks. Too high may compete with foreground rendering.",
+  "ui.settings.tooltip.thumbnailResolveConcurrency":
+    "Control concurrent thumbnail URL resolving. Too high increases I/O pressure.",
+  "ui.settings.tooltip.thumbnailQueueSize":
+    "Thumbnail generation task queue capacity. When full, oldest tasks are dropped (frontend retries automatically). Increase to reduce drops during fast scrolling, but uses more memory.",
+  "ui.settings.tooltip.cpuTokenLimit":
+    "Global CPU-intensive task concurrency. Increase to speed up thumbnail generation and fullscreen resampling, but competes with import tasks for CPU.",
+  "ui.settings.tooltip.performancePreset":
+    "Apply a pre-tuned parameter set for specific hardware profiles. Immediately overwrites current values; the preset name itself is not saved.",
+  "ui.settings.tooltip.layoutLocked":
+    "Lock main layout ratios to prevent accidental changes by dragging.",
+  "ui.settings.tooltip.headerHeight":
+    "Adjust header height and available top toolbar space.",
+  "ui.settings.tooltip.settingsFontScale":
+    "Adjust settings panel font size for readability vs density.",
+  "ui.settings.tooltip.sidebarRatio":
+    "Adjust sidebar ratio. Larger values reduce main content width.",
+  "ui.settings.tooltip.sidebarMinWidth":
+    "Set minimum sidebar width to avoid over-compression.",
   "ui.settings.tooltip.sidebarFontScale": "Adjust sidebar primary text size.",
-  "ui.settings.tooltip.sidebarCountFontScale": "Adjust sidebar count text size to balance readability and visual noise.",
-  "ui.settings.tooltip.sidebarIndentScale": "Adjust tree indent spacing to improve hierarchy recognition.",
-  "ui.settings.tooltip.sidebarVerticalGapScale": "Adjust vertical spacing between tree items for compactness.",
-  "ui.settings.tooltip.metadataPanelRatio": "Adjust right metadata panel width ratio.",
-  "ui.settings.tooltip.workspaceBottomPanelHeightScale": "Adjust bottom search/manage panel height.",
-  "ui.settings.tooltip.fullscreenVideoControlsMaxWidthScale": "Limit fullscreen video controls max width to avoid over-spread on ultra-wide screens.",
-  "ui.settings.tooltip.mediaPreloadMemoryBudgetMb": "Limit media preload memory budget. Higher values improve smoothness but increase memory usage.",
-  "ui.settings.tooltip.thumbnailWarmupRadius": "Warm up thumbnails around current page to reduce first-frame wait after page turn.",
-  "ui.settings.tooltip.thumbnailWarmupConcurrency": "Warmup batch level (not thread count). Higher is faster but can steal foreground resources.",
-  "ui.settings.tooltip.fullscreenPrefetchRadius": "Prefetch depth for adjacent media in fullscreen. Larger improves smoothness but uses more memory.",
-  "ui.settings.tooltip.fullscreenDecodeCacheSize": "Fullscreen decode cache cap. Larger improves hit rate but raises memory usage.",
-  "ui.settings.tooltip.databaseReset": "Reset media library database and rebuild indexes; clears persisted library state.",
-  "ui.settings.tooltip.sqlDatabasePath": "Current SQLite database directory for storage migration and diagnostics.",
-  "ui.settings.tooltip.thumbnailCacheDirectory": "Thumbnail cache directory. Moving it can reduce system drive usage.",
-  "ui.settings.tooltip.proxyServer": "Configure request proxy (HTTP/SOCKS) for model downloads and external requests.",
-  "ui.settings.tooltip.ehentaiCookies": "Configure Cookie required for restricted e-hentai access.",
-  "ui.settings.tooltip.offlineSubtitleVadPreset": "Choose VAD preset to balance segmentation sensitivity and stability.",
-  "ui.settings.tooltip.offlineSubtitleVadThreshold": "VAD decision threshold. Lower detects more speech; higher is more conservative.",
-  "ui.settings.tooltip.offlineSubtitleVadMinSilenceSec": "Minimum silence duration used to split sentences.",
-  "ui.settings.tooltip.offlineSubtitleVadMinSpeechSec": "Minimum speech duration; segments below this are suppressed.",
-  "ui.settings.tooltip.offlineSubtitleVadMaxSpeechSec": "Maximum speech segment duration before forced split.",
-  "ui.settings.tooltip.offlineSubtitleSpeakerThreshold": "Speaker similarity threshold. Higher values separate speakers more strictly.",
-  "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold": "Valid playback-rate threshold for filtering unreliable segments.",
-  "ui.settings.tooltip.offlineSubtitleLanguage": "Set target ASR language. Auto mode performs language detection first.",
+  "ui.settings.tooltip.sidebarCountFontScale":
+    "Adjust sidebar count text size to balance readability and visual noise.",
+  "ui.settings.tooltip.sidebarIndentScale":
+    "Adjust tree indent spacing to improve hierarchy recognition.",
+  "ui.settings.tooltip.sidebarVerticalGapScale":
+    "Adjust vertical spacing between tree items for compactness.",
+  "ui.settings.tooltip.metadataPanelRatio":
+    "Adjust right metadata panel width ratio.",
+  "ui.settings.tooltip.workspaceBottomPanelHeightScale":
+    "Adjust bottom search/manage panel height.",
+  "ui.settings.tooltip.fullscreenVideoControlsMaxWidthScale":
+    "Limit fullscreen video controls max width to avoid over-spread on ultra-wide screens.",
+  "ui.settings.tooltip.mediaPreloadMemoryBudgetMb":
+    "Limit media preload memory budget. Higher values improve smoothness but increase memory usage.",
+  "ui.settings.tooltip.thumbnailWarmupRadius":
+    "Warm up thumbnails around current page to reduce first-frame wait after page turn.",
+  "ui.settings.tooltip.thumbnailWarmupConcurrency":
+    "Warmup batch level (not thread count). Higher is faster but can steal foreground resources.",
+  "ui.settings.tooltip.fullscreenPrefetchRadius":
+    "Prefetch depth for adjacent media in fullscreen. Larger improves smoothness but uses more memory.",
+  "ui.settings.tooltip.fullscreenDecodeCacheSize":
+    "Fullscreen decode cache cap. Larger improves hit rate but raises memory usage.",
+  "ui.settings.tooltip.databaseReset":
+    "Reset media library database and rebuild indexes; clears persisted library state.",
+  "ui.settings.tooltip.sqlDatabasePath":
+    "Current SQLite database directory for storage migration and diagnostics.",
+  "ui.settings.tooltip.thumbnailCacheDirectory":
+    "Thumbnail cache directory. Moving it can reduce system drive usage.",
+  "ui.settings.tooltip.proxyServer":
+    "Configure request proxy (HTTP/SOCKS) for model downloads and external requests.",
+  "ui.settings.tooltip.ehentaiCookies":
+    "Configure Cookie required for restricted e-hentai access.",
+  "ui.settings.tooltip.offlineSubtitleVadPreset":
+    "Choose VAD preset to balance segmentation sensitivity and stability.",
+  "ui.settings.tooltip.offlineSubtitleVadThreshold":
+    "VAD decision threshold. Lower detects more speech; higher is more conservative.",
+  "ui.settings.tooltip.offlineSubtitleVadMinSilenceSec":
+    "Minimum silence duration used to split sentences.",
+  "ui.settings.tooltip.offlineSubtitleVadMinSpeechSec":
+    "Minimum speech duration; segments below this are suppressed.",
+  "ui.settings.tooltip.offlineSubtitleVadMaxSpeechSec":
+    "Maximum speech segment duration before forced split.",
+  "ui.settings.tooltip.offlineSubtitleSpeakerThreshold":
+    "Speaker similarity threshold. Higher values separate speakers more strictly.",
+  "ui.settings.tooltip.offlineSubtitleValidPlaybackRateThreshold":
+    "Valid playback-rate threshold for filtering unreliable segments.",
+  "ui.settings.tooltip.offlineSubtitleLanguage":
+    "Set target ASR language. Auto mode performs language detection first.",
   "ui.settings.tooltip.offlineSubtitleModelProfile":
     "Select offline subtitle model profile: Current keeps the stable existing pipeline; FunASR-Nano uses an isolated debug pipeline.",
-  "ui.settings.tooltip.offlineSubtitleModelDir": "Offline subtitle model directory. Must contain recognized model files.",
-  "ui.settings.tooltip.offlineSubtitleOffsetY": "Adjust subtitle vertical position to avoid covering key content.",
-  "ui.settings.tooltip.offlineSubtitleTextFillMode": "Set subtitle text fill mode: solid or gradient.",
-  "ui.settings.tooltip.offlineSubtitleTextColor": "Subtitle text color in solid mode.",
-  "ui.settings.tooltip.offlineSubtitleGradientStartColor": "Start color for gradient subtitle text.",
-  "ui.settings.tooltip.offlineSubtitleGradientEndColor": "End color for gradient subtitle text.",
-  "ui.settings.tooltip.offlineSubtitleGradientDirection": "Set subtitle gradient direction.",
-  "ui.settings.tooltip.offlineSubtitleGradientCurve": "Set gradient interpolation curve for transition feel.",
-  "ui.settings.tooltip.offlineSubtitleStrokeColor": "Set subtitle stroke color for contrast.",
-  "ui.settings.tooltip.offlineSubtitleStrokeWidth": "Set subtitle stroke width to improve readability on complex backgrounds.",
-  "ui.settings.tooltip.offlineSubtitleFontSize": "Set subtitle font size for readability vs occlusion.",
-  "ui.settings.tooltip.offlineSubtitleMaxLineChars": "Limit max characters per line; auto-wrap when exceeded.",
-  "ui.settings.tooltip.offlineSubtitleStrokeShadowColor": "Set stroke shadow color for edge separation.",
-  "ui.settings.tooltip.offlineSubtitleStrokeShadowRadius": "Set stroke shadow blur radius.",
-  "ui.settings.tooltip.adReviewVisionEndpoint": "Endpoint URL used by ad-review vision model.",
-  "ui.settings.tooltip.adReviewVisionModel": "Vision model identifier used by ad review.",
-  "ui.settings.tooltip.subtitleCleanupLlmEndpoint": "LLM endpoint used for subtitle cleanup tasks.",
-  "ui.settings.tooltip.subtitleCleanupLlmModel": "LLM model identifier used for subtitle cleanup tasks.",
-  "ui.settings.tooltip.subtitleCleanupLlmPrompt": "Prompt template for subtitle cleanup behavior and output style.",
+  "ui.settings.tooltip.offlineSubtitleModelDir":
+    "Offline subtitle model directory. Must contain recognized model files.",
+  "ui.settings.tooltip.offlineSubtitleOffsetY":
+    "Adjust subtitle vertical position to avoid covering key content.",
+  "ui.settings.tooltip.offlineSubtitleTextFillMode":
+    "Set subtitle text fill mode: solid or gradient.",
+  "ui.settings.tooltip.offlineSubtitleTextColor":
+    "Subtitle text color in solid mode.",
+  "ui.settings.tooltip.offlineSubtitleGradientStartColor":
+    "Start color for gradient subtitle text.",
+  "ui.settings.tooltip.offlineSubtitleGradientEndColor":
+    "End color for gradient subtitle text.",
+  "ui.settings.tooltip.offlineSubtitleGradientDirection":
+    "Set subtitle gradient direction.",
+  "ui.settings.tooltip.offlineSubtitleGradientCurve":
+    "Set gradient interpolation curve for transition feel.",
+  "ui.settings.tooltip.offlineSubtitleStrokeColor":
+    "Set subtitle stroke color for contrast.",
+  "ui.settings.tooltip.offlineSubtitleStrokeWidth":
+    "Set subtitle stroke width to improve readability on complex backgrounds.",
+  "ui.settings.tooltip.offlineSubtitleFontSize":
+    "Set subtitle font size for readability vs occlusion.",
+  "ui.settings.tooltip.offlineSubtitleMaxLineChars":
+    "Limit max characters per line; auto-wrap when exceeded.",
+  "ui.settings.tooltip.offlineSubtitleStrokeShadowColor":
+    "Set stroke shadow color for edge separation.",
+  "ui.settings.tooltip.offlineSubtitleStrokeShadowRadius":
+    "Set stroke shadow blur radius.",
+  "ui.settings.tooltip.adReviewVisionEndpoint":
+    "Endpoint URL used by ad-review vision model.",
+  "ui.settings.tooltip.adReviewVisionModel":
+    "Vision model identifier used by ad review.",
+  "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
+    "LLM endpoint used for subtitle cleanup tasks.",
+  "ui.settings.tooltip.subtitleCleanupLlmModel":
+    "LLM model identifier used for subtitle cleanup tasks.",
+  "ui.settings.tooltip.subtitleCleanupLlmPrompt":
+    "Prompt template for subtitle cleanup behavior and output style.",
   "ui.settings.runtimeDiagnosticsLegend": "Runtime diagnostics",
   "ui.settings.runtimeDiagnosticsHint":
     "Used to inspect backend bridge/path differences between EXE and dev:desktop.",
@@ -446,7 +510,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.preferenceDebugLoading": "Loading preference debug data...",
   "ui.settings.preferenceDebugUnsupported":
     "Current backend does not expose readAppState; preference debug data is unavailable.",
-  "ui.settings.preferenceDebugReadFailed": "Failed to read preference debug data",
+  "ui.settings.preferenceDebugReadFailed":
+    "Failed to read preference debug data",
   "ui.settings.preferenceDebugNoData": "No preference debug data",
   "ui.settings.preferenceDebugReason": "Last write reason",
   "ui.settings.preferenceDebugUpdatedAt": "Last write time",
@@ -777,8 +842,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.sidebar.renameDialogRemoveEndPlaceholder": "End position",
   "ui.sidebar.renameDialogRemoveHeadPlaceholder": "Remove from head",
   "ui.sidebar.renameDialogRemoveTailPlaceholder": "Remove from tail",
-  "ui.sidebar.renameDialogRemoveRangeHint": "Range remove (1-based positions, inclusive)",
-  "ui.sidebar.renameDialogRemoveEdgesHint": "Extra remove (from head forward / from tail backward)",
+  "ui.sidebar.renameDialogRemoveRangeHint":
+    "Range remove (1-based positions, inclusive)",
+  "ui.sidebar.renameDialogRemoveEdgesHint":
+    "Extra remove (from head forward / from tail backward)",
   "ui.sidebar.renameDialogMetadataTemplatePlaceholder": "Metadata template",
   "ui.sidebar.renameDialogPreviewLabel": "Preview",
   "ui.sidebar.renameDialogPreviewOriginalHeader": "Original name",

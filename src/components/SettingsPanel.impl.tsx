@@ -296,13 +296,23 @@ function SettingsPanel({
     mpvBinDirectoryDraft,
     mpvBinVerifyPending,
     mpvBinVerifyMessage,
+    ffmpegBinDirectoryDraft,
+    ffmpegBinVerifyPending,
+    ffmpegBinVerifyMessage,
+    audioTranscodeCapabilitiesLoading,
+    audioTranscodeCapabilitiesError,
+    audioTranscodeCapabilities,
     audioOutputDevicesLoading,
     audioOutputDevices,
     refreshAudioEngineState,
     refreshAudioOutputDevices,
+    refreshAudioTranscodeCapabilities,
     setMpvBinDirectoryDraft,
+    setFfmpegBinDirectoryDraft,
     pickMpvBinDirectory,
+    pickFfmpegBinDirectory,
     verifyMpvBinDirectory,
+    verifyFfmpegBinDirectory,
     setAudioEngineMode,
     setAudioOutputDevice,
     setAudioExclusive,
@@ -484,8 +494,8 @@ function SettingsPanel({
 
   const renderBindingRows = () => {
     return (
-        <div className="shortcut-list">
-          {SHORTCUT_DEFINITIONS.map((definition) => (
+      <div className="shortcut-list">
+        {SHORTCUT_DEFINITIONS.map((definition) => (
           <label
             key={definition.action}
             className="shortcut-row"
@@ -979,12 +989,18 @@ function SettingsPanel({
     mpvBinDirectoryDraft,
     mpvBinVerifyPending,
     mpvBinVerifyMessage,
+    ffmpegBinDirectoryDraft,
+    ffmpegBinVerifyPending,
+    ffmpegBinVerifyMessage,
     audioEngineActiveDeviceId: audioEngineState?.active_device_id ?? null,
     audioEngineExclusiveEnabled: audioEngineState?.exclusive_enabled ?? false,
     audioEngineGaplessMode: audioEngineState?.gapless_mode ?? "weak",
     audioEngineReplayGainMode: audioEngineState?.replaygain_mode ?? "off",
     audioOutputDevicesLoading,
     audioOutputDevices,
+    audioTranscodeCapabilitiesLoading,
+    audioTranscodeCapabilitiesError,
+    audioTranscodeCapabilities,
     preferenceDebugData,
     renderBindingRows,
     onResetShortcuts,
@@ -1095,12 +1111,20 @@ function SettingsPanel({
     onRefreshPreferenceDebug: refreshPreferenceDebug,
     onRefreshAudioEngineState: refreshAudioEngineState,
     onRefreshAudioOutputDevices: refreshAudioOutputDevices,
+    onRefreshAudioTranscodeCapabilities: refreshAudioTranscodeCapabilities,
     onMpvBinDirectoryDraftChange: setMpvBinDirectoryDraft,
+    onFfmpegBinDirectoryDraftChange: setFfmpegBinDirectoryDraft,
     onPickMpvBinDirectory: () => {
       void pickMpvBinDirectory();
     },
+    onPickFfmpegBinDirectory: () => {
+      void pickFfmpegBinDirectory();
+    },
     onVerifyMpvBinDirectory: () => {
       void verifyMpvBinDirectory();
+    },
+    onVerifyFfmpegBinDirectory: () => {
+      void verifyFfmpegBinDirectory();
     },
     onAudioEngineModeChange: (mode) => {
       void setAudioEngineMode(mode);
@@ -1219,7 +1243,10 @@ function SettingsPanel({
             onPickPreset={setCapturedCombo}
             onConfirmAdd={() => {
               const existingBinding = getBinding(capturingTarget);
-              const merged = appendShortcutBinding(existingBinding, capturedCombo);
+              const merged = appendShortcutBinding(
+                existingBinding,
+                capturedCombo,
+              );
               setBinding(capturingTarget, merged);
               setCapturingTarget(null);
               setCapturedCombo("");

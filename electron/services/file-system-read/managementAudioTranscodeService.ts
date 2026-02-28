@@ -137,9 +137,23 @@ export class ManagementAudioTranscodeService {
     muxers: Set<string>;
   }> | null = null;
 
+  private ffmpegBinPath: string;
+
   constructor(
     private readonly dependencies: ManagementAudioTranscodeServiceDependencies,
-  ) {}
+  ) {
+    this.ffmpegBinPath = dependencies.ffmpegBin;
+  }
+
+  overrideFfmpegBinPath(nextPath: string): void {
+    this.ffmpegBinPath = nextPath;
+    this.encoderCache = null;
+    this.encoderLoadingPromise = null;
+  }
+
+  private resolveFfmpegBinPath(): string {
+    return this.ffmpegBinPath;
+  }
 
   private resolveTaskConcurrency(totalCount: number): number {
     const rawValue = Number(this.dependencies.defaultConcurrency);
@@ -161,7 +175,7 @@ export class ManagementAudioTranscodeService {
   ): Promise<{ code: number; stderr: string }> {
     const runSpawnTask = async (): Promise<{ code: number; stderr: string }> =>
       await new Promise((resolve, reject) => {
-        const child = spawn(this.dependencies.ffmpegBin, args, {
+        const child = spawn(this.resolveFfmpegBinPath(), args, {
           windowsHide: true,
           stdio: ["ignore", "ignore", "pipe"],
         });
@@ -295,7 +309,7 @@ export class ManagementAudioTranscodeService {
   private async runFfmpegEncoderProbe(): Promise<Set<string>> {
     return await new Promise((resolve, reject) => {
       const child = spawn(
-        this.dependencies.ffmpegBin,
+        this.resolveFfmpegBinPath(),
         ["-hide_banner", "-encoders"],
         {
           windowsHide: true,
@@ -344,7 +358,7 @@ export class ManagementAudioTranscodeService {
   private async runFfmpegMuxerProbe(): Promise<Set<string>> {
     return await new Promise((resolve, reject) => {
       const child = spawn(
-        this.dependencies.ffmpegBin,
+        this.resolveFfmpegBinPath(),
         ["-hide_banner", "-muxers"],
         {
           windowsHide: true,
@@ -379,11 +393,19 @@ export class ManagementAudioTranscodeService {
         const output = `${stdout}\n${stderr}`;
         const muxers = new Set<string>();
         for (const line of output.split(/\r?\n/)) {
-          const matched = line.match(/^\s*[D.][E.]\s+([^\s]+)\s+/);
-          if (!matched) {
+          const flagField = line.slice(0, 4).toUpperCase();
+          if (!flagField.includes("E")) {
             continue;
           }
-          for (const name of matched[1].split(",")) {
+          const candidateSegment = line.slice(4).trim();
+          if (!candidateSegment) {
+            continue;
+          }
+          const muxerNameField = candidateSegment.split(/\s+/)[0] ?? "";
+          if (!muxerNameField) {
+            continue;
+          }
+          for (const name of muxerNameField.split(",")) {
             const normalized = name.trim().toLowerCase();
             if (!normalized) {
               continue;

@@ -11,19 +11,24 @@ export type PanelDragState = {
   startOffsetY: number;
 };
 
-export const MOUSE_CAPTURE_PRESETS: Array<{ labelKey: string; combo: string }> = [
-  { labelKey: "ui.settings.mousePresetLeft", combo: "MouseLeft" },
-  { labelKey: "ui.settings.mousePresetMiddle", combo: "MouseMiddle" },
-  { labelKey: "ui.settings.mousePresetRight", combo: "MouseRight" },
-  { labelKey: "ui.settings.mousePresetBack", combo: "MouseBack" },
-  { labelKey: "ui.settings.mousePresetForward", combo: "MouseForward" },
-  { labelKey: "ui.settings.mousePresetWheelUp", combo: "WheelUp" },
-  { labelKey: "ui.settings.mousePresetWheelDown", combo: "WheelDown" },
-];
+export const MOUSE_CAPTURE_PRESETS: Array<{ labelKey: string; combo: string }> =
+  [
+    { labelKey: "ui.settings.mousePresetLeft", combo: "MouseLeft" },
+    { labelKey: "ui.settings.mousePresetMiddle", combo: "MouseMiddle" },
+    { labelKey: "ui.settings.mousePresetRight", combo: "MouseRight" },
+    { labelKey: "ui.settings.mousePresetBack", combo: "MouseBack" },
+    { labelKey: "ui.settings.mousePresetForward", combo: "MouseForward" },
+    { labelKey: "ui.settings.mousePresetWheelUp", combo: "WheelUp" },
+    { labelKey: "ui.settings.mousePresetWheelDown", combo: "WheelDown" },
+  ];
 
-export const SETTINGS_SECTIONS: Array<{ id: SettingsSection; labelKey: string }> = [
+export const SETTINGS_SECTIONS: Array<{
+  id: SettingsSection;
+  labelKey: string;
+}> = [
   { id: "layout", labelKey: "ui.settings.sectionLayout" },
   { id: "performance", labelKey: "ui.settings.sectionPerformance" },
+  { id: "audio", labelKey: "ui.settings.sectionAudio" },
   { id: "model", labelKey: "ui.settings.sectionModel" },
   { id: "debug", labelKey: "ui.settings.sectionDebug" },
   { id: "shortcuts", labelKey: "ui.settings.sectionShortcuts" },
@@ -152,6 +157,7 @@ export function resolveSettingsSection(raw: unknown): SettingsSection {
   if (
     raw === "layout" ||
     raw === "performance" ||
+    raw === "audio" ||
     raw === "debug" ||
     raw === "system" ||
     raw === "model" ||

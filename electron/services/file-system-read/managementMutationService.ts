@@ -242,6 +242,10 @@ export class ManagementMutationService {
     return await this.audioTranscodeService.readAudioTranscodeCapabilities();
   }
 
+  overrideAudioTranscodeFfmpegBinPath(nextPath: string): void {
+    this.audioTranscodeService.overrideFfmpegBinPath(nextPath);
+  }
+
   async setImageHidden(
     request: SetImageHiddenRequestDto,
   ): Promise<SetImageHiddenResponseDto> {

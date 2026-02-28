@@ -7,6 +7,7 @@ import {
 import type { JSX } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
+import { renderSettingsAudioSection } from "./renderSettingsAudioSection";
 import { renderSettingsDatabaseSection } from "./renderSettingsDatabaseSection";
 import { renderSettingsDebugSection } from "./renderSettingsDebugSection";
 import { renderSettingsModelSection } from "./renderSettingsModelSection";
@@ -144,7 +145,9 @@ export function renderSettingsMainSection(
             <span>{t("ui.settings.themeSection")}</span>
           </header>
           <div className="settings-theme-inline-row">
-            <label htmlFor="theme-style-select" data-tooltip-label={settingsTip("style")}
+            <label
+              htmlFor="theme-style-select"
+              data-tooltip-label={settingsTip("style")}
             >
               {t("ui.settings.styleLabel")}
               <select
@@ -567,7 +570,9 @@ export function renderSettingsMainSection(
               }
             />
           </label>
-          <label data-tooltip-label={settingsTip("workspaceBottomPanelHeightScale")}>
+          <label
+            data-tooltip-label={settingsTip("workspaceBottomPanelHeightScale")}
+          >
             {t("ui.settings.workspaceBottomPanelHeightScale", {
               scale: formatScale(workspaceBottomPanelHeightScale),
               px: workspaceBottomPanelHeight,
@@ -588,7 +593,11 @@ export function renderSettingsMainSection(
               }
             />
           </label>
-          <label data-tooltip-label={settingsTip("fullscreenVideoControlsMaxWidthScale")}>
+          <label
+            data-tooltip-label={settingsTip(
+              "fullscreenVideoControlsMaxWidthScale",
+            )}
+          >
             {t("ui.settings.fullscreenVideoControlsMaxWidthScale", {
               scale: formatScale(fullscreenVideoControlsMaxWidthScale),
               px: fullscreenVideoControlsMaxWidth,
@@ -633,6 +642,51 @@ export function renderSettingsMainSection(
     return renderSettingsPerformanceSection({ params, settingsTip });
   }
 
+  if (activeSection === "audio") {
+    return renderSettingsAudioSection({
+      t,
+      audioEngineLoading: params.audioEngineLoading,
+      audioEngineUpdating: params.audioEngineUpdating,
+      audioEngineError: params.audioEngineError,
+      audioEngineMode: params.audioEngineMode,
+      audioEngineDesiredMode: params.audioEngineDesiredMode,
+      audioEngineUsingFallback: params.audioEngineUsingFallback,
+      audioEngineMpvAvailable: params.audioEngineMpvAvailable,
+      audioEngineMpvBinPath: params.audioEngineMpvBinPath,
+      mpvBinDirectoryDraft: params.mpvBinDirectoryDraft,
+      mpvBinVerifyPending: params.mpvBinVerifyPending,
+      mpvBinVerifyMessage: params.mpvBinVerifyMessage,
+      ffmpegBinDirectoryDraft: params.ffmpegBinDirectoryDraft,
+      ffmpegBinVerifyPending: params.ffmpegBinVerifyPending,
+      ffmpegBinVerifyMessage: params.ffmpegBinVerifyMessage,
+      audioEngineActiveDeviceId: params.audioEngineActiveDeviceId,
+      audioEngineExclusiveEnabled: params.audioEngineExclusiveEnabled,
+      audioEngineGaplessMode: params.audioEngineGaplessMode,
+      audioEngineReplayGainMode: params.audioEngineReplayGainMode,
+      audioOutputDevicesLoading: params.audioOutputDevicesLoading,
+      audioOutputDevices: params.audioOutputDevices,
+      audioTranscodeCapabilitiesLoading:
+        params.audioTranscodeCapabilitiesLoading,
+      audioTranscodeCapabilitiesError: params.audioTranscodeCapabilitiesError,
+      audioTranscodeCapabilities: params.audioTranscodeCapabilities,
+      onRefreshAudioEngineState: params.onRefreshAudioEngineState,
+      onRefreshAudioOutputDevices: params.onRefreshAudioOutputDevices,
+      onRefreshAudioTranscodeCapabilities:
+        params.onRefreshAudioTranscodeCapabilities,
+      onMpvBinDirectoryDraftChange: params.onMpvBinDirectoryDraftChange,
+      onFfmpegBinDirectoryDraftChange: params.onFfmpegBinDirectoryDraftChange,
+      onPickMpvBinDirectory: params.onPickMpvBinDirectory,
+      onPickFfmpegBinDirectory: params.onPickFfmpegBinDirectory,
+      onVerifyMpvBinDirectory: params.onVerifyMpvBinDirectory,
+      onVerifyFfmpegBinDirectory: params.onVerifyFfmpegBinDirectory,
+      onAudioEngineModeChange: params.onAudioEngineModeChange,
+      onAudioOutputDeviceChange: params.onAudioOutputDeviceChange,
+      onAudioExclusiveChange: params.onAudioExclusiveChange,
+      onAudioGaplessModeChange: params.onAudioGaplessModeChange,
+      onAudioReplayGainModeChange: params.onAudioReplayGainModeChange,
+    });
+  }
+
   if (activeSection === "system") {
     return renderSettingsSystemSection({
       t,
@@ -649,33 +703,6 @@ export function renderSettingsMainSection(
       preferenceDebugError: params.preferenceDebugError,
       preferenceDebugData: params.preferenceDebugData,
       onRefreshPreferenceDebug: params.onRefreshPreferenceDebug,
-      audioEngineLoading: params.audioEngineLoading,
-      audioEngineUpdating: params.audioEngineUpdating,
-      audioEngineError: params.audioEngineError,
-      audioEngineMode: params.audioEngineMode,
-      audioEngineDesiredMode: params.audioEngineDesiredMode,
-      audioEngineUsingFallback: params.audioEngineUsingFallback,
-      audioEngineMpvAvailable: params.audioEngineMpvAvailable,
-      audioEngineMpvBinPath: params.audioEngineMpvBinPath,
-      mpvBinDirectoryDraft: params.mpvBinDirectoryDraft,
-      mpvBinVerifyPending: params.mpvBinVerifyPending,
-      mpvBinVerifyMessage: params.mpvBinVerifyMessage,
-      audioEngineActiveDeviceId: params.audioEngineActiveDeviceId,
-      audioEngineExclusiveEnabled: params.audioEngineExclusiveEnabled,
-      audioEngineGaplessMode: params.audioEngineGaplessMode,
-      audioEngineReplayGainMode: params.audioEngineReplayGainMode,
-      audioOutputDevicesLoading: params.audioOutputDevicesLoading,
-      audioOutputDevices: params.audioOutputDevices,
-      onRefreshAudioEngineState: params.onRefreshAudioEngineState,
-      onRefreshAudioOutputDevices: params.onRefreshAudioOutputDevices,
-      onMpvBinDirectoryDraftChange: params.onMpvBinDirectoryDraftChange,
-      onPickMpvBinDirectory: params.onPickMpvBinDirectory,
-      onVerifyMpvBinDirectory: params.onVerifyMpvBinDirectory,
-      onAudioEngineModeChange: params.onAudioEngineModeChange,
-      onAudioOutputDeviceChange: params.onAudioOutputDeviceChange,
-      onAudioExclusiveChange: params.onAudioExclusiveChange,
-      onAudioGaplessModeChange: params.onAudioGaplessModeChange,
-      onAudioReplayGainModeChange: params.onAudioReplayGainModeChange,
     });
   }
 
@@ -727,7 +754,8 @@ export function renderSettingsMainSection(
       subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
       onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
       onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
-      onSubtitleAdvancedVadPresetChange: params.onSubtitleAdvancedVadPresetChange,
+      onSubtitleAdvancedVadPresetChange:
+        params.onSubtitleAdvancedVadPresetChange,
       onSubtitleAdvancedVadThresholdChange:
         params.onSubtitleAdvancedVadThresholdChange,
       onSubtitleAdvancedVadMinSilenceSecChange:

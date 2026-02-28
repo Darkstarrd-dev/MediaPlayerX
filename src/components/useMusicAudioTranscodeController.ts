@@ -254,7 +254,7 @@ export function useMusicAudioTranscodeController({
   const resolveAudioTranscodeTargetIds = useCallback((): string[] => {
     if (
       manageMode &&
-      activeSelectionScope === "sidebar" &&
+      (activeSelectionScope === "sidebar" || activeSelectionScope === "image") &&
       manageSelectedAudioIds.length > 0
     ) {
       return Array.from(new Set(manageSelectedAudioIds))

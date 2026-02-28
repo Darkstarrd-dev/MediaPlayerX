@@ -57,6 +57,9 @@ function createParams(
   audiosForSidebar: AudioItem[],
   selectedVideoId = '',
   selectedAudioId = '',
+  audioById: ReadonlyMap<string, AudioItem> = new Map(
+    audiosForSidebar.map((audio) => [audio.id, audio]),
+  ),
 ): Parameters<typeof useEffectiveDisplayState>[0] {
   return {
     backendPageData: null,
@@ -79,6 +82,7 @@ function createParams(
     currentGrade: null,
     selectedVideoId,
     selectedAudioId,
+    audioById,
     videosForSidebar,
     audiosForSidebar,
     videoDurationById: {},
@@ -114,5 +118,16 @@ describe('useEffectiveDisplayState', () => {
     )
 
     expect(result.current.focusedAudio?.id).toBe('audio-inside')
+  })
+
+  it('非音乐模式侧栏为空时仍应保持已选音频焦点', () => {
+    const pinnedAudio = makeAudio('audio-pinned')
+    const audioById = new Map<string, AudioItem>([[pinnedAudio.id, pinnedAudio]])
+
+    const { result } = renderHook(() =>
+      useEffectiveDisplayState(createParams([], [], '', pinnedAudio.id, audioById)),
+    )
+
+    expect(result.current.focusedAudio?.id).toBe('audio-pinned')
   })
 })

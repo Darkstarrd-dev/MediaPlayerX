@@ -76,6 +76,7 @@ export {
   cancelAudioTranscodeTaskRequestSchema,
   cancelAudioTranscodeTaskResponseSchema,
 } from "./backend.schemas.management";
+import { readAudioTranscodeCapabilitiesResponseSchema } from "./backend.schemas.management";
 
 const nonNegativeIntSchema = z.number().int().nonnegative();
 
@@ -1174,6 +1175,20 @@ export const verifyAudioEngineMpvBinResponseSchema = z.object({
   mpv_bin_path: z.string().min(1).nullable(),
   message: z.string().nullable(),
   state: readAudioEngineStateResponseSchema,
+});
+
+export const verifyAudioTranscodeFfmpegBinRequestSchema = z.object({
+  directory_path: z.string().min(1),
+});
+
+export const verifyAudioTranscodeFfmpegBinResponseSchema = z.object({
+  ok: z.boolean(),
+  ffmpeg_env_key: z.literal("MPX_FFMPEG_BIN"),
+  ffprobe_env_key: z.literal("MPX_FFPROBE_BIN"),
+  ffmpeg_bin_path: z.string().min(1).nullable(),
+  ffprobe_bin_path: z.string().min(1).nullable(),
+  message: z.string().nullable(),
+  capabilities: readAudioTranscodeCapabilitiesResponseSchema,
 });
 
 export const listAudioOutputDevicesResponseSchema = z.object({

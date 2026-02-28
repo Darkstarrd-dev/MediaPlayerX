@@ -688,6 +688,10 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
+    if (mode !== "music") {
+      return;
+    }
+
     if (audiosForSidebar.length === 0) {
       if (selectedAudioId !== "") {
         setSelectedAudioId("");
@@ -700,6 +704,7 @@ export function useAppEffects({
     }
   }, [
     audiosForSidebar,
+    mode,
     rootScopedAudioIds,
     selectedAudioId,
     setSelectedAudioId,

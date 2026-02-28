@@ -55,6 +55,8 @@ import {
   setAudioEngineModeResponseSchema,
   verifyAudioEngineMpvBinRequestSchema,
   verifyAudioEngineMpvBinResponseSchema,
+  verifyAudioTranscodeFfmpegBinRequestSchema,
+  verifyAudioTranscodeFfmpegBinResponseSchema,
   listAudioOutputDevicesResponseSchema,
   setAudioOutputDeviceRequestSchema,
   setAudioOutputDeviceResponseSchema,
@@ -196,7 +198,11 @@ import {
 import { SubtitleSessionManager } from "./subtitles/subtitleSession";
 import { resolveBenchMode } from "./mainBenchRuntime";
 import { AudioEngineController } from "./services/audio-engine/audioEngineController";
-import { resolveMpvBinPathFromDirectory } from "./runtimeBinaryPaths";
+import {
+  resolveFfmpegBinPathFromDirectory,
+  resolveFfprobeBinPathFromDirectory,
+  resolveMpvBinPathFromDirectory,
+} from "./runtimeBinaryPaths";
 
 interface IpcBreakdownEntry {
   timestamp: string;
@@ -209,7 +215,9 @@ interface IpcBreakdownEntry {
 }
 
 function resolveIpcBreakdownLogPath(): string | null {
-  const diagnosticsDir = (process.env.MEDIA_PLAYERX_DIAGNOSTICS_DIR ?? "").trim();
+  const diagnosticsDir = (
+    process.env.MEDIA_PLAYERX_DIAGNOSTICS_DIR ?? ""
+  ).trim();
   const resolved = diagnosticsDir
     ? path.resolve(diagnosticsDir)
     : path.join(app.getPath("userData"), "logs");
@@ -217,7 +225,10 @@ function resolveIpcBreakdownLogPath(): string | null {
   return path.join(resolved, "ipc-breakdown.ndjson");
 }
 
-function appendIpcBreakdown(pathOrNull: string | null, entry: IpcBreakdownEntry): void {
+function appendIpcBreakdown(
+  pathOrNull: string | null,
+  entry: IpcBreakdownEntry,
+): void {
   if (!pathOrNull) {
     return;
   }
@@ -410,7 +421,9 @@ export function registerBackendIpcHandlers(): void {
         action_ms: Number((actionEnd - actionStart).toFixed(3)),
         schema_parse_ms: Number(parseDurationMs.toFixed(3)),
         json_serialize_proxy_ms:
-          jsonSerializeProxyMs === null ? null : Number(jsonSerializeProxyMs.toFixed(3)),
+          jsonSerializeProxyMs === null
+            ? null
+            : Number(jsonSerializeProxyMs.toFixed(3)),
         payload_bytes: payloadBytes,
         request_id: requestId,
       });
@@ -1035,7 +1048,9 @@ export function registerBackendIpcHandlers(): void {
 
   ipcMain.handle(BACKEND_CHANNELS.readAudioEngineState, async () => {
     const snapshot = audioEngineController.readState();
-    return readAudioEngineStateResponseSchema.parse(toAudioEngineStateDto(snapshot));
+    return readAudioEngineStateResponseSchema.parse(
+      toAudioEngineStateDto(snapshot),
+    );
   });
 
   ipcMain.handle(BACKEND_CHANNELS.readAudioEnginePlaybackStatus, async () => {
@@ -1072,7 +1087,9 @@ export function registerBackendIpcHandlers(): void {
     async (_event, payload: unknown) => {
       const request = setAudioEngineModeRequestSchema.parse(payload);
       const snapshot = await audioEngineController.setMode(request.mode);
-      return setAudioEngineModeResponseSchema.parse(toAudioEngineStateDto(snapshot));
+      return setAudioEngineModeResponseSchema.parse(
+        toAudioEngineStateDto(snapshot),
+      );
     },
   );
 
@@ -1095,15 +1112,64 @@ export function registerBackendIpcHandlers(): void {
       }
 
       process.env.MPX_MPV_BIN = resolvedMpvBinPath;
-      const snapshot = await audioEngineController.overrideMpvBinPath(
-        resolvedMpvBinPath,
-      );
+      const snapshot =
+        await audioEngineController.overrideMpvBinPath(resolvedMpvBinPath);
       return verifyAudioEngineMpvBinResponseSchema.parse({
         ok: true,
         env_key: "MPX_MPV_BIN",
         mpv_bin_path: resolvedMpvBinPath,
         message: `已设置 MPX_MPV_BIN=${resolvedMpvBinPath}`,
         state: toAudioEngineStateDto(snapshot),
+      });
+    },
+  );
+
+  ipcMain.handle(
+    BACKEND_CHANNELS.verifyAudioTranscodeFfmpegBin,
+    async (_event, payload: unknown) => {
+      const request = verifyAudioTranscodeFfmpegBinRequestSchema.parse(payload);
+      const resolvedFfmpegBinPath = resolveFfmpegBinPathFromDirectory(
+        request.directory_path,
+      );
+      const resolvedFfprobeBinPath = resolveFfprobeBinPathFromDirectory(
+        request.directory_path,
+      );
+      const service = ensureService();
+
+      if (!resolvedFfmpegBinPath || !resolvedFfprobeBinPath) {
+        const missingBinaries = [
+          resolvedFfmpegBinPath ? null : "ffmpeg",
+          resolvedFfprobeBinPath ? null : "ffprobe",
+        ]
+          .filter((value): value is string => value != null)
+          .join("/");
+        return verifyAudioTranscodeFfmpegBinResponseSchema.parse({
+          ok: false,
+          ffmpeg_env_key: "MPX_FFMPEG_BIN",
+          ffprobe_env_key: "MPX_FFPROBE_BIN",
+          ffmpeg_bin_path: resolvedFfmpegBinPath,
+          ffprobe_bin_path: resolvedFfprobeBinPath,
+          message: `目录下缺少可执行文件 (${missingBinaries})：${request.directory_path}`,
+          capabilities: await service.readAudioTranscodeCapabilities(),
+        });
+      }
+
+      process.env.MPX_FFMPEG_BIN = resolvedFfmpegBinPath;
+      process.env.MPX_FFPROBE_BIN = resolvedFfprobeBinPath;
+      service.overrideAudioTranscodeRuntimeBins({
+        ffmpegBinPath: resolvedFfmpegBinPath,
+        ffprobeBinPath: resolvedFfprobeBinPath,
+      });
+      return verifyAudioTranscodeFfmpegBinResponseSchema.parse({
+        ok: true,
+        ffmpeg_env_key: "MPX_FFMPEG_BIN",
+        ffprobe_env_key: "MPX_FFPROBE_BIN",
+        ffmpeg_bin_path: resolvedFfmpegBinPath,
+        ffprobe_bin_path: resolvedFfprobeBinPath,
+        message:
+          `已设置 MPX_FFMPEG_BIN=${resolvedFfmpegBinPath}; ` +
+          `MPX_FFPROBE_BIN=${resolvedFfprobeBinPath}`,
+        capabilities: await service.readAudioTranscodeCapabilities(),
       });
     },
   );
@@ -1187,10 +1253,13 @@ export function registerBackendIpcHandlers(): void {
     BACKEND_CHANNELS.audioEngineLoadTrack,
     async (_event, payload: unknown) => {
       const request = audioEngineLoadTrackRequestSchema.parse(payload);
-      const response = await audioEngineController.loadTrack(request.file_path, {
-        startSec: request.start_sec ?? null,
-        endSec: request.end_sec ?? null,
-      });
+      const response = await audioEngineController.loadTrack(
+        request.file_path,
+        {
+          startSec: request.start_sec ?? null,
+          endSec: request.end_sec ?? null,
+        },
+      );
       return audioEngineActionResponseSchema.parse({
         ok: response.ok,
         mode: response.mode,

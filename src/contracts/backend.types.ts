@@ -94,8 +94,12 @@ export type RenameSidebarNodesResponseDto = Infer<
 >;
 export type RenameItemTargetDto = Infer<typeof Backend.renameItemTargetSchema>;
 export type RenameItemsModeDto = Infer<typeof Backend.renameItemsModeSchema>;
-export type RenameItemsRequestDto = Infer<typeof Backend.renameItemsRequestSchema>;
-export type RenameItemsResponseDto = Infer<typeof Backend.renameItemsResponseSchema>;
+export type RenameItemsRequestDto = Infer<
+  typeof Backend.renameItemsRequestSchema
+>;
+export type RenameItemsResponseDto = Infer<
+  typeof Backend.renameItemsResponseSchema
+>;
 export type ManageAdReviewSelectionScopeDto = Infer<
   typeof Backend.manageAdReviewSelectionScopeSchema
 >;
@@ -236,7 +240,9 @@ export type SaveManageSubtitleCleanupResponseDto = Infer<
 export type ImageConvertTaskStatusDto = Infer<
   typeof Backend.imageConvertTaskStatusSchema
 >;
-export type ImageConvertFormatDto = Infer<typeof Backend.imageConvertFormatSchema>;
+export type ImageConvertFormatDto = Infer<
+  typeof Backend.imageConvertFormatSchema
+>;
 export type ImageConvertAdjustModeDto = Infer<
   typeof Backend.imageConvertAdjustModeSchema
 >;
@@ -556,7 +562,9 @@ export type AudioGaplessModeDto = Infer<typeof Backend.audioGaplessModeSchema>;
 export type AudioReplayGainModeDto = Infer<
   typeof Backend.audioReplayGainModeSchema
 >;
-export type AudioOutputDeviceDto = Infer<typeof Backend.audioOutputDeviceSchema>;
+export type AudioOutputDeviceDto = Infer<
+  typeof Backend.audioOutputDeviceSchema
+>;
 export type ReadAudioEngineStateResponseDto = Infer<
   typeof Backend.readAudioEngineStateResponseSchema
 >;
@@ -571,6 +579,12 @@ export type VerifyAudioEngineMpvBinRequestDto = Infer<
 >;
 export type VerifyAudioEngineMpvBinResponseDto = Infer<
   typeof Backend.verifyAudioEngineMpvBinResponseSchema
+>;
+export type VerifyAudioTranscodeFfmpegBinRequestDto = Infer<
+  typeof Backend.verifyAudioTranscodeFfmpegBinRequestSchema
+>;
+export type VerifyAudioTranscodeFfmpegBinResponseDto = Infer<
+  typeof Backend.verifyAudioTranscodeFfmpegBinResponseSchema
 >;
 export type ListAudioOutputDevicesResponseDto = Infer<
   typeof Backend.listAudioOutputDevicesResponseSchema

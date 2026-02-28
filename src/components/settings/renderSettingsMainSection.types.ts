@@ -5,6 +5,7 @@ import type {
   AudioEngineModeDto,
   AudioOutputDeviceDto,
   AudioReplayGainModeDto,
+  ReadAudioTranscodeCapabilitiesResponseDto,
   ReadRuntimeInfoResponseDto,
 } from "../../contracts/backend";
 import type { RepositoryMode } from "../../features/backend/repository";
@@ -16,6 +17,7 @@ import type { ShortcutConflict } from "../../shortcuts";
 export type SettingsSection =
   | "layout"
   | "performance"
+  | "audio"
   | "debug"
   | "system"
   | "model"
@@ -67,11 +69,7 @@ export interface RenderSettingsMainSectionParams {
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
   fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
-  fullscreenDownsamplingKernel:
-    | "lanczos3"
-    | "mitchell"
-    | "nearest"
-    | "cubic";
+  fullscreenDownsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   proxyServer: string;
   ehentaiCookies: string;
   subtitleFeatureEnabled: boolean;
@@ -184,12 +182,18 @@ export interface RenderSettingsMainSectionParams {
   mpvBinDirectoryDraft: string;
   mpvBinVerifyPending: boolean;
   mpvBinVerifyMessage: string | null;
+  ffmpegBinDirectoryDraft: string;
+  ffmpegBinVerifyPending: boolean;
+  ffmpegBinVerifyMessage: string | null;
   audioEngineActiveDeviceId: string | null;
   audioEngineExclusiveEnabled: boolean;
   audioEngineGaplessMode: AudioGaplessModeDto;
   audioEngineReplayGainMode: AudioReplayGainModeDto;
   audioOutputDevicesLoading: boolean;
   audioOutputDevices: AudioOutputDeviceDto[];
+  audioTranscodeCapabilitiesLoading: boolean;
+  audioTranscodeCapabilitiesError: string | null;
+  audioTranscodeCapabilities: ReadAudioTranscodeCapabilitiesResponseDto | null;
   preferenceDebugData: {
     reason: string;
     updatedAtMs: number | null;
@@ -332,9 +336,13 @@ export interface RenderSettingsMainSectionParams {
   onRefreshPreferenceDebug: () => void;
   onRefreshAudioEngineState: () => void;
   onRefreshAudioOutputDevices: () => void;
+  onRefreshAudioTranscodeCapabilities: () => void;
   onMpvBinDirectoryDraftChange: (value: string) => void;
+  onFfmpegBinDirectoryDraftChange: (value: string) => void;
   onPickMpvBinDirectory: () => void;
+  onPickFfmpegBinDirectory: () => void;
   onVerifyMpvBinDirectory: () => void;
+  onVerifyFfmpegBinDirectory: () => void;
   onAudioEngineModeChange: (mode: AudioEngineModeDto) => void;
   onAudioOutputDeviceChange: (deviceId: string) => void;
   onAudioExclusiveChange: (enabled: boolean) => void;

@@ -1161,6 +1161,7 @@ export function useAppWorkspaceProps({
     metadataManageSelectionMode,
     sidebarSelectedCount: sidebarCheckedNodeIds.length,
     sidebarCheckedNodeIds,
+    imageCheckedIds,
     imageSelectedCount: imageCheckedIds.length,
     activeSelectionScope,
     pendingManageAction:
@@ -1193,6 +1194,7 @@ export function useAppWorkspaceProps({
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
     fullscreenVideoControlsMaxWidth:
       appSettings.fullscreenVideoControlsMaxWidth,
+    showNamesOnly,
     selectedAudioId,
     musicLoopMode,
     musicLoopModeLabels: {
@@ -1203,6 +1205,7 @@ export function useAppWorkspaceProps({
     },
     audioByIdEffective,
     setSelectedAudioId,
+    toggleImageChecked,
     setMusicLoopMode,
     setFullscreenActiveWithAutoStop,
     musicVisualizerSelectedShaderId:
