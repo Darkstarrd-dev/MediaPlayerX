@@ -28,7 +28,14 @@ function createAudioAccessContext(rootDir: string): MediaAccessGuardContext {
     archiveEntryIndexByPath: new Map<string, Set<string>>(),
     imageExtensions: new Set<string>(),
     videoExtensions: new Set<string>(),
-    audioExtensions: new Set([".mp3", ".flac", ".wav", ".m4a", ".opus", ".aac"]),
+    audioExtensions: new Set([
+      ".mp3",
+      ".flac",
+      ".wav",
+      ".m4a",
+      ".opus",
+      ".aac",
+    ]),
     subtitleExtensions: new Set<string>(),
   };
 }
@@ -62,7 +69,9 @@ async function createAudioSnapshot(
   };
 }
 
-function createCapabilities(rootDir: string): ReadAudioTranscodeCapabilitiesResponseDto {
+function createCapabilities(
+  rootDir: string,
+): ReadAudioTranscodeCapabilitiesResponseDto {
   const defaultOutputDir = path.join(rootDir, ".mediaplayerx", "transcoded");
   return {
     enabled: true,
@@ -149,19 +158,27 @@ describe("ManagementAudioTranscodeService", () => {
       await fs.writeFile(targetPath, Buffer.from("pre-existing"));
     }
 
-    let musicImportSources = { directories: [] as string[], files: [] as string[] };
-    const writeMusicImportSources = vi.fn((next: { directories: string[]; files: string[] }) => {
-      musicImportSources = {
-        directories: [...next.directories],
-        files: [...next.files],
-      };
-    });
+    let musicImportSources = {
+      directories: [] as string[],
+      files: [] as string[],
+    };
+    const writeMusicImportSources = vi.fn(
+      (next: { directories: string[]; files: string[] }) => {
+        musicImportSources = {
+          directories: [...next.directories],
+          files: [...next.files],
+        };
+      },
+    );
     const refreshSnapshotFromFilesystem = vi.fn().mockResolvedValue(snapshot);
     const emitLibraryChanged = vi.fn();
 
     const service = new ManagementAudioTranscodeService({
       rootDir,
       ffmpegBin: "ffmpeg",
+      defaultConcurrency: 2,
+      runWithCpuToken: async <T>(_taskName: string, task: () => Promise<T>) =>
+        await task(),
       ensureRuntimeDependencies: vi.fn().mockResolvedValue({
         ffmpeg: true,
         ffprobe: true,
@@ -176,12 +193,20 @@ describe("ManagementAudioTranscodeService", () => {
       emitLibraryChanged,
     });
 
-    vi.spyOn(service, "readAudioTranscodeCapabilities").mockResolvedValue(capabilities);
+    vi.spyOn(service, "readAudioTranscodeCapabilities").mockResolvedValue(
+      capabilities,
+    );
     const servicePrivate = service as unknown as TranscodeServicePrivateApi;
+    let runningCount = 0;
+    let maxRunningCount = 0;
     vi.spyOn(servicePrivate, "runFfmpeg").mockImplementation(async (args) => {
+      runningCount += 1;
+      maxRunningCount = Math.max(maxRunningCount, runningCount);
+      await new Promise((resolve) => setTimeout(resolve, 5));
       const outputPath = args[args.length - 1] ?? "";
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
       await fs.writeFile(outputPath, Buffer.from("transcoded"));
+      runningCount -= 1;
       return { code: 0, stderr: "" };
     });
 
@@ -207,6 +232,8 @@ describe("ManagementAudioTranscodeService", () => {
     expect(retryRun.total_count).toBe(12);
     expect(retryRun.success_count).toBe(12);
     expect(retryRun.failed_count).toBe(0);
+    expect(maxRunningCount).toBeLessThanOrEqual(2);
+    expect(maxRunningCount).toBeGreaterThan(1);
     expect(musicImportSources.files.length).toBe(100);
     expect(refreshSnapshotFromFilesystem).toHaveBeenCalledTimes(2);
     expect(emitLibraryChanged).toHaveBeenCalledTimes(2);
@@ -220,17 +247,23 @@ describe("ManagementAudioTranscodeService", () => {
 
     const { snapshot, audioIds } = await createAudioSnapshot(rootDir, 1);
     const capabilities = createCapabilities(rootDir);
-    let musicImportSources = { directories: [] as string[], files: [] as string[] };
-    const writeMusicImportSources = vi.fn((next: { directories: string[]; files: string[] }) => {
-      musicImportSources = {
-        directories: [...next.directories],
-        files: [...next.files],
-      };
-    });
+    let musicImportSources = {
+      directories: [] as string[],
+      files: [] as string[],
+    };
+    const writeMusicImportSources = vi.fn(
+      (next: { directories: string[]; files: string[] }) => {
+        musicImportSources = {
+          directories: [...next.directories],
+          files: [...next.files],
+        };
+      },
+    );
 
     const service = new ManagementAudioTranscodeService({
       rootDir,
       ffmpegBin: "ffmpeg",
+      defaultConcurrency: 1,
       ensureRuntimeDependencies: vi.fn().mockResolvedValue({
         ffmpeg: true,
         ffprobe: true,
@@ -245,7 +278,9 @@ describe("ManagementAudioTranscodeService", () => {
       emitLibraryChanged: vi.fn(),
     });
 
-    vi.spyOn(service, "readAudioTranscodeCapabilities").mockResolvedValue(capabilities);
+    vi.spyOn(service, "readAudioTranscodeCapabilities").mockResolvedValue(
+      capabilities,
+    );
     const servicePrivate = service as unknown as TranscodeServicePrivateApi;
     vi.spyOn(servicePrivate, "runFfmpeg").mockImplementation(async (args) => {
       const outputPath = args[args.length - 1] ?? "";

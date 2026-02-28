@@ -1,106 +1,114 @@
-import { resolveMpvBinPath } from '../../runtimeBinaryPaths'
-import { MpvEngine } from './mpvEngine'
+import { resolveMpvBinPath } from "../../runtimeBinaryPaths";
+import { MpvEngine } from "./mpvEngine";
 
-type AudioEngineMode = 'chromium' | 'mpv'
-type AudioGaplessMode = 'no' | 'weak' | 'yes'
-type AudioReplayGainMode = 'off' | 'track' | 'album'
+type AudioEngineMode = "chromium" | "mpv";
+type AudioGaplessMode = "no" | "weak" | "yes";
+type AudioReplayGainMode = "off" | "track" | "album";
 
 export interface AudioOutputDeviceItem {
-  id: string
-  label: string
-  isDefault: boolean
+  id: string;
+  label: string;
+  isDefault: boolean;
 }
 
 export interface AudioEngineStateSnapshot {
-  mode: AudioEngineMode
-  desiredMode: AudioEngineMode
-  mpvAvailable: boolean
-  mpvBinPath: string | null
-  usingFallback: boolean
-  lastError: string | null
-  activeDeviceId: string | null
-  exclusiveEnabled: boolean
-  gaplessMode: AudioGaplessMode
-  replayGainMode: AudioReplayGainMode
-  updatedAtMs: number
+  mode: AudioEngineMode;
+  desiredMode: AudioEngineMode;
+  mpvAvailable: boolean;
+  mpvBinPath: string | null;
+  usingFallback: boolean;
+  lastError: string | null;
+  activeDeviceId: string | null;
+  exclusiveEnabled: boolean;
+  gaplessMode: AudioGaplessMode;
+  replayGainMode: AudioReplayGainMode;
+  updatedAtMs: number;
 }
 
 export interface AudioEnginePlaybackStatusSnapshot {
-  ok: boolean
-  mode: AudioEngineMode
-  loaded: boolean
-  paused: boolean | null
-  timeSec: number | null
-  durationSec: number | null
-  message: string | null
-  updatedAtMs: number
+  ok: boolean;
+  mode: AudioEngineMode;
+  loaded: boolean;
+  paused: boolean | null;
+  timeSec: number | null;
+  durationSec: number | null;
+  message: string | null;
+  updatedAtMs: number;
 }
 
 export interface AudioEngineAnalysisFrameSnapshot {
-  ok: boolean
-  mode: AudioEngineMode
-  loaded: boolean
-  audioLevel: number
-  audioBeat: number
-  frequencyBins: number[]
-  waveformBins: number[]
-  message: string | null
-  updatedAtMs: number
+  ok: boolean;
+  mode: AudioEngineMode;
+  loaded: boolean;
+  audioLevel: number;
+  audioBeat: number;
+  frequencyBins: number[];
+  waveformBins: number[];
+  message: string | null;
+  updatedAtMs: number;
 }
 
 interface AudioEngineControllerOptions {
-  projectRoot?: string
+  projectRoot?: string;
 }
 
 interface AudioEngineActionResult {
-  ok: boolean
-  mode: AudioEngineMode
-  message: string | null
+  ok: boolean;
+  mode: AudioEngineMode;
+  message: string | null;
 }
 
 interface MpvProcessExitPayload {
-  code: number | null
-  signal: NodeJS.Signals | null
-  unexpected: boolean
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  unexpected: boolean;
 }
 
 export class AudioEngineController {
-  private static readonly MPV_RESTART_WINDOW_MS = 60_000
+  private static readonly MPV_RESTART_WINDOW_MS = 60_000;
 
-  private static readonly MPV_RESTART_MAX_ATTEMPTS = 3
+  private static readonly MPV_RESTART_MAX_ATTEMPTS = 3;
 
-  private static readonly MPV_RESTART_CIRCUIT_BREAKER_MS = 120_000
+  private static readonly MPV_RESTART_CIRCUIT_BREAKER_MS = 120_000;
 
-  private readonly mpvEngine = new MpvEngine()
+  private static readonly PLAYBACK_STATUS_MIN_INTERVAL_MS = 120;
 
-  private mpvBinPath: string | null
+  private static readonly ANALYSIS_FRAME_MIN_INTERVAL_MS = 33;
 
-  private mode: AudioEngineMode = 'chromium'
+  private readonly mpvEngine = new MpvEngine();
 
-  private desiredMode: AudioEngineMode = 'chromium'
+  private mpvBinPath: string | null;
 
-  private usingFallback = false
+  private mode: AudioEngineMode = "chromium";
 
-  private lastError: string | null = null
+  private desiredMode: AudioEngineMode = "chromium";
 
-  private updatedAtMs = Date.now()
+  private usingFallback = false;
 
-  private activeDeviceId: string | null = null
+  private lastError: string | null = null;
 
-  private exclusiveEnabled = false
+  private updatedAtMs = Date.now();
 
-  private gaplessMode: AudioGaplessMode = 'weak'
+  private activeDeviceId: string | null = null;
 
-  private replayGainMode: AudioReplayGainMode = 'off'
+  private exclusiveEnabled = false;
 
-  private mpvUnexpectedExitAtMs: number[] = []
+  private gaplessMode: AudioGaplessMode = "weak";
 
-  private mpvRestartCircuitBreakerUntilMs = 0
+  private replayGainMode: AudioReplayGainMode = "off";
 
-  private mpvRestartInFlight = false
+  private mpvUnexpectedExitAtMs: number[] = [];
+
+  private mpvRestartCircuitBreakerUntilMs = 0;
+
+  private mpvRestartInFlight = false;
+
+  private playbackStatusCache: AudioEnginePlaybackStatusSnapshot | null = null;
+
+  private analysisFrameCache: AudioEngineAnalysisFrameSnapshot | null = null;
 
   constructor(options: AudioEngineControllerOptions = {}) {
-    this.mpvBinPath = resolveMpvBinPath(options.projectRoot)
+    this.mpvBinPath = resolveMpvBinPath(options.projectRoot);
   }
 
   readState(): AudioEngineStateSnapshot {
@@ -116,386 +124,416 @@ export class AudioEngineController {
       gaplessMode: this.gaplessMode,
       replayGainMode: this.replayGainMode,
       updatedAtMs: this.updatedAtMs,
-    }
+    };
   }
 
   async setMode(nextMode: AudioEngineMode): Promise<AudioEngineStateSnapshot> {
-    this.desiredMode = nextMode
-    this.updatedAtMs = Date.now()
+    this.desiredMode = nextMode;
+    this.updatedAtMs = Date.now();
 
-    if (nextMode === 'chromium') {
-      this.usingFallback = false
-      this.lastError = null
-      this.mode = 'chromium'
-      this.maybeResetMpvRestartGuard()
-      await this.mpvEngine.dispose()
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
-      this.updatedAtMs = Date.now()
-      return this.readState()
+    if (nextMode === "chromium") {
+      this.usingFallback = false;
+      this.lastError = null;
+      this.mode = "chromium";
+      this.maybeResetMpvRestartGuard();
+      this.clearRuntimeCaches();
+      await this.mpvEngine.dispose();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
+      this.updatedAtMs = Date.now();
+      return this.readState();
     }
 
     if (!this.mpvBinPath) {
-      await this.mpvEngine.dispose()
-      this.mode = 'chromium'
-      this.usingFallback = true
-      this.lastError = '未找到 mpv 可执行文件，已回退到兼容模式'
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
-      this.updatedAtMs = Date.now()
-      return this.readState()
+      await this.mpvEngine.dispose();
+      this.mode = "chromium";
+      this.usingFallback = true;
+      this.lastError = "未找到 mpv 可执行文件，已回退到兼容模式";
+      this.clearRuntimeCaches();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
+      this.updatedAtMs = Date.now();
+      return this.readState();
     }
 
-    const now = Date.now()
+    const now = Date.now();
     if (this.isMpvRestartCircuitOpen(now)) {
-      const remainSec = Math.max(1, Math.ceil((this.mpvRestartCircuitBreakerUntilMs - now) / 1000))
-      await this.mpvEngine.dispose()
-      this.mode = 'chromium'
-      this.usingFallback = true
-      this.lastError = `mpv 自动恢复已熔断，请 ${remainSec} 秒后重试增强模式`
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
-      this.updatedAtMs = Date.now()
-      return this.readState()
+      const remainSec = Math.max(
+        1,
+        Math.ceil((this.mpvRestartCircuitBreakerUntilMs - now) / 1000),
+      );
+      await this.mpvEngine.dispose();
+      this.mode = "chromium";
+      this.usingFallback = true;
+      this.lastError = `mpv 自动恢复已熔断，请 ${remainSec} 秒后重试增强模式`;
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
+      this.updatedAtMs = Date.now();
+      return this.readState();
     }
 
     try {
-      await this.mpvEngine.dispose()
-      await this.initializeMpvEngine()
-      await this.applyPlaybackTuning()
-      this.maybeResetMpvRestartGuard()
-      this.mode = 'mpv'
-      this.usingFallback = false
-      this.lastError = null
+      await this.mpvEngine.dispose();
+      await this.initializeMpvEngine();
+      await this.applyPlaybackTuning();
+      this.maybeResetMpvRestartGuard();
+      this.mode = "mpv";
+      this.usingFallback = false;
+      this.lastError = null;
+      this.clearRuntimeCaches();
     } catch (error) {
-      this.mode = 'chromium'
-      this.usingFallback = true
-      this.lastError = error instanceof Error ? error.message : String(error)
-      await this.mpvEngine.dispose()
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
+      this.mode = "chromium";
+      this.usingFallback = true;
+      this.lastError = error instanceof Error ? error.message : String(error);
+      await this.mpvEngine.dispose();
+      this.clearRuntimeCaches();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
     }
 
-    this.updatedAtMs = Date.now()
-    return this.readState()
+    this.updatedAtMs = Date.now();
+    return this.readState();
   }
 
-  async overrideMpvBinPath(nextPath: string | null): Promise<AudioEngineStateSnapshot> {
-    this.mpvBinPath = nextPath
-    this.maybeResetMpvRestartGuard()
-    this.updatedAtMs = Date.now()
+  async overrideMpvBinPath(
+    nextPath: string | null,
+  ): Promise<AudioEngineStateSnapshot> {
+    this.mpvBinPath = nextPath;
+    this.maybeResetMpvRestartGuard();
+    this.updatedAtMs = Date.now();
 
-    if (this.desiredMode === 'mpv') {
-      return this.setMode('mpv')
+    if (this.desiredMode === "mpv") {
+      return this.setMode("mpv");
     }
 
-    this.usingFallback = false
-    this.lastError = null
-    return this.readState()
+    this.usingFallback = false;
+    this.lastError = null;
+    return this.readState();
   }
 
-  async listAudioDevices(): Promise<{ devices: AudioOutputDeviceItem[]; activeDeviceId: string | null }> {
-    if (this.mode !== 'mpv') {
+  async listAudioDevices(): Promise<{
+    devices: AudioOutputDeviceItem[];
+    activeDeviceId: string | null;
+  }> {
+    if (this.mode !== "mpv") {
       return {
         devices: [],
         activeDeviceId: this.activeDeviceId,
-      }
+      };
     }
 
-    const rawDevices = await this.mpvEngine.listAudioDevices()
-    const devices: AudioOutputDeviceItem[] = []
+    const rawDevices = await this.mpvEngine.listAudioDevices();
+    const devices: AudioOutputDeviceItem[] = [];
 
     for (const entry of rawDevices) {
-      if (!entry || typeof entry !== 'object') {
-        continue
+      if (!entry || typeof entry !== "object") {
+        continue;
       }
-      const record = entry as Record<string, unknown>
-      const id = typeof record.name === 'string' ? record.name.trim() : ''
+      const record = entry as Record<string, unknown>;
+      const id = typeof record.name === "string" ? record.name.trim() : "";
       if (!id) {
-        continue
+        continue;
       }
       const description =
-        typeof record.description === 'string' && record.description.trim().length > 0
+        typeof record.description === "string" &&
+        record.description.trim().length > 0
           ? record.description.trim()
-          : id
+          : id;
       devices.push({
         id,
         label: description,
-        isDefault: id === 'auto',
-      })
+        isDefault: id === "auto",
+      });
     }
 
-    this.updatedAtMs = Date.now()
+    this.updatedAtMs = Date.now();
     return {
       devices,
       activeDeviceId: this.activeDeviceId,
-    }
+    };
   }
 
-  async setAudioDevice(deviceId: string): Promise<{ ok: boolean; activeDeviceId: string | null; message: string | null }> {
-    if (this.mode !== 'mpv') {
+  async setAudioDevice(deviceId: string): Promise<{
+    ok: boolean;
+    activeDeviceId: string | null;
+    message: string | null;
+  }> {
+    if (this.mode !== "mpv") {
       return {
         ok: false,
         activeDeviceId: this.activeDeviceId,
-        message: '当前为兼容模式，无法设置 mpv 输出设备',
-      }
+        message: "当前为兼容模式，无法设置 mpv 输出设备",
+      };
     }
 
     try {
-      await this.mpvEngine.setAudioDevice(deviceId)
-      this.activeDeviceId = deviceId
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.setAudioDevice(deviceId);
+      this.activeDeviceId = deviceId;
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         activeDeviceId: this.activeDeviceId,
         message: null,
-      }
+      };
     } catch (error) {
       return {
         ok: false,
         activeDeviceId: this.activeDeviceId,
         message: error instanceof Error ? error.message : String(error),
-      }
+      };
     }
   }
 
-  async setAudioExclusive(enabled: boolean): Promise<{ ok: boolean; enabled: boolean; message: string | null }> {
-    if (this.mode !== 'mpv') {
+  async setAudioExclusive(
+    enabled: boolean,
+  ): Promise<{ ok: boolean; enabled: boolean; message: string | null }> {
+    if (this.mode !== "mpv") {
       return {
         ok: false,
         enabled: this.exclusiveEnabled,
-        message: '当前为兼容模式，无法设置独占输出',
-      }
+        message: "当前为兼容模式，无法设置独占输出",
+      };
     }
 
     try {
-      await this.mpvEngine.setAudioExclusive(enabled)
-      this.exclusiveEnabled = enabled
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.setAudioExclusive(enabled);
+      this.exclusiveEnabled = enabled;
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         enabled: this.exclusiveEnabled,
         message: null,
-      }
+      };
     } catch (error) {
       return {
         ok: false,
         enabled: this.exclusiveEnabled,
         message: error instanceof Error ? error.message : String(error),
-      }
+      };
     }
   }
 
-  async setGaplessMode(mode: AudioGaplessMode): Promise<{ ok: boolean; mode: AudioGaplessMode; message: string | null }> {
-    this.gaplessMode = mode
+  async setGaplessMode(
+    mode: AudioGaplessMode,
+  ): Promise<{ ok: boolean; mode: AudioGaplessMode; message: string | null }> {
+    this.gaplessMode = mode;
 
-    if (this.mode !== 'mpv') {
-      this.updatedAtMs = Date.now()
+    if (this.mode !== "mpv") {
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode,
-        message: '当前为兼容模式，已记录设置，切换增强模式后生效',
-      }
+        message: "当前为兼容模式，已记录设置，切换增强模式后生效",
+      };
     }
 
     try {
-      await this.mpvEngine.setGaplessMode(mode)
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.setGaplessMode(mode);
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode,
         message: null,
-      }
+      };
     } catch (error) {
       return {
         ok: false,
         mode: this.gaplessMode,
         message: error instanceof Error ? error.message : String(error),
-      }
+      };
     }
   }
 
-  async setReplayGainMode(mode: AudioReplayGainMode): Promise<{ ok: boolean; mode: AudioReplayGainMode; message: string | null }> {
-    this.replayGainMode = mode
+  async setReplayGainMode(mode: AudioReplayGainMode): Promise<{
+    ok: boolean;
+    mode: AudioReplayGainMode;
+    message: string | null;
+  }> {
+    this.replayGainMode = mode;
 
-    if (this.mode !== 'mpv') {
-      this.updatedAtMs = Date.now()
+    if (this.mode !== "mpv") {
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode,
-        message: '当前为兼容模式，已记录设置，切换增强模式后生效',
-      }
+        message: "当前为兼容模式，已记录设置，切换增强模式后生效",
+      };
     }
 
     try {
-      await this.mpvEngine.setReplayGainMode(this.resolveMpvReplayGainMode(mode))
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.setReplayGainMode(
+        this.resolveMpvReplayGainMode(mode),
+      );
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode,
         message: null,
-      }
+      };
     } catch (error) {
       return {
         ok: false,
         mode: this.replayGainMode,
         message: error instanceof Error ? error.message : String(error),
-      }
+      };
     }
   }
 
-  async loadTrack(filePath: string, range?: { startSec?: number | null; endSec?: number | null }): Promise<AudioEngineActionResult> {
-    if (this.mode !== 'mpv') {
+  async loadTrack(
+    filePath: string,
+    range?: { startSec?: number | null; endSec?: number | null },
+  ): Promise<AudioEngineActionResult> {
+    if (this.mode !== "mpv") {
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     }
 
     try {
-      await this.mpvEngine.playFile(filePath, range)
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.playFile(filePath, range);
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
       return {
         ok: false,
         mode: this.mode,
         message,
-      }
+      };
     }
   }
 
   async setPaused(paused: boolean): Promise<AudioEngineActionResult> {
-    if (this.mode !== 'mpv') {
+    if (this.mode !== "mpv") {
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     }
 
     try {
       if (paused) {
-        await this.mpvEngine.pause()
+        await this.mpvEngine.pause();
       } else {
-        await this.mpvEngine.resume()
+        await this.mpvEngine.resume();
       }
-      this.updatedAtMs = Date.now()
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
       return {
         ok: false,
         mode: this.mode,
         message,
-      }
+      };
     }
   }
 
   async stopPlayback(): Promise<AudioEngineActionResult> {
-    if (this.mode !== 'mpv') {
+    if (this.mode !== "mpv") {
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     }
 
     try {
-      await this.mpvEngine.stop()
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.stop();
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
       return {
         ok: false,
         mode: this.mode,
         message,
-      }
+      };
     }
   }
 
   async seekToSec(timeSec: number): Promise<AudioEngineActionResult> {
-    if (this.mode !== 'mpv') {
+    if (this.mode !== "mpv") {
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     }
 
     try {
-      await this.mpvEngine.seekToSec(timeSec)
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.seekToSec(timeSec);
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
       return {
         ok: false,
         mode: this.mode,
         message,
-      }
+      };
     }
   }
 
   async setVolume(volume: number): Promise<AudioEngineActionResult> {
-    if (this.mode !== 'mpv') {
+    if (this.mode !== "mpv") {
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     }
 
     try {
-      await this.mpvEngine.setVolume(volume)
-      this.updatedAtMs = Date.now()
+      await this.mpvEngine.setVolume(volume);
+      this.updatedAtMs = Date.now();
       return {
         ok: true,
         mode: this.mode,
         message: null,
-      }
+      };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
       return {
         ok: false,
         mode: this.mode,
         message,
-      }
+      };
     }
   }
 
   async readPlaybackStatus(): Promise<AudioEnginePlaybackStatusSnapshot> {
-    if (this.mode !== 'mpv') {
-      return {
+    if (this.mode !== "mpv") {
+      const fallbackSnapshot = {
         ok: true,
         mode: this.mode,
         loaded: false,
@@ -504,13 +542,25 @@ export class AudioEngineController {
         durationSec: null,
         message: null,
         updatedAtMs: Date.now(),
-      }
+      };
+      this.playbackStatusCache = fallbackSnapshot;
+      return fallbackSnapshot;
+    }
+
+    const now = Date.now();
+    if (
+      this.playbackStatusCache &&
+      this.playbackStatusCache.mode === this.mode &&
+      now - this.playbackStatusCache.updatedAtMs <
+        AudioEngineController.PLAYBACK_STATUS_MIN_INTERVAL_MS
+    ) {
+      return this.playbackStatusCache;
     }
 
     try {
-      const status = await this.mpvEngine.readPlaybackStatus()
-      this.updatedAtMs = Date.now()
-      return {
+      const status = await this.mpvEngine.readPlaybackStatus();
+      this.updatedAtMs = Date.now();
+      const snapshot = {
         ok: true,
         mode: this.mode,
         loaded: status.loaded,
@@ -519,12 +569,14 @@ export class AudioEngineController {
         durationSec: status.durationSec,
         message: null,
         updatedAtMs: this.updatedAtMs,
-      }
+      };
+      this.playbackStatusCache = snapshot;
+      return snapshot;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      this.updatedAtMs = Date.now()
-      return {
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      this.updatedAtMs = Date.now();
+      const snapshot = {
         ok: false,
         mode: this.mode,
         loaded: false,
@@ -533,13 +585,15 @@ export class AudioEngineController {
         durationSec: null,
         message,
         updatedAtMs: this.updatedAtMs,
-      }
+      };
+      this.playbackStatusCache = snapshot;
+      return snapshot;
     }
   }
 
   async readAnalysisFrame(): Promise<AudioEngineAnalysisFrameSnapshot> {
-    if (this.mode !== 'mpv') {
-      return {
+    if (this.mode !== "mpv") {
+      const fallbackFrame = {
         ok: true,
         mode: this.mode,
         loaded: false,
@@ -549,12 +603,24 @@ export class AudioEngineController {
         waveformBins: [],
         message: null,
         updatedAtMs: Date.now(),
-      }
+      };
+      this.analysisFrameCache = fallbackFrame;
+      return fallbackFrame;
+    }
+
+    const now = Date.now();
+    if (
+      this.analysisFrameCache &&
+      this.analysisFrameCache.mode === this.mode &&
+      now - this.analysisFrameCache.updatedAtMs <
+        AudioEngineController.ANALYSIS_FRAME_MIN_INTERVAL_MS
+    ) {
+      return this.analysisFrameCache;
     }
 
     try {
-      const frame = await this.mpvEngine.readAnalysisFrame()
-      return {
+      const frame = await this.mpvEngine.readAnalysisFrame();
+      const snapshot = {
         ok: true,
         mode: this.mode,
         loaded: frame.loaded,
@@ -564,11 +630,13 @@ export class AudioEngineController {
         waveformBins: frame.waveformBins,
         message: null,
         updatedAtMs: frame.updatedAtMs,
-      }
+      };
+      this.analysisFrameCache = snapshot;
+      return snapshot;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      this.lastError = message
-      return {
+      const message = error instanceof Error ? error.message : String(error);
+      this.lastError = message;
+      const snapshot = {
         ok: false,
         mode: this.mode,
         loaded: false,
@@ -578,118 +646,134 @@ export class AudioEngineController {
         waveformBins: [],
         message,
         updatedAtMs: Date.now(),
-      }
+      };
+      this.analysisFrameCache = snapshot;
+      return snapshot;
     }
   }
 
-  private resolveMpvReplayGainMode(mode: AudioReplayGainMode): 'no' | 'track' | 'album' {
-    if (mode === 'off') {
-      return 'no'
+  private resolveMpvReplayGainMode(
+    mode: AudioReplayGainMode,
+  ): "no" | "track" | "album" {
+    if (mode === "off") {
+      return "no";
     }
-    return mode
+    return mode;
   }
 
   private async applyPlaybackTuning(): Promise<void> {
-    await this.mpvEngine.setGaplessMode(this.gaplessMode)
-    await this.mpvEngine.setReplayGainMode(this.resolveMpvReplayGainMode(this.replayGainMode))
+    await this.mpvEngine.setGaplessMode(this.gaplessMode);
+    await this.mpvEngine.setReplayGainMode(
+      this.resolveMpvReplayGainMode(this.replayGainMode),
+    );
     if (this.activeDeviceId) {
-      await this.mpvEngine.setAudioDevice(this.activeDeviceId)
+      await this.mpvEngine.setAudioDevice(this.activeDeviceId);
     }
     if (this.exclusiveEnabled) {
-      await this.mpvEngine.setAudioExclusive(true)
+      await this.mpvEngine.setAudioExclusive(true);
     }
   }
 
   private async initializeMpvEngine(): Promise<void> {
     if (!this.mpvBinPath) {
-      throw new Error('未找到 mpv 可执行文件，无法初始化增强模式')
+      throw new Error("未找到 mpv 可执行文件，无法初始化增强模式");
     }
 
     await this.mpvEngine.initialize({
       mpvBinPath: this.mpvBinPath,
-      extraArgs: ['--no-config', '--ao=wasapi', '--msg-level=all=warn'],
+      extraArgs: ["--no-config", "--ao=wasapi", "--msg-level=all=warn"],
       onProcessExit: (payload) => {
         if (!payload.unexpected) {
-          return
+          return;
         }
         queueMicrotask(() => {
-          void this.handleUnexpectedMpvExit(payload)
-        })
+          void this.handleUnexpectedMpvExit(payload);
+        });
       },
-    })
+    });
   }
 
   private isMpvRestartCircuitOpen(now: number): boolean {
-    return this.mpvRestartCircuitBreakerUntilMs > now
+    return this.mpvRestartCircuitBreakerUntilMs > now;
   }
 
   private recordUnexpectedMpvExit(now: number): number {
-    const windowStart = now - AudioEngineController.MPV_RESTART_WINDOW_MS
-    this.mpvUnexpectedExitAtMs = this.mpvUnexpectedExitAtMs.filter((ts) => ts >= windowStart)
-    this.mpvUnexpectedExitAtMs.push(now)
-    return this.mpvUnexpectedExitAtMs.length
+    const windowStart = now - AudioEngineController.MPV_RESTART_WINDOW_MS;
+    this.mpvUnexpectedExitAtMs = this.mpvUnexpectedExitAtMs.filter(
+      (ts) => ts >= windowStart,
+    );
+    this.mpvUnexpectedExitAtMs.push(now);
+    return this.mpvUnexpectedExitAtMs.length;
   }
 
   private maybeResetMpvRestartGuard(): void {
-    this.mpvUnexpectedExitAtMs = []
-    this.mpvRestartCircuitBreakerUntilMs = 0
-    this.mpvRestartInFlight = false
+    this.mpvUnexpectedExitAtMs = [];
+    this.mpvRestartCircuitBreakerUntilMs = 0;
+    this.mpvRestartInFlight = false;
   }
 
-  private async handleUnexpectedMpvExit(payload: MpvProcessExitPayload): Promise<void> {
-    if (this.desiredMode !== 'mpv') {
-      return
+  private clearRuntimeCaches(): void {
+    this.playbackStatusCache = null;
+    this.analysisFrameCache = null;
+  }
+
+  private async handleUnexpectedMpvExit(
+    payload: MpvProcessExitPayload,
+  ): Promise<void> {
+    if (this.desiredMode !== "mpv") {
+      return;
     }
     if (!this.mpvBinPath) {
-      this.mode = 'chromium'
-      this.usingFallback = true
-      this.lastError = 'mpv 进程异常退出且路径不可用，已回退到兼容模式'
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
-      this.updatedAtMs = Date.now()
-      return
+      this.mode = "chromium";
+      this.usingFallback = true;
+      this.lastError = "mpv 进程异常退出且路径不可用，已回退到兼容模式";
+      this.clearRuntimeCaches();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
+      this.updatedAtMs = Date.now();
+      return;
     }
     if (this.mpvRestartInFlight) {
-      return
+      return;
     }
 
-    const now = Date.now()
-    const restartCount = this.recordUnexpectedMpvExit(now)
+    const now = Date.now();
+    const restartCount = this.recordUnexpectedMpvExit(now);
     if (restartCount > AudioEngineController.MPV_RESTART_MAX_ATTEMPTS) {
-      this.mode = 'chromium'
-      this.usingFallback = true
+      this.mode = "chromium";
+      this.usingFallback = true;
       this.mpvRestartCircuitBreakerUntilMs =
-        now + AudioEngineController.MPV_RESTART_CIRCUIT_BREAKER_MS
+        now + AudioEngineController.MPV_RESTART_CIRCUIT_BREAKER_MS;
       const remainSec = Math.max(
         1,
         Math.ceil(AudioEngineController.MPV_RESTART_CIRCUIT_BREAKER_MS / 1000),
-      )
-      this.lastError =
-        `mpv 异常退出过于频繁，已熔断并回退兼容模式，请 ${remainSec} 秒后重试 (code=${payload.code ?? 'null'}, signal=${payload.signal ?? 'null'})`
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
-      this.updatedAtMs = Date.now()
-      return
+      );
+      this.lastError = `mpv 异常退出过于频繁，已熔断并回退兼容模式，请 ${remainSec} 秒后重试 (code=${payload.code ?? "null"}, signal=${payload.signal ?? "null"})`;
+      this.clearRuntimeCaches();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
+      this.updatedAtMs = Date.now();
+      return;
     }
 
-    this.mpvRestartInFlight = true
+    this.mpvRestartInFlight = true;
     try {
-      await this.initializeMpvEngine()
-      await this.applyPlaybackTuning()
-      this.mode = 'mpv'
-      this.usingFallback = false
-      this.lastError =
-        `mpv 进程异常退出，已自动拉起 (${restartCount}/${AudioEngineController.MPV_RESTART_MAX_ATTEMPTS})`
+      await this.initializeMpvEngine();
+      await this.applyPlaybackTuning();
+      this.mode = "mpv";
+      this.usingFallback = false;
+      this.lastError = `mpv 进程异常退出，已自动拉起 (${restartCount}/${AudioEngineController.MPV_RESTART_MAX_ATTEMPTS})`;
+      this.clearRuntimeCaches();
     } catch (error) {
-      this.mode = 'chromium'
-      this.usingFallback = true
-      this.lastError =
-        `mpv 自动拉起失败，已回退兼容模式：${error instanceof Error ? error.message : String(error)}`
-      this.activeDeviceId = null
-      this.exclusiveEnabled = false
+      this.mode = "chromium";
+      this.usingFallback = true;
+      this.lastError = `mpv 自动拉起失败，已回退兼容模式：${error instanceof Error ? error.message : String(error)}`;
+      this.clearRuntimeCaches();
+      this.activeDeviceId = null;
+      this.exclusiveEnabled = false;
     } finally {
-      this.mpvRestartInFlight = false
-      this.updatedAtMs = Date.now()
+      this.mpvRestartInFlight = false;
+      this.updatedAtMs = Date.now();
     }
   }
 }

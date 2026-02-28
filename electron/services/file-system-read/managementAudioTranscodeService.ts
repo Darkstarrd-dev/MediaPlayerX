@@ -48,7 +48,12 @@ interface RunAudioTranscodeTaskResult {
 interface ManagementAudioTranscodeServiceDependencies {
   rootDir: string;
   ffmpegBin: string;
-  ensureRuntimeDependencies: () => Promise<{ ffmpeg: boolean; ffprobe: boolean }>;
+  defaultConcurrency: number;
+  runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>;
+  ensureRuntimeDependencies: () => Promise<{
+    ffmpeg: boolean;
+    ffprobe: boolean;
+  }>;
   ensureStateLoaded: () => Promise<void>;
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
@@ -127,11 +132,22 @@ export class ManagementAudioTranscodeService {
     muxers: Set<string>;
   } | null = null;
 
-  private encoderLoadingPromise: Promise<{ encoders: Set<string>; muxers: Set<string> }> | null = null;
+  private encoderLoadingPromise: Promise<{
+    encoders: Set<string>;
+    muxers: Set<string>;
+  }> | null = null;
 
   constructor(
     private readonly dependencies: ManagementAudioTranscodeServiceDependencies,
   ) {}
+
+  private resolveTaskConcurrency(totalCount: number): number {
+    const rawValue = Number(this.dependencies.defaultConcurrency);
+    const normalized = Number.isFinite(rawValue)
+      ? Math.max(1, Math.min(2, Math.round(rawValue)))
+      : 1;
+    return Math.max(1, Math.min(totalCount, normalized));
+  }
 
   private throwIfCancelled(options: RunAudioTranscodeTaskOptions): void {
     if (options.isCancelled?.() || options.signal?.aborted) {
@@ -143,48 +159,56 @@ export class ManagementAudioTranscodeService {
     args: string[],
     options: RunAudioTranscodeTaskOptions,
   ): Promise<{ code: number; stderr: string }> {
-    return await new Promise((resolve, reject) => {
-      const child = spawn(this.dependencies.ffmpegBin, args, {
-        windowsHide: true,
-        stdio: ["ignore", "ignore", "pipe"],
+    const runSpawnTask = async (): Promise<{ code: number; stderr: string }> =>
+      await new Promise((resolve, reject) => {
+        const child = spawn(this.dependencies.ffmpegBin, args, {
+          windowsHide: true,
+          stdio: ["ignore", "ignore", "pipe"],
+        });
+        let stderr = "";
+        let settled = false;
+
+        const settle = (handler: () => void): void => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          options.signal?.removeEventListener("abort", onAbort);
+          handler();
+        };
+
+        const onAbort = (): void => {
+          try {
+            child.kill("SIGKILL");
+          } catch {
+            // ignore
+          }
+          settle(() => reject(new AudioTranscodeCancelledError()));
+        };
+
+        options.signal?.addEventListener("abort", onAbort, { once: true });
+
+        child.stderr.on("data", (chunk) => {
+          stderr += String(chunk);
+        });
+
+        child.on("error", (error) => {
+          settle(() => reject(error));
+        });
+
+        child.on("close", (code) => {
+          settle(() => resolve({ code: code ?? -1, stderr }));
+        });
       });
-      let stderr = "";
-      let settled = false;
 
-      const settle = (
-        handler: () => void,
-      ): void => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        options.signal?.removeEventListener("abort", onAbort);
-        handler();
-      };
+    if (!this.dependencies.runWithCpuToken) {
+      return await runSpawnTask();
+    }
 
-      const onAbort = (): void => {
-        try {
-          child.kill("SIGKILL");
-        } catch {
-          // ignore
-        }
-        settle(() => reject(new AudioTranscodeCancelledError()));
-      };
-
-      options.signal?.addEventListener("abort", onAbort, { once: true });
-
-      child.stderr.on("data", (chunk) => {
-        stderr += String(chunk);
-      });
-
-      child.on("error", (error) => {
-        settle(() => reject(error));
-      });
-
-      child.on("close", (code) => {
-        settle(() => resolve({ code: code ?? -1, stderr }));
-      });
-    });
+    return await this.dependencies.runWithCpuToken(
+      "audio-transcode-ffmpeg",
+      runSpawnTask,
+    );
   }
 
   private computeSegmentRange(audio: AudioItemDto): {
@@ -220,7 +244,9 @@ export class ManagementAudioTranscodeService {
         ? `.track${String(audio.cue_track_no).padStart(2, "0")}`
         : "";
     const extension = PRESET_EXTENSION[preset];
-    return path.resolve(path.join(outputDir, `${sourceBaseName}${cueSuffix}${extension}`));
+    return path.resolve(
+      path.join(outputDir, `${sourceBaseName}${cueSuffix}${extension}`),
+    );
   }
 
   private async addOutputFilesToMusicImportSources(
@@ -232,14 +258,19 @@ export class ManagementAudioTranscodeService {
     const current = this.dependencies.readMusicImportSources();
     const fileKeyToPath = new Map<string, string>();
     for (const value of current.files) {
-      fileKeyToPath.set(normalizeAllowlistKey(path.resolve(value)), path.resolve(value));
+      fileKeyToPath.set(
+        normalizeAllowlistKey(path.resolve(value)),
+        path.resolve(value),
+      );
     }
     for (const value of outputFiles) {
       const resolved = path.resolve(value);
       fileKeyToPath.set(normalizeAllowlistKey(resolved), resolved);
     }
     this.dependencies.writeMusicImportSources({
-      directories: Array.from(new Set(current.directories.map((value) => path.resolve(value)))),
+      directories: Array.from(
+        new Set(current.directories.map((value) => path.resolve(value))),
+      ),
       files: Array.from(fileKeyToPath.values()).sort((left, right) =>
         left.localeCompare(right, "zh-CN"),
       ),
@@ -263,10 +294,14 @@ export class ManagementAudioTranscodeService {
 
   private async runFfmpegEncoderProbe(): Promise<Set<string>> {
     return await new Promise((resolve, reject) => {
-      const child = spawn(this.dependencies.ffmpegBin, ["-hide_banner", "-encoders"], {
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
+      const child = spawn(
+        this.dependencies.ffmpegBin,
+        ["-hide_banner", "-encoders"],
+        {
+          windowsHide: true,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
       let stdout = "";
       let stderr = "";
 
@@ -283,7 +318,12 @@ export class ManagementAudioTranscodeService {
 
       child.on("close", (code) => {
         if ((code ?? -1) !== 0) {
-          reject(new Error(stderr.trim() || `ffmpeg encoder probe exited with code ${code ?? -1}`));
+          reject(
+            new Error(
+              stderr.trim() ||
+                `ffmpeg encoder probe exited with code ${code ?? -1}`,
+            ),
+          );
           return;
         }
 
@@ -303,10 +343,14 @@ export class ManagementAudioTranscodeService {
 
   private async runFfmpegMuxerProbe(): Promise<Set<string>> {
     return await new Promise((resolve, reject) => {
-      const child = spawn(this.dependencies.ffmpegBin, ["-hide_banner", "-muxers"], {
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
+      const child = spawn(
+        this.dependencies.ffmpegBin,
+        ["-hide_banner", "-muxers"],
+        {
+          windowsHide: true,
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      );
       let stdout = "";
       let stderr = "";
 
@@ -323,7 +367,12 @@ export class ManagementAudioTranscodeService {
 
       child.on("close", (code) => {
         if ((code ?? -1) !== 0) {
-          reject(new Error(stderr.trim() || `ffmpeg muxer probe exited with code ${code ?? -1}`));
+          reject(
+            new Error(
+              stderr.trim() ||
+                `ffmpeg muxer probe exited with code ${code ?? -1}`,
+            ),
+          );
           return;
         }
 
@@ -434,7 +483,8 @@ export class ManagementAudioTranscodeService {
       const hasMuxer = requiredMuxers.some((muxer) => muxers.has(muxer));
       const available = hasEncoder && hasMuxer;
 
-      let reason: ReadAudioTranscodeCapabilitiesResponseDto["presets"][AudioTranscodePresetDto]["reason"] = null;
+      let reason: ReadAudioTranscodeCapabilitiesResponseDto["presets"][AudioTranscodePresetDto]["reason"] =
+        null;
       if (!hasEncoder) {
         reason = "encoder_unavailable";
       } else if (!hasMuxer) {
@@ -460,7 +510,8 @@ export class ManagementAudioTranscodeService {
   }
 
   async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
-    const runtimeDependencies = await this.dependencies.ensureRuntimeDependencies();
+    const runtimeDependencies =
+      await this.dependencies.ensureRuntimeDependencies();
     const checkedAtMs = Date.now();
     const libraryRootDir = this.resolveLibraryRootDir();
     const defaultOutputDir = this.resolveDefaultOutputDir();
@@ -542,7 +593,9 @@ export class ManagementAudioTranscodeService {
         continue;
       }
       const filesystemAudio = audio as FilesystemAudioItem;
-      const sourcePath = path.resolve(filesystemAudio.media_locator.absolute_path);
+      const sourcePath = path.resolve(
+        filesystemAudio.media_locator.absolute_path,
+      );
       if (!isPathAllowlisted(sourcePath, mediaAccessContext)) {
         continue;
       }
@@ -575,9 +628,16 @@ export class ManagementAudioTranscodeService {
       });
     };
 
-    emitProgress("starting audio transcode task");
+    const workerCount = this.resolveTaskConcurrency(selectedAudios.length);
+    emitProgress(
+      workerCount > 1
+        ? `starting audio transcode task with concurrency=${workerCount}`
+        : "starting audio transcode task",
+    );
 
-    for (const audio of selectedAudios) {
+    const processSingleAudio = async (
+      audio: FilesystemAudioItem,
+    ): Promise<void> => {
       this.throwIfCancelled(options);
       const sourcePath = path.resolve(audio.media_locator.absolute_path);
       const targetDir = resolvedOutputDir;
@@ -587,12 +647,19 @@ export class ManagementAudioTranscodeService {
         if (!firstErrorDetail) {
           firstErrorDetail = `output directory outside allowlist: ${targetDir}`;
         }
-        emitProgress(`failed ${path.basename(sourcePath)}: output outside allowlist`);
-        continue;
+        emitProgress(
+          `failed ${path.basename(sourcePath)}: output outside allowlist`,
+        );
+        return;
       }
       await fs.mkdir(targetDir, { recursive: true });
 
-      const outputPath = this.buildOutputPath(sourcePath, targetDir, request.preset, audio);
+      const outputPath = this.buildOutputPath(
+        sourcePath,
+        targetDir,
+        request.preset,
+        audio,
+      );
       if (!request.overwrite) {
         const exists = await fs.stat(outputPath).catch(() => null);
         if (exists) {
@@ -601,8 +668,10 @@ export class ManagementAudioTranscodeService {
           if (!firstErrorDetail) {
             firstErrorDetail = `destination already exists: ${outputPath}`;
           }
-          emitProgress(`failed ${path.basename(sourcePath)}: destination already exists`);
-          continue;
+          emitProgress(
+            `failed ${path.basename(sourcePath)}: destination already exists`,
+          );
+          return;
         }
       }
 
@@ -629,7 +698,9 @@ export class ManagementAudioTranscodeService {
       try {
         const result = await this.runFfmpeg(args, options);
         if (result.code !== 0) {
-          throw new Error(result.stderr.trim() || `ffmpeg exited with code ${result.code}`);
+          throw new Error(
+            result.stderr.trim() || `ffmpeg exited with code ${result.code}`,
+          );
         }
         outputFiles.push(outputPath);
         processedCount += 1;
@@ -641,7 +712,9 @@ export class ManagementAudioTranscodeService {
         }
         await fs.rm(outputPath, { force: true }).catch(() => undefined);
         const reason =
-          error instanceof Error && error.message ? error.message : String(error);
+          error instanceof Error && error.message
+            ? error.message
+            : String(error);
         processedCount += 1;
         failedCount += 1;
         if (!firstErrorDetail) {
@@ -649,7 +722,34 @@ export class ManagementAudioTranscodeService {
         }
         emitProgress(`failed ${path.basename(sourcePath)}: ${reason}`);
       }
-    }
+    };
+
+    let nextAudioIndex = 0;
+    const pickNextAudio = (): FilesystemAudioItem | null => {
+      if (nextAudioIndex >= selectedAudios.length) {
+        return null;
+      }
+      const audio = selectedAudios[nextAudioIndex];
+      nextAudioIndex += 1;
+      return audio;
+    };
+
+    const runWorker = async (): Promise<void> => {
+      while (true) {
+        this.throwIfCancelled(options);
+        const nextAudio = pickNextAudio();
+        if (!nextAudio) {
+          return;
+        }
+        await processSingleAudio(nextAudio);
+      }
+    };
+
+    await Promise.all(
+      Array.from({ length: workerCount }, async () => {
+        await runWorker();
+      }),
+    );
 
     if (successCount > 0) {
       if (request.add_output_to_music_sources !== false) {

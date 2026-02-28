@@ -100,6 +100,8 @@ interface ManagementMutationServiceOptions {
     reason: string;
     updated_at_ms: number;
   }) => void;
+  audioTranscodeConcurrency?: number;
+  runWithCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>;
   withArchiveWriteLock?: <T>(
     archivePath: string,
     task: () => Promise<T>,
@@ -138,8 +140,11 @@ export class ManagementMutationService {
       syncSnapshotFromDatabase: options.syncSnapshotFromDatabase,
       buildMediaAccessContext: options.buildMediaAccessContext,
       readMusicImportSources: () => options.database.readMusicImportSources(),
-      writeMusicImportSources: (next) => options.database.writeMusicImportSources(next),
+      writeMusicImportSources: (next) =>
+        options.database.writeMusicImportSources(next),
       emitLibraryChanged: options.emitLibraryChanged,
+      defaultConcurrency: options.audioTranscodeConcurrency ?? 1,
+      runWithCpuToken: options.runWithCpuToken,
     });
     this.renameService = new ManagementRenameService({
       database: options.database,
@@ -227,7 +232,10 @@ export class ManagementMutationService {
     request: StartAudioTranscodeTaskRequestDto,
     options: RunAudioTranscodeTaskOptions = {},
   ): Promise<RunAudioTranscodeTaskResult> {
-    return await this.audioTranscodeService.runAudioTranscodeTask(request, options);
+    return await this.audioTranscodeService.runAudioTranscodeTask(
+      request,
+      options,
+    );
   }
 
   async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
