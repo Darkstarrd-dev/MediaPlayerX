@@ -25,6 +25,7 @@ import { MetadataMusicEditor } from "./metadata/MetadataMusicEditor";
 import { MetadataSearchSection } from "./metadata/MetadataSearchSection";
 import { MetadataVideoEditor } from "./metadata/MetadataVideoEditor";
 import { MainUiIcon } from "./MainUiIcon";
+import { VideoControlIcon } from "./VideoControlIcon";
 import { useI18n } from "../i18n/useI18n";
 import { buildA11yProps, buildA11yPropsByRegistry } from "../i18n/a11y";
 import { a11yRegistry } from "../i18n/ariaRegistry";
@@ -965,6 +966,33 @@ function MetadataPanel({
                 <span className="header-btn-label">{metadataManageMode ? t("ui.header.imageMode") : t("ui.header.metadataManage")}</span>
               </span>
             </button>
+
+            {mode === "video" ? (
+              <button
+                className={`main-icon-square-btn ${metadataTab === "playlist" ? "is-active" : ""}`}
+                data-slot="fg-meta-toolbar-g3-playlist"
+                type="button"
+                aria-label={
+                  metadataTab === "info"
+                    ? t("ui.metadata.playlistTab")
+                    : t("ui.metadata.videoInfoTab")
+                }
+                aria-pressed={metadataTab === "playlist"}
+                data-tooltip-label={
+                  metadataTab === "info"
+                    ? t("ui.metadata.playlistTab")
+                    : t("ui.metadata.videoInfoTab")
+                }
+                disabled={interactionLocked}
+                onClick={() =>
+                  onMetadataTabChange(
+                    metadataTab === "playlist" ? "info" : "playlist",
+                  )
+                }
+              >
+                <VideoControlIcon className="main-ui-icon" name="playlist" />
+              </button>
+            ) : null}
           </div>
 
           {mode === "image" ? (
@@ -1042,7 +1070,6 @@ function MetadataPanel({
               selectedVideoId={selectedVideoId}
               dragVideoId={dragVideoId}
               videoById={videoById}
-              onMetadataTabChange={onMetadataTabChange}
               onVideoWorkTitleDraftChange={setVideoWorkTitleDraft}
               onVideoWorkTitleJpnDraftChange={setVideoWorkTitleJpnDraft}
               onVideoSeriesIdDraftChange={setVideoSeriesIdDraft}

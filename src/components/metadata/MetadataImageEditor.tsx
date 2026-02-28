@@ -355,7 +355,7 @@ export function MetadataImageEditor({
                       </p>
                       <button
                         type="button"
-                        className="metadata-lang-toggle-btn"
+                        className="metadata-lang-toggle-btn feature-action-btn"
                         onClick={(e) => {
                           e.preventDefault()
                           if (!hasDualTitle) {
@@ -391,7 +391,7 @@ export function MetadataImageEditor({
                       </p>
                       <button
                         type="button"
-                        className="metadata-lang-toggle-btn"
+                        className="metadata-lang-toggle-btn feature-action-btn"
                         onClick={(e) => {
                           e.preventDefault()
                           if (!hasDualAuthor) {
@@ -427,7 +427,7 @@ export function MetadataImageEditor({
                       </p>
                       <button
                         type="button"
-                        className="metadata-lang-toggle-btn"
+                        className="metadata-lang-toggle-btn feature-action-btn"
                         onClick={(e) => {
                           e.preventDefault()
                           if (!hasDualGroup) {
