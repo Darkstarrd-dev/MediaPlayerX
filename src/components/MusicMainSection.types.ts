@@ -63,6 +63,7 @@ export interface MusicMainSectionProps {
   onCycleMusicLoopMode: () => void
   onToggleShowNamesOnly: () => void
   onSelectAudio: (audioId: string) => void
+  onSelectAudioAndPlay: (audioId: string) => void
   onToggleAudioChecked: (
     audioId: string,
     checked?: boolean,

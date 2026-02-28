@@ -102,6 +102,7 @@ describe('MetadataVideoEditor playlist integration', () => {
     render(<MetadataVideoEditor {...props} />)
 
     const videoButton = screen.getByRole('button', { name: /video-1.mp4/i })
+    expect(videoButton.closest('.metadata-playlist-row')).toHaveClass('is-focused')
     fireEvent.focus(videoButton)
     fireEvent.keyDown(videoButton, { key: 'Delete' })
 

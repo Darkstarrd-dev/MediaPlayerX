@@ -207,13 +207,89 @@ describe('MetadataMusicEditor', () => {
     const playlist = screen.getByLabelText('音乐播放列表')
     expect(within(playlist).getByText('01')).toBeInTheDocument()
     expect(within(playlist).getByText('02')).toBeInTheDocument()
-    expect(within(playlist).getByText('3')).toBeInTheDocument()
+    expect(within(playlist).getByText('02:32')).toBeInTheDocument()
+    const audio1Button = screen.getByRole('button', { name: /audio-1.mp3/i })
+    expect(audio1Button.closest('.metadata-playlist-row')).toHaveClass('is-focused')
     const audio2Button = screen.getByRole('button', { name: /audio-2.mp3/i })
+    expect(audio2Button.closest('.metadata-playlist-row')).not.toHaveClass('is-focused')
     fireEvent.click(audio2Button)
     expect(onSelectAudio).toHaveBeenCalledWith('audio-2')
     expect(onSelectAudioAndPlay).not.toHaveBeenCalled()
 
     fireEvent.doubleClick(audio2Button)
     expect(onSelectAudioAndPlay).toHaveBeenCalledWith('audio-2')
+  })
+
+  it('播放列表聚焦项按空格可播放或暂停', () => {
+    const audioA = makeAudio()
+    const audioB = {
+      ...makeAudio(),
+      id: 'audio-2',
+      fileName: 'audio-2.mp3',
+      absolutePath: 'D:/audio/audio-2.mp3',
+      durationSec: 152,
+      mediaLocator: {
+        kind: 'filesystem' as const,
+        absolutePath: 'D:/audio/audio-2.mp3',
+        extension: '.mp3',
+        mediaType: 'audio' as const,
+        mimeType: 'audio/mpeg',
+      },
+    }
+    const onSelectAudioAndPlay = vi.fn()
+    const playbackActions: string[] = []
+    const onControl = (event: Event) => {
+      const detail = (event as CustomEvent<{ action?: string }>).detail
+      if (detail?.action) {
+        playbackActions.push(detail.action)
+      }
+    }
+    window.addEventListener('mpx:music-playback-control', onControl)
+
+    render(
+      <MetadataMusicEditor
+        focusedAudio={audioA}
+        audioPlaylistIds={[]}
+        selectedAudioId={audioA.id}
+        audioById={new Map([
+          [audioA.id, audioA],
+          [audioB.id, audioB],
+        ])}
+        {...makeBookletProps()}
+        metadataPending={false}
+        editable={false}
+        audioAlbumDraft="Album A"
+        audioAuthorDraft="Author A"
+        audioTrackTitleDraft="Track A"
+        audioSeriesIdDraft="series-a"
+        onAudioAlbumDraftChange={vi.fn()}
+        onAudioAuthorDraftChange={vi.fn()}
+        onAudioTrackTitleDraftChange={vi.fn()}
+        onAudioSeriesIdDraftChange={vi.fn()}
+        onSubmitAudioAlbum={vi.fn()}
+        onSubmitAudioAuthor={vi.fn()}
+        onSubmitAudioTrackTitle={vi.fn()}
+        onSubmitAudioSeriesId={vi.fn()}
+        onSearchByWorkTitle={vi.fn()}
+        onSearchByCircle={vi.fn()}
+        onSearchByAuthor={vi.fn()}
+        onSelectAudio={vi.fn()}
+        onSelectAudioAndPlay={onSelectAudioAndPlay}
+      />,
+    )
+
+    fireEvent.keyDown(screen.getByRole('button', { name: /audio-1.mp3/i }), {
+      key: ' ',
+      code: 'Space',
+    })
+    fireEvent.keyDown(screen.getByRole('button', { name: /audio-2.mp3/i }), {
+      key: ' ',
+      code: 'Space',
+    })
+
+    expect(playbackActions).toContain('toggle-playback')
+    expect(onSelectAudioAndPlay).toHaveBeenCalledWith('audio-2')
+
+    window.removeEventListener('mpx:music-playback-control', onControl)
   })
 })

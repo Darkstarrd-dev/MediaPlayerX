@@ -397,7 +397,7 @@ export function MetadataVideoEditor({
               return (
                 <div
                   key={videoId}
-                  className="metadata-playlist-row"
+                  className={`metadata-playlist-row name-list-row ${selectedVideoId === videoId ? 'is-focused' : ''}`}
                   draggable
                   onDragStart={() => onDragStart(videoId)}
                   onDragEnd={onDragEnd}

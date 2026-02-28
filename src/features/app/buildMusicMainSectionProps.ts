@@ -46,6 +46,7 @@ interface BuildMusicMainSectionPropsParams {
   musicLoopModeLabels: Record<MusicLoopMode, string>
   audioByIdEffective: Map<string, AudioItem>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
+  requestMusicPlay: () => void
   toggleImageChecked: (
     imageId: string,
     checked?: boolean,
@@ -340,6 +341,16 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       if (audioId !== params.selectedAudioId) {
         params.setSelectedAudioId(audioId)
       }
+      params.updateSettings({ sidebarFocus: 'main' })
+    },
+    onSelectAudioAndPlay: (audioId: string) => {
+      if (!params.audioByIdEffective.has(audioId)) {
+        return
+      }
+      if (audioId !== params.selectedAudioId) {
+        params.setSelectedAudioId(audioId)
+      }
+      params.requestMusicPlay()
       params.updateSettings({ sidebarFocus: 'main' })
     },
     onToggleAudioChecked: (

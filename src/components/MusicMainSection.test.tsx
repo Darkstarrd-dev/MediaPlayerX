@@ -134,6 +134,7 @@ function createMusicMainSectionProps(
     onCycleMusicLoopMode: vi.fn(),
     onToggleShowNamesOnly: vi.fn(),
     onSelectAudio: vi.fn(),
+    onSelectAudioAndPlay: vi.fn(),
     onToggleAudioChecked: vi.fn(),
     ...overrides,
     musicVisualizerSelectedShaderId:
@@ -266,6 +267,55 @@ describe("MusicMainSection", () => {
       expect(visualizer.querySelector("canvas")).toBeTruthy();
       expect(screen.queryByText(/可视化画布未就绪|Visualizer canvas is not ready/)).toBeNull();
     });
+  });
+
+  it("纯文件名模式双击曲目会选中并开始播放", () => {
+    const onSelectAudioAndPlay = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2")];
+    renderMusicMainSection({
+      showNamesOnly: true,
+      audios,
+      focusedAudio: audios[0],
+      onSelectAudioAndPlay,
+    });
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: /track-2\.mp3/i }));
+
+    expect(onSelectAudioAndPlay).toHaveBeenCalledWith("track-2");
+  });
+
+  it("纯文件名模式空格键可播放当前聚焦项", () => {
+    const onSelectAudioAndPlay = vi.fn();
+    const audios = [makeAudio("track-1"), makeAudio("track-2")];
+    renderMusicMainSection({
+      showNamesOnly: true,
+      audios,
+      focusedAudio: audios[0],
+      onSelectAudioAndPlay,
+    });
+
+    fireEvent.keyDown(screen.getByRole("button", { name: /track-2\.mp3/i }), {
+      key: " ",
+      code: "Space",
+    });
+
+    expect(onSelectAudioAndPlay).toHaveBeenCalledWith("track-2");
+  });
+
+  it("纯文件名模式空格键可暂停或恢复当前聚焦项", () => {
+    const onSelectAudioAndPlay = vi.fn();
+    renderMusicMainSection({
+      showNamesOnly: true,
+      onSelectAudioAndPlay,
+    });
+
+    fireEvent.keyDown(screen.getByRole("button", { name: /track-1\.mp3/i }), {
+      key: " ",
+      code: "Space",
+    });
+
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
+    expect(onSelectAudioAndPlay).not.toHaveBeenCalled();
   });
 
   it("纯文件名模式管理态点击曲目应切换选中", () => {

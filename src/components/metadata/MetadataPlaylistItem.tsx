@@ -11,6 +11,7 @@ interface MetadataPlaylistItemProps {
   active: boolean
   onSelect: (mediaId: string) => void
   onSelectAndPlay: (mediaId: string) => void
+  onTogglePlayPause?: (mediaId: string) => void
   onDelete?: (mediaId: string) => void
   buttonRef?: (element: HTMLButtonElement | null) => void
 }
@@ -34,6 +35,7 @@ export function MetadataPlaylistItem({
   active,
   onSelect,
   onSelectAndPlay,
+  onTogglePlayPause,
   onDelete,
   buttonRef,
 }: MetadataPlaylistItemProps) {
@@ -54,18 +56,24 @@ export function MetadataPlaylistItem({
   const durationLabel = formatDurationLabel(durationSec)
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key !== 'Delete' || !onDelete) {
+    if (event.key === 'Delete' && onDelete) {
+      event.preventDefault()
+      event.stopPropagation()
+      onDelete(mediaId)
       return
     }
-    event.preventDefault()
-    event.stopPropagation()
-    onDelete(mediaId)
+
+    if ((event.key === ' ' || event.code === 'Space') && onTogglePlayPause) {
+      event.preventDefault()
+      event.stopPropagation()
+      onTogglePlayPause(mediaId)
+    }
   }
 
   return (
     <button
       ref={buttonRef}
-      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
+      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${focused ? 'is-focused' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
       type="button"
       aria-keyshortcuts={onDelete ? 'Delete' : undefined}
       onClick={() => onSelect(mediaId)}

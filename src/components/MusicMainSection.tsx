@@ -83,6 +83,7 @@ function MusicMainSection({
   onCycleMusicLoopMode,
   onToggleShowNamesOnly,
   onSelectAudio,
+  onSelectAudioAndPlay,
   onToggleAudioChecked,
 }: MusicMainSectionProps) {
   const AUDIO_ENGINE_MODE_CHANGED_EVENT = 'mpx:audio-engine-mode-changed'
@@ -670,6 +671,17 @@ function MusicMainSection({
       void backendApi.audioEngineStopPlayback().catch(() => undefined)
     }
   }, [audioEngineMode, setAudioPlaying, setAudioTime])
+
+  const toggleFocusedNameListPlayback = useCallback((audioId: string) => {
+    if (manageMode) {
+      return
+    }
+    if (focusedAudio?.id === audioId) {
+      toggleAudioPlayback()
+      return
+    }
+    onSelectAudioAndPlay(audioId)
+  }, [focusedAudio?.id, manageMode, onSelectAudioAndPlay, toggleAudioPlayback])
 
   useEffect(() => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
@@ -1504,6 +1516,23 @@ function MusicMainSection({
                     return
                   }
                   onSelectAudio(audio.id)
+                }}
+                onDoubleClick={() => {
+                  if (manageMode) {
+                    return
+                  }
+                  onSelectAudioAndPlay(audio.id)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== ' ' && event.code !== 'Space') {
+                    return
+                  }
+                  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+                    return
+                  }
+                  event.preventDefault()
+                  event.stopPropagation()
+                  toggleFocusedNameListPlayback(audio.id)
                 }}
               >
                 <span className="name-list-row-label">{audio.fileName}</span>

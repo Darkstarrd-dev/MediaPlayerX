@@ -1205,6 +1205,7 @@ export function useAppWorkspaceProps({
     },
     audioByIdEffective,
     setSelectedAudioId,
+    requestMusicPlay,
     toggleImageChecked,
     setMusicLoopMode,
     setFullscreenActiveWithAutoStop,

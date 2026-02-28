@@ -4,6 +4,7 @@ import { MainUiIcon } from '../MainUiIcon'
 import { MetadataPlaylistItem } from './MetadataPlaylistItem'
 import { useI18n } from '../../i18n/useI18n'
 import type { AudioItem } from '../../types'
+import { dispatchMusicPlaybackControl } from '../../features/media/musicPlaybackBridge'
 
 interface MetadataMusicEditorProps {
   focusedAudio: AudioItem | null
@@ -289,16 +290,27 @@ export function MetadataMusicEditor({
             }
 
             return (
-              <MetadataPlaylistItem
+              <div
                 key={audioId}
-                mediaId={audioId}
-                title={audio.fileName}
-                index={index + 1}
-                durationSec={audio.durationSec}
-                active={selectedAudioId === audioId}
-                onSelect={onSelectAudio}
-                onSelectAndPlay={onSelectAudioAndPlay}
-              />
+                className={`metadata-playlist-row name-list-row ${selectedAudioId === audioId ? 'is-focused' : ''}`}
+              >
+                <MetadataPlaylistItem
+                  mediaId={audioId}
+                  title={audio.fileName}
+                  index={index + 1}
+                  durationSec={audio.durationSec}
+                  active={selectedAudioId === audioId}
+                  onSelect={onSelectAudio}
+                  onSelectAndPlay={onSelectAudioAndPlay}
+                  onTogglePlayPause={(targetAudioId) => {
+                    if (selectedAudioId === targetAudioId) {
+                      dispatchMusicPlaybackControl('toggle-playback')
+                      return
+                    }
+                    onSelectAudioAndPlay(targetAudioId)
+                  }}
+                />
+              </div>
             )
           })
         ) : (
