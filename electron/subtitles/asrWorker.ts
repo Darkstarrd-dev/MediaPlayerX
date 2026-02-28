@@ -236,7 +236,11 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
         continue;
       }
       seenAuxiliaryCandidates.add(candidate);
-      const resolved = await resolveAuxiliaryModelPath(candidate, matcher, options);
+      const resolved = await resolveAuxiliaryModelPath(
+        candidate,
+        matcher,
+        options,
+      );
       if (resolved) {
         return resolved;
       }
@@ -350,7 +354,6 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
       });
     }
   } else if (wantsVad) {
-    const exportKeys = Object.keys(sherpa).sort().join(",");
     const unavailableReason =
       !VadConstructor && !vadModelPath
         ? "missing_constructor_and_model"
@@ -365,11 +368,7 @@ async function handleInit(rawPayload: unknown): Promise<unknown> {
       `vad_model_path=${vadModelPath ?? "null"}; ` +
       `fallback to legacy decoding`;
     runtimeEvents.push(
-      createEvent(
-        "advanced_vad_unavailable",
-        "warning",
-        unavailableMessage,
-      ),
+      createEvent("advanced_vad_unavailable", "warning", unavailableMessage),
     );
     console.warn("[subtitle-asr] VAD unavailable", {
       reason: unavailableReason,
