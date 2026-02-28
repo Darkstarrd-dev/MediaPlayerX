@@ -46,6 +46,7 @@ interface RunAudioTranscodeTaskResult {
 }
 
 interface ManagementAudioTranscodeServiceDependencies {
+  rootDir: string;
   ffmpegBin: string;
   ensureRuntimeDependencies: () => Promise<{ ffmpeg: boolean; ffprobe: boolean }>;
   ensureStateLoaded: () => Promise<void>;
@@ -99,6 +100,15 @@ const PRESET_REQUIRED_ENCODER: Record<AudioTranscodePresetDto, string> = {
   mp3: "libmp3lame",
 };
 
+const PRESET_REQUIRED_MUXERS: Record<AudioTranscodePresetDto, string[]> = {
+  flac: ["flac"],
+  alac: ["ipod", "mp4"],
+  wav: ["wav"],
+  opus: ["opus"],
+  aac: ["ipod", "mp4"],
+  mp3: ["mp3"],
+};
+
 type FilesystemAudioItem = AudioItemDto & {
   media_locator: Extract<AudioItemDto["media_locator"], { kind: "filesystem" }>;
 };
@@ -106,12 +116,18 @@ type FilesystemAudioItem = AudioItemDto & {
 export class ManagementAudioTranscodeService {
   private static readonly ENCODER_CACHE_TTL_MS = 30_000;
 
+  private static readonly DEFAULT_TRANSCODE_OUTPUT_RELATIVE_PATH = path.join(
+    ".mediaplayerx",
+    "transcoded",
+  );
+
   private encoderCache: {
     expiresAtMs: number;
     encoders: Set<string>;
+    muxers: Set<string>;
   } | null = null;
 
-  private encoderLoadingPromise: Promise<Set<string>> | null = null;
+  private encoderLoadingPromise: Promise<{ encoders: Set<string>; muxers: Set<string> }> | null = null;
 
   constructor(
     private readonly dependencies: ManagementAudioTranscodeServiceDependencies,
@@ -230,6 +246,21 @@ export class ManagementAudioTranscodeService {
     });
   }
 
+  private resolveLibraryRootDir(): string {
+    return path.resolve(this.dependencies.rootDir);
+  }
+
+  private resolveDefaultOutputDir(): string {
+    return path.resolve(
+      this.resolveLibraryRootDir(),
+      ManagementAudioTranscodeService.DEFAULT_TRANSCODE_OUTPUT_RELATIVE_PATH,
+    );
+  }
+
+  private formatRequiredMuxer(preset: AudioTranscodePresetDto): string {
+    return PRESET_REQUIRED_MUXERS[preset].join("/");
+  }
+
   private async runFfmpegEncoderProbe(): Promise<Set<string>> {
     return await new Promise((resolve, reject) => {
       const child = spawn(this.dependencies.ffmpegBin, ["-hide_banner", "-encoders"], {
@@ -270,120 +301,176 @@ export class ManagementAudioTranscodeService {
     });
   }
 
-  private async readCachedFfmpegEncoders(): Promise<Set<string>> {
+  private async runFfmpegMuxerProbe(): Promise<Set<string>> {
+    return await new Promise((resolve, reject) => {
+      const child = spawn(this.dependencies.ffmpegBin, ["-hide_banner", "-muxers"], {
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+
+      child.stdout.on("data", (chunk) => {
+        stdout += String(chunk);
+      });
+      child.stderr.on("data", (chunk) => {
+        stderr += String(chunk);
+      });
+
+      child.on("error", (error) => {
+        reject(error);
+      });
+
+      child.on("close", (code) => {
+        if ((code ?? -1) !== 0) {
+          reject(new Error(stderr.trim() || `ffmpeg muxer probe exited with code ${code ?? -1}`));
+          return;
+        }
+
+        const output = `${stdout}\n${stderr}`;
+        const muxers = new Set<string>();
+        for (const line of output.split(/\r?\n/)) {
+          const matched = line.match(/^\s*[D.][E.]\s+([^\s]+)\s+/);
+          if (!matched) {
+            continue;
+          }
+          for (const name of matched[1].split(",")) {
+            const normalized = name.trim().toLowerCase();
+            if (!normalized) {
+              continue;
+            }
+            muxers.add(normalized);
+          }
+        }
+        resolve(muxers);
+      });
+    });
+  }
+
+  private async readCachedFfmpegCodecCapabilities(): Promise<{
+    encoders: Set<string>;
+    muxers: Set<string>;
+  }> {
     const now = Date.now();
     if (this.encoderCache && this.encoderCache.expiresAtMs > now) {
-      return this.encoderCache.encoders;
+      return {
+        encoders: this.encoderCache.encoders,
+        muxers: this.encoderCache.muxers,
+      };
     }
 
     if (!this.encoderLoadingPromise) {
-      this.encoderLoadingPromise = this.runFfmpegEncoderProbe().finally(() => {
-        this.encoderLoadingPromise = null;
-      });
+      this.encoderLoadingPromise = Promise.all([
+        this.runFfmpegEncoderProbe(),
+        this.runFfmpegMuxerProbe(),
+      ])
+        .then(([encoders, muxers]) => ({ encoders, muxers }))
+        .finally(() => {
+          this.encoderLoadingPromise = null;
+        });
     }
 
-    const encoders = await this.encoderLoadingPromise;
+    const capabilities = await this.encoderLoadingPromise;
     this.encoderCache = {
       expiresAtMs: now + ManagementAudioTranscodeService.ENCODER_CACHE_TTL_MS,
-      encoders,
+      encoders: capabilities.encoders,
+      muxers: capabilities.muxers,
     };
-    return encoders;
+    return capabilities;
   }
 
   private buildUnavailablePresetCapabilities(
-    reason: "ffmpeg_unavailable" | "encoder_unavailable",
+    reason: "ffmpeg_unavailable" | "encoder_unavailable" | "muxer_unavailable",
   ): ReadAudioTranscodeCapabilitiesResponseDto["presets"] {
     return {
       flac: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.flac,
+        required_muxer: this.formatRequiredMuxer("flac"),
         reason,
       },
       alac: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.alac,
+        required_muxer: this.formatRequiredMuxer("alac"),
         reason,
       },
       wav: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.wav,
+        required_muxer: this.formatRequiredMuxer("wav"),
         reason,
       },
       opus: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.opus,
+        required_muxer: this.formatRequiredMuxer("opus"),
         reason,
       },
       aac: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.aac,
+        required_muxer: this.formatRequiredMuxer("aac"),
         reason,
       },
       mp3: {
         available: false,
         required_encoder: PRESET_REQUIRED_ENCODER.mp3,
+        required_muxer: this.formatRequiredMuxer("mp3"),
         reason,
       },
     };
   }
 
-  private buildPresetCapabilitiesFromEncoders(
+  private buildPresetCapabilitiesFromCodecs(
     encoders: Set<string>,
+    muxers: Set<string>,
   ): ReadAudioTranscodeCapabilitiesResponseDto["presets"] {
+    const resolvePresetCapability = (
+      preset: AudioTranscodePresetDto,
+    ): ReadAudioTranscodeCapabilitiesResponseDto["presets"][AudioTranscodePresetDto] => {
+      const hasEncoder = encoders.has(PRESET_REQUIRED_ENCODER[preset]);
+      const requiredMuxers = PRESET_REQUIRED_MUXERS[preset];
+      const hasMuxer = requiredMuxers.some((muxer) => muxers.has(muxer));
+      const available = hasEncoder && hasMuxer;
+
+      let reason: ReadAudioTranscodeCapabilitiesResponseDto["presets"][AudioTranscodePresetDto]["reason"] = null;
+      if (!hasEncoder) {
+        reason = "encoder_unavailable";
+      } else if (!hasMuxer) {
+        reason = "muxer_unavailable";
+      }
+
+      return {
+        available,
+        required_encoder: PRESET_REQUIRED_ENCODER[preset],
+        required_muxer: this.formatRequiredMuxer(preset),
+        reason,
+      };
+    };
+
     return {
-      flac: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.flac),
-        required_encoder: PRESET_REQUIRED_ENCODER.flac,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.flac)
-          ? null
-          : "encoder_unavailable",
-      },
-      alac: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.alac),
-        required_encoder: PRESET_REQUIRED_ENCODER.alac,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.alac)
-          ? null
-          : "encoder_unavailable",
-      },
-      wav: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.wav),
-        required_encoder: PRESET_REQUIRED_ENCODER.wav,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.wav)
-          ? null
-          : "encoder_unavailable",
-      },
-      opus: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.opus),
-        required_encoder: PRESET_REQUIRED_ENCODER.opus,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.opus)
-          ? null
-          : "encoder_unavailable",
-      },
-      aac: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.aac),
-        required_encoder: PRESET_REQUIRED_ENCODER.aac,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.aac)
-          ? null
-          : "encoder_unavailable",
-      },
-      mp3: {
-        available: encoders.has(PRESET_REQUIRED_ENCODER.mp3),
-        required_encoder: PRESET_REQUIRED_ENCODER.mp3,
-        reason: encoders.has(PRESET_REQUIRED_ENCODER.mp3)
-          ? null
-          : "encoder_unavailable",
-      },
+      flac: resolvePresetCapability("flac"),
+      alac: resolvePresetCapability("alac"),
+      wav: resolvePresetCapability("wav"),
+      opus: resolvePresetCapability("opus"),
+      aac: resolvePresetCapability("aac"),
+      mp3: resolvePresetCapability("mp3"),
     };
   }
 
   async readAudioTranscodeCapabilities(): Promise<ReadAudioTranscodeCapabilitiesResponseDto> {
     const runtimeDependencies = await this.dependencies.ensureRuntimeDependencies();
     const checkedAtMs = Date.now();
+    const libraryRootDir = this.resolveLibraryRootDir();
+    const defaultOutputDir = this.resolveDefaultOutputDir();
     if (!runtimeDependencies.ffmpeg) {
       return {
         enabled: false,
         ffmpeg_available: false,
         ffprobe_available: runtimeDependencies.ffprobe,
+        library_root_dir: libraryRootDir,
+        default_output_dir: defaultOutputDir,
         presets: this.buildUnavailablePresetCapabilities("ffmpeg_unavailable"),
         checked_at_ms: checkedAtMs,
       };
@@ -391,8 +478,11 @@ export class ManagementAudioTranscodeService {
 
     let presets: ReadAudioTranscodeCapabilitiesResponseDto["presets"];
     try {
-      const encoders = await this.readCachedFfmpegEncoders();
-      presets = this.buildPresetCapabilitiesFromEncoders(encoders);
+      const codecCapabilities = await this.readCachedFfmpegCodecCapabilities();
+      presets = this.buildPresetCapabilitiesFromCodecs(
+        codecCapabilities.encoders,
+        codecCapabilities.muxers,
+      );
     } catch {
       presets = this.buildUnavailablePresetCapabilities("encoder_unavailable");
     }
@@ -408,6 +498,8 @@ export class ManagementAudioTranscodeService {
       enabled,
       ffmpeg_available: runtimeDependencies.ffmpeg,
       ffprobe_available: runtimeDependencies.ffprobe,
+      library_root_dir: libraryRootDir,
+      default_output_dir: defaultOutputDir,
       presets,
       checked_at_ms: checkedAtMs,
     };
@@ -424,6 +516,11 @@ export class ManagementAudioTranscodeService {
     }
     const presetCapability = capabilities.presets[request.preset];
     if (!presetCapability.available) {
+      if (presetCapability.reason === "muxer_unavailable") {
+        throw new Error(
+          `audio transcode failed: preset ${request.preset} unavailable (missing muxer ${presetCapability.required_muxer})`,
+        );
+      }
       throw new Error(
         `audio transcode failed: preset ${request.preset} unavailable (missing encoder ${presetCapability.required_encoder})`,
       );
@@ -456,6 +553,12 @@ export class ManagementAudioTranscodeService {
       throw new Error("audio transcode failed: no valid audio selected");
     }
 
+    const requestOutputDir = request.output_dir?.trim() ?? "";
+    const defaultOutputDir = capabilities.default_output_dir;
+    const resolvedOutputDir = path.resolve(
+      requestOutputDir.length > 0 ? requestOutputDir : defaultOutputDir,
+    );
+
     let processedCount = 0;
     let successCount = 0;
     let failedCount = 0;
@@ -477,7 +580,7 @@ export class ManagementAudioTranscodeService {
     for (const audio of selectedAudios) {
       this.throwIfCancelled(options);
       const sourcePath = path.resolve(audio.media_locator.absolute_path);
-      const targetDir = path.resolve(request.output_dir ?? path.dirname(sourcePath));
+      const targetDir = resolvedOutputDir;
       if (!isPathAllowlisted(targetDir, mediaAccessContext)) {
         processedCount += 1;
         failedCount += 1;

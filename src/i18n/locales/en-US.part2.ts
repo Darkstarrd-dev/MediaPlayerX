@@ -359,7 +359,7 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.music.audioTranscodeTitle": "Audio Transcode",
   "ui.music.audioTranscodePreset": "Preset",
   "ui.music.audioTranscodeOutputDirectory": "Output directory",
-  "ui.music.audioTranscodeOutputDirectoryPlaceholder": "Empty = source directory",
+  "ui.music.audioTranscodeOutputDirectoryPlaceholder": "Empty = default library transcode directory",
   "ui.music.audioTranscodePickOutputDirectory": "Choose directory",
   "ui.music.audioTranscodePickingOutputDirectory": "Choosing...",
   "ui.music.audioTranscodeOverwrite": "Overwrite existing files",
@@ -392,7 +392,13 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.music.audioTranscodeCapabilityFfmpegUnavailable": "ffmpeg is unavailable in current runtime, audio transcode is disabled",
   "ui.music.audioTranscodeCapabilityNoPresetAvailable": "No supported audio encoder is detected in current ffmpeg build",
   "ui.music.audioTranscodePresetUnavailable": "Preset unavailable: missing encoder {{encoder}}",
+  "ui.music.audioTranscodePresetMuxerUnavailable": "Preset unavailable: missing muxer {{muxer}}",
   "ui.music.audioTranscodeCapabilityReadFailed": "Failed to read transcode capabilities: {{message}}",
+  "ui.music.audioTranscodeDefaultOutputDirectoryHint": "Default output directory: {{path}}",
+  "ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint": "Output may be outside library root. It will be auto-added to music import sources after completion.",
+  "ui.music.audioTranscodeOutputOutsideLibraryManualImportHint": "Output may be outside library root. If auto-add is off, files will not appear in library.",
+  "ui.music.audioTranscodeOutputDirectoryOutsideAllowlist": "Output directory is outside allowlist: {{path}}",
+  "ui.music.audioTranscodeOutputFileExists": "Output file already exists: {{path}}",
   "ui.music.visualizerInitErrorMarker":
     "Visualizer renderer initialization failed",
   "ui.music.runtimeCanvasNotReady":

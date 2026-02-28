@@ -451,8 +451,12 @@ describe("FileSystemMediaReadService", () => {
     expect(typeof capabilities.enabled).toBe("boolean");
     expect(typeof capabilities.ffmpeg_available).toBe("boolean");
     expect(typeof capabilities.ffprobe_available).toBe("boolean");
+    expect(typeof capabilities.library_root_dir).toBe("string");
+    expect(typeof capabilities.default_output_dir).toBe("string");
+    expect(capabilities.default_output_dir.replace(/\\/g, "/").endsWith("/.mediaplayerx/transcoded")).toBe(true);
     expect(typeof capabilities.presets.flac.available).toBe("boolean");
     expect(typeof capabilities.presets.mp3.required_encoder).toBe("string");
+    expect(typeof capabilities.presets.mp3.required_muxer).toBe("string");
   });
 
   it("写链路可持久化评分与封面，失败时由调用端回滚", async () => {

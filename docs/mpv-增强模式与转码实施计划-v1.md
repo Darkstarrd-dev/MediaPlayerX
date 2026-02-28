@@ -358,16 +358,16 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 
 目标：交付可用转码能力，并把格式扩展从“能播”扩展到“可维护地入库/转码”。
 
-- [ ] `TranscodeService` 与任务 UI（创建/进度/取消/重试/输出清单）。
-- [ ] 内置 ffmpeg/ffprobe（或清晰降级：依赖缺失时转码入口不可用）。
-- [ ] 上线 FLAC/ALAC/WAV/Opus/AAC/MP3 预设与能力探测（按 encoders/formats 灰度）。
-- [ ] 扩展音乐导入白名单到 P1/P2（并对不可探测/不可播放文件给出明确错误）。
-- [ ] 转码输出默认路径策略与“输出到库外”的导入提示。
+- [x] `TranscodeService` 与任务 UI（创建/进度/取消/重试/输出清单）。
+- [x] 内置 ffmpeg/ffprobe（或清晰降级：依赖缺失时转码入口不可用）。
+- [x] 上线 FLAC/ALAC/WAV/Opus/AAC/MP3 预设与能力探测（按 encoders/formats 灰度）。
+- [x] 扩展音乐导入白名单到 P1/P2（并对不可探测/不可播放文件给出明确错误）。
+- [x] 转码输出默认路径策略与“输出到库外”的导入提示。
 
 验收：
 
-- [ ] 100 首批量转码可完成，失败项可重试。
-- [ ] 转码后文件可按策略自动入库并可立即播放。
+- [x] 100 首批量转码可完成，失败项可重试。
+- [x] 转码后文件可按策略自动入库并可立即播放。
 
 阶段进展记录：
 
@@ -413,6 +413,14 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - 音乐导入白名单新增 `dsf/dff/iso`（含文件选择过滤器）。
   - MIME 识别补充 `dsf/dff/iso`，减少探测链路中的“未知类型”歧义。
   - 兼容模式下新增 `dsf/dff/iso` 的增强模式切换提示，避免 Chromium 侧静默不可播放。
+- 2026-02-28：已完成 P2 剩余收口（转码默认路径 + formats 灰度 + 导入提示文案细化）：
+  - 能力探测从“编码器”扩展到“编码器 + 封装器（muxer）”矩阵，预设灰度支持 `muxer_unavailable` 原因。
+  - 转码默认输出路径统一为 `libraryRoot/.mediaplayerx/transcoded/`；`output_dir` 为空时自动落该目录。
+  - 转码面板文案细化：补充默认输出目录提示、库外输出自动入源/手动入源提示、常见失败原因本地化映射。
+- 2026-02-28：已完成 P2 验收闭环（自动化）：
+  - 新增 `managementAudioTranscodeService.test.ts`，覆盖“100 首批量转码 + 失败项重试”场景。
+  - 覆盖“默认输出到库内转码目录 + 自动入源写回 + 刷新广播”场景。
+  - 已通过 `npx vitest run electron/services/file-system-read/managementAudioTranscodeService.test.ts`、`npx vitest run src/components/MusicMainSection.test.tsx`、`npm run build`。
 
 ### P3：硬化与发布（1~2 周）
 

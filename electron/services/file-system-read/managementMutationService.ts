@@ -129,6 +129,7 @@ export class ManagementMutationService {
       withArchiveWriteLock: this.withArchiveWriteLock.bind(this),
     });
     this.audioTranscodeService = new ManagementAudioTranscodeService({
+      rootDir: options.rootDir,
       ffmpegBin: options.ffmpegBin,
       ensureRuntimeDependencies: options.ensureRuntimeDependencies,
       ensureStateLoaded: options.ensureStateLoaded,

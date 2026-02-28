@@ -293,11 +293,13 @@ export const audioTranscodePresetSchema = z.enum([
 export const audioTranscodePresetCapabilityReasonSchema = z.enum([
   "ffmpeg_unavailable",
   "encoder_unavailable",
+  "muxer_unavailable",
 ]);
 
 export const audioTranscodePresetCapabilitySchema = z.object({
   available: z.boolean(),
   required_encoder: z.string().min(1),
+  required_muxer: z.string().min(1),
   reason: audioTranscodePresetCapabilityReasonSchema.nullable(),
 });
 
@@ -305,6 +307,8 @@ export const readAudioTranscodeCapabilitiesResponseSchema = z.object({
   enabled: z.boolean(),
   ffmpeg_available: z.boolean(),
   ffprobe_available: z.boolean(),
+  library_root_dir: z.string().min(1),
+  default_output_dir: z.string().min(1),
   presets: z.object({
     flac: audioTranscodePresetCapabilitySchema,
     alac: audioTranscodePresetCapabilitySchema,

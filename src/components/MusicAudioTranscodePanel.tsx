@@ -38,6 +38,7 @@ interface MusicAudioTranscodePanelProps {
   capabilitiesLoading: boolean;
   capabilities: AudioTranscodePresetCapabilities | null;
   confirmDisabledReason: string | null;
+  outputPolicyHint: string | null;
   taskStatus: AudioTranscodeTaskStatus;
   taskProgress: number;
   taskMessage: string | null;
@@ -71,6 +72,7 @@ export function MusicAudioTranscodePanel({
   capabilitiesLoading,
   capabilities,
   confirmDisabledReason,
+  outputPolicyHint,
   taskStatus,
   taskProgress,
   taskMessage,
@@ -186,9 +188,13 @@ export function MusicAudioTranscodePanel({
         ) : null}
         {!capabilitiesLoading && selectedPresetCapability?.available === false ? (
           <p className="mpx-overlay-caption">
-            {t("ui.music.audioTranscodePresetUnavailable", {
-              encoder: selectedPresetCapability.required_encoder,
-            })}
+            {selectedPresetCapability.reason === "muxer_unavailable"
+              ? t("ui.music.audioTranscodePresetMuxerUnavailable", {
+                  muxer: selectedPresetCapability.required_muxer,
+                })
+              : t("ui.music.audioTranscodePresetUnavailable", {
+                  encoder: selectedPresetCapability.required_encoder,
+                })}
           </p>
         ) : null}
         {confirmDisabledReason ? (
@@ -222,6 +228,9 @@ export function MusicAudioTranscodePanel({
             {t("ui.common.clear")}
           </button>
         </div>
+        {outputPolicyHint ? (
+          <p className="mpx-overlay-caption">{outputPolicyHint}</p>
+        ) : null}
         <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
           <span>{t("ui.music.audioTranscodeOverwrite")}</span>
           <input

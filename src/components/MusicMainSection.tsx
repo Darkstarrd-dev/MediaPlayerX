@@ -40,6 +40,27 @@ const AUDIO_TRANSCODE_PRESET_ORDER: StartAudioTranscodeTaskRequestDto['preset'][
   'mp3',
 ]
 
+function normalizeFsPathForCompare(rawPath: string): string {
+  const normalized = rawPath
+    .trim()
+    .replace(/\//g, '\\')
+    .replace(/\\+/g, '\\')
+    .replace(/\\$/, '')
+  return normalized.toLowerCase()
+}
+
+function isPathInsideRootForHint(candidatePath: string, rootPath: string): boolean {
+  const normalizedCandidate = normalizeFsPathForCompare(candidatePath)
+  const normalizedRoot = normalizeFsPathForCompare(rootPath)
+  if (!normalizedCandidate || !normalizedRoot) {
+    return false
+  }
+  return (
+    normalizedCandidate === normalizedRoot ||
+    normalizedCandidate.startsWith(`${normalizedRoot}\\`)
+  )
+}
+
 function MusicMainSection({
   active,
   interruptByVideoPlayback,
@@ -371,6 +392,50 @@ function MusicMainSection({
     () => [...audioTranscodeTaskHistory].sort((left, right) => right.updatedAtMs - left.updatedAtMs).slice(0, 6),
     [audioTranscodeTaskHistory],
   )
+  const resolveAudioTranscodeErrorMessage = useCallback((rawMessage: string | null | undefined) => {
+    const message = typeof rawMessage === 'string' ? rawMessage.trim() : ''
+    if (!message) {
+      return null
+    }
+
+    if (message.includes('ffmpeg unavailable')) {
+      return t('ui.music.audioTranscodeCapabilityFfmpegUnavailable')
+    }
+
+    const encoderMissingMatched = message.match(/missing encoder\s+([^)]+)/i)
+    if (encoderMissingMatched) {
+      return t('ui.music.audioTranscodePresetUnavailable', {
+        encoder: encoderMissingMatched[1] ?? '',
+      })
+    }
+
+    const muxerMissingMatched = message.match(/missing muxer\s+([^)]+)/i)
+    if (muxerMissingMatched) {
+      return t('ui.music.audioTranscodePresetMuxerUnavailable', {
+        muxer: muxerMissingMatched[1] ?? '',
+      })
+    }
+
+    if (message.includes('no valid audio selected')) {
+      return t('ui.music.audioTranscodeNoTarget')
+    }
+
+    const outputOutsideAllowlistMatched = message.match(/^output directory outside allowlist:\s*(.+)$/i)
+    if (outputOutsideAllowlistMatched) {
+      return t('ui.music.audioTranscodeOutputDirectoryOutsideAllowlist', {
+        path: outputOutsideAllowlistMatched[1] ?? '',
+      })
+    }
+
+    const destinationExistsMatched = message.match(/^destination already exists:\s*(.+)$/i)
+    if (destinationExistsMatched) {
+      return t('ui.music.audioTranscodeOutputFileExists', {
+        path: destinationExistsMatched[1] ?? '',
+      })
+    }
+
+    return message
+  }, [t])
   const resolveAudioTranscodeCapabilityBlockReason = useCallback((preset: StartAudioTranscodeTaskRequestDto['preset']) => {
     if (audioTranscodeCapabilitiesLoading) {
       return t('ui.music.audioTranscodeCapabilityLoading')
@@ -386,6 +451,11 @@ function MusicMainSection({
 
     const presetCapability = capabilities.presets[preset]
     if (!presetCapability.available) {
+      if (presetCapability.reason === 'muxer_unavailable') {
+        return t('ui.music.audioTranscodePresetMuxerUnavailable', {
+          muxer: presetCapability.required_muxer,
+        })
+      }
       return t('ui.music.audioTranscodePresetUnavailable', {
         encoder: presetCapability.required_encoder,
       })
@@ -395,6 +465,27 @@ function MusicMainSection({
     }
     return null
   }, [audioTranscodeCapabilities, audioTranscodeCapabilitiesLoading, t])
+  const audioTranscodeOutputPolicyHint = useMemo(() => {
+    const capabilities = audioTranscodeCapabilities
+    if (!capabilities) {
+      return null
+    }
+
+    const outputDir = audioTranscodeOutputDir.trim()
+    if (!outputDir) {
+      return t('ui.music.audioTranscodeDefaultOutputDirectoryHint', {
+        path: capabilities.default_output_dir,
+      })
+    }
+
+    if (isPathInsideRootForHint(outputDir, capabilities.library_root_dir)) {
+      return null
+    }
+
+    return audioTranscodeAddOutputToMusicSources
+      ? t('ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint')
+      : t('ui.music.audioTranscodeOutputOutsideLibraryManualImportHint')
+  }, [audioTranscodeAddOutputToMusicSources, audioTranscodeCapabilities, audioTranscodeOutputDir, t])
   const audioTranscodeConfirmDisabledReason = useMemo(
     () => resolveAudioTranscodeCapabilityBlockReason(audioTranscodePreset),
     [audioTranscodePreset, resolveAudioTranscodeCapabilityBlockReason],
@@ -410,9 +501,10 @@ function MusicMainSection({
     const progress = resolveAudioTranscodeTaskProgress(task)
     setAudioTranscodeTaskStatus(task.status)
     setAudioTranscodeTaskProgress(progress)
-    setAudioTranscodeTaskMessage(task.message ?? null)
+    const failureDetail = resolveAudioTranscodeErrorMessage(task.error_detail ?? task.message)
+    setAudioTranscodeTaskMessage(task.status === 'failed' ? failureDetail : null)
     setAudioTranscodeOutputCount(task.output_files?.length ?? 0)
-  }, [resolveAudioTranscodeTaskProgress])
+  }, [resolveAudioTranscodeErrorMessage, resolveAudioTranscodeTaskProgress])
 
   const upsertAudioTranscodeTaskHistory = useCallback((task: AudioTranscodeTaskDto) => {
     const progress = resolveAudioTranscodeTaskProgress(task)
@@ -421,7 +513,9 @@ function MusicMainSection({
       status: task.status,
       progress,
       outputCount: task.output_files?.length ?? 0,
-      message: task.message ?? null,
+      message: task.status === 'failed'
+        ? resolveAudioTranscodeErrorMessage(task.error_detail ?? task.message)
+        : null,
       updatedAtMs: task.updated_at_ms,
     }
 
@@ -429,7 +523,7 @@ function MusicMainSection({
       const deduped = previous.filter((item) => item.taskId !== task.task_id)
       return [nextItem, ...deduped].slice(0, 16)
     })
-  }, [resolveAudioTranscodeTaskProgress])
+  }, [resolveAudioTranscodeErrorMessage, resolveAudioTranscodeTaskProgress])
 
   const clearAudioTranscodePollTimer = useCallback(() => {
     if (audioTranscodePollTimerRef.current != null) {
@@ -1232,9 +1326,15 @@ function MusicMainSection({
     } catch (error) {
       const reason = error instanceof Error && error.message ? error.message : String(error)
       setAudioTranscodeTaskStatus('failed')
-      setAudioTranscodeTaskMessage(reason)
+      setAudioTranscodeTaskMessage(resolveAudioTranscodeErrorMessage(reason))
     }
-  }, [applyAudioTranscodeTaskSnapshot, resolveAudioTranscodeCapabilityBlockReason, t, upsertAudioTranscodeTaskHistory])
+  }, [
+    applyAudioTranscodeTaskSnapshot,
+    resolveAudioTranscodeCapabilityBlockReason,
+    resolveAudioTranscodeErrorMessage,
+    t,
+    upsertAudioTranscodeTaskHistory,
+  ])
 
   const handleAudioTranscodeConfirm = async () => {
     const targetAudioIds = resolveAudioTranscodeTargetIds()
@@ -1585,6 +1685,7 @@ function MusicMainSection({
       capabilitiesLoading={audioTranscodeCapabilitiesLoading}
       capabilities={audioTranscodeCapabilities?.presets ?? null}
       confirmDisabledReason={audioTranscodeConfirmDisabledReason}
+      outputPolicyHint={audioTranscodeOutputPolicyHint}
       taskStatus={audioTranscodeTaskStatus}
       taskProgress={audioTranscodeTaskProgress}
       taskMessage={audioTranscodeTaskMessage}

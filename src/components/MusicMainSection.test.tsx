@@ -708,13 +708,15 @@ describe("MusicMainSection", () => {
       enabled: false,
       ffmpeg_available: false,
       ffprobe_available: false,
+      library_root_dir: "C:/media/library",
+      default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
       presets: {
-        flac: { available: false, required_encoder: "flac", reason: "ffmpeg_unavailable" },
-        alac: { available: false, required_encoder: "alac", reason: "ffmpeg_unavailable" },
-        wav: { available: false, required_encoder: "pcm_s16le", reason: "ffmpeg_unavailable" },
-        opus: { available: false, required_encoder: "libopus", reason: "ffmpeg_unavailable" },
-        aac: { available: false, required_encoder: "aac", reason: "ffmpeg_unavailable" },
-        mp3: { available: false, required_encoder: "libmp3lame", reason: "ffmpeg_unavailable" },
+        flac: { available: false, required_encoder: "flac", required_muxer: "flac", reason: "ffmpeg_unavailable" },
+        alac: { available: false, required_encoder: "alac", required_muxer: "ipod/mp4", reason: "ffmpeg_unavailable" },
+        wav: { available: false, required_encoder: "pcm_s16le", required_muxer: "wav", reason: "ffmpeg_unavailable" },
+        opus: { available: false, required_encoder: "libopus", required_muxer: "opus", reason: "ffmpeg_unavailable" },
+        aac: { available: false, required_encoder: "aac", required_muxer: "ipod/mp4", reason: "ffmpeg_unavailable" },
+        mp3: { available: false, required_encoder: "libmp3lame", required_muxer: "mp3", reason: "ffmpeg_unavailable" },
       },
       checked_at_ms: Date.now(),
     });
@@ -742,6 +744,87 @@ describe("MusicMainSection", () => {
 
     expect(screen.getByRole("button", { name: "开始" })).toBeDisabled();
     expect(startAudioTranscodeTask).not.toHaveBeenCalled();
+  });
+
+  it("转码面板应展示默认输出目录提示", async () => {
+    const readAudioTranscodeCapabilities = vi.fn().mockResolvedValue({
+      enabled: true,
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      library_root_dir: "C:/media/library",
+      default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
+      presets: {
+        flac: { available: true, required_encoder: "flac", required_muxer: "flac", reason: null },
+        alac: { available: true, required_encoder: "alac", required_muxer: "ipod/mp4", reason: null },
+        wav: { available: true, required_encoder: "pcm_s16le", required_muxer: "wav", reason: null },
+        opus: { available: true, required_encoder: "libopus", required_muxer: "opus", reason: null },
+        aac: { available: true, required_encoder: "aac", required_muxer: "ipod/mp4", reason: null },
+        mp3: { available: true, required_encoder: "libmp3lame", required_muxer: "mp3", reason: null },
+      },
+      checked_at_ms: Date.now(),
+    });
+
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      readAudioTranscodeCapabilities,
+      startAudioTranscodeTask: vi.fn(),
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("默认输出目录：C:/media/library/.mediaplayerx/transcoded"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("转码能力缺少封装器时应展示 muxer 缺失提示", async () => {
+    const readAudioTranscodeCapabilities = vi.fn().mockResolvedValue({
+      enabled: false,
+      ffmpeg_available: true,
+      ffprobe_available: true,
+      library_root_dir: "C:/media/library",
+      default_output_dir: "C:/media/library/.mediaplayerx/transcoded",
+      presets: {
+        flac: { available: false, required_encoder: "flac", required_muxer: "flac", reason: "muxer_unavailable" },
+        alac: { available: false, required_encoder: "alac", required_muxer: "ipod/mp4", reason: "muxer_unavailable" },
+        wav: { available: false, required_encoder: "pcm_s16le", required_muxer: "wav", reason: "muxer_unavailable" },
+        opus: { available: false, required_encoder: "libopus", required_muxer: "opus", reason: "muxer_unavailable" },
+        aac: { available: false, required_encoder: "aac", required_muxer: "ipod/mp4", reason: "muxer_unavailable" },
+        mp3: { available: false, required_encoder: "libmp3lame", required_muxer: "mp3", reason: "muxer_unavailable" },
+      },
+      checked_at_ms: Date.now(),
+    });
+
+    (window as Window & { mediaPlayerBackend?: unknown }).mediaPlayerBackend = {
+      readAudioTranscodeCapabilities,
+      startAudioTranscodeTask: vi.fn(),
+    } as unknown as NonNullable<Window["mediaPlayerBackend"]>;
+
+    renderMusicMainSection({
+      manageMode: true,
+      canManageMoveNodes: true,
+      activeSelectionScope: "sidebar",
+      sidebarSelectedCount: 1,
+      manageSelectedAudioIds: ["track-1"],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "TC" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText("当前预设不可用：缺少封装器 flac").length,
+      ).toBeGreaterThan(0);
+    });
+    expect(screen.getByRole("button", { name: "开始" })).toBeDisabled();
   });
 
   it("单曲循环在播放结束后会从头继续播放", () => {
