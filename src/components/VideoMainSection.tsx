@@ -1,11 +1,9 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
-  type KeyboardEvent,
 } from "react";
 
 import { MainUiIcon } from "./MainUiIcon";
@@ -17,6 +15,10 @@ import SubtitleOverlay from "./subtitles/SubtitleOverlay";
 import { ToolbarTitleMarquee } from "./ToolbarTitleMarquee";
 import { VideoControlIcon } from "./VideoControlIcon";
 import { useMediaPreloadWindow } from "./useMediaPreloadWindow";
+import {
+  useVideoNodeBrowseController,
+  type VideoNodeBrowseItem,
+} from "./useVideoNodeBrowseController";
 import { useVideoSeekDraft } from "./useVideoSeekDraft";
 import { useI18n } from "../i18n/useI18n";
 import type { VideoItem } from "../types";
@@ -30,6 +32,11 @@ import type {
 import { clamp, formatSeconds } from "../utils/ui";
 
 type VideoPopoverKey = "volume" | "subtitle" | "speed" | "fit" | "playlist";
+
+type VideoNodeBrowseGridItem = VideoNodeBrowseItem & {
+  label: string;
+  coverImageUrl: string | null;
+};
 
 interface VideoMainSectionProps {
   manageMode: boolean;
@@ -45,12 +52,7 @@ interface VideoMainSectionProps {
   canManageAddToPlaylist?: boolean;
   nodeBrowseMode?: boolean;
   nodeBrowseLabel?: string;
-  nodeBrowseItems?: Array<{
-    nodeId: string;
-    videoId?: string;
-    label: string;
-    coverImageUrl: string | null;
-  }>;
+  nodeBrowseItems?: VideoNodeBrowseGridItem[];
   nodeBrowsePageStart?: number;
   nodeBrowsePageSize?: number;
   thumbnailColumns?: number;
@@ -550,165 +552,33 @@ function VideoMainSection({
     };
   }, [autoSubtitleActive, subtitleTrackUrl, subtitleVisible, videoSourceUrl]);
 
-  const [openScalePopover, setOpenScalePopover] = useState(false);
-  const [scaleDraftValue, setScaleDraftValue] = useState(
-    Math.max(1, Math.round(displayThumbnailScaleLevel)),
-  );
-  const scalePopoverHideTimerRef = useRef<number | null>(null);
   const autoSavedCoverVideoIdSetRef = useRef<Set<string>>(new Set());
-
-  const effectiveNodeBrowsePageSize = Math.max(1, Math.floor(nodeBrowsePageSize));
-  const effectiveNodeBrowsePageStart = Math.max(0, Math.floor(nodeBrowsePageStart));
-  const pagedNodeBrowseItems = useMemo(
-    () =>
-      nodeBrowseMode
-        ? nodeBrowseItems.slice(
-            effectiveNodeBrowsePageStart,
-            effectiveNodeBrowsePageStart + effectiveNodeBrowsePageSize,
-          )
-        : [],
-    [
-      effectiveNodeBrowsePageSize,
-      effectiveNodeBrowsePageStart,
-      nodeBrowseItems,
-      nodeBrowseMode,
-    ],
-  );
-
-  const [focusedBrowseIndex, setFocusedBrowseIndex] = useState(0);
-  const browseCardButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const nodeBrowseGridRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setScaleDraftValue(Math.max(1, Math.round(displayThumbnailScaleLevel)));
-  }, [displayThumbnailScaleLevel]);
-
-  const clearScalePopoverHideTimer = useCallback(() => {
-    if (scalePopoverHideTimerRef.current == null) {
-      return;
-    }
-    window.clearTimeout(scalePopoverHideTimerRef.current);
-    scalePopoverHideTimerRef.current = null;
-  }, []);
-
-  const openScalePopoverByHover = useCallback(() => {
-    clearScalePopoverHideTimer();
-    setOpenScalePopover(true);
-  }, [clearScalePopoverHideTimer]);
-
-  const closeScalePopoverByHover = useCallback(() => {
-    if (popoverDebugPinned) {
-      return;
-    }
-    clearScalePopoverHideTimer();
-    scalePopoverHideTimerRef.current = window.setTimeout(() => {
-      setOpenScalePopover(false);
-      scalePopoverHideTimerRef.current = null;
-    }, 140);
-  }, [clearScalePopoverHideTimer, popoverDebugPinned]);
-
-  const effectiveOpenScalePopover = popoverDebugPinned || openScalePopover;
-
-  useEffect(() => {
-    return () => {
-      clearScalePopoverHideTimer();
-    };
-  }, [clearScalePopoverHideTimer]);
-
-  useEffect(() => {
-    if (pagedNodeBrowseItems.length === 0) {
-      setFocusedBrowseIndex(0);
-      return;
-    }
-    setFocusedBrowseIndex((previous) =>
-      Math.max(0, Math.min(pagedNodeBrowseItems.length - 1, previous)),
-    );
-  }, [pagedNodeBrowseItems.length]);
-
-  useEffect(() => {
-    if (!onGridElementChange) {
-      return;
-    }
-
-    if (!nodeBrowseMode) {
-      onGridElementChange(null);
-      return;
-    }
-
-    onGridElementChange(nodeBrowseGridRef.current);
-    return () => {
-      onGridElementChange(null);
-    };
-  }, [nodeBrowseMode, onGridElementChange]);
-
-  const handlePreviewNodeBrowseItem = useCallback(
-    (item: { nodeId: string; videoId?: string }) => {
-      onPreviewNodeBrowseItem?.(item.nodeId, item.videoId);
-    },
-    [onPreviewNodeBrowseItem],
-  );
-
-  const handleActivateNodeBrowseItem = useCallback(
-    (item: { nodeId: string; videoId?: string }) => {
-      onActivateNodeBrowseItem?.(item.nodeId, item.videoId);
-    },
-    [onActivateNodeBrowseItem],
-  );
-
-  const handleNodeBrowseGridKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      if (!nodeBrowseMode || pagedNodeBrowseItems.length === 0) {
-        return;
-      }
-
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        const target = pagedNodeBrowseItems[focusedBrowseIndex];
-        if (target) {
-          handleActivateNodeBrowseItem(target);
-        }
-        return;
-      }
-
-      const currentIndex = focusedBrowseIndex;
-      let nextIndex = currentIndex;
-      const stepByRow = Math.max(1, thumbnailColumns);
-      if (event.key === "ArrowRight") {
-        nextIndex = Math.min(pagedNodeBrowseItems.length - 1, currentIndex + 1);
-      } else if (event.key === "ArrowLeft") {
-        nextIndex = Math.max(0, currentIndex - 1);
-      } else if (event.key === "ArrowDown") {
-        nextIndex = Math.min(
-          pagedNodeBrowseItems.length - 1,
-          currentIndex + stepByRow,
-        );
-      } else if (event.key === "ArrowUp") {
-        nextIndex = Math.max(0, currentIndex - stepByRow);
-      } else {
-        return;
-      }
-
-      event.preventDefault();
-      if (nextIndex === currentIndex) {
-        return;
-      }
-      setFocusedBrowseIndex(nextIndex);
-      const nextItem = pagedNodeBrowseItems[nextIndex];
-      if (nextItem) {
-        handlePreviewNodeBrowseItem(nextItem);
-      }
-      const targetButton = browseCardButtonRefs.current[nextIndex];
-      targetButton?.focus();
-    },
-    [
-      focusedBrowseIndex,
-      handleActivateNodeBrowseItem,
-      handlePreviewNodeBrowseItem,
-      nodeBrowseMode,
-      pagedNodeBrowseItems,
-      thumbnailColumns,
-    ],
-  );
+  const {
+    scaleDraftValue,
+    setScaleDraftValue,
+    effectiveOpenScalePopover,
+    openScalePopoverByHover,
+    closeScalePopoverByHover,
+    focusedBrowseIndex,
+    setFocusedBrowseIndex,
+    pagedNodeBrowseItems,
+    browseCardButtonRefs,
+    nodeBrowseGridRef,
+    handlePreviewNodeBrowseItem,
+    handleActivateNodeBrowseItem,
+    handleNodeBrowseGridKeyDown,
+  } = useVideoNodeBrowseController({
+    nodeBrowseMode,
+    nodeBrowseItems,
+    nodeBrowsePageStart,
+    nodeBrowsePageSize,
+    thumbnailColumns,
+    displayThumbnailScaleLevel,
+    popoverDebugPinned,
+    onGridElementChange,
+    onPreviewNodeBrowseItem,
+    onActivateNodeBrowseItem,
+  });
 
   useEffect(() => {
     if (

@@ -188,20 +188,10 @@ import {
 import { FileSystemLibraryHandlers } from "./facade/FileSystemLibraryHandlers";
 import { FileSystemManagementHandlers } from "./facade/FileSystemManagementHandlers";
 import { FileSystemSystemHandlers } from "./facade/FileSystemSystemHandlers";
-
-export interface FileSystemMediaReadServiceOptions {
-  rootDir: string;
-  databaseFilePath?: string;
-  thumbnailCacheRootDir?: string;
-  taskResourceGovernor?: TaskResourceGovernor;
-  onLibraryChanged?: LibraryChangedListener;
-  onArchiveLoadStatusChanged?: ArchiveLoadStatusListener;
-}
-
-type FileSystemEventMap = {
-  libraryChanged: LibraryChangedEventPayload;
-  archiveLoadStatusChanged: ReadArchiveLoadStatusResponseDto;
-} & Record<string, unknown>;
+import type {
+  FileSystemEventMap,
+  FileSystemMediaReadServiceOptions,
+} from "./facade/fileSystemMediaReadService.types";
 
 export class FileSystemMediaReadService {
   private static readonly SYNC_PRUNE_ENTRY_THRESHOLD = 256;
