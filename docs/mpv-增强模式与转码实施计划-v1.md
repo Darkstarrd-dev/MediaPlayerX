@@ -427,8 +427,8 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 目标：发布可维护、可排障版本。
 
 - [x] 崩溃恢复：mpv 异常退出自动拉起（次数限制 + 熔断 + 诊断日志）。
-- [ ] 性能：事件节流、UI 渲染负载控制、转码并发默认值与资源治理联动。
-- [ ] 文档与发布说明：已知限制、回退路径、FAQ、许可证与源码提供方式。
+- [x] 性能：事件节流、UI 渲染负载控制、转码并发默认值与资源治理联动。
+- [x] 文档与发布说明：已知限制、回退路径、FAQ、许可证与源码提供方式。
 - [ ] 全量回归与长稳测试。
 
 验收：
@@ -441,6 +441,12 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - `AudioEngineController` 新增异常退出滑动窗口计数与熔断保护（60s 窗口内超过阈值后回退兼容模式并提示冷却时间）。
   - 非熔断场景下，mpv 异常退出将自动重建引擎并重应用 Gapless/ReplayGain/设备/独占配置。
   - 新增 `audioEngineController.test.ts` 覆盖“异常退出自动拉起”与“连续崩溃触发熔断”场景。
+- 2026-02-28：已完成 P3 性能硬化首轮：
+  - `AudioEngineController` 为 playback status / analysis frame 增加最小间隔缓存，降低高频 IPC 轮询下的主进程压力。
+  - 音频转码任务默认并发改为配置化（默认 1，最高 2），并接入 CPU token 治理路径，避免并发转码抢占前台交互资源。
+  - 新增/增强测试覆盖：`managementAudioTranscodeService.test.ts`（并发上限）、`audioEngineController.test.ts`（缓存命中）。
+- 2026-02-28：已补充发布说明文档：
+  - 新增 `audio-enhanced-mode-release-notes-v1.md`，覆盖已知限制、回退路径、FAQ 与许可证/源码获取说明。
 
 ---
 
