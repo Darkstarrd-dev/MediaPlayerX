@@ -51,6 +51,7 @@ export function useAppSettingsStore() {
       videoCollapsedFolderNodeIds: state.videoCollapsedFolderNodeIds,
       musicCollapsedFolderNodeIds: state.musicCollapsedFolderNodeIds,
       sidebarLabelDisplayMode: state.sidebarLabelDisplayMode,
+      sidebarTreeDisplayMode: state.sidebarTreeDisplayMode,
       uiLocale: state.uiLocale,
       themeId: state.themeId,
       styleId: state.styleId,

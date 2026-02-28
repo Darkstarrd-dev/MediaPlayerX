@@ -10,7 +10,11 @@ import {
 import { MainUiIcon } from "./MainUiIcon";
 import { SidebarPanelRow } from "./SidebarPanelRow";
 import { useI18n } from "../i18n/useI18n";
-import type { BrowserMode, SidebarNode } from "../types";
+import type {
+  BrowserMode,
+  SidebarNode,
+  SidebarTreeDisplayMode,
+} from "../types";
 import {
   flattenVisibleSidebarRows,
   isSameNodeIdSet,
@@ -80,7 +84,9 @@ interface SidebarPanelProps {
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
   sidebarLabelDisplayMode?: SidebarLabelDisplayMode;
+  sidebarTreeDisplayMode?: SidebarTreeDisplayMode;
   onToggleSidebarLabelDisplayMode?: () => void;
+  onToggleSidebarTreeDisplayMode?: () => void;
   titleCollapseEnabled?: boolean;
   videoNodeBrowseMode?: boolean;
 }
@@ -117,7 +123,6 @@ function SidebarPanel({
   onSelectVideo,
   onSelectVideoAndPlay,
   onSelectAudio,
-  onCollapseSidebar,
   onSetCurrentRoot,
   onGoToFromSearchMode,
   onResetRoot,
@@ -128,8 +133,9 @@ function SidebarPanel({
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
   sidebarLabelDisplayMode,
+  sidebarTreeDisplayMode,
   onToggleSidebarLabelDisplayMode,
-  titleCollapseEnabled = true,
+  onToggleSidebarTreeDisplayMode,
   videoNodeBrowseMode = false,
 }: SidebarPanelProps) {
   const { t } = useI18n();
@@ -166,6 +172,10 @@ function SidebarPanel({
     useState<SidebarLabelDisplayMode>("full");
   const effectiveSidebarLabelDisplayMode =
     sidebarLabelDisplayMode ?? localSidebarLabelDisplayMode;
+  const [localSidebarTreeDisplayMode, setLocalSidebarTreeDisplayMode] =
+    useState<SidebarTreeDisplayMode>("direct");
+  const effectiveSidebarTreeDisplayMode =
+    sidebarTreeDisplayMode ?? localSidebarTreeDisplayMode;
   const [overflowingNodeIds, setOverflowingNodeIds] = useState<Set<string>>(
     new Set(),
   );
@@ -476,6 +486,7 @@ function SidebarPanel({
         mode,
         collapsedImageFolderNodeIds,
         rows,
+        effectiveSidebarTreeDisplayMode,
       );
       const targetIndex = rows.findIndex((row) => row.node.id === targetNodeId);
       if (targetIndex < 0) {
@@ -502,6 +513,7 @@ function SidebarPanel({
     [
       activeTreeNodes,
       collapsedImageFolderNodeIds,
+      effectiveSidebarTreeDisplayMode,
       mode,
       sidebarFontSize,
       sidebarVerticalGap,
@@ -647,6 +659,7 @@ function SidebarPanel({
       mode,
       collapsedImageFolderNodeIds,
       visibleRows,
+      effectiveSidebarTreeDisplayMode,
     );
     if (visibleRows.some((row) => row.node.id === selectedSidebarNodeId)) {
       return;
@@ -675,6 +688,7 @@ function SidebarPanel({
   }, [
     activeTreeNodes,
     collapsedImageFolderNodeIds,
+    effectiveSidebarTreeDisplayMode,
     mode,
     selectedSidebarNodeId,
     updateCollapsedImageFolderNodeIds,
@@ -805,6 +819,14 @@ function SidebarPanel({
     : t("a11y.sidebar.collapseImageParents");
   const previousImageParentLabel = t("a11y.sidebar.previousImageParent");
   const nextImageParentLabel = t("a11y.sidebar.nextImageParent");
+  const sidebarTreeDisplayToggleLabel =
+    effectiveSidebarTreeDisplayMode === "direct"
+      ? t("a11y.sidebar.switchToHierarchyTree")
+      : t("a11y.sidebar.switchToDirectTree");
+  const sidebarTreeDisplayToggleTip =
+    effectiveSidebarTreeDisplayMode === "direct"
+      ? t("tip.sidebar.switchTreeDisplayModeToHierarchy")
+      : t("tip.sidebar.switchTreeDisplayModeToDirect");
   const parentJumpModeEnabled =
     mode === "image" || mode === "video" || mode === "music";
   const allTargetParentsCollapsed =
@@ -834,9 +856,15 @@ function SidebarPanel({
       mode,
       collapsedImageFolderNodeIds,
       rows,
+      effectiveSidebarTreeDisplayMode,
     );
     return rows;
-  }, [activeTreeNodes, collapsedImageFolderNodeIds, mode]);
+  }, [
+    activeTreeNodes,
+    collapsedImageFolderNodeIds,
+    effectiveSidebarTreeDisplayMode,
+    mode,
+  ]);
 
   const estimatedRowContentHeight = useMemo(
     () => Math.max(24, Math.round(sidebarFontSize + 14)),
@@ -1080,8 +1108,18 @@ function SidebarPanel({
           className="sidebar-title-btn"
           data-slot="fg-sidebar-toolbar-title"
           type="button"
-          disabled={!titleCollapseEnabled}
-          onClick={titleCollapseEnabled ? onCollapseSidebar : undefined}
+          aria-label={sidebarTreeDisplayToggleLabel}
+          data-tooltip-label={sidebarTreeDisplayToggleTip}
+          onClick={() => {
+            if (onToggleSidebarTreeDisplayMode) {
+              onToggleSidebarTreeDisplayMode();
+              return;
+            }
+
+            setLocalSidebarTreeDisplayMode((previous) =>
+              previous === "direct" ? "hierarchy" : "direct",
+            );
+          }}
         >
           {currentRootLabel ?? t("ui.sidebar.structure")}
         </button>
@@ -1261,10 +1299,11 @@ function SidebarPanel({
               }}
             />
           ) : null}
-          {rowsForRender.map(({ node }) => (
+          {rowsForRender.map(({ node, depth }) => (
             <SidebarPanelRow
               key={node.id}
               node={node}
+              depth={depth}
               mode={mode}
               selectedSidebarNodeId={selectedSidebarNodeId}
               hoveredNodeId={hoveredNodeId}
@@ -1283,6 +1322,8 @@ function SidebarPanel({
               checkedNodes={checkedNodes}
               sidebarFontSize={sidebarFontSize}
               sidebarCountFontSize={sidebarCountFontSize}
+              sidebarIndentStep={sidebarIndentStep}
+              sidebarTreeDisplayMode={effectiveSidebarTreeDisplayMode}
               audioPlaylistIds={audioPlaylistIds}
               searchResultReadonly={searchResultReadonly}
               videoNodeBrowseMode={videoNodeBrowseMode}

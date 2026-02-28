@@ -359,15 +359,19 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.music.audioTranscodeTitle": "Audio Transcode",
   "ui.music.audioTranscodePreset": "Preset",
   "ui.music.audioTranscodeOutputDirectory": "Output directory",
-  "ui.music.audioTranscodeOutputDirectoryPlaceholder": "Empty = default library transcode directory",
+  "ui.music.audioTranscodeOutputDirectoryPlaceholder":
+    "Empty = default library transcode directory",
   "ui.music.audioTranscodePickOutputDirectory": "Choose directory",
   "ui.music.audioTranscodePickingOutputDirectory": "Choosing...",
   "ui.music.audioTranscodeOverwrite": "Overwrite existing files",
   "ui.music.audioTranscodeCopyMetadata": "Copy metadata",
-  "ui.music.audioTranscodeAddOutputToSources": "Auto add outputs to music sources",
-  "ui.music.audioTranscodeTaskSummary": "Transcode {{status}} {{progress}}% | Outputs {{count}}",
+  "ui.music.audioTranscodeAddOutputToSources":
+    "Auto add outputs to music sources",
+  "ui.music.audioTranscodeTaskSummary":
+    "Transcode {{status}} {{progress}}% | Outputs {{count}}",
   "ui.music.audioTranscodeHistoryTitle": "Recent tasks",
-  "ui.music.audioTranscodeHistoryItem": "Task {{id}} | {{status}} {{progress}}% | Outputs {{count}}",
+  "ui.music.audioTranscodeHistoryItem":
+    "Task {{id}} | {{status}} {{progress}}% | Outputs {{count}}",
   "ui.music.audioTranscodeHistoryShowAll": "Show all",
   "ui.music.audioTranscodeHistoryShowFailedOnly": "Failed only",
   "ui.music.audioTranscodeRetryFailedTasks": "Retry failed ({{count}})",
@@ -381,24 +385,41 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.music.audioTranscodeStatus.cancelled": "cancelled",
   "ui.music.audioTranscodeStatus.failed": "failed",
   "ui.music.audioTranscodeNoTarget": "No audio targets found for transcode",
-  "ui.music.audioTranscodeBackendUnavailable": "Backend does not provide audio transcode API",
+  "ui.music.audioTranscodeBackendUnavailable":
+    "Backend does not provide audio transcode API",
   "ui.music.audioTranscodeMissingTaskId": "Backend did not return task ID",
-  "ui.music.audioTranscodeRetryRequestMissing": "Cannot retry: original task request payload is missing",
-  "ui.music.audioTranscodeRetryFailedTaskTargetsMissing": "Cannot retry failed tasks: retryable audio IDs are missing",
-  "ui.music.audioTranscodePickOutputDirectoryTitle": "Choose transcode output directory",
-  "ui.music.audioTranscodePickOutputDirectoryUnsupported": "Directory picker is not supported by current backend",
-  "ui.music.audioTranscodePickOutputDirectoryFailed": "Failed to choose output directory: {{message}}",
-  "ui.music.audioTranscodeCapabilityLoading": "Reading transcode capabilities...",
-  "ui.music.audioTranscodeCapabilityFfmpegUnavailable": "ffmpeg is unavailable in current runtime, audio transcode is disabled",
-  "ui.music.audioTranscodeCapabilityNoPresetAvailable": "No supported audio encoder is detected in current ffmpeg build",
-  "ui.music.audioTranscodePresetUnavailable": "Preset unavailable: missing encoder {{encoder}}",
-  "ui.music.audioTranscodePresetMuxerUnavailable": "Preset unavailable: missing muxer {{muxer}}",
-  "ui.music.audioTranscodeCapabilityReadFailed": "Failed to read transcode capabilities: {{message}}",
-  "ui.music.audioTranscodeDefaultOutputDirectoryHint": "Default output directory: {{path}}",
-  "ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint": "Output may be outside library root. It will be auto-added to music import sources after completion.",
-  "ui.music.audioTranscodeOutputOutsideLibraryManualImportHint": "Output may be outside library root. If auto-add is off, files will not appear in library.",
-  "ui.music.audioTranscodeOutputDirectoryOutsideAllowlist": "Output directory is outside allowlist: {{path}}",
-  "ui.music.audioTranscodeOutputFileExists": "Output file already exists: {{path}}",
+  "ui.music.audioTranscodeRetryRequestMissing":
+    "Cannot retry: original task request payload is missing",
+  "ui.music.audioTranscodeRetryFailedTaskTargetsMissing":
+    "Cannot retry failed tasks: retryable audio IDs are missing",
+  "ui.music.audioTranscodePickOutputDirectoryTitle":
+    "Choose transcode output directory",
+  "ui.music.audioTranscodePickOutputDirectoryUnsupported":
+    "Directory picker is not supported by current backend",
+  "ui.music.audioTranscodePickOutputDirectoryFailed":
+    "Failed to choose output directory: {{message}}",
+  "ui.music.audioTranscodeCapabilityLoading":
+    "Reading transcode capabilities...",
+  "ui.music.audioTranscodeCapabilityFfmpegUnavailable":
+    "ffmpeg is unavailable in current runtime, audio transcode is disabled",
+  "ui.music.audioTranscodeCapabilityNoPresetAvailable":
+    "No supported audio encoder is detected in current ffmpeg build",
+  "ui.music.audioTranscodePresetUnavailable":
+    "Preset unavailable: missing encoder {{encoder}}",
+  "ui.music.audioTranscodePresetMuxerUnavailable":
+    "Preset unavailable: missing muxer {{muxer}}",
+  "ui.music.audioTranscodeCapabilityReadFailed":
+    "Failed to read transcode capabilities: {{message}}",
+  "ui.music.audioTranscodeDefaultOutputDirectoryHint":
+    "Default output directory: {{path}}",
+  "ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint":
+    "Output may be outside library root. It will be auto-added to music import sources after completion.",
+  "ui.music.audioTranscodeOutputOutsideLibraryManualImportHint":
+    "Output may be outside library root. If auto-add is off, files will not appear in library.",
+  "ui.music.audioTranscodeOutputDirectoryOutsideAllowlist":
+    "Output directory is outside allowlist: {{path}}",
+  "ui.music.audioTranscodeOutputFileExists":
+    "Output file already exists: {{path}}",
   "ui.music.visualizerInitErrorMarker":
     "Visualizer renderer initialization failed",
   "ui.music.runtimeCanvasNotReady":
@@ -656,6 +677,8 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "a11y.sidebar.expandImageParents": "Expand all image parent nodes",
   "a11y.sidebar.previousImageParent": "Previous image parent node",
   "a11y.sidebar.nextImageParent": "Next image parent node",
+  "a11y.sidebar.switchToHierarchyTree": "Switch to hierarchy tree",
+  "a11y.sidebar.switchToDirectTree": "Switch to direct-media tree",
   "a11y.sidebar.imageCount": "Image {{count}}",
   "a11y.sidebar.nodeCount": "Node {{count}}",
   "a11y.sidebar.musicTrackCount": "Track {{count}}",
@@ -696,6 +719,10 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "tip.sidebar.expandImageParents": "Expand all image parent nodes",
   "tip.sidebar.previousImageParent": "Jump to previous image parent node",
   "tip.sidebar.nextImageParent": "Jump to next image parent node",
+  "tip.sidebar.switchTreeDisplayModeToHierarchy":
+    "Switch to actual-path hierarchy view",
+  "tip.sidebar.switchTreeDisplayModeToDirect":
+    "Switch to direct-media parent-child view",
   "tip.sidebar.processingPending": "Normalization queued, preview unavailable",
   "tip.sidebar.processingRunning": "Normalizing, preview unavailable",
   "tip.image.switchToGridMode": "Switch to thumbnail mode",

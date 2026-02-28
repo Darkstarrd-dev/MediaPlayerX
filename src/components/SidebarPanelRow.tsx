@@ -6,7 +6,11 @@ import type {
   SetStateAction,
 } from "react";
 
-import type { BrowserMode, SidebarNode } from "../types";
+import type {
+  BrowserMode,
+  SidebarNode,
+  SidebarTreeDisplayMode,
+} from "../types";
 import type { TranslateFn } from "../i18n/context";
 import {
   canFolderCollapse,
@@ -20,6 +24,7 @@ import { useRandomSweepAnimation } from "./useRandomSweepAnimation";
 
 interface SidebarPanelRowProps {
   node: SidebarNode;
+  depth: number;
   mode: BrowserMode;
   selectedSidebarNodeId: string | null;
   hoveredNodeId: string | null;
@@ -36,6 +41,8 @@ interface SidebarPanelRowProps {
   checkedNodes: ReadonlySet<string>;
   sidebarFontSize: number;
   sidebarCountFontSize: number;
+  sidebarIndentStep: number;
+  sidebarTreeDisplayMode?: SidebarTreeDisplayMode;
   audioPlaylistIds: string[];
   searchResultReadonly: boolean;
   videoNodeBrowseMode?: boolean;
@@ -64,6 +71,7 @@ interface SidebarPanelRowProps {
 
 export function SidebarPanelRow({
   node,
+  depth,
   mode,
   selectedSidebarNodeId,
   hoveredNodeId,
@@ -80,6 +88,8 @@ export function SidebarPanelRow({
   checkedNodes,
   sidebarFontSize,
   sidebarCountFontSize,
+  sidebarIndentStep,
+  sidebarTreeDisplayMode = "direct",
   audioPlaylistIds,
   searchResultReadonly,
   videoNodeBrowseMode = false,
@@ -122,7 +132,12 @@ export function SidebarPanelRow({
     mode === "image" ? imageNodeLoadStateById[node.id] : undefined;
   const hasOwnImages =
     imageNodeType === "package" || imageNodeType === "directory";
-  const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType);
+  const imageFolderCollapsible = canFolderCollapse(
+    mode,
+    node,
+    imageNodeType,
+    sidebarTreeDisplayMode,
+  );
   const imageFolderCollapsed =
     imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
   const visibleImageCount = node.directImageCount ?? 0;
@@ -154,6 +169,10 @@ export function SidebarPanelRow({
     initialDelayRangeMs: [1000, 2600],
     repeatDelayRangeMs: [2200, 7800],
   });
+  const rowStyle: CSSProperties | undefined =
+    sidebarTreeDisplayMode === "hierarchy" && depth > 0
+      ? { paddingLeft: `${Math.max(0, depth * sidebarIndentStep)}px` }
+      : undefined;
 
   const applyMediaSelection = () => {
     if (mode === "image" && searchResultReadonly) {
@@ -187,6 +206,7 @@ export function SidebarPanelRow({
     <div
       data-sidebar-node-id={node.id}
       className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
+      style={rowStyle}
     >
       <span
         className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
@@ -313,8 +333,20 @@ export function SidebarPanelRow({
           >
             <span
               className={`sidebar-count ${hasOwnImages ? "sidebar-count-images" : "sidebar-count-packages"}`}
-              aria-label={mode === "image" ? imageCountLabel : t("a11y.sidebar.nodeCount", { count: directMediaChildCount })}
-              data-tooltip-label={mode === "image" ? imageCountLabel : t("a11y.sidebar.nodeCount", { count: directMediaChildCount })}
+              aria-label={
+                mode === "image"
+                  ? imageCountLabel
+                  : t("a11y.sidebar.nodeCount", {
+                      count: directMediaChildCount,
+                    })
+              }
+              data-tooltip-label={
+                mode === "image"
+                  ? imageCountLabel
+                  : t("a11y.sidebar.nodeCount", {
+                      count: directMediaChildCount,
+                    })
+              }
             >
               {mode === "image"
                 ? showProcessingCountPlaceholder

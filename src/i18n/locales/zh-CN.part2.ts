@@ -308,9 +308,11 @@ export const zhCnCatalogPart2 = {
   "ui.music.audioTranscodeOverwrite": "覆盖已有文件",
   "ui.music.audioTranscodeCopyMetadata": "复制元数据",
   "ui.music.audioTranscodeAddOutputToSources": "输出自动纳入音乐源",
-  "ui.music.audioTranscodeTaskSummary": "转码 {{status}} {{progress}}% | 输出 {{count}} 个",
+  "ui.music.audioTranscodeTaskSummary":
+    "转码 {{status}} {{progress}}% | 输出 {{count}} 个",
   "ui.music.audioTranscodeHistoryTitle": "最近任务",
-  "ui.music.audioTranscodeHistoryItem": "任务 {{id}} | {{status}} {{progress}}% | 输出 {{count}} 个",
+  "ui.music.audioTranscodeHistoryItem":
+    "任务 {{id}} | {{status}} {{progress}}% | 输出 {{count}} 个",
   "ui.music.audioTranscodeHistoryShowAll": "显示全部",
   "ui.music.audioTranscodeHistoryShowFailedOnly": "仅失败",
   "ui.music.audioTranscodeRetryFailedTasks": "重试失败项 ({{count}})",
@@ -326,21 +328,33 @@ export const zhCnCatalogPart2 = {
   "ui.music.audioTranscodeNoTarget": "未找到可转码的音频",
   "ui.music.audioTranscodeBackendUnavailable": "后端未提供音频转码接口",
   "ui.music.audioTranscodeMissingTaskId": "后端未返回任务 ID",
-  "ui.music.audioTranscodeRetryRequestMissing": "无法重试：未找到原任务请求参数",
-  "ui.music.audioTranscodeRetryFailedTaskTargetsMissing": "无法重试失败项：缺少可重试音频 ID",
+  "ui.music.audioTranscodeRetryRequestMissing":
+    "无法重试：未找到原任务请求参数",
+  "ui.music.audioTranscodeRetryFailedTaskTargetsMissing":
+    "无法重试失败项：缺少可重试音频 ID",
   "ui.music.audioTranscodePickOutputDirectoryTitle": "选择转码输出目录",
-  "ui.music.audioTranscodePickOutputDirectoryUnsupported": "当前后端不支持目录选择",
-  "ui.music.audioTranscodePickOutputDirectoryFailed": "选择输出目录失败：{{message}}",
+  "ui.music.audioTranscodePickOutputDirectoryUnsupported":
+    "当前后端不支持目录选择",
+  "ui.music.audioTranscodePickOutputDirectoryFailed":
+    "选择输出目录失败：{{message}}",
   "ui.music.audioTranscodeCapabilityLoading": "正在读取转码能力...",
-  "ui.music.audioTranscodeCapabilityFfmpegUnavailable": "当前环境缺少 ffmpeg，音频转码不可用",
-  "ui.music.audioTranscodeCapabilityNoPresetAvailable": "当前 ffmpeg 未检测到可用音频编码器",
-  "ui.music.audioTranscodePresetUnavailable": "当前预设不可用：缺少编码器 {{encoder}}",
-  "ui.music.audioTranscodePresetMuxerUnavailable": "当前预设不可用：缺少封装器 {{muxer}}",
-  "ui.music.audioTranscodeCapabilityReadFailed": "读取转码能力失败：{{message}}",
+  "ui.music.audioTranscodeCapabilityFfmpegUnavailable":
+    "当前环境缺少 ffmpeg，音频转码不可用",
+  "ui.music.audioTranscodeCapabilityNoPresetAvailable":
+    "当前 ffmpeg 未检测到可用音频编码器",
+  "ui.music.audioTranscodePresetUnavailable":
+    "当前预设不可用：缺少编码器 {{encoder}}",
+  "ui.music.audioTranscodePresetMuxerUnavailable":
+    "当前预设不可用：缺少封装器 {{muxer}}",
+  "ui.music.audioTranscodeCapabilityReadFailed":
+    "读取转码能力失败：{{message}}",
   "ui.music.audioTranscodeDefaultOutputDirectoryHint": "默认输出目录：{{path}}",
-  "ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint": "当前目录可能在媒体库外，任务完成后将自动加入音乐导入源。",
-  "ui.music.audioTranscodeOutputOutsideLibraryManualImportHint": "当前目录可能在媒体库外，若不自动入源则不会出现在音乐库中。",
-  "ui.music.audioTranscodeOutputDirectoryOutsideAllowlist": "输出目录不在允许范围：{{path}}",
+  "ui.music.audioTranscodeOutputOutsideLibraryAutoImportHint":
+    "当前目录可能在媒体库外，任务完成后将自动加入音乐导入源。",
+  "ui.music.audioTranscodeOutputOutsideLibraryManualImportHint":
+    "当前目录可能在媒体库外，若不自动入源则不会出现在音乐库中。",
+  "ui.music.audioTranscodeOutputDirectoryOutsideAllowlist":
+    "输出目录不在允许范围：{{path}}",
   "ui.music.audioTranscodeOutputFileExists": "目标文件已存在：{{path}}",
   "ui.music.visualizerInitErrorMarker": "可视化渲染器初始化失败",
   "ui.music.runtimeCanvasNotReady":
@@ -589,6 +603,8 @@ export const zhCnCatalogPart2 = {
   "a11y.sidebar.expandImageParents": "展开全部含图父级",
   "a11y.sidebar.previousImageParent": "上一个含图父级",
   "a11y.sidebar.nextImageParent": "下一个含图父级",
+  "a11y.sidebar.switchToHierarchyTree": "切换到层级目录",
+  "a11y.sidebar.switchToDirectTree": "切换到直属媒体目录",
   "a11y.sidebar.imageCount": "图 {{count}}",
   "a11y.sidebar.nodeCount": "节点 {{count}}",
   "a11y.sidebar.musicTrackCount": "曲 {{count}}",
@@ -629,6 +645,8 @@ export const zhCnCatalogPart2 = {
   "tip.sidebar.expandImageParents": "展开全部含图父级",
   "tip.sidebar.previousImageParent": "定位到上一个含图父级",
   "tip.sidebar.nextImageParent": "定位到下一个含图父级",
+  "tip.sidebar.switchTreeDisplayModeToHierarchy": "切换为按实际路径层级显示",
+  "tip.sidebar.switchTreeDisplayModeToDirect": "切换为直属媒体父子结构显示",
   "tip.sidebar.processingPending": "归一化排队中，暂不可预览",
   "tip.sidebar.processingRunning": "归一化处理中，暂不可预览",
   "tip.image.switchToGridMode": "切换到缩略图模式",

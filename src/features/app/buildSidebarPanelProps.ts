@@ -13,6 +13,7 @@ interface BuildSidebarPanelPropsParams {
   sidebarIndentStep: number;
   sidebarVerticalGap: number;
   sidebarLabelDisplayMode?: AppSettings["sidebarLabelDisplayMode"];
+  sidebarTreeDisplayMode?: AppSettings["sidebarTreeDisplayMode"];
   currentRootLabel: string | null;
   searchResultsMode: boolean;
   searchResultsLabel: string;
@@ -66,6 +67,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
   const adReviewResultsMode = params.adReviewResultsMode ?? false;
   const sidebarResultMode = params.searchResultsMode || adReviewResultsMode;
   const sidebarLabelDisplayMode = params.sidebarLabelDisplayMode ?? "full";
+  const sidebarTreeDisplayMode = params.sidebarTreeDisplayMode ?? "direct";
   const metadataManageSelectionMode =
     params.metadataManageSelectionMode ?? "multiple";
 
@@ -79,6 +81,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     sidebarIndentStep: params.sidebarIndentStep,
     sidebarVerticalGap: params.sidebarVerticalGap,
     sidebarLabelDisplayMode,
+    sidebarTreeDisplayMode,
     currentRootLabel: params.searchResultsMode
       ? params.searchResultsLabel
       : params.currentRootLabel,
@@ -129,10 +132,13 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     },
     onSelectPackage: params.setSelectedPackageId,
     onSelectVideo: (videoId: string) => {
-      params.selectVideoFromBrowser(videoId, { queueSource: 'sidebar' });
+      params.selectVideoFromBrowser(videoId, { queueSource: "sidebar" });
     },
     onSelectVideoAndPlay: (videoId: string) => {
-      params.selectVideoFromBrowser(videoId, { play: true, queueSource: 'sidebar' });
+      params.selectVideoFromBrowser(videoId, {
+        play: true,
+        queueSource: "sidebar",
+      });
     },
     onSelectAudio: params.setSelectedAudioId,
     onCollapseSidebar: params.collapseSidebar,
@@ -140,6 +146,12 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
       params.updateSettings({
         sidebarLabelDisplayMode:
           sidebarLabelDisplayMode === "full" ? "leaf" : "full",
+      });
+    },
+    onToggleSidebarTreeDisplayMode: () => {
+      params.updateSettings({
+        sidebarTreeDisplayMode:
+          sidebarTreeDisplayMode === "direct" ? "hierarchy" : "direct",
       });
     },
     titleCollapseEnabled: params.titleCollapseEnabled ?? true,

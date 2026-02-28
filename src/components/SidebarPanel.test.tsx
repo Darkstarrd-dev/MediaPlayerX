@@ -567,7 +567,9 @@ describe("SidebarPanel music interactions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Album A" }));
 
     expect(onToggleManageNode).not.toHaveBeenCalled();
-    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith("folder:X盘/Album A");
+    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith(
+      "folder:X盘/Album A",
+    );
     expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/Album A");
     expect(onSelectAudio).toHaveBeenCalledWith("audio-1");
   });
@@ -595,10 +597,7 @@ describe("SidebarPanel music interactions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Album A" }), {
       shiftKey: true,
     });
-    expect(onToggleManageNode).toHaveBeenCalledWith(
-      "folder:X盘/Album A",
-      true,
-    );
+    expect(onToggleManageNode).toHaveBeenCalledWith("folder:X盘/Album A", true);
   });
 
   it("管理模式下侧栏头部显示清空选择按钮并仅清空侧栏勾选", () => {
@@ -693,7 +692,9 @@ describe("SidebarPanel music interactions", () => {
     fireEvent.doubleClick(screen.getByRole("button", { name: "X盘/Music" }));
 
     expect(screen.queryByRole("button", { name: "Album A" })).toBeNull();
-    expect(screen.getByRole("button", { name: "X盘/Music/Sub" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "X盘/Music/Sub" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Album B" })).toBeInTheDocument();
   });
 });
@@ -711,7 +712,10 @@ describe("SidebarPanel image collapse interactions", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Vol.1" }));
 
-    expect(onToggleManageNode).toHaveBeenCalledWith("package:图库/Vol.1", false);
+    expect(onToggleManageNode).toHaveBeenCalledWith(
+      "package:图库/Vol.1",
+      false,
+    );
     expect(onSelectNode).toHaveBeenCalledWith("package:图库/Vol.1");
     expect(onSelectPackage).toHaveBeenCalledWith("pkg-1");
   });
@@ -732,7 +736,9 @@ describe("SidebarPanel image collapse interactions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Vol.1" }));
 
     expect(onToggleManageNode).not.toHaveBeenCalled();
-    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith("package:图库/Vol.1");
+    expect(onSelectMetadataSingleNode).toHaveBeenCalledWith(
+      "package:图库/Vol.1",
+    );
     expect(onSelectNode).toHaveBeenCalledWith("package:图库/Vol.1");
     expect(onSelectPackage).toHaveBeenCalledWith("pkg-1");
   });
@@ -788,13 +794,31 @@ describe("SidebarPanel image collapse interactions", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "2.zip" })).toBeInTheDocument();
 
-    fireEvent.doubleClick(screen.getByRole("button", { name: "D:/Gallery/cool" }));
+    fireEvent.doubleClick(
+      screen.getByRole("button", { name: "D:/Gallery/cool" }),
+    );
 
     expect(screen.queryByRole("button", { name: "2.zip" })).toBeNull();
     expect(
       screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "3.zip" })).toBeInTheDocument();
+  });
+
+  it("层级模式下折叠目录会隐藏整个子树", () => {
+    renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE, {
+      sidebarTreeDisplayMode: "hierarchy",
+    });
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "D:/Gallery" }));
+
+    expect(screen.queryByRole("button", { name: "1.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "A.zip" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Octosoup.zip" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "D:/Gallery/cool" }),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "2.zip" })).toBeNull();
   });
 
   it("含图目录会计入父级直属媒体并随折叠隐藏", () => {
@@ -916,7 +940,9 @@ describe("SidebarPanel image collapse interactions", () => {
     fireEvent.doubleClick(screen.getByRole("button", { name: "Videos" }));
 
     expect(screen.queryByRole("button", { name: "clip.mp4" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Videos/Sub" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Videos/Sub" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "sub.mp4" })).toBeInTheDocument();
   });
 
@@ -936,5 +962,4 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
     expect(onToggleManageNode).not.toHaveBeenCalled();
   });
-
 });

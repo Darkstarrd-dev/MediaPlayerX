@@ -360,6 +360,8 @@ function renderImageSidebar(
 ) {
   const onSelectNode = vi.fn();
   const onSelectPackage = vi.fn();
+  const onCollapseSidebar = vi.fn();
+  const onToggleSidebarTreeDisplayMode = vi.fn();
   const result = render(
     <SidebarPanel
       mode="image"
@@ -388,13 +390,14 @@ function renderImageSidebar(
       onSelectPackage={onSelectPackage}
       onSelectVideo={vi.fn()}
       onSelectAudio={vi.fn()}
-      onCollapseSidebar={vi.fn()}
+      onCollapseSidebar={onCollapseSidebar}
       onSetCurrentRoot={vi.fn()}
       onGoToFromSearchMode={vi.fn()}
       onResetRoot={vi.fn()}
       onToggleVideoPlaylist={vi.fn()}
       onToggleAudioPlaylist={vi.fn()}
       onToggleManageNode={vi.fn()}
+      onToggleSidebarTreeDisplayMode={onToggleSidebarTreeDisplayMode}
       {...overrides}
     />,
   );
@@ -403,6 +406,8 @@ function renderImageSidebar(
     ...result,
     onSelectNode,
     onSelectPackage,
+    onCollapseSidebar,
+    onToggleSidebarTreeDisplayMode,
   };
 }
 
@@ -411,7 +416,9 @@ function renderControlledImageSidebar(
   selectedSidebarNodeId: string,
 ) {
   function ControlledSidebar() {
-    const [collapsedFolderNodeIds, setCollapsedFolderNodeIds] = useState<string[]>([]);
+    const [collapsedFolderNodeIds, setCollapsedFolderNodeIds] = useState<
+      string[]
+    >([]);
     return (
       <SidebarPanel
         mode="image"
@@ -457,6 +464,136 @@ function renderControlledImageSidebar(
 }
 
 describe("SidebarPanel music interactions", () => {
+  it("点击标题按钮切换侧栏树显示模式", () => {
+    const { onCollapseSidebar, onToggleSidebarTreeDisplayMode } =
+      renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE);
+    const titleButton = document.querySelector<HTMLButtonElement>(
+      '[data-slot="fg-sidebar-toolbar-title"]',
+    );
+    expect(titleButton).not.toBeNull();
+
+    fireEvent.click(titleButton!);
+
+    expect(onToggleSidebarTreeDisplayMode).toHaveBeenCalledTimes(1);
+    expect(onCollapseSidebar).not.toHaveBeenCalled();
+  });
+
+  it("层级模式下按 depth 应用缩进", () => {
+    const tree: SidebarNode[] = [
+      {
+        id: "folder:Root",
+        label: "Root",
+        kind: "folder",
+        pathKey: "Root",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        children: [
+          {
+            id: "folder:Root/Child",
+            label: "Child",
+            kind: "folder",
+            pathKey: "Root/Child",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            children: [
+              {
+                id: "package:Root/Child/Pkg.zip",
+                label: "Pkg.zip",
+                kind: "package",
+                imageNodeType: "package",
+                packageId: "pkg-child",
+                imageSourceId: "pkg-child",
+                pathKey: "Root/Child/Pkg.zip",
+                directImageCount: 1,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    renderImageSidebar(tree, {
+      sidebarTreeDisplayMode: "hierarchy",
+      sidebarIndentStep: 20,
+    });
+
+    const rootRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="folder:Root"]',
+    );
+    const childRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="folder:Root/Child"]',
+    );
+    const packageRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="package:Root/Child/Pkg.zip"]',
+    );
+
+    expect(rootRow).not.toBeNull();
+    expect(childRow).not.toBeNull();
+    expect(packageRow).not.toBeNull();
+    expect(rootRow?.getAttribute("style")).toBeNull();
+    expect(childRow).toHaveStyle({ paddingLeft: "20px" });
+    expect(packageRow).toHaveStyle({ paddingLeft: "40px" });
+  });
+
+  it("直属模式下不应用层级缩进", () => {
+    const tree: SidebarNode[] = [
+      {
+        id: "folder:Root",
+        label: "Root",
+        kind: "folder",
+        pathKey: "Root",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        children: [
+          {
+            id: "folder:Root/Child",
+            label: "Child",
+            kind: "folder",
+            pathKey: "Root/Child",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            children: [
+              {
+                id: "package:Root/Child/Pkg.zip",
+                label: "Pkg.zip",
+                kind: "package",
+                imageNodeType: "package",
+                packageId: "pkg-child",
+                imageSourceId: "pkg-child",
+                pathKey: "Root/Child/Pkg.zip",
+                directImageCount: 1,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    renderImageSidebar(tree, {
+      sidebarTreeDisplayMode: "direct",
+      sidebarIndentStep: 20,
+    });
+
+    const rootRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="folder:Root"]',
+    );
+    const childRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="folder:Root/Child"]',
+    );
+    const packageRow = document.querySelector<HTMLElement>(
+      '[data-sidebar-node-id="package:Root/Child/Pkg.zip"]',
+    );
+
+    expect(rootRow).not.toBeNull();
+    expect(childRow).not.toBeNull();
+    expect(packageRow).not.toBeNull();
+    expect(rootRow?.getAttribute("style")).toBeNull();
+    expect(childRow?.getAttribute("style")).toBeNull();
+    expect(packageRow?.getAttribute("style")).toBeNull();
+  });
+
   it("受控折叠状态在临时树切换后保持，不会因模式返回被重置", () => {
     const onSetCollapsedFolderNodeIds = vi.fn();
     const { rerender } = renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE, {
@@ -549,7 +686,6 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.queryByRole("button", { name: "Vol.1" })).toBeNull();
   });
 
-
   it("受控折叠状态下定位到子节点时会自动展开祖先节点", () => {
     const onSetCollapsedFolderNodeIds = vi.fn();
     const { rerender } = renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE, {
@@ -603,7 +739,6 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.getByRole("button", { name: "Vol.1" })).toBeInTheDocument();
   });
 
-
   it("点击折叠全部按钮会折叠所有含图父级节点", () => {
     renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE);
 
@@ -617,13 +752,14 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
   });
 
-
   it("一键折叠在指针模式下仅保留指针节点", () => {
     renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
 
     fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
 
-    expect(screen.getByRole("button", { name: "D:/Gallery" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "D:/Gallery" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "D:/Gallery/cool" }),
     ).toBeInTheDocument();
@@ -639,7 +775,6 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.queryByRole("button", { name: "4.zip" })).toBeNull();
   });
 
-
   it("多盘符场景下折叠会对所有目标父级节点生效", () => {
     renderImageSidebar(IMAGE_TREE_MULTI_DRIVE_FIXTURE);
 
@@ -651,7 +786,6 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.getByRole("button", { name: "图库D" })).toBeInTheDocument();
   });
 
-
   it("折叠全部按钮再次点击会展开所有含图父级节点", () => {
     renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE);
 
@@ -661,9 +795,11 @@ describe("SidebarPanel music interactions", () => {
     expect(screen.getAllByRole("button", { name: "Vol.1" }).length).toBe(2);
   });
 
-
   it("受控模式下折叠全部后不会被自动展开回去", async () => {
-    renderControlledImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, "package:X盘/图库A/Vol.1");
+    renderControlledImageSidebar(
+      IMAGE_TREE_PARENT_NAV_FIXTURE,
+      "package:X盘/图库A/Vol.1",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "折叠全部含图父级" }));
 
@@ -672,7 +808,6 @@ describe("SidebarPanel music interactions", () => {
       expect(screen.queryByRole("button", { name: "CoverPkg" })).toBeNull();
     });
   });
-
 
   it("图片模式可跳转到下一个目标父级节点", () => {
     const { onSelectNode } = renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
@@ -684,7 +819,6 @@ describe("SidebarPanel music interactions", () => {
     expect(onSelectNode).toHaveBeenCalledWith("folder:X盘/CoverRoot");
   });
 
-
   it("图片模式可跳转到上一个目标父级节点", () => {
     const { onSelectNode } = renderImageSidebar(IMAGE_TREE_PARENT_NAV_FIXTURE, {
       selectedSidebarNodeId: "folder:X盘/图库A",
@@ -694,7 +828,6 @@ describe("SidebarPanel music interactions", () => {
 
     expect(onSelectNode).toHaveBeenCalledWith("folder:X盘");
   });
-
 
   it("侧栏标签支持完整路径与末段名切换", () => {
     renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
@@ -718,7 +851,6 @@ describe("SidebarPanel music interactions", () => {
       screen.getByRole("button", { name: "D:/Gallery/cool/cooler" }),
     ).toBeInTheDocument();
   });
-
 
   it("超长路径在获得焦点时启用跑马灯，失焦后恢复静态省略", async () => {
     const longLabel =
@@ -790,7 +922,6 @@ describe("SidebarPanel music interactions", () => {
     }
   });
 
-
   it("超长路径在侧栏逻辑焦点且节点选中时也会触发跑马灯", async () => {
     const longLabel =
       "X:/Very/Long/Path/That/Should/Overflow/When/Sidebar/Is/Focused";
@@ -853,5 +984,4 @@ describe("SidebarPanel music interactions", () => {
       clientWidthSpy.mockRestore();
     }
   });
-
 });

@@ -1,173 +1,186 @@
-export const BROWSER_MODES = ['image', 'video', 'music'] as const
+export const BROWSER_MODES = ["image", "video", "music"] as const;
 
-export const MUSIC_LOOP_MODES = ['single', 'folder', 'album', 'library'] as const
+export const MUSIC_LOOP_MODES = [
+  "single",
+  "folder",
+  "album",
+  "library",
+] as const;
 
-export const MEDIA_TYPES = ['image', 'video', 'audio', 'subtitle'] as const
+export const MEDIA_TYPES = ["image", "video", "audio", "subtitle"] as const;
 
-export type BrowserMode = (typeof BROWSER_MODES)[number]
+export type BrowserMode = (typeof BROWSER_MODES)[number];
 
-export type MusicLoopMode = (typeof MUSIC_LOOP_MODES)[number]
+export type SidebarTreeDisplayMode = "direct" | "hierarchy";
 
-export type MediaType = (typeof MEDIA_TYPES)[number]
+export type MusicLoopMode = (typeof MUSIC_LOOP_MODES)[number];
 
-export type SearchField = 'all' | 'name' | 'workTitle' | 'circle' | 'author' | 'tags'
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
+export type SearchField =
+  | "all"
+  | "name"
+  | "workTitle"
+  | "circle"
+  | "author"
+  | "tags";
 
 export interface FileSystemMediaLocator {
-  kind: 'filesystem'
-  absolutePath: string
-  extension: string
-  mediaType: MediaType
-  mimeType: string
+  kind: "filesystem";
+  absolutePath: string;
+  extension: string;
+  mediaType: MediaType;
+  mimeType: string;
 }
 
 export interface ArchiveEntryMediaLocator {
-  kind: 'archive-entry'
-  archivePath: string
-  archiveFormat: 'zip' | 'rar' | '7z'
-  entryName: string
-  extension: string
-  mediaType: MediaType
-  mimeType: string
+  kind: "archive-entry";
+  archivePath: string;
+  archiveFormat: "zip" | "rar" | "7z";
+  entryName: string;
+  extension: string;
+  mediaType: MediaType;
+  mimeType: string;
 }
 
-export type MediaLocator = FileSystemMediaLocator | ArchiveEntryMediaLocator
+export type MediaLocator = FileSystemMediaLocator | ArchiveEntryMediaLocator;
 
 export interface ImageItem {
-  id: string
-  ordinal: number
-  width: number
-  height: number
-  sizeKb: number
-  cluster: number
-  color: string
-  mediaLocator: MediaLocator
-  hidden?: boolean
+  id: string;
+  ordinal: number;
+  width: number;
+  height: number;
+  sizeKb: number;
+  cluster: number;
+  color: string;
+  mediaLocator: MediaLocator;
+  hidden?: boolean;
 }
 
 export interface ImagePackage {
-  id: string
-  packageName: string
-  displayName: string
-  absolutePath: string
-  treePath: string[]
-  workTitle: string
-  seriesId?: string
-  circle: string
-  author: string
-  tags: string[]
-  mockGrade?: number
+  id: string;
+  packageName: string;
+  displayName: string;
+  absolutePath: string;
+  treePath: string[];
+  workTitle: string;
+  seriesId?: string;
+  circle: string;
+  author: string;
+  tags: string[];
+  mockGrade?: number;
   externalMetadata?: {
-    sourceSite: 'nhentai' | 'ehentai' | 'others'
-    sourceUrl: string
-    sourceRemoteId: string
-    sourceToken: string
-    title: string
-    titleJpn: string
-    groupName: string
-    groupNameJpn: string
-    artist: string
-    artistJpn: string
-    posted: string
-    rating?: string | null
-    favorited?: string | null
-    tags: Record<string, string>
-    rawJson: string
-  } | null
+    sourceSite: "nhentai" | "ehentai" | "others";
+    sourceUrl: string;
+    sourceRemoteId: string;
+    sourceToken: string;
+    title: string;
+    titleJpn: string;
+    groupName: string;
+    groupNameJpn: string;
+    artist: string;
+    artistJpn: string;
+    posted: string;
+    rating?: string | null;
+    favorited?: string | null;
+    tags: Record<string, string>;
+    rawJson: string;
+  } | null;
   sourceCover?: {
-    coverColor: string
-    coverImagePath: string | null
-    updatedAtMs: number
-  } | null
+    coverColor: string;
+    coverImagePath: string | null;
+    updatedAtMs: number;
+  } | null;
   preferenceMetrics?: {
-    eventCount: number
-    pagesRead: number
-    totalPages: number
-    completionRatio: number
-    lastEventTimeMs: number | null
-    updatedAtMs: number
-  } | null
-  images: ImageItem[]
+    eventCount: number;
+    pagesRead: number;
+    totalPages: number;
+    completionRatio: number;
+    lastEventTimeMs: number | null;
+    updatedAtMs: number;
+  } | null;
+  images: ImageItem[];
 }
 
 export interface VideoItem {
-  id: string
-  fileName: string
-  absolutePath: string
-  treePath: string[]
-  durationSec: number
-  width: number
-  height: number
-  sizeMb: number
-  coverColor: string
-  coverImagePath?: string | null
-  workTitle: string
-  workTitleJpn?: string
-  seriesId?: string
-  circle: string
-  circleJpn?: string
-  author: string
-  authorJpn?: string
-  tags: string[]
-  grade: number | null
+  id: string;
+  fileName: string;
+  absolutePath: string;
+  treePath: string[];
+  durationSec: number;
+  width: number;
+  height: number;
+  sizeMb: number;
+  coverColor: string;
+  coverImagePath?: string | null;
+  workTitle: string;
+  workTitleJpn?: string;
+  seriesId?: string;
+  circle: string;
+  circleJpn?: string;
+  author: string;
+  authorJpn?: string;
+  tags: string[];
+  grade: number | null;
   preferenceMetrics?: {
-    eventCount: number
-    watchSeconds: number
-    totalSeconds: number
-    completionRatio: number
-    lastEventTimeMs: number | null
-    updatedAtMs: number
-  } | null
-  mediaLocator: MediaLocator
+    eventCount: number;
+    watchSeconds: number;
+    totalSeconds: number;
+    completionRatio: number;
+    lastEventTimeMs: number | null;
+    updatedAtMs: number;
+  } | null;
+  mediaLocator: MediaLocator;
 }
 
 export interface AudioItem {
-  id: string
-  fileName: string
-  absolutePath: string
-  treePath: string[]
-  durationSec: number
-  sizeMb: number
-  album: string
-  author: string
-  trackTitle: string
-  seriesId?: string
-  cueSourcePath?: string
-  cueTrackNo?: number
-  cueStartSec?: number
-  cueEndSec?: number | null
-  mediaLocator: MediaLocator
+  id: string;
+  fileName: string;
+  absolutePath: string;
+  treePath: string[];
+  durationSec: number;
+  sizeMb: number;
+  album: string;
+  author: string;
+  trackTitle: string;
+  seriesId?: string;
+  cueSourcePath?: string;
+  cueTrackNo?: number;
+  cueStartSec?: number;
+  cueEndSec?: number | null;
+  mediaLocator: MediaLocator;
 }
 
-export type SidebarNodeKind = 'folder' | 'package' | 'video' | 'audio'
+export type SidebarNodeKind = "folder" | "package" | "video" | "audio";
 
 export interface SidebarNode {
-  id: string
-  label: string
-  kind: SidebarNodeKind
-  children: SidebarNode[]
-  packageId?: string
-  videoId?: string
-  audioId?: string
-  imageSourceId?: string
-  coverSourceId?: string
-  coverImageId?: string
-  imageNodeType?: 'folder' | 'package' | 'directory'
-  directImageCount?: number
-  descendantPackageCount?: number
-  descendantImageCount?: number
-  directAudioCount?: number
-  descendantAudioFolderCount?: number
-  descendantNodeCount?: number
-  pathKey: string
+  id: string;
+  label: string;
+  kind: SidebarNodeKind;
+  children: SidebarNode[];
+  packageId?: string;
+  videoId?: string;
+  audioId?: string;
+  imageSourceId?: string;
+  coverSourceId?: string;
+  coverImageId?: string;
+  imageNodeType?: "folder" | "package" | "directory";
+  directImageCount?: number;
+  descendantPackageCount?: number;
+  descendantImageCount?: number;
+  directAudioCount?: number;
+  descendantAudioFolderCount?: number;
+  descendantNodeCount?: number;
+  pathKey: string;
 }
 
 export interface FocusedImageRef {
-  packageId: string
-  imageIndex: number
+  packageId: string;
+  imageIndex: number;
 }
 
 export interface VectorCandidate {
-  score: number
-  packageId: string
-  imageIndex: number
+  score: number;
+  packageId: string;
+  imageIndex: number;
 }

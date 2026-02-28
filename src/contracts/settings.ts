@@ -32,6 +32,7 @@ export const musicVisualizerCompositionModeSchema = z.enum([
 export const paletteModeSchema = z.enum(["day", "night"]);
 export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
 export const sidebarLabelDisplayModeSchema = z.enum(["full", "leaf"]);
+export const sidebarTreeDisplayModeSchema = z.enum(["direct", "hierarchy"]);
 export const subtitleAccelerationSchema = z.enum(["auto", "cpu", "directml"]);
 export const subtitleLanguageSchema = z.enum([
   "auto",
@@ -145,6 +146,7 @@ export const appSettingsSchema = z.object({
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
   sidebarLabelDisplayMode: sidebarLabelDisplayModeSchema,
+  sidebarTreeDisplayMode: sidebarTreeDisplayModeSchema,
   uiLocale: uiLocaleSchema,
   themeId: z.string().min(1),
   styleId: z.string().min(1).default("soft-skeuomorphic"),
@@ -190,7 +192,10 @@ export const appSettingsSchema = z.object({
   subtitleAcceleration: subtitleAccelerationSchema,
   subtitleLanguage: subtitleLanguageSchema,
   subtitleModelDir: z.string().max(1024),
-  subtitleModelDirByProfile: z.record(z.string().max(128), z.string().max(1024)),
+  subtitleModelDirByProfile: z.record(
+    z.string().max(128),
+    z.string().max(1024),
+  ),
   subtitleSelectedModelId: z.string().max(128).nullable(),
   subtitleTextFillMode: subtitleTextFillModeSchema,
   subtitleTextColor: z.string().max(16),

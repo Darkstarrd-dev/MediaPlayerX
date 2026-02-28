@@ -75,6 +75,7 @@ export function useAppNavigationState({
     imageRootNodeId,
     videoRootNodeId,
     musicRootNodeId,
+    sidebarTreeDisplayMode,
     updateSettings,
   } = appSettings;
 
@@ -198,6 +199,7 @@ export function useAppNavigationState({
     featureAuthorQuery: featureAuthorQueryEffective,
     featureTags: featureTagsEffective,
     featureGradeFilter: featureGradeFilterEffective,
+    sidebarTreeDisplayMode,
     archiveLoadStatus,
     imageRootNodeId,
     videoRootNodeId,
@@ -257,12 +259,13 @@ export function useAppNavigationState({
     mode === "video" &&
     Boolean(
       selectedSidebarNode &&
-        selectedSidebarNode.kind === "folder" &&
-        selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
+      selectedSidebarNode.kind === "folder" &&
+      selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
     );
 
   // image 模式和 video 节点缩略图模式都允许 gap snap
-  const canGapSnap = !layoutLocked && (mode === "image" || videoNodeBrowseSnapActive);
+  const canGapSnap =
+    !layoutLocked && (mode === "image" || videoNodeBrowseSnapActive);
 
   const thumbnailLayout = useMemo(
     () =>

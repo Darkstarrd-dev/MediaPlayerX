@@ -168,6 +168,85 @@ describe("useVideoSidebarState", () => {
     ).toEqual(["Z:/Video"]);
   });
 
+  it("层级模式下保留过程路径节点", () => {
+    const videos = [
+      makeVideo({
+        id: "video-a1",
+        fileName: "a1.mp4",
+        workTitle: "a1",
+        treePath: ["Z:", "Video", "CEO NEET", "a1.mp4"],
+      }),
+      makeVideo({
+        id: "video-a2",
+        fileName: "a2.mp4",
+        workTitle: "a2",
+        treePath: ["Z:", "Video", "CEO NEET", "a2.mp4"],
+      }),
+      makeVideo({
+        id: "video-b1",
+        fileName: "b1.mp4",
+        workTitle: "b1",
+        treePath: ["Z:", "Video", "Rinhee", "b1.mp4"],
+      }),
+      makeVideo({
+        id: "video-b2",
+        fileName: "b2.mp4",
+        workTitle: "b2",
+        treePath: ["Z:", "Video", "Rinhee", "b2.mp4"],
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useVideoSidebarState({
+        videos,
+        videoRootNodeId: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    expect(
+      result.current.videoTreeForSidebar.map((node) => node.pathKey),
+    ).toEqual(["Z:"]);
+    expect(
+      result.current.videoTreeForSidebar[0]?.children.map(
+        (node) => node.pathKey,
+      ),
+    ).toEqual(["Z:/Video"]);
+    expect(
+      result.current.videoTreeForSidebar[0]?.children[0]?.children.map(
+        (node) => node.pathKey,
+      ),
+    ).toEqual(["Z:/Video/CEO NEET", "Z:/Video/Rinhee"]);
+  });
+
+  it("层级模式下视频叶子使用文件名", () => {
+    const videos = [
+      makeVideo({
+        id: "video-title",
+        fileName: "teaser_city.mp4",
+        workTitle: "城市先导片",
+        treePath: ["X盘", "视频", "项目A", "teaser_city.mp4"],
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useVideoSidebarState({
+        videos,
+        videoRootNodeId: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    expect(result.current.videoTreeForSidebar[0]?.label).toBe("X盘");
+    expect(result.current.videoTreeForSidebar[0]?.children[0]?.label).toBe(
+      "视频",
+    );
+    expect(
+      result.current.videoTreeForSidebar[0]?.children[0]?.children[0]
+        ?.children[0]?.label,
+    ).toBe("teaser_city.mp4");
+  });
+
   it("父节点存在直属视频时保留该父节点", () => {
     const videos = [
       makeVideo({

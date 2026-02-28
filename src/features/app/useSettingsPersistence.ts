@@ -202,6 +202,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     typeof next.sidebarLabelDisplayMode === "string"
       ? next.sidebarLabelDisplayMode.trim()
       : "";
+  const rawSidebarTreeDisplayMode =
+    typeof next.sidebarTreeDisplayMode === "string"
+      ? next.sidebarTreeDisplayMode.trim()
+      : "";
 
   next.styleId = rawStyleId || "soft-skeuomorphic";
   next.paletteId = rawPaletteId || rawThemeId || "skeuomorphic-luxury-white";
@@ -222,12 +226,20 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.uiLocale;
   }
   if (
-    rawSidebarLabelDisplayMode === "full"
-    || rawSidebarLabelDisplayMode === "leaf"
+    rawSidebarLabelDisplayMode === "full" ||
+    rawSidebarLabelDisplayMode === "leaf"
   ) {
     next.sidebarLabelDisplayMode = rawSidebarLabelDisplayMode;
   } else if ("sidebarLabelDisplayMode" in next) {
     delete next.sidebarLabelDisplayMode;
+  }
+  if (
+    rawSidebarTreeDisplayMode === "direct" ||
+    rawSidebarTreeDisplayMode === "hierarchy"
+  ) {
+    next.sidebarTreeDisplayMode = rawSidebarTreeDisplayMode;
+  } else if ("sidebarTreeDisplayMode" in next) {
+    delete next.sidebarTreeDisplayMode;
   }
   next.themeId = next.paletteId;
 
@@ -262,8 +274,8 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
 
   const normalizedSubtitleModelDirByProfile: Record<string, string> = {};
   if (
-    next.subtitleModelDirByProfile
-    && typeof next.subtitleModelDirByProfile === "object"
+    next.subtitleModelDirByProfile &&
+    typeof next.subtitleModelDirByProfile === "object"
   ) {
     for (const [rawModelId, rawModelDir] of Object.entries(
       next.subtitleModelDirByProfile as Record<string, unknown>,
@@ -294,8 +306,8 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   next.subtitleSelectedModelId = normalizedSubtitleSelectedModelId;
 
   const activeSubtitleModelDir =
-    normalizedSubtitleModelDirByProfile[normalizedSubtitleSelectedModelId]
-    ?? legacySubtitleModelDir;
+    normalizedSubtitleModelDirByProfile[normalizedSubtitleSelectedModelId] ??
+    legacySubtitleModelDir;
   if (activeSubtitleModelDir) {
     normalizedSubtitleModelDirByProfile[normalizedSubtitleSelectedModelId] =
       activeSubtitleModelDir;
@@ -605,7 +617,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     typeof next.thumbnailScale === "number" &&
     Number.isFinite(next.thumbnailScale)
   ) {
-    next.thumbnailScale = Math.max(1, Math.min(7, Math.round(next.thumbnailScale)));
+    next.thumbnailScale = Math.max(
+      1,
+      Math.min(7, Math.round(next.thumbnailScale)),
+    );
   }
 
   if (

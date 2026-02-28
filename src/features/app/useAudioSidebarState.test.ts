@@ -128,4 +128,33 @@ describe("useAudioSidebarState", () => {
     ]);
     expect(Array.from(result.current.rootScopedAudioIds)).toEqual(["audio-a"]);
   });
+
+  it("层级模式下按真实目录层级输出树结构", () => {
+    const audios = [
+      makeAudio({
+        id: "audio-a",
+        fileName: "track_a.mp3",
+        treePath: ["X盘", "音乐", "专辑A", "track_a.mp3"],
+      }),
+      makeAudio({
+        id: "audio-b",
+        fileName: "track_b.mp3",
+        treePath: ["X盘", "音乐", "专辑A", "子目录", "track_b.mp3"],
+      }),
+    ];
+
+    const { result } = renderHook(() =>
+      useAudioSidebarState({
+        audios,
+        musicRootNodeId: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    const root = result.current.audioTreeForSidebar[0];
+    expect(root?.label).toBe("X盘");
+    expect(root?.children[0]?.label).toBe("音乐");
+    expect(root?.children[0]?.children[0]?.label).toBe("专辑A");
+    expect(root?.children[0]?.children[0]?.children[0]?.label).toBe("子目录");
+  });
 });

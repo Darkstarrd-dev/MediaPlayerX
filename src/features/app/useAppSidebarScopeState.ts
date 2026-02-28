@@ -3,152 +3,150 @@ import {
   type Dispatch,
   type RefObject,
   type SetStateAction,
-} from 'react'
+} from "react";
 
-import {
-  buildImageSidebarTree,
-  findNodeById,
-} from '../../mockData'
-import type { BrowserMode } from '../../types'
+import { buildImageSidebarTree, findNodeById } from "../../mockData";
+import type { BrowserMode, SidebarTreeDisplayMode } from "../../types";
 import type {
   AudioItem,
   FocusedImageRef,
   ImagePackage,
   VectorCandidate,
   VideoItem,
-} from '../../types'
+} from "../../types";
 import type {
   ImageSidebarTreeViewModel,
   LibrarySnapshotViewModel,
-} from '../backend'
-import { buildImageNodeLoadState } from './buildImageNodeLoadState'
-import { buildVectorSidebarState } from './buildVectorSidebarState'
-import { normalizePathForCompare } from './mediaPathUtils'
-import { useImageSidebarBaseState } from './useImageSidebarBaseState'
-import { useRootScopedImageData } from './useRootScopedImageData'
-import { useScopedImageSourceStateSync } from './useScopedImageSourceStateSync'
-import { useVideoSidebarState } from './useVideoSidebarState'
-import { useAudioSidebarState } from './useAudioSidebarState'
-import { useManageSelection } from '../management/useManageSelection'
-import { useSidebarNavigation } from '../sidebar/useSidebarNavigation'
+} from "../backend";
+import { buildImageNodeLoadState } from "./buildImageNodeLoadState";
+import { buildVectorSidebarState } from "./buildVectorSidebarState";
+import { normalizePathForCompare } from "./mediaPathUtils";
+import { useImageSidebarBaseState } from "./useImageSidebarBaseState";
+import { useRootScopedImageData } from "./useRootScopedImageData";
+import { useScopedImageSourceStateSync } from "./useScopedImageSourceStateSync";
+import { useVideoSidebarState } from "./useVideoSidebarState";
+import { useAudioSidebarState } from "./useAudioSidebarState";
+import { useManageSelection } from "../management/useManageSelection";
+import { useSidebarNavigation } from "../sidebar/useSidebarNavigation";
 
 interface ReadSliceSnapshot<T> {
-  data: T | null
-  snapshot: T | null
+  data: T | null;
+  snapshot: T | null;
 }
 
 interface AppSidebarBackendReadState {
-  sidebar: ReadSliceSnapshot<ImageSidebarTreeViewModel>
-  library: ReadSliceSnapshot<LibrarySnapshotViewModel>
+  sidebar: ReadSliceSnapshot<ImageSidebarTreeViewModel>;
+  library: ReadSliceSnapshot<LibrarySnapshotViewModel>;
 }
 
 interface UseAppSidebarScopeStateParams {
-  backendRead: AppSidebarBackendReadState
-  mode: BrowserMode
-  fullscreenActive: boolean
-  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
-  bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null
-  bootstrapImagePackages: ImagePackage[]
-  bootstrapImageDirectories: ImagePackage[]
-  bootstrapVideos: VideoItem[]
-  bootstrapAudios: AudioItem[]
-  vectorSearchResults: VectorCandidate[]
-  vectorResultsActive: boolean
-  featureSearchActive: boolean
-  featureNameQuery: string
-  featureWorkTitleQuery: string
-  featureSeriesIdQuery: string
-  featureCircleQuery: string
-  featureAuthorQuery: string
-  featureTags: string[]
-  featureGradeFilter: number | null
+  backendRead: AppSidebarBackendReadState;
+  mode: BrowserMode;
+  fullscreenActive: boolean;
+  fullscreenDisplay: "dual" | "video-only" | "image-only";
+  bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null;
+  bootstrapImagePackages: ImagePackage[];
+  bootstrapImageDirectories: ImagePackage[];
+  bootstrapVideos: VideoItem[];
+  bootstrapAudios: AudioItem[];
+  vectorSearchResults: VectorCandidate[];
+  vectorResultsActive: boolean;
+  featureSearchActive: boolean;
+  featureNameQuery: string;
+  featureWorkTitleQuery: string;
+  featureSeriesIdQuery: string;
+  featureCircleQuery: string;
+  featureAuthorQuery: string;
+  featureTags: string[];
+  featureGradeFilter: number | null;
+  sidebarTreeDisplayMode: SidebarTreeDisplayMode;
   archiveLoadStatus: {
-    runningArchivePath: string | null
-    pendingArchivePaths: string[]
-  }
-  imageRootNodeId: string | null
-  videoRootNodeId: string | null
-  musicRootNodeId: string | null
-  selectedSidebarNodeId: string | null
-  appBodyRef: RefObject<HTMLDivElement | null>
-  setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
-  setSelectedPackageId: Dispatch<SetStateAction<string>>
-  selectVideoFromBrowser: (videoId: string) => void
-  setSelectedAudioId: Dispatch<SetStateAction<string>>
-  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>
-  setFocusByPackage: Dispatch<SetStateAction<Record<string, number>>>
-  setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>
-  setGradeByPackage: Dispatch<SetStateAction<Record<string, number | null>>>
+    runningArchivePath: string | null;
+    pendingArchivePaths: string[];
+  };
+  imageRootNodeId: string | null;
+  videoRootNodeId: string | null;
+  musicRootNodeId: string | null;
+  selectedSidebarNodeId: string | null;
+  appBodyRef: RefObject<HTMLDivElement | null>;
+  setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>;
+  setSelectedPackageId: Dispatch<SetStateAction<string>>;
+  selectVideoFromBrowser: (videoId: string) => void;
+  setSelectedAudioId: Dispatch<SetStateAction<string>>;
+  setAudioPlaylistIds: Dispatch<SetStateAction<string[]>>;
+  setFocusByPackage: Dispatch<SetStateAction<Record<string, number>>>;
+  setPageByPackage: Dispatch<SetStateAction<Record<string, number>>>;
+  setGradeByPackage: Dispatch<SetStateAction<Record<string, number | null>>>;
   updateSettings: (patch: {
-    sidebarFocus?: 'sidebar' | 'main'
-    imageRootNodeId?: string | null
-    videoRootNodeId?: string | null
-    musicRootNodeId?: string | null
-  }) => void
+    sidebarFocus?: "sidebar" | "main";
+    imageRootNodeId?: string | null;
+    videoRootNodeId?: string | null;
+    musicRootNodeId?: string | null;
+  }) => void;
 }
 
 interface UseAppSidebarScopeStateResult {
-  scopedImageSourcesEffective: ImagePackage[]
-  packageByIdEffective: Map<string, ImagePackage>
-  videoByIdEffective: Map<string, VideoItem>
-  audioByIdEffective: Map<string, AudioItem>
-  imageTreeForSidebar: ImageSidebarTreeViewModel['tree']
-  imageNodeLoadStateById: Record<string, 'pending' | 'running'>
-  videosForSidebar: VideoItem[]
-  videoTreeForSidebar: ImageSidebarTreeViewModel['tree']
-  audiosForSidebar: AudioItem[]
-  audioTreeForSidebar: ImageSidebarTreeViewModel['tree']
-  rootScopedVideoIds: Set<string>
-  rootScopedAudioIds: Set<string>
-  imageRootNode: ImageSidebarTreeViewModel['tree'][number] | null
-  rootScopedPackageIds: Set<string>
-  rootScopedPackages: ImagePackage[]
-  allScopedRefs: FocusedImageRef[]
-  normalImageSourceNodeIdMap: Map<string, string>
-  vectorSidebarNodes: ImageSidebarTreeViewModel['tree']
-  vectorResultPackageNodeIdMap: Map<string, string>
-  flatSidebarNodes: ImageSidebarTreeViewModel['tree']
-  sidebarNodeById: Map<string, ImageSidebarTreeViewModel['tree'][number]>
-  imageSourceNodeIdMap: Map<string, string>
-  videoNodeIdMap: Map<string, string>
-  audioNodeIdMap: Map<string, string>
-  canSetCurrentRoot: boolean
-  currentRootLabel: string | null
-  applyCurrentRootFromSelection: () => void
-  ensureSidebarNodeVisible: (nodeId: string) => void
-  handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
-  sidebarCheckedNodeIds: string[]
-  sidebarCheckedNodeIdSet: Set<string>
-  imageCheckedIds: string[]
-  imageCheckedIdSet: Set<string>
-  activeSelectionScope: 'image' | 'sidebar' | null
-  clearSidebarSelections: () => void
-  clearAllSelections: () => void
-  toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void
-  checkSidebarNode: (nodeId: string) => void
-  toggleImageChecked: (imageId: string, checked?: boolean) => void
-  replaceImageCheckedIds: (ids: string[], append?: boolean) => void
-  orderedRootScopedPackages: ImagePackage[]
-  orderedRootScopedImageRefs: FocusedImageRef[]
+  scopedImageSourcesEffective: ImagePackage[];
+  packageByIdEffective: Map<string, ImagePackage>;
+  videoByIdEffective: Map<string, VideoItem>;
+  audioByIdEffective: Map<string, AudioItem>;
+  imageTreeForSidebar: ImageSidebarTreeViewModel["tree"];
+  imageNodeLoadStateById: Record<string, "pending" | "running">;
+  videosForSidebar: VideoItem[];
+  videoTreeForSidebar: ImageSidebarTreeViewModel["tree"];
+  audiosForSidebar: AudioItem[];
+  audioTreeForSidebar: ImageSidebarTreeViewModel["tree"];
+  rootScopedVideoIds: Set<string>;
+  rootScopedAudioIds: Set<string>;
+  imageRootNode: ImageSidebarTreeViewModel["tree"][number] | null;
+  rootScopedPackageIds: Set<string>;
+  rootScopedPackages: ImagePackage[];
+  allScopedRefs: FocusedImageRef[];
+  normalImageSourceNodeIdMap: Map<string, string>;
+  vectorSidebarNodes: ImageSidebarTreeViewModel["tree"];
+  vectorResultPackageNodeIdMap: Map<string, string>;
+  flatSidebarNodes: ImageSidebarTreeViewModel["tree"];
+  sidebarNodeById: Map<string, ImageSidebarTreeViewModel["tree"][number]>;
+  imageSourceNodeIdMap: Map<string, string>;
+  videoNodeIdMap: Map<string, string>;
+  audioNodeIdMap: Map<string, string>;
+  canSetCurrentRoot: boolean;
+  currentRootLabel: string | null;
+  applyCurrentRootFromSelection: () => void;
+  ensureSidebarNodeVisible: (nodeId: string) => void;
+  handleSidebarNavigationKey: (event: KeyboardEvent) => boolean;
+  sidebarCheckedNodeIds: string[];
+  sidebarCheckedNodeIdSet: Set<string>;
+  imageCheckedIds: string[];
+  imageCheckedIdSet: Set<string>;
+  activeSelectionScope: "image" | "sidebar" | null;
+  clearSidebarSelections: () => void;
+  clearAllSelections: () => void;
+  toggleSidebarNodeChecked: (nodeId: string, shiftKey: boolean) => void;
+  checkSidebarNode: (nodeId: string) => void;
+  toggleImageChecked: (imageId: string, checked?: boolean) => void;
+  replaceImageCheckedIds: (ids: string[], append?: boolean) => void;
+  orderedRootScopedPackages: ImagePackage[];
+  orderedRootScopedImageRefs: FocusedImageRef[];
 }
 
 function buildImageSourceNodeIdMapFromSources(
   imagePackages: ImagePackage[],
   imageDirectories: ImagePackage[],
 ): Map<string, string> {
-  const map = new Map<string, string>()
+  const map = new Map<string, string>();
 
   for (const source of imagePackages) {
-    const pathKey = source.treePath.join('/')
-    map.set(source.id, `package:${pathKey}`)
+    const pathKey = source.treePath.join("/");
+    map.set(source.id, `package:${pathKey}`);
   }
 
   for (const source of imageDirectories) {
-    const pathKey = source.treePath.join('/')
-    map.set(source.id, `folder:${pathKey}`)
+    const pathKey = source.treePath.join("/");
+    map.set(source.id, `folder:${pathKey}`);
   }
 
-  return map
+  return map;
 }
 
 export function useAppSidebarScopeState({
@@ -171,6 +169,7 @@ export function useAppSidebarScopeState({
   featureAuthorQuery,
   featureTags,
   featureGradeFilter,
+  sidebarTreeDisplayMode,
   archiveLoadStatus,
   imageRootNodeId,
   videoRootNodeId,
@@ -187,121 +186,179 @@ export function useAppSidebarScopeState({
   setGradeByPackage,
   updateSettings,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
-  const isImageMode = mode === 'image'
-  const isVideoMode = mode === 'video'
-  const isMusicMode = mode === 'music'
-  const imagePaneVisibleInFullscreen = fullscreenActive && (fullscreenDisplay === 'dual' || fullscreenDisplay === 'image-only')
-  const videoPaneVisibleInFullscreen = fullscreenActive && (fullscreenDisplay === 'dual' || fullscreenDisplay === 'video-only')
-  const shouldUseImageSidebarSnapshot = isImageMode || imagePaneVisibleInFullscreen
-  const shouldExposeVideoSidebar = isVideoMode || videoPaneVisibleInFullscreen
-  const sidebarSnapshot = backendRead.sidebar.data ?? backendRead.sidebar.snapshot
-  const librarySnapshotEffective = backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot
-  const imagePackagesFromLibrary = librarySnapshotEffective?.imagePackages ?? bootstrapImagePackages
-  const imageDirectoriesFromLibrary = librarySnapshotEffective?.imageDirectories ?? bootstrapImageDirectories
+  const isImageMode = mode === "image";
+  const isVideoMode = mode === "video";
+  const isMusicMode = mode === "music";
+  const imagePaneVisibleInFullscreen =
+    fullscreenActive &&
+    (fullscreenDisplay === "dual" || fullscreenDisplay === "image-only");
+  const videoPaneVisibleInFullscreen =
+    fullscreenActive &&
+    (fullscreenDisplay === "dual" || fullscreenDisplay === "video-only");
+  const shouldUseImageSidebarSnapshot =
+    isImageMode || imagePaneVisibleInFullscreen;
+  const shouldExposeVideoSidebar = isVideoMode || videoPaneVisibleInFullscreen;
+  const sidebarSnapshot =
+    backendRead.sidebar.data ?? backendRead.sidebar.snapshot;
+  const librarySnapshotEffective =
+    backendRead.library.data ??
+    backendRead.library.snapshot ??
+    bootstrapLibrarySnapshot;
+  const imagePackagesFromLibrary =
+    librarySnapshotEffective?.imagePackages ?? bootstrapImagePackages;
+  const imageDirectoriesFromLibrary =
+    librarySnapshotEffective?.imageDirectories ?? bootstrapImageDirectories;
   const scopedSearchPackagesEffective = useMemo(() => {
     if (!shouldUseImageSidebarSnapshot) {
-      return imagePackagesFromLibrary
+      return imagePackagesFromLibrary;
     }
-    const snapshotPackages = sidebarSnapshot?.imagePackages
-    return snapshotPackages && snapshotPackages.length > 0 ? snapshotPackages : imagePackagesFromLibrary
-  }, [imagePackagesFromLibrary, shouldUseImageSidebarSnapshot, sidebarSnapshot])
+    const snapshotPackages = sidebarSnapshot?.imagePackages;
+    return snapshotPackages && snapshotPackages.length > 0
+      ? snapshotPackages
+      : imagePackagesFromLibrary;
+  }, [
+    imagePackagesFromLibrary,
+    shouldUseImageSidebarSnapshot,
+    sidebarSnapshot,
+  ]);
 
   const scopedSearchDirectoriesEffective = useMemo(() => {
     if (!shouldUseImageSidebarSnapshot) {
-      return imageDirectoriesFromLibrary
+      return imageDirectoriesFromLibrary;
     }
-    const snapshotDirectories = sidebarSnapshot?.imageDirectories
-    return snapshotDirectories && snapshotDirectories.length > 0 ? snapshotDirectories : imageDirectoriesFromLibrary
-  }, [imageDirectoriesFromLibrary, shouldUseImageSidebarSnapshot, sidebarSnapshot])
+    const snapshotDirectories = sidebarSnapshot?.imageDirectories;
+    return snapshotDirectories && snapshotDirectories.length > 0
+      ? snapshotDirectories
+      : imageDirectoriesFromLibrary;
+  }, [
+    imageDirectoriesFromLibrary,
+    shouldUseImageSidebarSnapshot,
+    sidebarSnapshot,
+  ]);
   const scopedImageSourcesEffective = useMemo(
-    () => [...scopedSearchPackagesEffective, ...scopedSearchDirectoriesEffective],
+    () => [
+      ...scopedSearchPackagesEffective,
+      ...scopedSearchDirectoriesEffective,
+    ],
     [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective],
-  )
-  const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos
-  const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios
+  );
+  const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos;
+  const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios;
   const packageByIdEffective = useMemo(
-    () => new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
+    () =>
+      new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
     [scopedImageSourcesEffective],
-  )
+  );
   const validImageIdSet = useMemo(() => {
     if (!isImageMode) {
-      return new Set<string>()
+      return new Set<string>();
     }
 
-    const next = new Set<string>()
+    const next = new Set<string>();
     for (const source of scopedImageSourcesEffective) {
       for (const image of source.images) {
-        next.add(image.id)
+        next.add(image.id);
       }
     }
-    return next
-  }, [isImageMode, scopedImageSourcesEffective])
+    return next;
+  }, [isImageMode, scopedImageSourcesEffective]);
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],
-  )
+  );
   const audioByIdEffective = useMemo(
     () => new Map(audiosEffective.map((audio) => [audio.id, audio])),
     [audiosEffective],
-  )
-  const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null
+  );
+  const sidebarTreeSnapshot = sidebarSnapshot?.tree ?? null;
 
   useScopedImageSourceStateSync({
     scopedImageSources: scopedImageSourcesEffective,
     setFocusByPackage,
     setPageByPackage,
     setGradeByPackage,
-  })
+  });
 
   const imageTreeRawLocal = useMemo(
-    () => (shouldUseImageSidebarSnapshot ? buildImageSidebarTree(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective) : []),
-    [scopedSearchDirectoriesEffective, scopedSearchPackagesEffective, shouldUseImageSidebarSnapshot],
-  )
+    () =>
+      shouldUseImageSidebarSnapshot
+        ? buildImageSidebarTree(
+            scopedSearchPackagesEffective,
+            scopedSearchDirectoriesEffective,
+          )
+        : [],
+    [
+      scopedSearchDirectoriesEffective,
+      scopedSearchPackagesEffective,
+      shouldUseImageSidebarSnapshot,
+    ],
+  );
   const imageTreeRaw = useMemo(
-    () => (shouldUseImageSidebarSnapshot ? (sidebarTreeSnapshot ?? imageTreeRawLocal) : imageTreeRawLocal),
+    () =>
+      shouldUseImageSidebarSnapshot
+        ? (sidebarTreeSnapshot ?? imageTreeRawLocal)
+        : imageTreeRawLocal,
     [imageTreeRawLocal, shouldUseImageSidebarSnapshot, sidebarTreeSnapshot],
-  )
+  );
 
   const imageRootNode = useMemo(
-    () => (shouldUseImageSidebarSnapshot ? findNodeById(imageTreeRaw, imageRootNodeId) : null),
+    () =>
+      shouldUseImageSidebarSnapshot
+        ? findNodeById(imageTreeRaw, imageRootNodeId)
+        : null,
     [imageRootNodeId, imageTreeRaw, shouldUseImageSidebarSnapshot],
-  )
+  );
 
   const rootScopedImageData = useRootScopedImageData({
     imageRootNode,
-    scopedImageSources: shouldUseImageSidebarSnapshot ? scopedImageSourcesEffective : [],
-  })
+    scopedImageSources: shouldUseImageSidebarSnapshot
+      ? scopedImageSourcesEffective
+      : [],
+  });
 
   const rootScopedPackageIds = useMemo(
-    () => (shouldUseImageSidebarSnapshot ? rootScopedImageData.rootScopedPackageIds : new Set<string>()),
+    () =>
+      shouldUseImageSidebarSnapshot
+        ? rootScopedImageData.rootScopedPackageIds
+        : new Set<string>(),
     [rootScopedImageData.rootScopedPackageIds, shouldUseImageSidebarSnapshot],
-  )
+  );
   const rootScopedPackages = useMemo(
-    () => (shouldUseImageSidebarSnapshot ? rootScopedImageData.rootScopedPackages : []),
+    () =>
+      shouldUseImageSidebarSnapshot
+        ? rootScopedImageData.rootScopedPackages
+        : [],
     [rootScopedImageData.rootScopedPackages, shouldUseImageSidebarSnapshot],
-  )
+  );
   const allScopedRefs = useMemo(
     () => (isImageMode ? rootScopedImageData.allScopedRefs : []),
     [isImageMode, rootScopedImageData.allScopedRefs],
-  )
+  );
 
-  const { imageTreeForSidebarNormal, normalImageSourceNodeIdMap: normalImageSourceNodeIdMapFromTree } = useImageSidebarBaseState({
+  const {
+    imageTreeForSidebarNormal,
+    normalImageSourceNodeIdMap: normalImageSourceNodeIdMapFromTree,
+  } = useImageSidebarBaseState({
     imageTreeRaw,
     imageRootNode,
-  })
+    sidebarTreeDisplayMode,
+  });
 
   const normalImageSourceNodeIdMap = useMemo(
     () =>
       shouldUseImageSidebarSnapshot
         ? normalImageSourceNodeIdMapFromTree
-        : buildImageSourceNodeIdMapFromSources(scopedSearchPackagesEffective, scopedSearchDirectoriesEffective),
+        : buildImageSourceNodeIdMapFromSources(
+            scopedSearchPackagesEffective,
+            scopedSearchDirectoriesEffective,
+          ),
     [
       normalImageSourceNodeIdMapFromTree,
       scopedSearchDirectoriesEffective,
       scopedSearchPackagesEffective,
       shouldUseImageSidebarSnapshot,
     ],
-  )
+  );
 
   const vectorSidebarState = useMemo(
     () =>
@@ -309,45 +366,55 @@ export function useAppSidebarScopeState({
         ? buildVectorSidebarState(vectorSearchResults, packageByIdEffective)
         : { nodes: [], packageNodeIdMap: new Map<string, string>() },
     [isImageMode, packageByIdEffective, vectorSearchResults],
-  )
+  );
 
-  const vectorSidebarNodes = vectorSidebarState.nodes
-  const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap
+  const vectorSidebarNodes = vectorSidebarState.nodes;
+  const vectorResultPackageNodeIdMap = vectorSidebarState.packageNodeIdMap;
 
   const imageTreeForSidebar = useMemo(() => {
     if (!shouldUseImageSidebarSnapshot) {
-      return []
+      return [];
     }
     if (isImageMode && vectorResultsActive) {
-      return vectorSidebarNodes
+      return vectorSidebarNodes;
     }
-    return imageTreeForSidebarNormal
-  }, [imageTreeForSidebarNormal, isImageMode, shouldUseImageSidebarSnapshot, vectorResultsActive, vectorSidebarNodes])
+    return imageTreeForSidebarNormal;
+  }, [
+    imageTreeForSidebarNormal,
+    isImageMode,
+    shouldUseImageSidebarSnapshot,
+    vectorResultsActive,
+    vectorSidebarNodes,
+  ]);
 
-  const imageNodeLoadStateById = useMemo(
-    () => {
-      if (!isImageMode) {
-        return {}
-      }
+  const imageNodeLoadStateById = useMemo(() => {
+    if (!isImageMode) {
+      return {};
+    }
 
-      return buildImageNodeLoadState({
-        archiveLoadStatus,
-        imageTreeForSidebar,
-        scopedImageSources: scopedImageSourcesEffective,
-        normalizePathForCompare,
-      })
-    },
-    [archiveLoadStatus, imageTreeForSidebar, isImageMode, scopedImageSourcesEffective],
-  )
+    return buildImageNodeLoadState({
+      archiveLoadStatus,
+      imageTreeForSidebar,
+      scopedImageSources: scopedImageSourcesEffective,
+      normalizePathForCompare,
+    });
+  }, [
+    archiveLoadStatus,
+    imageTreeForSidebar,
+    isImageMode,
+    scopedImageSourcesEffective,
+  ]);
 
   const normalizedVideoFeatureFilter = useMemo(
     () => ({
-      nameQuery: featureNameQuery.trim().toLocaleLowerCase('zh-CN'),
-      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase('zh-CN'),
-      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase('zh-CN'),
-      circleQuery: featureCircleQuery.trim().toLocaleLowerCase('zh-CN'),
-      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase('zh-CN'),
-      tags: featureTags.map((tag) => tag.trim().toLocaleLowerCase('zh-CN')).filter(Boolean),
+      nameQuery: featureNameQuery.trim().toLocaleLowerCase("zh-CN"),
+      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase("zh-CN"),
+      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase("zh-CN"),
+      circleQuery: featureCircleQuery.trim().toLocaleLowerCase("zh-CN"),
+      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase("zh-CN"),
+      tags: featureTags
+        .map((tag) => tag.trim().toLocaleLowerCase("zh-CN"))
+        .filter(Boolean),
       grade: featureGradeFilter,
     }),
     [
@@ -359,127 +426,194 @@ export function useAppSidebarScopeState({
       featureTags,
       featureWorkTitleQuery,
     ],
-  )
+  );
 
   const searchedVideos = useMemo(() => {
-    if (mode !== 'video' || !featureSearchActive) {
-      return videosEffective
+    if (mode !== "video" || !featureSearchActive) {
+      return videosEffective;
     }
 
     const textIncludes = (value: string, query: string) =>
-      query.length === 0 || value.toLocaleLowerCase('zh-CN').includes(query)
+      query.length === 0 || value.toLocaleLowerCase("zh-CN").includes(query);
 
     return videosEffective.filter((video) => {
       if (normalizedVideoFeatureFilter.nameQuery.length > 0) {
         const matched =
-          textIncludes(video.fileName, normalizedVideoFeatureFilter.nameQuery) ||
-          textIncludes(video.absolutePath, normalizedVideoFeatureFilter.nameQuery)
+          textIncludes(
+            video.fileName,
+            normalizedVideoFeatureFilter.nameQuery,
+          ) ||
+          textIncludes(
+            video.absolutePath,
+            normalizedVideoFeatureFilter.nameQuery,
+          );
         if (!matched) {
-          return false
+          return false;
         }
       }
 
       if (
-        ![video.workTitle, video.workTitleJpn ?? ''].some((value) =>
+        ![video.workTitle, video.workTitleJpn ?? ""].some((value) =>
           textIncludes(value, normalizedVideoFeatureFilter.workTitleQuery),
         )
       ) {
-        return false
-      }
-
-      if (!textIncludes(video.seriesId ?? '', normalizedVideoFeatureFilter.seriesIdQuery)) {
-        return false
+        return false;
       }
 
       if (
-        ![video.circle, video.circleJpn ?? ''].some((value) => textIncludes(value, normalizedVideoFeatureFilter.circleQuery))
+        !textIncludes(
+          video.seriesId ?? "",
+          normalizedVideoFeatureFilter.seriesIdQuery,
+        )
       ) {
-        return false
+        return false;
       }
 
       if (
-        ![video.author, video.authorJpn ?? ''].some((value) => textIncludes(value, normalizedVideoFeatureFilter.authorQuery))
+        ![video.circle, video.circleJpn ?? ""].some((value) =>
+          textIncludes(value, normalizedVideoFeatureFilter.circleQuery),
+        )
       ) {
-        return false
+        return false;
+      }
+
+      if (
+        ![video.author, video.authorJpn ?? ""].some((value) =>
+          textIncludes(value, normalizedVideoFeatureFilter.authorQuery),
+        )
+      ) {
+        return false;
       }
 
       if (normalizedVideoFeatureFilter.tags.length > 0) {
-        const lowerTags = video.tags.map((tag) => tag.toLocaleLowerCase('zh-CN'))
-        const matched = normalizedVideoFeatureFilter.tags.every((tag) => lowerTags.includes(tag))
+        const lowerTags = video.tags.map((tag) =>
+          tag.toLocaleLowerCase("zh-CN"),
+        );
+        const matched = normalizedVideoFeatureFilter.tags.every((tag) =>
+          lowerTags.includes(tag),
+        );
         if (!matched) {
-          return false
+          return false;
         }
       }
 
       if (normalizedVideoFeatureFilter.grade !== null) {
-        const grade = video.grade ?? 0
+        const grade = video.grade ?? 0;
         if (grade !== normalizedVideoFeatureFilter.grade) {
-          return false
+          return false;
         }
       }
 
-      return true
-    })
-  }, [featureSearchActive, mode, normalizedVideoFeatureFilter, videosEffective])
+      return true;
+    });
+  }, [
+    featureSearchActive,
+    mode,
+    normalizedVideoFeatureFilter,
+    videosEffective,
+  ]);
 
   const normalizedAudioFeatureFilter = useMemo(
     () => ({
-      nameQuery: featureNameQuery.trim().toLocaleLowerCase('zh-CN'),
-      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase('zh-CN'),
-      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase('zh-CN'),
-      circleQuery: featureCircleQuery.trim().toLocaleLowerCase('zh-CN'),
-      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase('zh-CN'),
+      nameQuery: featureNameQuery.trim().toLocaleLowerCase("zh-CN"),
+      workTitleQuery: featureWorkTitleQuery.trim().toLocaleLowerCase("zh-CN"),
+      seriesIdQuery: featureSeriesIdQuery.trim().toLocaleLowerCase("zh-CN"),
+      circleQuery: featureCircleQuery.trim().toLocaleLowerCase("zh-CN"),
+      authorQuery: featureAuthorQuery.trim().toLocaleLowerCase("zh-CN"),
     }),
-    [featureAuthorQuery, featureCircleQuery, featureNameQuery, featureSeriesIdQuery, featureWorkTitleQuery],
-  )
+    [
+      featureAuthorQuery,
+      featureCircleQuery,
+      featureNameQuery,
+      featureSeriesIdQuery,
+      featureWorkTitleQuery,
+    ],
+  );
 
   const searchedAudios = useMemo(() => {
-    if (mode !== 'music' || !featureSearchActive) {
-      return audiosEffective
+    if (mode !== "music" || !featureSearchActive) {
+      return audiosEffective;
     }
 
     const textIncludes = (value: string, query: string) =>
-      query.length === 0 || value.toLocaleLowerCase('zh-CN').includes(query)
+      query.length === 0 || value.toLocaleLowerCase("zh-CN").includes(query);
 
     return audiosEffective.filter((audio) => {
       if (normalizedAudioFeatureFilter.nameQuery.length > 0) {
         const matched =
-          textIncludes(audio.fileName, normalizedAudioFeatureFilter.nameQuery) ||
-          textIncludes(audio.absolutePath, normalizedAudioFeatureFilter.nameQuery)
+          textIncludes(
+            audio.fileName,
+            normalizedAudioFeatureFilter.nameQuery,
+          ) ||
+          textIncludes(
+            audio.absolutePath,
+            normalizedAudioFeatureFilter.nameQuery,
+          );
         if (!matched) {
-          return false
+          return false;
         }
       }
 
-      if (!textIncludes(audio.trackTitle, normalizedAudioFeatureFilter.workTitleQuery)) {
-        return false
+      if (
+        !textIncludes(
+          audio.trackTitle,
+          normalizedAudioFeatureFilter.workTitleQuery,
+        )
+      ) {
+        return false;
       }
 
-      if (!textIncludes(audio.seriesId ?? '', normalizedAudioFeatureFilter.seriesIdQuery)) {
-        return false
+      if (
+        !textIncludes(
+          audio.seriesId ?? "",
+          normalizedAudioFeatureFilter.seriesIdQuery,
+        )
+      ) {
+        return false;
       }
 
-      if (!textIncludes(audio.album, normalizedAudioFeatureFilter.circleQuery)) {
-        return false
+      if (
+        !textIncludes(audio.album, normalizedAudioFeatureFilter.circleQuery)
+      ) {
+        return false;
       }
 
-      if (!textIncludes(audio.author, normalizedAudioFeatureFilter.authorQuery)) {
-        return false
+      if (
+        !textIncludes(audio.author, normalizedAudioFeatureFilter.authorQuery)
+      ) {
+        return false;
       }
 
-      return true
-    })
-  }, [audiosEffective, featureSearchActive, mode, normalizedAudioFeatureFilter])
+      return true;
+    });
+  }, [
+    audiosEffective,
+    featureSearchActive,
+    mode,
+    normalizedAudioFeatureFilter,
+  ]);
 
-  const { videoRootNode, rootScopedVideoIds, videosForSidebar, videoTreeForSidebar } = useVideoSidebarState({
+  const {
+    videoRootNode,
+    rootScopedVideoIds,
+    videosForSidebar,
+    videoTreeForSidebar,
+  } = useVideoSidebarState({
     videos: shouldExposeVideoSidebar ? searchedVideos : [],
     videoRootNodeId,
-  })
+    sidebarTreeDisplayMode,
+  });
 
-  const { musicRootNode, rootScopedAudioIds, audiosForSidebar, audioTreeForSidebar } = useAudioSidebarState({
+  const {
+    musicRootNode,
+    rootScopedAudioIds,
+    audiosForSidebar,
+    audioTreeForSidebar,
+  } = useAudioSidebarState({
     audios: isMusicMode ? searchedAudios : [],
     musicRootNodeId,
-  })
+    sidebarTreeDisplayMode,
+  });
 
   const {
     flatSidebarNodes,
@@ -507,54 +641,59 @@ export function useAppSidebarScopeState({
     onSelectPackage: setSelectedPackageId,
     onSelectVideo: selectVideoFromBrowser,
     onSelectAudio: (audioId) => {
-      setSelectedAudioId(audioId)
+      setSelectedAudioId(audioId);
       setAudioPlaylistIds((previous) => {
         if (previous.includes(audioId)) {
-          return previous
+          return previous;
         }
-        return [...previous, audioId]
-      })
+        return [...previous, audioId];
+      });
     },
     onSetSidebarFocusMain: () => {
-      updateSettings({ sidebarFocus: 'main' })
+      updateSettings({ sidebarFocus: "main" });
     },
     onSetImageRootNodeId: (nodeId) => {
-      updateSettings({ imageRootNodeId: nodeId })
+      updateSettings({ imageRootNodeId: nodeId });
     },
     onSetVideoRootNodeId: (nodeId) => {
-      updateSettings({ videoRootNodeId: nodeId })
+      updateSettings({ videoRootNodeId: nodeId });
     },
     onSetMusicRootNodeId: (nodeId) => {
-      updateSettings({ musicRootNodeId: nodeId })
+      updateSettings({ musicRootNodeId: nodeId });
     },
-  })
+  });
 
   const sidebarDescendantNodeIdsById = useMemo(() => {
-    const next = new Map<string, string[]>()
-    const collectDescendantIds = (node: (typeof flatSidebarNodes)[number]): string[] => {
-      const descendants: string[] = []
+    const next = new Map<string, string[]>();
+    const collectDescendantIds = (
+      node: (typeof flatSidebarNodes)[number],
+    ): string[] => {
+      const descendants: string[] = [];
       const walk = (children: typeof node.children) => {
         for (const child of children) {
-          descendants.push(child.id)
+          descendants.push(child.id);
           if (child.children.length > 0) {
-            walk(child.children)
+            walk(child.children);
           }
         }
-      }
+      };
 
       if (node.children.length > 0) {
-        walk(node.children)
+        walk(node.children);
       }
-      return descendants
-    }
+      return descendants;
+    };
 
     for (const node of flatSidebarNodes) {
-      next.set(node.id, collectDescendantIds(node))
+      next.set(node.id, collectDescendantIds(node));
     }
-    return next
-  }, [flatSidebarNodes])
+    return next;
+  }, [flatSidebarNodes]);
 
-  const flatSidebarNodeIds = useMemo(() => flatSidebarNodes.map((node) => node.id), [flatSidebarNodes])
+  const flatSidebarNodeIds = useMemo(
+    () => flatSidebarNodes.map((node) => node.id),
+    [flatSidebarNodes],
+  );
 
   const {
     sidebarCheckedNodeIds,
@@ -572,53 +711,62 @@ export function useAppSidebarScopeState({
     flatSidebarNodeIds,
     validImageIdSet,
     sidebarDescendantNodeIdsById,
-  })
+  });
 
   const sidebarOrderedImageSourceIds = useMemo(() => {
-    const orderedIds: string[] = []
-    const seen = new Set<string>()
+    const orderedIds: string[] = [];
+    const seen = new Set<string>();
 
     for (const node of flatSidebarNodes) {
-      const sourceId = node.imageSourceId
+      const sourceId = node.imageSourceId;
       if (!sourceId || seen.has(sourceId)) {
-        continue
+        continue;
       }
-      if (!rootScopedPackageIds.has(sourceId) || !packageByIdEffective.has(sourceId)) {
-        continue
+      if (
+        !rootScopedPackageIds.has(sourceId) ||
+        !packageByIdEffective.has(sourceId)
+      ) {
+        continue;
       }
-      seen.add(sourceId)
-      orderedIds.push(sourceId)
+      seen.add(sourceId);
+      orderedIds.push(sourceId);
     }
 
     if (orderedIds.length > 0) {
-      return orderedIds
+      return orderedIds;
     }
 
-    return rootScopedPackages.map((pkg) => pkg.id)
-  }, [flatSidebarNodes, packageByIdEffective, rootScopedPackageIds, rootScopedPackages])
+    return rootScopedPackages.map((pkg) => pkg.id);
+  }, [
+    flatSidebarNodes,
+    packageByIdEffective,
+    rootScopedPackageIds,
+    rootScopedPackages,
+  ]);
 
-  const orderedRootScopedPackages = useMemo(
-    () => {
-      if (!shouldUseImageSidebarSnapshot) {
-        return []
-      }
+  const orderedRootScopedPackages = useMemo(() => {
+    if (!shouldUseImageSidebarSnapshot) {
+      return [];
+    }
 
-      return sidebarOrderedImageSourceIds
-        .map((sourceId) => packageByIdEffective.get(sourceId))
-        .filter((pkg): pkg is ImagePackage => Boolean(pkg))
-    },
-    [packageByIdEffective, shouldUseImageSidebarSnapshot, sidebarOrderedImageSourceIds],
-  )
+    return sidebarOrderedImageSourceIds
+      .map((sourceId) => packageByIdEffective.get(sourceId))
+      .filter((pkg): pkg is ImagePackage => Boolean(pkg));
+  }, [
+    packageByIdEffective,
+    shouldUseImageSidebarSnapshot,
+    sidebarOrderedImageSourceIds,
+  ]);
 
   const orderedRootScopedImageRefs = useMemo<FocusedImageRef[]>(() => {
-    const refs: FocusedImageRef[] = []
+    const refs: FocusedImageRef[] = [];
     for (const pkg of orderedRootScopedPackages) {
       pkg.images.forEach((_, imageIndex) => {
-        refs.push({ packageId: pkg.id, imageIndex })
-      })
+        refs.push({ packageId: pkg.id, imageIndex });
+      });
     }
-    return refs
-  }, [orderedRootScopedPackages])
+    return refs;
+  }, [orderedRootScopedPackages]);
 
   return {
     scopedImageSourcesEffective,
@@ -663,5 +811,5 @@ export function useAppSidebarScopeState({
     replaceImageCheckedIds,
     orderedRootScopedPackages,
     orderedRootScopedImageRefs,
-  }
+  };
 }

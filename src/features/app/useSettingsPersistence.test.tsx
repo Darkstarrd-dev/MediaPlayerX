@@ -186,6 +186,64 @@ describe("useSettingsPersistence", () => {
     expect(hydrationPatch).not.toHaveProperty("sidebarLabelDisplayMode");
   });
 
+  it("hydrates sidebarTreeDisplayMode when value is supported", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sidebarTreeDisplayMode: "hierarchy",
+        }),
+      );
+    });
+  });
+
+  it("drops invalid sidebarTreeDisplayMode during hydration", async () => {
+    const updateSettings = vi.fn();
+    const readAppState = vi.fn().mockResolvedValue({
+      state_json: JSON.stringify({
+        sidebarTreeDisplayMode: "bad",
+      }),
+    });
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    renderHook(() =>
+      useSettingsPersistence({
+        settings: DEFAULT_SETTINGS,
+        repository,
+        updateSettings,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(updateSettings).toHaveBeenCalled();
+    });
+
+    const hydrationPatch = updateSettings.mock.calls[0]?.[0] as Record<
+      string,
+      unknown
+    >;
+    expect(hydrationPatch).not.toHaveProperty("sidebarTreeDisplayMode");
+  });
+
   it("migrates legacy subtitleModelDir into selected profile directory", async () => {
     const updateSettings = vi.fn();
     const readAppState = vi.fn().mockResolvedValue({

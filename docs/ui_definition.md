@@ -76,7 +76,7 @@
 |---|---|---|---|---|---|
 | `fg.sidebar.expand` | `.sidebar-expand-btn` | `data-slot="fg-sidebar-expand"` | `sidebarCollapsed` | 侧栏折叠时展开按钮 | 左侧悬浮箭头 |
 | `fg.sidebar.toolbar` | `.sidebar-head` | `data-slot="fg-sidebar-toolbar"` | `!sidebarCollapsed` | 侧栏 toolbar | |
-| `fg.sidebar.toolbar.title` | `.sidebar-title-btn` | `data-slot="fg-sidebar-toolbar-title"` | always in sidebar | 结构标题/折叠触发 | |
+| `fg.sidebar.toolbar.title` | `.sidebar-title-btn` | `data-slot="fg-sidebar-toolbar-title"` | always in sidebar | 结构标题/显示模式切换（直属媒体结构 ↔ 实际路径层级） | |
 | `fg.sidebar.toolbar.back` | `.sidebar-head-icon-btn`(return) | `data-slot="fg-sidebar-toolbar-back"` | `searchResultMode` | 搜索结果返回 | |
 | `fg.sidebar.toolbar.clear` | `.sidebar-head-icon-btn`(unselectAll) | `data-slot="fg-sidebar-toolbar-clear"` | `manageMode || metadataManageMode` | 清空选择 | |
 | `fg.sidebar.toolbar.collapseAll` | `.sidebar-head-icon-btn`(collapse) | `data-slot="fg-sidebar-toolbar-collapse-all"` | `mode=image && !searchResultMode` | 一键折叠含图父级节点 | |

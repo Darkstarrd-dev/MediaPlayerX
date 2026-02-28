@@ -1,4 +1,8 @@
-import type { BrowserMode, SidebarNode } from "../types";
+import type {
+  BrowserMode,
+  SidebarNode,
+  SidebarTreeDisplayMode,
+} from "../types";
 
 export type SidebarLabelDisplayMode = "full" | "leaf";
 
@@ -26,7 +30,12 @@ export function canFolderCollapse(
   mode: BrowserMode,
   node: SidebarNode,
   imageNodeType: SidebarNode["imageNodeType"],
+  sidebarTreeDisplayMode: SidebarTreeDisplayMode = "direct",
 ): boolean {
+  if (sidebarTreeDisplayMode === "hierarchy") {
+    return node.kind === "folder" && node.children.length > 0;
+  }
+
   if (node.kind !== "folder" || node.children.length === 0) {
     return false;
   }
@@ -258,6 +267,7 @@ export function flattenVisibleSidebarRows(
   mode: BrowserMode,
   collapsedImageFolderNodeIds: Set<string>,
   rows: VisibleSidebarRow[],
+  sidebarTreeDisplayMode: SidebarTreeDisplayMode = "direct",
 ): void {
   for (const node of nodes) {
     rows.push({ node, depth });
@@ -267,11 +277,20 @@ export function flattenVisibleSidebarRows(
     }
 
     const imageNodeType = resolveImageNodeType(node);
-    const imageFolderCollapsible = canFolderCollapse(mode, node, imageNodeType);
+    const imageFolderCollapsible = canFolderCollapse(
+      mode,
+      node,
+      imageNodeType,
+      sidebarTreeDisplayMode,
+    );
     const imageFolderCollapsed =
       imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
 
     if (imageFolderCollapsed) {
+      if (sidebarTreeDisplayMode === "hierarchy") {
+        continue;
+      }
+
       for (const child of node.children) {
         if (isMediaNodeForMode(mode, child)) {
           continue;
@@ -282,6 +301,7 @@ export function flattenVisibleSidebarRows(
           mode,
           collapsedImageFolderNodeIds,
           rows,
+          sidebarTreeDisplayMode,
         );
       }
       continue;
@@ -293,6 +313,7 @@ export function flattenVisibleSidebarRows(
       mode,
       collapsedImageFolderNodeIds,
       rows,
+      sidebarTreeDisplayMode,
     );
   }
 }

@@ -310,11 +310,13 @@ export function useAppWorkspaceProps({
     return videosForSidebar.map((video) => video.id);
   }, [videoTreeForSidebar, videosForSidebar]);
 
-  const activePaletteId = appSettings.paletteMode === "night"
-    ? appSettings.paletteNightId
-    : appSettings.paletteDayId;
-  const luxuryWhiteActive = appSettings.styleId.startsWith("soft-skeuomorphic")
-    && activePaletteId === "skeuomorphic-luxury-white";
+  const activePaletteId =
+    appSettings.paletteMode === "night"
+      ? appSettings.paletteNightId
+      : appSettings.paletteDayId;
+  const luxuryWhiteActive =
+    appSettings.styleId.startsWith("soft-skeuomorphic") &&
+    activePaletteId === "skeuomorphic-luxury-white";
 
   const videoNodeBrowseMode =
     mode === "video" &&
@@ -322,8 +324,8 @@ export function useAppWorkspaceProps({
     !metadataManageMode &&
     Boolean(
       selectedSidebarNode &&
-        selectedSidebarNode.kind === "folder" &&
-        selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
+      selectedSidebarNode.kind === "folder" &&
+      selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
     );
 
   const videoNodeBrowseItems = buildVideoNodeBrowseItems({
@@ -352,6 +354,7 @@ export function useAppWorkspaceProps({
     sidebarIndentStep: appSettings.sidebarIndentStep,
     sidebarVerticalGap: appSettings.sidebarVerticalGap,
     sidebarLabelDisplayMode: appSettings.sidebarLabelDisplayMode,
+    sidebarTreeDisplayMode: appSettings.sidebarTreeDisplayMode,
     currentRootLabel: adReviewResultsMode
       ? t("ui.sidebar.adReviewResultsRoot")
       : currentRootLabel,
@@ -625,8 +628,7 @@ export function useAppWorkspaceProps({
     onThumbnailWheelDeltaPreview,
   } = useWorkspaceNodeBrowsePaging({
     nodeBrowseMode: mainNodeBrowseMode,
-    nodeBrowseNodeId:
-      mainNodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "",
+    nodeBrowseNodeId: mainNodeBrowseMode ? (selectedSidebarNode?.id ?? "") : "",
     nodeBrowseItemsLength: mainNodeBrowseItemsLength,
     pagedPageSize,
     adReviewResultsMode,
@@ -645,7 +647,10 @@ export function useAppWorkspaceProps({
 
     const pageStart = Math.max(0, nodeBrowsePageStart);
     const pageSize = Math.max(1, nodeBrowsePageSize);
-    const pagedItems = videoNodeBrowseItems.slice(pageStart, pageStart + pageSize);
+    const pagedItems = videoNodeBrowseItems.slice(
+      pageStart,
+      pageStart + pageSize,
+    );
 
     for (const item of pagedItems) {
       const videoId = item.videoId?.trim() ?? "";
@@ -666,7 +671,9 @@ export function useAppWorkspaceProps({
         continue;
       }
 
-      const hasExistingCover = Boolean(video.coverImagePath || videoCoverImageUrlById[videoId]);
+      const hasExistingCover = Boolean(
+        video.coverImagePath || videoCoverImageUrlById[videoId],
+      );
       if (hasExistingCover) {
         autoSavedVideoCoverIdsRef.current.add(videoId);
         continue;

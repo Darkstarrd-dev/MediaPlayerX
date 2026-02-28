@@ -470,6 +470,179 @@ describe("useImageSidebarBaseState", () => {
     ).toEqual(["Z:/#Sorted/Transit/Media/1.zip"]);
   });
 
+  it("层级模式下保留过程性路径节点", () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: "folder:Z:/#Sorted",
+        label: "Z:/#Sorted",
+        kind: "folder",
+        pathKey: "Z:/#Sorted",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        children: [
+          {
+            id: "folder:Z:/#Sorted/Transit",
+            label: "Transit",
+            kind: "folder",
+            pathKey: "Z:/#Sorted/Transit",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            children: [
+              {
+                id: "folder:Z:/#Sorted/Transit/Group-A",
+                label: "Group-A",
+                kind: "folder",
+                pathKey: "Z:/#Sorted/Transit/Group-A",
+                imageNodeType: "folder",
+                directImageCount: 0,
+                children: [
+                  makePackageNode("Z:/#Sorted/Transit/Group-A/1.zip", "pkg-a1"),
+                  makePackageNode("Z:/#Sorted/Transit/Group-A/2.zip", "pkg-a2"),
+                ],
+              },
+              {
+                id: "folder:Z:/#Sorted/Transit/Group-B",
+                label: "Group-B",
+                kind: "folder",
+                pathKey: "Z:/#Sorted/Transit/Group-B",
+                imageNodeType: "folder",
+                directImageCount: 0,
+                children: [
+                  makePackageNode("Z:/#Sorted/Transit/Group-B/1.zip", "pkg-b1"),
+                  makePackageNode("Z:/#Sorted/Transit/Group-B/2.zip", "pkg-b2"),
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    expect(
+      result.current.imageTreeForSidebarNormal.map((node) => node.pathKey),
+    ).toEqual(["Z:/#Sorted"]);
+    expect(
+      result.current.imageTreeForSidebarNormal[0]?.children.map(
+        (node) => node.pathKey,
+      ),
+    ).toEqual(["Z:/#Sorted/Transit"]);
+    expect(
+      result.current.imageTreeForSidebarNormal[0]?.children[0]?.children.map(
+        (node) => node.pathKey,
+      ),
+    ).toEqual(["Z:/#Sorted/Transit/Group-A", "Z:/#Sorted/Transit/Group-B"]);
+  });
+
+  it("层级模式下使用目录段名与文件名显示", () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: "folder:D:",
+        label: "D:",
+        kind: "folder",
+        pathKey: "D:",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        children: [
+          {
+            id: "folder:D:/Gallery",
+            label: "D:/Gallery",
+            kind: "folder",
+            pathKey: "D:/Gallery",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            children: [
+              {
+                id: "package:D:/Gallery/demo.zip",
+                label: "[Meta] 展示标题",
+                kind: "package",
+                pathKey: "D:/Gallery/demo.zip",
+                imageNodeType: "package",
+                packageId: "pkg-demo",
+                imageSourceId: "pkg-demo",
+                directImageCount: 1,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    const driveNode = result.current.imageTreeForSidebarNormal[0];
+    expect(driveNode?.label).toBe("D:");
+    expect(driveNode?.children[0]?.label).toBe("Gallery");
+    expect(driveNode?.children[0]?.children[0]?.label).toBe("demo.zip");
+  });
+
+  it("层级模式下直属媒体节点保留在各自父级下方", () => {
+    const imageTreeRaw: SidebarNode[] = [
+      {
+        id: "folder:D:",
+        label: "D:",
+        kind: "folder",
+        pathKey: "D:",
+        imageNodeType: "folder",
+        directImageCount: 0,
+        children: [
+          {
+            id: "folder:D:/Gallery",
+            label: "Gallery",
+            kind: "folder",
+            pathKey: "D:/Gallery",
+            imageNodeType: "folder",
+            directImageCount: 0,
+            children: [
+              makePackageNode("D:/Gallery/1.zip", "pkg-1"),
+              {
+                id: "folder:D:/Gallery/cool",
+                label: "cool",
+                kind: "folder",
+                pathKey: "D:/Gallery/cool",
+                imageNodeType: "folder",
+                directImageCount: 0,
+                children: [makePackageNode("D:/Gallery/cool/2.zip", "pkg-2")],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() =>
+      useImageSidebarBaseState({
+        imageTreeRaw,
+        imageRootNode: null,
+        sidebarTreeDisplayMode: "hierarchy",
+      }),
+    );
+
+    const galleryNode =
+      result.current.imageTreeForSidebarNormal[0]?.children[0];
+    expect(galleryNode?.children.map((node) => node.pathKey)).toEqual([
+      "D:/Gallery/1.zip",
+      "D:/Gallery/cool",
+    ]);
+    expect(
+      galleryNode?.children[1]?.children.map((node) => node.pathKey),
+    ).toEqual(["D:/Gallery/cool/2.zip"]);
+  });
+
   it("媒体目录节点不再向下展开并复用父级映射", () => {
     const imageTreeRaw: SidebarNode[] = [
       {

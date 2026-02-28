@@ -1,122 +1,164 @@
-import { useMemo } from 'react'
+import { useMemo } from "react";
 
-import { buildSidebarTree, findNodeById } from '../../mockData'
-import type { SidebarNode, VideoItem } from '../../types'
-import { collectLeafIds } from '../../utils/mediaHelpers'
-import { compactSidebarTree } from '../sidebar/compactSidebarTree'
-import { normalizePointerSidebarTree } from '../sidebar/normalizePointerSidebarTree'
+import { buildSidebarTree, findNodeById } from "../../mockData";
+import type {
+  SidebarNode,
+  SidebarTreeDisplayMode,
+  VideoItem,
+} from "../../types";
+import { collectLeafIds } from "../../utils/mediaHelpers";
+import { compactSidebarTree } from "../sidebar/compactSidebarTree";
+import { normalizePointerSidebarTree } from "../sidebar/normalizePointerSidebarTree";
 
 interface UseVideoSidebarStateParams {
-  videos: VideoItem[]
-  videoRootNodeId: string | null
+  videos: VideoItem[];
+  videoRootNodeId: string | null;
+  sidebarTreeDisplayMode?: SidebarTreeDisplayMode;
 }
 
 interface UseVideoSidebarStateResult {
-  videoTreeRaw: SidebarNode[]
-  videoRootNode: SidebarNode | null
-  rootScopedVideoIds: Set<string>
-  videosForSidebar: VideoItem[]
-  videoTreeForSidebar: SidebarNode[]
+  videoTreeRaw: SidebarNode[];
+  videoRootNode: SidebarNode | null;
+  rootScopedVideoIds: Set<string>;
+  videosForSidebar: VideoItem[];
+  videoTreeForSidebar: SidebarNode[];
 }
 
 function normalizeNodeLabelCompare(value: string): string {
-  return value.trim().replace(/\.[^./\\]+$/, '').toLowerCase()
+  return value
+    .trim()
+    .replace(/\.[^./\\]+$/, "")
+    .toLowerCase();
 }
 
 function shouldUseWorkTitleLabel(fileName: string, workTitle: string): boolean {
-  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle)
+  const normalizedWorkTitle = normalizeNodeLabelCompare(workTitle);
   if (normalizedWorkTitle.length === 0) {
-    return false
+    return false;
   }
-  return normalizeNodeLabelCompare(fileName) !== normalizedWorkTitle
+  return normalizeNodeLabelCompare(fileName) !== normalizedWorkTitle;
+}
+
+function resolveVideoLeafLabel(
+  video: Pick<VideoItem, "fileName" | "workTitle">,
+  sidebarTreeDisplayMode: SidebarTreeDisplayMode,
+): string | undefined {
+  if (sidebarTreeDisplayMode === "hierarchy") {
+    return undefined;
+  }
+
+  return shouldUseWorkTitleLabel(video.fileName, video.workTitle)
+    ? video.workTitle
+    : undefined;
 }
 
 function isCompressibleVideoFolderNode(node: SidebarNode): boolean {
-  if (node.kind !== 'folder') {
-    return false
+  if (node.kind !== "folder") {
+    return false;
   }
 
-  return !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId
+  return (
+    !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId
+  );
 }
 
 function isVideoPointerFolderNode(node: SidebarNode): boolean {
-  return isCompressibleVideoFolderNode(node)
+  return isCompressibleVideoFolderNode(node);
 }
 
 function isVideoMediaNode(node: SidebarNode): boolean {
-  return node.kind === 'video'
+  return node.kind === "video";
 }
 
 function pruneProceduralVideoPathNodes(nodes: SidebarNode[]): SidebarNode[] {
-  const next: SidebarNode[] = []
+  const next: SidebarNode[] = [];
 
   for (const node of nodes) {
-    const normalizedChildren = pruneProceduralVideoPathNodes(node.children)
+    const normalizedChildren = pruneProceduralVideoPathNodes(node.children);
     const nextNode: SidebarNode = {
       ...node,
       children: normalizedChildren,
-    }
+    };
 
-    const hasDirectVideoChild = nextNode.children.some((child) => isVideoMediaNode(child))
+    const hasDirectVideoChild = nextNode.children.some((child) =>
+      isVideoMediaNode(child),
+    );
     if (isVideoPointerFolderNode(nextNode) && !hasDirectVideoChild) {
-      next.push(...nextNode.children)
-      continue
+      next.push(...nextNode.children);
+      continue;
     }
 
-    next.push(nextNode)
+    next.push(nextNode);
   }
 
-  return next
+  return next;
 }
 
-export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSidebarStateParams): UseVideoSidebarStateResult {
+export function useVideoSidebarState({
+  videos,
+  videoRootNodeId,
+  sidebarTreeDisplayMode = "direct",
+}: UseVideoSidebarStateParams): UseVideoSidebarStateResult {
   const videoTreeRaw = useMemo(
     () =>
       buildSidebarTree(
         videos.map((video) => ({
           id: video.id,
           treePath: video.treePath,
-          leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle) ? video.workTitle : undefined,
+          leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle)
+            ? video.workTitle
+            : undefined,
         })),
-        'video',
+        "video",
       ),
     [videos],
-  )
+  );
 
-  const videoRootNode = useMemo(() => findNodeById(videoTreeRaw, videoRootNodeId), [videoRootNodeId, videoTreeRaw])
+  const videoRootNode = useMemo(
+    () => findNodeById(videoTreeRaw, videoRootNodeId),
+    [videoRootNodeId, videoTreeRaw],
+  );
 
   const rootScopedVideoIds = useMemo(() => {
     if (!videoRootNode) {
-      return new Set(videos.map((video) => video.id))
+      return new Set(videos.map((video) => video.id));
     }
-    return new Set(collectLeafIds(videoRootNode, 'video'))
-  }, [videoRootNode, videos])
+    return new Set(collectLeafIds(videoRootNode, "video"));
+  }, [videoRootNode, videos]);
 
-  const videosForSidebar = useMemo(() => videos.filter((video) => rootScopedVideoIds.has(video.id)), [rootScopedVideoIds, videos])
+  const videosForSidebar = useMemo(
+    () => videos.filter((video) => rootScopedVideoIds.has(video.id)),
+    [rootScopedVideoIds, videos],
+  );
 
   const videoTreeForSidebar = useMemo(() => {
     const rawTree = buildSidebarTree(
       videosForSidebar.map((video) => ({
         id: video.id,
         treePath: video.treePath,
-        leafLabel: shouldUseWorkTitleLabel(video.fileName, video.workTitle) ? video.workTitle : undefined,
+        leafLabel: resolveVideoLeafLabel(video, sidebarTreeDisplayMode),
       })),
-      'video',
-    )
+      "video",
+    );
 
-    const compactedTree = compactSidebarTree(rawTree, {
-      shouldCompressFolderNode: isCompressibleVideoFolderNode,
-      includeRoot: true,
-    })
+    const displayTree =
+      sidebarTreeDisplayMode === "hierarchy"
+        ? rawTree
+        : pruneProceduralVideoPathNodes(
+            compactSidebarTree(rawTree, {
+              shouldCompressFolderNode: isCompressibleVideoFolderNode,
+              includeRoot: true,
+            }),
+          );
 
-    return normalizePointerSidebarTree(
-      pruneProceduralVideoPathNodes(compactedTree),
-      {
-        isPointerFolderNode: isVideoPointerFolderNode,
-        isMediaNode: isVideoMediaNode,
-      },
-    )
-  }, [videosForSidebar])
+    return normalizePointerSidebarTree(displayTree, {
+      isPointerFolderNode: isVideoPointerFolderNode,
+      isMediaNode: isVideoMediaNode,
+      pointerLabelMode:
+        sidebarTreeDisplayMode === "hierarchy" ? "segment" : "path",
+      siblingOrder: "media-first",
+    });
+  }, [sidebarTreeDisplayMode, videosForSidebar]);
 
   return {
     videoTreeRaw,
@@ -124,5 +166,5 @@ export function useVideoSidebarState({ videos, videoRootNodeId }: UseVideoSideba
     rootScopedVideoIds,
     videosForSidebar,
     videoTreeForSidebar,
-  }
+  };
 }
