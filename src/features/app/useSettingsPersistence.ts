@@ -243,6 +243,33 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
   next.themeId = next.paletteId;
 
+  if ("layoutGapScaleCoeff" in next) {
+    next.layoutGapScaleCoeff = normalizeNumberInRange(
+      next.layoutGapScaleCoeff,
+      1,
+      0,
+      3,
+    );
+  }
+
+  if ("paneInnerGapScaleCoeff" in next) {
+    next.paneInnerGapScaleCoeff = normalizeNumberInRange(
+      next.paneInnerGapScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
+  if ("paneStackGapScaleCoeff" in next) {
+    next.paneStackGapScaleCoeff = normalizeNumberInRange(
+      next.paneStackGapScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
   if (
     typeof next.subtitleFeatureEnabled !== "boolean" &&
     "subtitleFeatureEnabled" in next

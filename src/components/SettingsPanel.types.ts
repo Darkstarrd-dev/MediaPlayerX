@@ -20,6 +20,8 @@ export interface SettingsPanelProps {
   settingsBackdropOpacity: number;
   settingsFontSize: number;
   layoutGapScaleCoeff: number;
+  paneInnerGapScaleCoeff: number;
+  paneStackGapScaleCoeff: number;
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
@@ -159,6 +161,8 @@ export interface SettingsPanelProps {
   onSettingsBackdropOpacityChange: (value: number) => void;
   onSettingsFontSizeChange: (value: number) => void;
   onLayoutGapScaleCoeffChange: (value: number) => void;
+  onPaneInnerGapScaleCoeffChange: (value: number) => void;
+  onPaneStackGapScaleCoeffChange: (value: number) => void;
   onSidebarRatioChange: (value: number) => void;
   onSidebarMinWidthChange: (value: number) => void;
   onLayoutLockedChange: (value: boolean) => void;

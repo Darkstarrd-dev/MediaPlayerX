@@ -26,6 +26,8 @@ describe("buildSettingsPanelProps", () => {
       settingsBackdropOpacity: 18,
       settingsFontSize: 14,
       layoutGapScaleCoeff: 1,
+      paneInnerGapScaleCoeff: 1,
+      paneStackGapScaleCoeff: 1,
       sidebarRatio: 0.26,
       sidebarMinWidth: 180,
       layoutLocked: false,

@@ -102,6 +102,8 @@ interface UseAppEffectsParams {
   themeId: string;
   settingsBackdropOpacity: number;
   layoutGapScaleCoeff: number;
+  paneInnerGapScaleCoeff: number;
+  paneStackGapScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
   setVectorFocusIndex: Dispatch<SetStateAction<number>>;
@@ -191,6 +193,8 @@ export function useAppEffects({
   themeId,
   settingsBackdropOpacity,
   layoutGapScaleCoeff,
+  paneInnerGapScaleCoeff,
+  paneStackGapScaleCoeff,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -971,10 +975,93 @@ export function useAppEffects({
   }, [settingsBackdropOpacity]);
 
   useEffect(() => {
-    const normalizedScale = Math.max(0, Math.min(3, layoutGapScaleCoeff));
-    document.documentElement.style.setProperty(
-      "--mpx-layout-gap-scale",
-      normalizedScale.toFixed(2),
-    );
-  }, [layoutGapScaleCoeff]);
+    const applyLayoutGapVars = () => {
+      const normalizedScale = Math.max(0, Math.min(3, layoutGapScaleCoeff));
+      const normalizedInnerScale = Math.max(0, Math.min(2, paneInnerGapScaleCoeff));
+      const normalizedStackScale = Math.max(0, Math.min(2, paneStackGapScaleCoeff));
+      const viewportWidth =
+        window.innerWidth > 0
+          ? window.innerWidth
+          : document.documentElement.clientWidth;
+      const resolvedLayoutGapPx = Math.max(
+        0,
+        Math.round(viewportWidth * 0.01 * normalizedScale),
+      );
+      const resolvedPaneInnerPaddingPx = Math.max(
+        0,
+        Math.round(viewportWidth * 0.01 * normalizedInnerScale),
+      );
+      const resolvedPaneStackGapPx = Math.max(
+        0,
+        Math.round(resolvedPaneInnerPaddingPx * 0.75 * normalizedStackScale),
+      );
+      const resolvedIconButtonSizePx = Math.max(
+        34,
+        Math.round(34 + normalizedInnerScale * 3),
+      );
+      const resolvedHeaderButtonSizePx = Math.max(
+        resolvedIconButtonSizePx,
+        Math.round(34 + normalizedInnerScale * 4),
+      );
+      const resolvedPanelHeadHeightPx = Math.max(
+        resolvedHeaderButtonSizePx,
+        resolvedHeaderButtonSizePx,
+      );
+      const resolvedControlPaddingXPx = Math.max(
+        0,
+        Math.round(normalizedInnerScale * 4),
+      );
+
+      document.documentElement.style.setProperty(
+        "--mpx-layout-gap-scale",
+        normalizedScale.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-inner-gap-scale",
+        normalizedInnerScale.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-stack-gap-scale",
+        normalizedStackScale.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-layout-gap-px",
+        `${resolvedLayoutGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-inner-padding-px",
+        `${resolvedPaneInnerPaddingPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-stack-gap-px",
+        `${resolvedPaneStackGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-icon-button-size-px",
+        `${resolvedIconButtonSizePx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-header-btn-size-px",
+        `${resolvedHeaderButtonSizePx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-panel-head-height-px",
+        `${resolvedPanelHeadHeightPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-control-padding-x",
+        `${resolvedControlPaddingXPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-header-btn-padding-x",
+        `${resolvedControlPaddingXPx}px`,
+      );
+    };
+
+    applyLayoutGapVars();
+    window.addEventListener("resize", applyLayoutGapVars);
+    return () => {
+      window.removeEventListener("resize", applyLayoutGapVars);
+    };
+  }, [layoutGapScaleCoeff, paneInnerGapScaleCoeff, paneStackGapScaleCoeff]);
 }

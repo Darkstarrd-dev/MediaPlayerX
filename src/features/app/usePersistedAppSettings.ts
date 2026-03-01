@@ -22,6 +22,8 @@ export function toPersistedAppSettings(
     settingsBackdropOpacity: settings.settingsBackdropOpacity,
     settingsFontSize: settings.settingsFontSize,
     layoutGapScaleCoeff: settings.layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff: settings.paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff: settings.paneStackGapScaleCoeff,
     sidebarRatio: settings.sidebarRatio,
     sidebarMinWidth: settings.sidebarMinWidth,
     layoutLocked: settings.layoutLocked,

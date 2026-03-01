@@ -54,6 +54,7 @@
   transition: var(--mpx-metadata-transition);
   display: flex;
   flex-direction: column;
+  gap: var(--mpx-pane-stack-gap, 8px);
 }
 
 .metadata-panel
@@ -101,30 +102,30 @@
 
 .metadata-head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
-  height: var(--mpx-panel-head-height);
-  min-height: var(--mpx-panel-head-height);
+  gap: var(--mpx-pane-stack-gap, 8px);
+  height: auto;
+  min-height: var(--mpx-icon-button-size);
   flex-shrink: 0;
   margin: calc(-1 * var(--mpx-metadata-padding))
     calc(-1 * var(--mpx-metadata-padding)) 0;
-  padding: 0 var(--mpx-metadata-padding);
+  padding: var(--mpx-pane-inner-padding-px, 0px) var(--mpx-metadata-padding) 0;
   background: var(--mpx-slot-fg-meta-toolbar-bg, transparent);
   border-bottom: none;
 }
 
 .metadata-toolbar-g3 {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-end;
+  gap: var(--mpx-pane-stack-gap, 8px);
 }
 
 .metadata-toolbar-g3 .search-trigger-btn {
-  min-width: 34px;
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  min-width: var(--mpx-icon-button-size);
+  width: var(--mpx-icon-button-size);
+  height: var(--mpx-icon-button-size);
+  min-height: var(--mpx-icon-button-size);
   padding: 0;
 }
 
@@ -143,7 +144,7 @@
 .metadata-content {
   color: var(--mpx-slot-fg-meta-main-text, var(--mpx-text-2));
   line-height: 1.5;
-  margin-top: 8px;
+  margin-top: var(--mpx-pane-stack-gap, 8px);
   min-height: 0;
   flex: 1;
   display: flex;
@@ -1137,15 +1138,12 @@
 
 [data-slot='fg-meta-footer'] {
   box-sizing: border-box;
-  height: var(--mpx-panel-footer-height, calc(var(--mpx-control-height) + 14px));
-  min-height: var(--mpx-panel-footer-min-height, calc(var(--mpx-control-height) + 14px));
-  padding: var(--mpx-panel-footer-padding-top, 7px)
+  height: var(--mpx-panel-footer-height, auto);
+  min-height: var(--mpx-panel-footer-min-height, var(--mpx-icon-button-size));
+  padding: var(--mpx-panel-footer-padding-top, 0px)
     var(--mpx-panel-footer-padding-inline, 0)
-    var(--mpx-panel-footer-padding-bottom, 0);
-  margin-top: 8px;
-  margin-right: calc(var(--mpx-main-padding, 0px) - var(--mpx-metadata-padding, 0px));
-  margin-bottom: calc(var(--mpx-main-padding, 0px) - var(--mpx-metadata-padding, 0px));
-  margin-left: calc(var(--mpx-main-padding, 0px) - var(--mpx-metadata-padding, 0px));
+    var(--mpx-panel-footer-padding-bottom, 0px);
+  margin: 0;
   flex-shrink: 0;
   color: var(--mpx-slot-fg-meta-footer-text, inherit);
 }

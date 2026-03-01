@@ -104,12 +104,30 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       fireEvent.change(settingsFontSlider, { target: { value: "1.2" } });
       expect(settingsPanel?.style.fontSize).not.toBe(fontSizeBefore);
 
-      const layoutGapSlider = screen.getByLabelText(/界面间距系数/);
+      const layoutGapSlider = screen.getByLabelText(/容器边距系数/);
       fireEvent.change(layoutGapSlider, { target: { value: "1.5" } });
       await waitFor(() => {
         expect(
           document.documentElement.style.getPropertyValue("--mpx-layout-gap-scale"),
         ).toBe("1.50");
+      });
+
+      const paneInnerGapSlider = screen.getByLabelText(/容器内边距系数/);
+      fireEvent.change(paneInnerGapSlider, { target: { value: "0.6" } });
+      await waitFor(() => {
+        expect(
+          document.documentElement.style.getPropertyValue("--mpx-pane-inner-gap-scale"),
+        ).toBe("0.60");
+      });
+
+      const paneStackGapSlider = screen.getByLabelText(
+        /容器内上中下间距系数/,
+      );
+      fireEvent.change(paneStackGapSlider, { target: { value: "0.5" } });
+      await waitFor(() => {
+        expect(
+          document.documentElement.style.getPropertyValue("--mpx-pane-stack-gap-scale"),
+        ).toBe("0.50");
       });
 
       await click(screen.getByRole("button", { name: "调试" }));

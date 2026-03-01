@@ -601,6 +601,8 @@ export function useAppTopLayerState({
     settingsBackdropOpacity: appSettings.settingsBackdropOpacity,
     settingsFontSize: appSettings.settingsFontSize,
     layoutGapScaleCoeff: appSettings.layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
     sidebarRatio: appSettings.sidebarRatio,
     sidebarMinWidth: appSettings.sidebarMinWidth,
     layoutLocked: appSettings.layoutLocked,

@@ -271,7 +271,6 @@ export interface AppHeaderProps {
 
 function AppHeader(props: AppHeaderProps) {
   const {
-    headerHeight,
     mode,
     paletteMode,
     interactionLocked = false,
@@ -425,7 +424,6 @@ function AppHeader(props: AppHeaderProps) {
       className="app-header"
       data-slot="fg-header-root"
       style={{
-        height: `${headerHeight}px`,
         ...(dualCollapsed
           ? {
               width: "100%",

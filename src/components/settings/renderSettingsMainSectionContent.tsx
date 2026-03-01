@@ -29,11 +29,11 @@ export function renderSettingsMainSection(
     const {
       uiLocale,
       layoutLocked,
-      headerHeight,
-      headerHeightScale,
       settingsFontSize,
       settingsFontSizeScale,
       layoutGapScaleCoeff,
+      paneInnerGapScaleCoeff,
+      paneStackGapScaleCoeff,
       sidebarRatio,
       sidebarMinWidth,
       sidebarMinWidthScale,
@@ -65,10 +65,11 @@ export function renderSettingsMainSection(
       settingsBackdropOpacity,
       onUiLocaleChange,
       onLayoutLockedChange,
-      onHeaderHeightChange,
       onSettingsBackdropOpacityChange,
       onSettingsFontSizeChange,
       onLayoutGapScaleCoeffChange,
+      onPaneInnerGapScaleCoeffChange,
+      onPaneStackGapScaleCoeffChange,
       onSidebarRatioChange,
       onSidebarMinWidthChange,
       onSidebarFontSizeChange,
@@ -417,6 +418,40 @@ export function renderSettingsMainSection(
             />
           </label>
           <label
+            data-tooltip-label={settingsTip("paneInnerGapScaleCoeff")}
+          >
+            {t("ui.settings.paneInnerGapScaleCoeff", {
+              value: paneInnerGapScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={paneInnerGapScaleCoeff}
+              onChange={(event) =>
+                onPaneInnerGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label
+            data-tooltip-label={settingsTip("paneStackGapScaleCoeff")}
+          >
+            {t("ui.settings.paneStackGapScaleCoeff", {
+              value: paneStackGapScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={paneStackGapScaleCoeff}
+              onChange={(event) =>
+                onPaneStackGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label
             className="settings-toggle-row"
             data-tooltip-label={settingsTip("layoutLocked")}
           >
@@ -425,24 +460,6 @@ export function renderSettingsMainSection(
               type="checkbox"
               checked={layoutLocked}
               onChange={(event) => onLayoutLockedChange(event.target.checked)}
-            />
-          </label>
-          <label data-tooltip-label={settingsTip("headerHeight")}>
-            {t("ui.settings.headerHeightScale", {
-              scale: formatScale(headerHeightScale),
-              px: headerHeight,
-            })}
-            <input
-              max={SIZE_SCALE_CONFIG.headerHeight.max}
-              min={SIZE_SCALE_CONFIG.headerHeight.min}
-              step={SIZE_SCALE_CONFIG.headerHeight.step}
-              type="range"
-              value={headerHeightScale}
-              onChange={(event) =>
-                onHeaderHeightChange(
-                  toAbsolutePx("headerHeight", Number(event.target.value)),
-                )
-              }
             />
           </label>
           <label data-tooltip-label={settingsTip("settingsFontScale")}>

@@ -5,7 +5,7 @@
   min-height: 0;
   background: var(--mpx-slot-fg-main-root-bg, var(--mpx-main-bg));
   padding: var(--mpx-main-padding);
-  gap: 8px;
+  gap: var(--mpx-pane-stack-gap, 8px);
   border-radius: var(--mpx-slot-fg-main-root-radius, var(--mpx-main-radius));
   border: var(--mpx-main-border-width) var(--mpx-main-border-style) var(--mpx-slot-fg-main-root-border,
       var(--mpx-main-border-color, var(--mpx-border-1)));
@@ -69,13 +69,13 @@
 .main-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  height: var(--mpx-panel-head-height);
-  min-height: var(--mpx-panel-head-height);
+  align-items: flex-end;
+  gap: var(--mpx-pane-stack-gap, 10px);
+  height: auto;
+  min-height: var(--mpx-icon-button-size);
   flex-shrink: 0;
   margin: calc(-1 * var(--mpx-main-padding)) calc(-1 * var(--mpx-main-padding)) 0;
-  padding: 0 var(--mpx-main-padding);
+  padding: var(--mpx-pane-inner-padding-px, 0px) var(--mpx-main-padding) 0;
   background: var(--mpx-slot-fg-main-toolbar-bg, transparent);
   border-bottom: 1px solid var(--mpx-slot-fg-main-toolbar-border,
       var(--mpx-main-border-color, var(--mpx-border-1)));
@@ -89,7 +89,7 @@
   font-size: 15px;
   line-height: 1.2;
   text-align: left;
-  padding-left: 8px;
+  padding-left: var(--mpx-pane-stack-gap, 8px);
 }
 
 .main-toolbar-title.is-video {
@@ -149,7 +149,7 @@
     inset 0 1px 0 color-mix(in srgb,
       var(--mpx-skeuo-shadow-light, #ffffff) 65%,
       transparent);
-  padding: 8px;
+  padding: var(--mpx-pane-inner-padding-px, 8px);
   isolation: isolate;
   display: grid;
   grid-auto-flow: row;
@@ -356,11 +356,11 @@
 }
 
 .main-footer {
-  --mpx-panel-footer-height: calc(var(--mpx-control-height) + 14px);
-  --mpx-panel-footer-min-height: var(--mpx-panel-footer-height);
-  --mpx-panel-footer-padding-top: 7px;
+  --mpx-panel-footer-height: auto;
+  --mpx-panel-footer-min-height: var(--mpx-icon-button-size);
+  --mpx-panel-footer-padding-top: 0px;
   --mpx-panel-footer-padding-inline: 0;
-  --mpx-panel-footer-padding-bottom: 0;
+  --mpx-panel-footer-padding-bottom: 0px;
   border-top: 1px solid var(--mpx-slot-fg-main-footer-border,
       var(--mpx-main-border-color, var(--mpx-border-1)));
   padding: var(--mpx-panel-footer-padding-top) var(--mpx-panel-footer-padding-inline) var(--mpx-panel-footer-padding-bottom);
@@ -390,7 +390,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 2px;
+  padding: 0 var(--mpx-pane-inner-padding-px, 2px);
   color: var(--mpx-slot-fg-main-footer-pagination-text, inherit);
   user-select: none;
   -webkit-user-select: none;

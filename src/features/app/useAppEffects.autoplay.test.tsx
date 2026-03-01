@@ -75,6 +75,8 @@ function createBaseParams(overrides: Partial<UseAppEffectsParams> = {}): UseAppE
     themeId: 'default',
     settingsBackdropOpacity: 60,
     layoutGapScaleCoeff: 1,
+    paneInnerGapScaleCoeff: 1,
+    paneStackGapScaleCoeff: 1,
     setAppBodyWidth: vi.fn(),
     setGridSize: vi.fn(),
     setVectorFocusIndex: vi.fn(),

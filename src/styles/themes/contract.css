@@ -11,19 +11,19 @@
   --mpx-radius-xl: 14px;
   --mpx-radius-pill: 9999px;
 
-  --mpx-panel-head-height: 54px;
+  --mpx-panel-head-height: var(--mpx-panel-head-height-px, 54px);
   --mpx-control-radius: 8px;
   --mpx-control-border-width: 1px;
   --mpx-control-height: 34px;
   --mpx-control-padding-x: 9px;
   --mpx-control-font-weight: 600;
 
-  --mpx-icon-button-size: 34px;
+  --mpx-icon-button-size: var(--mpx-icon-button-size-px, 34px);
   --mpx-icon-size: 17px;
   --mpx-header-btn-icon-display: none;
   --mpx-header-btn-label-display: inline;
   --mpx-header-btn-gap: 6px;
-  --mpx-header-btn-size: var(--mpx-control-height);
+  --mpx-header-btn-size: var(--mpx-header-btn-size-px, var(--mpx-control-height));
   --mpx-header-btn-radius: var(--mpx-control-radius);
   --mpx-header-btn-padding-x: calc(var(--mpx-control-padding-x) + 4px);
   --mpx-header-icon-size: var(--mpx-icon-size);
@@ -289,6 +289,12 @@
    * ======================================================== */
 
   /* 全局布局 */
+  --mpx-layout-gap-scale: 1;
+  --mpx-pane-inner-gap-scale: 1;
+  --mpx-pane-stack-gap-scale: 1;
+  --mpx-layout-gap-px: 0px;
+  --mpx-pane-inner-padding-px: 10px;
+  --mpx-pane-stack-gap-px: 8px;
   --mpx-layout-padding: 0px;
   --mpx-splitter-width: 8px;
   --mpx-bg-body: radial-gradient(circle at top right, var(--mpx-bg-muted), var(--mpx-bg-app) 70%);
@@ -302,6 +308,8 @@
   --mpx-panel-transform: none;
   --mpx-panel-transition: none;
   --mpx-panel-padding: 10px;
+  --mpx-pane-frame-padding: var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding));
+  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, 8px);
 
   /* Sidebar 覆写（默认继承 panel） */
   --mpx-sidebar-radius: var(--mpx-panel-radius);
@@ -311,7 +319,7 @@
   --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-sidebar-transform: var(--mpx-panel-transform);
   --mpx-sidebar-transition: var(--mpx-panel-transition);
-  --mpx-sidebar-padding: 0px;
+  --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
   --mpx-sidebar-bg: var(--mpx-bg-panel);
 
   /* Main 覆写 */
@@ -322,7 +330,7 @@
   --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-main-transform: var(--mpx-panel-transform);
   --mpx-main-transition: var(--mpx-panel-transition);
-  --mpx-main-padding: var(--mpx-panel-padding);
+  --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
   --mpx-main-bg: var(--mpx-bg-panel);
 
   /* Metadata 覆写 */
@@ -333,7 +341,7 @@
   --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-metadata-transform: var(--mpx-panel-transform);
   --mpx-metadata-transition: var(--mpx-panel-transition);
-  --mpx-metadata-padding: var(--mpx-panel-padding);
+  --mpx-metadata-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
   --mpx-metadata-bg: var(--mpx-bg-panel);
 
   /* Header 独立 */

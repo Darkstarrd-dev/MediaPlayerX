@@ -13,6 +13,8 @@ export function useAppSettingsStore() {
       settingsBackdropOpacity: state.settingsBackdropOpacity,
       settingsFontSize: state.settingsFontSize,
       layoutGapScaleCoeff: state.layoutGapScaleCoeff,
+      paneInnerGapScaleCoeff: state.paneInnerGapScaleCoeff,
+      paneStackGapScaleCoeff: state.paneStackGapScaleCoeff,
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
       layoutLocked: state.layoutLocked,

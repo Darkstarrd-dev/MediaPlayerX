@@ -299,7 +299,7 @@ select option {
 .fg-sysinfo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--mpx-pane-stack-gap, 8px);
   margin: var(--mpx-slot-fg-sysinfo-root-margin, var(--mpx-slot-fg-header-root-margin, var(--mpx-header-margin)));
   background: var(--mpx-slot-fg-sysinfo-root-bg, transparent);
 }
@@ -319,10 +319,11 @@ select option {
 .backend-error-banner {
   border-left: 3px solid var(--mpx-slot-fg-sysinfo-backend-error-border, var(--mpx-status-danger-border));
   color: var(--mpx-slot-fg-sysinfo-backend-error-text, var(--mpx-status-danger-text));
-  padding: 8px 12px;
+  padding: var(--mpx-pane-inner-padding-px, 8px)
+    var(--mpx-pane-inner-padding-px, 12px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--mpx-pane-stack-gap, 6px);
 }
 
 .backend-error-banner header strong {
@@ -347,16 +348,18 @@ select option {
 
 .backend-error-banner button {
   min-width: 58px;
-  padding: 2px 8px;
+  padding: var(--mpx-pane-stack-gap, 2px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .runtime-warning-banner {
   border-left: 3px solid var(--mpx-slot-fg-sysinfo-runtime-warning-border, var(--mpx-status-warning-border));
   color: var(--mpx-slot-fg-sysinfo-runtime-warning-text, var(--mpx-status-warning-text));
-  padding: 8px 12px;
+  padding: var(--mpx-pane-inner-padding-px, 8px)
+    var(--mpx-pane-inner-padding-px, 12px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--mpx-pane-stack-gap, 6px);
 }
 
 .runtime-warning-banner header strong {
@@ -366,12 +369,13 @@ select option {
 .runtime-warning-banner header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--mpx-pane-stack-gap, 10px);
 }
 
 .runtime-warning-banner header button {
   min-width: 70px;
-  padding: 2px 8px;
+  padding: var(--mpx-pane-stack-gap, 2px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .runtime-warning-banner ul {
@@ -393,10 +397,11 @@ select option {
 .import-task-panel {
   border-left: 3px solid var(--mpx-slot-fg-header-g1-task-import-task-panel-border, var(--mpx-status-info-border));
   color: var(--mpx-slot-fg-header-g1-task-import-task-panel-text, var(--mpx-status-info-text));
-  padding: 8px 12px;
+  padding: var(--mpx-pane-inner-padding-px, 8px)
+    var(--mpx-pane-inner-padding-px, 12px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--mpx-pane-stack-gap, 6px);
 }
 
 .import-task-panel header {
@@ -442,7 +447,8 @@ select option {
 
 .import-task-panel button {
   min-width: 58px;
-  padding: 2px 8px;
+  padding: var(--mpx-pane-stack-gap, 2px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .grade-control {
@@ -504,7 +510,7 @@ select option {
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--mpx-pane-stack-gap, 8px);
   flex-shrink: 0;
 }
 
@@ -525,7 +531,7 @@ select option {
 .toolbar-actions-manage-secondary {
   margin-left: auto;
   min-width: 0;
-  gap: 10px;
+  gap: var(--mpx-pane-stack-gap, 10px);
 }
 
 .toolbar-actions-manage-secondary .main-toolbar-summary {
@@ -597,7 +603,7 @@ select option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--mpx-pane-stack-gap, 6px);
   line-height: 1;
 }
 

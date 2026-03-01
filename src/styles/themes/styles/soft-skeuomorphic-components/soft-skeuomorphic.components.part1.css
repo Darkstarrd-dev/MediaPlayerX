@@ -8,10 +8,6 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell {
-  margin-top: 8px;
-  margin-right: var(--mpx-main-padding);
-  margin-bottom: 0;
-  margin-left: var(--mpx-main-padding);
   border: 1px solid #b8b2a6;
   border-radius: 12px;
   background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));

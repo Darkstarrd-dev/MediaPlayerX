@@ -441,8 +441,17 @@ gapped/liquid 风格下，面板有间距和圆角：
 
 | Token | 默认值 | 说明 |
 |-------|--------|------|
+| `--mpx-layout-gap-unit` | `1vw` | 统一边距基准单位（按窗口宽度 `1%`） |
+| `--mpx-layout-gap-scale` | `1` | 容器边距系数（运行时可调，`0~3`） |
+| `--mpx-pane-inner-gap-scale` | `1` | 容器内边距系数（运行时可调，`0~2`） |
+| `--mpx-pane-stack-gap-scale` | `1` | 容器内上中下间距系数（运行时可调，`0~2`） |
+| `--mpx-layout-gap-px` | `0px` | 运行时四舍五入后的统一边距像素值 |
+| `--mpx-pane-inner-padding-px` | `10px` | 运行时四舍五入后的统一内边距像素值 |
+| `--mpx-pane-stack-gap-px` | `8px` | 运行时四舍五入后的统一上中下间距像素值 |
 | `--mpx-layout-padding` | `0px` | app-body 外围 padding，非零时可见 body 背景 |
 | `--mpx-splitter-width` | `8px` | 分割条宽度（即面板间距） |
+| `--mpx-pane-frame-padding` | `var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding))` | 三栏统一外框内边距（Sidebar/Main/Metadata） |
+| `--mpx-pane-stack-gap` | `var(--mpx-pane-stack-gap-px, 8px)` | 三栏 `toolbar-main-footer` 的统一纵向节奏 |
 | `--mpx-bg-body` | `radial-gradient(...)` | body 元素完整背景值 |
 
 #### 面板共享基底
@@ -460,7 +469,7 @@ gapped/liquid 风格下，面板有间距和圆角：
 
 #### 面板独立覆写
 
-每个面板有 9 个 token，默认继承对应的 `--mpx-panel-*`：
+每个面板有 9 个 token，默认继承对应的 `--mpx-panel-*`。建议通过 `--mpx-pane-frame-padding` 统一三栏 padding：
 
 **Sidebar**：`--mpx-sidebar-{radius, border-width, border-style, shadow, backdrop-filter, transform, transition, padding, bg}`
 
@@ -966,3 +975,25 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 ### 设置面板
 
 设置面板 (`.settings-mask` + `.settings-panel`) 作为 overlay 呈现，有自己的 backdrop-filter 和 shadow。Style 的面板 token 不直接影响设置面板布局，但控件 token（button/input/range/checkbox）仍会在设置面板内生效。
+
+### 运行时布局间距系数
+
+设置面板“界面设置 -> 布局参数”支持实时写入三项系数：
+
+- `--mpx-layout-gap-scale`（容器边距系数，默认 `1.00`，范围 `0.00~3.00`，步进 `0.1`）
+- `--mpx-pane-inner-gap-scale`（容器内边距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
+- `--mpx-pane-stack-gap-scale`（容器内上中下间距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
+
+计算与取整策略：
+
+- `--mpx-layout-gap-px = round(windowWidth * 1% * --mpx-layout-gap-scale)`
+- `--mpx-pane-inner-padding-px = round(windowWidth * 1% * --mpx-pane-inner-gap-scale)`
+- `--mpx-pane-stack-gap-px = round(--mpx-pane-inner-padding-px * 0.75 * --mpx-pane-stack-gap-scale)`
+
+按钮与 head 区自适应策略：
+
+- 运行时会派生 `--mpx-icon-button-size-px`、`--mpx-header-btn-size-px`、`--mpx-panel-head-height-px` 与按钮横向 padding（整数 px）。
+- 面板 toolbar 应使用 `min-height` 而非固定 `height`，确保按钮增大时容器可自动增高，不裁切。 
+- Header 不再使用独立“高度滑条”直接设高，避免与容器参数体系冲突。
+
+推荐做法：Style 内优先消费 `--mpx-layout-gap-px`、`--mpx-pane-inner-padding-px` 与 `--mpx-pane-stack-gap-px`，避免半像素导致边缘模糊。

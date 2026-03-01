@@ -839,6 +839,8 @@ export function useAppInteractionEffects({
     themeId,
     settingsBackdropOpacity,
     layoutGapScaleCoeff: appSettings.layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
     setAppBodyWidth,
     setGridSize,
     setVectorFocusIndex,
