@@ -809,10 +809,16 @@
   .mode-switch-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  box-sizing: border-box;
+  gap: 0;
   padding: var(--mpx-button-group-inset-px, 2px);
   min-width: max-content;
   width: max-content;
+  height: auto;
+  min-height: calc(
+    var(--mpx-header-btn-size) + var(--mpx-button-group-inset-px, 2px) * 2 +
+      2px
+  );
   border: 1px solid #bcc4cf;
   border-radius: var(--mpx-radius-header-group, 12px);
   background: var(--mpx-runway-groove-bg);
@@ -841,7 +847,7 @@
   .mode-switch {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--mpx-header-item-gap, 8px);
   padding: 0;
   position: static;
   border: none;

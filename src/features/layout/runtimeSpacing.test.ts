@@ -28,6 +28,7 @@ describe("resolveRuntimeSpacing", () => {
     // D1.2 = round(10 * 0.5) = 5, E = round((12 * 0.8 * 0.5) * 1) = 5
     expect(spacing.metadataEditGridLabelGapPx).toBe(5);
     expect(spacing.buttonGroupInsetPx).toBe(5);
+    expect(spacing.controlGroupGapPx).toBe(5);
   });
 
   it("缩略图间距系数独立于 Sidebar 系数", () => {

@@ -434,7 +434,10 @@
 }
 
 .main-footer {
-  --mpx-panel-footer-height: auto;
+  --mpx-panel-footer-height: var(
+    --mpx-pane-footer-height-px,
+    calc(var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2)
+  );
   --mpx-panel-footer-min-height: var(
     --mpx-pane-footer-height-px,
     calc(var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2)

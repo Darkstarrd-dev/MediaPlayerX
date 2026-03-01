@@ -110,7 +110,7 @@ export function resolveRuntimeSpacing(
     0,
     Math.round(dBasePx * 0.5 * buttonGroupInsetScaleCoeff),
   );
-  const controlGroupGapPx = Math.max(0, Math.round(buttonGroupInsetPx * 2));
+  const controlGroupGapPx = buttonGroupInsetPx;
   const metadataEditGridLabelGapPx = Math.max(
     0,
     Math.round(sidebarGapPx * 0.5),
