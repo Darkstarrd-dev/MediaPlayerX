@@ -19,7 +19,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-main-shell .sidebar-tree {
-  background: #ecf0f3;
+  background: #e3e7ec;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist {
@@ -45,21 +45,21 @@
   box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell > .metadata-rating-group,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell > .metadata-edit-grid {
-  border: 1px solid #b8b2a6;
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell>.metadata-rating-group,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-editor-shell>.metadata-edit-grid {
+  border: 1px solid #c0c4ca;
   border-radius: 12px;
-  background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
-  box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
+  background: #e3e7ec;
+  box-shadow: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body > .metadata-rating-group,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body > .metadata-edit-grid,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body > .metadata-preference-record {
-  border: 1px solid #b8b2a6;
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body>.metadata-rating-group,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body>.metadata-edit-grid,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-video-body>.metadata-preference-record {
+  border: 1px solid #c0c4ca;
   border-radius: 12px;
-  background: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
-  box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(245, 242, 236, 0.92);
+  background: #e3e7ec;
+  box-shadow: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell {
@@ -236,7 +236,7 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls-shader-pop"] .music-ctrl-panel-option::after {
   right: 0;
-  background: #f2d796;
+  background: #c9a96e;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls-shader-pop"] .music-ctrl-option-label {
@@ -347,14 +347,14 @@
   position: relative;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 40%, var(--mpx-metal-dark) 100%);
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 1px var(--mpx-metal-dark), 0 0 0 3px var(--mpx-metal-light);
+  background: linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%);
+  box-shadow: 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .workspace.is-focus .main-pane {
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 1px var(--mpx-metal-dark), 0 0 0 3px var(--mpx-metal-light);
+  box-shadow: 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .app-header,
@@ -363,14 +363,15 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-panel {
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 40%, var(--mpx-metal-dark) 100%);
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 1px var(--mpx-metal-dark), 0 0 0 3px var(--mpx-metal-light);
+  background: linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%);
+  box-shadow: 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  --mpx-metadata-control-shadow: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar.is-focus {
-  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-    0 0 0 1px var(--mpx-metal-dark), 0 0 0 3px var(--mpx-metal-light);
+  box-shadow: 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree [data-sidebar-node-id] {
@@ -396,11 +397,11 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-label.is-collapsible.is-collapsed {
-  background: linear-gradient(135deg, #f3ead1, #e6d6b3);
+  background: linear-gradient(135deg, #ede6d6, #ddd4bf);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-label.is-collapsible:not(.is-collapsed) {
-  background: linear-gradient(135deg, #fffbf2, #f3ead1);
+  background: linear-gradient(135deg, #f8f4eb, #ede6d6);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-sidebar-main'] .sidebar-row .sidebar-label {
@@ -442,7 +443,7 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-sidebar-main'] .sidebar-row.is-active .sidebar-label::before {
   opacity: 1;
-  background: #f2d796;
+  background: #c9a96e;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-sidebar-main'] .sidebar-row.is-manage.is-selected .sidebar-label::before {
@@ -452,7 +453,7 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-sidebar-main'] .sidebar-row .sidebar-label:focus-visible::before {
   opacity: 1;
-  background: #f2d796;
+  background: #c9a96e;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
@@ -584,12 +585,15 @@
     transform: translate(var(--mpx-random-sheen-start-translate), var(--mpx-random-sheen-start-translate)) rotate(0deg);
     opacity: 0;
   }
+
   12% {
     opacity: var(--mpx-random-sheen-opacity-peak);
   }
+
   82% {
     opacity: var(--mpx-random-sheen-opacity-peak);
   }
+
   100% {
     transform: translate(var(--mpx-random-sheen-end-translate), var(--mpx-random-sheen-end-translate)) rotate(0deg);
     opacity: 0;

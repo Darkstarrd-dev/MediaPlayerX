@@ -56,7 +56,7 @@
   --mpx-input-text: #33281d;
   --mpx-input-focus-bg: #fffcf7;
   --mpx-input-focus-border: #8a6a3b;
-  --mpx-input-readonly-bg: #f5f2ec;
+  --mpx-input-readonly-bg: #f3f2ef;
   --mpx-input-readonly-text: #6e5b42;
   --mpx-input-readonly-border: #d7c6ac;
 
@@ -188,13 +188,13 @@
   --mpx-shadow-popover: 0 14px 30px rgba(116, 88, 50, 0.22);
 
   /* A3: overlay-soft 暖中性覆写（覆盖 contract.css 冷蓝灰默认值） */
-  --mpx-overlay-soft-border: #d2cfc8;
-  --mpx-overlay-soft-bg: #f4f2ee;
-  --mpx-overlay-soft-hover-bg: #edeae5;
-  --mpx-overlay-soft-focus-bg: #e6e3dd;
-  --mpx-overlay-soft-head-bg: #e8e6e1;
-  --mpx-overlay-soft-head-divider: #d4d0c9;
-  --mpx-overlay-soft-row-divider: #e1ded8;
+  --mpx-overlay-soft-border: #c0c4ca;
+  --mpx-overlay-soft-bg: #e9ecf0;
+  --mpx-overlay-soft-hover-bg: #dde2e9;
+  --mpx-overlay-soft-focus-bg: #cfd6df;
+  --mpx-overlay-soft-head-bg: #D6DBE1;
+  --mpx-overlay-soft-head-divider: #b5bdc8;
+  --mpx-overlay-soft-row-divider: #dce1e7;
 
   /* sidebar scrollbar 暖中性覆写（覆盖 style 层冷蓝灰值） */
   --mpx-sidebar-tree-scrollbar-track-bg: #edebe7;
