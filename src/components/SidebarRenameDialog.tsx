@@ -237,9 +237,10 @@ function SidebarRenameDialog({
   }
 
   return (
-    <div className="settings-floating-mask" data-slot="fg-sidebar-shortcut-rename-panel" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
+    <div className="settings-floating-mask" data-slot="fg-sidebar-shortcut-rename-ovl" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
       <section
         className="settings-floating-panel manage-group-dialog sidebar-rename-dialog"
+        data-slot="fg-sidebar-shortcut-rename-panel"
         role="document"
         onKeyDown={(event) => {
           if (event.key === 'Escape') {

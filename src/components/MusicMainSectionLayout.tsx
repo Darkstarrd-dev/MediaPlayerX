@@ -270,7 +270,7 @@ export function MusicMainSectionLayout({
 
       {fullscreenActive && typeof document !== "undefined"
         ? createPortal(
-            <div className="music-fullscreen-layer" data-overlay-close="fullscreen">
+            <div className="music-fullscreen-layer" data-slot="fg-main-content-music-fullscreen-ovl" data-overlay-close="fullscreen">
               {visualizerPane}
             </div>,
             document.body,

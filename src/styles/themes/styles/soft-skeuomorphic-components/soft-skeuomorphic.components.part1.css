@@ -153,8 +153,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-shortcut-rename-panel"]
-  .sidebar-rename-dialog {
+  [data-slot="fg-sidebar-shortcut-rename-panel"].sidebar-rename-dialog {
   border-color: var(--mpx-overlay-surface-border);
   background: var(--mpx-overlay-surface-bg);
   color: #4c4033;
@@ -162,8 +161,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-main-toolbar-manage-music-transcode-panel"]
-  .music-audio-transcode-dialog {
+  [data-slot="fg-main-toolbar-manage-music-transcode-panel"].music-audio-transcode-dialog {
   border-color: var(--mpx-overlay-surface-border);
   background: var(--mpx-overlay-surface-bg);
   color: #4c4033;

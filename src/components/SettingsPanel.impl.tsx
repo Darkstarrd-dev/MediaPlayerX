@@ -1236,7 +1236,7 @@ function SettingsPanel({
     <div
       {...settingsPanelA11y}
       className="settings-mask"
-      data-slot="fg-header-g1-settings-root-panel"
+      data-slot="fg-header-g1-settings-root-ovl"
       role="dialog"
       aria-modal="true"
       data-overlay-close="settings"
@@ -1244,6 +1244,7 @@ function SettingsPanel({
       <section
         ref={settingsPanelRef}
         className={`settings-panel ${settingsPanelDragging ? "is-dragging" : ""}`}
+        data-slot="fg-header-g1-settings-root-panel"
         style={{
           fontSize: `${settingsFontSize}px`,
           transform: `translate(${settingsPanelOffset.x}px, ${settingsPanelOffset.y}px)`,

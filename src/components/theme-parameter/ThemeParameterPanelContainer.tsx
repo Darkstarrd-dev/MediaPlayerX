@@ -278,13 +278,14 @@ function ThemeParameterPanel({
     <div
       {...panelA11y}
       className="settings-mask"
-      data-slot="fg-header-g3-theme-parameter-root-panel"
+      data-slot="fg-header-g3-theme-parameter-root-ovl"
       role="dialog"
       aria-modal="true"
       data-overlay-close="theme-parameter"
     >
       <section
         className="settings-panel theme-parameter-panel"
+        data-slot="fg-header-g3-theme-parameter-root-panel"
         style={{ fontSize: `${settingsFontSize}px` }}
       >
         <div className="settings-head">

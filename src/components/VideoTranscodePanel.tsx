@@ -167,7 +167,7 @@ export function VideoTranscodePanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-manage-video-transcode-panel"
+      data-slot="fg-main-toolbar-manage-video-transcode-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t("ui.media.videoTranscodeDialog")}
@@ -180,6 +180,7 @@ export function VideoTranscodePanel({
     >
       <section
         className="settings-floating-panel manage-group-dialog"
+        data-slot="fg-main-toolbar-manage-video-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
         <div className="music-audio-transcode-header">

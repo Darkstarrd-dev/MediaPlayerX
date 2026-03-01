@@ -20,6 +20,8 @@ export function AdReviewStartDialog({
   onClose,
   onStartWithOption,
 }: AdReviewStartDialogProps) {
+  const overlaySlot = `${slot.replace(/-panel$/, "")}-ovl`;
+
   if (!open) {
     return null;
   }
@@ -27,7 +29,7 @@ export function AdReviewStartDialog({
   return (
     <div
       className="manage-ad-review-start-mask"
-      data-slot={slot}
+      data-slot={overlaySlot}
       role="dialog"
       aria-modal="true"
       aria-label={t("a11y.manage.startModeDialog")}
@@ -39,6 +41,7 @@ export function AdReviewStartDialog({
     >
       <section
         className="settings-floating-panel manage-ad-review-start-dialog"
+        data-slot={slot}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <h3>

@@ -272,7 +272,7 @@
   background: var(--mpx-overlay-surface-bg) !important;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-main-toolbar-image-scale-pop'] .header-popover-panel {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot='fg-main-toolbar-image-scale-pop'] {
   min-width: 34px;
   width: 34px;
   min-height: 176px;

@@ -72,7 +72,7 @@ export function ImageConvertSettingsPanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-image-rs-panel"
+      data-slot="fg-main-toolbar-image-convert-ovl"
       role="dialog"
       aria-modal="true"
       aria-label="RS 转换设置"
@@ -85,6 +85,7 @@ export function ImageConvertSettingsPanel({
     >
       <section
         className="settings-floating-panel main-toolbar-image-convert-panel main-toolbar-image-convert-dialog"
+        data-slot="fg-main-toolbar-image-convert-panel"
         onMouseDown={onPanelMouseDown}
       >
         <h3 className="main-toolbar-image-convert-title">RS 转换设置</h3>

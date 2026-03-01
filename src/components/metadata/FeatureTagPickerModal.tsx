@@ -39,7 +39,7 @@ export function FeatureTagPickerModal({
   }
 
   return createPortal(
-    <div className="feature-tag-modal-overlay" role="dialog" aria-modal="true" {...buildA11yPropsByRegistry({ key: 'tagsPanel', t })}>
+    <div className="feature-tag-modal-overlay" data-slot="fg-meta-main-search-feature-tag-picker-ovl" role="dialog" aria-modal="true" {...buildA11yPropsByRegistry({ key: 'tagsPanel', t })}>
       <div
         className="feature-tag-modal-backdrop"
         onMouseDown={(event) => {

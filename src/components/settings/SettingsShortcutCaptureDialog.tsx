@@ -22,12 +22,15 @@ export function SettingsShortcutCaptureDialog({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-header-g1-settings-shortcut-capture-panel"
+      data-slot="fg-header-g1-settings-shortcut-capture-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}
     >
-      <section className="settings-floating-panel">
+      <section
+        className="settings-floating-panel"
+        data-slot="fg-header-g1-settings-shortcut-capture-panel"
+      >
         <h3>{t("ui.settings.shortcutCaptureTitle")}</h3>
         <p className="mpx-overlay-caption">{t("ui.settings.shortcutCaptureHint")}</p>
         <p className="mpx-overlay-content-surface mpx-overlay-mono-preview">

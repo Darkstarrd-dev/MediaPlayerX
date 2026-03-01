@@ -89,19 +89,19 @@
   justify-content: center;
 }
 
-[data-slot='fg-header-g1-settings-root-panel'] {
-  background: var(--mpx-slot-fg-header-g1-settings-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
-  color: var(--mpx-slot-fg-header-g1-settings-root-panel-text, inherit);
+[data-slot='fg-header-g1-settings-root-ovl'] {
+  background: var(--mpx-slot-fg-header-g1-settings-root-ovl-bg, var(--mpx-slot-fg-header-g1-settings-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
+  color: var(--mpx-slot-fg-header-g1-settings-root-ovl-text, var(--mpx-slot-fg-header-g1-settings-root-panel-text, inherit));
 }
 
-[data-slot='fg-header-g3-theme-parameter-root-panel'] {
-  background: var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
-  color: var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-text, inherit);
+[data-slot='fg-header-g3-theme-parameter-root-ovl'] {
+  background: var(--mpx-slot-fg-header-g3-theme-parameter-root-ovl-bg, var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
+  color: var(--mpx-slot-fg-header-g3-theme-parameter-root-ovl-text, var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-text, inherit));
 }
 
-[data-slot='fg-header-g3-help-root-panel'] {
-  background: var(--mpx-slot-fg-header-g3-help-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent));
-  color: var(--mpx-slot-fg-header-g3-help-root-panel-text, inherit);
+[data-slot='fg-header-g3-help-root-ovl'] {
+  background: var(--mpx-slot-fg-header-g3-help-root-ovl-bg, var(--mpx-slot-fg-header-g3-help-root-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
+  color: var(--mpx-slot-fg-header-g3-help-root-ovl-text, var(--mpx-slot-fg-header-g3-help-root-panel-text, inherit));
 }
 
 .settings-panel {

@@ -641,7 +641,7 @@ select option {
   width: var(--mpx-icon-button-size);
 }
 
-[data-slot='fg-main-toolbar-image-scale-pop'] .header-popover-panel {
+[data-slot='fg-main-toolbar-image-scale-pop'] {
   border-color: var(--mpx-slot-fg-main-toolbar-image-scale-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
   background: var(--mpx-slot-fg-main-toolbar-image-scale-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
   color: var(--mpx-slot-fg-main-toolbar-image-scale-pop-text, var(--mpx-text-1));

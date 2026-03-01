@@ -144,7 +144,7 @@ export function MusicAudioTranscodePanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-manage-music-transcode-panel"
+      data-slot="fg-main-toolbar-manage-music-transcode-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t("ui.music.audioTranscodeDialog")}
@@ -157,6 +157,7 @@ export function MusicAudioTranscodePanel({
     >
       <section
         className="settings-floating-panel manage-group-dialog music-audio-transcode-dialog"
+        data-slot="fg-main-toolbar-manage-music-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
         <div className="music-audio-transcode-header">

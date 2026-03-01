@@ -206,8 +206,8 @@ function SubtitleCleanupPanel({
   }
 
   return (
-    <div className="settings-mask" data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel" role="dialog" aria-modal="true" aria-label={t('a11y.media.subtitleCleanupDialog')} data-overlay-close="subtitle-cleanup-panel">
-      <section className="settings-panel metadata-fetch-panel" data-overlay-close="subtitle-cleanup-panel">
+    <div className="settings-mask" data-slot="fg-main-toolbar-manage-subtitle-cleanup-ovl" role="dialog" aria-modal="true" aria-label={t('a11y.media.subtitleCleanupDialog')} data-overlay-close="subtitle-cleanup-panel">
+      <section className="settings-panel metadata-fetch-panel" data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel" data-overlay-close="subtitle-cleanup-panel">
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
           <h2>{t('ui.media.subtitleCleanupTitle')}</h2>

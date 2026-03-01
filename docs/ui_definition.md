@@ -34,15 +34,19 @@
 | `fg.header.logo.state.busy` | `.logo-btn.is-task-busy` | `data-slot-state="fg-header-logo-state-busy"` | `importBusy || adReviewRunning || adReviewDeleting` | Logo 忙碌态 | 文案 `Processing...` |
 | `fg.header.logo.state.open` | `.logo-btn.is-task-open` | `data-slot-state="fg-header-logo-state-open"` | `importTaskPanelOpen` | Logo 面板展开态 | 焦点环 |
 | `fg.header.g1` | `.header-group-primary` | `data-slot="fg-header-g1"` | always | 第 1 组 | panel toggles + palette + settings（紧随 logo） |
+| `fg.header.g1.panelToggles` | `.panel-toggle-wrap` | `data-slot="fg-header-g1-panel-toggles"` | `showPanelToggleControls` | 侧栏/元数据面板切换按钮容器 | L/R 按钮组合 |
 | `fg.header.g1.toggle.sidebar` | `.panel-toggle-btn` (L) | `data-slot="fg-header-g1-toggle-sidebar"` | `showPanelToggleControls` | 侧边栏开关按钮 | L 按钮 |
 | `fg.header.g1.toggle.metadata` | `.panel-toggle-btn` (R) | `data-slot="fg-header-g1-toggle-metadata"` | `showPanelToggleControls` | 元数据面板开关按钮 | R 按钮 |
 | `fg.header.g1.task.importTask.panel` | `.import-task-panel` | `data-slot="fg-header-g1-task-import-task-panel"` | `importTaskPanelOpen` | 导入任务面板 | 渲染在 `fg.sysinfo` 容器 |
 | `fg.header.g1.task.importTask.error.panel` | `.import-task-panel > p`（错误行） | `data-slot="fg-header-g1-task-import-task-error-panel"` | `taskError != null` | 任务面板错误区 | clear 按钮 |
 | `fg.header.g1.palette` | `.window-control-btn` (palette) | `data-slot="fg-header-g1-palette"` | always | 昼夜切换按钮 | 无 popover |
 | `fg.header.g1.settings` | `.window-control-btn` (settings) | `data-slot="fg-header-g1-settings"` | always | 设置按钮 | 触发设置面板 |
-| `fg.header.g1.settings.root.panel` | `.settings-mask > .settings-panel` | `data-slot="fg-header-g1-settings-root-panel"` | `settingsOpen` | 设置面板 | 全屏遮罩+居中主面板 |
-| `fg.header.g1.settings.shortcutEdit.panel` | `.settings-floating-mask`（快捷键编辑） | `data-slot="fg-header-g1-settings-shortcut-edit-panel"` | `bindingTarget != null` | 设置子面板（编辑） | 浮层叠加在设置面板上 |
-| `fg.header.g1.settings.shortcutCapture.panel` | `.settings-floating-mask`（快捷键捕获） | `data-slot="fg-header-g1-settings-shortcut-capture-panel"` | `capturingTarget != null` | 设置子面板（捕获） | 浮层叠加 |
+| `fg.header.g1.settings.root.ovl` | `.settings-mask` | `data-slot="fg-header-g1-settings-root-ovl"` | `settingsOpen` | 设置面板遮罩层 | 全屏遮罩 |
+| `fg.header.g1.settings.root.panel` | `.settings-panel`（SettingsPanel） | `data-slot="fg-header-g1-settings-root-panel"` | `settingsOpen` | 设置面板主体 | 居中主面板 |
+| `fg.header.g1.settings.shortcutEdit.ovl` | `.settings-floating-mask`（快捷键编辑） | `data-slot="fg-header-g1-settings-shortcut-edit-ovl"` | `bindingTarget != null` | 设置子面板（编辑）遮罩层 | 浮层叠加在设置面板上 |
+| `fg.header.g1.settings.shortcutEdit.panel` | `.settings-floating-panel`（快捷键编辑） | `data-slot="fg-header-g1-settings-shortcut-edit-panel"` | `bindingTarget != null` | 设置子面板（编辑）主体 | 浮层叠加 |
+| `fg.header.g1.settings.shortcutCapture.ovl` | `.settings-floating-mask`（快捷键捕获） | `data-slot="fg-header-g1-settings-shortcut-capture-ovl"` | `capturingTarget != null` | 设置子面板（捕获）遮罩层 | 浮层叠加 |
+| `fg.header.g1.settings.shortcutCapture.panel` | `.settings-floating-panel`（快捷键捕获） | `data-slot="fg-header-g1-settings-shortcut-capture-panel"` | `capturingTarget != null` | 设置子面板（捕获）主体 | 浮层叠加 |
 | `fg.header.g2` | `.header-group-modes` | `data-slot="fg-header-g2"` | always | 第 2 组 | 模式切换（header 中心线居中） |
 | `fg.header.g2.mode.image` | `.mode-switch button` (image) | `data-slot="fg-header-g2-mode-image"` | always | Image 模式按钮 | active 样式切换 |
 | `fg.header.g2.mode.video` | `.mode-switch button` (video) | `data-slot="fg-header-g2-mode-video"` | always | Video 模式按钮 | active 样式切换 |
@@ -54,9 +58,12 @@
 | `fg.header.gDebug.themeParameter` | `.window-control-btn--theme-parameter` (T) | `data-slot="fg-header-g-debug-theme-parameter"` | `headerDebugGroupVisible` | 主题参数按钮 | 打开 ThemeParameter 面板；关闭态会先启用按钮可见性 |
 | `fg.header.g3` | `.header-group-window` | `data-slot="fg-header-g3"` | always | 第 3 组 | 帮助/窗口控制 |
 | `fg.header.g3.popoverDebugPin` | `.header-group-debug > .window-control-btn`（O/C） | `data-slot="fg-header-g3-popover-debug-pin"` | `headerDebugGroupVisible` | 调试悬浮层固定开关 | `C`=关闭，`O`=开启 |
-| `fg.header.g3.themeParameter.root.panel` | `.settings-mask > .settings-panel.theme-parameter-panel` | `data-slot="fg-header-g3-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板 | 全屏遮罩+居中主面板 |
+| `fg.header.g3.themeParameter` | `.window-control-btn--theme-parameter`（T） | `data-slot="fg-header-g3-theme-parameter"` | `themeParameterButtonVisible && !headerDebugGroupVisible` | Theme 参数按钮 | 打开 Theme 参数面板 |
+| `fg.header.g3.themeParameter.root.ovl` | `.settings-mask`（ThemeParameterPanel） | `data-slot="fg-header-g3-theme-parameter-root-ovl"` | `themeParameterOpen` | Theme 参数面板遮罩层 | 全屏遮罩 |
+| `fg.header.g3.themeParameter.root.panel` | `.settings-panel.theme-parameter-panel` | `data-slot="fg-header-g3-theme-parameter-root-panel"` | `themeParameterOpen` | Theme 参数面板主体 | 居中主面板 |
 | `fg.header.g3.help` | `.window-control-btn` (help) | `data-slot="fg-header-g3-help"` | always | 帮助按钮 | 打开 Help 面板 |
-| `fg.header.g3.help.root.panel` | `.settings-mask > .settings-panel`（HelpPanel） | `data-slot="fg-header-g3-help-root-panel"` | `helpOpen` | Help 面板 | 全屏遮罩+居中主面板 |
+| `fg.header.g3.help.root.ovl` | `.settings-mask`（HelpPanel） | `data-slot="fg-header-g3-help-root-ovl"` | `helpOpen` | Help 面板遮罩层 | 全屏遮罩 |
+| `fg.header.g3.help.root.panel` | `.settings-panel`（HelpPanel） | `data-slot="fg-header-g3-help-root-panel"` | `helpOpen` | Help 面板主体 | 居中主面板 |
 | `fg.header.g3.help.root.buttonOverlay.ovl` | `.help-overlay` | `data-slot="fg-header-g3-help-root-button-overlay-ovl"` | `helpOverlayActive` | 按钮说明覆盖层 | 打开 Help 后由面板内动作触发 |
 | `fg.header.g3.window.min` | `window-control-btn` (minimize) | `data-slot="fg-header-g3-window-min"` | desktop | 最小化 | 无面板 |
 | `fg.header.g3.window.maxrestore` | `window-control-btn` (maximize/fullscreen/restore) | `data-slot="fg-header-g3-window-maxrestore"` | desktop | 三态切换：最大化→全屏→还原 | 全屏态进入 Electron Fullscreen |
@@ -79,13 +86,15 @@
 | `fg.sidebar.toolbar.title` | `.sidebar-title-btn` | `data-slot="fg-sidebar-toolbar-title"` | always in sidebar | 结构标题/显示模式切换（直属媒体结构 ↔ 实际路径层级） | |
 | `fg.sidebar.toolbar.back` | `.sidebar-head-icon-btn`(return) | `data-slot="fg-sidebar-toolbar-back"` | `searchResultMode` | 搜索结果返回 | |
 | `fg.sidebar.toolbar.clear` | `.sidebar-head-icon-btn`(unselectAll) | `data-slot="fg-sidebar-toolbar-clear"` | `manageMode || metadataManageMode` | 清空选择 | |
+| `fg.sidebar.toolbar.labelModeToggle` | `.sidebar-head-icon-btn`(F/L) | `data-slot="fg-sidebar-toolbar-label-mode-toggle"` | `showRootToggle` | 侧栏标签显示模式切换 | `F=完整路径`，`L=末段名` |
 | `fg.sidebar.toolbar.collapseAll` | `.sidebar-head-icon-btn`(collapse) | `data-slot="fg-sidebar-toolbar-collapse-all"` | `mode=image && !searchResultMode` | 一键折叠含图父级节点 | |
 | `fg.sidebar.toolbar.prevImageParent` | `.sidebar-head-icon-btn`(prev) | `data-slot="fg-sidebar-toolbar-prev-image-parent"` | `mode=image && !searchResultMode` | 跳转到上一个含图父级节点 | |
 | `fg.sidebar.toolbar.nextImageParent` | `.sidebar-head-icon-btn`(next) | `data-slot="fg-sidebar-toolbar-next-image-parent"` | `mode=image && !searchResultMode` | 跳转到下一个含图父级节点 | |
 | `fg.sidebar.toolbar.rootToggle` | `.sidebar-head-icon-btn`(setRoot/return) | `data-slot="fg-sidebar-toolbar-root-toggle"` | `!searchResultMode` | 根范围切换 | |
 | `fg.sidebar.main` | `.sidebar-tree` | `data-slot="fg-sidebar-main"` | `!sidebarCollapsed` | 侧栏主列表区 | 可滚动 |
 | `fg.sidebar.main.label` | `.sidebar-label` | `data-slot="fg-sidebar-main-label"` | per node | 节点标签按钮 | |
-| `fg.sidebar.shortcut.rename.panel` | `.settings-floating-mask > .sidebar-rename-dialog` | `data-slot="fg-sidebar-shortcut-rename-panel"` | sidebar 上下文触发 `KeyR` 且存在目标节点 | 侧栏重命名弹窗 | 触发逻辑在 `useAppInteractionEffects` |
+| `fg.sidebar.shortcut.rename.ovl` | `.settings-floating-mask`（SidebarRenameDialog） | `data-slot="fg-sidebar-shortcut-rename-ovl"` | sidebar 上下文触发 `KeyR` 且存在目标节点 | 侧栏重命名弹窗遮罩层 | 触发逻辑在 `useAppInteractionEffects` |
+| `fg.sidebar.shortcut.rename.panel` | `.sidebar-rename-dialog` | `data-slot="fg-sidebar-shortcut-rename-panel"` | sidebar 上下文触发 `KeyR` 且存在目标节点 | 侧栏重命名弹窗主体 | 居中浮层 |
 | `fg.sidebar.footer` | 预留 | `data-slot="fg-sidebar-footer"` | 预留 | 空槽位 | 保留用于未来扩展 |
 
 ## 5. Foreground / Main
@@ -96,8 +105,10 @@
 | `fg.main.toolbar.state.manage` | 各 MainSection 的 manage 分支 | `data-slot="fg-main-toolbar-state-manage"` | `manageMode` | 管理态工具栏 | |
 | `fg.main.toolbar.state.metadata` | 各 MainSection 的 metadata 分支 | `data-slot="fg-main-toolbar-state-metadata"` | `metadataManageMode` | 元数据管理态 | |
 | `fg.main.toolbar.state.normal` | 各 MainSection 的 normal 分支 | `data-slot="fg-main-toolbar-state-normal"` | `!manageMode && !metadataManageMode` | 常规浏览态 | |
-| `fg.main.toolbar.manage.groupName.panel` | `.settings-floating-mask > .manage-group-dialog` | `data-slot="fg-main-toolbar-manage-group-name-panel"` | 分组/移动命名弹窗打开 | GroupNameDialog | 居中浮层 |
-| `fg.main.toolbar.manage.deleteConfirm.panel` | `.settings-floating-mask > .manage-confirm-dialog` | `data-slot="fg-main-toolbar-manage-delete-confirm-panel"` | 删除确认弹窗打开 | DangerConfirmDialog | 除 toolbar 外也可由 sidebar `Delete` 快捷键触发 |
+| `fg.main.toolbar.manage.groupName.ovl` | `.settings-floating-mask`（GroupNameDialog） | `data-slot="fg-main-toolbar-manage-group-name-ovl"` | 分组/移动命名弹窗打开 | GroupNameDialog 遮罩层 | |
+| `fg.main.toolbar.manage.groupName.panel` | `.manage-group-dialog`（GroupNameDialog） | `data-slot="fg-main-toolbar-manage-group-name-panel"` | 分组/移动命名弹窗打开 | GroupNameDialog 主体 | 居中浮层 |
+| `fg.main.toolbar.manage.deleteConfirm.ovl` | `.settings-floating-mask`（DangerConfirmDialog） | `data-slot="fg-main-toolbar-manage-delete-confirm-ovl"` | 删除确认弹窗打开 | DangerConfirmDialog 遮罩层 | |
+| `fg.main.toolbar.manage.deleteConfirm.panel` | `.manage-confirm-dialog`（DangerConfirmDialog） | `data-slot="fg-main-toolbar-manage-delete-confirm-panel"` | 删除确认弹窗打开 | DangerConfirmDialog 主体 | 除 toolbar 外也可由 sidebar `Delete` 快捷键触发 |
 
 ### 5.1 Main / Image
 
@@ -111,13 +122,17 @@
 | `fg.main.content.image.nameList.row` | `.name-list-row` | `data-slot="fg-main-content-image-name-list-row"` | `mode=image && showNamesOnly` | 文件名列表行容器 | |
 | `fg.main.content.image.nameList.label` | `.name-list-row-label` | `data-slot="fg-main-content-image-name-list-label"` | `mode=image && showNamesOnly` | 文件名列文本（首列） | |
 | `fg.main.content.image.marquee.ovl` | `.manage-selection-marquee` | `data-slot="fg-main-content-image-marquee-ovl"` | 框选中 | 管理框选遮罩 | fixed 定位 |
+| `fg.main.toolbar.image.scale.control` | `.main-toolbar-scale-control` | `data-slot="fg-main-toolbar-image-scale-control"` | always in image toolbar | 缩略图比例控件容器 | 触发比例 popover |
 | `fg.main.toolbar.image.scale.pop` | `.main-toolbar-scale-control .header-popover-panel` | `data-slot="fg-main-toolbar-image-scale-pop"` | scale popover open | 缩略图比例弹层 | 下拉窄面板；`level=rows`（`1→1行`，`7→7行`）；纵向方向由 axis rotate 控制，不使用 runway reverse |
 | `fg.main.toolbar.image.adReviewStrategy.pop` | `.main-toolbar-ad-review-strategy-panel` | `data-slot="fg-main-toolbar-image-ad-review-strategy-pop"` | 对应按钮 hover/open | 审核策略 popover | 左对齐下拉 |
 | `fg.main.toolbar.image.adReviewProgress.pop` | `.main-toolbar-ad-review-progress-panel` | `data-slot="fg-main-toolbar-image-ad-review-progress-pop"` | 运行中 hover/open | 审核进度 popover | 左对齐下拉 |
-| `fg.main.toolbar.image.adReviewStart.panel` | `.manage-ad-review-start-mask > .manage-ad-review-start-dialog` | `data-slot="fg-main-toolbar-image-ad-review-start-panel"` | 从图像主区工具栏启动审核时 | 审核启动对话框 | 居中浮层 |
-| `fg.main.toolbar.image.metadataFetch.panel` | `.settings-mask > .settings-panel.metadata-fetch-panel` | `data-slot="fg-main-toolbar-image-metadata-fetch-panel"` | 点击 metadata fetch 后 | 元数据抓取面板 | 全屏遮罩 |
+| `fg.main.toolbar.image.adReviewStart.ovl` | `.manage-ad-review-start-mask` | `data-slot="fg-main-toolbar-image-ad-review-start-ovl"` | 从图像主区工具栏启动审核时 | 审核启动对话框遮罩层 | |
+| `fg.main.toolbar.image.adReviewStart.panel` | `.manage-ad-review-start-dialog` | `data-slot="fg-main-toolbar-image-ad-review-start-panel"` | 从图像主区工具栏启动审核时 | 审核启动对话框主体 | 居中浮层 |
+| `fg.main.toolbar.image.metadataFetch.ovl` | `.settings-mask`（MetadataFetchPanel） | `data-slot="fg-main-toolbar-image-metadata-fetch-ovl"` | 点击 metadata fetch 后 | 元数据抓取面板遮罩层 | 全屏遮罩 |
+| `fg.main.toolbar.image.metadataFetch.panel` | `.settings-panel.metadata-fetch-panel` | `data-slot="fg-main-toolbar-image-metadata-fetch-panel"` | 点击 metadata fetch 后 | 元数据抓取面板主体 | 居中主面板 |
 | `fg.main.toolbar.image.deleteProgress.ovl` | `.ad-review-delete-overlay` | `data-slot="fg-main-toolbar-image-delete-progress-ovl"` | 批量删除执行中 | 删除等待进度覆盖层 | 全屏遮罩+进度条 |
-| `fg.main.toolbar.image.rs.panel` | `.main-toolbar-image-convert-panel` | `data-slot="fg-main-toolbar-image-rs-panel"` | manage 模式点击 `RS` 后 | 图包转换参数面板 | 6 行参数/动作区（含 Longest Edge） |
+| `fg.main.toolbar.image.convert.ovl` | `.settings-floating-mask`（ImageConvertSettingsPanel） | `data-slot="fg-main-toolbar-image-convert-ovl"` | manage 模式点击 `RS` 后 | 图包转换参数面板遮罩层 | |
+| `fg.main.toolbar.image.convert.panel` | `.main-toolbar-image-convert-panel` | `data-slot="fg-main-toolbar-image-convert-panel"` | manage 模式点击 `RS` 后 | 图包转换参数面板主体 | 6 行参数/动作区（含 Longest Edge） |
 
 ### 5.2 Main / Video
 
@@ -139,8 +154,10 @@
 | `fg.main.content.video.controls.speed.pop` | `#video-main-popover-speed.video-ctrl-panel` | `data-slot="fg-main-content-video-controls-speed-pop"` | speed open | 速度弹层 | 上弹定位 |
 | `fg.main.content.video.controls.playlist.pop` | `#video-main-popover-playlist.video-ctrl-panel` | `data-slot="fg-main-content-video-controls-playlist-pop"` | playlist open | 播放列表弹层 | fullscreen 时可见 |
 | `fg.main.content.video.controls.volume.pop` | `#video-main-popover-volume.video-ctrl-panel.is-volume` | `data-slot="fg-main-content-video-controls-volume-pop"` | volume open | 音量弹层 | 纵向轴（旋转） |
-| `fg.main.toolbar.manage.videoTranscode.panel` | `.settings-floating-mask > .manage-group-dialog`（VideoTranscodePanel） | `data-slot="fg-main-toolbar-manage-video-transcode-panel"` | manage 工具栏点击 `TC` 后 | 视频转码参数面板 | 居中浮层 |
-| `fg.main.toolbar.manage.subtitleCleanup.panel` | `.settings-mask > .settings-panel.metadata-fetch-panel`（SubtitleCleanupPanel） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel"` | manage 工具栏点击字幕清洗按钮后 | 字幕清洗面板 | 全屏遮罩 |
+| `fg.main.toolbar.manage.videoTranscode.ovl` | `.settings-floating-mask`（VideoTranscodePanel） | `data-slot="fg-main-toolbar-manage-video-transcode-ovl"` | manage 工具栏点击 `TC` 后 | 视频转码参数面板遮罩层 | |
+| `fg.main.toolbar.manage.videoTranscode.panel` | `.manage-group-dialog`（VideoTranscodePanel） | `data-slot="fg-main-toolbar-manage-video-transcode-panel"` | manage 工具栏点击 `TC` 后 | 视频转码参数面板主体 | 居中浮层 |
+| `fg.main.toolbar.manage.subtitleCleanup.ovl` | `.settings-mask`（SubtitleCleanupPanel） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-ovl"` | manage 工具栏点击字幕清洗按钮后 | 字幕清洗面板遮罩层 | 全屏遮罩 |
+| `fg.main.toolbar.manage.subtitleCleanup.panel` | `.settings-panel.metadata-fetch-panel`（SubtitleCleanupPanel） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel"` | manage 工具栏点击字幕清洗按钮后 | 字幕清洗面板主体 | 居中主面板 |
 | `fg.main.toolbar.manage.subtitleCleanup.rawPreview.panel` | `.metadata-fetch-preview-card`（Raw） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-raw-preview-panel"` | `subtitleCleanupOpen && !rawCollapsed` | 字幕清洗原文预览区 | 可折叠 textarea |
 | `fg.main.toolbar.manage.subtitleCleanup.cleanPreview.panel` | `.metadata-fetch-preview-card`（Cleaned） | `data-slot="fg-main-toolbar-manage-subtitle-cleanup-clean-preview-panel"` | `subtitleCleanupOpen && !cleanCollapsed` | 字幕清洗结果预览区 | 可编辑 textarea |
 
@@ -155,9 +172,11 @@
 | `fg.main.content.music.nameList.row` | `.name-list.music-name-list .name-list-row` | `data-slot="fg-main-content-music-name-list-row"` | `mode=music && showNamesOnly && !fullscreenActive` | 音乐文件名列表行 | |
 | `fg.main.content.music.preview.hud.ovl` | `.music-visualizer-hud` | `data-slot="fg-main-content-music-preview-hud-ovl"` | `runtimeShowFps || visualizerRuntimeError!=null` | 可视化调试/错误 HUD | 与画布同层覆盖 |
 | `fg.main.content.music.preview.fullscreenHotzone.ovl` | `.music-controls-fullscreen-hotzone` | `data-slot="fg-main-content-music-preview-fullscreen-hotzone-ovl"` | `mode=music && fullscreenActive` | 全屏控制热区 | 触发浮动控件显示 |
+| `fg.main.content.music.fullscreen.ovl` | `.music-fullscreen-layer` | `data-slot="fg-main-content-music-fullscreen-ovl"` | `mode=music && fullscreenActive` | 音乐全屏覆盖层 | portal 到 `document.body` |
 | `fg.main.content.music.controls` | `.music-controls-shell` | `data-slot="fg-main-content-music-controls"` | `mode=music && active` | 音乐控制壳 | |
 | `fg.main.content.music.controls.fullscreenFloating.panel` | `div[data-slot="fg-main-content-music-controls-fullscreen-floating-panel"]` | `data-slot="fg-main-content-music-controls-fullscreen-floating-panel"` | `mode=music && fullscreenActive` | 音乐全屏浮动控制层 | 与主内容分离的悬浮壳 |
-| `fg.main.toolbar.manage.musicTranscode.panel` | `.settings-floating-mask > .music-audio-transcode-dialog`（MusicAudioTranscodePanel） | `data-slot="fg-main-toolbar-manage-music-transcode-panel"` | manage 工具栏点击 `TC` 后 | 音频转码参数面板 | 居中浮层 |
+| `fg.main.toolbar.manage.musicTranscode.ovl` | `.settings-floating-mask`（MusicAudioTranscodePanel） | `data-slot="fg-main-toolbar-manage-music-transcode-ovl"` | manage 工具栏点击 `TC` 后 | 音频转码参数面板遮罩层 | |
+| `fg.main.toolbar.manage.musicTranscode.panel` | `.music-audio-transcode-dialog`（MusicAudioTranscodePanel） | `data-slot="fg-main-toolbar-manage-music-transcode-panel"` | manage 工具栏点击 `TC` 后 | 音频转码参数面板主体 | 居中浮层 |
 | `fg.main.content.music.controls.progress` | `.music-controls-progress` + `SkeuoRunway` | `data-slot="fg-main-content-music-controls-progress"` | 同上 | 进度控制 | |
 | `fg.main.content.music.controls.left` | `.music-controls-group.is-left` | `data-slot="fg-main-content-music-controls-left"` | 同上 | 左控制组 | |
 | `fg.main.content.music.controls.center` | `.music-controls-group.is-center` | `data-slot="fg-main-content-music-controls-center"` | 同上 | 中控制组 | |
@@ -195,9 +214,11 @@
 | `fg.meta.main.musicEditor` | `<MetadataMusicEditor />` | `data-slot="fg-meta-main-music-editor"` | `mode=music` | 音乐元数据编辑 | |
 | `fg.meta.main.musicEditor.bookletBinding.panel` | `.metadata-music-booklet-bindings` | `data-slot="fg-meta-main-music-editor-booklet-binding-panel"` | `mode=music && editable` | 封面/Booklet 绑定配置区 | coverSource/bookletSource + 快捷动作 |
 | `fg.meta.main.search` | `<MetadataSearchSection />` | `data-slot="fg-meta-main-search"` | `searchModeActive` | 元数据检索区 | |
+| `fg.meta.main.search.featureTagPicker.ovl` | `.feature-tag-modal-overlay` | `data-slot="fg-meta-main-search-feature-tag-picker-ovl"` | tag picker open | 标签选择模态遮罩层 | 全屏遮罩 |
 | `fg.meta.main.search.featureTagPicker.panel` | `.feature-tag-modal-overlay > .feature-tag-modal-panel` | `data-slot="fg-meta-main-search-feature-tag-picker-panel"` | tag picker open | 标签选择模态面板 | 全屏遮罩+居中 |
 | `fg.meta.main.adReview` | `<MetadataAdReviewSection />` | `data-slot="fg-meta-main-ad-review"` | `mode=image && manageMode && adReviewPanelOpen` | 审核区 | |
-| `fg.meta.main.adReview.start.panel` | `.manage-ad-review-start-mask > .manage-ad-review-start-dialog` | `data-slot="fg-meta-main-ad-review-start-panel"` | 从 Meta 审核区启动审核时 | 审核启动对话框 | 居中浮层 |
+| `fg.meta.main.adReview.start.ovl` | `.manage-ad-review-start-mask` | `data-slot="fg-meta-main-ad-review-start-ovl"` | 从 Meta 审核区启动审核时 | 审核启动对话框遮罩层 | |
+| `fg.meta.main.adReview.start.panel` | `.manage-ad-review-start-dialog` | `data-slot="fg-meta-main-ad-review-start-panel"` | 从 Meta 审核区启动审核时 | 审核启动对话框主体 | 居中浮层 |
 | `fg.meta.footer` | `.metadata-image-caption` | `data-slot="fg-meta-footer"` | `mode=image && showImageCanvas` | 原图说明区（文件名 + 分辨率/大小） | 第二行合并显示分辨率与大小 |
 
 ## 7. Fullscreen
@@ -221,8 +242,12 @@
 | `fs.image.controls.shell` | `.fullscreen-footer` | `data-slot="fs-image-controls-shell"` | 图像 pane 可见 | 全屏图像控制壳 | |
 | `fs.image.controls.autoplay.pop` | `.fullscreen-autoplay-popover` | `data-slot="fs-image-controls-autoplay-pop"` | autoplay popover open | 自动播放参数弹层 | upward |
 | `fs.image.controls.zoom.pop` | `.fullscreen-zoom-popover` | `data-slot="fs-image-controls-zoom-pop"` | zoom popover open | 缩放参数弹层 | upward |
-| `fs.image.controls.adjust.panel` | `.fullscreen-image-adjust-mask > .fullscreen-image-adjust-panel` | `data-slot="fs-image-controls-adjust-panel"` | 图像预览态点击 `ADJ` 后 | 全屏图像调节面板 | 默认左下，可拖拽 |
+| `fs.image.controls.adjust.ovl` | `.fullscreen-image-adjust-mask` | `data-slot="fs-image-controls-adjust-ovl"` | 图像预览态点击 `ADJ` 后 | 全屏图像调节面板遮罩层 | |
+| `fs.image.controls.adjust.panel` | `.fullscreen-image-adjust-panel` | `data-slot="fs-image-controls-adjust-panel"` | 图像预览态点击 `ADJ` 后 | 全屏图像调节面板主体 | 默认左下，可拖拽 |
 | `fs.image.convertPreview.panel` | `.fullscreen-image-compare` | `data-slot="fs-image-convert-preview-panel"` | `mode=image && imageConvertPreviewMode` | 图包转换左右对比容器 | 左原图右预览图 |
+| `fs.image.convertPreview.scale.pop` | `.header-popover-panel`（Scale） | `data-slot="fs-image-convert-preview-scale-pop"` | `mode=image && imageConvertPreviewMode && showPreviewScalePopover` | 转换预览缩放弹层 | upward |
+| `fs.image.convertPreview.format.pop` | `.fullscreen-convert-format-popover` | `data-slot="fs-image-convert-preview-format-pop"` | `mode=image && imageConvertPreviewMode && showPreviewFormatPopover` | 转换预览格式弹层 | upward |
+| `fs.image.convertPreview.quality.pop` | `.header-popover-panel`（Quality） | `data-slot="fs-image-convert-preview-quality-pop"` | `mode=image && imageConvertPreviewMode && showPreviewQualityPopover` | 转换预览质量弹层 | upward |
 | `fs.image.convertPreview.splitter` | `.fullscreen-image-compare-divider` | `data-slot="fs-image-convert-preview-splitter"` | `mode=image && imageConvertPreviewMode && !imageConvertPreviewError` | 对比中线拖拽控件 | 调整对比比例 |
 | `fs.image.convertPreview.error.ovl` | `.fullscreen-image-compare-error` | `data-slot="fs-image-convert-preview-error-ovl"` | `mode=image && imageConvertPreviewMode && imageConvertPreviewError!=null` | 转换预览失败提示层 | 回退原图显示 |
 

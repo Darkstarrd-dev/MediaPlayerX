@@ -22,12 +22,15 @@ export function SettingsShortcutBindingDialog({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-header-g1-settings-shortcut-edit-panel"
+      data-slot="fg-header-g1-settings-shortcut-edit-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t(a11yRegistry.settingsShortcutEditDialog.labelKey)}
     >
-      <section className="settings-floating-panel">
+      <section
+        className="settings-floating-panel"
+        data-slot="fg-header-g1-settings-shortcut-edit-panel"
+      >
         <h3>{bindingTarget.label}</h3>
         {currentCombos.length > 0 ? (
           <ul className="mpx-overlay-chip-list">

@@ -501,7 +501,7 @@ export function FullscreenFooter({
                 >
                   <span className="fullscreen-action-content">S</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewScalePopover} role="dialog" aria-label="Scale">
+                <div className="header-popover-panel header-popover-panel--upward" data-slot="fs-image-convert-preview-scale-pop" hidden={!showPreviewScalePopover} role="dialog" aria-label="Scale">
                   <div className="header-vertical-slider" role="group" aria-label="Scale levels">
                     <div className="header-vertical-slider-value">{previewScaleDraftValue.toFixed(1)}</div>
                     <div className="header-vertical-slider-body">
@@ -550,7 +550,7 @@ export function FullscreenFooter({
                 <button aria-pressed={showPreviewFormatPopover} className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Format ${imageConvertPreviewFormat.toUpperCase()}`}>
                   <span className="fullscreen-action-content">F</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" hidden={!showPreviewFormatPopover} role="dialog" aria-label="Format">
+                <div className="header-popover-panel header-popover-panel--upward fullscreen-convert-format-popover" data-slot="fs-image-convert-preview-format-pop" hidden={!showPreviewFormatPopover} role="dialog" aria-label="Format">
                   <div className="fullscreen-convert-format-options" role="group" aria-label="Format options">
                     {IMAGE_CONVERT_FORMAT_OPTIONS.map((option) => (
                       <button
@@ -580,7 +580,7 @@ export function FullscreenFooter({
                 <button aria-pressed={showPreviewQualityPopover} className="video-action-btn fullscreen-action-btn header-popover-trigger" type="button" data-tooltip-label={`Quality ${imageConvertPreviewQuality}`}>
                   <span className="fullscreen-action-content">Q</span>
                 </button>
-                <div className="header-popover-panel header-popover-panel--upward" hidden={!showPreviewQualityPopover} role="dialog" aria-label="Quality">
+                <div className="header-popover-panel header-popover-panel--upward" data-slot="fs-image-convert-preview-quality-pop" hidden={!showPreviewQualityPopover} role="dialog" aria-label="Quality">
                   <div className="header-vertical-slider" role="group" aria-label="Quality levels">
                     <div className="header-vertical-slider-value">{Math.round(previewQualityDraftValue)}</div>
                     <div className="header-vertical-slider-body">

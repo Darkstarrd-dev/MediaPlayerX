@@ -192,9 +192,9 @@
   font-size: inherit;
 }
 
-[data-slot='fg-sidebar-shortcut-rename-panel'] {
-  background: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
-  color: var(--mpx-slot-fg-sidebar-shortcut-rename-panel-text, inherit);
+[data-slot='fg-sidebar-shortcut-rename-ovl'] {
+  background: var(--mpx-slot-fg-sidebar-shortcut-rename-ovl-bg, var(--mpx-slot-fg-sidebar-shortcut-rename-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)));
+  color: var(--mpx-slot-fg-sidebar-shortcut-rename-ovl-text, var(--mpx-slot-fg-sidebar-shortcut-rename-panel-text, inherit));
 }
 
 @media (max-width: 900px) {

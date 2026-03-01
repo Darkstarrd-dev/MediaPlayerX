@@ -275,8 +275,8 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
   })
 
   return (
-    <div {...helpPanelA11y} className="settings-mask" data-slot="fg-header-g3-help-root-panel" role="dialog" aria-modal="true" data-overlay-close="help">
-      <section className="settings-panel" style={{ fontSize: `${settingsFontSize}px` }}>
+    <div {...helpPanelA11y} className="settings-mask" data-slot="fg-header-g3-help-root-ovl" role="dialog" aria-modal="true" data-overlay-close="help">
+      <section className="settings-panel" data-slot="fg-header-g3-help-root-panel" style={{ fontSize: `${settingsFontSize}px` }}>
         <div className="settings-head">
           <span className="settings-head-spacer" aria-hidden="true" />
           <h2>{t('ui.help.panel')}</h2>

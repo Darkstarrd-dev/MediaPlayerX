@@ -81,11 +81,12 @@ export function FullscreenImageAdjustPanel({
   return (
     <div
       className="fullscreen-image-adjust-mask"
-      data-slot="fs-image-controls-adjust-panel"
+      data-slot="fs-image-controls-adjust-ovl"
     >
       <section
         ref={panelRef}
         className={`fullscreen-image-adjust-panel${panelDragging ? " is-dragging" : ""}`}
+        data-slot="fs-image-controls-adjust-panel"
         style={panelInlineStyle}
         onMouseDown={(event) => {
           event.stopPropagation();
