@@ -3,6 +3,7 @@
   --mpx-slot-fg-main-content-image-grid-card-border: #b5bdc8;
   --mpx-slot-fg-main-content-image-grid-card-bg: var(--mpx-runway-groove-bg);
   --mpx-slot-fg-main-content-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-slot-fg-main-content-image-grid-card-padding: 5px;
   --mpx-slot-fg-main-content-image-node-grid-card-border: #b5bdc8;
   --mpx-slot-fg-main-content-image-node-grid-card-bg: var(--mpx-runway-groove-bg);
   --mpx-slot-fg-main-content-image-node-grid-card-shadow: var(--mpx-runway-groove-shadow);
@@ -10,9 +11,16 @@
   --mpx-control-hover-shadow: var(--mpx-runway-groove-shadow);
   --mpx-control-hover-transform: none;
   border-radius: var(--mpx-card-radius);
-  padding: 5px;
+  padding: var(--mpx-slot-fg-main-content-image-grid-card-padding, 5px);
   overflow: hidden;
   transition: padding 0.15s ease, box-shadow 0.25s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-image-real {
+  --mpx-slot-fg-main-content-image-grid-card-border: #b5bdc8;
+  --mpx-slot-fg-main-content-image-grid-card-bg: var(--mpx-runway-groove-bg);
+  --mpx-slot-fg-main-content-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-slot-fg-main-content-image-grid-card-padding: 5px;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"]::before,
