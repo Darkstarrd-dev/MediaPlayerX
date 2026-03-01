@@ -34,6 +34,13 @@
 ## 待办
 
 - [ ] FunASR 参数调优执行计划（高效版）：`funasr-parameter-tuning-execution-plan.md`
+- [ ] 间距系统去硬编码收口（image | video | music 三模式）
+  - [ ] Video 主区控件容器去硬编码：`src/styles/app/main/main.part3.css`（`video-controls-shell` 的 `margin-top/gap/padding`）
+  - [ ] Music 主区控件容器去硬编码：`src/styles/app/main/main.part2.css`（`music-controls-shell` 的 `margin-top/padding`，`music-controls-progress` 的 `gap/margin-bottom`）
+  - [ ] Meta Video/Music 编辑区内部间距参数化：`src/styles/app/metadata.css`（`metadata-video-body`、`metadata-music-content` 的固定 `gap: 10px`）
+  - [ ] Image/NameList 相关固定间距参数化：`src/styles/app/main/main.part2.css`（`name-list-header` 的 `gap/padding`）
+  - [ ] Main Footer 内部固定间距参数化：`src/styles/app/main/main.part1.css`（`main-footer`、`main-footer-meta`、`main-footer-pagination` 的固定 `gap`）
+  - [ ] 目标：上述区域可通过设置面板参数统一控制，不再依赖硬编码 px 常量
 
 ## 当前进展（样式统一）
 
