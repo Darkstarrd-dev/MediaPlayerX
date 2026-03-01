@@ -12,6 +12,7 @@ export function useAppSettingsStore() {
       headerHeight: state.headerHeight,
       settingsBackdropOpacity: state.settingsBackdropOpacity,
       settingsFontSize: state.settingsFontSize,
+      layoutGapScaleCoeff: state.layoutGapScaleCoeff,
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
       layoutLocked: state.layoutLocked,

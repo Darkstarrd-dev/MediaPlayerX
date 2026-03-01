@@ -307,6 +307,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.brutalCornerRadius": "新粗野圆角",
   "ui.settings.headerHeightScale": "Header 高度系数 {{scale}}（{{px}}px）",
   "ui.settings.settingsFontScale": "设置面板字体系数 {{scale}}（{{px}}px）",
+  "ui.settings.layoutGapScaleCoeff": "界面间距系数 {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar 比例 {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
     "Sidebar 最小宽度系数 {{scale}}（{{px}}px）",
@@ -356,6 +357,8 @@ export const zhCnCatalogPart1 = {
     "调整 Header 高度，影响顶部工具栏可用空间。",
   "ui.settings.tooltip.settingsFontScale":
     "调整设置面板字体大小，影响可读性与信息密度。",
+  "ui.settings.tooltip.layoutGapScaleCoeff":
+    "调整 Header/Sidebar/Main/Meta 四区之间的统一间距系数，基准为窗口宽度的 1%。",
   "ui.settings.tooltip.sidebarRatio":
     "调整侧栏占比；数值越大，内容区可用宽度越小。",
   "ui.settings.tooltip.sidebarMinWidth":

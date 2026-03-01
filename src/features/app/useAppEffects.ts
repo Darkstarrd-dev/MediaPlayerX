@@ -101,6 +101,7 @@ interface UseAppEffectsParams {
   paletteNightId: string;
   themeId: string;
   settingsBackdropOpacity: number;
+  layoutGapScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
   setVectorFocusIndex: Dispatch<SetStateAction<number>>;
@@ -189,6 +190,7 @@ export function useAppEffects({
   paletteNightId,
   themeId,
   settingsBackdropOpacity,
+  layoutGapScaleCoeff,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -967,4 +969,12 @@ export function useAppEffects({
       `${normalizedOpacity.toFixed(0)}%`,
     );
   }, [settingsBackdropOpacity]);
+
+  useEffect(() => {
+    const normalizedScale = Math.max(0, Math.min(3, layoutGapScaleCoeff));
+    document.documentElement.style.setProperty(
+      "--mpx-layout-gap-scale",
+      normalizedScale.toFixed(2),
+    );
+  }, [layoutGapScaleCoeff]);
 }

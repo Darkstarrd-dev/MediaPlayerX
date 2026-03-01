@@ -25,6 +25,7 @@ describe("buildSettingsPanelProps", () => {
       headerHeight: 56,
       settingsBackdropOpacity: 18,
       settingsFontSize: 14,
+      layoutGapScaleCoeff: 1,
       sidebarRatio: 0.26,
       sidebarMinWidth: 180,
       layoutLocked: false,

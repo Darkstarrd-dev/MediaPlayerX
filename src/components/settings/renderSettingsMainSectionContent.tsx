@@ -33,6 +33,7 @@ export function renderSettingsMainSection(
       headerHeightScale,
       settingsFontSize,
       settingsFontSizeScale,
+      layoutGapScaleCoeff,
       sidebarRatio,
       sidebarMinWidth,
       sidebarMinWidthScale,
@@ -67,6 +68,7 @@ export function renderSettingsMainSection(
       onHeaderHeightChange,
       onSettingsBackdropOpacityChange,
       onSettingsFontSizeChange,
+      onLayoutGapScaleCoeffChange,
       onSidebarRatioChange,
       onSidebarMinWidthChange,
       onSidebarFontSizeChange,
@@ -397,6 +399,23 @@ export function renderSettingsMainSection(
           <header className="settings-group-head">
             <span>{t("ui.settings.layoutSection")}</span>
           </header>
+          <label
+            data-tooltip-label={settingsTip("layoutGapScaleCoeff")}
+          >
+            {t("ui.settings.layoutGapScaleCoeff", {
+              value: layoutGapScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={3}
+              min={0}
+              step={0.1}
+              type="range"
+              value={layoutGapScaleCoeff}
+              onChange={(event) =>
+                onLayoutGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
           <label
             className="settings-toggle-row"
             data-tooltip-label={settingsTip("layoutLocked")}

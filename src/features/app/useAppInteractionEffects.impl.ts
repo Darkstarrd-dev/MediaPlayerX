@@ -838,6 +838,7 @@ export function useAppInteractionEffects({
     paletteNightId,
     themeId,
     settingsBackdropOpacity,
+    layoutGapScaleCoeff: appSettings.layoutGapScaleCoeff,
     setAppBodyWidth,
     setGridSize,
     setVectorFocusIndex,

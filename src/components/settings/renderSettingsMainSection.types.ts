@@ -161,6 +161,7 @@ export interface RenderSettingsMainSectionParams {
   shortcutConflicts: ShortcutConflict[];
   shortcutLabelByAction: Map<string, string>;
   settingsBackdropOpacity: number;
+  layoutGapScaleCoeff: number;
   databaseResetPending: boolean;
   databaseResetError: string | null;
   runtimePathUpdatePending: boolean;
@@ -215,6 +216,7 @@ export interface RenderSettingsMainSectionParams {
   onLayoutLockedChange: (value: boolean) => void;
   onHeaderHeightChange: (value: number) => void;
   onSettingsBackdropOpacityChange: (value: number) => void;
+  onLayoutGapScaleCoeffChange: (value: number) => void;
   onSettingsFontSizeChange: (value: number) => void;
   onSidebarRatioChange: (value: number) => void;
   onSidebarMinWidthChange: (value: number) => void;

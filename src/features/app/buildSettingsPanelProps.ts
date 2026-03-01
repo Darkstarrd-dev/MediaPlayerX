@@ -57,6 +57,7 @@ interface BuildSettingsPanelPropsParams {
   headerHeight: number;
   settingsBackdropOpacity: number;
   settingsFontSize: number;
+  layoutGapScaleCoeff: number;
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
@@ -191,6 +192,7 @@ export function buildSettingsPanelProps(
     headerHeight: params.headerHeight,
     settingsBackdropOpacity: params.settingsBackdropOpacity,
     settingsFontSize: params.settingsFontSize,
+    layoutGapScaleCoeff: params.layoutGapScaleCoeff,
     sidebarRatio: params.sidebarRatio,
     sidebarMinWidth: params.sidebarMinWidth,
     layoutLocked: params.layoutLocked,
@@ -365,6 +367,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ headerHeight: value }),
     onSettingsBackdropOpacityChange: (value) =>
       params.updateSettings({ settingsBackdropOpacity: value }),
+    onLayoutGapScaleCoeffChange: (value) =>
+      params.updateSettings({ layoutGapScaleCoeff: value }),
     onSettingsFontSizeChange: (value) =>
       params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,

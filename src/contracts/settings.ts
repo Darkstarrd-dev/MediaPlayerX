@@ -152,6 +152,7 @@ export const appSettingsSchema = z.object({
   headerHeight: z.number().min(48).max(96),
   settingsBackdropOpacity: z.number().min(0).max(100),
   settingsFontSize: z.number().min(12).max(24),
+  layoutGapScaleCoeff: z.number().min(0).max(3).default(1),
   sidebarRatio: z.number().min(0).max(0.95),
   sidebarMinWidth: z.number().min(80).max(640),
   layoutLocked: z.boolean(),

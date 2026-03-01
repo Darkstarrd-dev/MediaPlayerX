@@ -324,6 +324,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.brutalCornerRadius": "Brutal corner radius",
   "ui.settings.headerHeightScale": "Header height scale {{scale}} ({{px}}px)",
   "ui.settings.settingsFontScale": "Settings font scale {{scale}} ({{px}}px)",
+  "ui.settings.layoutGapScaleCoeff": "Layout gap coeff {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar ratio {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
     "Sidebar min width scale {{scale}} ({{px}}px)",
@@ -374,6 +375,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Adjust header height and available top toolbar space.",
   "ui.settings.tooltip.settingsFontScale":
     "Adjust settings panel font size for readability vs density.",
+  "ui.settings.tooltip.layoutGapScaleCoeff":
+    "Adjust the unified gap coefficient between Header/Sidebar/Main/Meta. Baseline is 1% of window width.",
   "ui.settings.tooltip.sidebarRatio":
     "Adjust sidebar ratio. Larger values reduce main content width.",
   "ui.settings.tooltip.sidebarMinWidth":

@@ -1,6 +1,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] {
-  --mpx-layout-padding: 10px;
-  --mpx-splitter-width: 14px;
+  --mpx-layout-gap-unit: 1vw;
+  --mpx-layout-padding: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1));
+  --mpx-splitter-width: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1));
   --mpx-bg-body: linear-gradient(160deg,
       color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
       var(--mpx-palette-base));
@@ -45,7 +46,7 @@
   --mpx-header-radius: 14px;
   --mpx-header-shadow: 6px 6px 16px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
     -6px -6px 16px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
-  --mpx-header-margin: 10px 10px 0px;
+  --mpx-header-margin: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) 0;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
 
@@ -102,8 +103,8 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
-  --mpx-layout-padding: 14px;
-  --mpx-header-margin: 12px 12px 0;
+  --mpx-layout-padding: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1));
+  --mpx-header-margin: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) 0;
   --mpx-panel-padding: 14px;
   --mpx-panel-radius: 18px;
   --mpx-header-radius: 16px;
@@ -142,8 +143,8 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] {
-  --mpx-layout-padding: 14px;
-  --mpx-header-margin: 12px 12px 0;
+  --mpx-layout-padding: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1));
+  --mpx-header-margin: calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)) 0;
   --mpx-panel-padding: 14px;
   --mpx-panel-radius: 18px;
   --mpx-header-radius: 16px;
