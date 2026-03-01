@@ -2,7 +2,7 @@
 
 Last updated: 2026-02-17
 
-关联方案：`docs/offline-auto-subtitle-implementation-plan.md`
+关联方案：`docs/18-offline-auto-subtitle-implementation-plan.md`
 
 ## 本阶段目标
 

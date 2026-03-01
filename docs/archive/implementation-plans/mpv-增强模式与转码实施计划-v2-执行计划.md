@@ -249,8 +249,8 @@ Last updated: 2026-02-28
 - [x] 输出处理：
   - 完成后提供“打开输出目录”按钮（通过现有 `openExternalUrl` 或新增 `openDirectory` IPC）。
 - [x] 文档同步：
-  - `docs/interaction-v1.md`：新增音频/视频转码入口与参数说明。
-  - `docs/requirements-v1.md`（如需求口径变更）。
+  - `docs/05-interaction-v1.md`：新增音频/视频转码入口与参数说明。
+  - `docs/03-requirements-v1.md`（如需求口径变更）。
 - [x] 全量回归：
   - `npm run quality:ci`
   - `npm run build:electron`

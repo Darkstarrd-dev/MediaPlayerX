@@ -47,8 +47,8 @@ styles/<name>.css     → :root[data-mpx-style="x"]    → 布局效果 + 效果
 
 Theme 系统现在与稳定槽位治理绑定，必须同时遵循：
 
-- `docs/ui_definition.md`：稳定路径 + 当前实现锚点 + 拟定唯一标识（`data-slot`）
-- `docs/token_design.md`：稳定路径 -> `--mpx-slot-*` 前缀映射
+- `docs/10-ui_definition.md`：稳定路径 + 当前实现锚点 + 拟定唯一标识（`data-slot`）
+- `docs/11-token_design.md`：稳定路径 -> `--mpx-slot-*` 前缀映射
 
 强约束：新增/修改/删除 UI 槽位时，代码与两张表必须同步更新，不允许只改其中一处。
 
@@ -126,7 +126,7 @@ src/features/theme/
 
 仅依赖以下即可开发 Style 或 Palette（不需要读取其它代码文件）：
 
-- 本文档 (`docs/theme-system-v2.md`)
+- 本文档 (`docs/08-theme-system-v2.md`)
 - `src/styles/themes/styles/_style-template.css`（Style 模板）
 - `src/styles/themes/palettes/_palette-template.css`（Palette 模板）
 - `src/styles/themes/styles/liquid-glass.css`（Style 参考实现）

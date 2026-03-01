@@ -14,14 +14,14 @@
 ## 待执行计划
 
 - [ ] 用户行为偏好分析（User Behavior Preference Analysis）与基于用户行为偏好的作品推荐（Behavior-Based Content Recommendation）：完成指标消费、推荐策略定义与前端推荐结果展示链路。
-  - 参考文档：`docs/ref/Xpanalysis.md`、`docs/preference-metrics-spec-v1.md`。
+  - 参考文档：`docs/ref/Xpanalysis.md`、`docs/16-preference-metrics-spec-v1.md`。
 
 ## 当前质量快照（v12）
 
 - 质量门禁：`npm run lint` 0 warning，`npm run build` 通过，`npm run test:coverage` 通过。
 - 结构健康：`npx madge --circular src electron` 0 循环依赖。
 - 依赖风险：`npm audit --audit-level=high` 为 high/critical 0，moderate 持续跟踪。
-- 详细评估见：`docs/project-evaluation-report-v12.md`。
+- 详细评估见：`docs/14-project-evaluation-report-v17.md`。
 
 ## 运行项目
 
@@ -117,26 +117,26 @@ npm run test
 
 ## 文档入口
 
-- `docs/README.md`
-- `docs/DOCS_INDEX.md`
-- `docs/requirements-v1.md`
-- `docs/architecture-v1.md`
-- `docs/interaction-v1.md`
-- `docs/backend-integration-guardrails.md`
-- `docs/i18n-aria-guardrails.md`
-- `docs/music-visualizer-shader-entry.md`
-- `docs/music-visualizer-shader-migration-playbook.md`
-- `docs/theme-system-v2.md`
-- `docs/theme-brainstorm-entry.md`
-- `docs/ui_definition.md`
-- `docs/token_design.md`
-- `docs/windows-release-signing-runbook.md`
-- `docs/Tips.md`
-- `docs/offline-auto-subtitle-implementation-plan.md`
-- `docs/project-evaluation-report-v12.md`
-- `docs/preference-metrics-spec-v1.md`
+- `docs/01-README.md`
+- `docs/02-DOCS_INDEX.md`
+- `docs/03-requirements-v1.md`
+- `docs/04-architecture-v1.md`
+- `docs/05-interaction-v1.md`
+- `docs/06-backend-integration-guardrails.md`
+- `docs/07-i18n-aria-guardrails.md`
+- `docs/12-music-visualizer-shader-entry.md`
+- `docs/13-music-visualizer-shader-migration-playbook.md`
+- `docs/08-theme-system-v2.md`
+- `docs/09-theme-brainstorm-entry.md`
+- `docs/10-ui_definition.md`
+- `docs/11-token_design.md`
+- `docs/25-windows-release-signing-runbook.md`
+- `docs/27-Tips.md`
+- `docs/18-offline-auto-subtitle-implementation-plan.md`
+- `docs/14-project-evaluation-report-v17.md`
+- `docs/16-preference-metrics-spec-v1.md`
 - `docs/ref/Xpanalysis.md`
-- `docs/dependency-risk-register.md`
+- `docs/15-dependency-risk-register.md`
 - `docs/archive/README.md`
 - `docs/perf/2026-02-07-scan-benchmark.md`
 - `docs/perf/2026-02-08-ui-perf-benchmark-plan.md`
@@ -147,12 +147,12 @@ npm run test
 
 UI 主题重构必须同时遵循两张表：
 
-- 槽位定义：`docs/ui_definition.md`
-- 槽位到 token 前缀映射：`docs/token_design.md`
+- 槽位定义：`docs/10-ui_definition.md`
+- 槽位到 token 前缀映射：`docs/11-token_design.md`
 
 当发生新增、修改、删除时，必须同步更新两张表；禁止只改代码不改表，或只改其中一张表。
 
-Shader 与 Theme 开发请优先阅读：`docs/music-visualizer-shader-entry.md`、`docs/music-visualizer-shader-migration-playbook.md`、`docs/theme-system-v2.md`、`docs/theme-brainstorm-entry.md`。
+Shader 与 Theme 开发请优先阅读：`docs/12-music-visualizer-shader-entry.md`、`docs/13-music-visualizer-shader-migration-playbook.md`、`docs/08-theme-system-v2.md`、`docs/09-theme-brainstorm-entry.md`。
 
 ## 质量基线
 

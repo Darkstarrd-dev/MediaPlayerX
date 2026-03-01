@@ -52,7 +52,7 @@ Last updated: 2026-02-27
 - 当前音乐可视化：`AudioContext + AnalyserNode` 从 `<audio>` 抽取频谱/波形，并输出 `512x2` 音频纹理；shader 侧通过 `iAudioLevel/iAudioBeat` + `iChannel*` 采样驱动：
   - 分析器：`src/features/music-visualizer/audioAnalyser.ts`
   - 渲染器：`src/features/music-visualizer/webglRenderer.ts`
-  - 契约文档：`docs/music-visualizer-shader-migration-playbook.md`
+  - 契约文档：`docs/13-music-visualizer-shader-migration-playbook.md`
 - 当前 preload 注入点：`window.mediaPlayerBackend`（不是 `window.backendApi`）：`electron/preload.ts`。
 - 当前音乐导入白名单：`mp3/flac/wav/ogg/m4a/opus/aac`：`electron/services/file-system-read/fileSystemReadFacadeConfig.ts`。
 - 当前 `ffmpeg/ffprobe` 为可选外部依赖（缺失会降级）：`electron/services/file-system-read/runtimeDependencyService.ts`。
@@ -446,7 +446,7 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
   - 音频转码任务默认并发改为配置化（默认 1，最高 2），并接入 CPU token 治理路径，避免并发转码抢占前台交互资源。
   - 新增/增强测试覆盖：`managementAudioTranscodeService.test.ts`（并发上限）、`audioEngineController.test.ts`（缓存命中）。
 - 2026-02-28：已补充发布说明文档：
-  - 新增 `audio-enhanced-mode-release-notes-v1.md`，覆盖已知限制、回退路径、FAQ 与许可证/源码获取说明。
+  - 新增 `20-audio-enhanced-mode-release-notes-v1.md`，覆盖已知限制、回退路径、FAQ 与许可证/源码获取说明。
 
 ---
 
@@ -510,9 +510,9 @@ ffmpeg/ffprobe 内置（用于转码与 sidecar decode）：
 
 ## 11. 文档同步要求（实施时）
 
-- 架构边界变化：同步 `docs/architecture-v1.md`。
-- 交互与设置变化：同步 `docs/interaction-v1.md`。
-- 后端接入约束变化：同步 `docs/backend-integration-guardrails.md`。
+- 架构边界变化：同步 `docs/04-architecture-v1.md`。
+- 交互与设置变化：同步 `docs/05-interaction-v1.md`。
+- 后端接入约束变化：同步 `docs/06-backend-integration-guardrails.md`。
 - 音乐可视化运行时契约变化：如新增/变更 uniform 或音频纹理语义，需同步：
-  - `docs/music-visualizer-shader-entry.md`
-  - `docs/music-visualizer-shader-migration-playbook.md`
+  - `docs/12-music-visualizer-shader-entry.md`
+  - `docs/13-music-visualizer-shader-migration-playbook.md`

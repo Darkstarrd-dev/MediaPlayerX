@@ -5,7 +5,7 @@ Last updated: 2026-02-18
 执行状态更新（2026-02-18）：
 
 - Phase 0 ~ Phase 5 已完成，阶段报告已归档到 `docs/archive/offline-auto-subtitle/`。
-- Phase 6 门禁已并入当前质量基线（见 `docs/project-evaluation-report-v12.md`）。
+- Phase 6 门禁已并入当前质量基线（见 `docs/14-project-evaluation-report-v17.md`）。
 - 下文保留原实施分解结构，作为可追溯的实现记录。
 
 ## 1. 目标与范围
@@ -149,7 +149,7 @@ Last updated: 2026-02-18
 - `src/components/settings/renderSettingsMainSection.tsx`
 - `src/i18n/locales/zh-CN.ts`
 - `src/i18n/locales/en-US.ts`
-- `docs/i18n-aria-guardrails.md`（仅遵循）
+- `docs/07-i18n-aria-guardrails.md`（仅遵循）
 
 ### TODO
 
@@ -300,7 +300,7 @@ Last updated: 2026-02-18
 
 ## Phase 6 - 回归、门禁与发布
 
-状态：`completed`（门禁结果见 `docs/project-evaluation-report-v12.md`）
+状态：`completed`（门禁结果见 `docs/14-project-evaluation-report-v17.md`）
 
 ### 目标
 
@@ -308,10 +308,10 @@ Last updated: 2026-02-18
 
 ### 涉及文件
 
-- `docs/interaction-v1.md`（必要时补交互）
-- `docs/requirements-v1.md`（必要时补范围）
-- `docs/architecture-v1.md`（必要时补模块边界）
-- `docs/backend-integration-guardrails.md`（仅遵循）
+- `docs/05-interaction-v1.md`（必要时补交互）
+- `docs/03-requirements-v1.md`（必要时补范围）
+- `docs/04-architecture-v1.md`（必要时补模块边界）
+- `docs/06-backend-integration-guardrails.md`（仅遵循）
 
 ### TODO
 

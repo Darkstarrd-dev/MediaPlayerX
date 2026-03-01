@@ -167,7 +167,7 @@
 |---|---|---|---|---|---|---|---|
 | Vite circular chunk 回归 | 中 | 中 | `npm run build` / `npx vite build` | 已关闭 | 已通过 `manualChunks` 收敛为 `ui-media-playback` | 前端 | 已完成 |
 | 结构循环依赖 2 条 | 中 | 中 | `madge --circular` | 已关闭 | contracts 与 theme-parameter 链路已收敛为单向依赖 | 前端 | 已完成 |
-| moderate 漏洞 10 项 | 中 | 中 | `npm audit --audit-level=high` | 已登记 | 按 `docs/dependency-risk-register.md` 复审，维持 high/critical=0 | 全栈 | 2026-03-15 |
+| moderate 漏洞 10 项 | 中 | 中 | `npm audit --audit-level=high` | 已登记 | 按 `docs/15-dependency-risk-register.md` 复审，维持 high/critical=0 | 全栈 | 2026-03-15 |
 | lint warning 10 条 | 低 | 高 | `npm run lint` | 已关闭 | `react-hooks/exhaustive-deps` 历史告警已清零 | 前端 | 已完成 |
 
 ### 10.2 改进建议（P1/P2）

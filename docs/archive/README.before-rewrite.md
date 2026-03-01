@@ -4,15 +4,15 @@
 
 ## 核心文档（SSOT）
 
-- `requirements-v1.md`：需求范围与行为边界。
-- `architecture-v1.md`：运行时架构、模块边界、数据流。
-- `interaction-v1.md`：界面结构、交互规则、快捷键行为。
-- `music-visualizer-shader-entry.md`：Shader 开发新对话极简入口（提示词模板 + 最小读取范围）。
-- `music-visualizer-shader-migration-playbook.md`：音乐可视化 Shader 迁移流程、排障与验收清单。
-- `backend-integration-guardrails.md`：后端接入强约束与门禁。
-- `i18n-aria-guardrails.md`：i18n 与 aria 长期开发约束（key 分层、a11y-id、门禁）。
-- `windows-release-signing-runbook.md`：Windows 发布签名与 CI 打包流程。
-- `开发启动清单.md`：跨机器拉取后的一次性启动流程。
+- `03-requirements-v1.md`：需求范围与行为边界。
+- `04-architecture-v1.md`：运行时架构、模块边界、数据流。
+- `05-interaction-v1.md`：界面结构、交互规则、快捷键行为。
+- `12-music-visualizer-shader-entry.md`：Shader 开发新对话极简入口（提示词模板 + 最小读取范围）。
+- `13-music-visualizer-shader-migration-playbook.md`：音乐可视化 Shader 迁移流程、排障与验收清单。
+- `06-backend-integration-guardrails.md`：后端接入强约束与门禁。
+- `07-i18n-aria-guardrails.md`：i18n 与 aria 长期开发约束（key 分层、a11y-id、门禁）。
+- `25-windows-release-signing-runbook.md`：Windows 发布签名与 CI 打包流程。
+- `26-开发启动清单.md`：跨机器拉取后的一次性启动流程。
 
 ## 质量与稳定性
 
@@ -23,7 +23,7 @@
 ## 当前实施计划
 
 - `ad-review-audit-mode-fix-implementation-plan.md`：广告审核模式 5 项问题修复计划（分 Phase、最小读取、测试门禁、提交推送门禁）。
-- `offline-auto-subtitle-implementation-plan.md`：离线自动字幕实施方案（可选安装、模型按需下载、DirectML/CPU 自动回退、分 Phase 门禁）。
+- `18-offline-auto-subtitle-implementation-plan.md`：离线自动字幕实施方案（可选安装、模型按需下载、DirectML/CPU 自动回退、分 Phase 门禁）。
 - `offline-auto-subtitle-phase0-report.md`：离线自动字幕 Phase 0 执行记录（探针脚本、阻塞项、风险清单）。
 - `offline-auto-subtitle-phase1-report.md`：离线自动字幕 Phase 1 执行记录（可选安装组件与运行时探测）。
 - `offline-auto-subtitle-phase2-report.md`：离线自动字幕 Phase 2 执行记录（设置项、模型目录与基础 UI）。
@@ -33,7 +33,7 @@
 
 ## 主题与 UI
 
-- `ui/theme-system-v2.md`：主题系统 V2 规范（主文档）。
+- `ui/08-theme-system-v2.md`：主题系统 V2 规范（主文档）。
 - `ui/theme-system-v1.md`：主题系统 V1 历史文档（仅追溯）。
 - `ui/instruction.md`：主题/样式开发说明。
 - `ui/theme-playground.html`：主题调试页。
@@ -59,8 +59,8 @@
 
 1. 基于 `docs/aria-regression-checklist.md` 执行全量回归签收（zh-CN / en-US、键盘流、屏幕阅读器）。
 2. 基于 `docs/copy-review-checklist.md` 执行文案统一审校，补齐边角错误文案与术语一致性。
-3. Theme brainstorm 迭代入口：使用 `docs/ui/theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
-4. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
+3. Theme brainstorm 迭代入口：使用 `docs/ui/09-theme-brainstorm-entry.md` 作为新对话提示词，限制读取范围并执行 screenshot gallery 流程。
+4. Shader 开发入口落地：新建 Shader 相关任务默认使用 `docs/12-music-visualizer-shader-entry.md` 作为首个提示词入口，并持续维护最小读取范围。
 5. 继续 UI 界面的文字按钮重构为图形按钮。
 6. 补齐剩余未图标化按钮（见 `docs/ui/Soft-Skeuomorphic-icon_design.md`）：
    - MetadataAdReviewSection：审核模式（广告/封面）、策略切换、启动/暂停、焦点切换。
@@ -77,8 +77,8 @@
 
 ## 文档维护约定
 
-- 需求变化：同步更新 `requirements-v1.md`。
-- 架构变化：同步更新 `architecture-v1.md`。
-- 交互变化：同步更新 `interaction-v1.md`。
-- 后端链路变化：同步更新 `backend-integration-guardrails.md`。
+- 需求变化：同步更新 `03-requirements-v1.md`。
+- 架构变化：同步更新 `04-architecture-v1.md`。
+- 交互变化：同步更新 `05-interaction-v1.md`。
+- 后端链路变化：同步更新 `06-backend-integration-guardrails.md`。
 - 代码与文档不一致时，以当前代码行为为准，文档需在同一迭代内修正。

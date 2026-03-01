@@ -155,7 +155,7 @@ Last updated: 2026-02-22
 - 视频事件支持全屏与非全屏采集；非全屏会话 `<10s` 会保留事实层并标记 `is_noise=1`，但不计入聚合缓存。
 - 统一入口：Renderer 通过 `writeAppState(xp_preference_metrics_v1)` 上送缓冲快照（聚合缓存 + 会话事件 + runtime checkpoint），Main 在 `writeAppState` 分支解析并写入专表，保持 IPC 面稳定。
 - 崩溃恢复：主进程启动时扫描 `*_preference_runtime`，将遗留会话补写到 `*_preference_sessions`（`end_reason=recovered-after-crash`），并回填聚合缓存后清理 runtime 行。
-- 指标口径与字段定义以 `docs/preference-metrics-spec-v1.md` 为唯一事实源。
+- 指标口径与字段定义以 `docs/16-preference-metrics-spec-v1.md` 为唯一事实源。
 
 ### 向量字段职责（当前实现）
 

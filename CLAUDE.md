@@ -149,13 +149,13 @@ theme/        # 主题系统（Style x Palette）
 
 | 改动类型 | 需同步更新的文档 |
 |----------|-----------------|
-| 需求变更 | `docs/requirements-v1.md` |
-| 架构/模块边界变更 | `docs/architecture-v1.md` |
-| UI/交互/快捷键变更 | `docs/interaction-v1.md` |
-| 后端/IPC 接入规则变更 | `docs/backend-integration-guardrails.md` |
-| i18n/a11y 规则变更 | `docs/i18n-aria-guardrails.md` |
-| Theme token/风格规则变更 | `docs/theme-system-v2.md` 与 `docs/theme-brainstorm-entry.md` |
-| Shader 运行时/迁移规则变更 | `docs/music-visualizer-shader-entry.md` 与 `docs/music-visualizer-shader-migration-playbook.md` |
-| 文档目录结构变更 | `docs/DOCS_INDEX.md` 与 `docs/README.md` |
+| 需求变更 | `docs/03-requirements-v1.md` |
+| 架构/模块边界变更 | `docs/04-architecture-v1.md` |
+| UI/交互/快捷键变更 | `docs/05-interaction-v1.md` |
+| 后端/IPC 接入规则变更 | `docs/06-backend-integration-guardrails.md` |
+| i18n/a11y 规则变更 | `docs/07-i18n-aria-guardrails.md` |
+| Theme token/风格规则变更 | `docs/08-theme-system-v2.md` 与 `docs/09-theme-brainstorm-entry.md` |
+| Shader 运行时/迁移规则变更 | `docs/12-music-visualizer-shader-entry.md` 与 `docs/13-music-visualizer-shader-migration-playbook.md` |
+| 文档目录结构变更 | `docs/02-DOCS_INDEX.md` 与 `docs/01-README.md` |
 
-**UI 槽位表维护约束**：新增/修改/删除 UI 槽位时，`docs/ui_definition.md` 与 `docs/token_design.md` 必须同步操作。
+**UI 槽位表维护约束**：新增/修改/删除 UI 槽位时，`docs/10-ui_definition.md` 与 `docs/11-token_design.md` 必须同步操作。

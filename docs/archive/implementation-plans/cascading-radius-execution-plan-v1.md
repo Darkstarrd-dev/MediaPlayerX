@@ -120,8 +120,8 @@
 
 - `src/components/ThemeParameterPanel.test.tsx`
 - `src/__tests__/App.settings.test.tsx`
-- `docs/theme-system-v2.md`
-- `docs/theme-brainstorm-entry.md`
+- `docs/08-theme-system-v2.md`
+- `docs/09-theme-brainstorm-entry.md`
 
 **任务**
 

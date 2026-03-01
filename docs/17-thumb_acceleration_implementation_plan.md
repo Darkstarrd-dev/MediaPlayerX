@@ -200,9 +200,9 @@ Last updated: 2026-02-22
 
 实施完成后需同步：
 
-- `docs/interaction-v1.md`（设置面板新增分栏与项）
-- `docs/README.md`（新增计划文档入口，标注状态）
-- 如涉及架构边界变化，再更新 `docs/architecture-v1.md`
+- `docs/05-interaction-v1.md`（设置面板新增分栏与项）
+- `docs/01-README.md`（新增计划文档入口，标注状态）
+- 如涉及架构边界变化，再更新 `docs/04-architecture-v1.md`
 
 ---
 

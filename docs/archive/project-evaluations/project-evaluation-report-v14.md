@@ -4,7 +4,7 @@
 > 项目类型：Electron + React  
 > 评估人：OpenCode  
 > 评估范围：规模/结构质量/测试/覆盖率/构建与产物/安全与合规/维护性与扩展性/发布就绪  
-> 评估基线：仓库 `Z:/Playground/CurrentWorking/MediaPlayerX`，版本 `0.75.0`，commit `f03abab`（工作区存在已修改：`docs/archive/README.before-rewrite.md`、`package.json`、`package-lock.json`、`report/html/index.html`、`report/html/jscpd-report.json`、`src/__tests__/App.metadata.test.tsx`、`src/__tests__/App.navigation.test.tsx`、`src/__tests__/App.settings.test.tsx`、`src/__tests__/App.state.test.tsx`、`src/features/app/usePreferenceMetricsBuffer.ts`、`src/features/app/usePreferenceMetricsBuffer.test.tsx`；未跟踪：`.claude/`、`docs/project-evaluation-report-v13.md`、`docs/project-evaluation-report-v14.md`、`docs/ref/Xpanalysis.md`、`docs/ref/randomPicture.md`、`docs/thumb_acceleration_implementation_plan.md`、`docs/ui/DesignRef/`、`docs/up_down_sampling_implementation_plan.md`、`library-bench/`、`testdata/`）  
+> 评估基线：仓库 `Z:/Playground/CurrentWorking/MediaPlayerX`，版本 `0.75.0`，commit `f03abab`（工作区存在已修改：`docs/archive/README.before-rewrite.md`、`package.json`、`package-lock.json`、`report/html/index.html`、`report/html/jscpd-report.json`、`src/__tests__/App.metadata.test.tsx`、`src/__tests__/App.navigation.test.tsx`、`src/__tests__/App.settings.test.tsx`、`src/__tests__/App.state.test.tsx`、`src/features/app/usePreferenceMetricsBuffer.ts`、`src/features/app/usePreferenceMetricsBuffer.test.tsx`；未跟踪：`.claude/`、`docs/project-evaluation-report-v13.md`、`docs/project-evaluation-report-v14.md`、`docs/ref/Xpanalysis.md`、`docs/ref/randomPicture.md`、`docs/17-thumb_acceleration_implementation_plan.md`、`docs/ui/DesignRef/`、`docs/up_down_sampling_implementation_plan.md`、`library-bench/`、`testdata/`）  
 > 评估环境：OS Windows；Node `v22.13.1`；npm `10.9.2`；Vite `v7.3.1`；Electron `v40.4.1`  
 > 产物目录：`report/html/`（jscpd HTML）
 

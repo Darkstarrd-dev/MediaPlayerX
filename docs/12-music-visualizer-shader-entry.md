@@ -4,8 +4,8 @@
 
 ## 使用顺序
 
-1. 先阅读：`docs/music-visualizer-shader-entry.md`（本文件）
-2. 再阅读：`docs/music-visualizer-shader-migration-playbook.md`（完整契约与排障）
+1. 先阅读：`docs/12-music-visualizer-shader-entry.md`（本文件）
+2. 再阅读：`docs/13-music-visualizer-shader-migration-playbook.md`（完整契约与排障）
 
 ## 建议读取范围（最小集）
 
@@ -20,8 +20,8 @@
 
 ```text
 请先阅读并严格遵循：
-1) docs/music-visualizer-shader-entry.md
-2) docs/music-visualizer-shader-migration-playbook.md
+1) docs/12-music-visualizer-shader-entry.md
+2) docs/13-music-visualizer-shader-migration-playbook.md
 
 本次任务只允许优先查看以下路径：
 - src/features/music-visualizer/

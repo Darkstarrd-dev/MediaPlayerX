@@ -74,8 +74,8 @@ Last updated: 2026-02-22
 - `src/features/app/useAppWorkspaceBindings.ts`
 - `src/features/app/buildImageMainSectionProps.ts`
 - `src/features/app/buildManagementPanelProps.ts`
-- `docs/ui_definition.md`
-- `docs/token_design.md`
+- `docs/10-ui_definition.md`
+- `docs/11-token_design.md`
 
 ### Checklist
 
@@ -84,7 +84,7 @@ Last updated: 2026-02-22
 - [x] 新增 5 行 panel：分辨率、格式、质量、线程、操作按钮。
 - [x] 参数默认值与步进符合需求（0.1~1.0、10~100、1~16）。
 - [x] “预览/确定/取消”按钮接线完成（先占位回调亦可）。
-- [x] 同步 `docs/ui_definition.md` 与 `docs/token_design.md`。
+- [x] 同步 `docs/10-ui_definition.md` 与 `docs/11-token_design.md`。
 
 ### TODO
 
@@ -107,7 +107,7 @@ Last updated: 2026-02-22
 - `src/features/app/useAppTopLayerState.ts`
 - `src/features/app/useAppTopLayerBindings.ts`
 - `src/styles/app/layout.css`
-- `docs/interaction-v1.md`
+- `docs/05-interaction-v1.md`
 
 ### Checklist
 
@@ -117,7 +117,7 @@ Last updated: 2026-02-22
 - [x] 新增“确定/取消”：确定回写 panel，取消丢弃预览改动。
 - [x] 保留上一张/下一张/上个包/下个包、上下左右对齐。
 - [x] 实现左右同图 dual 对比与可拖拽分割条。
-- [x] 更新 `docs/interaction-v1.md`（预览模式交互说明）。
+- [x] 更新 `docs/05-interaction-v1.md`（预览模式交互说明）。
 
 ### TODO
 
@@ -139,7 +139,7 @@ Last updated: 2026-02-22
 - `src/shortcuts.ts`
 - `src/components/AppWorkspace.tsx`
 - `src/components/ImageMainSection.tsx`
-- `docs/interaction-v1.md`
+- `docs/05-interaction-v1.md`
 
 ### Checklist
 
@@ -147,7 +147,7 @@ Last updated: 2026-02-22
 - [x] 执行态下全局快捷键除 `Esc` 外全部失效。
 - [x] 执行态下除 panel“取消”外其余按钮失效。
 - [x] 点击“取消”可中止任务；未执行时“取消”退出转换模式。
-- [x] 更新 `docs/interaction-v1.md`（执行锁与取消语义）。
+- [x] 更新 `docs/05-interaction-v1.md`（执行锁与取消语义）。
 
 ### TODO
 
@@ -168,7 +168,7 @@ Last updated: 2026-02-22
 - `electron/facade/FileSystemManagementHandlers.ts`
 - `electron/registerBackendIpcHandlers.ts`
 - （如已在 P1 新建）本功能专用 service 文件
-- `docs/architecture-v1.md`
+- `docs/04-architecture-v1.md`
 
 ### Checklist
 
@@ -177,7 +177,7 @@ Last updated: 2026-02-22
 - [x] 仅在新文件成功就位后执行源文件替换/删除。
 - [x] 失败时执行回滚并保留可诊断错误信息。
 - [x] 进度事件上报（总量、已完成、当前项、阶段）。
-- [x] 更新 `docs/architecture-v1.md`（任务流与边界）。
+- [x] 更新 `docs/04-architecture-v1.md`（任务流与边界）。
 
 ### TODO
 
@@ -196,11 +196,11 @@ Last updated: 2026-02-22
 - `src/**/*.test.ts`
 - `src/**/*.test.tsx`
 - `electron/**/*.test.ts`
-- `docs/requirements-v1.md`
-- `docs/interaction-v1.md`
-- `docs/architecture-v1.md`
-- `docs/ui_definition.md`
-- `docs/token_design.md`
+- `docs/03-requirements-v1.md`
+- `docs/05-interaction-v1.md`
+- `docs/04-architecture-v1.md`
+- `docs/10-ui_definition.md`
+- `docs/11-token_design.md`
 
 ### Checklist
 

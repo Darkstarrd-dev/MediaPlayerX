@@ -432,7 +432,7 @@ git push
 
 ## 维护约定（实施后长期有效）
 
-> 详细长期约束见：`docs/i18n-aria-guardrails.md`。
+> 详细长期约束见：`docs/07-i18n-aria-guardrails.md`。
 
 - 新增 UI 字符串时：先加 key，再引用 `t()`，禁止直接硬编码。
 - 新增可交互控件时：补 `data-a11y-id`，避免测试和自动化绑死文案。

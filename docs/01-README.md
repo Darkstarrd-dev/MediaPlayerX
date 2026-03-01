@@ -7,33 +7,31 @@
 
 ## 快速入口
 
-- 总索引：`DOCS_INDEX.md`
-- 需求：`requirements-v1.md`
-- 架构：`architecture-v1.md`
-- 交互：`interaction-v1.md`
-- 后端约束：`backend-integration-guardrails.md`
-- i18n/a11y 约束：`i18n-aria-guardrails.md`
-- Shader 开发入口：`music-visualizer-shader-entry.md`
-- Shader 实施手册：`music-visualizer-shader-migration-playbook.md`
-- Theme 规范（SSOT）：`theme-system-v2.md`
-- Theme 迭代入口：`theme-brainstorm-entry.md`
-- 疑难点记录：`Tips.md`
-- UI 稳定路径表：`ui_definition.md`
-- UI 槽位 Token 前缀表：`token_design.md`
-- 当前评估：`project-evaluation-report-v12.md`
-- 风险台账：`dependency-risk-register.md`
-- 性能实施计划：`thumb_acceleration_implementation_plan.md`
-- 音频增强与转码计划：`mpv-增强模式与转码实施计划-v1.md`
-- 音频增强发布说明：`audio-enhanced-mode-release-notes-v1.md`
-- 音频增强长稳测试手册：`audio-enhanced-mode-longrun-test-runbook-v1.md`
-- 音频增强专家咨询申请：`mpv-增强模式专家咨询申请-2026-02-27.md`
-- 全屏重采样 SSOT 草案：`fullscreen_resampling_ssot_draft.md`
-- 高优化需求项目表：`high-optimization-demand-table.md`
-- 视频节点浏览实现记录：`video-node-browse-implementation-log-2026-02-27.md`
+- 总索引：`02-DOCS_INDEX.md`
+- 需求：`03-requirements-v1.md`
+- 架构：`04-architecture-v1.md`
+- 交互：`05-interaction-v1.md`
+- 后端约束：`06-backend-integration-guardrails.md`
+- i18n/a11y 约束：`07-i18n-aria-guardrails.md`
+- Shader 开发入口：`12-music-visualizer-shader-entry.md`
+- Shader 实施手册：`13-music-visualizer-shader-migration-playbook.md`
+- Theme 规范（SSOT）：`08-theme-system-v2.md`
+- Theme 迭代入口：`09-theme-brainstorm-entry.md`
+- 疑难点记录：`27-Tips.md`
+- UI 稳定路径表：`10-ui_definition.md`
+- UI 槽位 Token 前缀表：`11-token_design.md`
+- 当前评估：`14-project-evaluation-report-v17.md`
+- 风险台账：`15-dependency-risk-register.md`
+- 性能实施计划：`17-thumb_acceleration_implementation_plan.md`
+- 音频增强与转码计划：`19-mpv-增强模式与转码实施计划-v1.md`
+- 音频增强发布说明：`20-audio-enhanced-mode-release-notes-v1.md`
+- 音频增强长稳测试手册：`21-audio-enhanced-mode-longrun-test-runbook-v1.md`
+- 音频增强专家咨询申请：`22-mpv-增强模式专家咨询申请-2026-02-27.md`
+- 全屏重采样 SSOT 草案：`23-fullscreen_resampling_ssot_draft.md`
+- 高优化需求项目表：`24-high-optimization-demand-table.md`
 
 ## 待办
 
-- [ ] FunASR 参数调优执行计划（高效版）：`funasr-parameter-tuning-execution-plan.md`
 - [ ] 间距系统去硬编码收口（image | video | music 三模式）
   - [ ] Video 主区控件容器去硬编码：`src/styles/app/main/main.part3.css`（`video-controls-shell` 的 `margin-top/gap/padding`）
   - [ ] Music 主区控件容器去硬编码：`src/styles/app/main/main.part2.css`（`music-controls-shell` 的 `margin-top/padding`，`music-controls-progress` 的 `gap/margin-bottom`）
@@ -54,12 +52,12 @@
 ## SSOT 同步提醒
 
 - 当实现“高级分页 / 加载性能”相关交互或默认值调整时，必须同步更新：
-  - `interaction-v1.md`（交互、分组、参数语义、Tooltip 用途）
-  - `thumb_acceleration_implementation_plan.md`（阶段、验收、回滚策略）
+  - `05-interaction-v1.md`（交互、分组、参数语义、Tooltip 用途）
+  - `17-thumb_acceleration_implementation_plan.md`（阶段、验收、回滚策略）
 
 ## UI 表维护约束
 
-- 新增 UI 槽位：同时新增 `ui_definition.md` 与 `token_design.md` 条目。
+- 新增 UI 槽位：同时新增 `10-ui_definition.md` 与 `11-token_design.md` 条目。
 - 修改 UI 槽位：两张表同步修改。
 - 删除 UI 槽位：两张表同步删除（如需兼容先标记 deprecated 再移除）。
 

@@ -81,7 +81,7 @@
   - `src/features/app/buildVideoMainSectionProps.test.ts`
   - `src/features/app/buildMainFooter.test.tsx`
 - 文档
-  - `docs/interaction-v1.md`
+  - `docs/05-interaction-v1.md`
   - `docs/video-node-browse-implementation-log-2026-02-27.md`（本文）
 
 ## 验证记录

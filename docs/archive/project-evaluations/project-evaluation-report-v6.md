@@ -118,8 +118,8 @@
 
 正向项：
 
-- 评估与治理文档持续更新，新增签名运行手册：`docs/windows-release-signing-runbook.md`。
-- `README.md` 与 `docs/README.md` 已补签名发布入口。
+- 评估与治理文档持续更新，新增签名运行手册：`docs/25-windows-release-signing-runbook.md`。
+- `01-README.md` 与 `docs/01-README.md` 已补签名发布入口。
 
 关注项：
 

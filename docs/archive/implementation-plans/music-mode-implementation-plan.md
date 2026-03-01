@@ -182,7 +182,7 @@
 - 主要文件（预期）：
   - `src/features/app/useAppWorkspaceProps.ts`
   - `src/components/MusicMainSection.tsx`
-  - `docs/interaction-v1.md`（若新增按钮说明）
+  - `docs/05-interaction-v1.md`（若新增按钮说明）
 - 关键任务：
   - music toolbar 增加“漫画版/动画版”跳转按钮。
   - 复用既有 `applyQuickFeatureSearch({ seriesId })`。
@@ -195,8 +195,8 @@
 
 - 目标：补全新增链路测试与文档。
 - 主要文件（预期）：
-  - `docs/interaction-v1.md`
-  - `docs/architecture-v1.md`
+  - `docs/05-interaction-v1.md`
+  - `docs/04-architecture-v1.md`
   - 新增/更新相关 test 文件
 - 关键任务：
   - 增加音频模式行为说明、快捷键行为与边界条件。
@@ -312,8 +312,8 @@
 
 - 目标：收口所有行为文档与测试，形成可持续扩展的 shader 管线。
 - 主要文件（预期）：
-  - `docs/interaction-v1.md`
-  - `docs/architecture-v1.md`
+  - `docs/05-interaction-v1.md`
+  - `docs/04-architecture-v1.md`
   - `docs/readme.md`
   - （可选）`docs/music-visualizer-implementation-notes.md`
 - 关键任务：
