@@ -327,6 +327,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.layoutGapScaleCoeff": "Container margin coeff {{value}}x",
   "ui.settings.paneInnerGapScaleCoeff": "Container inner padding coeff {{value}}x",
   "ui.settings.paneStackGapScaleCoeff": "Container top-middle-bottom gap coeff {{value}}x",
+  "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar inner padding coeff {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar ratio {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
     "Sidebar min width scale {{scale}} ({{px}}px)",
@@ -383,6 +384,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Adjust container inner padding. Baseline is 1% of window width.",
   "ui.settings.tooltip.paneStackGapScaleCoeff":
     "Adjust top-middle-bottom spacing inside containers. Computed as inner padding * 0.75 * this coefficient.",
+  "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
+    "Adjust Sidebar main-list four-side spacing coefficient. Actual value is inner padding * 0.8 * this coefficient.",
   "ui.settings.tooltip.sidebarRatio":
     "Adjust sidebar ratio. Larger values reduce main content width.",
   "ui.settings.tooltip.sidebarMinWidth":

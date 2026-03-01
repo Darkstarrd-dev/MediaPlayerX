@@ -202,7 +202,7 @@
 .sidebar-tree {
   overflow-x: hidden;
   overflow-y: scroll;
-  padding: var(--mpx-pane-inner-padding-px, 8px) 0;
+  padding: var(--mpx-sidebar-gap-px, var(--mpx-pane-inner-padding-px, 8px));
   flex: 1;
   min-height: 0;
   border-bottom-left-radius: inherit;
@@ -211,6 +211,10 @@
   direction: ltr;
   overflow-anchor: none;
   background: var(--mpx-slot-fg-sidebar-main-bg, transparent);
+}
+
+.sidebar-tree.mpx-scroll-area {
+  scrollbar-gutter: auto;
 }
 
 .sidebar-row {
@@ -295,6 +299,7 @@
   min-width: 0;
   text-align: left;
   padding: 4px 2px;
+  padding-inline-start: calc(2px + var(--mpx-sidebar-node-indent, 0px));
   color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
   cursor: pointer;
   overflow: hidden;
@@ -313,7 +318,7 @@
 }
 
 .sidebar-label:not(.is-collapsible) {
-  padding-left: calc(2px + 1.2em);
+  padding-left: calc(2px + 1.2em + var(--mpx-sidebar-node-indent, 0px));
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'][data-mpx-palette='skeuomorphic-luxury-white'] .sidebar-row .sidebar-label.is-collapsible.is-collapsed {

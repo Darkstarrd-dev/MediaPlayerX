@@ -169,10 +169,14 @@ export function SidebarPanelRow({
     initialDelayRangeMs: [1000, 2600],
     repeatDelayRangeMs: [2200, 7800],
   });
-  const rowStyle: CSSProperties | undefined =
+  const sidebarNodeIndentPx =
     sidebarTreeDisplayMode === "hierarchy" && depth > 0
-      ? { paddingLeft: `${Math.max(0, depth * sidebarIndentStep)}px` }
-      : undefined;
+      ? Math.max(0, depth * sidebarIndentStep)
+      : 0;
+  const sidebarLabelStyle = {
+    fontSize: `${sidebarFontSize}px`,
+    ["--mpx-sidebar-node-indent" as string]: `${sidebarNodeIndentPx}px`,
+  } as CSSProperties;
 
   const applyMediaSelection = () => {
     if (mode === "image" && searchResultReadonly) {
@@ -206,7 +210,6 @@ export function SidebarPanelRow({
     <div
       data-sidebar-node-id={node.id}
       className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
-      style={rowStyle}
     >
       <span
         className={`sidebar-bullet ${loadState ? `is-${loadState}` : ""}`}
@@ -221,7 +224,7 @@ export function SidebarPanelRow({
         aria-pressed={
           manageStyleEnabled ? checkedNodes.has(node.id) : undefined
         }
-        style={{ fontSize: `${sidebarFontSize}px` }}
+        style={sidebarLabelStyle}
         onMouseEnter={() => {
           setHoveredNodeId(node.id);
         }}

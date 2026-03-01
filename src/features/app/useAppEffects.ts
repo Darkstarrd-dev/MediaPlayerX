@@ -104,6 +104,7 @@ interface UseAppEffectsParams {
   layoutGapScaleCoeff: number;
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
+  sidebarInnerGapScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
   setVectorFocusIndex: Dispatch<SetStateAction<number>>;
@@ -195,6 +196,7 @@ export function useAppEffects({
   layoutGapScaleCoeff,
   paneInnerGapScaleCoeff,
   paneStackGapScaleCoeff,
+  sidebarInnerGapScaleCoeff,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -979,6 +981,10 @@ export function useAppEffects({
       const normalizedScale = Math.max(0, Math.min(3, layoutGapScaleCoeff));
       const normalizedInnerScale = Math.max(0, Math.min(2, paneInnerGapScaleCoeff));
       const normalizedStackScale = Math.max(0, Math.min(2, paneStackGapScaleCoeff));
+      const normalizedSidebarInnerScale = Math.max(
+        0,
+        Math.min(2, sidebarInnerGapScaleCoeff),
+      );
       const viewportWidth =
         window.innerWidth > 0
           ? window.innerWidth
@@ -994,6 +1000,10 @@ export function useAppEffects({
       const resolvedPaneStackGapPx = Math.max(
         0,
         Math.round(resolvedPaneInnerPaddingPx * 0.75 * normalizedStackScale),
+      );
+      const resolvedSidebarGapPx = Math.max(
+        0,
+        Math.round(resolvedPaneInnerPaddingPx * 0.8 * normalizedSidebarInnerScale),
       );
       const resolvedIconButtonSizePx = Math.max(
         34,
@@ -1037,6 +1047,10 @@ export function useAppEffects({
         `${resolvedPaneStackGapPx}px`,
       );
       document.documentElement.style.setProperty(
+        "--mpx-sidebar-gap-px",
+        `${resolvedSidebarGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
         "--mpx-icon-button-size-px",
         `${resolvedIconButtonSizePx}px`,
       );
@@ -1063,5 +1077,10 @@ export function useAppEffects({
     return () => {
       window.removeEventListener("resize", applyLayoutGapVars);
     };
-  }, [layoutGapScaleCoeff, paneInnerGapScaleCoeff, paneStackGapScaleCoeff]);
+  }, [
+    layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff,
+    sidebarInnerGapScaleCoeff,
+  ]);
 }

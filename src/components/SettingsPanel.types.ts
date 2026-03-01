@@ -22,6 +22,7 @@ export interface SettingsPanelProps {
   layoutGapScaleCoeff: number;
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
+  sidebarInnerGapScaleCoeff: number;
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
@@ -163,6 +164,7 @@ export interface SettingsPanelProps {
   onLayoutGapScaleCoeffChange: (value: number) => void;
   onPaneInnerGapScaleCoeffChange: (value: number) => void;
   onPaneStackGapScaleCoeffChange: (value: number) => void;
+  onSidebarInnerGapScaleCoeffChange: (value: number) => void;
   onSidebarRatioChange: (value: number) => void;
   onSidebarMinWidthChange: (value: number) => void;
   onLayoutLockedChange: (value: boolean) => void;

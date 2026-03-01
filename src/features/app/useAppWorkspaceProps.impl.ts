@@ -328,6 +328,36 @@ export function useAppWorkspaceProps({
       selectedSidebarNode.children.some((child) => Boolean(child.videoId)),
     );
 
+  const resolvedSidebarGapPx = useMemo(() => {
+    const normalizedInnerScale = Math.max(
+      0,
+      Math.min(2, appSettings.paneInnerGapScaleCoeff),
+    );
+    const normalizedSidebarInnerScale = Math.max(
+      0,
+      Math.min(2, appSettings.sidebarInnerGapScaleCoeff),
+    );
+    if (typeof window === "undefined") {
+      return Math.max(0, Math.round(appSettings.sidebarVerticalGap));
+    }
+    const viewportWidth =
+      window.innerWidth > 0
+        ? window.innerWidth
+        : document.documentElement.clientWidth;
+    const paneInnerPaddingPx = Math.max(
+      0,
+      Math.round(viewportWidth * 0.01 * normalizedInnerScale),
+    );
+    return Math.max(
+      0,
+      Math.round(paneInnerPaddingPx * 0.8 * normalizedSidebarInnerScale),
+    );
+  }, [
+    appSettings.paneInnerGapScaleCoeff,
+    appSettings.sidebarInnerGapScaleCoeff,
+    appSettings.sidebarVerticalGap,
+  ]);
+
   const videoNodeBrowseItems = buildVideoNodeBrowseItems({
     nodeBrowseMode: videoNodeBrowseMode,
     selectedSidebarNode,
@@ -352,7 +382,7 @@ export function useAppWorkspaceProps({
     sidebarFontSize: appSettings.sidebarFontSize,
     sidebarCountFontSize: appSettings.sidebarCountFontSize,
     sidebarIndentStep: appSettings.sidebarIndentStep,
-    sidebarVerticalGap: appSettings.sidebarVerticalGap,
+    sidebarVerticalGap: resolvedSidebarGapPx,
     sidebarLabelDisplayMode: appSettings.sidebarLabelDisplayMode,
     sidebarTreeDisplayMode: appSettings.sidebarTreeDisplayMode,
     currentRootLabel: adReviewResultsMode

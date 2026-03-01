@@ -370,10 +370,6 @@
     0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree [data-sidebar-node-id] {
-  padding-left: 10px;
-}
-
 @supports not selector(::-webkit-scrollbar) {
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .sidebar-tree {
     scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb) var(--mpx-sidebar-tree-scrollbar-color-track);

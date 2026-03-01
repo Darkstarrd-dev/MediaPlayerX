@@ -841,6 +841,7 @@ export function useAppInteractionEffects({
     layoutGapScaleCoeff: appSettings.layoutGapScaleCoeff,
     paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
+    sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
     setAppBodyWidth,
     setGridSize,
     setVectorFocusIndex,

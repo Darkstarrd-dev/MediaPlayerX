@@ -34,6 +34,7 @@ export function renderSettingsMainSection(
       layoutGapScaleCoeff,
       paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff,
+      sidebarInnerGapScaleCoeff,
       sidebarRatio,
       sidebarMinWidth,
       sidebarMinWidthScale,
@@ -43,8 +44,6 @@ export function renderSettingsMainSection(
       sidebarCountFontSizeScale,
       sidebarIndentStep,
       sidebarIndentStepScale,
-      sidebarVerticalGap,
-      sidebarVerticalGapScale,
       metadataRatio,
       workspaceBottomPanelHeight,
       workspaceBottomPanelHeightScale,
@@ -70,12 +69,12 @@ export function renderSettingsMainSection(
       onLayoutGapScaleCoeffChange,
       onPaneInnerGapScaleCoeffChange,
       onPaneStackGapScaleCoeffChange,
+      onSidebarInnerGapScaleCoeffChange,
       onSidebarRatioChange,
       onSidebarMinWidthChange,
       onSidebarFontSizeChange,
       onSidebarCountFontSizeChange,
       onSidebarIndentStepChange,
-      onSidebarVerticalGapChange,
       onMetadataRatioChange,
       onWorkspaceBottomPanelHeightChange,
       onFullscreenVideoControlsMaxWidthChange,
@@ -451,6 +450,21 @@ export function renderSettingsMainSection(
               }
             />
           </label>
+          <label data-tooltip-label={settingsTip("sidebarInnerGapScaleCoeff")}>
+            {t("ui.settings.sidebarInnerGapScaleCoeff", {
+              value: sidebarInnerGapScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={sidebarInnerGapScaleCoeff}
+              onChange={(event) =>
+                onSidebarInnerGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
           <label
             className="settings-toggle-row"
             data-tooltip-label={settingsTip("layoutLocked")}
@@ -566,27 +580,6 @@ export function renderSettingsMainSection(
               onChange={(event) =>
                 onSidebarIndentStepChange(
                   toAbsolutePx("sidebarIndentStep", Number(event.target.value)),
-                )
-              }
-            />
-          </label>
-          <label data-tooltip-label={settingsTip("sidebarVerticalGapScale")}>
-            {t("ui.settings.sidebarVerticalGapScale", {
-              scale: formatScale(sidebarVerticalGapScale),
-              px: sidebarVerticalGap,
-            })}
-            <input
-              max={SIZE_SCALE_CONFIG.sidebarVerticalGap.max}
-              min={SIZE_SCALE_CONFIG.sidebarVerticalGap.min}
-              step={SIZE_SCALE_CONFIG.sidebarVerticalGap.step}
-              type="range"
-              value={sidebarVerticalGapScale}
-              onChange={(event) =>
-                onSidebarVerticalGapChange(
-                  toAbsolutePx(
-                    "sidebarVerticalGap",
-                    Number(event.target.value),
-                  ),
                 )
               }
             />

@@ -310,6 +310,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.layoutGapScaleCoeff": "容器边距系数 {{value}}x",
   "ui.settings.paneInnerGapScaleCoeff": "容器内边距系数 {{value}}x",
   "ui.settings.paneStackGapScaleCoeff": "容器内上中下间距系数 {{value}}x",
+  "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar 内边距系数 {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar 比例 {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
     "Sidebar 最小宽度系数 {{scale}}（{{px}}px）",
@@ -365,6 +366,8 @@ export const zhCnCatalogPart1 = {
     "调整容器内部边距系数，基准为窗口宽度的 1%。",
   "ui.settings.tooltip.paneStackGapScaleCoeff":
     "调整容器内部上中下分段间距系数，按容器内边距的 0.75 倍再乘本系数计算。",
+  "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
+    "调整 Sidebar 主列表四边留空系数；实际值为容器内边距的 0.8 倍再乘本系数。",
   "ui.settings.tooltip.sidebarRatio":
     "调整侧栏占比；数值越大，内容区可用宽度越小。",
   "ui.settings.tooltip.sidebarMinWidth":

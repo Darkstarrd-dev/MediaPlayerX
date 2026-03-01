@@ -270,6 +270,15 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     );
   }
 
+  if ("sidebarInnerGapScaleCoeff" in next) {
+    next.sidebarInnerGapScaleCoeff = normalizeNumberInRange(
+      next.sidebarInnerGapScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
   if (
     typeof next.subtitleFeatureEnabled !== "boolean" &&
     "subtitleFeatureEnabled" in next

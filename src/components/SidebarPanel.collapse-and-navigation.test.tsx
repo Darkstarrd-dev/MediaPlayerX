@@ -532,8 +532,13 @@ describe("SidebarPanel music interactions", () => {
     expect(childRow).not.toBeNull();
     expect(packageRow).not.toBeNull();
     expect(rootRow?.getAttribute("style")).toBeNull();
-    expect(childRow).toHaveStyle({ paddingLeft: "20px" });
-    expect(packageRow).toHaveStyle({ paddingLeft: "40px" });
+    const childLabel = childRow?.querySelector<HTMLElement>(".sidebar-label");
+    const packageLabel =
+      packageRow?.querySelector<HTMLElement>(".sidebar-label");
+    expect(childLabel).not.toBeNull();
+    expect(packageLabel).not.toBeNull();
+    expect(childLabel).toHaveStyle("--mpx-sidebar-node-indent: 20px");
+    expect(packageLabel).toHaveStyle("--mpx-sidebar-node-indent: 40px");
   });
 
   it("直属模式下不应用层级缩进", () => {

@@ -15,6 +15,7 @@ export function useAppSettingsStore() {
       layoutGapScaleCoeff: state.layoutGapScaleCoeff,
       paneInnerGapScaleCoeff: state.paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff: state.paneStackGapScaleCoeff,
+      sidebarInnerGapScaleCoeff: state.sidebarInnerGapScaleCoeff,
       sidebarRatio: state.sidebarRatio,
       sidebarMinWidth: state.sidebarMinWidth,
       layoutLocked: state.layoutLocked,
