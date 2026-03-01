@@ -24,6 +24,7 @@ interface RenderImageMainContentParams {
   thumbnailColumns: number;
   actualCellWidth: number;
   thumbnailGap: number;
+  thumbnailRowGap: number;
   nodeBrowseItems: NodeBrowseItem[];
   nodeBrowsePageStart: number;
   nodeBrowsePageSize: number;
@@ -67,6 +68,7 @@ export function renderImageMainContent({
   thumbnailColumns,
   actualCellWidth,
   thumbnailGap,
+  thumbnailRowGap,
   nodeBrowseItems,
   nodeBrowsePageStart,
   nodeBrowsePageSize,
@@ -113,7 +115,8 @@ export function renderImageMainContent({
         onWheel={handleThumbnailContainerWheel}
         style={{
           gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-          gap: `${thumbnailGap}px`,
+          rowGap: `${thumbnailRowGap}px`,
+          columnGap: `${thumbnailGap}px`,
         }}
       >
         {nodeBrowsePagedItems.map((item) => (
@@ -257,7 +260,8 @@ export function renderImageMainContent({
       }
       style={{
         gridTemplateColumns: `repeat(${thumbnailColumns}, ${actualCellWidth}px)`,
-        gap: `${thumbnailGap}px`,
+        rowGap: `${thumbnailRowGap}px`,
+        columnGap: `${thumbnailGap}px`,
       }}
     >
       {showSkeleton

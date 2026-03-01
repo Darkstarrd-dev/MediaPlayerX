@@ -13,6 +13,7 @@ interface ImageMainSectionContentAreaProps {
   thumbnailColumns: number;
   actualCellWidth: number;
   thumbnailGap: number;
+  thumbnailRowGap: number;
   nodeBrowseItems: NonNullable<ImageMainSectionProps["nodeBrowseItems"]>;
   nodeBrowsePageStart: number;
   nodeBrowsePageSize: number;

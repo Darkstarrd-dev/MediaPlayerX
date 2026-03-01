@@ -34,7 +34,7 @@ const GAP_SNAP_MANUAL_MS = 36;
 // 右避让（扩展 +1 列）时的精度补偿：ratio→pixel 换算经过浮点除法、
 // CSS flexbox 舍入、gridSize Math.floor 三层丢失，总计 1-3px；
 // 补偿不足会导致 pickClosestCols 判定 cols+1 溢出而保留原列数。
-const GAP_SNAP_EXPAND_BUFFER_PX = 2;
+const GAP_SNAP_EXPAND_BUFFER_PX = 5;
 // snap 执行后的冷却窗口：覆盖 CSS re-layout 多帧 settling，
 // 防止精度偏差导致 snap 方向反转形成不收敛振荡。
 const GAP_SNAP_COOLDOWN_MS = 250;
@@ -381,6 +381,7 @@ export function useAppNavigationState({
       thumbnailLayout.gap,
     ],
   );
+  const actualThumbnailRowGap = thumbnailLayout.gap;
 
   const horizontalResizeAnchorRef = useRef<GridSnapAnchor | null>(null);
   const previousHorizontalResizingRef = useRef(false);
@@ -849,6 +850,9 @@ export function useAppNavigationState({
       // 例如顶部系统面板展开导致主区高度变化，这类变化不应被冷却窗口拦截。
       lastSnapTimeRef.current = 0;
       snapTargetWidthRef.current = 0;
+      snapTargetColumnsRef.current = 0;
+      snapDirectionRef.current = null;
+      snapReverseCountRef.current = 0;
     }
 
     if (snapTargetWidthRef.current > 0) {
@@ -1071,6 +1075,7 @@ export function useAppNavigationState({
     actualMediaHeight,
     pagedPageSize,
     actualThumbnailGap,
+    actualThumbnailRowGap,
     activePackage,
     focusedRef,
     focusedImage,

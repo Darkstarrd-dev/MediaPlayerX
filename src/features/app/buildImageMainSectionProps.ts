@@ -46,6 +46,7 @@ interface BuildImageMainSectionPropsParams {
   actualMediaHeight: number
   thumbnailColumns: number
   actualThumbnailGap: number
+  actualThumbnailRowGap: number
   vectorSearchResults: VectorCandidate[]
   packageByIdEffective: Map<string, ImagePackage>
   thumbnailImageUrlById: Record<string, string>
@@ -198,6 +199,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     actualMediaHeight: params.actualMediaHeight,
     thumbnailColumns: params.thumbnailColumns,
     thumbnailGap: params.actualThumbnailGap,
+    thumbnailRowGap: params.actualThumbnailRowGap,
     vectorCandidates: params.vectorSearchResults,
     packageById: params.packageByIdEffective,
     imageUrlById: params.thumbnailImageUrlById,

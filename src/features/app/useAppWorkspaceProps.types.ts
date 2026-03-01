@@ -130,6 +130,7 @@ export interface UseAppWorkspacePropsParams {
   actualMediaHeight: number
   thumbnailColumns: number
   actualThumbnailGap: number
+  actualThumbnailRowGap: number
   normalizedPageIndexEffective: number
   imageTotalPagesEffective: number
   packageByIdEffective: Map<string, ImagePackage>

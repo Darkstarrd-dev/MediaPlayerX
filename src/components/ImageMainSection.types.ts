@@ -45,6 +45,7 @@ export interface ImageMainSectionProps {
   actualMediaHeight: number;
   thumbnailColumns: number;
   thumbnailGap: number;
+  thumbnailRowGap?: number;
   vectorCandidates: VectorCandidate[];
   packageById: Map<string, ImagePackage>;
   imageUrlById: Record<string, string>;

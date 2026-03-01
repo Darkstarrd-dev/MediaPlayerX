@@ -104,6 +104,7 @@ function ImageMainSection({
   actualMediaHeight: _actualMediaHeight,
   thumbnailColumns,
   thumbnailGap,
+  thumbnailRowGap = thumbnailGap,
   vectorCandidates,
   packageById,
   imageUrlById,
@@ -1353,6 +1354,7 @@ function ImageMainSection({
         thumbnailColumns={thumbnailColumns}
         actualCellWidth={actualCellWidth}
         thumbnailGap={thumbnailGap}
+        thumbnailRowGap={thumbnailRowGap}
         nodeBrowseItems={nodeBrowseItems}
         nodeBrowsePageStart={nodeBrowsePageStart}
         nodeBrowsePageSize={nodeBrowsePageSize}
