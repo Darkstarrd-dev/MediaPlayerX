@@ -68,10 +68,11 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       expect(screen.queryByRole("button", { name: "缩略图设置" })).toBeNull();
       expect(screen.queryByRole("button", { name: "theme 设置" })).toBeNull();
 
+      expect(screen.getByText("语言设置")).toBeInTheDocument();
       expect(screen.getByText("主题设置")).toBeInTheDocument();
-      expect(screen.getByText("缩略图设置")).toBeInTheDocument();
-      expect(screen.queryByText("频谱可视化设置")).toBeNull();
       expect(screen.getByText("布局参数")).toBeInTheDocument();
+      expect(screen.queryByText("缩略图设置")).toBeNull();
+      expect(screen.queryByText("频谱可视化设置")).toBeNull();
 
       const styleSelect = screen.getByRole("combobox", {
         name: "Style",
@@ -93,8 +94,8 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       ).toBe(true);
 
       expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument();
-      expect(screen.getByLabelText("缩略图质量")).toBeInTheDocument();
-      expect(screen.getByLabelText("缩略图宽度")).toBeInTheDocument();
+      expect(screen.queryByLabelText("缩略图质量")).toBeNull();
+      expect(screen.queryByLabelText("缩略图宽度")).toBeNull();
       expect(screen.queryByLabelText("实际渲染长边分辨率")).toBeNull();
       expect(screen.queryByLabelText("渲染帧率上限")).toBeNull();
       expect(screen.queryByLabelText("Tone Mapping")).toBeNull();
@@ -129,6 +130,12 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
           document.documentElement.style.getPropertyValue("--mpx-pane-stack-gap-scale"),
         ).toBe("0.50");
       });
+
+      await click(screen.getByRole("button", { name: "高级分页" }));
+      expect(screen.getByText("加载性能")).toBeInTheDocument();
+      expect(screen.getByText("缩略图管线")).toBeInTheDocument();
+      expect(screen.getByLabelText("缩略图质量")).toBeInTheDocument();
+      expect(screen.getByLabelText("缩略图宽度")).toBeInTheDocument();
 
       await click(screen.getByRole("button", { name: "调试" }));
       expect(
