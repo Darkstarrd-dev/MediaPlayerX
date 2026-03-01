@@ -9,6 +9,7 @@ import type { AppReadStateResult } from "./useAppReadState";
 import { useAppSidebarScopeState } from "./useAppSidebarScopeState";
 import { usePaneResizers } from "../layout/usePaneResizers";
 import {
+  computeRenderGap,
   computeThumbnailGridLayout,
   resolveThumbnailCardChromePx,
 } from "../layout/thumbnailLayout";
@@ -37,6 +38,9 @@ const GAP_SNAP_EXPAND_BUFFER_PX = 2;
 // snap 执行后的冷却窗口：覆盖 CSS re-layout 多帧 settling，
 // 防止精度偏差导致 snap 方向反转形成不收敛振荡。
 const GAP_SNAP_COOLDOWN_MS = 250;
+const GAP_SNAP_RENDER_GAP_SKIP_RATIO = 0.3;
+const GAP_SNAP_COLUMN_LOCK_NOISE_RATIO = 0.5;
+const MAX_SNAP_REVERSES = 2;
 const METADATA_MAX_APP_RATIO = 0.45;
 const METADATA_MIN_WIDTH_SCALE_LEVEL = 2;
 const IMAGE_HEIGHT_BOUND_EPSILON_PX = 2;
@@ -360,7 +364,23 @@ export function useAppNavigationState({
   const actualCellWidth = thumbnailLayout.cellWidth;
   const actualMediaHeight = thumbnailLayout.mediaHeight;
   const pagedPageSize = thumbnailLayout.pageSize;
-  const actualThumbnailGap = thumbnailLayout.gap;
+  const actualThumbnailGap = useMemo(
+    () =>
+      Number(
+        computeRenderGap({
+          gridWidth: gridSize.width,
+          columns: thumbnailLayout.columns,
+          cellWidth: thumbnailLayout.cellWidth,
+          baseGap: thumbnailLayout.gap,
+        }).toFixed(2),
+      ),
+    [
+      gridSize.width,
+      thumbnailLayout.cellWidth,
+      thumbnailLayout.columns,
+      thumbnailLayout.gap,
+    ],
+  );
 
   const horizontalResizeAnchorRef = useRef<GridSnapAnchor | null>(null);
   const previousHorizontalResizingRef = useRef(false);
@@ -371,6 +391,9 @@ export function useAppNavigationState({
   const lastSnapTimeRef = useRef(0);
   // snap 后记录期望目标宽度，在宽度未显著偏离目标前拒绝再次 snap，防止振荡
   const snapTargetWidthRef = useRef(0);
+  const snapTargetColumnsRef = useRef(0);
+  const snapDirectionRef = useRef<"expand" | "shrink" | null>(null);
+  const snapReverseCountRef = useRef(0);
   const initialSnapDoneRef = useRef(false);
   const previousAppBodyWidthRef = useRef(appBodyWidth);
   const previousPanelCollapseStateRef = useRef<{
@@ -385,6 +408,22 @@ export function useAppNavigationState({
     // 反振荡守卫：grid 宽度未显著偏离上次 snap 目标时，
     // 残余空隙为 ratio→pixel 精度误差，接受不再 snap
     const rightGap = gridSize.width - thumbnailLayout.idealGridWidth;
+    if (
+      thumbnailLayout.columns > 1 &&
+      rightGap < thumbnailLayout.cellWidth * GAP_SNAP_RENDER_GAP_SKIP_RATIO
+    ) {
+      return;
+    }
+    if (
+      snapTargetColumnsRef.current > 0 &&
+      thumbnailLayout.columns === snapTargetColumnsRef.current &&
+      rightGap < thumbnailLayout.cellWidth * GAP_SNAP_COLUMN_LOCK_NOISE_RATIO
+    ) {
+      return;
+    }
+    if (snapReverseCountRef.current >= MAX_SNAP_REVERSES) {
+      return;
+    }
     if (snapTargetWidthRef.current > 0) {
       const drift = Math.abs(gridSize.width - snapTargetWidthRef.current);
       const settleThreshold = Math.max(
@@ -420,12 +459,36 @@ export function useAppNavigationState({
     );
     const resolveMainDeltaByGap = (gap: number) =>
       gap <= halfCell ? -gap : cellSpan - gap + GAP_SNAP_EXPAND_BUFFER_PX;
+    const resolveSnapDirection = (mainDelta: number): "expand" | "shrink" =>
+      mainDelta > 0 ? "expand" : "shrink";
+    const resolveTargetColumnsByDelta = (mainDelta: number) => {
+      const targetGridWidth = Math.max(1, Math.round(gridSize.width + mainDelta));
+      return computeThumbnailGridLayout({
+        gridWidth: targetGridWidth,
+        gridHeight: gridSize.height,
+        thumbnailWidth,
+        thumbnailGap: resolvedThumbnailGapPx,
+        zoomLevel: thumbnailScale,
+        cardChrome,
+      }).columns;
+    };
     const markSnapApplied = (actualMainDelta: number) => {
       if (Math.abs(actualMainDelta) < GAP_SNAP_MIN_PX) {
         return false;
       }
+
+      const nextDirection = resolveSnapDirection(actualMainDelta);
+      if (
+        snapDirectionRef.current !== null &&
+        nextDirection !== snapDirectionRef.current
+      ) {
+        snapReverseCountRef.current += 1;
+      }
+      snapDirectionRef.current = nextDirection;
+
       lastSnapTimeRef.current = performance.now();
       snapTargetWidthRef.current = gridSize.width + actualMainDelta;
+      snapTargetColumnsRef.current = resolveTargetColumnsByDelta(actualMainDelta);
       return true;
     };
     const isMetadataImageHeightBound = () => {
@@ -547,7 +610,7 @@ export function useAppNavigationState({
           gridWidth: shrinkGridWidth,
           gridHeight: gridSize.height,
           thumbnailWidth,
-          thumbnailGap,
+          thumbnailGap: resolvedThumbnailGapPx,
           zoomLevel: thumbnailScale,
           cardChrome,
         });
@@ -660,7 +723,7 @@ export function useAppNavigationState({
     thumbnailLayout.columns,
     metadataMinPanelWidthPx,
     thumbnailScale,
-    thumbnailGap,
+    resolvedThumbnailGapPx,
     thumbnailWidth,
     workspaceBodyRef,
   ]);
@@ -697,6 +760,9 @@ export function useAppNavigationState({
       }
       lastSnapTimeRef.current = 0;
       snapTargetWidthRef.current = 0;
+      snapTargetColumnsRef.current = 0;
+      snapDirectionRef.current = null;
+      snapReverseCountRef.current = 0;
       initialSnapDoneRef.current = false;
       setLayoutConvergedInsetPx(0);
     }
@@ -724,6 +790,9 @@ export function useAppNavigationState({
     // 折叠/展开属于强交互，需立即解除锁定并重新吸附。
     lastSnapTimeRef.current = 0;
     snapTargetWidthRef.current = 0;
+    snapTargetColumnsRef.current = 0;
+    snapDirectionRef.current = null;
+    snapReverseCountRef.current = 0;
     if (
       !(sidebarCollapsed && metadataCollapsed) &&
       layoutConvergedInsetPx !== 0
@@ -747,6 +816,9 @@ export function useAppNavigationState({
     initialSnapDoneRef.current = true;
     lastSnapTimeRef.current = 0;
     snapTargetWidthRef.current = 0;
+    snapTargetColumnsRef.current = 0;
+    snapDirectionRef.current = null;
+    snapReverseCountRef.current = 0;
     queueGapSnap(GAP_SNAP_SETTLE_MS);
   }, [canGapSnap, gridSize.width, gridSize.height, queueGapSnap]);
 
@@ -758,6 +830,9 @@ export function useAppNavigationState({
     lastHandledCommitCountRef.current = horizontalResizeCommitCount;
     lastSnapTimeRef.current = 0; // 用户动作：清除冷却
     snapTargetWidthRef.current = 0; // 用户动作：清除目标锁定
+    snapTargetColumnsRef.current = 0;
+    snapDirectionRef.current = null;
+    snapReverseCountRef.current = 0;
     queueGapSnap(GAP_SNAP_SETTLE_MS);
   }, [canGapSnap, horizontalResizeCommitCount, queueGapSnap]);
 
@@ -813,6 +888,9 @@ export function useAppNavigationState({
     if (!canGapSnap) return;
     lastSnapTimeRef.current = 0;
     snapTargetWidthRef.current = 0;
+    snapTargetColumnsRef.current = 0;
+    snapDirectionRef.current = null;
+    snapReverseCountRef.current = 0;
     queueGapSnap(GAP_SNAP_SETTLE_MS);
   }, [appBodyWidth, canGapSnap, queueGapSnap]);
 
@@ -824,6 +902,9 @@ export function useAppNavigationState({
     if (!canGapSnap) return;
     lastSnapTimeRef.current = 0; // 用户动作：清除冷却
     snapTargetWidthRef.current = 0; // 用户动作：清除目标锁定
+    snapTargetColumnsRef.current = 0;
+    snapDirectionRef.current = null;
+    snapReverseCountRef.current = 0;
     queueGapSnap(GAP_SNAP_MANUAL_MS);
   }, [canGapSnap, thumbnailScale, queueGapSnap]);
 

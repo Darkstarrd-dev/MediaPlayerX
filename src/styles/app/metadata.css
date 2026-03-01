@@ -135,6 +135,7 @@
   padding: 0;
   background: var(--mpx-slot-fg-meta-toolbar-bg, transparent);
   border-bottom: none;
+  transition: padding-inline 0.12s ease;
 }
 
 .metadata-toolbar-g3 {
@@ -1221,4 +1222,5 @@
   align-items: stretch;
   overflow: hidden;
   color: var(--mpx-slot-fg-meta-footer-text, inherit);
+  transition: padding-inline 0.12s ease;
 }

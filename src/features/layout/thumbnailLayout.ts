@@ -41,6 +41,21 @@ export interface ThumbnailGridLayout {
   idealGridHeight: number;
 }
 
+export function computeRenderGap(params: {
+  gridWidth: number;
+  columns: number;
+  cellWidth: number;
+  baseGap: number;
+}): number {
+  if (params.columns <= 1) {
+    return params.baseGap;
+  }
+  const adjusted =
+    (params.gridWidth - params.columns * params.cellWidth) /
+    (params.columns - 1);
+  return adjusted >= params.baseGap ? adjusted : params.baseGap;
+}
+
 function floorPx(value: number): number {
   return Math.floor(value);
 }

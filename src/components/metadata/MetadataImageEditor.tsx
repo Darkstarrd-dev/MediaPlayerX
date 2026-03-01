@@ -46,6 +46,7 @@ interface MetadataImageEditorProps {
   onSearchByAuthor: (value: string) => void;
   onSearchByTag: (value: string) => void;
   onCaptionChange?: (value: MetadataImageCaption | null) => void;
+  onImageAlignInsetChange?: (insetPx: number) => void;
 }
 
 export interface MetadataImageCaption {
@@ -83,6 +84,7 @@ export function MetadataImageEditor({
   onSearchByAuthor,
   onSearchByTag,
   onCaptionChange,
+  onImageAlignInsetChange,
 }: MetadataImageEditorProps) {
   const { t } = useI18n();
   const [resolvedCaptionDims, setResolvedCaptionDims] = useState<{
@@ -93,6 +95,8 @@ export function MetadataImageEditor({
     number | null
   >(null);
   const captionRequestIdRef = useRef(0);
+  const imageElementRef = useRef<HTMLImageElement | null>(null);
+  const imageCanvasElementRef = useRef<HTMLDivElement | null>(null);
 
   const imageFromPackage =
     focusedImage && focusedImagePackage
@@ -331,13 +335,79 @@ export function MetadataImageEditor({
     captionMetaLine,
   ]);
 
+  useEffect(() => {
+    if (!onImageAlignInsetChange) {
+      return;
+    }
+
+    if (!showImageCanvas || !displayedImageSrc) {
+      onImageAlignInsetChange(0);
+      return;
+    }
+
+    onImageAlignInsetChange(0);
+
+    const imageElement = imageElementRef.current;
+    const canvasElement = imageCanvasElementRef.current;
+    if (!imageElement || !canvasElement) {
+      onImageAlignInsetChange(0);
+      return;
+    }
+
+    let rafId = 0;
+    const emitInset = () => {
+      const canvasRect = canvasElement.getBoundingClientRect();
+      const imageRect = imageElement.getBoundingClientRect();
+      if (canvasRect.width <= 0 || imageRect.width <= 0) {
+        onImageAlignInsetChange(0);
+        return;
+      }
+      const rawInset = Math.floor((canvasRect.width - imageRect.width) / 2);
+      const maxInset = Math.floor(canvasRect.width * 0.3);
+      onImageAlignInsetChange(Math.max(0, Math.min(rawInset, maxInset)));
+    };
+    const queueMeasure = () => {
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        emitInset();
+      });
+    };
+    const handleImageLoad = () => {
+      queueMeasure();
+    };
+
+    imageElement.addEventListener("load", handleImageLoad);
+    queueMeasure();
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver === "function") {
+      resizeObserver = new ResizeObserver(() => {
+        queueMeasure();
+      });
+      resizeObserver.observe(canvasElement);
+      resizeObserver.observe(imageElement);
+    }
+
+    return () => {
+      imageElement.removeEventListener("load", handleImageLoad);
+      resizeObserver?.disconnect();
+      if (rafId !== 0) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, [displayedImageSrc, onImageAlignInsetChange, showImageCanvas]);
+
   return (
     <div className={contentClassName}>
       {showImageCanvas && focusedImage ? (
         <>
-          <div className="metadata-image-canvas">
+          <div className="metadata-image-canvas" ref={imageCanvasElementRef}>
             {displayedImageSrc ? (
               <img
+                ref={imageElementRef}
                 className="metadata-image-real"
                 src={displayedImageSrc}
                 alt={`${focusedImagePackage?.displayName ?? t("ui.metadata.imageFallbackName")} #${focusedImage.ordinal}`}

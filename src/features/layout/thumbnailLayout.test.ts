@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  computeRenderGap,
   computeThumbnailGridLayout,
   THUMBNAIL_LEVEL_COUNT,
 } from "./thumbnailLayout";
@@ -257,5 +258,44 @@ describe("computeThumbnailGridLayout", () => {
 
       expect(layout.idealGridWidth).toBeLessThanOrEqual(gridWidth);
     }
+  });
+});
+
+describe("computeRenderGap", () => {
+  it("单列时返回 baseGap", () => {
+    const renderGap = computeRenderGap({
+      gridWidth: 800,
+      columns: 1,
+      cellWidth: 320,
+      baseGap: 8,
+    });
+
+    expect(renderGap).toBe(8);
+  });
+
+  it("多列时优先吸收右侧 epsilon", () => {
+    const params = {
+      gridWidth: 1003,
+      columns: 4,
+      cellWidth: 244,
+      baseGap: 8,
+    };
+    const renderGap = computeRenderGap(params);
+    const renderWidth =
+      params.columns * params.cellWidth + (params.columns - 1) * renderGap;
+
+    expect(renderGap).toBeGreaterThanOrEqual(params.baseGap);
+    expect(renderWidth).toBeCloseTo(params.gridWidth, 6);
+  });
+
+  it("gridWidth 小于列宽总和时回退到 baseGap", () => {
+    const renderGap = computeRenderGap({
+      gridWidth: 700,
+      columns: 3,
+      cellWidth: 240,
+      baseGap: 8,
+    });
+
+    expect(renderGap).toBe(8);
   });
 });
