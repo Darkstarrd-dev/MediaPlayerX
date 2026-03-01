@@ -1,9 +1,16 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-header-logo"] {
   --mpx-random-sheen-duration: 1.9s;
+  --mpx-header-logo-max-height: calc(var(--mpx-header-btn-size) + 4px);
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  flex: 0 0 auto;
+  width: max-content;
+  min-height: var(--mpx-header-logo-max-height);
+  height: var(--mpx-header-logo-max-height);
+  min-width: var(--mpx-header-status-btn-min-width);
+  padding-inline: clamp(14px, calc(var(--mpx-header-btn-padding-x) + 14px), 24px);
   border-color: #c6cfd9;
   background: linear-gradient(135deg, #f0f3f8 0%, #e2e7ee 30%, #cdd4df 50%, #e2e7ee 70%, #f4f6f9 100%);
   color: #4a5568;
