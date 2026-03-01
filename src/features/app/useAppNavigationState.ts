@@ -16,6 +16,7 @@ import {
   resolveSnapTargetColumns,
   type GridSnapAnchor,
 } from "../layout/thumbnailHorizontalSnap";
+import { isMetadataImageHeightBoundByMetrics } from "../layout/metadataImageBound";
 import { useImageBrowserViewModel } from "./useImageBrowserViewModel";
 import { clamp } from "../../utils/ui";
 import { resolveMetadataMainDelta } from "../layout/thumbnailGapPolicy";
@@ -34,6 +35,7 @@ const GAP_SNAP_EXPAND_BUFFER_PX = 2;
 const GAP_SNAP_COOLDOWN_MS = 250;
 const METADATA_MAX_APP_RATIO = 0.45;
 const METADATA_MIN_WIDTH_SCALE_LEVEL = 2;
+const IMAGE_HEIGHT_BOUND_EPSILON_PX = 2;
 const DUAL_COLLAPSED_INSET_MAX_RATIO = 0.6;
 
 interface UseAppNavigationStateParams {
@@ -393,6 +395,33 @@ export function useAppNavigationState({
       snapTargetWidthRef.current = gridSize.width + actualMainDelta;
       return true;
     };
+    const isMetadataImageHeightBound = () => {
+      const imageElement = document.querySelector<HTMLImageElement>(
+        ".metadata-image-real",
+      );
+      if (!imageElement) {
+        return false;
+      }
+      const canvasElement = imageElement.closest(".metadata-image-canvas");
+      if (!(canvasElement instanceof HTMLElement)) {
+        return false;
+      }
+      const imageHeight = imageElement.getBoundingClientRect().height;
+      const canvasRect = canvasElement.getBoundingClientRect();
+      if (imageHeight <= 0 || canvasRect.height <= 0) {
+        return false;
+      }
+      const computed = window.getComputedStyle(canvasElement);
+      const paddingTop = Number.parseFloat(computed.paddingTop) || 0;
+      const paddingBottom = Number.parseFloat(computed.paddingBottom) || 0;
+      return isMetadataImageHeightBoundByMetrics({
+        imageHeight,
+        canvasHeight: canvasRect.height,
+        canvasPaddingTop: paddingTop,
+        canvasPaddingBottom: paddingBottom,
+        epsilonPx: IMAGE_HEIGHT_BOUND_EPSILON_PX,
+      });
+    };
 
     if (sidebarCollapsed && metadataCollapsed) {
       if (Math.abs(rightGap) < GAP_SNAP_MIN_PX) {
@@ -491,6 +520,7 @@ export function useAppNavigationState({
         });
         const shrinkWouldDropColumns =
           shrinkLayout.columns < thumbnailLayout.columns;
+        const forceAvoidByImageHeightBound = isMetadataImageHeightBound();
 
         const desiredMainDelta = resolveMetadataMainDelta({
           proposedMainDelta: mainDelta,
@@ -501,6 +531,7 @@ export function useAppNavigationState({
           minActionPx: GAP_SNAP_MIN_PX,
           expandBufferPx: GAP_SNAP_EXPAND_BUFFER_PX,
           shrinkWouldDropColumns,
+          forceAvoidByImageHeightBound,
         });
 
         if (Math.abs(desiredMainDelta) < GAP_SNAP_MIN_PX) {

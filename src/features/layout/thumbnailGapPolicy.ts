@@ -7,6 +7,7 @@ interface ResolveMetadataMainDeltaParams {
   minActionPx: number;
   expandBufferPx: number;
   shrinkWouldDropColumns: boolean;
+  forceAvoidByImageHeightBound?: boolean;
 }
 
 export function resolveMetadataMainDelta({
@@ -18,6 +19,7 @@ export function resolveMetadataMainDelta({
   minActionPx,
   expandBufferPx,
   shrinkWouldDropColumns,
+  forceAvoidByImageHeightBound = false,
 }: ResolveMetadataMainDeltaParams): number {
   const minExpandNeeded = Math.max(0, cellSpan - rightGap);
   let desiredMainDelta = proposedMainDelta;
@@ -34,6 +36,10 @@ export function resolveMetadataMainDelta({
     }
     return expandDelta;
   };
+
+  if (forceAvoidByImageHeightBound) {
+    return resolveExpandDelta();
+  }
 
   if (desiredMainDelta > 0) {
     if (maxExpandableMainDelta + minActionPx < minExpandNeeded) {

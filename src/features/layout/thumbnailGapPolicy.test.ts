@@ -77,4 +77,36 @@ describe("resolveMetadataMainDelta", () => {
 
     expect(next).toBe(0);
   });
+
+  it("图片高度贴边时强制走右避让", () => {
+    const next = resolveMetadataMainDelta({
+      proposedMainDelta: -60,
+      rightGap: 60,
+      cellSpan: 208,
+      maxExpandableMainDelta: 220,
+      maxShrinkMainDelta: 80,
+      minActionPx: 4,
+      expandBufferPx: 2,
+      shrinkWouldDropColumns: false,
+      forceAvoidByImageHeightBound: true,
+    });
+
+    expect(next).toBe(150);
+  });
+
+  it("图片高度贴边且右避让不可达时保持不动", () => {
+    const next = resolveMetadataMainDelta({
+      proposedMainDelta: -60,
+      rightGap: 60,
+      cellSpan: 208,
+      maxExpandableMainDelta: 40,
+      maxShrinkMainDelta: 80,
+      minActionPx: 4,
+      expandBufferPx: 2,
+      shrinkWouldDropColumns: false,
+      forceAvoidByImageHeightBound: true,
+    });
+
+    expect(next).toBe(0);
+  });
 });
