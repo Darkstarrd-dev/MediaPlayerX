@@ -279,6 +279,24 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     );
   }
 
+  if ("thumbnailGapScaleCoeff" in next) {
+    next.thumbnailGapScaleCoeff = normalizeNumberInRange(
+      next.thumbnailGapScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
+  if ("buttonGroupInsetScaleCoeff" in next) {
+    next.buttonGroupInsetScaleCoeff = normalizeNumberInRange(
+      next.buttonGroupInsetScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
   if ("radiusCascadeScaleCoeff" in next) {
     next.radiusCascadeScaleCoeff = normalizeNumberInRange(
       next.radiusCascadeScaleCoeff,

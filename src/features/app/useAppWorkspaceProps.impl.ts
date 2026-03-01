@@ -42,6 +42,10 @@ import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
 import { buildWorkspaceMetadataPanelProps } from "./workspaceMetadataPanelProps";
 import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
 import type { MetadataFetchTarget } from "../metadata/metadataFetchTargets";
+import {
+  resolveRuntimeSpacing,
+  resolveRuntimeViewportWidth,
+} from "../layout/runtimeSpacing";
 import { useI18n } from "../../i18n/useI18n";
 export function useAppWorkspaceProps({
   appSettings,
@@ -329,33 +333,26 @@ export function useAppWorkspaceProps({
     );
 
   const resolvedSidebarGapPx = useMemo(() => {
-    const normalizedInnerScale = Math.max(
-      0,
-      Math.min(2, appSettings.paneInnerGapScaleCoeff),
-    );
-    const normalizedSidebarInnerScale = Math.max(
-      0,
-      Math.min(2, appSettings.sidebarInnerGapScaleCoeff),
-    );
     if (typeof window === "undefined") {
       return Math.max(0, Math.round(appSettings.sidebarVerticalGap));
     }
-    const viewportWidth =
-      window.innerWidth > 0
-        ? window.innerWidth
-        : document.documentElement.clientWidth;
-    const paneInnerPaddingPx = Math.max(
-      0,
-      Math.round(viewportWidth * 0.01 * normalizedInnerScale),
-    );
-    return Math.max(
-      0,
-      Math.round(paneInnerPaddingPx * 0.8 * normalizedSidebarInnerScale),
-    );
+    return resolveRuntimeSpacing({
+      viewportWidth: resolveRuntimeViewportWidth(),
+      layoutGapScaleCoeff: appSettings.layoutGapScaleCoeff,
+      paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
+      paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
+      sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
+      thumbnailGapScaleCoeff: appSettings.thumbnailGapScaleCoeff,
+      buttonGroupInsetScaleCoeff: appSettings.buttonGroupInsetScaleCoeff,
+    }).sidebarGapPx;
   }, [
+    appSettings.buttonGroupInsetScaleCoeff,
+    appSettings.layoutGapScaleCoeff,
     appSettings.paneInnerGapScaleCoeff,
+    appSettings.paneStackGapScaleCoeff,
     appSettings.sidebarInnerGapScaleCoeff,
     appSettings.sidebarVerticalGap,
+    appSettings.thumbnailGapScaleCoeff,
   ]);
 
   const videoNodeBrowseItems = buildVideoNodeBrowseItems({
@@ -1013,14 +1010,12 @@ export function useAppWorkspaceProps({
   });
 
   const manageSelectedVideoIds = Array.from(
-    new Set(
-      [
-        ...sidebarCheckedNodeIds
-          .map((nodeId) => sidebarNodeById.get(nodeId)?.videoId ?? null)
-          .filter((videoId): videoId is string => Boolean(videoId)),
-        ...imageCheckedIds.filter((videoId) => videoByIdEffective.has(videoId)),
-      ],
-    ),
+    new Set([
+      ...sidebarCheckedNodeIds
+        .map((nodeId) => sidebarNodeById.get(nodeId)?.videoId ?? null)
+        .filter((videoId): videoId is string => Boolean(videoId)),
+      ...imageCheckedIds.filter((videoId) => videoByIdEffective.has(videoId)),
+    ]),
   );
 
   const videoMainSectionProps = buildVideoMainSectionProps({

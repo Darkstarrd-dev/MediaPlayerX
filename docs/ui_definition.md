@@ -193,7 +193,7 @@
 | `fg.meta.main.search.featureTagPicker.panel` | `.feature-tag-modal-overlay > .feature-tag-modal-panel` | `data-slot="fg-meta-main-search-feature-tag-picker-panel"` | tag picker open | 标签选择模态面板 | 全屏遮罩+居中 |
 | `fg.meta.main.adReview` | `<MetadataAdReviewSection />` | `data-slot="fg-meta-main-ad-review"` | `mode=image && manageMode && adReviewPanelOpen` | 审核区 | |
 | `fg.meta.main.adReview.start.panel` | `.manage-ad-review-start-mask > .manage-ad-review-start-dialog` | `data-slot="fg-meta-main-ad-review-start-panel"` | 从 Meta 审核区启动审核时 | 审核启动对话框 | 居中浮层 |
-| `fg.meta.footer` | 预留 | `data-slot="fg-meta-footer"` | 预留 | 空槽位 | 保留用于未来扩展 |
+| `fg.meta.footer` | `.metadata-image-caption` | `data-slot="fg-meta-footer"` | `mode=image && showImageCanvas` | 原图说明区（文件名 + 分辨率/大小） | 第二行合并显示分辨率与大小 |
 
 ## 7. Fullscreen
 

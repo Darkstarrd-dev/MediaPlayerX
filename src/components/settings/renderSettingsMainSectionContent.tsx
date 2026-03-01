@@ -35,6 +35,7 @@ export function renderSettingsMainSection(
       paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff,
       sidebarInnerGapScaleCoeff,
+      buttonGroupInsetScaleCoeff,
       radiusCascadeScaleCoeff,
       radiusValueScaleCoeff,
       sidebarRatio,
@@ -52,7 +53,7 @@ export function renderSettingsMainSection(
       fullscreenVideoControlsMaxWidthScale,
       mediaPreloadMemoryBudgetMb,
       thumbnailGap,
-      thumbnailGapScale,
+      thumbnailGapScaleCoeff,
       thumbnailQuality,
       thumbnailAdaptiveResolution,
       thumbnailWidthInputValue,
@@ -71,6 +72,8 @@ export function renderSettingsMainSection(
       onPaneInnerGapScaleCoeffChange,
       onPaneStackGapScaleCoeffChange,
       onSidebarInnerGapScaleCoeffChange,
+      onThumbnailGapScaleCoeffChange,
+      onButtonGroupInsetScaleCoeffChange,
       onRadiusCascadeScaleCoeffChange,
       onRadiusValueScaleCoeffChange,
       onSidebarRatioChange,
@@ -81,7 +84,6 @@ export function renderSettingsMainSection(
       onWorkspaceBottomPanelHeightChange,
       onFullscreenVideoControlsMaxWidthChange,
       onMediaPreloadMemoryBudgetMbChange,
-      onThumbnailGapChange,
       onThumbnailQualityChange,
       onResetThumbnailQuality,
       onThumbnailAdaptiveResolutionChange,
@@ -248,19 +250,17 @@ export function renderSettingsMainSection(
           </header>
           <label data-tooltip-label={settingsTip("thumbnailGap")}>
             {t("ui.settings.thumbnailGapScale", {
-              scale: formatScale(thumbnailGapScale),
+              scale: formatScale(thumbnailGapScaleCoeff),
               px: thumbnailGap,
             })}
             <input
-              max={SIZE_SCALE_CONFIG.thumbnailGap.max}
-              min={SIZE_SCALE_CONFIG.thumbnailGap.min}
-              step={SIZE_SCALE_CONFIG.thumbnailGap.step}
+              max={2}
+              min={0}
+              step={0.1}
               type="range"
-              value={thumbnailGapScale}
+              value={thumbnailGapScaleCoeff}
               onChange={(event) =>
-                onThumbnailGapChange(
-                  toAbsolutePx("thumbnailGap", Number(event.target.value)),
-                )
+                onThumbnailGapScaleCoeffChange(Number(event.target.value))
               }
             />
           </label>
@@ -401,9 +401,7 @@ export function renderSettingsMainSection(
           <header className="settings-group-head">
             <span>{t("ui.settings.layoutSection")}</span>
           </header>
-          <label
-            data-tooltip-label={settingsTip("layoutGapScaleCoeff")}
-          >
+          <label data-tooltip-label={settingsTip("layoutGapScaleCoeff")}>
             {t("ui.settings.layoutGapScaleCoeff", {
               value: layoutGapScaleCoeff.toFixed(2),
             })}
@@ -418,9 +416,7 @@ export function renderSettingsMainSection(
               }
             />
           </label>
-          <label
-            data-tooltip-label={settingsTip("paneInnerGapScaleCoeff")}
-          >
+          <label data-tooltip-label={settingsTip("paneInnerGapScaleCoeff")}>
             {t("ui.settings.paneInnerGapScaleCoeff", {
               value: paneInnerGapScaleCoeff.toFixed(2),
             })}
@@ -435,9 +431,7 @@ export function renderSettingsMainSection(
               }
             />
           </label>
-          <label
-            data-tooltip-label={settingsTip("paneStackGapScaleCoeff")}
-          >
+          <label data-tooltip-label={settingsTip("paneStackGapScaleCoeff")}>
             {t("ui.settings.paneStackGapScaleCoeff", {
               value: paneStackGapScaleCoeff.toFixed(2),
             })}
@@ -464,6 +458,21 @@ export function renderSettingsMainSection(
               value={sidebarInnerGapScaleCoeff}
               onChange={(event) =>
                 onSidebarInnerGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label data-tooltip-label={settingsTip("buttonGroupInsetScaleCoeff")}>
+            {t("ui.settings.buttonGroupInsetScaleCoeff", {
+              value: buttonGroupInsetScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={buttonGroupInsetScaleCoeff}
+              onChange={(event) =>
+                onButtonGroupInsetScaleCoeffChange(Number(event.target.value))
               }
             />
           </label>

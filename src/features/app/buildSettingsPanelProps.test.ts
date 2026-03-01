@@ -29,6 +29,8 @@ describe("buildSettingsPanelProps", () => {
       paneInnerGapScaleCoeff: 1,
       paneStackGapScaleCoeff: 1,
       sidebarInnerGapScaleCoeff: 1,
+      thumbnailGapScaleCoeff: 1,
+      buttonGroupInsetScaleCoeff: 1,
       radiusCascadeScaleCoeff: 1,
       radiusValueScaleCoeff: 1,
       sidebarRatio: 0.26,
@@ -234,6 +236,16 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(19, {
       fullscreenUpsamplingKernel: "nearest",
+    });
+
+    props.onThumbnailGapScaleCoeffChange(1.4);
+    props.onButtonGroupInsetScaleCoeffChange(0.8);
+
+    expect(updateSettings).toHaveBeenCalledWith({
+      thumbnailGapScaleCoeff: 1.4,
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      buttonGroupInsetScaleCoeff: 0.8,
     });
   });
 });

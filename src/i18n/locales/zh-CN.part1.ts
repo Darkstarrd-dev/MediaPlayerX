@@ -311,6 +311,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.paneInnerGapScaleCoeff": "容器内边距系数 {{value}}x",
   "ui.settings.paneStackGapScaleCoeff": "容器内上中下间距系数 {{value}}x",
   "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar 内边距系数 {{value}}x",
+  "ui.settings.buttonGroupInsetScaleCoeff": "按钮组边距系数 {{value}}x",
   "ui.settings.radiusCascadeScaleCoeff": "统一圆角级联系数 {{value}}x",
   "ui.settings.radiusValueScaleCoeff": "统一圆角值系数 {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar 比例 {{percent}}%",
@@ -339,7 +340,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.tooltip.backdropOpacity":
     "调整设置面板遮罩透明度，数值越高背景越暗。",
   "ui.settings.tooltip.thumbnailGap":
-    "控制缩略图之间的间距，影响单位屏可见数量与密度。",
+    "控制缩略图间距系数；实际间距按容器内边距的 0.8 倍再乘本系数计算，并做整数像素取整。",
   "ui.settings.tooltip.thumbnailQuality":
     "控制缩略图编码质量；越高画质越好，体积和生成耗时也更高。",
   "ui.settings.tooltip.thumbnailResolution":
@@ -370,6 +371,8 @@ export const zhCnCatalogPart1 = {
     "调整容器内部上中下分段间距系数，按容器内边距的 0.75 倍再乘本系数计算。",
   "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
     "调整 Sidebar 主列表四边留空系数；实际值为容器内边距的 0.8 倍再乘本系数。",
+  "ui.settings.tooltip.buttonGroupInsetScaleCoeff":
+    "调整按钮组内边距系数；基准为容器内边距 * 0.8 * 0.5，再乘本系数并取整。",
   "ui.settings.tooltip.radiusCascadeScaleCoeff":
     "调整统一圆角级联强度系数。0 为禁用级联扣减，1 为默认强度，2 为双倍扣减强度。",
   "ui.settings.tooltip.radiusValueScaleCoeff":

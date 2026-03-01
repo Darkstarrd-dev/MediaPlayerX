@@ -461,10 +461,9 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
         ) as HTMLElement | null;
         expect(caption).not.toBeNull();
         const lines = caption?.querySelectorAll("span") ?? [];
-        expect(lines).toHaveLength(3);
+        expect(lines).toHaveLength(2);
         expect(lines[0]?.textContent ?? "").toContain("img_0001.jpg");
-        expect(lines[1]?.textContent ?? "").toBe("920 x 920");
-        expect(lines[2]?.textContent ?? "").toBe("180KB");
+        expect(lines[1]?.textContent ?? "").toBe("920 x 920 / 180KB");
         expect(caption?.querySelector("strong")).toBeNull();
       });
     },

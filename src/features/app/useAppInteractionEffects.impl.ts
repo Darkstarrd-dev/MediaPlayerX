@@ -26,7 +26,8 @@ const SIDEBAR_COLLAPSE_RATIO = 0.03;
 const CLIPBOARD_MEDIA_RESOLVE_TIMEOUT_MS = 8_000;
 
 function canWriteImageToClipboard(): boolean {
-  const windowApi = typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
+  const windowApi =
+    typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
   return typeof windowApi?.writeClipboardPng === "function";
 }
 
@@ -48,7 +49,9 @@ async function canvasToPngBytes(
   });
 }
 
-async function writePngBytesToClipboard(pngBytes: Uint8Array): Promise<boolean> {
+async function writePngBytesToClipboard(
+  pngBytes: Uint8Array,
+): Promise<boolean> {
   if (!canWriteImageToClipboard()) {
     return false;
   }
@@ -57,7 +60,8 @@ async function writePngBytesToClipboard(pngBytes: Uint8Array): Promise<boolean> 
     return false;
   }
 
-  const windowApi = typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
+  const windowApi =
+    typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
   if (!windowApi?.writeClipboardPng) {
     return false;
   }
@@ -72,7 +76,10 @@ async function writePngBytesToClipboard(pngBytes: Uint8Array): Promise<boolean> 
 async function copyImageElementToClipboard(
   imageElement: HTMLImageElement,
 ): Promise<boolean> {
-  const width = Math.max(1, imageElement.naturalWidth || imageElement.width || 1);
+  const width = Math.max(
+    1,
+    imageElement.naturalWidth || imageElement.width || 1,
+  );
   const height = Math.max(
     1,
     imageElement.naturalHeight || imageElement.height || 1,
@@ -134,12 +141,16 @@ function resolveFullscreenImageElement(): HTMLImageElement | null {
     return previewImage;
   }
 
-  const fullscreenImage = document.querySelector(".fullscreen-media-image-element");
+  const fullscreenImage = document.querySelector(
+    ".fullscreen-media-image-element",
+  );
   if (fullscreenImage instanceof HTMLImageElement) {
     return fullscreenImage;
   }
 
-  const compareBaseImage = document.querySelector(".fullscreen-image-compare-layer");
+  const compareBaseImage = document.querySelector(
+    ".fullscreen-image-compare-layer",
+  );
   return compareBaseImage instanceof HTMLImageElement ? compareBaseImage : null;
 }
 
@@ -197,10 +208,14 @@ function resolveImageItemByRef(
     return null;
   }
 
-  return packageById.get(focusedRef.packageId)?.images[focusedRef.imageIndex] ?? null;
+  return (
+    packageById.get(focusedRef.packageId)?.images[focusedRef.imageIndex] ?? null
+  );
 }
 
-async function loadImageElementFromUrl(url: string): Promise<HTMLImageElement | null> {
+async function loadImageElementFromUrl(
+  url: string,
+): Promise<HTMLImageElement | null> {
   if (url.trim().length === 0) {
     return null;
   }
@@ -244,7 +259,9 @@ async function copyOriginalImageToClipboard(
   }
 }
 
-function resolveVideoElement(preferFullscreen: boolean): HTMLVideoElement | null {
+function resolveVideoElement(
+  preferFullscreen: boolean,
+): HTMLVideoElement | null {
   const selectors = preferFullscreen
     ? [".fullscreen-media-video-element", ".video-screen-media"]
     : [".video-screen-media", ".fullscreen-media-video-element"];
@@ -726,7 +743,8 @@ export function useAppInteractionEffects({
       }
 
       if (!fullscreenActive && mode === "image") {
-        const focusedImageRef = resolveMainFocusedImageRefFromDom() ?? focusedRef;
+        const focusedImageRef =
+          resolveMainFocusedImageRefFromDom() ?? focusedRef;
         const focusedImage = resolveImageItemByRef(
           focusedImageRef,
           packageByIdEffective,
@@ -842,6 +860,8 @@ export function useAppInteractionEffects({
     paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff: appSettings.thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff: appSettings.buttonGroupInsetScaleCoeff,
     radiusCascadeScaleCoeff: appSettings.radiusCascadeScaleCoeff,
     radiusValueScaleCoeff: appSettings.radiusValueScaleCoeff,
     setAppBodyWidth,

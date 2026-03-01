@@ -1,5 +1,5 @@
 .mpx-btn-group.is-groove {
-  padding: 2px;
+  padding: var(--mpx-button-group-inset-px, 2px);
   border: 1px solid var(--mpx-btn-group-groove-border);
   border-radius: var(--mpx-btn-group-groove-radius);
   background: var(--mpx-btn-group-groove-bg);
@@ -29,18 +29,18 @@
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  .mode-switch > button
-):not(:disabled):hover,
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    .mode-switch > button
+  ):not(:disabled):hover,
 :is(
   button.feature-action-btn,
   button.window-control-btn,
@@ -60,18 +60,18 @@
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  .mode-switch > button
-):not(:disabled):active,
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    .mode-switch > button
+  ):not(:disabled):active,
 :is(
   button.feature-action-btn,
   button.window-control-btn,
@@ -118,7 +118,7 @@
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
-)[aria-pressed='true'] {
+)[aria-pressed="true"] {
   background: var(--mpx-btn-template-pressed) !important;
   border-color: var(--mpx-btn-template-border) !important;
   color: var(--mpx-btn-template-text-pressed) !important;
@@ -127,47 +127,47 @@
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  .mode-switch > button
-).is-active[aria-pressed='true'] {
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    .mode-switch > button
+  ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-template-text-merged) !important;
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  .mode-switch > button
-).danger:not(:disabled):hover,
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    .mode-switch > button
+  ).danger:not(:disabled):hover,
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  .mode-switch > button
-).danger.force-hover,
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    .mode-switch > button
+  ).danger.force-hover,
 button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   background: var(--mpx-btn-template-danger-hover-bg) !important;
   border-color: var(--mpx-btn-template-danger-hover-border) !important;
@@ -243,56 +243,58 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
-  .settings-head button,
-  .settings-side button,
-  .settings-shortcuts-head button,
-  .main-footer-pagination button,
-  .video-controls button:not(.video-action-btn),
-  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
-  .settings-block button:not(.sidebar-mini-btn),
-  .search-mode-switch button,
-  .zoom-stepper .zoom-stepper-btn,
-  .auto-play-toggle-btn,
-  .header-settings-btn,
-  .video-ctrl-panel-option,
-  .music-ctrl-panel-option,
-  .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
-  .manage-ad-review-icon-btn
-):not(:disabled):hover {
+    .sidebar-head button,
+    .toolbar-actions button,
+    .metadata-head button,
+    .settings-head button,
+    .settings-side button,
+    .settings-shortcuts-head button,
+    .main-footer-pagination button,
+    .video-controls button:not(.video-action-btn),
+    .fullscreen-footer
+      button:not(.video-action-btn):not(.fullscreen-action-btn),
+    .main-toolbar button,
+    .settings-block button:not(.sidebar-mini-btn),
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn,
+    .video-ctrl-panel-option,
+    .music-ctrl-panel-option,
+    .fullscreen-convert-format-btn,
+    .main-toolbar-ad-review-review-pill,
+    .main-toolbar-ad-review-running-pill,
+    .manage-ad-review-icon-btn
+  ):not(:disabled):hover {
   background: var(--mpx-btn-template-hover) !important;
   box-shadow: var(--mpx-btn-template-shadow-hover) !important;
   transform: var(--mpx-btn-template-transform-hover);
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
-  .settings-head button,
-  .settings-side button,
-  .settings-shortcuts-head button,
-  .main-footer-pagination button,
-  .video-controls button:not(.video-action-btn),
-  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
-  .settings-block button:not(.sidebar-mini-btn),
-  .search-mode-switch button,
-  .zoom-stepper .zoom-stepper-btn,
-  .auto-play-toggle-btn,
-  .header-settings-btn,
-  .video-ctrl-panel-option,
-  .music-ctrl-panel-option,
-  .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
-  .manage-ad-review-icon-btn
-):not(:disabled):active {
+    .sidebar-head button,
+    .toolbar-actions button,
+    .metadata-head button,
+    .settings-head button,
+    .settings-side button,
+    .settings-shortcuts-head button,
+    .main-footer-pagination button,
+    .video-controls button:not(.video-action-btn),
+    .fullscreen-footer
+      button:not(.video-action-btn):not(.fullscreen-action-btn),
+    .main-toolbar button,
+    .settings-block button:not(.sidebar-mini-btn),
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn,
+    .video-ctrl-panel-option,
+    .music-ctrl-panel-option,
+    .fullscreen-convert-format-btn,
+    .main-toolbar-ad-review-review-pill,
+    .main-toolbar-ad-review-running-pill,
+    .manage-ad-review-icon-btn
+  ):not(:disabled):active {
   background: var(--mpx-btn-template-active) !important;
   box-shadow: var(--mpx-btn-template-shadow-active) !important;
   transform: var(--mpx-btn-template-transform-active);
@@ -348,7 +350,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .main-toolbar-ad-review-review-pill,
   .main-toolbar-ad-review-running-pill,
   .manage-ad-review-icon-btn
-)[aria-pressed='true'] {
+)[aria-pressed="true"] {
   background: var(--mpx-btn-template-pressed) !important;
   border-color: var(--mpx-btn-template-border) !important;
   color: var(--mpx-btn-template-text-pressed) !important;
@@ -357,28 +359,29 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
-  .settings-head button,
-  .settings-side button,
-  .settings-shortcuts-head button,
-  .main-footer-pagination button,
-  .video-controls button:not(.video-action-btn),
-  .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
-  .settings-block button:not(.sidebar-mini-btn),
-  .search-mode-switch button,
-  .zoom-stepper .zoom-stepper-btn,
-  .auto-play-toggle-btn,
-  .header-settings-btn,
-  .video-ctrl-panel-option,
-  .music-ctrl-panel-option,
-  .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
-  .manage-ad-review-icon-btn
-).is-active[aria-pressed='true'] {
+    .sidebar-head button,
+    .toolbar-actions button,
+    .metadata-head button,
+    .settings-head button,
+    .settings-side button,
+    .settings-shortcuts-head button,
+    .main-footer-pagination button,
+    .video-controls button:not(.video-action-btn),
+    .fullscreen-footer
+      button:not(.video-action-btn):not(.fullscreen-action-btn),
+    .main-toolbar button,
+    .settings-block button:not(.sidebar-mini-btn),
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn,
+    .video-ctrl-panel-option,
+    .music-ctrl-panel-option,
+    .fullscreen-convert-format-btn,
+    .main-toolbar-ad-review-review-pill,
+    .main-toolbar-ad-review-running-pill,
+    .manage-ad-review-icon-btn
+  ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-template-text-merged) !important;
 }
 
@@ -412,7 +415,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ) {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
@@ -423,20 +429,26 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-):not(:disabled):hover {
+    button.main-icon-square-btn,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  ):not(:disabled):hover {
   background: var(--mpx-btn-template-hover) !important;
   box-shadow: var(--mpx-btn-template-shadow-hover) !important;
   transform: var(--mpx-btn-template-transform-hover);
 }
 
 :is(
-  button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-):not(:disabled):active {
+    button.main-icon-square-btn,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  ):not(:disabled):active {
   background: var(--mpx-btn-template-active) !important;
   box-shadow: var(--mpx-btn-template-shadow-active) !important;
   transform: var(--mpx-btn-template-transform-active);
@@ -444,7 +456,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ).is-active {
   color: var(--mpx-btn-template-text-active) !important;
@@ -452,9 +467,12 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
-)[aria-pressed='true'] {
+)[aria-pressed="true"] {
   background: var(--mpx-btn-template-pressed) !important;
   border-color: var(--mpx-btn-template-border) !important;
   color: var(--mpx-btn-template-text-pressed) !important;
@@ -463,16 +481,22 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-).is-active[aria-pressed='true'] {
+    button.main-icon-square-btn,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-template-text-merged) !important;
 }
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):disabled {
   opacity: 0.56;
@@ -493,7 +517,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus,
 :is(
@@ -509,64 +536,76 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
+  .settings-floating-panel
+    button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+      .fullscreen-action-btn
+    ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus-visible {
   outline: none !important;
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  button.main-icon-square-btn,
-  .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-):focus-visible:not([aria-pressed='true']) {
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  ):focus-visible:not([aria-pressed="true"]) {
   border-color: var(--mpx-btn-template-border) !important;
   box-shadow: var(--mpx-btn-template-shadow-hover) !important;
 }
 
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  button.main-icon-square-btn,
-  .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-)[aria-pressed='true']:focus,
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  )[aria-pressed="true"]:focus,
 :is(
-  button.feature-action-btn,
-  button.window-control-btn,
-  button.search-trigger-btn,
-  button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
-  button.toolbar-icon-btn,
-  button.settings-icon-btn,
-  button.main-icon-square-btn,
-  .mode-switch > button,
-  .settings-floating-panel button:not(.sidebar-mini-btn):not(.video-action-btn):not(.fullscreen-action-btn):not(.mpx-overlay-cell-btn),
-  .meta-tabs button:not(.mpx-overlay-cell-btn)
-)[aria-pressed='true']:focus-visible {
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.video-action-btn,
+    button.fullscreen-action-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .settings-floating-panel
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not(.mpx-overlay-cell-btn),
+    .meta-tabs button:not(.mpx-overlay-cell-btn)
+  )[aria-pressed="true"]:focus-visible {
   border-color: var(--mpx-btn-template-border) !important;
   box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
 }

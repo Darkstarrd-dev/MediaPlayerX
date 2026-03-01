@@ -94,7 +94,13 @@ export const audioTranscodeDefaultParamsSchema = z.object({
   vbrQuality: z.number().int().min(0).max(9).nullable().default(null),
   sampleRateHz: audioTranscodeSampleRateSchema.nullable().default(null),
   channels: audioTranscodeChannelsSchema.nullable().default(null),
-  flacCompressionLevel: z.number().int().min(0).max(12).nullable().default(null),
+  flacCompressionLevel: z
+    .number()
+    .int()
+    .min(0)
+    .max(12)
+    .nullable()
+    .default(null),
   wavBitDepth: audioTranscodeWavBitDepthSchema.nullable().default(null),
   metadataMode: audioTranscodeMetadataModeSchema.default("copy"),
   metadataOverrideKey: z.string().max(64).default(""),
@@ -156,6 +162,8 @@ export const appSettingsSchema = z.object({
   paneInnerGapScaleCoeff: z.number().min(0).max(2).default(1),
   paneStackGapScaleCoeff: z.number().min(0).max(2).default(1),
   sidebarInnerGapScaleCoeff: z.number().min(0).max(2).default(1),
+  thumbnailGapScaleCoeff: z.number().min(0).max(2).default(1),
+  buttonGroupInsetScaleCoeff: z.number().min(0).max(2).default(1),
   radiusCascadeScaleCoeff: z.number().min(0).max(2).default(1),
   radiusValueScaleCoeff: z.number().min(0).max(2).default(1),
   sidebarRatio: z.number().min(0).max(0.95),

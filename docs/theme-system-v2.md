@@ -445,9 +445,17 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-layout-gap-scale` | `1` | 容器边距系数（运行时可调，`0~3`） |
 | `--mpx-pane-inner-gap-scale` | `1` | 容器内边距系数（运行时可调，`0~2`） |
 | `--mpx-pane-stack-gap-scale` | `1` | 容器内上中下间距系数（运行时可调，`0~2`） |
+| `--mpx-sidebar-inner-gap-scale` | `1` | Sidebar 内边距系数（运行时可调，`0~2`） |
+| `--mpx-thumbnail-gap-scale` | `1` | 缩略图间距系数（运行时可调，`0~2`） |
+| `--mpx-button-group-inset-scale` | `1` | 按钮组边距系数（运行时可调，`0~2`） |
 | `--mpx-layout-gap-px` | `0px` | 运行时四舍五入后的统一边距像素值 |
 | `--mpx-pane-inner-padding-px` | `10px` | 运行时四舍五入后的统一内边距像素值 |
 | `--mpx-pane-stack-gap-px` | `8px` | 运行时四舍五入后的统一上中下间距像素值 |
+| `--mpx-pane-section-gap-px` | `8px` | 运行时四舍五入后的容器分段间距像素值 |
+| `--mpx-pane-recessed-padding-px` | `3px` | 运行时四舍五入后的凹槽内边距（`inner/3`） |
+| `--mpx-sidebar-gap-px` | `8px` | 运行时四舍五入后的 Sidebar 内边距像素值 |
+| `--mpx-thumbnail-gap-px` | `8px` | 运行时四舍五入后的缩略图间距像素值 |
+| `--mpx-button-group-inset-px` | `2px` | 运行时四舍五入后的按钮组边距像素值 |
 | `--mpx-layout-padding` | `0px` | app-body 外围 padding，非零时可见 body 背景 |
 | `--mpx-splitter-width` | `8px` | 分割条宽度（即面板间距） |
 | `--mpx-pane-frame-padding` | `var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding))` | 三栏统一外框内边距（Sidebar/Main/Metadata） |
@@ -1010,17 +1018,25 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 
 ### 运行时布局间距系数
 
-设置面板“界面设置 -> 布局参数”支持实时写入三项系数：
+设置面板“界面设置 -> 布局参数”支持实时写入多项间距系数：
 
 - `--mpx-layout-gap-scale`（容器边距系数，默认 `1.00`，范围 `0.00~3.00`，步进 `0.1`）
 - `--mpx-pane-inner-gap-scale`（容器内边距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
 - `--mpx-pane-stack-gap-scale`（容器内上中下间距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
+- `--mpx-sidebar-inner-gap-scale`（Sidebar 内边距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
+- `--mpx-thumbnail-gap-scale`（缩略图间距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
+- `--mpx-button-group-inset-scale`（按钮组边距系数，默认 `1.00`，范围 `0.00~2.00`，步进 `0.1`）
 
 计算与取整策略：
 
 - `--mpx-layout-gap-px = round(windowWidth * 1% * --mpx-layout-gap-scale)`
 - `--mpx-pane-inner-padding-px = round(windowWidth * 1% * --mpx-pane-inner-gap-scale)`
 - `--mpx-pane-stack-gap-px = round(--mpx-pane-inner-padding-px * 0.75 * --mpx-pane-stack-gap-scale)`
+- `--mpx-pane-section-gap-px = --mpx-pane-stack-gap-px`
+- `--mpx-pane-recessed-padding-px = round(--mpx-pane-inner-padding-px / 3)`
+- `--mpx-sidebar-gap-px = round(--mpx-pane-inner-padding-px * 0.8 * --mpx-sidebar-inner-gap-scale)`
+- `--mpx-thumbnail-gap-px = round(--mpx-pane-inner-padding-px * 0.8 * --mpx-thumbnail-gap-scale)`
+- `--mpx-button-group-inset-px = round(--mpx-pane-inner-padding-px * 0.8 * 0.5 * --mpx-button-group-inset-scale)`
 
 按钮与 head 区自适应策略：
 
@@ -1028,4 +1044,4 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 - 面板 toolbar 应使用 `min-height` 而非固定 `height`，确保按钮增大时容器可自动增高，不裁切。 
 - Header 不再使用独立“高度滑条”直接设高，避免与容器参数体系冲突。
 
-推荐做法：Style 内优先消费 `--mpx-layout-gap-px`、`--mpx-pane-inner-padding-px` 与 `--mpx-pane-stack-gap-px`，避免半像素导致边缘模糊。
+推荐做法：Style 内优先消费 `--mpx-layout-gap-px`、`--mpx-pane-inner-padding-px`、`--mpx-pane-section-gap-px`、`--mpx-sidebar-gap-px`、`--mpx-thumbnail-gap-px` 与 `--mpx-button-group-inset-px`，避免半像素导致边缘模糊。

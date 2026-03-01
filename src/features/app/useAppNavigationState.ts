@@ -19,6 +19,10 @@ import {
 import { isMetadataImageHeightBoundByMetrics } from "../layout/metadataImageBound";
 import { useImageBrowserViewModel } from "./useImageBrowserViewModel";
 import { clamp } from "../../utils/ui";
+import {
+  resolveRuntimeSpacing,
+  resolveRuntimeViewportWidth,
+} from "../layout/runtimeSpacing";
 import { resolveMetadataMainDelta } from "../layout/thumbnailGapPolicy";
 import { toDisplayThumbnailScaleLevel } from "./thumbnailScaleMapping";
 
@@ -65,6 +69,12 @@ export function useAppNavigationState({
     mode,
     sidebarRatio,
     sidebarMinWidth,
+    layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff,
+    sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff,
     metadataCollapsed,
     metadataRatio,
     workspaceBottomPanelHeight,
@@ -222,17 +232,40 @@ export function useAppNavigationState({
     updateSettings({ sidebarRatio: 0, sidebarFocus: "main" });
   }, [updateSettings]);
 
+  const resolvedThumbnailGapPx = useMemo(() => {
+    if (typeof window === "undefined") {
+      return Math.max(0, Math.round(thumbnailGap));
+    }
+    return resolveRuntimeSpacing({
+      viewportWidth: resolveRuntimeViewportWidth(),
+      layoutGapScaleCoeff,
+      paneInnerGapScaleCoeff,
+      paneStackGapScaleCoeff,
+      sidebarInnerGapScaleCoeff,
+      thumbnailGapScaleCoeff,
+      buttonGroupInsetScaleCoeff,
+    }).thumbnailGapPx;
+  }, [
+    buttonGroupInsetScaleCoeff,
+    layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff,
+    sidebarInnerGapScaleCoeff,
+    thumbnailGap,
+    thumbnailGapScaleCoeff,
+  ]);
+
   const metadataMinPanelWidthPx = useMemo(
     () =>
       computeThumbnailGridLayout({
         gridWidth: gridSize.width,
         gridHeight: gridSize.height,
         thumbnailWidth,
-        thumbnailGap,
+        thumbnailGap: resolvedThumbnailGapPx,
         zoomLevel: METADATA_MIN_WIDTH_SCALE_LEVEL,
         cardChrome: resolveThumbnailCardChromePx(),
       }).cellWidth,
-    [gridSize.height, gridSize.width, thumbnailGap, thumbnailWidth],
+    [gridSize.height, gridSize.width, resolvedThumbnailGapPx, thumbnailWidth],
   );
 
   const {
@@ -302,7 +335,7 @@ export function useAppNavigationState({
         gridWidth: gridSize.width,
         gridHeight: gridSize.height,
         thumbnailWidth,
-        thumbnailGap,
+        thumbnailGap: resolvedThumbnailGapPx,
         zoomLevel: thumbnailScale,
         cardChrome: resolveThumbnailCardChromePx(),
       }),
@@ -310,7 +343,7 @@ export function useAppNavigationState({
       thumbnailScale,
       gridSize.height,
       gridSize.width,
-      thumbnailGap,
+      resolvedThumbnailGapPx,
       thumbnailWidth,
     ],
   );

@@ -29,6 +29,10 @@ import {
   resolveFullscreenImageAutoplayEnabled,
   type FullscreenImageNavigationSource,
 } from "../../utils/fullscreenAutoplay";
+import {
+  resolveRuntimeSpacing,
+  resolveRuntimeViewportWidth,
+} from "../layout/runtimeSpacing";
 
 const TOP_PANEL_MIN_HEIGHT = 80;
 const TOP_PANEL_MAX_HEIGHT = 360;
@@ -105,6 +109,8 @@ interface UseAppEffectsParams {
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
   sidebarInnerGapScaleCoeff: number;
+  thumbnailGapScaleCoeff: number;
+  buttonGroupInsetScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
@@ -199,6 +205,8 @@ export function useAppEffects({
   paneInnerGapScaleCoeff,
   paneStackGapScaleCoeff,
   sidebarInnerGapScaleCoeff,
+  thumbnailGapScaleCoeff,
+  buttonGroupInsetScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
   setAppBodyWidth,
@@ -493,7 +501,8 @@ export function useAppEffects({
 
     const nextImageNodeId = imageSourceNodeIdMap.get(selectedPackageId) ?? null;
     if (!nextImageNodeId) {
-      handledImageSidebarLocateNonceRef.current = imageSidebarLocateRequestNonce;
+      handledImageSidebarLocateNonceRef.current =
+        imageSidebarLocateRequestNonce;
       return;
     }
 
@@ -638,7 +647,8 @@ export function useAppEffects({
 
     const nextVideoNodeId = videoNodeIdMap.get(selectedVideoId) ?? null;
     if (!nextVideoNodeId) {
-      handledVideoSidebarLocateNonceRef.current = videoSidebarLocateRequestNonce;
+      handledVideoSidebarLocateNonceRef.current =
+        videoSidebarLocateRequestNonce;
       return;
     }
 
@@ -982,13 +992,15 @@ export function useAppEffects({
 
   useEffect(() => {
     const applyLayoutGapVars = () => {
-      const normalizedScale = Math.max(0, Math.min(3, layoutGapScaleCoeff));
-      const normalizedInnerScale = Math.max(0, Math.min(2, paneInnerGapScaleCoeff));
-      const normalizedStackScale = Math.max(0, Math.min(2, paneStackGapScaleCoeff));
-      const normalizedSidebarInnerScale = Math.max(
-        0,
-        Math.min(2, sidebarInnerGapScaleCoeff),
-      );
+      const runtimeSpacing = resolveRuntimeSpacing({
+        viewportWidth: resolveRuntimeViewportWidth(),
+        layoutGapScaleCoeff,
+        paneInnerGapScaleCoeff,
+        paneStackGapScaleCoeff,
+        sidebarInnerGapScaleCoeff,
+        thumbnailGapScaleCoeff,
+        buttonGroupInsetScaleCoeff,
+      });
       const normalizedRadiusCascadeScale = Math.max(
         0,
         Math.min(2, radiusCascadeScaleCoeff),
@@ -997,33 +1009,13 @@ export function useAppEffects({
         0,
         Math.min(2, radiusValueScaleCoeff),
       );
-      const viewportWidth =
-        window.innerWidth > 0
-          ? window.innerWidth
-          : document.documentElement.clientWidth;
-      const resolvedLayoutGapPx = Math.max(
-        0,
-        Math.round(viewportWidth * 0.01 * normalizedScale),
-      );
-      const resolvedPaneInnerPaddingPx = Math.max(
-        0,
-        Math.round(viewportWidth * 0.01 * normalizedInnerScale),
-      );
-      const resolvedPaneStackGapPx = Math.max(
-        0,
-        Math.round(resolvedPaneInnerPaddingPx * 0.75 * normalizedStackScale),
-      );
-      const resolvedSidebarGapPx = Math.max(
-        0,
-        Math.round(resolvedPaneInnerPaddingPx * 0.8 * normalizedSidebarInnerScale),
-      );
       const resolvedIconButtonSizePx = Math.max(
         34,
-        Math.round(34 + normalizedInnerScale * 3),
+        Math.round(34 + runtimeSpacing.paneInnerGapScaleCoeff * 3),
       );
       const resolvedHeaderButtonSizePx = Math.max(
         resolvedIconButtonSizePx,
-        Math.round(34 + normalizedInnerScale * 4),
+        Math.round(34 + runtimeSpacing.paneInnerGapScaleCoeff * 4),
       );
       const resolvedPanelHeadHeightPx = Math.max(
         resolvedHeaderButtonSizePx,
@@ -1031,20 +1023,32 @@ export function useAppEffects({
       );
       const resolvedControlPaddingXPx = Math.max(
         0,
-        Math.round(normalizedInnerScale * 4),
+        Math.round(runtimeSpacing.paneInnerGapScaleCoeff * 4),
       );
 
       document.documentElement.style.setProperty(
         "--mpx-layout-gap-scale",
-        normalizedScale.toFixed(2),
+        runtimeSpacing.layoutGapScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
         "--mpx-pane-inner-gap-scale",
-        normalizedInnerScale.toFixed(2),
+        runtimeSpacing.paneInnerGapScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
         "--mpx-pane-stack-gap-scale",
-        normalizedStackScale.toFixed(2),
+        runtimeSpacing.paneStackGapScaleCoeff.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-sidebar-inner-gap-scale",
+        runtimeSpacing.sidebarInnerGapScaleCoeff.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-thumbnail-gap-scale",
+        runtimeSpacing.thumbnailGapScaleCoeff.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-button-group-inset-scale",
+        runtimeSpacing.buttonGroupInsetScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
         "--mpx-radius-cascade-scale-coeff",
@@ -1056,19 +1060,39 @@ export function useAppEffects({
       );
       document.documentElement.style.setProperty(
         "--mpx-layout-gap-px",
-        `${resolvedLayoutGapPx}px`,
+        `${runtimeSpacing.layoutGapPx}px`,
       );
       document.documentElement.style.setProperty(
         "--mpx-pane-inner-padding-px",
-        `${resolvedPaneInnerPaddingPx}px`,
+        `${runtimeSpacing.paneInnerPaddingPx}px`,
       );
       document.documentElement.style.setProperty(
         "--mpx-pane-stack-gap-px",
-        `${resolvedPaneStackGapPx}px`,
+        `${runtimeSpacing.paneStackGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-section-gap-px",
+        `${runtimeSpacing.paneSectionGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-recessed-padding-px",
+        `${runtimeSpacing.paneRecessedPaddingPx}px`,
       );
       document.documentElement.style.setProperty(
         "--mpx-sidebar-gap-px",
-        `${resolvedSidebarGapPx}px`,
+        `${runtimeSpacing.sidebarGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-thumbnail-gap-px",
+        `${runtimeSpacing.thumbnailGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-button-group-inset-px",
+        `${runtimeSpacing.buttonGroupInsetPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-metadata-edit-grid-label-gap-px",
+        `${runtimeSpacing.metadataEditGridLabelGapPx}px`,
       );
       document.documentElement.style.setProperty(
         "--mpx-icon-button-size-px",
@@ -1102,6 +1126,8 @@ export function useAppEffects({
     paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,
   ]);

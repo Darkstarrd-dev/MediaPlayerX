@@ -165,6 +165,8 @@ export interface RenderSettingsMainSectionParams {
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
   sidebarInnerGapScaleCoeff: number;
+  thumbnailGapScaleCoeff: number;
+  buttonGroupInsetScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
   databaseResetPending: boolean;
@@ -225,6 +227,8 @@ export interface RenderSettingsMainSectionParams {
   onPaneInnerGapScaleCoeffChange: (value: number) => void;
   onPaneStackGapScaleCoeffChange: (value: number) => void;
   onSidebarInnerGapScaleCoeffChange: (value: number) => void;
+  onThumbnailGapScaleCoeffChange: (value: number) => void;
+  onButtonGroupInsetScaleCoeffChange: (value: number) => void;
   onRadiusCascadeScaleCoeffChange: (value: number) => void;
   onRadiusValueScaleCoeffChange: (value: number) => void;
   onSettingsFontSizeChange: (value: number) => void;

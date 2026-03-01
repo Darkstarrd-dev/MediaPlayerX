@@ -45,6 +45,10 @@ import {
   resolveSettingsSection,
   shouldIgnoreSettingsPanelDragStart,
 } from "./settings/settingsPanelHelpers";
+import {
+  resolveRuntimeSpacing,
+  resolveRuntimeViewportWidth,
+} from "../features/layout/runtimeSpacing";
 import { toScale } from "./settings/settingsScale";
 import type { SettingsPanelProps } from "./SettingsPanel.types";
 
@@ -62,6 +66,8 @@ function SettingsPanel({
   paneInnerGapScaleCoeff,
   paneStackGapScaleCoeff,
   sidebarInnerGapScaleCoeff,
+  thumbnailGapScaleCoeff,
+  buttonGroupInsetScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
   sidebarRatio,
@@ -173,6 +179,8 @@ function SettingsPanel({
   onPaneInnerGapScaleCoeffChange,
   onPaneStackGapScaleCoeffChange,
   onSidebarInnerGapScaleCoeffChange,
+  onThumbnailGapScaleCoeffChange,
+  onButtonGroupInsetScaleCoeffChange,
   onRadiusCascadeScaleCoeffChange,
   onRadiusValueScaleCoeffChange,
   onSidebarRatioChange,
@@ -366,7 +374,20 @@ function SettingsPanel({
     "fullscreenVideoControlsMaxWidth",
     fullscreenVideoControlsMaxWidth,
   );
-  const thumbnailGapScale = toScale("thumbnailGap", thumbnailGap);
+  const runtimeSpacing = resolveRuntimeSpacing({
+    viewportWidth: resolveRuntimeViewportWidth(),
+    layoutGapScaleCoeff,
+    paneInnerGapScaleCoeff,
+    paneStackGapScaleCoeff,
+    sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff,
+  });
+  const thumbnailGapScale = thumbnailGapScaleCoeff;
+  const resolvedThumbnailGap =
+    runtimeSpacing.thumbnailGapPx > 0
+      ? runtimeSpacing.thumbnailGapPx
+      : thumbnailGap;
 
   const shortcutLabelByAction = useMemo(
     () =>
@@ -899,6 +920,8 @@ function SettingsPanel({
     paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,
     sidebarRatio,
@@ -920,7 +943,7 @@ function SettingsPanel({
     fullscreenVideoControlsMaxWidth,
     fullscreenVideoControlsMaxWidthScale,
     mediaPreloadMemoryBudgetMb,
-    thumbnailGap,
+    thumbnailGap: resolvedThumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
     thumbnailAdaptiveResolution,
@@ -1045,6 +1068,8 @@ function SettingsPanel({
     onPaneInnerGapScaleCoeffChange,
     onPaneStackGapScaleCoeffChange,
     onSidebarInnerGapScaleCoeffChange,
+    onThumbnailGapScaleCoeffChange,
+    onButtonGroupInsetScaleCoeffChange,
     onRadiusCascadeScaleCoeffChange,
     onRadiusValueScaleCoeffChange,
     onSettingsBackdropOpacityChange,

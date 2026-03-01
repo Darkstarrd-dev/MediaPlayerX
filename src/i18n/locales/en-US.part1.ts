@@ -325,10 +325,16 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.headerHeightScale": "Header height scale {{scale}} ({{px}}px)",
   "ui.settings.settingsFontScale": "Settings font scale {{scale}} ({{px}}px)",
   "ui.settings.layoutGapScaleCoeff": "Container margin coeff {{value}}x",
-  "ui.settings.paneInnerGapScaleCoeff": "Container inner padding coeff {{value}}x",
-  "ui.settings.paneStackGapScaleCoeff": "Container top-middle-bottom gap coeff {{value}}x",
-  "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar inner padding coeff {{value}}x",
-  "ui.settings.radiusCascadeScaleCoeff": "Unified radius cascade coeff {{value}}x",
+  "ui.settings.paneInnerGapScaleCoeff":
+    "Container inner padding coeff {{value}}x",
+  "ui.settings.paneStackGapScaleCoeff":
+    "Container top-middle-bottom gap coeff {{value}}x",
+  "ui.settings.sidebarInnerGapScaleCoeff":
+    "Sidebar inner padding coeff {{value}}x",
+  "ui.settings.buttonGroupInsetScaleCoeff":
+    "Button-group inset coeff {{value}}x",
+  "ui.settings.radiusCascadeScaleCoeff":
+    "Unified radius cascade coeff {{value}}x",
   "ui.settings.radiusValueScaleCoeff": "Unified radius value coeff {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar ratio {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
@@ -357,7 +363,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.tooltip.backdropOpacity":
     "Adjust settings panel backdrop opacity; higher values darken the background.",
   "ui.settings.tooltip.thumbnailGap":
-    "Control spacing between thumbnails, affecting density and visible count per screen.",
+    "Control thumbnail-gap coefficient. Final gap = round(inner padding * 0.8 * this coeff).",
   "ui.settings.tooltip.thumbnailQuality":
     "Control thumbnail encoding quality. Higher means better quality but larger size and slower generation.",
   "ui.settings.tooltip.thumbnailResolution":
@@ -388,6 +394,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Adjust top-middle-bottom spacing inside containers. Computed as inner padding * 0.75 * this coefficient.",
   "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
     "Adjust Sidebar main-list four-side spacing coefficient. Actual value is inner padding * 0.8 * this coefficient.",
+  "ui.settings.tooltip.buttonGroupInsetScaleCoeff":
+    "Adjust button-group inset coefficient. Baseline is inner padding * 0.8 * 0.5, then multiplied by this coeff and rounded to integer pixels.",
   "ui.settings.tooltip.radiusCascadeScaleCoeff":
     "Adjust unified radius cascading strength. 0 disables cascading reduction, 1 is default strength, 2 doubles reduction strength.",
   "ui.settings.tooltip.radiusValueScaleCoeff":

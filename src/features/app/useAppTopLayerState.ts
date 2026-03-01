@@ -129,9 +129,7 @@ interface UseAppTopLayerStateParams {
     value: "webp" | "jpeg" | "png" | "avif",
   ) => void;
   onChangeImageConvertPreviewQuality?: (value: number) => void;
-  onApplyImageConvertPreviewScaleToLongestEdge?: (
-    value: number | null,
-  ) => void;
+  onApplyImageConvertPreviewScaleToLongestEdge?: (value: number | null) => void;
   onChangeImageConvertPreviewAdjustProfile?: (
     profile: ImageConvertAdjustProfile,
   ) => void;
@@ -604,6 +602,8 @@ export function useAppTopLayerState({
     paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
+    thumbnailGapScaleCoeff: appSettings.thumbnailGapScaleCoeff,
+    buttonGroupInsetScaleCoeff: appSettings.buttonGroupInsetScaleCoeff,
     radiusCascadeScaleCoeff: appSettings.radiusCascadeScaleCoeff,
     radiusValueScaleCoeff: appSettings.radiusValueScaleCoeff,
     sidebarRatio: appSettings.sidebarRatio,
@@ -774,9 +774,11 @@ export function useAppTopLayerState({
     setSearchPanelCollapsed,
     onToggleManageMode,
     onToggleMetadataManageMode,
-    onTooltipEnabledChange: (value: boolean) => appSettings.updateSettings({ tooltipEnabled: value }),
+    onTooltipEnabledChange: (value: boolean) =>
+      appSettings.updateSettings({ tooltipEnabled: value }),
     onElectronNativeChromeEnabledChange: applyElectronNativeChromeEnabled,
-    onThemeParameterButtonVisibleChange: (value: boolean) => appSettings.updateSettings({ themeParameterButtonVisible: value }),
+    onThemeParameterButtonVisibleChange: (value: boolean) =>
+      appSettings.updateSettings({ themeParameterButtonVisible: value }),
     onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
     sidebarCollapsed,
     metadataCollapsed,
