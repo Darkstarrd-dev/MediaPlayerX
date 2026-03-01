@@ -35,6 +35,7 @@ export function renderSettingsMainSection(
       paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff,
       sidebarInnerGapScaleCoeff,
+      radiusCascadeScaleCoeff,
       sidebarRatio,
       sidebarMinWidth,
       sidebarMinWidthScale,
@@ -44,7 +45,6 @@ export function renderSettingsMainSection(
       sidebarCountFontSizeScale,
       sidebarIndentStep,
       sidebarIndentStepScale,
-      metadataRatio,
       workspaceBottomPanelHeight,
       workspaceBottomPanelHeightScale,
       fullscreenVideoControlsMaxWidth,
@@ -70,12 +70,12 @@ export function renderSettingsMainSection(
       onPaneInnerGapScaleCoeffChange,
       onPaneStackGapScaleCoeffChange,
       onSidebarInnerGapScaleCoeffChange,
+      onRadiusCascadeScaleCoeffChange,
       onSidebarRatioChange,
       onSidebarMinWidthChange,
       onSidebarFontSizeChange,
       onSidebarCountFontSizeChange,
       onSidebarIndentStepChange,
-      onMetadataRatioChange,
       onWorkspaceBottomPanelHeightChange,
       onFullscreenVideoControlsMaxWidthChange,
       onMediaPreloadMemoryBudgetMbChange,
@@ -465,6 +465,21 @@ export function renderSettingsMainSection(
               }
             />
           </label>
+          <label data-tooltip-label={settingsTip("radiusCascadeScaleCoeff")}>
+            {t("ui.settings.radiusCascadeScaleCoeff", {
+              value: radiusCascadeScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={radiusCascadeScaleCoeff}
+              onChange={(event) =>
+                onRadiusCascadeScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
           <label
             className="settings-toggle-row"
             data-tooltip-label={settingsTip("layoutLocked")}
@@ -581,21 +596,6 @@ export function renderSettingsMainSection(
                 onSidebarIndentStepChange(
                   toAbsolutePx("sidebarIndentStep", Number(event.target.value)),
                 )
-              }
-            />
-          </label>
-          <label data-tooltip-label={settingsTip("metadataPanelRatio")}>
-            {t("ui.settings.metadataPanelRatio", {
-              percent: (metadataRatio * 100).toFixed(0),
-            })}
-            <input
-              max={0.45}
-              min={0.2}
-              step={0.01}
-              type="range"
-              value={metadataRatio}
-              onChange={(event) =>
-                onMetadataRatioChange(Number(event.target.value))
               }
             />
           </label>

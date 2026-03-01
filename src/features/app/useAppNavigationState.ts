@@ -32,9 +32,8 @@ const GAP_SNAP_EXPAND_BUFFER_PX = 2;
 // snap 执行后的冷却窗口：覆盖 CSS re-layout 多帧 settling，
 // 防止精度偏差导致 snap 方向反转形成不收敛振荡。
 const GAP_SNAP_COOLDOWN_MS = 250;
-const METADATA_RATIO_MIN = 0.2;
-const METADATA_RATIO_MAX = 0.45;
-const METADATA_PANEL_MIN_WIDTH_PX = 180;
+const METADATA_MAX_APP_RATIO = 0.45;
+const METADATA_MIN_WIDTH_SCALE_LEVEL = 2;
 const DUAL_COLLAPSED_INSET_MAX_RATIO = 0.6;
 
 interface UseAppNavigationStateParams {
@@ -221,6 +220,19 @@ export function useAppNavigationState({
     updateSettings({ sidebarRatio: 0, sidebarFocus: "main" });
   }, [updateSettings]);
 
+  const metadataMinPanelWidthPx = useMemo(
+    () =>
+      computeThumbnailGridLayout({
+        gridWidth: gridSize.width,
+        gridHeight: gridSize.height,
+        thumbnailWidth,
+        thumbnailGap,
+        zoomLevel: METADATA_MIN_WIDTH_SCALE_LEVEL,
+        cardChrome: resolveThumbnailCardChromePx(),
+      }).cellWidth,
+    [gridSize.height, gridSize.width, thumbnailGap, thumbnailWidth],
+  );
+
   const {
     sidebarCollapsed,
     normalizeSidebarRatio,
@@ -241,6 +253,7 @@ export function useAppNavigationState({
     sidebarRatio,
     sidebarMinWidth,
     metadataRatio,
+    metadataMinWidthPx: metadataMinPanelWidthPx,
     workspaceBottomPanelHeight,
     layoutLocked,
     searchPanelCollapsed,
@@ -255,6 +268,20 @@ export function useAppNavigationState({
   const selectedSidebarNode = selectedSidebarNodeId
     ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
     : null;
+
+  useEffect(() => {
+    if (metadataCollapsed || horizontalResizing) {
+      return;
+    }
+    applyMetadataRatio(metadataRatio);
+  }, [
+    applyMetadataRatio,
+    horizontalResizing,
+    metadataCollapsed,
+    metadataMinPanelWidthPx,
+    metadataRatio,
+  ]);
+
   const videoNodeBrowseSnapActive =
     mode === "video" &&
     Boolean(
@@ -429,10 +456,17 @@ export function useAppNavigationState({
     if (!metadataCollapsed) {
       const bodyWidth = workspaceBodyRef.current?.getBoundingClientRect().width;
       if (bodyWidth && bodyWidth > 1) {
-        const metadataMinRatioByWidth = METADATA_PANEL_MIN_WIDTH_PX / bodyWidth;
-        const metadataMinRatio = Math.min(
-          METADATA_RATIO_MAX,
-          Math.max(METADATA_RATIO_MIN, metadataMinRatioByWidth),
+        const measuredAppWidth =
+          appBodyRef.current?.getBoundingClientRect().width ?? appBodyWidth;
+        const metadataMaxRatioByWindow =
+          measuredAppWidth > 1
+            ? (measuredAppWidth * METADATA_MAX_APP_RATIO) / bodyWidth
+            : 0.95;
+        const metadataMaxRatio = clamp(metadataMaxRatioByWindow, 0, 0.95);
+        const metadataMinRatio = clamp(
+          metadataMinPanelWidthPx / bodyWidth,
+          0,
+          metadataMaxRatio,
         );
         const maxExpandableMainDelta = Math.max(
           0,
@@ -440,7 +474,7 @@ export function useAppNavigationState({
         );
         const maxShrinkMainDelta = Math.max(
           0,
-          (METADATA_RATIO_MAX - metadataRatio) * bodyWidth,
+          (metadataMaxRatio - metadataRatio) * bodyWidth,
         );
         const shrinkMainDelta = -rightGap;
         const shrinkGridWidth = Math.max(
@@ -479,7 +513,7 @@ export function useAppNavigationState({
           const nextRatio = clamp(
             ratioCandidate,
             metadataMinRatio,
-            METADATA_RATIO_MAX,
+            metadataMaxRatio,
           );
           return {
             nextRatio,
@@ -560,6 +594,7 @@ export function useAppNavigationState({
     thumbnailLayout.idealGridWidth,
     thumbnailLayout.mediaHeight,
     thumbnailLayout.columns,
+    metadataMinPanelWidthPx,
     thumbnailScale,
     thumbnailGap,
     thumbnailWidth,

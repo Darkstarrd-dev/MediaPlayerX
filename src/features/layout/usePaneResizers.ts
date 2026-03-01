@@ -14,6 +14,8 @@ import type {
 
 const LIVE_RESIZE_THROTTLE_MS = 80;
 const LIVE_RESIZE_DELTA_STEP_PX = 28;
+const METADATA_MAX_APP_RATIO = 0.45;
+const METADATA_RATIO_HARD_MAX = 0.95;
 
 interface UsePaneResizersParams {
   appBodyRef: RefObject<HTMLDivElement | null>;
@@ -23,6 +25,7 @@ interface UsePaneResizersParams {
   sidebarRatio: number;
   sidebarMinWidth: number;
   metadataRatio: number;
+  metadataMinWidthPx: number;
   workspaceBottomPanelHeight: number;
   layoutLocked: boolean;
   searchPanelCollapsed: boolean;
@@ -58,6 +61,7 @@ export function usePaneResizers({
   sidebarRatio,
   sidebarMinWidth,
   metadataRatio,
+  metadataMinWidthPx,
   workspaceBottomPanelHeight,
   layoutLocked,
   searchPanelCollapsed,
@@ -203,13 +207,45 @@ export function usePaneResizers({
 
   const applyMetadataRatio = useCallback(
     (candidate: number) => {
-      const next = Number(clamp(candidate, 0.2, 0.45).toFixed(3));
+      const workspaceWidth =
+        workspaceBodyRef.current?.getBoundingClientRect().width ?? 0;
+      if (workspaceWidth <= 1) {
+        const fallback = Number(
+          clamp(candidate, 0, METADATA_RATIO_HARD_MAX).toFixed(3),
+        );
+        if (Math.abs(fallback - metadataRatio) < 0.0005) {
+          return;
+        }
+        onSetMetadataRatio(fallback);
+        return;
+      }
+
+      const appWidth = readAppBodyWidth();
+      const maxRatioByApp =
+        appWidth > 1
+          ? (appWidth * METADATA_MAX_APP_RATIO) / workspaceWidth
+          : METADATA_RATIO_HARD_MAX;
+      const metadataMaxRatio = clamp(maxRatioByApp, 0, METADATA_RATIO_HARD_MAX);
+      const metadataMinRatio = clamp(
+        metadataMinWidthPx / workspaceWidth,
+        0,
+        metadataMaxRatio,
+      );
+      const next = Number(
+        clamp(candidate, metadataMinRatio, metadataMaxRatio).toFixed(3),
+      );
       if (Math.abs(next - metadataRatio) < 0.0005) {
         return;
       }
       onSetMetadataRatio(next);
     },
-    [metadataRatio, onSetMetadataRatio],
+    [
+      metadataMinWidthPx,
+      metadataRatio,
+      onSetMetadataRatio,
+      readAppBodyWidth,
+      workspaceBodyRef,
+    ],
   );
 
   const updateMetadataRatioByClientX = useCallback(
@@ -218,7 +254,6 @@ export function usePaneResizers({
       if (!bodyRect || bodyRect.width <= 0) {
         return;
       }
-
       const ratio = (bodyRect.right - clientX) / bodyRect.width;
       applyMetadataRatio(ratio);
     },
