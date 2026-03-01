@@ -82,6 +82,8 @@ function createBaseParams(
     sidebarInnerGapScaleCoeff: 1,
     thumbnailGapScaleCoeff: 1,
     buttonGroupInsetScaleCoeff: 1,
+    paneToolbarHeightScaleCoeff: 1,
+    paneFooterHeightScaleCoeff: 1,
     radiusCascadeScaleCoeff: 1,
     radiusValueScaleCoeff: 1,
     setAppBodyWidth: vi.fn(),

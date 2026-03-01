@@ -331,6 +331,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Container top-middle-bottom gap coeff {{value}}x",
   "ui.settings.sidebarInnerGapScaleCoeff":
     "Sidebar inner padding coeff {{value}}x",
+  "ui.settings.paneToolbarHeightScaleCoeff":
+    "Pane toolbar height coeff {{value}}x",
+  "ui.settings.paneFooterHeightScaleCoeff":
+    "Pane footer height coeff {{value}}x",
   "ui.settings.buttonGroupInsetScaleCoeff":
     "Button-group inset coeff {{value}}x",
   "ui.settings.radiusCascadeScaleCoeff":
@@ -394,6 +398,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Adjust top-middle-bottom spacing inside containers. Computed as inner padding * 0.75 * this coefficient.",
   "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
     "Adjust Sidebar main-list four-side spacing coefficient. Actual value is inner padding * 0.8 * this coefficient.",
+  "ui.settings.tooltip.paneToolbarHeightScaleCoeff":
+    "Adjust toolbar height coefficient for Sidebar/Main/Meta panes.",
+  "ui.settings.tooltip.paneFooterHeightScaleCoeff":
+    "Adjust footer height coefficient for Sidebar/Main/Meta panes.",
   "ui.settings.tooltip.buttonGroupInsetScaleCoeff":
     "Adjust button-group inset coefficient. Baseline is inner padding * 0.8 * 0.5, then multiplied by this coeff and rounded to integer pixels.",
   "ui.settings.tooltip.radiusCascadeScaleCoeff":

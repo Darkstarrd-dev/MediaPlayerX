@@ -35,6 +35,8 @@ export function renderSettingsMainSection(
       paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff,
       sidebarInnerGapScaleCoeff,
+      paneToolbarHeightScaleCoeff,
+      paneFooterHeightScaleCoeff,
       buttonGroupInsetScaleCoeff,
       radiusCascadeScaleCoeff,
       radiusValueScaleCoeff,
@@ -54,11 +56,6 @@ export function renderSettingsMainSection(
       mediaPreloadMemoryBudgetMb,
       thumbnailGap,
       thumbnailGapScaleCoeff,
-      thumbnailQuality,
-      thumbnailAdaptiveResolution,
-      thumbnailWidthInputValue,
-      thumbnailGenerationConcurrencyInput,
-      thumbnailResolveConcurrencyInput,
       styleId,
       paletteMode,
       paletteDayId,
@@ -73,6 +70,8 @@ export function renderSettingsMainSection(
       onPaneStackGapScaleCoeffChange,
       onSidebarInnerGapScaleCoeffChange,
       onThumbnailGapScaleCoeffChange,
+      onPaneToolbarHeightScaleCoeffChange,
+      onPaneFooterHeightScaleCoeffChange,
       onButtonGroupInsetScaleCoeffChange,
       onRadiusCascadeScaleCoeffChange,
       onRadiusValueScaleCoeffChange,
@@ -84,21 +83,6 @@ export function renderSettingsMainSection(
       onWorkspaceBottomPanelHeightChange,
       onFullscreenVideoControlsMaxWidthChange,
       onMediaPreloadMemoryBudgetMbChange,
-      onThumbnailQualityChange,
-      onResetThumbnailQuality,
-      onThumbnailAdaptiveResolutionChange,
-      onThumbnailWidthInputChange,
-      onThumbnailWidthInputBlur,
-      onThumbnailWidthInputKeyDown,
-      onResetThumbnailWidth,
-      onThumbnailGenerationConcurrencyInputChange,
-      onThumbnailGenerationConcurrencyInputBlur,
-      onThumbnailGenerationConcurrencyInputKeyDown,
-      onResetThumbnailGenerationConcurrency,
-      onThumbnailResolveConcurrencyInputChange,
-      onThumbnailResolveConcurrencyInputBlur,
-      onThumbnailResolveConcurrencyInputKeyDown,
-      onResetThumbnailResolveConcurrency,
       onStyleChange,
       onPaletteModeChange,
       onPaletteDayChange,
@@ -246,159 +230,6 @@ export function renderSettingsMainSection(
 
         <section className="settings-group">
           <header className="settings-group-head">
-            <span>{t("ui.settings.thumbnailSection")}</span>
-          </header>
-          <label data-tooltip-label={settingsTip("thumbnailGap")}>
-            {t("ui.settings.thumbnailGapScale", {
-              scale: formatScale(thumbnailGapScaleCoeff),
-              px: thumbnailGap,
-            })}
-            <input
-              max={2}
-              min={0}
-              step={0.1}
-              type="range"
-              value={thumbnailGapScaleCoeff}
-              onChange={(event) =>
-                onThumbnailGapScaleCoeffChange(Number(event.target.value))
-              }
-            />
-          </label>
-          <label
-            className="settings-toggle-row"
-            data-tooltip-label={settingsTip("thumbnailAdaptiveResolution")}
-          >
-            <span>{t("ui.settings.thumbnailAdaptiveResolution")}</span>
-            <input
-              type="checkbox"
-              checked={thumbnailAdaptiveResolution}
-              onChange={(event) =>
-                onThumbnailAdaptiveResolutionChange(event.target.checked)
-              }
-            />
-          </label>
-          <div className="settings-thumbnail-four-row">
-            <div
-              className="settings-compact-control-cell"
-              data-tooltip-label={settingsTip("thumbnailQuality")}
-            >
-              <span>{t("ui.settings.thumbnailQuality")}</span>
-              <div className="settings-compact-control-actions">
-                <input
-                  max={100}
-                  min={1}
-                  type="number"
-                  aria-label={t("ui.settings.thumbnailQuality")}
-                  value={thumbnailQuality}
-                  onChange={(event) =>
-                    onThumbnailQualityChange(Number(event.target.value))
-                  }
-                />
-                <button
-                  className="settings-icon-btn main-icon-square-btn"
-                  type="button"
-                  aria-label={t("a11y.common.restoreDefault")}
-                  data-tooltip-label={t("tip.common.restoreDefault")}
-                  onClick={onResetThumbnailQuality}
-                >
-                  <MainUiIcon name="return" />
-                </button>
-              </div>
-            </div>
-            <div
-              className="settings-compact-control-cell"
-              data-tooltip-label={settingsTip("thumbnailResolution")}
-            >
-              <span>{t("ui.settings.thumbnailResolution")}</span>
-              <div className="settings-compact-control-actions">
-                <input
-                  max={2048}
-                  min={128}
-                  type="number"
-                  aria-label={t("ui.settings.thumbnailResolution")}
-                  value={thumbnailWidthInputValue}
-                  onBlur={onThumbnailWidthInputBlur}
-                  onChange={(event) =>
-                    onThumbnailWidthInputChange(event.target.value)
-                  }
-                  onKeyDown={onThumbnailWidthInputKeyDown}
-                />
-                <button
-                  className="settings-icon-btn main-icon-square-btn"
-                  type="button"
-                  aria-label={t("a11y.common.restoreDefault")}
-                  data-tooltip-label={t("tip.common.restoreDefault")}
-                  onClick={onResetThumbnailWidth}
-                >
-                  <MainUiIcon name="return" />
-                </button>
-              </div>
-            </div>
-            <div
-              className="settings-compact-control-cell"
-              data-tooltip-label={settingsTip("thumbnailGenerationConcurrency")}
-            >
-              <span>{t("ui.settings.thumbnailGenerationConcurrency")}</span>
-              <div className="settings-compact-control-actions">
-                <input
-                  max={16}
-                  min={1}
-                  type="number"
-                  aria-label={t("ui.settings.thumbnailGenerationConcurrency")}
-                  value={thumbnailGenerationConcurrencyInput}
-                  onBlur={onThumbnailGenerationConcurrencyInputBlur}
-                  onChange={(event) =>
-                    onThumbnailGenerationConcurrencyInputChange(
-                      event.target.value,
-                    )
-                  }
-                  onKeyDown={onThumbnailGenerationConcurrencyInputKeyDown}
-                />
-                <button
-                  className="settings-icon-btn main-icon-square-btn"
-                  type="button"
-                  aria-label={t("a11y.common.restoreDefault")}
-                  data-tooltip-label={t("tip.common.restoreDefault")}
-                  onClick={onResetThumbnailGenerationConcurrency}
-                >
-                  <MainUiIcon name="return" />
-                </button>
-              </div>
-            </div>
-            <div
-              className="settings-compact-control-cell"
-              data-tooltip-label={settingsTip("thumbnailResolveConcurrency")}
-            >
-              <span>{t("ui.settings.thumbnailResolveConcurrency")}</span>
-              <div className="settings-compact-control-actions">
-                <input
-                  max={32}
-                  min={1}
-                  type="number"
-                  aria-label={t("ui.settings.thumbnailResolveConcurrency")}
-                  value={thumbnailResolveConcurrencyInput}
-                  onBlur={onThumbnailResolveConcurrencyInputBlur}
-                  onChange={(event) =>
-                    onThumbnailResolveConcurrencyInputChange(event.target.value)
-                  }
-                  onKeyDown={onThumbnailResolveConcurrencyInputKeyDown}
-                />
-                <button
-                  className="settings-icon-btn main-icon-square-btn"
-                  type="button"
-                  aria-label={t("a11y.common.restoreDefault")}
-                  data-tooltip-label={t("tip.common.restoreDefault")}
-                  onClick={onResetThumbnailResolveConcurrency}
-                >
-                  <MainUiIcon name="return" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="settings-group">
-          <header className="settings-group-head">
             <span>{t("ui.settings.layoutSection")}</span>
           </header>
           <label data-tooltip-label={settingsTip("layoutGapScaleCoeff")}>
@@ -458,6 +289,52 @@ export function renderSettingsMainSection(
               value={sidebarInnerGapScaleCoeff}
               onChange={(event) =>
                 onSidebarInnerGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label data-tooltip-label={settingsTip("thumbnailGap")}>
+            {t("ui.settings.thumbnailGapScale", {
+              scale: formatScale(thumbnailGapScaleCoeff),
+              px: thumbnailGap,
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={thumbnailGapScaleCoeff}
+              onChange={(event) =>
+                onThumbnailGapScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label data-tooltip-label={settingsTip("paneToolbarHeightScaleCoeff")}>
+            {t("ui.settings.paneToolbarHeightScaleCoeff", {
+              value: paneToolbarHeightScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0.5}
+              step={0.1}
+              type="range"
+              value={paneToolbarHeightScaleCoeff}
+              onChange={(event) =>
+                onPaneToolbarHeightScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label data-tooltip-label={settingsTip("paneFooterHeightScaleCoeff")}>
+            {t("ui.settings.paneFooterHeightScaleCoeff", {
+              value: paneFooterHeightScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0.5}
+              step={0.1}
+              type="range"
+              value={paneFooterHeightScaleCoeff}
+              onChange={(event) =>
+                onPaneFooterHeightScaleCoeffChange(Number(event.target.value))
               }
             />
           </label>

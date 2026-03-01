@@ -235,7 +235,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--mpx-header-item-gap, 8px);
-  padding: max(0px, calc(var(--mpx-pane-stack-gap, 8px) - 6px));
+  padding: var(--mpx-button-group-inset-px, 2px);
   border: 1px solid var(--mpx-border-2);
   border-radius: var(--mpx-radius-header-group, 10px);
   background: var(--mpx-bg-elevated);
@@ -258,7 +258,7 @@
 .panel-toggle-wrap {
   display: inline-flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 6px);
+  gap: var(--mpx-control-group-gap, 6px);
 }
 
 .mode-switch button {
@@ -340,7 +340,7 @@
 
 .search-mode-switch button {
   border: 0;
-  padding: var(--mpx-pane-stack-gap, 8px)
+  padding: max(4px, var(--mpx-button-group-inset-px, 2px))
     var(--mpx-pane-inner-padding-px, 14px);
   background: transparent;
   cursor: pointer;
@@ -350,7 +350,7 @@
 .inline-switch {
   display: inline-flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 6px);
+  gap: var(--mpx-control-group-gap, 6px);
   white-space: nowrap;
 }
 
@@ -358,14 +358,14 @@
   min-width: 260px;
   display: flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 6px);
+  gap: var(--mpx-control-group-gap, 6px);
   flex: 1;
 }
 
 .slider-block {
   display: inline-flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 8px);
+  gap: var(--mpx-control-group-gap, 8px);
 }
 
 .slider-block input {
@@ -375,7 +375,7 @@
 .zoom-stepper {
   display: inline-flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 8px);
+  gap: var(--mpx-control-group-gap, 8px);
   white-space: nowrap;
 }
 

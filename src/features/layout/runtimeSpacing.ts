@@ -6,6 +6,8 @@ interface RuntimeSpacingInput {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
+  paneToolbarHeightScaleCoeff?: number;
+  paneFooterHeightScaleCoeff?: number;
 }
 
 interface RuntimeSpacingResult {
@@ -15,6 +17,8 @@ interface RuntimeSpacingResult {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
+  paneToolbarHeightScaleCoeff: number;
+  paneFooterHeightScaleCoeff: number;
   layoutGapPx: number;
   paneInnerPaddingPx: number;
   paneStackGapPx: number;
@@ -23,6 +27,7 @@ interface RuntimeSpacingResult {
   sidebarGapPx: number;
   thumbnailGapPx: number;
   buttonGroupInsetPx: number;
+  controlGroupGapPx: number;
   metadataEditGridLabelGapPx: number;
 }
 
@@ -68,6 +73,16 @@ export function resolveRuntimeSpacing(
     0,
     2,
   );
+  const paneToolbarHeightScaleCoeff = clampNumber(
+    input.paneToolbarHeightScaleCoeff ?? 1,
+    0.5,
+    2,
+  );
+  const paneFooterHeightScaleCoeff = clampNumber(
+    input.paneFooterHeightScaleCoeff ?? 1,
+    0.5,
+    2,
+  );
 
   const safeViewportWidth = Math.max(0, input.viewportWidth);
   const baseUnitPx = safeViewportWidth * 0.01;
@@ -95,6 +110,7 @@ export function resolveRuntimeSpacing(
     0,
     Math.round(dBasePx * 0.5 * buttonGroupInsetScaleCoeff),
   );
+  const controlGroupGapPx = Math.max(0, Math.round(buttonGroupInsetPx * 2));
   const metadataEditGridLabelGapPx = Math.max(
     0,
     Math.round(sidebarGapPx * 0.5),
@@ -107,6 +123,8 @@ export function resolveRuntimeSpacing(
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
+    paneToolbarHeightScaleCoeff,
+    paneFooterHeightScaleCoeff,
     layoutGapPx,
     paneInnerPaddingPx,
     paneStackGapPx,
@@ -115,6 +133,7 @@ export function resolveRuntimeSpacing(
     sidebarGapPx,
     thumbnailGapPx,
     buttonGroupInsetPx,
+    controlGroupGapPx,
     metadataEditGridLabelGapPx,
   };
 }

@@ -12,6 +12,8 @@ describe("resolveRuntimeSpacing", () => {
       sidebarInnerGapScaleCoeff: 1,
       thumbnailGapScaleCoeff: 1,
       buttonGroupInsetScaleCoeff: 1,
+      paneToolbarHeightScaleCoeff: 1,
+      paneFooterHeightScaleCoeff: 1,
     });
 
     // A = 12, B2 = 12, C = round(12 * 0.75) = 9
@@ -37,6 +39,8 @@ describe("resolveRuntimeSpacing", () => {
       sidebarInnerGapScaleCoeff: 0.5,
       thumbnailGapScaleCoeff: 1.5,
       buttonGroupInsetScaleCoeff: 1,
+      paneToolbarHeightScaleCoeff: 1,
+      paneFooterHeightScaleCoeff: 1,
     });
 
     // B2 = 16, D-base = 12.8
@@ -53,6 +57,8 @@ describe("resolveRuntimeSpacing", () => {
       sidebarInnerGapScaleCoeff: 3,
       thumbnailGapScaleCoeff: -1,
       buttonGroupInsetScaleCoeff: 3,
+      paneToolbarHeightScaleCoeff: 3,
+      paneFooterHeightScaleCoeff: 0,
     });
 
     expect(spacing.layoutGapScaleCoeff).toBe(3);
@@ -61,5 +67,7 @@ describe("resolveRuntimeSpacing", () => {
     expect(spacing.sidebarInnerGapScaleCoeff).toBe(2);
     expect(spacing.thumbnailGapScaleCoeff).toBe(0);
     expect(spacing.buttonGroupInsetScaleCoeff).toBe(2);
+    expect(spacing.paneToolbarHeightScaleCoeff).toBe(2);
+    expect(spacing.paneFooterHeightScaleCoeff).toBe(0.5);
   });
 });

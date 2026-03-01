@@ -111,6 +111,8 @@ interface UseAppEffectsParams {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
+  paneToolbarHeightScaleCoeff: number;
+  paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
@@ -207,6 +209,8 @@ export function useAppEffects({
   sidebarInnerGapScaleCoeff,
   thumbnailGapScaleCoeff,
   buttonGroupInsetScaleCoeff,
+  paneToolbarHeightScaleCoeff,
+  paneFooterHeightScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
   setAppBodyWidth,
@@ -1000,6 +1004,8 @@ export function useAppEffects({
         sidebarInnerGapScaleCoeff,
         thumbnailGapScaleCoeff,
         buttonGroupInsetScaleCoeff,
+        paneToolbarHeightScaleCoeff,
+        paneFooterHeightScaleCoeff,
       });
       const normalizedRadiusCascadeScale = Math.max(
         0,
@@ -1019,7 +1025,22 @@ export function useAppEffects({
       );
       const resolvedPanelHeadHeightPx = Math.max(
         resolvedHeaderButtonSizePx,
-        resolvedHeaderButtonSizePx,
+        Math.round(
+          resolvedHeaderButtonSizePx *
+            runtimeSpacing.paneToolbarHeightScaleCoeff,
+        ),
+      );
+      const basePanelFooterMinHeightPx = Math.max(
+        resolvedIconButtonSizePx,
+        Math.round(
+          resolvedHeaderButtonSizePx + runtimeSpacing.paneRecessedPaddingPx * 2,
+        ),
+      );
+      const resolvedPanelFooterMinHeightPx = Math.max(
+        resolvedIconButtonSizePx,
+        Math.round(
+          basePanelFooterMinHeightPx * runtimeSpacing.paneFooterHeightScaleCoeff,
+        ),
       );
       const resolvedControlPaddingXPx = Math.max(
         0,
@@ -1049,6 +1070,14 @@ export function useAppEffects({
       document.documentElement.style.setProperty(
         "--mpx-button-group-inset-scale",
         runtimeSpacing.buttonGroupInsetScaleCoeff.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-toolbar-height-scale",
+        runtimeSpacing.paneToolbarHeightScaleCoeff.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-footer-height-scale",
+        runtimeSpacing.paneFooterHeightScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
         "--mpx-radius-cascade-scale-coeff",
@@ -1091,6 +1120,10 @@ export function useAppEffects({
         `${runtimeSpacing.buttonGroupInsetPx}px`,
       );
       document.documentElement.style.setProperty(
+        "--mpx-control-group-gap-px",
+        `${runtimeSpacing.controlGroupGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
         "--mpx-metadata-edit-grid-label-gap-px",
         `${runtimeSpacing.metadataEditGridLabelGapPx}px`,
       );
@@ -1105,6 +1138,18 @@ export function useAppEffects({
       document.documentElement.style.setProperty(
         "--mpx-panel-head-height-px",
         `${resolvedPanelHeadHeightPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-toolbar-height-px",
+        `${resolvedPanelHeadHeightPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-pane-footer-height-px",
+        `${resolvedPanelFooterMinHeightPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-panel-footer-min-height",
+        `${resolvedPanelFooterMinHeightPx}px`,
       );
       document.documentElement.style.setProperty(
         "--mpx-control-padding-x",
@@ -1128,6 +1173,8 @@ export function useAppEffects({
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
+    paneToolbarHeightScaleCoeff,
+    paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,
   ]);

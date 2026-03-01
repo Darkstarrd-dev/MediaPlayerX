@@ -311,6 +311,8 @@ export const zhCnCatalogPart1 = {
   "ui.settings.paneInnerGapScaleCoeff": "容器内边距系数 {{value}}x",
   "ui.settings.paneStackGapScaleCoeff": "容器内上中下间距系数 {{value}}x",
   "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar 内边距系数 {{value}}x",
+  "ui.settings.paneToolbarHeightScaleCoeff": "面板 Toolbar 高度系数 {{value}}x",
+  "ui.settings.paneFooterHeightScaleCoeff": "面板 Footer 高度系数 {{value}}x",
   "ui.settings.buttonGroupInsetScaleCoeff": "按钮组边距系数 {{value}}x",
   "ui.settings.radiusCascadeScaleCoeff": "统一圆角级联系数 {{value}}x",
   "ui.settings.radiusValueScaleCoeff": "统一圆角值系数 {{value}}x",
@@ -371,6 +373,10 @@ export const zhCnCatalogPart1 = {
     "调整容器内部上中下分段间距系数，按容器内边距的 0.75 倍再乘本系数计算。",
   "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
     "调整 Sidebar 主列表四边留空系数；实际值为容器内边距的 0.8 倍再乘本系数。",
+  "ui.settings.tooltip.paneToolbarHeightScaleCoeff":
+    "调整 Sidebar/Main/Meta 面板顶部 Toolbar 高度系数。",
+  "ui.settings.tooltip.paneFooterHeightScaleCoeff":
+    "调整 Sidebar/Main/Meta 面板底部 Footer 高度系数。",
   "ui.settings.tooltip.buttonGroupInsetScaleCoeff":
     "调整按钮组内边距系数；基准为容器内边距 * 0.8 * 0.5，再乘本系数并取整。",
   "ui.settings.tooltip.radiusCascadeScaleCoeff":

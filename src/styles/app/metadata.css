@@ -74,7 +74,7 @@
 }
 
 .metadata-panel > * + * {
-  margin-top: var(--mpx-pane-section-gap, 0px);
+  margin-top: var(--mpx-pane-section-gap-px, 0px);
 }
 
 .metadata-panel
@@ -126,7 +126,10 @@
   justify-content: space-between;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
   height: auto;
-  min-height: var(--mpx-icon-button-size);
+  min-height: var(
+    --mpx-pane-toolbar-height-px,
+    var(--mpx-icon-button-size)
+  );
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -1206,7 +1209,7 @@
   padding: var(--mpx-panel-footer-padding-top, 0px)
     var(--mpx-panel-footer-padding-inline, 0)
     var(--mpx-panel-footer-padding-bottom, 0px);
-  margin: 0;
+  margin: var(--mpx-pane-section-gap-px, 0px) 0 0;
   flex-shrink: 0;
   min-width: 0;
   display: flex;

@@ -510,7 +510,7 @@ select option {
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: var(--mpx-pane-stack-gap, 8px);
+  gap: var(--mpx-control-group-gap, 8px);
   flex-shrink: 0;
 }
 
@@ -531,7 +531,7 @@ select option {
 .toolbar-actions-manage-secondary {
   margin-left: auto;
   min-width: 0;
-  gap: var(--mpx-pane-stack-gap, 10px);
+  gap: var(--mpx-control-group-gap, 10px);
 }
 
 .toolbar-actions-manage-secondary .main-toolbar-summary {
@@ -603,7 +603,7 @@ select option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--mpx-pane-stack-gap, 6px);
+  gap: var(--mpx-button-group-inset-px, 4px);
   line-height: 1;
 }
 

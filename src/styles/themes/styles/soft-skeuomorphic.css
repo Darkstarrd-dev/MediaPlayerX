@@ -86,8 +86,8 @@
   --mpx-header-btn-active-shadow: inset 3px 3px 6px var(--mpx-skeuo-shadow-dark), inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
   --mpx-header-btn-active-border: var(--mpx-skeuo-accent-fill);
   --mpx-header-status-btn-min-width: var(--mpx-header-btn-size);
-  --mpx-header-group-gap: calc(var(--mpx-pane-stack-gap-px, 8px) * 2 + 6px);
-  --mpx-header-item-gap: var(--mpx-pane-stack-gap-px, 8px);
+  --mpx-header-group-gap: calc(var(--mpx-control-group-gap-px, 8px) * 2 + 6px);
+  --mpx-header-item-gap: var(--mpx-control-group-gap-px, 8px);
   --mpx-header-group-modes-width: var(--mpx-header-modes-wrap-width);
   --mpx-header-group-search-width: 180px;
   --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);

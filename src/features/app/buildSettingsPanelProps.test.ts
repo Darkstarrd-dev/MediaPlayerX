@@ -31,6 +31,8 @@ describe("buildSettingsPanelProps", () => {
       sidebarInnerGapScaleCoeff: 1,
       thumbnailGapScaleCoeff: 1,
       buttonGroupInsetScaleCoeff: 1,
+      paneToolbarHeightScaleCoeff: 1,
+      paneFooterHeightScaleCoeff: 1,
       radiusCascadeScaleCoeff: 1,
       radiusValueScaleCoeff: 1,
       sidebarRatio: 0.26,
@@ -240,12 +242,20 @@ describe("buildSettingsPanelProps", () => {
 
     props.onThumbnailGapScaleCoeffChange(1.4);
     props.onButtonGroupInsetScaleCoeffChange(0.8);
+    props.onPaneToolbarHeightScaleCoeffChange(1.2);
+    props.onPaneFooterHeightScaleCoeffChange(0.9);
 
     expect(updateSettings).toHaveBeenCalledWith({
       thumbnailGapScaleCoeff: 1.4,
     });
     expect(updateSettings).toHaveBeenCalledWith({
       buttonGroupInsetScaleCoeff: 0.8,
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      paneToolbarHeightScaleCoeff: 1.2,
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      paneFooterHeightScaleCoeff: 0.9,
     });
   });
 });

@@ -164,7 +164,10 @@
   justify-content: space-between;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
   height: auto;
-  min-height: var(--mpx-icon-button-size);
+  min-height: var(
+    --mpx-pane-toolbar-height-px,
+    var(--mpx-icon-button-size)
+  );
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -311,7 +314,7 @@
   display: flex;
   overflow: hidden;
   position: relative;
-  margin-top: var(--mpx-pane-section-gap, 0px);
+  margin-top: var(--mpx-pane-section-gap-px, 0px);
 }
 
 .sidebar-tree {
@@ -600,7 +603,7 @@
   padding: var(--mpx-panel-footer-padding-top, 0px)
     var(--mpx-panel-footer-padding-inline, 0)
     var(--mpx-panel-footer-padding-bottom, 0px);
-  margin: var(--mpx-pane-section-gap, 0px) 0 0;
+  margin: var(--mpx-pane-section-gap-px, 0px) 0 0;
   flex-shrink: 0;
   color: var(--mpx-slot-fg-sidebar-footer-text, inherit);
 }

@@ -297,6 +297,24 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     );
   }
 
+  if ("paneToolbarHeightScaleCoeff" in next) {
+    next.paneToolbarHeightScaleCoeff = normalizeNumberInRange(
+      next.paneToolbarHeightScaleCoeff,
+      1,
+      0.5,
+      2,
+    );
+  }
+
+  if ("paneFooterHeightScaleCoeff" in next) {
+    next.paneFooterHeightScaleCoeff = normalizeNumberInRange(
+      next.paneFooterHeightScaleCoeff,
+      1,
+      0.5,
+      2,
+    );
+  }
+
   if ("radiusCascadeScaleCoeff" in next) {
     next.radiusCascadeScaleCoeff = normalizeNumberInRange(
       next.radiusCascadeScaleCoeff,

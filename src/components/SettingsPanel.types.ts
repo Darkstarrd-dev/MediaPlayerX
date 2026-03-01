@@ -25,6 +25,8 @@ export interface SettingsPanelProps {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
+  paneToolbarHeightScaleCoeff: number;
+  paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
   sidebarRatio: number;
@@ -171,6 +173,8 @@ export interface SettingsPanelProps {
   onSidebarInnerGapScaleCoeffChange: (value: number) => void;
   onThumbnailGapScaleCoeffChange: (value: number) => void;
   onButtonGroupInsetScaleCoeffChange: (value: number) => void;
+  onPaneToolbarHeightScaleCoeffChange: (value: number) => void;
+  onPaneFooterHeightScaleCoeffChange: (value: number) => void;
   onRadiusCascadeScaleCoeffChange: (value: number) => void;
   onRadiusValueScaleCoeffChange: (value: number) => void;
   onSidebarRatioChange: (value: number) => void;

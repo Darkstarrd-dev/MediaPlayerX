@@ -21,6 +21,11 @@ export function renderSettingsPerformanceSection({
     fullscreenResamplingEnabled,
     fullscreenDownsamplingKernel,
     fullscreenUpsamplingKernel,
+    thumbnailQuality,
+    thumbnailAdaptiveResolution,
+    thumbnailWidthInputValue,
+    thumbnailGenerationConcurrencyInput,
+    thumbnailResolveConcurrencyInput,
     thumbnailQueueSizeInput,
     cpuTokenLimitInput,
     onThumbnailWarmupRadiusChange,
@@ -30,6 +35,21 @@ export function renderSettingsPerformanceSection({
     onFullscreenResamplingEnabledChange,
     onFullscreenDownsamplingKernelChange,
     onFullscreenUpsamplingKernelChange,
+    onThumbnailQualityChange,
+    onResetThumbnailQuality,
+    onThumbnailAdaptiveResolutionChange,
+    onThumbnailWidthInputChange,
+    onThumbnailWidthInputBlur,
+    onThumbnailWidthInputKeyDown,
+    onResetThumbnailWidth,
+    onThumbnailGenerationConcurrencyInputChange,
+    onThumbnailGenerationConcurrencyInputBlur,
+    onThumbnailGenerationConcurrencyInputKeyDown,
+    onResetThumbnailGenerationConcurrency,
+    onThumbnailResolveConcurrencyInputChange,
+    onThumbnailResolveConcurrencyInputBlur,
+    onThumbnailResolveConcurrencyInputKeyDown,
+    onResetThumbnailResolveConcurrency,
     onPerformancePresetChange,
     onThumbnailQueueSizeInputChange,
     onThumbnailQueueSizeInputBlur,
@@ -225,6 +245,133 @@ export function renderSettingsPerformanceSection({
         <header className="settings-group-head">
           <span>{t("ui.settings.thumbnailPipelineSection")}</span>
         </header>
+        <label
+          className="settings-toggle-row"
+          data-tooltip-label={settingsTip("thumbnailAdaptiveResolution")}
+        >
+          <span>{t("ui.settings.thumbnailAdaptiveResolution")}</span>
+          <input
+            type="checkbox"
+            checked={thumbnailAdaptiveResolution}
+            onChange={(event) =>
+              onThumbnailAdaptiveResolutionChange(event.target.checked)
+            }
+          />
+        </label>
+        <div className="settings-thumbnail-four-row">
+          <div
+            className="settings-compact-control-cell"
+            data-tooltip-label={settingsTip("thumbnailQuality")}
+          >
+            <span>{t("ui.settings.thumbnailQuality")}</span>
+            <div className="settings-compact-control-actions">
+              <input
+                max={100}
+                min={1}
+                type="number"
+                aria-label={t("ui.settings.thumbnailQuality")}
+                value={thumbnailQuality}
+                onChange={(event) =>
+                  onThumbnailQualityChange(Number(event.target.value))
+                }
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
+                onClick={onResetThumbnailQuality}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
+          <div
+            className="settings-compact-control-cell"
+            data-tooltip-label={settingsTip("thumbnailResolution")}
+          >
+            <span>{t("ui.settings.thumbnailResolution")}</span>
+            <div className="settings-compact-control-actions">
+              <input
+                max={2048}
+                min={128}
+                type="number"
+                aria-label={t("ui.settings.thumbnailResolution")}
+                value={thumbnailWidthInputValue}
+                onBlur={onThumbnailWidthInputBlur}
+                onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
+                onKeyDown={onThumbnailWidthInputKeyDown}
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
+                onClick={onResetThumbnailWidth}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
+          <div
+            className="settings-compact-control-cell"
+            data-tooltip-label={settingsTip("thumbnailGenerationConcurrency")}
+          >
+            <span>{t("ui.settings.thumbnailGenerationConcurrency")}</span>
+            <div className="settings-compact-control-actions">
+              <input
+                max={16}
+                min={1}
+                type="number"
+                aria-label={t("ui.settings.thumbnailGenerationConcurrency")}
+                value={thumbnailGenerationConcurrencyInput}
+                onBlur={onThumbnailGenerationConcurrencyInputBlur}
+                onChange={(event) =>
+                  onThumbnailGenerationConcurrencyInputChange(event.target.value)
+                }
+                onKeyDown={onThumbnailGenerationConcurrencyInputKeyDown}
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
+                onClick={onResetThumbnailGenerationConcurrency}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
+          <div
+            className="settings-compact-control-cell"
+            data-tooltip-label={settingsTip("thumbnailResolveConcurrency")}
+          >
+            <span>{t("ui.settings.thumbnailResolveConcurrency")}</span>
+            <div className="settings-compact-control-actions">
+              <input
+                max={32}
+                min={1}
+                type="number"
+                aria-label={t("ui.settings.thumbnailResolveConcurrency")}
+                value={thumbnailResolveConcurrencyInput}
+                onBlur={onThumbnailResolveConcurrencyInputBlur}
+                onChange={(event) =>
+                  onThumbnailResolveConcurrencyInputChange(event.target.value)
+                }
+                onKeyDown={onThumbnailResolveConcurrencyInputKeyDown}
+              />
+              <button
+                className="settings-icon-btn main-icon-square-btn"
+                type="button"
+                aria-label={t("a11y.common.restoreDefault")}
+                data-tooltip-label={t("tip.common.restoreDefault")}
+                onClick={onResetThumbnailResolveConcurrency}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            </div>
+          </div>
+        </div>
         <label
           htmlFor="settings-performance-preset-select"
           data-tooltip-label={t("ui.settings.tooltip.performancePreset")}

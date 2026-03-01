@@ -20,7 +20,7 @@
 }
 
 .main-pane > * + * {
-  margin-top: var(--mpx-pane-section-gap, 0px);
+  margin-top: var(--mpx-pane-section-gap-px, 0px);
 }
 
 .workspace.is-focus .main-pane {
@@ -109,7 +109,10 @@
   align-items: flex-end;
   gap: var(--mpx-pane-recessed-padding-px, 10px);
   height: auto;
-  min-height: var(--mpx-icon-button-size);
+  min-height: var(
+    --mpx-pane-toolbar-height-px,
+    var(--mpx-icon-button-size)
+  );
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -432,8 +435,9 @@
 
 .main-footer {
   --mpx-panel-footer-height: auto;
-  --mpx-panel-footer-min-height: calc(
-    var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2
+  --mpx-panel-footer-min-height: var(
+    --mpx-pane-footer-height-px,
+    calc(var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2)
   );
   --mpx-panel-footer-padding-top: 0px;
   --mpx-panel-footer-padding-inline: 0;
