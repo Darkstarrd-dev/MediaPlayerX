@@ -374,7 +374,7 @@ export function MetadataImageEditor({
 
                   <details
                     className="metadata-preference-record"
-                    data-slot="fg-meta-main-image-editor-preference-record"
+                    data-slot="fg-meta-main-image-editor-preference-metrics-panel"
                   >
                     <summary>{t("ui.metadata.preferenceRecordTitle")}</summary>
                     <div className="metadata-preference-record-content">

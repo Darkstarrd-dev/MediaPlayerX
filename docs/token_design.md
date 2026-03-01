@@ -78,6 +78,8 @@
 | `fg.main.toolbar.state.normal` | `--mpx-slot-fg-main-toolbar-state-normal-*` |
 | `fg.main.toolbar.manage.groupName.panel` | `--mpx-slot-fg-main-toolbar-manage-group-name-panel-*` |
 | `fg.main.toolbar.manage.deleteConfirm.panel` | `--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-*` |
+| `fg.main.toolbar.manage.videoTranscode.panel` | `--mpx-slot-fg-main-toolbar-manage-video-transcode-panel-*` |
+| `fg.main.toolbar.manage.musicTranscode.panel` | `--mpx-slot-fg-main-toolbar-manage-music-transcode-panel-*` |
 | `fg.main.content.image.grid` | `--mpx-slot-fg-main-content-image-grid-*` |
 | `fg.main.content.image.grid.card` | `--mpx-slot-fg-main-content-image-grid-card-*` |
 | `fg.main.content.image.nodeGrid` | `--mpx-slot-fg-main-content-image-node-grid-*` |
@@ -115,6 +117,8 @@
 | `fg.main.content.music.preview` | `--mpx-slot-fg-main-content-music-preview-*` |
 | `fg.main.content.music.preview.canvas.gpu` | `--mpx-slot-fg-main-content-music-preview-canvas-gpu-*` |
 | `fg.main.content.music.preview.canvas.cpu` | `--mpx-slot-fg-main-content-music-preview-canvas-cpu-*` |
+| `fg.main.content.music.nameList` | `--mpx-slot-fg-main-content-music-name-list-*` |
+| `fg.main.content.music.nameList.row` | `--mpx-slot-fg-main-content-music-name-list-row-*` |
 | `fg.main.content.music.preview.hud.ovl` | `--mpx-slot-fg-main-content-music-preview-hud-ovl-*` |
 | `fg.main.content.music.preview.fullscreenHotzone.ovl` | `--mpx-slot-fg-main-content-music-preview-fullscreen-hotzone-ovl-*` |
 | `fg.main.content.music.controls` | `--mpx-slot-fg-main-content-music-controls-*` |
@@ -135,6 +139,7 @@
 | `fg.meta.toolbar.g3.search` | `--mpx-slot-fg-meta-toolbar-g3-search-*` |
 | `fg.meta.toolbar.g3.manage` | `--mpx-slot-fg-meta-toolbar-g3-manage-*` |
 | `fg.meta.toolbar.g3.metadata` | `--mpx-slot-fg-meta-toolbar-g3-metadata-*` |
+| `fg.meta.toolbar.g3.playlist` | `--mpx-slot-fg-meta-toolbar-g3-playlist-*` |
 | `fg.meta.toolbar.toggle` | `--mpx-slot-fg-meta-toolbar-toggle-*` |
 | `fg.meta.main` | `--mpx-slot-fg-meta-main-*` |
 | `fg.meta.main.imageEditor` | `--mpx-slot-fg-meta-main-image-editor-*` |

@@ -1037,6 +1037,7 @@ function VideoMainSection({
               ) : null}
 
               <SubtitleOverlay
+                dataSlot="fg-main-content-video-preview-subtitle-ovl"
                 text={subtitleOverlayText}
                 visible={subtitleVisible}
                 style={subtitleOverlayStyle}

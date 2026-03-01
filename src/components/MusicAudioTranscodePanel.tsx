@@ -144,7 +144,7 @@ export function MusicAudioTranscodePanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-music-transcode-panel"
+      data-slot="fg-main-toolbar-manage-music-transcode-panel"
       role="dialog"
       aria-modal="true"
       aria-label={t("ui.music.audioTranscodeDialog")}

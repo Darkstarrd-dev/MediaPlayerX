@@ -1470,7 +1470,7 @@ function MusicMainSection({
         style={cpuCanvasStyle}
       />
       {runtimeShowFps && visualizerStats ? (
-        <div className="music-visualizer-hud" role="status">
+        <div className="music-visualizer-hud" data-slot="fg-main-content-music-preview-hud-ovl" role="status">
           <span>{`FPS ${visualizerStats.fps.toFixed(1)} | ${visualizerStats.frameMs.toFixed(2)}ms`}</span>
           <span>{`Render ${visualizerStats.renderWidth} x ${visualizerStats.renderHeight}`}</span>
           <span>{`TargetLongEdge ${runtimeRenderLongEdgePx}`}</span>
@@ -1482,7 +1482,7 @@ function MusicMainSection({
         </div>
       ) : null}
       {visualizerRuntimeError ? (
-        <div className={`music-visualizer-hud ${runtimeShowFps ? 'is-warning' : 'is-warning is-bottom'}`} role="status">
+        <div className={`music-visualizer-hud ${runtimeShowFps ? 'is-warning' : 'is-warning is-bottom'}`} data-slot="fg-main-content-music-preview-hud-ovl" role="status">
           <span>{visualizerRuntimeError}</span>
         </div>
       ) : null}
@@ -1490,10 +1490,13 @@ function MusicMainSection({
         <>
           <div
             className="music-controls-fullscreen-hotzone"
+            data-slot="fg-main-content-music-preview-fullscreen-hotzone-ovl"
             onMouseEnter={showFullscreenControls}
             onMouseLeave={hideFullscreenControls}
           />
-          {musicControlsShell}
+          <div data-slot="fg-main-content-music-controls-fullscreen-floating-panel">
+            {musicControlsShell}
+          </div>
         </>
       ) : null}
     </div>

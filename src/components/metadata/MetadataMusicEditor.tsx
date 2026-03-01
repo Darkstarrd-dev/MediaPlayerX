@@ -204,7 +204,7 @@ export function MetadataMusicEditor({
       </div>
 
       {editable ? (
-        <div className="metadata-music-booklet-bindings">
+        <div className="metadata-music-booklet-bindings" data-slot="fg-meta-main-music-editor-booklet-binding-panel">
           <div className="metadata-music-booklet-bindings-head">
             <strong>{t('ui.metadata.bookletBinding')}</strong>
             <span data-tooltip-label={musicBookletAlbumRootPath}>{musicBookletAlbumRootPath || '-'}</span>

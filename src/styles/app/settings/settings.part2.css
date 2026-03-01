@@ -173,9 +173,9 @@
   color: var(--mpx-slot-fg-main-toolbar-image-rs-panel-text, inherit);
 }
 
-[data-slot='fg-main-toolbar-music-transcode-panel'] {
-  background: var(--mpx-slot-fg-main-toolbar-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
-  color: var(--mpx-slot-fg-main-toolbar-music-transcode-panel-text, inherit);
+[data-slot='fg-main-toolbar-manage-music-transcode-panel'] {
+  background: var(--mpx-slot-fg-main-toolbar-manage-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
+  color: var(--mpx-slot-fg-main-toolbar-manage-music-transcode-panel-text, inherit);
 }
 
 [data-slot='fg-main-toolbar-image-metadata-fetch-panel'] {

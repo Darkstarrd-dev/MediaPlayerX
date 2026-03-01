@@ -579,7 +579,7 @@ export function MetadataVideoEditor({
               {!editable ? (
                 <details
                   className="metadata-preference-record"
-                  data-slot="fg-meta-main-video-editor-preference-record"
+                  data-slot="fg-meta-main-video-editor-preference-metrics-panel"
                 >
                   <summary>{t("ui.metadata.preferenceRecordTitle")}</summary>
                   <div className="metadata-preference-record-content">

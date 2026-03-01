@@ -162,7 +162,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-main-toolbar-music-transcode-panel"]
+  [data-slot="fg-main-toolbar-manage-music-transcode-panel"]
   .music-audio-transcode-dialog {
   border-color: var(--mpx-overlay-surface-border);
   background: var(--mpx-overlay-surface-bg);

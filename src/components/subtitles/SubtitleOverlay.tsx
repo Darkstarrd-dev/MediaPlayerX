@@ -4,6 +4,7 @@ interface SubtitleOverlayProps {
   text: string | null
   visible: boolean
   style: CSSProperties
+  dataSlot?: string
 }
 
 function normalizeSubtitleText(text: string): string {
@@ -101,7 +102,7 @@ function wrapSubtitleTextByChars(text: string, maxChars: number): string[] {
   return wrapped
 }
 
-export function SubtitleOverlay({ text, visible, style }: SubtitleOverlayProps) {
+export function SubtitleOverlay({ text, visible, style, dataSlot }: SubtitleOverlayProps) {
   const normalizedText = useMemo(() => {
     if (!text) {
       return ''
@@ -169,7 +170,7 @@ export function SubtitleOverlay({ text, visible, style }: SubtitleOverlayProps) 
   ;(strokeTextStyle as Record<string, string>).WebkitTextFillColor = 'transparent'
 
   return (
-    <div aria-live="polite" className="subtitle-overlay" style={rootStyle}>
+    <div aria-live="polite" className="subtitle-overlay" data-slot={dataSlot} style={rootStyle}>
       <div className="subtitle-overlay-stack" style={stackStyle}>
         {wrappedLines.map((line, index) => (
           <span className="subtitle-overlay-line" key={`${line}-${index}`}>

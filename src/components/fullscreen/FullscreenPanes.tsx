@@ -118,7 +118,7 @@ export function FullscreenImagePane({
         >
           {displayedImageSrc ? (
             imageConvertPreviewMode ? (
-              <div className="fullscreen-image-compare" style={{ '--mpx-fs-compare-split': `${Math.round(clampedCompareSplit * 100)}%` } as CSSProperties}>
+              <div className="fullscreen-image-compare" data-slot="fs-image-convert-preview-panel" style={{ '--mpx-fs-compare-split': `${Math.round(clampedCompareSplit * 100)}%` } as CSSProperties}>
                 <img
                   className="fullscreen-image-compare-layer"
                   src={displayedImageSrc}
@@ -141,13 +141,14 @@ export function FullscreenImagePane({
                   <button
                     aria-label="调整预览分割位置"
                     className="fullscreen-image-compare-divider"
+                    data-slot="fs-image-convert-preview-splitter"
                     data-tooltip-label="调整预览分割位置"
                     type="button"
                     style={{ left: `${Math.round(clampedCompareSplit * 100)}%` }}
                     onMouseDown={startCompareDividerDrag}
                   />
                 )}
-                {imageConvertPreviewError ? <div className="fullscreen-image-compare-error">预览失败，已回退为原图显示：{imageConvertPreviewError}</div> : null}
+                {imageConvertPreviewError ? <div className="fullscreen-image-compare-error" data-slot="fs-image-convert-preview-error-ovl">预览失败，已回退为原图显示：{imageConvertPreviewError}</div> : null}
               </div>
             ) : (
               <img
@@ -389,12 +390,14 @@ export function FullscreenVideoPane({
           <>
             <div
               className={`fullscreen-video-controls-hotzone ${controlsAtTop ? 'is-top' : 'is-bottom'}`}
+              data-slot="fs-video-controls-hotzone-ovl"
               style={controlsStyle}
               onMouseEnter={onShowControls}
               onMouseLeave={onHideControls}
             />
             <div
               className={`fullscreen-video-controls ${controlsAtTop ? 'is-top' : 'is-bottom'} ${videoControlsVisible ? 'is-visible' : ''}`}
+              data-slot="fs-video-controls-float-panel"
               style={controlsStyle}
               onMouseEnter={onShowControls}
               onMouseLeave={onHideControls}
