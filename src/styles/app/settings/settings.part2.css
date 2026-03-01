@@ -130,7 +130,7 @@
   width: 100%;
   min-height: 34px;
   border: 1px solid var(--mpx-border-2);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-input-bg);
   color: var(--mpx-input-text);
   text-align: left;

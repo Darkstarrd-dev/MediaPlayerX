@@ -604,6 +604,8 @@ export function useAppTopLayerState({
     paneInnerGapScaleCoeff: appSettings.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: appSettings.paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
+    radiusCascadeScaleCoeff: appSettings.radiusCascadeScaleCoeff,
+    radiusValueScaleCoeff: appSettings.radiusValueScaleCoeff,
     sidebarRatio: appSettings.sidebarRatio,
     sidebarMinWidth: appSettings.sidebarMinWidth,
     layoutLocked: appSettings.layoutLocked,

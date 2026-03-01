@@ -5,7 +5,7 @@
 .vector-collapse-btn,
 .feature-action-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   min-height: var(--mpx-control-height);
   background: var(--mpx-btn-secondary-bg);
   color: var(--mpx-btn-secondary-text);
@@ -15,7 +15,7 @@
 
 .feature-query-input {
   border: var(--mpx-control-border-width) solid var(--mpx-input-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   min-height: var(--mpx-control-height);
   background: var(--mpx-input-bg);
   color: var(--mpx-input-text);

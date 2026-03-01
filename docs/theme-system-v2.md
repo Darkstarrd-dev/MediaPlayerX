@@ -497,6 +497,38 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-card-shadow` | `none` | 内容卡片阴影 |
 | `--mpx-card-border-width` | `1px` | 内容卡片边框宽 |
 
+#### 级联圆角（Cascading Radius）
+
+为避免“外层圆角变大、内层仍是固定值”造成几何断裂，新增级联半径 token。默认采用方案：
+
+- `inner = outer - (padding * factor)`
+- `factor = 0.35`
+- `cap = 8px`
+- 统一用 `max(0px, calc(...))` 防止负值
+
+| Token | 默认值 | 说明 |
+|-------|--------|------|
+| `--mpx-radius-cascade-factor` | `0.35` | 内层扣减比例系数 |
+| `--mpx-radius-cascade-cap` | `8px` | 内层扣减上限 |
+| `--mpx-radius-inset-pane` | `clamp(...)` | 由 pane 内边距推导的扣减量 |
+| `--mpx-radius-inset-stack` | `clamp(...)` | 由 pane 上中下间距推导的扣减量 |
+| `--mpx-radius-inset-control` | `clamp(...)` | 由控件边框推导的扣减量 |
+| `--mpx-radius-sidebar-inner` | `max(...)` | Sidebar 内层基准半径 |
+| `--mpx-radius-main-inner` | `max(...)` | Main 内层基准半径 |
+| `--mpx-radius-metadata-inner` | `max(...)` | Metadata 内层基准半径 |
+| `--mpx-radius-header-inner` | `max(...)` | Header 内层基准半径 |
+| `--mpx-radius-sidebar-toolbar-btn` | `min(...)` | Sidebar 工具按钮半径 |
+| `--mpx-radius-sidebar-label` | `max(...)` | Sidebar 列表标签半径 |
+| `--mpx-radius-main-card` | `min(...)` | Main 内容卡片半径 |
+| `--mpx-radius-thumb-media` | `max(...)` | 缩略图媒体内层半径 |
+| `--mpx-radius-metadata-control` | `min(...)` | Metadata 控件半径 |
+| `--mpx-radius-metadata-card` | `min(...)` | Metadata 卡片半径 |
+| `--mpx-radius-header-group` | `max(...)` | Header 组容器半径 |
+| `--mpx-radius-header-btn-inner` | `max(...)` | Header 内层按钮半径 |
+| `--mpx-radius-overlay-pop` | `min(...)` | overlay/popover 统一半径 |
+
+约束：`0`、`50%`、`999px` 这类语义圆角（无圆角、圆形、胶囊）不纳入级联扣减。
+
 #### 控件视觉效果
 
 | Token | 默认值 | 说明 |

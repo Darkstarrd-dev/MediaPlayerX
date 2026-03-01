@@ -9,7 +9,7 @@
   min-width: 40px;
   height: 40px;
   min-height: 40px;
-  border-radius: 10px;
+  border-radius: var(--mpx-radius-main-card, 10px);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center .video-action-btn,

@@ -279,6 +279,24 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     );
   }
 
+  if ("radiusCascadeScaleCoeff" in next) {
+    next.radiusCascadeScaleCoeff = normalizeNumberInRange(
+      next.radiusCascadeScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
+  if ("radiusValueScaleCoeff" in next) {
+    next.radiusValueScaleCoeff = normalizeNumberInRange(
+      next.radiusValueScaleCoeff,
+      1,
+      0,
+      2,
+    );
+  }
+
   if (
     typeof next.subtitleFeatureEnabled !== "boolean" &&
     "subtitleFeatureEnabled" in next

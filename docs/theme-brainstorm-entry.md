@@ -2,6 +2,8 @@
 
 用途：给新对话直接粘贴，快速进入 theme 样式 brainstorm，避免先遍历仓库读取无关文件。
 
+补充：若任务涉及圆角体系，请先对齐执行计划 `docs/cascading-radius-execution-plan-v1.md`，优先消费级联半径 token，避免新增固定 `8px/10px/12px`。
+
 ---
 
 ## 可直接复制的 Prompt

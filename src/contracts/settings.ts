@@ -157,6 +157,7 @@ export const appSettingsSchema = z.object({
   paneStackGapScaleCoeff: z.number().min(0).max(2).default(1),
   sidebarInnerGapScaleCoeff: z.number().min(0).max(2).default(1),
   radiusCascadeScaleCoeff: z.number().min(0).max(2).default(1),
+  radiusValueScaleCoeff: z.number().min(0).max(2).default(1),
   sidebarRatio: z.number().min(0).max(0.95),
   sidebarMinWidth: z.number().min(80).max(640),
   layoutLocked: z.boolean(),

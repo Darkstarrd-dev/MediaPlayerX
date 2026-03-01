@@ -328,6 +328,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.paneInnerGapScaleCoeff": "Container inner padding coeff {{value}}x",
   "ui.settings.paneStackGapScaleCoeff": "Container top-middle-bottom gap coeff {{value}}x",
   "ui.settings.sidebarInnerGapScaleCoeff": "Sidebar inner padding coeff {{value}}x",
+  "ui.settings.radiusCascadeScaleCoeff": "Unified radius cascade coeff {{value}}x",
+  "ui.settings.radiusValueScaleCoeff": "Unified radius value coeff {{value}}x",
   "ui.settings.sidebarRatio": "Sidebar ratio {{percent}}%",
   "ui.settings.sidebarMinWidthScale":
     "Sidebar min width scale {{scale}} ({{px}}px)",
@@ -386,6 +388,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Adjust top-middle-bottom spacing inside containers. Computed as inner padding * 0.75 * this coefficient.",
   "ui.settings.tooltip.sidebarInnerGapScaleCoeff":
     "Adjust Sidebar main-list four-side spacing coefficient. Actual value is inner padding * 0.8 * this coefficient.",
+  "ui.settings.tooltip.radiusCascadeScaleCoeff":
+    "Adjust unified radius cascading strength. 0 disables cascading reduction, 1 is default strength, 2 doubles reduction strength.",
+  "ui.settings.tooltip.radiusValueScaleCoeff":
+    "Adjust unified radius value coefficient. Final radius = current radius * coeff; 0 makes corners square globally, 1 keeps defaults, 2 doubles radius.",
   "ui.settings.tooltip.sidebarRatio":
     "Adjust sidebar ratio. Larger values reduce main content width.",
   "ui.settings.tooltip.sidebarMinWidth":

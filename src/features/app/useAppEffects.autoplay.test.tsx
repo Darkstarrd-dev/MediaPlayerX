@@ -78,6 +78,8 @@ function createBaseParams(overrides: Partial<UseAppEffectsParams> = {}): UseAppE
     paneInnerGapScaleCoeff: 1,
     paneStackGapScaleCoeff: 1,
     sidebarInnerGapScaleCoeff: 1,
+    radiusCascadeScaleCoeff: 1,
+    radiusValueScaleCoeff: 1,
     setAppBodyWidth: vi.fn(),
     setGridSize: vi.fn(),
     setVectorFocusIndex: vi.fn(),

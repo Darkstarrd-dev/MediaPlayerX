@@ -17,7 +17,7 @@
   z-index: 2;
   border: 1px solid transparent;
   background: var(--mpx-bg-selected);
-  border-radius: max(var(--mpx-control-radius), 10px);
+  border-radius: var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px));
   transform: var(--mpx-control-active-transform);
   box-shadow:
     var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),

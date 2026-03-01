@@ -29,6 +29,8 @@ describe("buildSettingsPanelProps", () => {
       paneInnerGapScaleCoeff: 1,
       paneStackGapScaleCoeff: 1,
       sidebarInnerGapScaleCoeff: 1,
+      radiusCascadeScaleCoeff: 1,
+      radiusValueScaleCoeff: 1,
       sidebarRatio: 0.26,
       sidebarMinWidth: 180,
       layoutLocked: false,

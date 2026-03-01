@@ -61,6 +61,8 @@ interface BuildSettingsPanelPropsParams {
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
   sidebarInnerGapScaleCoeff: number;
+  radiusCascadeScaleCoeff: number;
+  radiusValueScaleCoeff: number;
   sidebarRatio: number;
   sidebarMinWidth: number;
   layoutLocked: boolean;
@@ -199,6 +201,8 @@ export function buildSettingsPanelProps(
     paneInnerGapScaleCoeff: params.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: params.paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff: params.sidebarInnerGapScaleCoeff,
+    radiusCascadeScaleCoeff: params.radiusCascadeScaleCoeff,
+    radiusValueScaleCoeff: params.radiusValueScaleCoeff,
     sidebarRatio: params.sidebarRatio,
     sidebarMinWidth: params.sidebarMinWidth,
     layoutLocked: params.layoutLocked,
@@ -381,6 +385,10 @@ export function buildSettingsPanelProps(
       params.updateSettings({ paneStackGapScaleCoeff: value }),
     onSidebarInnerGapScaleCoeffChange: (value) =>
       params.updateSettings({ sidebarInnerGapScaleCoeff: value }),
+    onRadiusCascadeScaleCoeffChange: (value) =>
+      params.updateSettings({ radiusCascadeScaleCoeff: value }),
+    onRadiusValueScaleCoeffChange: (value) =>
+      params.updateSettings({ radiusValueScaleCoeff: value }),
     onSettingsFontSizeChange: (value) =>
       params.updateSettings({ settingsFontSize: value }),
     onSidebarRatioChange: params.applySidebarRatio,

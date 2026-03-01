@@ -10,7 +10,7 @@
   padding: 10px 0;
   overflow: visible;
   border: 1px solid var(--mpx-overlay-surface-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-overlay-surface-bg);
   box-shadow: var(--mpx-overlay-surface-shadow);
 }

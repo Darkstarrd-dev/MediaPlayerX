@@ -98,6 +98,13 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-main-shadow"),
     ).toBe("var(--mpx-panel-shadow)");
 
+    fireEvent.change(getSliderByLabelText("面板圆角"), {
+      target: { value: "18" },
+    });
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-panel-radius"),
+    ).toBe("18px");
+
     fireEvent.click(screen.getByRole("button", { name: "重置当前风格参数" }));
     expect(
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),

@@ -36,6 +36,7 @@ export function renderSettingsMainSection(
       paneStackGapScaleCoeff,
       sidebarInnerGapScaleCoeff,
       radiusCascadeScaleCoeff,
+      radiusValueScaleCoeff,
       sidebarRatio,
       sidebarMinWidth,
       sidebarMinWidthScale,
@@ -71,6 +72,7 @@ export function renderSettingsMainSection(
       onPaneStackGapScaleCoeffChange,
       onSidebarInnerGapScaleCoeffChange,
       onRadiusCascadeScaleCoeffChange,
+      onRadiusValueScaleCoeffChange,
       onSidebarRatioChange,
       onSidebarMinWidthChange,
       onSidebarFontSizeChange,
@@ -477,6 +479,21 @@ export function renderSettingsMainSection(
               value={radiusCascadeScaleCoeff}
               onChange={(event) =>
                 onRadiusCascadeScaleCoeffChange(Number(event.target.value))
+              }
+            />
+          </label>
+          <label data-tooltip-label={settingsTip("radiusValueScaleCoeff")}>
+            {t("ui.settings.radiusValueScaleCoeff", {
+              value: radiusValueScaleCoeff.toFixed(2),
+            })}
+            <input
+              max={2}
+              min={0}
+              step={0.1}
+              type="range"
+              value={radiusValueScaleCoeff}
+              onChange={(event) =>
+                onRadiusValueScaleCoeffChange(Number(event.target.value))
               }
             />
           </label>

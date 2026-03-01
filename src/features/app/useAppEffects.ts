@@ -105,6 +105,8 @@ interface UseAppEffectsParams {
   paneInnerGapScaleCoeff: number;
   paneStackGapScaleCoeff: number;
   sidebarInnerGapScaleCoeff: number;
+  radiusCascadeScaleCoeff: number;
+  radiusValueScaleCoeff: number;
   setAppBodyWidth: Dispatch<SetStateAction<number>>;
   setGridSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
   setVectorFocusIndex: Dispatch<SetStateAction<number>>;
@@ -197,6 +199,8 @@ export function useAppEffects({
   paneInnerGapScaleCoeff,
   paneStackGapScaleCoeff,
   sidebarInnerGapScaleCoeff,
+  radiusCascadeScaleCoeff,
+  radiusValueScaleCoeff,
   setAppBodyWidth,
   setGridSize,
   setVectorFocusIndex,
@@ -985,6 +989,14 @@ export function useAppEffects({
         0,
         Math.min(2, sidebarInnerGapScaleCoeff),
       );
+      const normalizedRadiusCascadeScale = Math.max(
+        0,
+        Math.min(2, radiusCascadeScaleCoeff),
+      );
+      const normalizedRadiusValueScale = Math.max(
+        0,
+        Math.min(2, radiusValueScaleCoeff),
+      );
       const viewportWidth =
         window.innerWidth > 0
           ? window.innerWidth
@@ -1035,6 +1047,14 @@ export function useAppEffects({
         normalizedStackScale.toFixed(2),
       );
       document.documentElement.style.setProperty(
+        "--mpx-radius-cascade-scale-coeff",
+        normalizedRadiusCascadeScale.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-radius-value-scale-coeff",
+        normalizedRadiusValueScale.toFixed(2),
+      );
+      document.documentElement.style.setProperty(
         "--mpx-layout-gap-px",
         `${resolvedLayoutGapPx}px`,
       );
@@ -1082,5 +1102,7 @@ export function useAppEffects({
     paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff,
+    radiusCascadeScaleCoeff,
+    radiusValueScaleCoeff,
   ]);
 }

@@ -1,5 +1,5 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-panel {
-  border-radius: 6px;
+  border-radius: var(--mpx-radius-overlay-pop, 6px);
   box-shadow: var(--mpx-overlay-surface-shadow);
 }

@@ -136,7 +136,7 @@ select {
 }
 
 button {
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   font-weight: var(--mpx-control-font-weight);
   box-shadow: var(--mpx-control-shadow);
   backdrop-filter: var(--mpx-control-backdrop-filter);

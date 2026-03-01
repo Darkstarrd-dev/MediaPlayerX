@@ -266,7 +266,7 @@
 }
 
 .video-ctrl-panel-option {
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   min-height: 28px;
   font-size: 12px;
   cursor: pointer;
@@ -274,7 +274,7 @@
 
 .video-action-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   width: 34px;
   min-width: 34px;
   height: 34px;

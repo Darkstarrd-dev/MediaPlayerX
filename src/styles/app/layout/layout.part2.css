@@ -18,7 +18,7 @@
   display: flex;
   justify-content: center;
   border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-1));
-  border-radius: 8px;
+  border-radius: var(--mpx-radius-overlay-pop, 8px);
   background: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
   padding: 8px 0;
   box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover));
@@ -86,7 +86,7 @@
   height: var(--mpx-header-btn-size);
   min-height: var(--mpx-header-btn-size);
   border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
-  border-radius: var(--mpx-header-btn-radius);
+  border-radius: var(--mpx-header-btn-radius-effective, var(--mpx-header-btn-radius));
   background: var(--mpx-player-btn-bg);
   color: var(--mpx-player-btn-text);
   cursor: pointer;
@@ -450,7 +450,7 @@
   right: 12px;
   bottom: 12px;
   border: 1px solid color-mix(in srgb, var(--mpx-status-danger-border) 70%, transparent);
-  border-radius: 8px;
+  border-radius: var(--mpx-radius-overlay-pop, 8px);
   background: color-mix(in srgb, var(--mpx-status-danger-bg) 70%, transparent);
   color: var(--mpx-status-danger-text);
   font-size: 12px;
@@ -511,7 +511,7 @@
   width: var(--mpx-fullscreen-controls-resolved-width);
   max-width: var(--mpx-fullscreen-controls-resolved-width);
   border: 1px solid var(--mpx-slot-fs-image-controls-shell-border, var(--mpx-player-surface-border));
-  border-radius: var(--mpx-card-radius);
+  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
   background: var(--mpx-slot-fs-image-controls-shell-bg, var(--mpx-player-surface-bg));
   color: var(--mpx-slot-fs-image-controls-shell-text, var(--mpx-player-surface-text));
   backdrop-filter: blur(8px);

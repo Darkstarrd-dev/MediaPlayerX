@@ -138,7 +138,7 @@
   min-height: 0;
   flex: 1;
   border: var(--mpx-card-border-width) solid var(--mpx-slot-fg-main-content-image-grid-border, var(--mpx-border-1));
-  border-radius: var(--mpx-card-radius);
+  border-radius: var(--mpx-radius-main-card, var(--mpx-card-radius));
   background: var(--mpx-slot-fg-main-content-image-grid-bg,
       var(--mpx-bg-workspace));
   box-shadow:
@@ -171,7 +171,7 @@
 .thumb-card {
   position: relative;
   border: var(--mpx-card-border-width) solid var(--mpx-border-1);
-  border-radius: var(--mpx-card-radius);
+  border-radius: var(--mpx-radius-main-card, var(--mpx-card-radius));
   padding: 0;
   box-sizing: border-box;
   background: transparent;
@@ -228,7 +228,7 @@
   cursor: pointer;
   text-align: inherit;
   outline: none;
-  border-radius: var(--mpx-card-radius);
+  border-radius: var(--mpx-radius-thumb-media, var(--mpx-card-radius));
   overflow: hidden;
 }
 
@@ -323,7 +323,7 @@
 .thumb-placeholder {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 0;
+  border-radius: var(--mpx-radius-thumb-media, 0px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -332,7 +332,7 @@
 }
 
 .thumb-media {
-  border-radius: 0;
+  border-radius: var(--mpx-radius-thumb-media, 0px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -429,7 +429,7 @@
   min-height: 0;
   flex: 1;
   border: 1px solid #c7d0d8;
-  border-radius: 16px;
+  border-radius: var(--mpx-radius-main-card, 16px);
   background: #ecf0f3;
   display: flex;
   flex-direction: column;

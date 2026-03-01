@@ -43,7 +43,7 @@
 .settings-block button,
 .search-trigger-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-btn-template-base);
   color: var(--mpx-btn-template-text-idle);
   font-weight: var(--mpx-control-font-weight);

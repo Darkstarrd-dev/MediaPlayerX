@@ -57,6 +57,9 @@
     -4px -4px 10px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
   --mpx-card-border-width: 1px;
 
+  --mpx-radius-cascade-factor-base: 0.35;
+  --mpx-radius-cascade-cap: 8px;
+
   --mpx-control-radius: 8px;
   --mpx-control-border-width: 1px;
   --mpx-control-shadow: 3px 3px 7px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),

@@ -25,6 +25,8 @@ export function toPersistedAppSettings(
     paneInnerGapScaleCoeff: settings.paneInnerGapScaleCoeff,
     paneStackGapScaleCoeff: settings.paneStackGapScaleCoeff,
     sidebarInnerGapScaleCoeff: settings.sidebarInnerGapScaleCoeff,
+    radiusCascadeScaleCoeff: settings.radiusCascadeScaleCoeff,
+    radiusValueScaleCoeff: settings.radiusValueScaleCoeff,
     sidebarRatio: settings.sidebarRatio,
     sidebarMinWidth: settings.sidebarMinWidth,
     layoutLocked: settings.layoutLocked,

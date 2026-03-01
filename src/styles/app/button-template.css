@@ -20,7 +20,7 @@
   .mode-switch > button
 ) {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-btn-template-base) !important;
   color: var(--mpx-btn-template-text-idle) !important;
   box-shadow: var(--mpx-btn-template-shadow-idle) !important;

@@ -125,7 +125,7 @@
 
 .sidebar-title-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-radius-sidebar-toolbar-btn, var(--mpx-control-radius));
   background: var(--mpx-player-btn-bg);
   color: var(--mpx-slot-fg-sidebar-toolbar-title-text, var(--mpx-player-btn-text));
   font-weight: 700;
@@ -221,9 +221,7 @@
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
   padding-right: 0;
-  min-height: 34px;
 }
 
 
@@ -253,7 +251,7 @@
 
 .sidebar-row.is-active .sidebar-label {
   background: var(--mpx-bg-selected);
-  border-radius: max(var(--mpx-control-radius), 10px);
+  border-radius: var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px));
   transform: var(--mpx-control-active-transform);
   box-shadow:
     var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
@@ -267,7 +265,7 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] .sidebar-row:not(.is-pressed-active) .sidebar-label {
   border: 1px solid var(--mpx-sidebar-node-border, color-mix(in srgb, var(--mpx-border-2) 68%, var(--mpx-bg-panel) 32%));
-  border-radius: 12px;
+  border-radius: var(--mpx-radius-sidebar-label, 12px);
   background: var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg));
   color: var(--mpx-sidebar-node-text, var(--mpx-player-btn-text));
   box-shadow:

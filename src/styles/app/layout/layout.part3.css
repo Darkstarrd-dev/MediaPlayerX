@@ -201,7 +201,7 @@
 }
 
 .fullscreen-group .fullscreen-autoplay-control .header-popover-trigger {
-  border-radius: var(--mpx-control-radius);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-btn-template-base);
   color: var(--mpx-btn-template-text-idle);
   border-color: var(--mpx-btn-template-border);
