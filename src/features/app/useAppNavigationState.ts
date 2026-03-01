@@ -38,7 +38,7 @@ const GAP_SNAP_EXPAND_BUFFER_PX = 2;
 // snap 执行后的冷却窗口：覆盖 CSS re-layout 多帧 settling，
 // 防止精度偏差导致 snap 方向反转形成不收敛振荡。
 const GAP_SNAP_COOLDOWN_MS = 250;
-const GAP_SNAP_RENDER_GAP_SKIP_RATIO = 0.3;
+const GAP_SNAP_RENDER_GAP_SKIP_RATIO = 0.15;
 const GAP_SNAP_COLUMN_LOCK_NOISE_RATIO = 0.5;
 const MAX_SNAP_REVERSES = 2;
 const METADATA_MAX_APP_RATIO = 0.45;

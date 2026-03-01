@@ -50,10 +50,13 @@ export function computeRenderGap(params: {
   if (params.columns <= 1) {
     return params.baseGap;
   }
-  const adjusted =
-    (params.gridWidth - params.columns * params.cellWidth) /
-    (params.columns - 1);
-  return adjusted >= params.baseGap ? adjusted : params.baseGap;
+  const totalGapSpace = params.gridWidth - params.columns * params.cellWidth;
+  if (totalGapSpace <= 0) {
+    return params.baseGap;
+  }
+  const perGap = totalGapSpace / (params.columns - 1);
+  const maxPerGap = params.baseGap + Math.max(2, params.cellWidth * 0.08);
+  return perGap <= maxPerGap ? perGap : params.baseGap;
 }
 
 function floorPx(value: number): number {

@@ -1,5 +1,4 @@
 import {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -39,7 +38,6 @@ import {
 } from "./metadata/metadataPanelUtils";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
-const METADATA_IMAGE_ALIGN_MIN_INSET_PX = 4;
 
 export interface MetadataPanelProps {
   mode: BrowserMode;
@@ -341,7 +339,6 @@ function MetadataPanel({
   const [imageCaption, setImageCaption] = useState<MetadataImageCaption | null>(
     null,
   );
-  const [metadataImageAlignInsetPx, setMetadataImageAlignInsetPx] = useState(0);
   const featureTagGroupsRef = useRef<HTMLDivElement | null>(null);
   const imagePreloadSeqRef = useRef(0);
   const lastFocusedImageIdRef = useRef<string | null>(null);
@@ -582,24 +579,6 @@ function MetadataPanel({
     showImagePreview &&
     hasImageFocus &&
     Boolean(focusedImage);
-  const metadataAlignInsetPx =
-    mode === "image" &&
-    showImageCanvas &&
-    metadataImageAlignInsetPx >= METADATA_IMAGE_ALIGN_MIN_INSET_PX
-      ? metadataImageAlignInsetPx
-      : 0;
-  const metadataAlignStyle =
-    metadataAlignInsetPx > 0
-      ? { paddingInline: `${metadataAlignInsetPx}px` }
-      : undefined;
-  const handleImageAlignInsetChange = useCallback((insetPx: number) => {
-    const normalizedInset = Number.isFinite(insetPx)
-      ? Math.max(0, Math.floor(insetPx))
-      : 0;
-    setMetadataImageAlignInsetPx((previous) =>
-      previous === normalizedInset ? previous : normalizedInset,
-    );
-  }, []);
   const imagePreviewClassName = showImageCanvas
     ? "metadata-content metadata-content-focus"
     : "metadata-content";
@@ -953,7 +932,6 @@ function MetadataPanel({
         <div
           className="metadata-head"
           data-slot="fg-meta-toolbar"
-          style={metadataAlignStyle}
         >
           <div className="metadata-toolbar-g3" data-slot="fg-meta-toolbar-g3">
             <button
@@ -1096,7 +1074,6 @@ function MetadataPanel({
                 onSearchByAuthor={onSearchByAuthor}
                 onSearchByTag={onSearchByTag}
                 onCaptionChange={setImageCaption}
-                onImageAlignInsetChange={handleImageAlignInsetChange}
               />
             </div>
           ) : mode === "video" ? (
@@ -1195,7 +1172,7 @@ function MetadataPanel({
             </div>
           )}
         </div>
-        <div data-slot="fg-meta-footer" style={metadataAlignStyle}>
+        <div data-slot="fg-meta-footer">
           {mode === "image" && showImageCanvas && imageCaption ? (
             <div className="metadata-image-caption">
               <span>{imageCaption.fileName}</span>

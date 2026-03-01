@@ -288,6 +288,17 @@ describe("computeRenderGap", () => {
     expect(renderWidth).toBeCloseTo(params.gridWidth, 6);
   });
 
+  it("epsilon 过大时回退到 baseGap，避免 gap 暴增", () => {
+    const renderGap = computeRenderGap({
+      gridWidth: 700,
+      columns: 4,
+      cellWidth: 150,
+      baseGap: 8,
+    });
+
+    expect(renderGap).toBe(8);
+  });
+
   it("gridWidth 小于列宽总和时回退到 baseGap", () => {
     const renderGap = computeRenderGap({
       gridWidth: 700,

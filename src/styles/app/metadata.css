@@ -135,7 +135,6 @@
   padding: 0;
   background: var(--mpx-slot-fg-meta-toolbar-bg, transparent);
   border-bottom: none;
-  transition: padding-inline 0.12s ease;
 }
 
 .metadata-toolbar-g3 {
@@ -528,10 +527,9 @@
 }
 
 .metadata-image-real {
-  width: auto;
+  width: 100%;
   height: auto;
   max-width: 100%;
-  max-height: 100%;
   padding: var(--mpx-slot-fg-main-content-image-grid-card-padding, 0);
   border: var(--mpx-card-border-width) solid
     var(--mpx-slot-fg-main-content-image-grid-card-border, var(--mpx-border-1));
@@ -1222,5 +1220,4 @@
   align-items: stretch;
   overflow: hidden;
   color: var(--mpx-slot-fg-meta-footer-text, inherit);
-  transition: padding-inline 0.12s ease;
 }
