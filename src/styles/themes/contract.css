@@ -110,6 +110,9 @@
   --mpx-checkbox-checked-bg: var(--mpx-accent);
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
+  --mpx-state-focus-color: #f2d796;
+  --mpx-state-selected-color: #8a919a;
+
   /* Default Semantic (Parchment-like base) */
   --mpx-bg-app: #f2eee7;
   --mpx-bg-workspace: #f3f0ea;

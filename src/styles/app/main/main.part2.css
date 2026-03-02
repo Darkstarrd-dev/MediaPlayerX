@@ -48,15 +48,15 @@
 }
 
 .name-list-row.is-focused {
-  border-left-color: #f2d796;
+  border-left-color: var(--mpx-state-focus-color);
 }
 
 .name-list-row.is-selected {
-  border-left-color: #b5a080;
+  border-left-color: var(--mpx-state-selected-color);
 }
 
 .name-list-row.is-selected.is-focused {
-  border-left-color: #f2d796;
+  border-left-color: var(--mpx-state-focus-color);
 }
 
 .name-list-row:focus,

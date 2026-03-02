@@ -364,7 +364,7 @@
 }
 
 .sidebar-row.is-active .sidebar-label {
-  background: var(--mpx-bg-selected);
+  background: var(--mpx-state-focus-color);
   border-radius: var(
     --mpx-sidebar-node-label-radius,
     var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px))
@@ -376,8 +376,8 @@
     0 0 0 4px
       color-mix(
         in srgb,
-        var(--mpx-status-info-border) 78%,
-        var(--mpx-status-info-text) 22%
+        var(--mpx-state-focus-color) 82%,
+        transparent
       );
 }
 
@@ -428,7 +428,7 @@
   .sidebar-row.is-active
   .sidebar-bullet {
   opacity: 1;
-  background: #f2d796;
+  background: var(--mpx-state-focus-color);
   box-shadow: none;
 }
 

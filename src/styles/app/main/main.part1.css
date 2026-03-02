@@ -366,27 +366,15 @@
 }
 
 :root {
-  --mpx-thumb-focus-ring-inner: color-mix(
-    in srgb,
-    var(--mpx-bg-workspace) 16%,
-    #ffffff 84%
-  );
-  --mpx-thumb-focus-ring-outer: color-mix(
-    in srgb,
-    #1f6fff 92%,
-    var(--mpx-status-info-border) 8%
-  );
-  --mpx-thumb-focus-glow: color-mix(in srgb, #1f6fff 46%, transparent);
+  --mpx-thumb-focus-ring-inner: var(--mpx-state-focus-color);
+  --mpx-thumb-focus-ring-outer: var(--mpx-state-focus-color);
+  --mpx-thumb-focus-glow: var(--mpx-state-focus-color);
 }
 
 :root[data-mpx-palette-mode="night"] {
-  --mpx-thumb-focus-ring-inner: color-mix(
-    in srgb,
-    var(--mpx-bg-workspace) 34%,
-    #ffffff 66%
-  );
-  --mpx-thumb-focus-ring-outer: color-mix(in srgb, #1f6fff 94%, #061b45 6%);
-  --mpx-thumb-focus-glow: color-mix(in srgb, #1f6fff 58%, transparent);
+  --mpx-thumb-focus-ring-inner: var(--mpx-state-focus-color);
+  --mpx-thumb-focus-ring-outer: var(--mpx-state-focus-color);
+  --mpx-thumb-focus-glow: var(--mpx-state-focus-color);
 }
 
 .thumb-card.is-skeleton:hover {

@@ -677,7 +677,7 @@
     )
     0 0
     var(--mpx-sidebar-node-label-radius, var(--mpx-radius-sidebar-label, 12px));
-  background: #8c939e;
+  background: var(--mpx-state-selected-color);
   pointer-events: none;
 }
 
@@ -704,7 +704,7 @@
   .sidebar-row.is-active
   .sidebar-label::before {
   opacity: 1;
-  background: #c9a96e;
+  background: var(--mpx-state-focus-color);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -712,7 +712,7 @@
   .sidebar-row.is-manage.is-selected
   .sidebar-label::before {
   opacity: 1;
-  background: #8c939e;
+  background: var(--mpx-state-selected-color);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -720,7 +720,7 @@
   .sidebar-row
   .sidebar-label:focus-visible::before {
   opacity: 1;
-  background: #c9a96e;
+  background: var(--mpx-state-focus-color);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -756,7 +756,7 @@
   opacity: 0;
   border-radius: var(--mpx-radius-metadata-control, 12px) 0 0
     var(--mpx-radius-metadata-control, 12px);
-  background: #8c939e;
+  background: var(--mpx-state-selected-color);
   pointer-events: none;
 }
 
@@ -784,13 +784,17 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .metadata-music-playlist-item:not(.mpx-overlay-cell-btn).is-active::before,
+  .metadata-music-playlist-item:not(.mpx-overlay-cell-btn).is-active::before {
+  opacity: 1;
+  background: var(--mpx-state-selected-color);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .metadata-music-playlist-item:not(
     .mpx-overlay-cell-btn
   ):focus-visible::before {
   opacity: 1;
-  background: #8c939e;
+  background: var(--mpx-state-focus-color);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]

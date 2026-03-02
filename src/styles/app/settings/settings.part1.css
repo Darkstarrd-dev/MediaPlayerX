@@ -356,7 +356,11 @@ button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn[aria-press
 }
 
 button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn:focus-visible {
-  outline: 1px solid color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2));
+  outline: var(--mpx-overlay-cell-btn-focus-outline-width, 1px) solid
+    var(
+      --mpx-overlay-cell-btn-focus-outline-color,
+      color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2))
+    );
   outline-offset: -2px;
   box-shadow: none !important;
   transform: none !important;
