@@ -7,6 +7,8 @@ GeneralUIFrame 是在线应用基座工程，用于复用 MediaPlayerX 的主题
 - 主题与 token 系统（`src/styles/themes`）
 - 模块化 UI 容器结构（侧栏模块列表 + 主内容区）
 - 占位模块（执行逻辑暂空）
+- 设置面板 UI（仅“界面设置”分页，含外观/布局/工作区比例）
+- 界面设置本地持久化（`localStorage`，刷新后保持）
 
 ## 与主 App 对应关系
 
@@ -109,6 +111,15 @@ npm run preview
 ## 与主仓库同步方式（subtree）
 
 本目录在主仓库路径：`apps/GeneralUIFrame`。
+
+完整操作说明见：`apps/GeneralUIFrame/SUBTREE_GUIDE.md`。
+
+常用固定脚本（在主仓库根目录执行）：
+
+```bash
+npm run subtree:pull:generaluiframe
+npm run subtree:push:generaluiframe
+```
 
 - 推送到独立仓库：
 

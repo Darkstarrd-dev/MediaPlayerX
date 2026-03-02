@@ -1,4 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
+import { SettingsPanel } from './components/SettingsPanel'
+import {
+  DEFAULT_UI_SETTINGS,
+  applyUiSettingsToDocument,
+  loadUiSettings,
+  normalizeUiSettings,
+  persistUiSettings,
+  type SettingsPageId,
+  type UiSettingsState,
+} from './features/uiSettings'
 import './App.css'
 
 interface ModuleDefinition {
@@ -29,21 +39,43 @@ const MODULES: ModuleDefinition[] = [
   },
 ]
 
-const STYLE_ID = 'soft-skeuomorphic'
-const PALETTE_ID = 'skeuomorphic-luxury-white'
-
 function App() {
   const [activeModuleId, setActiveModuleId] = useState(MODULES[0]?.id ?? '')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsPage, setSettingsPage] = useState<SettingsPageId>('appearance')
+  const [uiSettings, setUiSettings] = useState<UiSettingsState>(() => loadUiSettings())
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-mpx-style', STYLE_ID)
-    document.documentElement.setAttribute('data-mpx-palette', PALETTE_ID)
+    applyUiSettingsToDocument(uiSettings)
+    persistUiSettings(uiSettings)
+  }, [uiSettings])
+
+  useEffect(() => {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSettingsOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeydown)
+    return () => window.removeEventListener('keydown', handleKeydown)
   }, [])
 
   const activeModule = useMemo(
     () => MODULES.find((entry) => entry.id === activeModuleId) ?? MODULES[0],
     [activeModuleId],
   )
+
+  const sidebarWidth = `${uiSettings.sidebarWidthPercent}%`
+  const metadataWidth = `${uiSettings.metadataWidthPercent}%`
+
+  const handleUiSettingsPatch = (patch: Partial<UiSettingsState>) => {
+    setUiSettings((previous) => normalizeUiSettings({ ...previous, ...patch }))
+  }
+
+  const handleUiSettingsReset = () => {
+    setUiSettings(DEFAULT_UI_SETTINGS)
+    setSettingsPage('appearance')
+  }
 
   return (
     <div className="app">
@@ -62,15 +94,20 @@ function App() {
         </div>
         <div className="header-right" data-slot="fg-header-right-group">
           <div className="window-controls" data-slot="fg-header-g3">
-            <button className="window-control-btn" type="button" data-slot="fg-header-g3-help">
-              ?
+            <button
+              className="window-control-btn"
+              type="button"
+              data-slot="fg-header-g3-help"
+              onClick={() => setSettingsOpen(true)}
+            >
+              设置
             </button>
           </div>
         </div>
       </header>
 
       <div className="app-body" data-slot="bg-app-workspace">
-        <aside className="sidebar" data-slot="fg-sidebar-root">
+        <aside className="sidebar" data-slot="fg-sidebar-root" style={{ width: sidebarWidth, flex: `0 0 ${sidebarWidth}` }}>
           <div className="sidebar-head" data-slot="fg-sidebar-head">
             <strong>功能模块</strong>
           </div>
@@ -93,9 +130,9 @@ function App() {
         </aside>
         <div className="sidebar-splitter" data-slot="fg-splitter-left" />
 
-        <section className="workspace" data-slot="bg-app-workspace-shell">
+        <section className="workspace" data-slot="bg-app-workspace-shell" style={{ flex: '1 1 auto' }}>
           <div className="workspace-body" data-slot="bg-app-workspace-body">
-            <main className="main-pane" data-slot="fg-main-root">
+            <main className="main-pane" data-slot="fg-main-root" style={{ flex: '1 1 auto' }}>
               <div className="main-toolbar" data-slot="fg-main-toolbar-root">
                 <strong>{activeModule?.title}</strong>
               </div>
@@ -111,7 +148,11 @@ function App() {
             </main>
 
             <div className="metadata-splitter" data-slot="fg-splitter-right" />
-            <aside className="metadata-panel" data-slot="fg-meta-root">
+            <aside
+              className="metadata-panel"
+              data-slot="fg-meta-root"
+              style={{ width: metadataWidth, flex: `0 0 ${metadataWidth}` }}
+            >
               <div className="metadata-head" data-slot="fg-meta-head">
                 <strong>模块说明</strong>
               </div>
@@ -119,11 +160,24 @@ function App() {
                 <div className="panel-placeholder">
                   当前为框架复用阶段：UI、主题、token 与布局已落地；模块能力后续分批迁移。
                 </div>
+                <div className="panel-placeholder">
+                  当前界面语言：{uiSettings.uiLocale}；模式：{uiSettings.paletteMode}
+                </div>
               </div>
             </aside>
           </div>
         </section>
       </div>
+
+      <SettingsPanel
+        open={settingsOpen}
+        settingsPage={settingsPage}
+        settings={uiSettings}
+        onClose={() => setSettingsOpen(false)}
+        onSettingsPageChange={setSettingsPage}
+        onSettingsPatch={handleUiSettingsPatch}
+        onReset={handleUiSettingsReset}
+      />
     </div>
   )
 }

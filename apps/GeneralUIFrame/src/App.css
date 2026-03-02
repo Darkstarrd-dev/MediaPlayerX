@@ -40,3 +40,33 @@
   color: var(--mpx-text-2);
   padding: 12px;
 }
+
+.settings-side button.is-active {
+  border-color: var(--mpx-accent);
+  background: var(--mpx-bg-selected);
+  color: var(--mpx-text-1);
+}
+
+.settings-inline-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-inline-range em {
+  font-style: normal;
+  color: var(--mpx-text-2);
+  min-width: 56px;
+  text-align: right;
+}
+
+.settings-segmented {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.settings-segmented button.is-active {
+  border-color: var(--mpx-accent);
+  background: var(--mpx-bg-selected);
+}
