@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+
+import { BillingWorkbenchMain, BillingWorkbenchSidebar, useBillingWorkbench } from './apps/billing-workbench'
+import { PathArrowEditorMain, PathArrowEditorSidebar, usePathArrowEditor } from './apps/path-arrow-editor'
 import { SettingsPanel } from './components/SettingsPanel'
+import {
+  loadAppShellState,
+  persistAppShellState,
+  type AppPanelState,
+  type ShellViewMode,
+} from './features/appShellState'
 import {
   DEFAULT_UI_SETTINGS,
   applyUiSettingsToDocument,
@@ -11,41 +20,37 @@ import {
 } from './features/uiSettings'
 import './App.css'
 
-interface ModuleDefinition {
-  id: string
-  title: string
-  tag: string
-  description: string
-}
-
-const MODULES: ModuleDefinition[] = [
-  {
-    id: 'dashboard',
-    title: '控制台模块',
-    tag: 'UI已就绪',
-    description: '用于承载后续在线应用入口、运行状态提示与导航。',
-  },
-  {
-    id: 'file-panel',
-    title: '文件列表面板',
-    tag: '待接入逻辑',
-    description: '保留列表与筛选布局，后续接入 FSAA 与 ZIP 浏览能力。',
-  },
-  {
-    id: 'rename',
-    title: '更名工具模块',
-    tag: '待接入逻辑',
-    description: '先复用表单与批量操作 UI，后续接入命名策略执行器。',
-  },
-]
-
 const APP_ENTRIES = [
   {
     id: 'billing-workbench',
     name: '账单处理',
-    description: '当前仅占位，后续接入实际功能模块。',
+    description: '微信账单支出报销处理工具。',
+    layout: {
+      sidebarCollapsed: false,
+      metadataCollapsed: true,
+    },
+  },
+  {
+    id: 'workspace-placeholder',
+    name: '通用工作台',
+    description: '占位应用，用于承接后续模块。',
+    layout: {
+      sidebarCollapsed: false,
+      metadataCollapsed: false,
+    },
+  },
+  {
+    id: 'path-arrow-editor',
+    name: '路径动画生成器',
+    description: '路径箭头动画编辑与播放工具。',
+    layout: {
+      sidebarCollapsed: false,
+      metadataCollapsed: true,
+    },
   },
 ] as const
+
+type AppEntryId = (typeof APP_ENTRIES)[number]['id']
 
 const SIDEBAR_MIN_PERCENT = 20
 const SIDEBAR_MAX_PERCENT = 40
@@ -57,23 +62,56 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function App() {
-  const [activeModuleId, setActiveModuleId] = useState(MODULES[0]?.id ?? '')
+  const initialShellState = useMemo(() => loadAppShellState(APP_ENTRIES), [])
+
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsPage, setSettingsPage] = useState<SettingsPageId>('appearance')
   const [uiSettings, setUiSettings] = useState<UiSettingsState>(() => loadUiSettings())
   const [appPickerOpen, setAppPickerOpen] = useState(false)
-  const [selectedAppId, setSelectedAppId] = useState(APP_ENTRIES[0]?.id ?? '')
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [metadataCollapsed, setMetadataCollapsed] = useState(false)
+  const [activeView, setActiveView] = useState<ShellViewMode>(initialShellState.activeView)
+  const [selectedAppId, setSelectedAppId] = useState<AppEntryId>(initialShellState.selectedAppId)
+  const [panelStateMap, setPanelStateMap] = useState<Record<AppEntryId, AppPanelState>>(initialShellState.panelStates)
+
   const appBodyRef = useRef<HTMLDivElement | null>(null)
   const workspaceBodyRef = useRef<HTMLDivElement | null>(null)
   const appSwitcherRef = useRef<HTMLDivElement | null>(null)
   const resizeCleanupRef = useRef<(() => void) | null>(null)
 
+  const selectedApp = useMemo(
+    () => APP_ENTRIES.find((entry) => entry.id === selectedAppId) ?? APP_ENTRIES[0],
+    [selectedAppId],
+  )
+
+  const currentPanelState = panelStateMap[selectedAppId] ?? selectedApp.layout
+  const sidebarCollapsed = activeView === 'app' ? currentPanelState.sidebarCollapsed : false
+  const metadataCollapsed = activeView === 'app' ? currentPanelState.metadataCollapsed : false
+  const isBillingApp = activeView === 'app' && selectedApp.id === 'billing-workbench'
+  const isPathEditorApp = activeView === 'app' && selectedApp.id === 'path-arrow-editor'
+
+  const billingWorkbench = useBillingWorkbench({
+    aiSummary: {
+      enabled: uiSettings.aiEnabled,
+      provider: uiSettings.aiProvider,
+      modelName: uiSettings.aiModelName,
+    },
+  })
+
+  const pathArrowEditor = usePathArrowEditor({
+    active: isPathEditorApp,
+  })
+
   useEffect(() => {
     applyUiSettingsToDocument(uiSettings)
     persistUiSettings(uiSettings)
   }, [uiSettings])
+
+  useEffect(() => {
+    persistAppShellState({
+      activeView,
+      selectedAppId,
+      panelStates: panelStateMap,
+    })
+  }, [activeView, panelStateMap, selectedAppId])
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
@@ -82,43 +120,9 @@ function App() {
         setAppPickerOpen(false)
       }
     }
+
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
-  }, [])
-
-  const activeModule = useMemo(
-    () => MODULES.find((entry) => entry.id === activeModuleId) ?? MODULES[0],
-    [activeModuleId],
-  )
-  const selectedApp = useMemo(
-    () => APP_ENTRIES.find((entry) => entry.id === selectedAppId) ?? APP_ENTRIES[0],
-    [selectedAppId],
-  )
-
-  const sidebarWidth = `${uiSettings.sidebarWidthPercent}%`
-  const metadataWidth = `${uiSettings.metadataWidthPercent}%`
-  const workspaceWidth = sidebarCollapsed
-    ? '100%'
-    : `calc(${(100 - uiSettings.sidebarWidthPercent).toFixed(3)}% - var(--mpx-splitter-width))`
-  const mainPaneWidth = metadataCollapsed
-    ? '100%'
-    : `calc(${(100 - uiSettings.metadataWidthPercent).toFixed(3)}% - var(--mpx-splitter-width))`
-
-  const handleUiSettingsPatch = useCallback((patch: Partial<UiSettingsState>) => {
-    setUiSettings((previous) => normalizeUiSettings({ ...previous, ...patch }))
-  }, [])
-
-  const onToggleSidebarCollapse = useCallback(() => {
-    setSidebarCollapsed((previous) => !previous)
-  }, [])
-
-  const onToggleMetadataCollapse = useCallback(() => {
-    setMetadataCollapsed((previous) => !previous)
-  }, [])
-
-  const onToggleAppPicker = useCallback(() => {
-    setAppPickerOpen((previous) => !previous)
-    setSettingsOpen(false)
   }, [])
 
   useEffect(() => {
@@ -139,6 +143,37 @@ function App() {
     window.addEventListener('pointerdown', onPointerDown)
     return () => window.removeEventListener('pointerdown', onPointerDown)
   }, [appPickerOpen])
+
+  const sidebarWidth = `${uiSettings.sidebarWidthPercent}%`
+  const metadataWidth = `${uiSettings.metadataWidthPercent}%`
+  const workspaceWidth = sidebarCollapsed
+    ? '100%'
+    : `calc(${(100 - uiSettings.sidebarWidthPercent).toFixed(3)}% - var(--mpx-splitter-width))`
+  const mainPaneWidth = metadataCollapsed
+    ? '100%'
+    : `calc(${(100 - uiSettings.metadataWidthPercent).toFixed(3)}% - var(--mpx-splitter-width))`
+
+  const handleUiSettingsPatch = useCallback((patch: Partial<UiSettingsState>) => {
+    setUiSettings((previous) => normalizeUiSettings({ ...previous, ...patch }))
+  }, [])
+
+  const handleUiSettingsReset = useCallback(() => {
+    setUiSettings(DEFAULT_UI_SETTINGS)
+    setSettingsPage('appearance')
+  }, [])
+
+  const updateCurrentAppPanelState = useCallback((patch: Partial<AppPanelState>) => {
+    setPanelStateMap((previous) => {
+      const current = previous[selectedAppId] ?? selectedApp.layout
+      return {
+        ...previous,
+        [selectedAppId]: {
+          ...current,
+          ...patch,
+        },
+      }
+    })
+  }, [selectedApp.layout, selectedAppId])
 
   const beginHorizontalResize = useCallback(
     (source: 'sidebar' | 'metadata') => {
@@ -187,31 +222,30 @@ function App() {
         document.body.style.cursor = previousCursor
         document.body.style.userSelect = previousUserSelect
       }
-
     },
     [handleUiSettingsPatch],
   )
 
   const onStartSidebarResize = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
-      if (event.button !== 0) {
+      if (event.button !== 0 || sidebarCollapsed) {
         return
       }
       event.preventDefault()
       beginHorizontalResize('sidebar')
     },
-    [beginHorizontalResize],
+    [beginHorizontalResize, sidebarCollapsed],
   )
 
   const onStartMetadataResize = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
-      if (event.button !== 0) {
+      if (event.button !== 0 || metadataCollapsed) {
         return
       }
       event.preventDefault()
       beginHorizontalResize('metadata')
     },
-    [beginHorizontalResize],
+    [beginHorizontalResize, metadataCollapsed],
   )
 
   useEffect(() => {
@@ -221,10 +255,151 @@ function App() {
     }
   }, [])
 
-  const handleUiSettingsReset = () => {
-    setUiSettings(DEFAULT_UI_SETTINGS)
-    setSettingsPage('appearance')
-  }
+  const onToggleAppPicker = useCallback(() => {
+    setAppPickerOpen((previous) => !previous)
+    setSettingsOpen(false)
+  }, [])
+
+  const onActivateApp = useCallback((appId: AppEntryId) => {
+    setSelectedAppId(appId)
+    setActiveView('app')
+  }, [])
+
+  const onBackHome = useCallback(() => {
+    setActiveView('home')
+  }, [])
+
+  const onToggleSidebarCollapse = useCallback(() => {
+    if (activeView !== 'app') {
+      return
+    }
+    updateCurrentAppPanelState({ sidebarCollapsed: !sidebarCollapsed })
+  }, [activeView, sidebarCollapsed, updateCurrentAppPanelState])
+
+  const onToggleMetadataCollapse = useCallback(() => {
+    if (activeView !== 'app') {
+      return
+    }
+    updateCurrentAppPanelState({ metadataCollapsed: !metadataCollapsed })
+  }, [activeView, metadataCollapsed, updateCurrentAppPanelState])
+
+  const mainTitle = useMemo(() => {
+    if (activeView === 'home') {
+      return '首页 / 选择应用'
+    }
+    if (isBillingApp) {
+      return `${selectedApp.name} / 预览与调整`
+    }
+    if (isPathEditorApp) {
+      return `${selectedApp.name} / 画布编辑`
+    }
+    return `${selectedApp.name} / 模块视图`
+  }, [activeView, isBillingApp, isPathEditorApp, selectedApp.name])
+
+  const sidebarTitle = activeView === 'home' ? '首页' : selectedApp.name
+
+  const metadataContent = useMemo(() => {
+    if (activeView === 'home') {
+      return (
+        <>
+          <div className="panel-placeholder">欢迎使用 GeneralUIFrame。</div>
+          <div className="panel-placeholder">请选择左侧或主区中的应用入口继续。</div>
+        </>
+      )
+    }
+
+    if (isBillingApp) {
+      return (
+        <>
+          <div className="panel-placeholder">当前应用：{selectedApp.name}</div>
+          <div className="panel-placeholder">
+            处理状态：{billingWorkbench.notice?.text ?? '等待上传账单文件'}
+          </div>
+          <div className="panel-placeholder">
+            AI设置：{billingWorkbench.aiSummary.enabled ? '启用' : '未启用'} / {billingWorkbench.aiSummary.provider} /
+            {' '}
+            {billingWorkbench.aiSummary.modelName}
+          </div>
+        </>
+      )
+    }
+
+    if (isPathEditorApp) {
+      return (
+        <>
+          <div className="panel-placeholder">当前应用：{selectedApp.name}</div>
+          <div className="panel-placeholder">运行状态：{pathArrowEditor.statusText}</div>
+          <div className="panel-placeholder">
+            路径数量：{pathArrowEditor.paths.length}；缩放：{Math.round(pathArrowEditor.zoom * 100)}%
+          </div>
+        </>
+      )
+    }
+
+    return <div className="panel-placeholder">当前应用尚未接入。</div>
+  }, [
+    activeView,
+    billingWorkbench.aiSummary.enabled,
+    billingWorkbench.aiSummary.modelName,
+    billingWorkbench.aiSummary.provider,
+    billingWorkbench.notice?.text,
+    isBillingApp,
+    isPathEditorApp,
+    pathArrowEditor.paths.length,
+    pathArrowEditor.statusText,
+    pathArrowEditor.zoom,
+    selectedApp.name,
+  ])
+
+  const sidebarBody = useMemo(() => {
+    if (activeView === 'home') {
+      return (
+        <div className="home-sidebar-list">
+          {APP_ENTRIES.map((entry) => (
+            <button key={entry.id} className="module-link-btn" type="button" onClick={() => onActivateApp(entry.id)}>
+              {entry.name}
+              <span className="module-link-desc">{entry.description}</span>
+            </button>
+          ))}
+        </div>
+      )
+    }
+
+    if (isBillingApp) {
+      return <BillingWorkbenchSidebar model={billingWorkbench} />
+    }
+
+    if (isPathEditorApp) {
+      return <PathArrowEditorSidebar model={pathArrowEditor} />
+    }
+
+    return <div className="panel-placeholder">当前应用暂无侧栏配置项。</div>
+  }, [activeView, billingWorkbench, isBillingApp, isPathEditorApp, onActivateApp, pathArrowEditor])
+
+  const mainContent = useMemo(() => {
+    if (activeView === 'home') {
+      return (
+        <div className="home-main-grid">
+          {APP_ENTRIES.map((entry) => (
+            <button key={entry.id} className="home-main-card" type="button" onClick={() => onActivateApp(entry.id)}>
+              <strong>{entry.name}</strong>
+              <span>{entry.description}</span>
+            </button>
+          ))}
+        </div>
+      )
+    }
+
+    if (isBillingApp) {
+      return <BillingWorkbenchMain model={billingWorkbench} />
+    }
+
+    if (isPathEditorApp) {
+      return <PathArrowEditorMain model={pathArrowEditor} />
+    }
+
+    return <div className="panel-placeholder">当前应用主面板尚未接入。</div>
+  }, [activeView, billingWorkbench, isBillingApp, isPathEditorApp, onActivateApp, pathArrowEditor])
 
   return (
     <div className="app">
@@ -239,12 +414,12 @@ function App() {
               aria-expanded={appPickerOpen}
               onClick={onToggleAppPicker}
             >
-              {selectedApp?.name ?? '应用入口'}
+              {activeView === 'home' ? '首页' : selectedApp.name}
             </button>
             {appPickerOpen ? (
               <div className="app-switcher-panel" role="menu" aria-label="应用选择">
                 {APP_ENTRIES.map((entry) => {
-                  const active = entry.id === selectedAppId
+                  const active = activeView === 'app' && entry.id === selectedAppId
                   return (
                     <button
                       key={entry.id}
@@ -253,7 +428,7 @@ function App() {
                       aria-checked={active}
                       className={`app-switcher-item${active ? ' is-active' : ''}`}
                       onClick={() => {
-                        setSelectedAppId(entry.id)
+                        onActivateApp(entry.id)
                         setAppPickerOpen(false)
                       }}
                     >
@@ -271,6 +446,7 @@ function App() {
             </button>
           </div>
         </div>
+
         <div className="header-right" data-slot="fg-header-right-group">
           <div className="window-controls" data-slot="fg-header-g3">
             <button
@@ -278,6 +454,7 @@ function App() {
               type="button"
               data-slot="fg-header-g3-toggle-sidebar"
               aria-pressed={!sidebarCollapsed}
+              disabled={activeView !== 'app'}
               onClick={onToggleSidebarCollapse}
             >
               {sidebarCollapsed ? '左开' : '左收'}
@@ -287,6 +464,7 @@ function App() {
               type="button"
               data-slot="fg-header-g3-toggle-metadata"
               aria-pressed={!metadataCollapsed}
+              disabled={activeView !== 'app'}
               onClick={onToggleMetadataCollapse}
             >
               {metadataCollapsed ? '右开' : '右收'}
@@ -294,7 +472,7 @@ function App() {
             <button
               className="window-control-btn"
               type="button"
-              data-slot="fg-header-g3-help"
+              data-slot="fg-header-g3-settings"
               onClick={() => setSettingsOpen(true)}
             >
               设置
@@ -308,25 +486,26 @@ function App() {
           <>
             <aside className="sidebar" data-slot="fg-sidebar-root" style={{ width: sidebarWidth, flex: `0 0 ${sidebarWidth}` }}>
               <div className="sidebar-head" data-slot="fg-sidebar-head">
-                <strong>功能模块</strong>
+                <div className="sidebar-head-title">
+                  <strong>{sidebarTitle}</strong>
+                </div>
+                <div className="sidebar-head-actions">
+                  {activeView === 'app' ? (
+                    <button
+                      className="feature-action-btn main-icon-square-btn sidebar-home-btn"
+                      type="button"
+                      onClick={onBackHome}
+                    >
+                      返回
+                    </button>
+                  ) : null}
+                </div>
               </div>
               <div className="sidebar-tree mpx-scroll-area" data-slot="fg-sidebar-tree">
-                {MODULES.map((module) => {
-                  const active = module.id === activeModuleId
-                  return (
-                    <button
-                      key={module.id}
-                      className={`module-link-btn${active ? ' is-active' : ''}`}
-                      type="button"
-                      onClick={() => setActiveModuleId(module.id)}
-                    >
-                      {module.title}
-                      <span className="module-link-desc">{module.tag}</span>
-                    </button>
-                  )
-                })}
+                {sidebarBody}
               </div>
             </aside>
+
             <div
               className="sidebar-splitter"
               data-slot="fg-splitter-left"
@@ -341,18 +520,19 @@ function App() {
           <div className="workspace-body" data-slot="bg-app-workspace-body" ref={workspaceBodyRef}>
             <main className="main-pane" data-slot="fg-main-root" style={{ width: mainPaneWidth }}>
               <div className="main-toolbar" data-slot="fg-main-toolbar-root">
-                <strong>
-                  {selectedApp?.name} / {activeModule?.title}
-                </strong>
+                <strong>{mainTitle}</strong>
               </div>
-              <div className="image-grid mpx-scroll-area" data-slot="fg-main-content-image-grid-shell">
-                <article className="thumb-card" data-slot="fg-main-content-image-card-shell">
-                  <div className="thumb-card-meta">{activeModule?.description}</div>
-                  <div className="panel-placeholder">执行逻辑暂空，后续逐模块接入。</div>
-                </article>
+              <div className="main-content-host mpx-scroll-area" data-slot="fg-main-content-image-grid-shell">
+                {mainContent}
               </div>
               <footer className="main-footer" data-slot="fg-main-footer-root">
-                <small>窗口即应用视口，默认主题与样式已接入。</small>
+                <small>
+                  {isBillingApp
+                    ? '单页应用已模块化接入：账单处理。'
+                    : isPathEditorApp
+                      ? '单页应用已模块化接入：路径动画生成器。'
+                      : '请选择应用进入工作流。'}
+                </small>
               </footer>
             </main>
 
@@ -371,18 +551,12 @@ function App() {
                   style={{ width: metadataWidth, flex: `0 0 ${metadataWidth}` }}
                 >
                   <div className="metadata-head" data-slot="fg-meta-head">
-                    <strong>模块说明</strong>
+                    <strong>运行信息</strong>
                   </div>
                   <div className="metadata-content" data-slot="fg-meta-content-image-editor">
-                    <div className="panel-placeholder">
-                      当前为框架复用阶段：UI、主题、token 与布局已落地；模块能力后续分批迁移。
-                    </div>
-                <div className="panel-placeholder">
-                  当前界面语言：{uiSettings.uiLocale}；模式：{uiSettings.paletteMode}
-                </div>
-                <div className="panel-placeholder">当前应用：{selectedApp?.name}（占位）</div>
-              </div>
-            </aside>
+                    {metadataContent}
+                  </div>
+                </aside>
               </>
             )}
           </div>

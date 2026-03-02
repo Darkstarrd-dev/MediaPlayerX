@@ -10,6 +10,15 @@ GeneralUIFrame 是在线应用基座工程，用于复用 MediaPlayerX 的主题
 - 设置面板 UI（仅“界面设置”分页，含外观/布局/工作区比例）
 - 界面设置本地持久化（`localStorage`，刷新后保持）
 - AI模型设置分页（提供商/模型/API参数，含本地持久化）
+- 首个业务应用落地：`账单处理`（独立目录 `src/apps/billing-workbench`）
+- 账单处理接入规则：前置参数在 sidebar，预览与列宽调整在 main，下载入口在 main 底部
+- 第二个业务应用落地：`路径动画生成器`（独立目录 `src/apps/path-arrow-editor`）
+- 路径动画生成器布局规则：调节工具栏统一迁移到左侧 sidebar，主区保留画布与播放/导出操作
+- 路径动画生成器导出能力：支持 GIF / MP4(WebM 回退) / PNG（浏览器端生成）
+- 应用壳层状态独立持久化（每个应用的侧栏/元信息面板折叠状态单独保存）
+- Sidebar 工具栏支持返回首页，返回后应用状态保留并可继续接续处理
+
+迁移进度清单见：`apps/GeneralUIFrame/MIGRATION_PROGRESS.md`
 
 ## 与主 App 对应关系
 
