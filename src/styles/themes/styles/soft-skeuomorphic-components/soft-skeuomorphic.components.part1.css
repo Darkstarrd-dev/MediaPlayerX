@@ -643,7 +643,10 @@
   overflow: hidden;
   min-height: 30px;
   border: 1px solid #bcc1c9;
-  border-radius: var(--mpx-radius-sidebar-label, 12px);
+  border-radius: var(
+    --mpx-sidebar-node-label-radius,
+    var(--mpx-radius-sidebar-label, 12px)
+  );
   padding: 0 2px 0
     calc(6px + var(--mpx-sidebar-marker-width) + var(--mpx-sidebar-marker-gap));
   color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
@@ -668,8 +671,12 @@
   bottom: -1px;
   width: calc(var(--mpx-sidebar-marker-width) + 1px);
   opacity: 0;
-  border-radius: var(--mpx-radius-sidebar-label, 12px) 0 0
-    var(--mpx-radius-sidebar-label, 12px);
+  border-radius: var(
+      --mpx-sidebar-node-label-radius,
+      var(--mpx-radius-sidebar-label, 12px)
+    )
+    0 0
+    var(--mpx-sidebar-node-label-radius, var(--mpx-radius-sidebar-label, 12px));
   background: #8c939e;
   pointer-events: none;
 }
@@ -814,8 +821,7 @@
   width: max-content;
   height: auto;
   min-height: calc(
-    var(--mpx-header-btn-size) + var(--mpx-button-group-inset-px, 2px) * 2 +
-      2px
+    var(--mpx-header-btn-size) + var(--mpx-button-group-inset-px, 2px) * 2 + 2px
   );
   border: 1px solid #bcc4cf;
   border-radius: var(--mpx-radius-header-group, 12px);

@@ -164,10 +164,7 @@
   justify-content: space-between;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
   height: auto;
-  min-height: var(
-    --mpx-pane-toolbar-height-px,
-    var(--mpx-icon-button-size)
-  );
+  min-height: var(--mpx-pane-toolbar-height-px, var(--mpx-icon-button-size));
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -369,8 +366,8 @@
 .sidebar-row.is-active .sidebar-label {
   background: var(--mpx-bg-selected);
   border-radius: var(
-    --mpx-radius-sidebar-label,
-    max(var(--mpx-control-radius), 10px)
+    --mpx-sidebar-node-label-radius,
+    var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px))
   );
   transform: var(--mpx-control-active-transform);
   box-shadow:
@@ -396,7 +393,10 @@
       --mpx-sidebar-node-border,
       color-mix(in srgb, var(--mpx-border-2) 68%, var(--mpx-bg-panel) 32%)
     );
-  border-radius: var(--mpx-radius-sidebar-label, 12px);
+  border-radius: var(
+    --mpx-sidebar-node-label-radius,
+    var(--mpx-radius-sidebar-label, 12px)
+  );
   background: var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg));
   color: var(--mpx-sidebar-node-text, var(--mpx-player-btn-text));
   box-shadow:
@@ -557,7 +557,7 @@
   width: 4.4ch;
   height: 1.9em;
   padding: 0 0.45em;
-  border-radius: 999px;
+  border-radius: var(--mpx-sidebar-node-count-radius, 999px);
   font-family: var(--mpx-font-mono);
   font-size: 1em;
   line-height: 1;

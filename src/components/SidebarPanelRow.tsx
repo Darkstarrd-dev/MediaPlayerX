@@ -69,6 +69,22 @@ interface SidebarPanelRowProps {
   t: TranslateFn;
 }
 
+const SIDEBAR_NODE_RADIUS_DEPTH_STEP_PX = 0.75;
+const SIDEBAR_NODE_RADIUS_DEPTH_CAP_PX = 6;
+const SIDEBAR_COUNT_RADIUS_MIN_PX = 4;
+
+const resolveSidebarNodeRadiusStyle = (depth: number): CSSProperties => {
+  const level = Math.max(0, depth);
+  const depthInsetPx = Math.min(
+    SIDEBAR_NODE_RADIUS_DEPTH_CAP_PX,
+    level * SIDEBAR_NODE_RADIUS_DEPTH_STEP_PX,
+  );
+  return {
+    ["--mpx-sidebar-node-label-radius" as string]: `max(2px, calc(var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px)) - ${depthInsetPx}px))`,
+    ["--mpx-sidebar-node-count-radius" as string]: `max(${SIDEBAR_COUNT_RADIUS_MIN_PX}px, calc(var(--mpx-sidebar-node-label-radius) - var(--mpx-radius-inset-control, 2px)))`,
+  };
+};
+
 export function SidebarPanelRow({
   node,
   depth,
@@ -176,6 +192,7 @@ export function SidebarPanelRow({
   const sidebarLabelStyle = {
     fontSize: `${sidebarFontSize}px`,
     ["--mpx-sidebar-node-indent" as string]: `${sidebarNodeIndentPx}px`,
+    ...resolveSidebarNodeRadiusStyle(depth),
   } as CSSProperties;
 
   const applyMediaSelection = () => {
