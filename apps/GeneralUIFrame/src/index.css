@@ -1,0 +1,30 @@
+@import './styles/themes/index.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--mpx-font-ui);
+  color: var(--mpx-text-1);
+  background: var(--mpx-bg-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

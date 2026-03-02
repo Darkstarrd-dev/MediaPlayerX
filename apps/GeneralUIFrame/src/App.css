@@ -1,0 +1,42 @@
+@import '../../../src/styles/app/base.css';
+@import '../../../src/styles/app/layout.css';
+@import '../../../src/styles/app/sidebar.css';
+@import '../../../src/styles/app/main.css';
+@import '../../../src/styles/app/metadata.css';
+@import '../../../src/styles/app/settings.css';
+@import '../../../src/styles/app/vector.css';
+@import '../../../src/styles/app/manage.css';
+@import '../../../src/styles/app/responsive.css';
+@import '../../../src/components/subtitles.css';
+@import '../../../src/styles/app/button-template.css';
+
+.module-link-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: var(--mpx-radius-md);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  cursor: pointer;
+}
+
+.module-link-btn.is-active {
+  border-color: var(--mpx-accent);
+  background: var(--mpx-bg-selected);
+}
+
+.module-link-desc {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.panel-placeholder {
+  border: 1px dashed var(--mpx-border-2);
+  border-radius: var(--mpx-radius-md);
+  background: color-mix(in srgb, var(--mpx-bg-elevated) 70%, transparent);
+  color: var(--mpx-text-2);
+  padding: 12px;
+}

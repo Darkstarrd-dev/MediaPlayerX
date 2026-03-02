@@ -1,0 +1,157 @@
+/*
+ * Palette template
+ *
+ * Usage:
+ * 1) Copy this file to palettes/<your-palette-id>.css
+ * 2) Replace selector id
+ * 3) Fill all color tokens
+ * 4) Do NOT override layout/effect tokens from style layer
+ */
+
+:root[data-mpx-palette="your-palette-id"] {
+  /* light | dark */
+  color-scheme: light;
+
+  /* ---------- Raw palette exports (required) ---------- */
+  --mpx-palette-surface: #fbf8f3;
+  --mpx-palette-base: #f2eee7;
+  --mpx-palette-accent-raw: #2e6f7f;
+  --mpx-palette-text-raw: #2e2a22;
+  --mpx-palette-shadow-color: rgba(60, 48, 30, 0.15);
+
+  /* ---------- Control colors (B layer) ---------- */
+  --mpx-scrollbar-track-bg: #ece5d9;
+  --mpx-scrollbar-thumb-bg: #b7ab95;
+  --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
+  --mpx-scrollbar-thumb-active-bg: #215663;
+
+  --mpx-range-track-bg: #d6cfc1;
+  --mpx-range-thumb-bg: #2e6f7f;
+  --mpx-range-thumb-border: #ffffff;
+
+  --mpx-checkbox-bg: var(--mpx-input-bg);
+  --mpx-checkbox-border: var(--mpx-input-border);
+  --mpx-checkbox-check: var(--mpx-accent-contrast);
+  --mpx-checkbox-checked-bg: var(--mpx-accent);
+  --mpx-checkbox-checked-border: var(--mpx-accent);
+
+  /* ---------- Semantic surfaces/text/borders/accent (C layer) ---------- */
+  --mpx-bg-app: #f2eee7;
+  --mpx-bg-workspace: #f3f0ea;
+  --mpx-bg-panel: #fbf8f3;
+  --mpx-bg-elevated: #ffffff;
+  --mpx-bg-hover: rgba(46, 111, 127, 0.06);
+  --mpx-bg-selected: #e6f1f4;
+  --mpx-bg-muted: #f9f6ef;
+  --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
+
+  --mpx-text-1: #2e2a22;
+  --mpx-text-2: #6a6358;
+  --mpx-text-3: #9f937f;
+  --mpx-text-heading: #1a1814;
+  --mpx-text-inverse: #ffffff;
+
+  --mpx-border-1: #d6cfc1;
+  --mpx-border-2: #b7ab95;
+  --mpx-border-focus: #2e6f7f;
+
+  --mpx-accent: #2e6f7f;
+  --mpx-accent-contrast: #ffffff;
+  --mpx-accent-soft: #dcecf0;
+
+  --mpx-input-bg: #ffffff;
+  --mpx-input-border: #d6cfc1;
+  --mpx-input-text: #2e2a22;
+  --mpx-input-focus-bg: #ffffff;
+  --mpx-input-focus-border: #2e6f7f;
+  --mpx-input-readonly-bg: #f8f5ef;
+  --mpx-input-readonly-text: #6b6356;
+  --mpx-input-readonly-border: #d6cfc1;
+
+  --mpx-btn-primary-bg: #2e6f7f;
+  --mpx-btn-primary-text: #ffffff;
+  --mpx-btn-secondary-bg: #ffffff;
+  --mpx-btn-secondary-border: #b7ab95;
+  --mpx-btn-secondary-text: #2e2a22;
+
+  /* ---------- Status tokens ---------- */
+  --mpx-status-danger-bg: #fdeee8;
+  --mpx-status-danger-border: #d7a596;
+  --mpx-status-danger-text: #5f2a1e;
+
+  --mpx-status-warning-bg: #fff7e7;
+  --mpx-status-warning-border: #d8c69b;
+  --mpx-status-warning-text: #5a3b12;
+
+  --mpx-status-info-bg: #edf6f9;
+  --mpx-status-info-border: #c5d6de;
+  --mpx-status-info-text: #173b47;
+
+  --mpx-status-success-bg: #ebf7ee;
+  --mpx-status-success-border: #97d4a9;
+  --mpx-status-success-text: #1e4620;
+
+  --mpx-status-busy-bg: #fff7e8;
+  --mpx-status-busy-border: #d79d2e;
+  --mpx-status-busy-text: #7d4e12;
+
+  --mpx-status-idle-bg: #f5f9fa;
+  --mpx-status-idle-border: #9cb3bb;
+  --mpx-status-idle-text: #35525c;
+
+  /* ---------- Component aliases (D layer, color/effect only) ---------- */
+  --mpx-header-bg: linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%);
+  --mpx-header-border: var(--mpx-border-1);
+
+  --mpx-sidebar-bullet-pending: #94a3ad;
+  --mpx-sidebar-bullet-running: #2fb36e;
+
+  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(181, 171, 149, 0.16), rgba(181, 171, 149, 0.02));
+  --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
+  --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
+
+  --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
+
+  --mpx-fullscreen-bg: #060708;
+  --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
+
+  --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
+  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+  --mpx-video-empty-text: var(--mpx-text-inverse);
+
+  /*
+   * Player 控件默认建议保持固定深色半透明，以便在全屏/非全屏都维持一致的播放器语义。
+   * 如需定制可覆盖以下 token，但建议仅做轻微调整。
+   */
+  --mpx-player-surface-bg: rgba(8, 12, 16, 0.82);
+  --mpx-player-surface-border: rgba(103, 122, 148, 0.72);
+  --mpx-player-surface-text: #e7edf5;
+  --mpx-player-surface-text-muted: rgba(229, 238, 248, 0.9);
+  --mpx-player-hud-bg: rgba(10, 14, 20, 0.72);
+  --mpx-player-hud-border: rgba(129, 145, 163, 0.48);
+  --mpx-player-hud-text: #eef1f4;
+  --mpx-player-btn-bg: rgba(30, 40, 52, 0.74);
+  --mpx-player-btn-border: rgba(117, 136, 162, 0.8);
+  --mpx-player-btn-text: #f1f6ff;
+  --mpx-player-btn-hover-bg: rgba(42, 56, 74, 0.9);
+  --mpx-player-btn-active-bg: rgba(64, 86, 112, 0.95);
+  --mpx-player-btn-active-border: rgba(140, 165, 196, 0.92);
+  --mpx-player-btn-muted-text: rgba(213, 223, 236, 0.62);
+  --mpx-random-sheen-duration: 1.9s;
+  --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --mpx-random-sheen-overlay: linear-gradient(
+    115deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.6) 48%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.6) 52%,
+    transparent 55%
+  );
+  --mpx-random-sheen-blend-mode: overlay;
+  --mpx-random-sheen-start-translate: -42%;
+  --mpx-random-sheen-end-translate: 42%;
+  --mpx-random-sheen-opacity-peak: 1;
+
+  --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
+  --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+}

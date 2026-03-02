@@ -1,0 +1,265 @@
+:root[data-mpx-style^="soft-skeuomorphic"] {
+  --mpx-layout-gap-unit: 1vw;
+  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
+  --mpx-splitter-width: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
+  --mpx-bg-body: linear-gradient(160deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
+      var(--mpx-palette-base));
+
+  --mpx-panel-radius: 16px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: 8px 8px 20px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent),
+    -8px -8px 20px color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-bg-elevated));
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: box-shadow 0.22s ease, transform 0.22s ease;
+  --mpx-panel-padding: 12px;
+  --mpx-pane-frame-padding: var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding));
+  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-pane-inner-gap-scale, 1) * 0.75 * var(--mpx-pane-stack-gap-scale, 1)));
+
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: var(--mpx-pane-frame-padding);
+
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-pane-frame-padding);
+
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(--mpx-pane-frame-padding);
+
+  --mpx-header-radius: 14px;
+  --mpx-header-shadow: 6px 6px 16px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    -6px -6px 16px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-header-margin: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
+  --mpx-header-border-width: 1px;
+  --mpx-header-backdrop-filter: none;
+
+  --mpx-card-radius: 12px;
+  --mpx-card-shadow: 4px 4px 10px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -4px -4px 10px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+  --mpx-card-border-width: 1px;
+
+  --mpx-radius-cascade-factor-base: 0.35;
+  --mpx-radius-cascade-cap: 8px;
+
+  --mpx-control-radius: 8px;
+  --mpx-control-border-width: 1px;
+  --mpx-control-shadow: 3px 3px 7px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 88%, var(--mpx-bg-elevated));
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  --mpx-control-hover-transform: translateY(-1px);
+  --mpx-control-hover-shadow: 4px 4px 9px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    -4px -4px 9px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: translateY(0px);
+  --mpx-control-active-shadow: inset 2px 2px 4px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    inset -2px -2px 4px color-mix(in srgb, var(--mpx-palette-surface) 86%, var(--mpx-bg-elevated));
+
+  --mpx-header-btn-icon-display: inline-flex;
+  --mpx-header-btn-label-display: none;
+  --mpx-header-btn-gap: 0px;
+  --mpx-header-btn-size: var(--mpx-header-btn-size-px, 40px);
+  --mpx-header-btn-radius: 12px;
+  --mpx-header-btn-padding-x: 0px;
+  --mpx-header-icon-size: 18px;
+  --mpx-header-btn-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  --mpx-header-btn-hover-shadow: 2px 2px 3px var(--mpx-skeuo-shadow-dark), -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  --mpx-header-btn-active-shadow: inset 3px 3px 6px var(--mpx-skeuo-shadow-dark), inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
+  --mpx-header-btn-active-border: var(--mpx-skeuo-accent-fill);
+  --mpx-header-status-btn-min-width: var(--mpx-header-btn-size);
+  --mpx-header-group-gap: calc(var(--mpx-control-group-gap-px, 8px) * 2 + 6px);
+  --mpx-header-item-gap: var(--mpx-control-group-gap-px, 8px);
+  --mpx-header-group-modes-width: var(--mpx-header-modes-wrap-width);
+  --mpx-header-group-search-width: 180px;
+  --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);
+  --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 6px);
+
+  --mpx-splitter-track-bg: linear-gradient(180deg,
+      color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+      color-mix(in srgb, var(--mpx-palette-surface) 14%, transparent));
+  --mpx-splitter-handle-bg: color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent);
+  --mpx-splitter-handle-hover-bg: color-mix(in srgb, var(--mpx-palette-accent-raw) 44%, transparent);
+
+  --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 82%, var(--mpx-palette-base));
+  --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+  --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent);
+  --mpx-header-bg: linear-gradient(145deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
+      color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base)));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
+  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
+  --mpx-header-margin: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
+  --mpx-panel-padding: 14px;
+  --mpx-panel-radius: 18px;
+  --mpx-header-radius: 16px;
+  --mpx-card-radius: 13px;
+
+  --mpx-panel-shadow: 0 14px 28px color-mix(in srgb, var(--mpx-palette-shadow-color) 88%, transparent),
+    0 2px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 72%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
+  --mpx-header-shadow: 0 14px 30px color-mix(in srgb, var(--mpx-palette-shadow-color) 92%, transparent),
+    0 2px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 76%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 97%, var(--mpx-bg-elevated));
+  --mpx-card-shadow: 0 9px 18px color-mix(in srgb, var(--mpx-palette-shadow-color) 86%, transparent),
+    -3px -3px 8px color-mix(in srgb, var(--mpx-palette-surface) 95%, var(--mpx-bg-elevated));
+
+  --mpx-control-shadow: 4px 4px 11px color-mix(in srgb, var(--mpx-palette-shadow-color) 94%, transparent),
+    -4px -4px 11px color-mix(in srgb, var(--mpx-palette-surface) 98%, var(--mpx-bg-elevated));
+  --mpx-control-hover-shadow: 5px 5px 14px color-mix(in srgb, var(--mpx-palette-shadow-color) 96%, transparent),
+    -5px -5px 14px color-mix(in srgb, var(--mpx-palette-surface) 99%, var(--mpx-bg-elevated));
+  --mpx-control-active-shadow: inset 3px 3px 6px color-mix(in srgb, var(--mpx-palette-shadow-color) 96%, transparent),
+    inset -3px -3px 6px color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
+
+  --mpx-main-bg: color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-palette-base));
+  --mpx-sidebar-bg: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+  --mpx-metadata-bg: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .image-grid,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-rating-group,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-edit-grid,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-booklet-bindings,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .feature-tag-picker-panel,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
+  border-color: color-mix(in srgb, var(--mpx-border-1) 90%, var(--mpx-palette-accent-raw) 10%);
+  box-shadow: var(--mpx-card-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] {
+  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
+  --mpx-header-margin: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
+  --mpx-panel-padding: 14px;
+  --mpx-panel-radius: 18px;
+  --mpx-header-radius: 16px;
+  --mpx-card-radius: 13px;
+  --mpx-panel-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
+  --mpx-header-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
+  --mpx-card-shadow: 0 10px 20px color-mix(in srgb, var(--mpx-palette-shadow-color) 88%, transparent),
+    -3px -3px 8px color-mix(in srgb, var(--mpx-palette-surface) 95%, var(--mpx-bg-elevated));
+  --mpx-control-shadow: 4px 4px 12px color-mix(in srgb, var(--mpx-palette-shadow-color) 95%, transparent),
+    -4px -4px 12px color-mix(in srgb, var(--mpx-palette-surface) 98%, var(--mpx-bg-elevated));
+  --mpx-control-hover-shadow: 5px 5px 15px color-mix(in srgb, var(--mpx-palette-shadow-color) 97%, transparent),
+    -5px -5px 15px color-mix(in srgb, var(--mpx-palette-surface) 99%, var(--mpx-bg-elevated));
+  --mpx-control-active-shadow: inset 3px 3px 7px color-mix(in srgb, var(--mpx-palette-shadow-color) 97%, transparent),
+    inset -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
+  --mpx-main-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-sidebar-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-metadata-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-header-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-border-1: #e5e4e0;
+  --mpx-header-border-color: #e5e4e0;
+  --mpx-sidebar-border-color: #e5e4e0;
+  --mpx-main-border-color: #e5e4e0;
+  --mpx-metadata-border-color: #e5e4e0;
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+
+  --mpx-control-panel-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-control-panel-border: #e5e4e0;
+  --mpx-control-panel-shadow: 0 10px 30px color-mix(in srgb, var(--mpx-palette-shadow-color) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
+  --mpx-control-well-bg: color-mix(in srgb, var(--mpx-palette-surface) 94%, var(--mpx-palette-base));
+  --mpx-control-well-shadow: inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
+    inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
+    0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff);
+  --mpx-player-progress-fill: linear-gradient(90deg,
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 62%, #e2c48e),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 82%, #9f7a45));
+  --mpx-player-progress-thumb-core: linear-gradient(135deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 76%, #d7dce3),
+      #ffffff 50%,
+      color-mix(in srgb, var(--mpx-palette-base) 66%, #c5cad4));
+  --mpx-player-progress-thumb-ring: linear-gradient(90deg,
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 42%, #f3e5ab),
+      color-mix(in srgb, var(--mpx-palette-accent-raw) 72%, #8c6a28));
+  --mpx-player-secondary-btn-bg: linear-gradient(145deg,
+      color-mix(in srgb, var(--mpx-palette-surface) 95%, #ffffff),
+      color-mix(in srgb, var(--mpx-palette-base) 64%, #dfe3eb));
+  --mpx-player-secondary-btn-border: color-mix(in srgb, var(--mpx-palette-text-raw) 18%, var(--mpx-palette-surface));
+  --mpx-player-secondary-btn-shadow: inset 1px 1px 2px color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff),
+    inset -1px -1px 2px color-mix(in srgb, var(--mpx-palette-text-raw) 4%, transparent),
+    0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 12%, transparent);
+  --mpx-player-secondary-btn-active-shadow: inset 1px 1px 2px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent),
+    inset -1px -1px 2px color-mix(in srgb, var(--mpx-palette-surface) 94%, #ffffff);
+
+  --mpx-runway-groove-bg: #e9ecf0;
+  --mpx-runway-groove-shadow: inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1);
+  --mpx-runway-fill-gold: linear-gradient(90deg, #cba468 0%, #b5853b 100%);
+  --mpx-runway-fill-graphite: linear-gradient(90deg, #9ca3af 0%, #4b5563 55%, #374151 100%);
+  --mpx-runway-fill-shadow-gold: inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+  --mpx-runway-fill-shadow-graphite: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.25);
+  --mpx-runway-thumb-shell-pearl: linear-gradient(90deg, #d6bc86 0%, #c79d4a 50%, #d6bc86 100%);
+  --mpx-runway-thumb-shell-graphite: linear-gradient(145deg, #ffffff 0%, #e5e7eb 40%, #9ca3af 100%);
+  --mpx-runway-thumb-shell-shadow-pearl: 0 1px 1px rgba(0, 0, 0, 0.05);
+  --mpx-runway-thumb-shell-shadow-graphite: 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 1),
+    inset -1px -1px 2px rgba(156, 163, 175, 0.5);
+  --mpx-runway-thumb-core-pearl: radial-gradient(circle at 35% 25%, #ffffff 0%, #f8f9fa 40%, #d1d5db 100%);
+  --mpx-runway-thumb-core-graphite: radial-gradient(circle at 35% 25%, #9ca3af 0%, #4b5563 50%, #374151 100%);
+  --mpx-runway-thumb-core-shadow-pearl: inset 1px 1px 2px rgba(255, 255, 255, 1), inset -1px -1px 3px rgba(0, 0, 0, 0.15),
+    0 1px 1px rgba(0, 0, 0, 0.05);
+  --mpx-runway-thumb-core-shadow-graphite: inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 3px rgba(0, 0, 0, 0.5),
+    0 1px 1px rgba(255, 255, 255, 0.5);
+
+  --mpx-sidebar-tree-scrollbar-size: 10px;
+  --mpx-sidebar-tree-scrollbar-radius: 999px;
+  --mpx-sidebar-tree-scrollbar-track-radius: 10px;
+  --mpx-sidebar-tree-scrollbar-thumb-radius: 999px;
+  --mpx-sidebar-tree-scrollbar-color-thumb: #d6dce4;
+  --mpx-sidebar-tree-scrollbar-color-track: #ecf0f3;
+  --mpx-sidebar-tree-scrollbar-track-bg: #e9edf2;
+  --mpx-sidebar-tree-scrollbar-track-border: none;
+  --mpx-sidebar-tree-scrollbar-track-shadow: inset 1px 1px 2px #d4dce8, inset -1px -1px 2px #ffffff;
+  --mpx-sidebar-tree-scrollbar-end-gap: 0.5%;
+  --mpx-sidebar-tree-scrollbar-thumb-min-height: 26px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-width: 2px;
+  --mpx-sidebar-tree-scrollbar-thumb-border-color: rgba(233, 237, 242, 0.96);
+  --mpx-sidebar-tree-scrollbar-thumb-bg: #d6dbe1;
+  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: #d9dee6;
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: #c8cfd9;
+  --mpx-sidebar-tree-scrollbar-thumb-shadow: 1px 1px 2px rgba(191, 200, 212, 0.62), -1px -1px 2px rgba(255, 255, 255, 0.76);
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px rgba(171, 181, 194, 0.78);
+
+  --mpx-metal-light: #f5f2ec;
+  --mpx-metal-base: #e6e2da;
+  --mpx-metal-dark: #cdc7bb;
+  --mpx-popover-metal-bg: linear-gradient(to bottom, var(--mpx-metal-light), var(--mpx-metal-base));
+  --mpx-overlay-surface-border: #b8ac9b;
+  --mpx-overlay-surface-bg: #f5f2ec;
+  --mpx-overlay-surface-shadow:
+    0 0 0 1px rgba(247, 242, 232, 0.96),
+    0 0 0 2px rgba(190, 176, 154, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.96),
+    0 2px 0 rgba(172, 155, 129, 0.68),
+    0 12px 30px rgba(120, 110, 100, 0.3),
+    0 4px 10px rgba(120, 110, 100, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(165, 146, 119, 0.45);
+  --mpx-screen-bg: #110f0e;
+
+  --mpx-slot-fg-main-content-video-controls-left-bg: var(--mpx-runway-groove-bg);
+  --mpx-slot-bg-app-root-bg: var(--mpx-slot-fg-main-content-video-controls-left-bg);
+}

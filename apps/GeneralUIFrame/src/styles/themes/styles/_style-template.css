@@ -1,0 +1,343 @@
+/*
+ * Style template
+ *
+ * Usage:
+ * 1) Copy this file to styles/<your-style-id>.css
+ * 2) Replace the selector id below
+ * 3) Adjust layout/effect tokens only (E layer)
+ * 4) When deriving color effects, use --mpx-palette-* raw exports
+ */
+
+:root[data-mpx-style="your-style-id"] {
+  /* ---------- Global layout ---------- */
+  --mpx-layout-gap-scale: 1;
+  --mpx-pane-inner-gap-scale: 1;
+  --mpx-pane-stack-gap-scale: 1;
+  --mpx-sidebar-inner-gap-scale: 1;
+  --mpx-thumbnail-gap-scale: 1;
+  --mpx-button-group-inset-scale: 1;
+  --mpx-pane-toolbar-height-scale: 1;
+  --mpx-pane-footer-height-scale: 1;
+  --mpx-layout-gap-px: 0px;
+  --mpx-pane-inner-padding-px: 10px;
+  --mpx-pane-stack-gap-px: 8px;
+  --mpx-pane-section-gap-px: 8px;
+  --mpx-pane-recessed-padding-px: 3px;
+  --mpx-sidebar-gap-px: 8px;
+  --mpx-thumbnail-gap-px: 8px;
+  --mpx-button-group-inset-px: 2px;
+  --mpx-control-group-gap-px: 8px;
+  --mpx-pane-toolbar-height-px: 34px;
+  --mpx-pane-footer-height-px: 40px;
+  --mpx-metadata-edit-grid-label-gap-px: 4px;
+  --mpx-icon-button-size-px: 34px;
+  --mpx-header-btn-size-px: 34px;
+  --mpx-panel-head-height-px: 54px;
+  --mpx-layout-padding: 0px;
+  --mpx-splitter-width: 8px;
+  --mpx-bg-body: radial-gradient(
+    circle at top right,
+    var(--mpx-bg-muted),
+    var(--mpx-bg-app) 70%
+  );
+
+  /* ---------- Shared panel base ---------- */
+  --mpx-panel-radius: 0px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: none;
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: none;
+  --mpx-panel-padding: 10px;
+  --mpx-pane-frame-padding: var(
+    --mpx-pane-inner-padding-px,
+    var(--mpx-panel-padding)
+  );
+  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, 8px);
+  --mpx-pane-section-gap: var(
+    --mpx-pane-section-gap-px,
+    var(--mpx-pane-stack-gap-px, 8px)
+  );
+  --mpx-control-group-gap: var(--mpx-control-group-gap-px, 8px);
+
+  /* ---------- Sidebar overrides ---------- */
+  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
+  --mpx-sidebar-bg: var(--mpx-bg-panel);
+
+  /* ---------- Main overrides ---------- */
+  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
+  --mpx-main-bg: var(--mpx-bg-panel);
+
+  /* ---------- Metadata overrides ---------- */
+  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-transition: var(--mpx-panel-transition);
+  --mpx-metadata-padding: var(
+    --mpx-pane-frame-padding,
+    var(--mpx-panel-padding)
+  );
+  --mpx-metadata-bg: var(--mpx-bg-panel);
+
+  /* ---------- Header ---------- */
+  --mpx-header-radius: 0px;
+  --mpx-header-shadow: none;
+  --mpx-header-margin: 0px;
+  --mpx-header-border-width: 1px;
+  --mpx-header-backdrop-filter: none;
+  --mpx-header-transform: none;
+  --mpx-header-transform-origin: center top;
+  --mpx-header-transition: none;
+
+  /* ---------- Inner cards ---------- */
+  --mpx-card-radius: 10px;
+  --mpx-card-shadow: none;
+  --mpx-card-border-width: 1px;
+
+  /* ---------- Cascading radius ---------- */
+  --mpx-radius-value-scale-coeff: 1;
+  --mpx-panel-radius-effective: max(
+    0px,
+    calc(var(--mpx-panel-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-sidebar-radius-effective: max(
+    0px,
+    calc(var(--mpx-sidebar-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-main-radius-effective: max(
+    0px,
+    calc(var(--mpx-main-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-metadata-radius-effective: max(
+    0px,
+    calc(var(--mpx-metadata-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-header-radius-effective: max(
+    0px,
+    calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-card-radius-effective: max(
+    0px,
+    calc(var(--mpx-card-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-control-radius-effective: max(
+    0px,
+    calc(var(--mpx-control-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-header-btn-radius-effective: max(
+    0px,
+    calc(var(--mpx-header-btn-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+
+  --mpx-radius-cascade-factor-base: 0.35;
+  --mpx-radius-cascade-scale-coeff: 1;
+  --mpx-radius-cascade-factor: calc(
+    var(--mpx-radius-cascade-factor-base) *
+      var(--mpx-radius-cascade-scale-coeff)
+  );
+  --mpx-radius-cascade-cap: 8px;
+  --mpx-radius-inset-pane: clamp(
+    1px,
+    calc(var(--mpx-pane-inner-padding-px) * var(--mpx-radius-cascade-factor)),
+    var(--mpx-radius-cascade-cap)
+  );
+  --mpx-radius-inset-stack: clamp(
+    1px,
+    calc(var(--mpx-pane-stack-gap-px) * 0.5),
+    6px
+  );
+  --mpx-radius-inset-control: clamp(
+    1px,
+    calc(var(--mpx-control-border-width) + 1px),
+    3px
+  );
+
+  --mpx-radius-sidebar-inner-base: max(
+    0px,
+    calc(var(--mpx-sidebar-radius) - var(--mpx-radius-inset-pane))
+  );
+  --mpx-radius-main-inner-base: max(
+    0px,
+    calc(var(--mpx-main-radius) - var(--mpx-radius-inset-pane))
+  );
+  --mpx-radius-metadata-inner-base: max(
+    0px,
+    calc(var(--mpx-metadata-radius) - var(--mpx-radius-inset-pane))
+  );
+  --mpx-radius-header-inner-base: max(
+    0px,
+    calc(var(--mpx-header-radius) - var(--mpx-radius-inset-stack))
+  );
+
+  --mpx-radius-sidebar-toolbar-btn-base: min(
+    var(--mpx-control-radius),
+    var(--mpx-radius-sidebar-inner-base)
+  );
+  --mpx-radius-sidebar-label-base: max(
+    0px,
+    calc(
+      var(--mpx-radius-sidebar-toolbar-btn-base) -
+        var(--mpx-radius-inset-control)
+    )
+  );
+
+  --mpx-radius-main-card-base: min(
+    var(--mpx-card-radius),
+    max(
+      0px,
+      calc(var(--mpx-radius-main-inner-base) - var(--mpx-radius-inset-stack))
+    )
+  );
+  --mpx-radius-thumb-media-base: max(
+    0px,
+    calc(var(--mpx-radius-main-card-base) - var(--mpx-radius-inset-control))
+  );
+
+  --mpx-radius-metadata-control-base: min(
+    var(--mpx-control-radius),
+    var(--mpx-radius-metadata-inner-base)
+  );
+  --mpx-radius-metadata-card-base: min(
+    var(--mpx-card-radius),
+    max(
+      0px,
+      calc(
+        var(--mpx-radius-metadata-inner-base) - var(--mpx-radius-inset-stack)
+      )
+    )
+  );
+
+  --mpx-radius-header-group-base: max(
+    0px,
+    calc(var(--mpx-radius-header-inner-base) - 1px)
+  );
+  --mpx-radius-header-btn-inner-base: max(
+    0px,
+    calc(var(--mpx-header-btn-radius) - 2px)
+  );
+  --mpx-radius-overlay-pop-base: min(
+    var(--mpx-card-radius),
+    max(
+      0px,
+      calc(
+        var(--mpx-radius-header-group-base) - var(--mpx-radius-inset-control)
+      )
+    )
+  );
+
+  --mpx-radius-sidebar-inner: max(
+    0px,
+    calc(
+      var(--mpx-radius-sidebar-inner-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-main-inner: max(
+    0px,
+    calc(
+      var(--mpx-radius-main-inner-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-metadata-inner: max(
+    0px,
+    calc(
+      var(--mpx-radius-metadata-inner-base) *
+        var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-header-inner: max(
+    0px,
+    calc(
+      var(--mpx-radius-header-inner-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-sidebar-toolbar-btn: max(
+    0px,
+    calc(
+      var(--mpx-radius-sidebar-toolbar-btn-base) *
+        var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-sidebar-label: max(
+    0px,
+    calc(
+      var(--mpx-radius-sidebar-label-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-main-card: max(
+    0px,
+    calc(var(--mpx-radius-main-card-base) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-radius-thumb-media: max(
+    0px,
+    calc(
+      var(--mpx-radius-thumb-media-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-metadata-control: max(
+    0px,
+    calc(
+      var(--mpx-radius-metadata-control-base) *
+        var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-metadata-card: max(
+    0px,
+    calc(
+      var(--mpx-radius-metadata-card-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-header-group: max(
+    0px,
+    calc(
+      var(--mpx-radius-header-group-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-header-btn-inner: max(
+    0px,
+    calc(
+      var(--mpx-radius-header-btn-inner-base) *
+        var(--mpx-radius-value-scale-coeff)
+    )
+  );
+  --mpx-radius-overlay-pop: max(
+    0px,
+    calc(
+      var(--mpx-radius-overlay-pop-base) * var(--mpx-radius-value-scale-coeff)
+    )
+  );
+
+  /* ---------- Control visuals ---------- */
+  --mpx-control-shadow: none;
+  --mpx-control-backdrop-filter: none;
+  --mpx-control-transition: 0.15s ease;
+  --mpx-control-hover-transform: none;
+  --mpx-control-hover-shadow: none;
+  --mpx-control-hover-backdrop-filter: none;
+  --mpx-control-active-transform: none;
+  --mpx-control-active-shadow: none;
+
+  /* ---------- Optional effect-derived colors ---------- */
+  /* Keep these palette-aware so one style can pair with many palettes. */
+  /* --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 80%, transparent); */
+  /* --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 90%, transparent); */
+  /* --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent); */
+  /* --mpx-header-bg: color-mix(in srgb, var(--mpx-palette-base) 78%, transparent); */
+}

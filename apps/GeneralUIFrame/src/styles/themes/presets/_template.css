@@ -1,0 +1,9 @@
+/*
+ * Legacy preset template (deprecated)
+ *
+ * Theme System V2 separates style and palette:
+ * - styles template:   src/styles/themes/styles/_style-template.css
+ * - palettes template: src/styles/themes/palettes/_palette-template.css
+ *
+ * Keep this file only for backward compatibility with old docs/scripts.
+ */

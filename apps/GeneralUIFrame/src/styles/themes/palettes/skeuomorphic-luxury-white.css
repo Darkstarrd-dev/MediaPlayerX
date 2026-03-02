@@ -1,0 +1,210 @@
+:root[data-mpx-palette="skeuomorphic-luxury-white"] {
+  color-scheme: light;
+
+  --mpx-palette-surface: #fbf7f1;
+  --mpx-palette-base: #f1ebe2;
+  --mpx-palette-accent-raw: #8a6a3b;
+  --mpx-palette-text-raw: #2b241b;
+  --mpx-palette-shadow-color: rgba(149, 124, 84, 0.46);
+
+  --mpx-scrollbar-track-bg: #e4dacb;
+  --mpx-scrollbar-thumb-bg: #c4b093;
+  --mpx-scrollbar-thumb-hover-bg: #9f845d;
+  --mpx-scrollbar-thumb-active-bg: #8c7048;
+
+  --mpx-range-track-bg: #ece3d6;
+  --mpx-range-thumb-size: 16px;
+  --mpx-range-thumb-bg: #fffdf9;
+  --mpx-range-thumb-border: #baa27f;
+  --mpx-range-thumb-border-width: 1.5px;
+  --mpx-range-thumb-shadow: 1px 1px 3px rgba(163, 138, 98, 0.56), -1px -1px 2px rgba(255, 253, 248, 0.96);
+  --mpx-range-thumb-hover-shadow: 0 0 0 2px rgba(138, 106, 59, 0.24), 1px 2px 4px rgba(151, 127, 91, 0.64), -1px -1px 2px rgba(255, 253, 248, 0.98);
+  --mpx-range-thumb-active-shadow: 0 0 0 2px rgba(138, 106, 59, 0.3), inset 1px 1px 2px rgba(157, 133, 96, 0.64), inset -1px -1px 2px rgba(255, 253, 248, 0.98);
+  --mpx-range-thumb-focus-ring: 0 0 0 2px rgba(138, 106, 59, 0.36);
+
+  --mpx-checkbox-bg: var(--mpx-input-bg);
+  --mpx-checkbox-border: var(--mpx-input-border);
+  --mpx-checkbox-check: var(--mpx-accent-contrast);
+  --mpx-checkbox-checked-bg: var(--mpx-accent);
+  --mpx-checkbox-checked-border: var(--mpx-accent);
+
+  --mpx-bg-app: #e0dfde;
+  --mpx-bg-workspace: #e7e0d4;
+  --mpx-bg-panel: #fbf7f1;
+  --mpx-bg-elevated: #fffcf8;
+  --mpx-bg-hover: rgba(56, 43, 28, 0.07);
+  --mpx-bg-selected: #f0e5d5;
+  --mpx-bg-muted: #f4ede1;
+  --mpx-bg-tooltip: rgba(40, 31, 23, 0.9);
+
+  --mpx-text-1: #30271d;
+  --mpx-text-2: #4a3e31;
+  --mpx-text-3: #7a6549;
+  --mpx-text-heading: #241d16;
+  --mpx-text-inverse: #fffdf9;
+
+  --mpx-border-1: rgba(179, 154, 118, 0.82);
+  --mpx-border-2: #b08d5c;
+  --mpx-border-focus: #8a6a3b;
+
+  --mpx-accent: #8a6a3b;
+  --mpx-accent-contrast: #fffaf2;
+  --mpx-accent-soft: rgba(138, 106, 59, 0.19);
+
+  --mpx-input-bg: #fffdf8;
+  --mpx-input-border: #ccb89b;
+  --mpx-input-text: #33281d;
+  --mpx-input-focus-bg: #fffcf7;
+  --mpx-input-focus-border: #8a6a3b;
+  --mpx-input-readonly-bg: #f3f2ef;
+  --mpx-input-readonly-text: #6e5b42;
+  --mpx-input-readonly-border: #d7c6ac;
+
+  --mpx-btn-primary-bg: #8a6a3b;
+  --mpx-btn-primary-text: #fffaf2;
+  --mpx-btn-secondary-bg: #fffdf8;
+  --mpx-btn-secondary-border: #c7b295;
+  --mpx-btn-secondary-text: #3f3224;
+  --mpx-btn-template-base: #ecf0f3;
+  --mpx-btn-template-hover: #f8fafc;
+  --mpx-btn-template-active: #dce2e8;
+  --mpx-btn-template-pressed: #d6dee5;
+  --mpx-btn-template-border: #cbd5e1;
+  --mpx-btn-template-text-idle: #4a4a4a;
+  --mpx-btn-template-text-active: #334155;
+  --mpx-btn-template-text-pressed: #555555;
+  --mpx-btn-template-text-merged: #0f172a;
+  --mpx-btn-template-shadow-idle:
+    0 4px 6px rgba(116, 88, 50, 0.14),
+    inset 0 2px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 1px rgba(116, 88, 50, 0.08);
+  --mpx-btn-template-shadow-hover:
+    0 6px 10px rgba(116, 88, 50, 0.17),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(116, 88, 50, 0.08);
+  --mpx-btn-template-shadow-active:
+    0 1px 2px rgba(116, 88, 50, 0.12),
+    inset 0 2px 4px rgba(116, 88, 50, 0.17),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+  --mpx-btn-template-shadow-pressed:
+    0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 4px 8px rgba(116, 88, 50, 0.28),
+    inset 0 -2px 2px rgba(255, 255, 255, 0.7);
+  --mpx-btn-template-transform-hover: translateY(-1px);
+  --mpx-btn-template-transform-active: translateY(2px);
+  --mpx-btn-template-transform-pressed: translateY(1px);
+  --mpx-btn-template-danger-hover-bg: #fee2e2;
+  --mpx-btn-template-danger-hover-border: #fca5a5;
+  --mpx-btn-template-danger-hover-text: #dc2626;
+  --mpx-btn-template-danger-hover-shadow:
+    0 6px 10px rgba(220, 38, 38, 0.15),
+    inset 0 2px 1px rgba(255, 255, 255, 1),
+    inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+
+  --mpx-status-danger-bg: #fceeea;
+  --mpx-status-danger-border: #dfae9f;
+  --mpx-status-danger-text: #6d3129;
+
+  --mpx-status-warning-bg: #fbf1e0;
+  --mpx-status-warning-border: #d7ba8a;
+  --mpx-status-warning-text: #6a4b1e;
+
+  --mpx-status-info-bg: #e9f0f9;
+  --mpx-status-info-border: #aec0d8;
+  --mpx-status-info-text: #2a425f;
+
+  --mpx-status-success-bg: #ebf3ed;
+  --mpx-status-success-border: #9bbca4;
+  --mpx-status-success-text: #2a5738;
+
+  --mpx-status-busy-bg: #fbedda;
+  --mpx-status-busy-border: #d3a96a;
+  --mpx-status-busy-text: #6d4d20;
+
+  --mpx-status-idle-bg: #eceff4;
+  --mpx-status-idle-border: #a2b2c6;
+  --mpx-status-idle-text: #3d5167;
+
+  --mpx-header-bg: linear-gradient(120deg, #fefbf6 0%, #f7efe2 52%, #efe2cd 100%);
+  --mpx-header-border: var(--mpx-border-1);
+
+  --mpx-sidebar-bullet-pending: #98836a;
+  --mpx-sidebar-bullet-running: #4ea87c;
+
+  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(155, 124, 82, 0.34), rgba(155, 124, 82, 0.12));
+  --mpx-splitter-handle-bg: rgba(148, 116, 73, 0.76);
+  --mpx-splitter-handle-hover-bg: rgba(127, 95, 53, 0.92);
+
+  --mpx-card-focus-ring: rgba(138, 106, 59, 0.28);
+  --mpx-sidebar-focus-day-gap: #efe7d9;
+  --mpx-sidebar-focus-day-inner: #faf4ea;
+  --mpx-sidebar-focus-day-mid: #9b7c4f;
+  --mpx-sidebar-focus-day-outer: #745731;
+  --mpx-sidebar-focus-day-glow: rgba(140, 105, 56, 0.34);
+  --mpx-sidebar-focus-day-ambient: rgba(97, 70, 36, 0.2);
+
+  --mpx-fullscreen-bg: #080a0d;
+  --mpx-fullscreen-footer-bg: var(--mpx-player-surface-bg);
+
+  --mpx-video-screen-bg: #000000;
+  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+  --mpx-video-empty-text: #f4f6fa;
+
+  --mpx-player-surface-bg: #f9f2e8;
+  --mpx-player-surface-border: rgba(185, 159, 122, 0.84);
+  --mpx-player-surface-text: #3a2f22;
+  --mpx-player-surface-text-muted: #5e4d3a;
+  --mpx-player-hud-bg: #f7efe4;
+  --mpx-player-hud-border: rgba(185, 159, 122, 0.82);
+  --mpx-player-hud-text: #413325;
+  --mpx-player-btn-bg: #fffaf3;
+  --mpx-player-btn-border: rgba(185, 159, 122, 0.82);
+  --mpx-player-btn-text: #4d3e2d;
+  --mpx-player-btn-hover-bg: #f5eadb;
+  --mpx-player-btn-active-bg: #ecddc8;
+  --mpx-player-btn-active-border: #ad8752;
+  --mpx-player-btn-muted-text: #9b8465;
+  --mpx-random-sheen-duration: 1.9s;
+  --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --mpx-random-sheen-overlay: linear-gradient(115deg,
+      transparent 45%,
+      rgba(255, 255, 255, 0.6) 48%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.6) 52%,
+      transparent 55%);
+  --mpx-random-sheen-blend-mode: overlay;
+  --mpx-random-sheen-start-translate: -42%;
+  --mpx-random-sheen-end-translate: 42%;
+  --mpx-random-sheen-opacity-peak: 1;
+
+  --mpx-skeuo-shadow-dark: #cdb799;
+  --mpx-skeuo-shadow-light: #fffdf7;
+  --mpx-skeuo-border-color: rgba(186, 161, 125, 0.8);
+  --mpx-skeuo-inset-bg: #f3e9d8;
+  --mpx-skeuo-accent-fill: #8a6a3b;
+  --mpx-skeuo-active-icon: #7d5e31;
+
+  --mpx-shadow-panel: 0 16px 34px rgba(116, 88, 50, 0.24);
+  --mpx-shadow-popover: 0 14px 30px rgba(116, 88, 50, 0.22);
+
+  /* A3: overlay-soft 暖中性覆写（覆盖 contract.css 冷蓝灰默认值） */
+  --mpx-overlay-soft-border: #c0c4ca;
+  --mpx-overlay-soft-bg: #e9ecf0;
+  --mpx-overlay-soft-hover-bg: #dde2e9;
+  --mpx-overlay-soft-focus-bg: #cfd6df;
+  --mpx-overlay-soft-head-bg: #D6DBE1;
+  --mpx-overlay-soft-head-divider: #b5bdc8;
+  --mpx-overlay-soft-row-divider: #dce1e7;
+
+  /* sidebar scrollbar 暖中性覆写（覆盖 style 层冷蓝灰值） */
+  --mpx-sidebar-tree-scrollbar-track-bg: #edebe7;
+  --mpx-sidebar-tree-scrollbar-color-track: #edebe7;
+  --mpx-sidebar-tree-scrollbar-color-thumb: #d5d2cc;
+  --mpx-sidebar-tree-scrollbar-thumb-bg: #d5d2cc;
+  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: #cecac3;
+  --mpx-sidebar-tree-scrollbar-thumb-active-bg: #c5c1b9;
+  --mpx-sidebar-tree-scrollbar-track-shadow: inset 1px 1px 2px #dbd8d2, inset -1px -1px 2px #ffffff;
+  --mpx-sidebar-tree-scrollbar-thumb-border-color: rgba(237, 235, 231, 0.96);
+  --mpx-sidebar-tree-scrollbar-thumb-shadow: 1px 1px 2px rgba(200, 196, 188, 0.62), -1px -1px 2px rgba(255, 255, 255, 0.76);
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px rgba(186, 182, 174, 0.78);
+}

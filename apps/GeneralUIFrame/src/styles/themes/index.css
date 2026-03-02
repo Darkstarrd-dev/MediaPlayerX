@@ -1,0 +1,15 @@
+/* Global Theme Entry */
+
+@import './contract.css';
+
+/* Palette presets (color layer) */
+@import './palettes/skeuomorphic-luxury-white.css';
+
+/* Style presets (layout/effect layer) */
+@import './styles/soft-skeuomorphic.css';
+@import './styles/soft-skeuomorphic.components.css';
+@import './styles/soft-skeuomorphic.main-transport.css';
+@import './styles/soft-skeuomorphic.fullscreen-transport.css';
+@import './styles/soft-skeuomorphic.fullscreen-shell.css';
+@import './styles/soft-skeuomorphic.runway.css';
+@import './styles/soft-skeuomorphic.image-grid.css';
