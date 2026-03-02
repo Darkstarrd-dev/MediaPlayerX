@@ -96,6 +96,52 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(snapshot.audios?.map((item) => item.id)).toEqual(['audio-b'])
   })
 
+  it('replaceSnapshot 遇到同路径不同 source id 时复用已存在 id，不触发唯一约束异常', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-source-path-collision-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const sharedDirectoryPath = 'D:/root/shared/gallery'
+
+    store.replaceSnapshot({
+      image_packages: [],
+      image_directories: [
+        createImageSourceFixture({
+          sourceId: 'legacy-source-id',
+          packageName: 'gallery',
+          absolutePath: sharedDirectoryPath,
+          sourceType: 'directory',
+        }),
+      ],
+      videos: [],
+      audios: [],
+    })
+
+    expect(() => {
+      store.replaceSnapshot({
+        image_packages: [],
+        image_directories: [
+          createImageSourceFixture({
+            sourceId: 'new-source-id',
+            packageName: 'gallery',
+            absolutePath: sharedDirectoryPath,
+            sourceType: 'directory',
+          }),
+        ],
+        videos: [],
+        audios: [],
+      })
+    }).not.toThrow()
+
+    const snapshot = store.readSnapshot()
+    expect(snapshot.image_directories).toHaveLength(1)
+    expect(snapshot.image_directories[0]?.id).toBe('legacy-source-id')
+    expect(path.normalize(snapshot.image_directories[0]?.absolute_path ?? '')).toBe(path.normalize(sharedDirectoryPath))
+  })
+
   it('replaceSnapshot 遇到同路径不同 video id 时复用已存在 id，不触发唯一约束异常', async () => {
     const root = await createTempMediaRoot('mpx-snapshot-video-path-collision-')
     roots.push(root)
@@ -126,6 +172,106 @@ describe('MediaLibrarySnapshotStore', () => {
     expect(snapshot.videos).toHaveLength(1)
     expect(snapshot.videos[0]?.id).toBe('legacy-video-id')
     expect(path.normalize(snapshot.videos[0]?.absolute_path ?? '')).toBe(path.normalize(sharedVideoPath))
+  })
+
+  it('replaceSnapshot 遇到同路径不同 audio id 时复用已存在 id，不触发唯一约束异常', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-audio-path-collision-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const sharedAudioPath = 'D:/root/shared/track.mp3'
+
+    store.replaceSnapshot({
+      image_packages: [],
+      image_directories: [],
+      videos: [],
+      audios: [createAudioFixture('legacy-audio-id', sharedAudioPath)],
+    })
+
+    expect(() => {
+      store.replaceSnapshot({
+        image_packages: [],
+        image_directories: [],
+        videos: [],
+        audios: [createAudioFixture('new-audio-id', sharedAudioPath)],
+      })
+    }).not.toThrow()
+
+    const snapshot = store.readSnapshot()
+    expect(snapshot.audios).toHaveLength(1)
+    expect(snapshot.audios?.[0]?.id).toBe('legacy-audio-id')
+    expect(path.normalize(snapshot.audios?.[0]?.absolute_path ?? '')).toBe(path.normalize(sharedAudioPath))
+  })
+
+  it('replaceSnapshot 在 image/video/audio 同时同路径换 id 时可稳定复用已存在 id', async () => {
+    const root = await createTempMediaRoot('mpx-snapshot-mixed-path-collision-')
+    roots.push(root)
+
+    const harness = openMigratedSqliteDatabase(root)
+    closers.push(harness.close)
+    const store = new MediaLibrarySnapshotStore(harness.db, createTransactionRunner(harness.db))
+
+    const sharedPackagePath = 'D:/root/shared/mixed.zip'
+    const sharedDirectoryPath = 'D:/root/shared/mixed-gallery'
+    const sharedVideoPath = 'D:/root/shared/mixed.mp4'
+    const sharedAudioPath = 'D:/root/shared/mixed.mp3'
+
+    store.replaceSnapshot({
+      image_packages: [
+        createImageSourceFixture({
+          sourceId: 'legacy-pkg-id',
+          packageName: 'mixed.zip',
+          absolutePath: sharedPackagePath,
+          sourceType: 'package',
+        }),
+      ],
+      image_directories: [
+        createImageSourceFixture({
+          sourceId: 'legacy-dir-id',
+          packageName: 'mixed-gallery',
+          absolutePath: sharedDirectoryPath,
+          sourceType: 'directory',
+        }),
+      ],
+      videos: [createVideoFixture('legacy-video-id', sharedVideoPath)],
+      audios: [createAudioFixture('legacy-audio-id', sharedAudioPath)],
+    })
+
+    expect(() => {
+      store.replaceSnapshot({
+        image_packages: [
+          createImageSourceFixture({
+            sourceId: 'next-pkg-id',
+            packageName: 'mixed.zip',
+            absolutePath: sharedPackagePath,
+            sourceType: 'package',
+          }),
+        ],
+        image_directories: [
+          createImageSourceFixture({
+            sourceId: 'next-dir-id',
+            packageName: 'mixed-gallery',
+            absolutePath: sharedDirectoryPath,
+            sourceType: 'directory',
+          }),
+        ],
+        videos: [createVideoFixture('next-video-id', sharedVideoPath)],
+        audios: [createAudioFixture('next-audio-id', sharedAudioPath)],
+      })
+    }).not.toThrow()
+
+    const snapshot = store.readSnapshot()
+    expect(snapshot.image_packages).toHaveLength(1)
+    expect(snapshot.image_directories).toHaveLength(1)
+    expect(snapshot.videos).toHaveLength(1)
+    expect(snapshot.audios).toHaveLength(1)
+    expect(snapshot.image_packages[0]?.id).toBe('legacy-pkg-id')
+    expect(snapshot.image_directories[0]?.id).toBe('legacy-dir-id')
+    expect(snapshot.videos[0]?.id).toBe('legacy-video-id')
+    expect(snapshot.audios?.[0]?.id).toBe('legacy-audio-id')
   })
 
   it('readSnapshotLite 会返回图片与视频偏好指标', async () => {

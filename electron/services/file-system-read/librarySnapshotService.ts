@@ -396,7 +396,7 @@ export class LibrarySnapshotService {
   ): Promise<{
     audio: AudioItemDto;
     parsedMetadataForUpsert: {
-      audioId: string;
+      audioAbsolutePath: string;
       payload: {
         album: string;
         author: string;
@@ -454,7 +454,7 @@ export class LibrarySnapshotService {
         parsedTrackTitle.length > 0 ||
         parsedSeriesId.length > 0)
         ? {
-            audioId,
+            audioAbsolutePath: file.absolutePath,
             payload: {
               album: parsedAlbum,
               author: parsedAuthor,
@@ -1461,22 +1461,39 @@ export class LibrarySnapshotService {
 
     this.options.database.replaceSnapshot(scannedSnapshot);
 
-    const persistedAudioIdSet = new Set(allAudioItems.map((audio) => audio.id));
+    const snapshot = this.options.database.readSnapshot();
+    const persistedAudioIdByPathKey = new Map<string, string>();
+    for (const audio of snapshot.audios ?? []) {
+      const audioPath = audio.absolute_path.trim();
+      if (!audioPath || /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(audioPath)) {
+        continue;
+      }
 
-    for (const result of audioSourceResults) {
-      if (!result.parsedMetadataForUpsert) {
-        continue;
-      }
-      if (!persistedAudioIdSet.has(result.parsedMetadataForUpsert.audioId)) {
-        continue;
-      }
-      this.options.upsertAudioMetadataFromScan(
-        result.parsedMetadataForUpsert.audioId,
-        result.parsedMetadataForUpsert.payload,
+      persistedAudioIdByPathKey.set(
+        normalizeAllowlistKey(path.resolve(audioPath)),
+        audio.id,
       );
     }
 
-    const snapshot = this.options.database.readSnapshot();
+    for (const result of audioSourceResults) {
+      const parsedMetadataForUpsert = result.parsedMetadataForUpsert;
+      if (!parsedMetadataForUpsert) {
+        continue;
+      }
+
+      const persistedAudioId = persistedAudioIdByPathKey.get(
+        normalizeAllowlistKey(path.resolve(parsedMetadataForUpsert.audioAbsolutePath)),
+      );
+      if (!persistedAudioId) {
+        continue;
+      }
+
+      this.options.upsertAudioMetadataFromScan(
+        persistedAudioId,
+        parsedMetadataForUpsert.payload,
+      );
+    }
+
     console.info("library snapshot refresh finished", {
       scannedFileCount,
       imagePackageCount: snapshot.image_packages.length,

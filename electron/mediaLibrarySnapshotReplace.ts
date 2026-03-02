@@ -119,6 +119,24 @@ export function replaceLibrarySnapshot(
     `,
   );
 
+  const selectSourceIdByAbsolutePath = db.prepare(
+    `
+      SELECT id
+      FROM media_source
+      WHERE absolute_path = ?
+      LIMIT 1
+    `,
+  );
+
+  const selectAudioIdByAbsolutePath = db.prepare(
+    `
+      SELECT id
+      FROM audio_item
+      WHERE absolute_path = ?
+      LIMIT 1
+    `,
+  );
+
   const upsertAudio = db.prepare(
     `
       INSERT INTO audio_item (
@@ -199,8 +217,17 @@ export function replaceLibrarySnapshot(
 
     for (const item of allSources) {
       const source = item.source;
+      const existingSourceIdRow = selectSourceIdByAbsolutePath.get(
+        source.absolute_path,
+      ) as { id?: string } | undefined;
+      const effectiveSourceId =
+        typeof existingSourceIdRow?.id === "string" &&
+        existingSourceIdRow.id.trim().length > 0
+          ? existingSourceIdRow.id
+          : source.id;
+
       upsertSource.run(
-        source.id,
+        effectiveSourceId,
         item.sourceType,
         source.package_name,
         source.display_name,
@@ -215,14 +242,14 @@ export function replaceLibrarySnapshot(
         now,
       );
 
-      deleteStaleImagesBySource.run(source.id, revision);
+      deleteStaleImagesBySource.run(effectiveSourceId, revision);
 
       for (const image of source.images) {
         const imageVector = (image as { feature_vector?: unknown })
           .feature_vector;
         upsertImage.run(
           image.id,
-          source.id,
+          effectiveSourceId,
           image.ordinal,
           image.width,
           image.height,
@@ -264,8 +291,17 @@ export function replaceLibrarySnapshot(
     }
 
     for (const audio of snapshot.audios ?? []) {
+      const existingAudioIdRow = selectAudioIdByAbsolutePath.get(
+        audio.absolute_path,
+      ) as { id?: string } | undefined;
+      const effectiveAudioId =
+        typeof existingAudioIdRow?.id === "string" &&
+        existingAudioIdRow.id.trim().length > 0
+          ? existingAudioIdRow.id
+          : audio.id;
+
       upsertAudio.run(
-        audio.id,
+        effectiveAudioId,
         audio.file_name,
         audio.absolute_path,
         JSON.stringify(audio.tree_path),
