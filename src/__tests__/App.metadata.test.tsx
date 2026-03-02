@@ -46,11 +46,6 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     await flushUiUpdates();
   };
 
-  const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.mouseDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -417,9 +412,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await waitFor(() => {
         expect(document.querySelector(".metadata-image-real")).toBeNull();
-        expect(
-          screen.getByRole("group", { name: "图包评分" }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole("group", { name: "收藏" })).toBeInTheDocument();
       });
     },
     uiLongTestTimeoutMs,
@@ -503,30 +496,46 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       render(<App />);
       await click(getMetadataManageModeButton());
 
-      const ratingGroup = screen.getByRole("group", { name: "图包评分" });
-      const readStars = () =>
-        within(ratingGroup)
-          .getAllByRole("button")
-          .map((button) => button.textContent);
+      const ratingGroup = screen.getByRole("group", { name: "收藏" });
+      const enableFavoriteButton = within(ratingGroup).queryByRole("button", {
+        name: "收藏：开启收藏",
+      });
+      if (enableFavoriteButton) {
+        await click(enableFavoriteButton);
+      }
 
-      await click(screen.getByRole("button", { name: "图包评分 2 星" }));
-      expect(readStars()).toEqual(["×", "★", "★", "☆", "☆", "☆"]);
+      await click(
+        within(ratingGroup).getByRole("button", { name: "收藏 2 星评价" }),
+      );
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: "图包评分 2 星" }),
-        ).not.toBeDisabled();
+          within(ratingGroup).getByRole("button", { name: "收藏 2 星评价" }),
+        ).toHaveAttribute("aria-pressed", "true");
       });
 
-      await mouseDown(screen.getByRole("button", { name: "清空评分" }), {
-        button: 0,
-      });
-      expect(readStars()).toEqual(["×", "☆", "☆", "☆", "☆", "☆"]);
+      await click(
+        within(ratingGroup).getByRole("button", {
+          name: "收藏：取消收藏并清空评价",
+        }),
+      );
+
+      expect(
+        within(ratingGroup).queryByRole("button", { name: "收藏 2 星评价" }),
+      ).toBeNull();
+
+      await click(
+        within(ratingGroup).getByRole("button", { name: "收藏：开启收藏" }),
+      );
+
+      await click(
+        within(ratingGroup).getByRole("button", { name: "收藏 2 星评价" }),
+      );
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: "图包评分 2 星" }),
-        ).not.toBeDisabled();
+          within(ratingGroup).getByRole("button", { name: "收藏 2 星评价" }),
+        ).toHaveAttribute("aria-pressed", "true");
       });
     },
     uiLongTestTimeoutMs,
@@ -541,9 +550,15 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       );
       render(<App />);
 
-      const ratingGroup = screen.getByRole("group", { name: "图包评分" });
+      const ratingGroup = screen.getByRole("group", { name: "收藏" });
+      const enableFavoriteButton = within(ratingGroup).queryByRole("button", {
+        name: "收藏：开启收藏",
+      });
+      if (enableFavoriteButton) {
+        await click(enableFavoriteButton);
+      }
       const ratingThreeStar = within(ratingGroup).getByRole("button", {
-        name: "图包评分 3 星",
+        name: "收藏 3 星评价",
       }) as HTMLButtonElement;
       expect(ratingThreeStar.disabled).toBe(false);
 
@@ -558,9 +573,11 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
         expect(ratingThreeStar.disabled).toBe(false);
       });
 
-      await mouseDown(screen.getByRole("button", { name: "清空评分" }), {
-        button: 0,
-      });
+      await click(
+        within(ratingGroup).getByRole("button", {
+          name: "收藏：取消收藏并清空评价",
+        }),
+      );
       await waitFor(() => {
         expect(writePackageGradeSpy).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -594,7 +611,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
         screen.getByRole("group", { name: "视频评分" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "视频评分 无评分" }),
+        screen.getByRole("button", { name: "视频评分：开启收藏" }),
       ).toBeDisabled();
       expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
       expect(
@@ -893,7 +910,19 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       await click(screen.getByRole("button", { name: "视频模式" }));
       await click(getMetadataManageModeButton());
       await ensureVideoInfoTab();
-      await click(screen.getByRole("button", { name: "视频评分 5 星" }));
+      const videoRatingGroup = screen.getByRole("group", { name: "视频评分" });
+      const enableVideoFavoriteButton = within(videoRatingGroup).queryByRole(
+        "button",
+        { name: "视频评分：开启收藏" },
+      );
+      if (enableVideoFavoriteButton) {
+        await click(enableVideoFavoriteButton);
+      }
+      await click(
+        within(videoRatingGroup).getByRole("button", {
+          name: "视频评分 5 星评价",
+        }),
+      );
 
       await waitFor(() => {
         expect(writeVideoMetadataSpy).toHaveBeenCalledWith(

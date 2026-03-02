@@ -933,7 +933,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.metadata.clearTags": "Clear tags",
   "ui.metadata.noTagsSelected": "No tags selected",
   "ui.metadata.tags": "Tags",
-  "ui.metadata.packageRatingLabel": "Package rating",
+  "ui.metadata.packageRatingLabel": "Favorite",
+  "ui.metadata.ratingEvaluationLabel": "Rate",
   "ui.metadata.searchHint":
     "Combine fields with AND logic; results sync to Sidebar and main view in real time.",
   "ui.metadata.selectedTagsSummary": "Selected: {{tags}}",

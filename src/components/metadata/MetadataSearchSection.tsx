@@ -1,4 +1,5 @@
 import { useI18n } from '../../i18n/useI18n'
+import { RatingFavoriteControl } from './RatingFavoriteControl'
 
 interface MetadataSearchSectionProps {
   featureResultCount: number
@@ -138,36 +139,13 @@ export function MetadataSearchSection({
 
         <div className="feature-rating-group">
           <strong>{t('ui.metadata.packageRatingLabel')}</strong>
-          <div className="feature-rating-stars" role="group" aria-label={t('a11y.metadata.ratingFilter')}>
-            <button
-              aria-label={t('a11y.metadata.ratingNone')}
-              data-tooltip-label={t('a11y.metadata.ratingNone')}
-              aria-pressed={featureGradeFilter === null}
-              className={`is-clear ${featureGradeFilter === null ? 'is-active' : ''}`}
-              type="button"
-              onClick={() => onFeatureGradeFilterChange(null)}
-            >
-              ×
-            </button>
-
-            {[1, 2, 3, 4, 5].map((score) => {
-              const isActive = featureGradeFilter !== null && score <= featureGradeFilter
-              return (
-                <button
-                  key={score}
-                  aria-label={t('a11y.metadata.ratingScore', { score })}
-                  data-tooltip-label={t('a11y.metadata.ratingScore', { score })}
-                  aria-pressed={featureGradeFilter === score}
-                  className={isActive ? 'is-active' : ''}
-                  style={{ color: `hsl(42deg ${35 + score * 13}% 48%)` }}
-                  type="button"
-                  onClick={() => onFeatureGradeFilterChange(featureGradeFilter === score ? null : score)}
-                >
-                  {isActive ? '★' : '☆'}
-                </button>
-              )
-            })}
-          </div>
+          <RatingFavoriteControl
+            groupAriaLabel={t('a11y.metadata.ratingFilter')}
+            value={featureGradeFilter}
+            toggleScoreOnRepeat
+            evaluationLabel={t('ui.metadata.ratingEvaluationLabel')}
+            onChange={onFeatureGradeFilterChange}
+          />
         </div>
 
         <p className="vector-hint">{t('ui.metadata.searchHint')}</p>

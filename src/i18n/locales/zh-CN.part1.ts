@@ -874,7 +874,8 @@ export const zhCnCatalogPart1 = {
   "ui.metadata.clearTags": "清空 tags",
   "ui.metadata.noTagsSelected": "未选择 tags",
   "ui.metadata.tags": "标签",
-  "ui.metadata.packageRatingLabel": "图包评分",
+  "ui.metadata.packageRatingLabel": "收藏",
+  "ui.metadata.ratingEvaluationLabel": "评价",
   "ui.metadata.searchHint":
     "多字段组合按 AND 逻辑过滤，结果即时同步到 Sidebar 与主视图。",
   "ui.metadata.selectedTagsSummary": "已选: {{tags}}",

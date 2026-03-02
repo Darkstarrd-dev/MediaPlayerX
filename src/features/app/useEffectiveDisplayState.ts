@@ -170,7 +170,7 @@ export function useEffectiveDisplayState({
       : metadataImagePackage
   const currentGradeEffective =
     imageFocusActive && metadataSnapshotMatchesFocus
-      ? (effectiveMetadataSnapshot?.grade ?? currentGrade)
+      ? (currentGrade ?? effectiveMetadataSnapshot?.grade ?? null)
       : currentGrade
 
   const scopedVideoById = useMemo(
