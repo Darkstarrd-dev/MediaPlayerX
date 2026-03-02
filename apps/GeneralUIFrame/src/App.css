@@ -41,6 +41,55 @@
   padding: 12px;
 }
 
+.app-switcher-anchor {
+  position: relative;
+}
+
+.app-switcher-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--mpx-radius-lg);
+  border: 1px solid var(--mpx-border-1);
+  background: var(--mpx-bg-panel);
+  box-shadow: var(--mpx-shadow-panel);
+}
+
+.app-switcher-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--mpx-radius-md);
+  border: 1px solid var(--mpx-border-1);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
+  cursor: pointer;
+}
+
+.app-switcher-item:hover {
+  background: var(--mpx-bg-hover);
+}
+
+.app-switcher-item.is-active {
+  border-color: var(--mpx-accent);
+  background: var(--mpx-bg-selected);
+}
+
+.app-switcher-item em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
 .settings-side button.is-active {
   border-color: var(--mpx-accent);
   background: var(--mpx-bg-selected);
@@ -69,4 +118,15 @@
 .settings-segmented button.is-active {
   border-color: var(--mpx-accent);
   background: var(--mpx-bg-selected);
+}
+
+.settings-inline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-inline-toggle em {
+  font-style: normal;
+  color: var(--mpx-text-2);
 }

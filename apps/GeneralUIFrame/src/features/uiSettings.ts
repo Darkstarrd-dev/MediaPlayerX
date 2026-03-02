@@ -1,5 +1,6 @@
-export type SettingsPageId = 'appearance' | 'layout' | 'workspace'
+export type SettingsPageId = 'appearance' | 'layout' | 'workspace' | 'ai-model'
 export type PaletteMode = 'day' | 'night'
+export type AiProviderId = 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'custom'
 
 export interface UiSettingsState {
   styleId: string
@@ -14,6 +15,13 @@ export interface UiSettingsState {
   controlHeight: number
   sidebarWidthPercent: number
   metadataWidthPercent: number
+  aiEnabled: boolean
+  aiProvider: AiProviderId
+  aiEndpoint: string
+  aiModelName: string
+  aiApiKey: string
+  aiTemperature: number
+  aiMaxTokens: number
 }
 
 export const UI_SETTINGS_STORAGE_KEY = 'general-ui-frame.ui-settings.v1'
@@ -31,6 +39,13 @@ export const DEFAULT_UI_SETTINGS: UiSettingsState = {
   controlHeight: 34,
   sidebarWidthPercent: 26,
   metadataWidthPercent: 28,
+  aiEnabled: false,
+  aiProvider: 'openai',
+  aiEndpoint: 'https://api.openai.com/v1',
+  aiModelName: 'gpt-4o-mini',
+  aiApiKey: '',
+  aiTemperature: 0.2,
+  aiMaxTokens: 2048,
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -53,6 +68,20 @@ function asLocale(value: unknown): UiSettingsState['uiLocale'] {
 
 function asPaletteMode(value: unknown): PaletteMode {
   return value === 'night' ? 'night' : 'day'
+}
+
+function asBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value !== 'boolean') {
+    return fallback
+  }
+  return value
+}
+
+function asProvider(value: unknown): AiProviderId {
+  if (value === 'openai' || value === 'anthropic' || value === 'gemini' || value === 'deepseek' || value === 'custom') {
+    return value
+  }
+  return DEFAULT_UI_SETTINGS.aiProvider
 }
 
 function asNonEmptyString(value: unknown, fallback: string): string {
@@ -83,6 +112,13 @@ export function normalizeUiSettings(source: unknown): UiSettingsState {
     controlHeight: asNumber(raw.controlHeight, DEFAULT_UI_SETTINGS.controlHeight, 30, 44),
     sidebarWidthPercent: asNumber(raw.sidebarWidthPercent, DEFAULT_UI_SETTINGS.sidebarWidthPercent, 20, 40),
     metadataWidthPercent: asNumber(raw.metadataWidthPercent, DEFAULT_UI_SETTINGS.metadataWidthPercent, 20, 40),
+    aiEnabled: asBoolean(raw.aiEnabled, DEFAULT_UI_SETTINGS.aiEnabled),
+    aiProvider: asProvider(raw.aiProvider),
+    aiEndpoint: asNonEmptyString(raw.aiEndpoint, DEFAULT_UI_SETTINGS.aiEndpoint).slice(0, 256),
+    aiModelName: asNonEmptyString(raw.aiModelName, DEFAULT_UI_SETTINGS.aiModelName).slice(0, 128),
+    aiApiKey: typeof raw.aiApiKey === 'string' ? raw.aiApiKey.slice(0, 256) : DEFAULT_UI_SETTINGS.aiApiKey,
+    aiTemperature: asNumber(raw.aiTemperature, DEFAULT_UI_SETTINGS.aiTemperature, 0, 2),
+    aiMaxTokens: Math.round(asNumber(raw.aiMaxTokens, DEFAULT_UI_SETTINGS.aiMaxTokens, 256, 32000)),
   }
 }
 
@@ -110,10 +146,15 @@ export function applyUiSettingsToDocument(settings: UiSettingsState): void {
   document.documentElement.setAttribute('data-mpx-style', settings.styleId)
   document.documentElement.setAttribute('data-mpx-palette', settings.paletteId)
   document.documentElement.setAttribute('data-mpx-palette-mode', settings.paletteMode)
+  document.documentElement.style.setProperty('--mpx-layout-gap-px', `${settings.layoutPadding}px`)
   document.documentElement.style.setProperty('--mpx-settings-backdrop-opacity', `${settings.settingsBackdropOpacity}%`)
   document.documentElement.style.setProperty('--mpx-layout-padding', `${settings.layoutPadding}px`)
   document.documentElement.style.setProperty('--mpx-pane-inner-padding-px', `${settings.paneInnerPadding}px`)
+  document.documentElement.style.setProperty('--mpx-pane-stack-gap-px', `${settings.paneStackGap}px`)
   document.documentElement.style.setProperty('--mpx-pane-stack-gap', `${settings.paneStackGap}px`)
+  document.documentElement.style.setProperty('--mpx-pane-section-gap-px', `${settings.paneStackGap}px`)
+  document.documentElement.style.setProperty('--mpx-sidebar-gap-px', `${settings.paneStackGap}px`)
+  document.documentElement.style.setProperty('--mpx-control-group-gap-px', `${settings.paneStackGap}px`)
   document.documentElement.style.setProperty('--mpx-control-radius', `${settings.controlRadius}px`)
   document.documentElement.style.setProperty('--mpx-control-height', `${settings.controlHeight}px`)
   document.documentElement.style.setProperty('--mpx-icon-button-size', `${settings.controlHeight}px`)
