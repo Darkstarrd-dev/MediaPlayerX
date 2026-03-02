@@ -701,6 +701,7 @@ function ImageMainSection({
       : activeSelectionScope === "image"
         ? t("a11y.manage.selectedMediaItems", { count: imageSelectedCount })
         : t("a11y.manage.noSelection");
+  const manageSummaryText = manageOperationHint ?? manageSummary;
 
   const currentThumbnailPageImageIds = useMemo(() => {
     if (!manageMode) {
@@ -1286,8 +1287,11 @@ function ImageMainSection({
               />
             </div>
             <div className="toolbar-actions toolbar-actions-manage-secondary">
-              <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
-                {manageSummary}
+              <strong
+                className="main-toolbar-summary"
+                data-tooltip-label={manageSummaryText}
+              >
+                {manageSummaryText}
               </strong>
               <ImageMainScaleControl
                 t={t}

@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useI18n } from '../../i18n/useI18n'
 import { toErrorDetailWithCode } from '../shared/errorCode'
 import { MusicAudioAnalyser } from './audioAnalyser'
 import { CpuMusicVisualizerRenderer } from './cpuRenderer'
 import { resolveDefaultMusicVisualizerShader, resolveMusicVisualizerShaderById } from './shaderRegistry'
+import type {
+  UseMusicVisualizerRuntimeParams,
+  UseMusicVisualizerRuntimeResult,
+} from './useMusicVisualizerRuntime.types'
 import type {
   MusicVisualizerShaderChannelSource,
   MusicVisualizerShaderDefinition,
@@ -13,13 +17,16 @@ import type {
   MusicVisualizerRenderer,
   MusicVisualizerRendererMode,
   MusicVisualizerFrameInput,
-  MusicVisualizerPluginCustomBinding,
-  MusicVisualizerPluginInputBinding,
   MusicVisualizerStats,
   MusicVisualizerToneMapMode,
 } from './types'
 import { WebglMusicVisualizerRenderer } from './webglRenderer'
 import { useMusicVisualizerPluginRuntime } from './useMusicVisualizerPluginRuntime'
+
+export type {
+  UseMusicVisualizerRuntimeParams,
+  UseMusicVisualizerRuntimeResult,
+} from './useMusicVisualizerRuntime.types'
 
 const MIN_RENDER_LONG_EDGE = 240
 const MAX_RENDER_LONG_EDGE = 4096
@@ -166,52 +173,6 @@ function resolveThemeBackgroundColor(canvas: HTMLCanvasElement, paletteMode: 'da
   }
 
   return fallback
-}
-
-export interface UseMusicVisualizerRuntimeParams {
-  canvasRef: RefObject<HTMLCanvasElement | null>
-  cpuCanvasRef?: RefObject<HTMLCanvasElement | null>
-  audioRef: RefObject<HTMLAudioElement | null>
-  canvasInstanceVersion?: number
-  active: boolean
-  playbackPaused?: boolean
-  playbackResetNonce?: number
-  preferredRenderer: MusicVisualizerRendererMode
-  renderLongEdgePx: number
-  fpsCap: 30 | 60 | 120
-  toneMapMode: MusicVisualizerToneMapMode
-  toneMapExposure: number
-  toneMapStrength: number
-  selectedShaderId: string | null
-  renderScaleCoeff?: number
-  layeredBackgroundShaderId?: string | null
-  layeredForegroundShaderId?: string | null
-  layeredBackgroundEnabled?: boolean
-  layeredForegroundEnabled?: boolean
-  layeredBackgroundRenderScaleCoeff?: number
-  layeredForegroundRenderScaleCoeff?: number
-  layeredForegroundOffsetX?: number
-  layeredForegroundOffsetY?: number
-  layeredForegroundScale?: number
-  paletteMode?: 'day' | 'night'
-  disableAudioAnalyser?: boolean
-  externalAudioFrame?: {
-    frequencyData: Uint8Array
-    waveformData: Uint8Array
-    audioLevel: number
-    audioBeat: number
-  } | null
-  pluginInputBinding?: MusicVisualizerPluginInputBinding | null
-  pluginCustomBinding?: MusicVisualizerPluginCustomBinding | null
-  resolvedShaderOverride?: MusicVisualizerShaderDefinition | null
-  mode?: 'legacy' | 'plugin'
-}
-
-export interface UseMusicVisualizerRuntimeResult {
-  stats: MusicVisualizerStats | null
-  activeBackend: MusicVisualizerRendererMode | null
-  runtimeError: string | null
-  resumeAudioAnalyser: () => Promise<void>
 }
 
 interface VisualizerContinuitySnapshot {

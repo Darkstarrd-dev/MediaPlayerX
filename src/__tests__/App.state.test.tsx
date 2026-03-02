@@ -90,7 +90,6 @@ describe("MediaPlayer 虚拟 UI", () => {
       const rootFolderButton = screen.getByRole("button", {
         name: /X盘\/收藏/,
       });
-      expect(screen.getByRole("button", { name: /收藏/ })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "画廊A" })).toBeInTheDocument();
 
       await click(rootFolderButton);

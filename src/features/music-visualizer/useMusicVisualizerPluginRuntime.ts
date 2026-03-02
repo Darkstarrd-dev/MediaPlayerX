@@ -1,7 +1,7 @@
 import type {
   UseMusicVisualizerRuntimeParams,
   UseMusicVisualizerRuntimeResult,
-} from "./useMusicVisualizerRuntime";
+} from "./useMusicVisualizerRuntime.types";
 import type { MusicVisualizerShaderDefinition } from "./types";
 import {
   resolveDefaultMusicVisualizerShader,
