@@ -28,6 +28,7 @@ import { useVideoSidebarState } from "./useVideoSidebarState";
 import { useAudioSidebarState } from "./useAudioSidebarState";
 import { useManageSelection } from "../management/useManageSelection";
 import { useSidebarNavigation } from "../sidebar/useSidebarNavigation";
+import { resolvePreferredSidebarSources } from "./sidebarSourceSelection";
 
 interface ReadSliceSnapshot<T> {
   data: T | null;
@@ -216,11 +217,13 @@ export function useAppSidebarScopeState({
     if (!shouldUseImageSidebarSnapshot) {
       return imagePackagesFromLibrary;
     }
-    const snapshotPackages = sidebarSnapshot?.imagePackages;
-    return snapshotPackages && snapshotPackages.length > 0
-      ? snapshotPackages
-      : imagePackagesFromLibrary;
+    return resolvePreferredSidebarSources(
+      sidebarSnapshot?.imagePackages,
+      imagePackagesFromLibrary,
+      bootstrapImagePackages,
+    );
   }, [
+    bootstrapImagePackages,
     imagePackagesFromLibrary,
     shouldUseImageSidebarSnapshot,
     sidebarSnapshot,
@@ -230,11 +233,13 @@ export function useAppSidebarScopeState({
     if (!shouldUseImageSidebarSnapshot) {
       return imageDirectoriesFromLibrary;
     }
-    const snapshotDirectories = sidebarSnapshot?.imageDirectories;
-    return snapshotDirectories && snapshotDirectories.length > 0
-      ? snapshotDirectories
-      : imageDirectoriesFromLibrary;
+    return resolvePreferredSidebarSources(
+      sidebarSnapshot?.imageDirectories,
+      imageDirectoriesFromLibrary,
+      bootstrapImageDirectories,
+    );
   }, [
+    bootstrapImageDirectories,
     imageDirectoriesFromLibrary,
     shouldUseImageSidebarSnapshot,
     sidebarSnapshot,
