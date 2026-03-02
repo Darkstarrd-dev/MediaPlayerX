@@ -1,7 +1,10 @@
 import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import { useOverflowMarquee } from '../useOverflowMarquee'
-import { useRandomSweepAnimation } from '../useRandomSweepAnimation'
+import {
+  canReplaySweepWhenGlobalMediaIdle,
+  useRandomSweepAnimation,
+} from '../useRandomSweepAnimation'
 
 interface MetadataPlaylistItemProps {
   mediaId: string
@@ -40,11 +43,16 @@ export function MetadataPlaylistItem({
   buttonRef,
 }: MetadataPlaylistItemProps) {
   const [focused, setFocused] = useState(false)
-  const sheenEnabled = active || focused
+  const sheenEnabled = focused
   const { sweeping, onAnimationEnd } = useRandomSweepAnimation({
     enabled: sheenEnabled,
-    initialDelayRangeMs: [1200, 3000],
-    repeatDelayRangeMs: [2500, 8200],
+    playOnEnable: true,
+    playOnEnableDelayRangeMs: [120, 560],
+    idleReplayEnabled: true,
+    idleThresholdMs: 120000,
+    idleDelayRangeMs: [240000, 580000],
+    stopOnInteraction: true,
+    canReplayWhenIdle: canReplaySweepWhenGlobalMediaIdle,
   })
   const { hostRef, textRef, overflowing, marqueeStyle } = useOverflowMarquee<HTMLSpanElement>({
     text: title,
@@ -73,7 +81,7 @@ export function MetadataPlaylistItem({
   return (
     <button
       ref={buttonRef}
-      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${sheenEnabled ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${focused ? 'is-focused' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
+      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${focused ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${focused ? 'is-focused' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
       type="button"
       aria-keyshortcuts={onDelete ? 'Delete' : undefined}
       onClick={() => onSelect(mediaId)}

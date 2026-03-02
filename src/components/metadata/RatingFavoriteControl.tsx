@@ -1,7 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { useI18n } from '../../i18n/useI18n'
-import { useRandomSweepAnimation } from '../useRandomSweepAnimation'
+import {
+  canReplaySweepWhenGlobalMediaIdle,
+  useRandomSweepAnimation,
+} from '../useRandomSweepAnimation'
 
 interface RatingMaterialIds {
   recessedGradient: string
@@ -234,15 +237,23 @@ export function RatingFavoriteControl({
   const [localValue, setLocalValue] = useState<number | null>(value)
   const [hoverRating, setHoverRating] = useState(0)
   const [dragging, setDragging] = useState(false)
+  const [starSweepTriggerKey, setStarSweepTriggerKey] = useState(0)
   const previousValueRef = useRef<number | null>(value)
+  const localValueRef = useRef<number | null>(value)
   const lastDragScoreRef = useRef<number | null>(null)
+  const dragReleaseHandledRef = useRef(false)
 
   const rawId = useId()
   const idPrefix = useMemo(() => `mpx-rating-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`, [rawId])
   const materialIds = useMemo(() => buildRatingMaterialIds(idPrefix), [idPrefix])
 
+  const triggerStarSweep = () => {
+    setStarSweepTriggerKey((previous) => previous + 1)
+  }
+
   useEffect(() => {
     setLocalValue(value)
+    localValueRef.current = value
     if (value !== null) {
       setExpanded(true)
     }
@@ -257,7 +268,16 @@ export function RatingFavoriteControl({
       return
     }
     const stopDragging = () => {
+      if (dragReleaseHandledRef.current) {
+        return
+      }
+      dragReleaseHandledRef.current = true
+      const finalScore = localValueRef.current
       setDragging(false)
+      lastDragScoreRef.current = null
+      if (finalScore === 4 || finalScore === 5) {
+        triggerStarSweep()
+      }
     }
     window.addEventListener('mouseup', stopDragging)
     return () => {
@@ -267,14 +287,24 @@ export function RatingFavoriteControl({
 
   const selectedValue = localValue
   const activeRating = hoverRating > 0 ? hoverRating : selectedValue ?? 0
-  const sweepingEnabled = (selectedValue ?? 0) >= 4
+  const sweepingEnabled = expanded && (selectedValue === 4 || selectedValue === 5)
   const { sweeping: starSweeping, onAnimationEnd: handleStarSweepAnimationEnd } =
     useRandomSweepAnimation({
       enabled: sweepingEnabled,
       animationName: 'mpx-rating-sheen-horizontal',
-      initialDelayRangeMs: [120, 420],
-      repeatDelayRangeMs: [1800, 4200],
+      triggerKey: starSweepTriggerKey,
+      playOnEnable: false,
+      idleReplayEnabled: true,
+      idleThresholdMs: 120000,
+      idleDelayRangeMs: [180000, 420000],
+      stopOnInteraction: true,
+      canReplayWhenIdle: canReplaySweepWhenGlobalMediaIdle,
     })
+
+  const updateLocalValue = (nextScore: number | null) => {
+    localValueRef.current = nextScore
+    setLocalValue(nextScore)
+  }
 
   const commitScore = (nextScore: number | null, mode: 'click' | 'drag') => {
     if (pending) {
@@ -286,7 +316,7 @@ export function RatingFavoriteControl({
       }
       lastDragScoreRef.current = nextScore
     }
-    setLocalValue(nextScore)
+    updateLocalValue(nextScore)
     onChange(nextScore)
   }
 
@@ -296,13 +326,13 @@ export function RatingFavoriteControl({
     }
     if (expanded) {
       setExpanded(false)
-      setLocalValue(null)
+      updateLocalValue(null)
       setHoverRating(0)
       onChange(null)
       return
     }
     setExpanded(true)
-    setLocalValue(null)
+    updateLocalValue(null)
   }
 
   const heartAriaLabel = expanded
@@ -354,6 +384,7 @@ export function RatingFavoriteControl({
               }
               event.preventDefault()
               const score = resolveRatingByClientX(event.clientX, event.currentTarget)
+              dragReleaseHandledRef.current = false
               lastDragScoreRef.current = null
               commitScore(score, 'drag')
               setDragging(true)
@@ -366,8 +397,16 @@ export function RatingFavoriteControl({
               commitScore(score, 'drag')
             }}
             onMouseUp={() => {
+              if (dragReleaseHandledRef.current) {
+                return
+              }
+              dragReleaseHandledRef.current = true
+              const finalScore = localValueRef.current
               setDragging(false)
               lastDragScoreRef.current = null
+              if (finalScore === 4 || finalScore === 5) {
+                triggerStarSweep()
+              }
             }}
             onMouseLeave={() => {
               setDragging(false)
@@ -418,6 +457,9 @@ export function RatingFavoriteControl({
                       return
                     }
                     commitScore(score, 'click')
+                    if (score === 4 || score === 5) {
+                      triggerStarSweep()
+                    }
                   }}
                 >
                   <RatingStarLayer materialLevel={materialLevel} ids={materialIds} />

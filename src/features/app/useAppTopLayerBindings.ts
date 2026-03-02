@@ -285,6 +285,8 @@ export function useAppTopLayerBindings({
     setDismissedImportTaskIds,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
+    manageOperationHint,
+    setManageOperationHint,
     helpOverlayOpen,
     themeParameterPanelOpen,
     setThemeParameterPanelOpen,
@@ -351,6 +353,16 @@ export function useAppTopLayerBindings({
     setFullscreenVideoFocus,
     setFullscreenSplit,
   } = mediaState
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+    document.documentElement.dataset.mpxVideoPlaying = videoPlaying ? '1' : '0'
+    return () => {
+      document.documentElement.dataset.mpxVideoPlaying = '0'
+    }
+  }, [videoPlaying])
 
   const {
     backendRead,
@@ -570,6 +582,8 @@ export function useAppTopLayerBindings({
     retryImportTask: importState.retryImportTask,
     adReviewRunning: displayState.manageAdReview.hasRunningTask,
     adReviewDeleting: displayState.manageAdReview.deletePending,
+    manageOperationHint,
+    clearManageOperationHint: () => setManageOperationHint(null),
     taskError: importState.taskError,
     clearTaskError: importState.clearTaskError,
     fullscreenActive,

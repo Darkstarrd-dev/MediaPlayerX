@@ -99,6 +99,7 @@ export function MusicMainSectionLayout({
   musicControlsShell,
   audioTranscodePanel,
 }: MusicMainSectionLayoutProps) {
+  void manageOperationHint;
   if (!active) {
     return null;
   }
@@ -165,9 +166,6 @@ export function MusicMainSectionLayout({
               >
                 <MainUiIcon name="delete" />
               </button>
-              {manageOperationHint ? (
-                <span className="main-toolbar-hint">{manageOperationHint}</span>
-              ) : null}
               {audioTranscodePanel}
             </div>
             <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
@@ -188,9 +186,6 @@ export function MusicMainSectionLayout({
               >
                 {metadataManageSelectionMode === "single" ? "S" : "M"}
               </button>
-              {manageOperationHint ? (
-                <span className="main-toolbar-hint">{manageOperationHint}</span>
-              ) : null}
             </div>
           </>
         ) : (

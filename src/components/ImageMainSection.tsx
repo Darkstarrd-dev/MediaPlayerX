@@ -1254,9 +1254,6 @@ function ImageMainSection({
                   onClick={triggerToolbarAdReviewStartOrPause}
                 />
               ) : null}
-              {!showAdReviewToolbarControls && manageOperationHint ? (
-                <span className="main-toolbar-hint">{manageOperationHint}</span>
-              ) : null}
               <ImageConvertSettingsPanel
                 open={imageConvertPanelOpen}
                 fullscreenActive={fullscreenActive}

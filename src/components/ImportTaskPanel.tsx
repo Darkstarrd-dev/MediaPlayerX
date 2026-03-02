@@ -13,11 +13,13 @@ export interface ImportTaskPanelProps {
   thumbnailRunningProgress: number | null
   thumbnailRunningMessage: string | null
   enqueuePending: boolean
+  operationHint: string | null
   taskError: string | null
   tasks: ImportTaskDto[]
   onClose: () => void
   onClearFinished: () => void
   onClearAll: () => void
+  onClearOperationHint: () => void
   onClearError: () => void
   onRetryTask: (taskId: string) => void
   onRemoveTask: (taskId: string) => void
@@ -66,11 +68,13 @@ function ImportTaskPanel({
   thumbnailRunningProgress,
   thumbnailRunningMessage,
   enqueuePending,
+  operationHint,
   taskError,
   tasks,
   onClose,
   onClearFinished,
   onClearAll,
+  onClearOperationHint,
   onClearError,
   onRetryTask,
   onRemoveTask,
@@ -113,20 +117,32 @@ function ImportTaskPanel({
           <span>{t('ui.importTask.thumbnailRunningMessage', { message: thumbnailRunningMessage })}</span>
         ) : null}
         {enqueuePending ? <span>{t('ui.importTask.enqueuing')}</span> : null}
-        <button type="button" onClick={onClose}>
-          {t('ui.common.close')}
-        </button>
-        <button type="button" onClick={onClearFinished}>
-          {t('ui.importTask.clearFinished')}
-        </button>
-        <button type="button" onClick={onClearAll}>
-          {t('ui.importTask.clearAll')}
-        </button>
+        {open ? (
+          <>
+            <button type="button" onClick={onClose}>
+              {t('ui.common.close')}
+            </button>
+            <button type="button" onClick={onClearFinished}>
+              {t('ui.importTask.clearFinished')}
+            </button>
+            <button type="button" onClick={onClearAll}>
+              {t('ui.importTask.clearAll')}
+            </button>
+          </>
+        ) : null}
       </header>
       {taskError ? (
         <p data-slot="fg-header-g1-task-import-task-error-panel">
           <span>{taskError}</span>
           <button type="button" onClick={onClearError}>
+            {t('ui.common.clear')}
+          </button>
+        </p>
+      ) : null}
+      {operationHint ? (
+        <p data-slot="fg-header-g1-task-import-task-hint-panel">
+          <span>{operationHint}</span>
+          <button type="button" onClick={onClearOperationHint}>
             {t('ui.common.clear')}
           </button>
         </p>

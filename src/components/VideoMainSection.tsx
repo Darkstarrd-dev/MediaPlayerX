@@ -261,6 +261,7 @@ function VideoMainSection({
   onSaveCoverAtTime = () => undefined,
   onEnterFullscreen,
 }: VideoMainSectionProps) {
+  void manageOperationHint;
   const { t } = useI18n();
   const metadataSelectionToggleLabel =
     metadataManageSelectionMode === "single"
@@ -770,9 +771,6 @@ function VideoMainSection({
               >
                 <MainUiIcon name="getMetaData" />
               </button>
-              {manageOperationHint ? (
-                <span className="main-toolbar-hint">{manageOperationHint}</span>
-              ) : null}
             </div>
             <strong
               className="main-toolbar-summary"
@@ -807,9 +805,6 @@ function VideoMainSection({
               >
                 <MainUiIcon name="refresh" />
               </button>
-              {manageOperationHint ? (
-                <span className="main-toolbar-hint">{manageOperationHint}</span>
-              ) : null}
             </div>
           </>
         ) : (

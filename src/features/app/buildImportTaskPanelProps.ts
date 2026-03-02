@@ -14,11 +14,13 @@ interface BuildImportTaskPanelPropsParams {
   thumbnailRunningProgress: number | null
   thumbnailRunningMessage: string | null
   enqueuePending: boolean
+  manageOperationHint: string | null
   taskError: string | null
   tasks: ImportTaskDto[]
   setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>
   clearFinishedImportTasks: () => void
   clearAllImportTasks: () => void
+  clearManageOperationHint: () => void
   clearTaskError: () => void
   retryImportTaskFromPanel: (taskId: string) => void
   setDismissedImportTaskIds: Dispatch<SetStateAction<Record<string, true>>>
@@ -36,11 +38,13 @@ export function buildImportTaskPanelProps(params: BuildImportTaskPanelPropsParam
     thumbnailRunningProgress: params.thumbnailRunningProgress,
     thumbnailRunningMessage: params.thumbnailRunningMessage,
     enqueuePending: params.enqueuePending,
+    operationHint: params.manageOperationHint,
     taskError: params.taskError,
     tasks: params.tasks,
     onClose: () => params.setImportTaskPanelOpen(false),
     onClearFinished: params.clearFinishedImportTasks,
     onClearAll: params.clearAllImportTasks,
+    onClearOperationHint: params.clearManageOperationHint,
     onClearError: params.clearTaskError,
     onRetryTask: params.retryImportTaskFromPanel,
     onRemoveTask: (taskId) => {

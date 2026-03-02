@@ -85,6 +85,8 @@ interface UseAppTopLayerStateParams {
   retryImportTask: (taskId: string) => Promise<void>;
   adReviewRunning: boolean;
   adReviewDeleting: boolean;
+  manageOperationHint: string | null;
+  clearManageOperationHint: () => void;
   taskError: string | null;
   clearTaskError: () => void;
   fullscreenActive: boolean;
@@ -226,6 +228,8 @@ export function useAppTopLayerState({
   retryImportTask,
   adReviewRunning,
   adReviewDeleting,
+  manageOperationHint,
+  clearManageOperationHint,
   taskError,
   clearTaskError,
   fullscreenActive,
@@ -831,7 +835,9 @@ export function useAppTopLayerState({
     thumbnailRunningProgress,
     thumbnailRunningMessage,
     enqueuePending,
+    manageOperationHint,
     taskError,
+    clearManageOperationHint,
     tasks: importTasksForPanel,
     setImportTaskPanelOpen,
     clearFinishedImportTasks,

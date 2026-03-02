@@ -432,6 +432,19 @@ function MusicMainSection({
     mode: musicVisualizerRuntimeMode,
   })
 
+  const shaderPlaybackActive =
+    active && visualizerRuntimeActive && !hasNoLayerEnabled && visualizerVisible
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+    document.documentElement.dataset.mpxMusicShaderPlaying = shaderPlaybackActive ? '1' : '0'
+    return () => {
+      document.documentElement.dataset.mpxMusicShaderPlaying = '0'
+    }
+  }, [shaderPlaybackActive])
+
   useEffect(() => {
     if (!visualizerRuntimeError) {
       visualizerRecoveryRef.current = { windowStartedAt: 0, attempts: 0 }

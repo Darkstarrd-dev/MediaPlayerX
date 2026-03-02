@@ -20,7 +20,10 @@ import {
   resolveSidebarDisplayLabel,
   type SidebarLabelDisplayMode,
 } from "./sidebarPanelTreeUtils";
-import { useRandomSweepAnimation } from "./useRandomSweepAnimation";
+import {
+  canReplaySweepWhenGlobalMediaIdle,
+  useRandomSweepAnimation,
+} from "./useRandomSweepAnimation";
 
 interface SidebarPanelRowProps {
   node: SidebarNode;
@@ -182,8 +185,13 @@ export function SidebarPanelRow({
     onAnimationEnd: handleSidebarFocusSweepAnimationEnd,
   } = useRandomSweepAnimation({
     enabled: isFocusedNode,
-    initialDelayRangeMs: [1000, 2600],
-    repeatDelayRangeMs: [2200, 7800],
+    playOnEnable: true,
+    playOnEnableDelayRangeMs: [120, 520],
+    idleReplayEnabled: true,
+    idleThresholdMs: 120000,
+    idleDelayRangeMs: [210000, 520000],
+    stopOnInteraction: true,
+    canReplayWhenIdle: canReplaySweepWhenGlobalMediaIdle,
   });
   const sidebarNodeIndentPx =
     sidebarTreeDisplayMode === "hierarchy" && depth > 0

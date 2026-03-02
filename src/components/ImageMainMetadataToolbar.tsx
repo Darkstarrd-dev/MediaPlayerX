@@ -22,6 +22,7 @@ export function ImageMainMetadataToolbar({
   onToggleMetadataManageSelectionMode,
   onOpenMetadataFetch,
 }: ImageMainMetadataToolbarProps) {
+  void manageOperationHint;
   const metadataSelectionToggleLabel =
     metadataManageSelectionMode === "single"
       ? t("a11y.metadata.switchToMultipleSelectMode")
@@ -62,9 +63,6 @@ export function ImageMainMetadataToolbar({
         >
           <MainUiIcon name="getMetaData" />
         </button>
-        {manageOperationHint ? (
-          <span className="main-toolbar-hint">{manageOperationHint}</span>
-        ) : null}
       </div>
     </>
   );
