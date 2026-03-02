@@ -10,8 +10,10 @@
 ## 建议读取范围（最小集）
 
 - `src/features/music-visualizer/`
-- `src/components/MusicMainSection.tsx`
+- `src/components/settings/renderSettingsShaderSection.tsx`
+- `src/components/settings/ShaderProgramIntrospectionPanel.tsx`
 - `src/features/app/buildMusicMainSectionProps.ts`
+- `src/features/app/buildSettingsPanelProps.ts`
 - `src/features/app/useSettingsPersistence.ts`
 - `src/store/useUiStore.ts`
 - `src/contracts/settings.ts`
@@ -25,8 +27,10 @@
 
 本次任务只允许优先查看以下路径：
 - src/features/music-visualizer/
-- src/components/MusicMainSection.tsx
+- src/components/settings/renderSettingsShaderSection.tsx
+- src/components/settings/ShaderProgramIntrospectionPanel.tsx
 - src/features/app/buildMusicMainSectionProps.ts
+- src/features/app/buildSettingsPanelProps.ts
 - src/features/app/useSettingsPersistence.ts
 - src/store/useUiStore.ts
 - src/contracts/settings.ts
@@ -35,6 +39,7 @@
 约束：
 - 非必要不要遍历其他目录。
 - 保持现有运行时契约（multi-pass、tone mapping、GPU/CPU fallback）。
+- 保持入口收口约束：音乐主区不新增 Shader 参数编辑入口，统一走 设置 > Shader。
 - 变更后运行最小回归：
   npm run test -- src/features/music-visualizer/shaderRegistry.test.ts src/features/music-visualizer/useMusicVisualizerRuntime.test.tsx src/components/MusicMainSection.test.tsx
 ```
@@ -42,6 +47,6 @@
 ## 任务完成检查
 
 - Shader 注册与选择可用。
-- 参数面板行为与运行时一致。
+- 设置页 Shader 参数行为与运行时一致。
 - 分层合成与单层/透明边界行为不回退。
 - 上述最小回归测试通过。

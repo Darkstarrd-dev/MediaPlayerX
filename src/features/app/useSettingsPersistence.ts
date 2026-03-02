@@ -17,6 +17,11 @@ const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 type MusicVisualizerShaderSettings =
   AppSettings["musicVisualizerShaderSettingsById"][string];
+type MusicVisualizerPluginInputBinding =
+  AppSettings["musicVisualizerPluginInputBindingsByShaderId"][string];
+type MusicVisualizerPluginCustomBinding =
+  AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string];
+type MusicVisualizerShaderLab = AppSettings["musicVisualizerShaderLab"];
 
 function normalizeHexColor(value: unknown, fallback: string): string {
   if (typeof value !== "string") {
@@ -171,6 +176,174 @@ function normalizeShaderSettingEntry(
   };
 }
 
+function normalizePluginInputBindingEntry(
+  value: unknown,
+): MusicVisualizerPluginInputBinding | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Record<string, unknown>;
+  const normalizeUniformName = (raw: unknown, fallback: string): string => {
+    if (typeof raw !== "string") {
+      return fallback;
+    }
+    const normalized = raw.trim().slice(0, 64);
+    return normalized.length > 0 ? normalized : fallback;
+  };
+
+  return {
+    audioLevelUniform: normalizeUniformName(
+      source.audioLevelUniform,
+      "iAudioLevel",
+    ),
+    audioBeatUniform: normalizeUniformName(source.audioBeatUniform, "iAudioBeat"),
+    timeUniform: normalizeUniformName(source.timeUniform, "iTime"),
+    audioTextureSampler: normalizeUniformName(
+      source.audioTextureSampler,
+      "iChannel0",
+    ),
+  };
+}
+
+function normalizePluginCustomBindingEntry(
+  value: unknown,
+): MusicVisualizerPluginCustomBinding | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Record<string, unknown>;
+  const scalarBindingsRaw =
+    source.scalarBindings && typeof source.scalarBindings === "object"
+      ? (source.scalarBindings as Record<string, unknown>)
+      : {};
+  const samplerBindingsRaw =
+    source.samplerBindings && typeof source.samplerBindings === "object"
+      ? (source.samplerBindings as Record<string, unknown>)
+      : {};
+  const scalarTransformsRaw =
+    source.scalarTransforms && typeof source.scalarTransforms === "object"
+      ? (source.scalarTransforms as Record<string, unknown>)
+      : {};
+
+  const scalarBindings: MusicVisualizerPluginCustomBinding["scalarBindings"] =
+    {};
+  const scalarTransforms: MusicVisualizerPluginCustomBinding["scalarTransforms"] =
+    {};
+  const samplerBindings: MusicVisualizerPluginCustomBinding["samplerBindings"] =
+    {};
+
+  for (const [rawName, rawSignal] of Object.entries(scalarBindingsRaw)) {
+    const uniformName = rawName.trim().slice(0, 64);
+    if (!uniformName) {
+      continue;
+    }
+    if (
+      rawSignal === "none" ||
+      rawSignal === "audioLevel" ||
+      rawSignal === "audioBeat" ||
+      rawSignal === "timeSec"
+    ) {
+      scalarBindings[uniformName] = rawSignal;
+    }
+  }
+
+  for (const [rawName, rawSignal] of Object.entries(samplerBindingsRaw)) {
+    const uniformName = rawName.trim().slice(0, 64);
+    if (!uniformName) {
+      continue;
+    }
+    if (rawSignal === "none" || rawSignal === "audioTexture") {
+      samplerBindings[uniformName] = rawSignal;
+    }
+  }
+
+  for (const [rawName, rawValue] of Object.entries(scalarTransformsRaw)) {
+    const uniformName = rawName.trim().slice(0, 64);
+    if (!uniformName || !rawValue || typeof rawValue !== "object") {
+      continue;
+    }
+    const sourceTransform = rawValue as Record<string, unknown>;
+    const normalizeNumber = (
+      value: unknown,
+      fallback: number,
+      min: number,
+      max: number,
+    ): number => {
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        return fallback;
+      }
+      return Math.max(min, Math.min(max, value));
+    };
+    const clampEnabled =
+      typeof sourceTransform.clampEnabled === "boolean"
+        ? sourceTransform.clampEnabled
+        : false;
+    const clampMin = normalizeNumber(sourceTransform.clampMin, 0, -4, 4);
+    const clampMaxRaw = normalizeNumber(sourceTransform.clampMax, 1, -4, 4);
+    const clampMax = Math.max(clampMin, clampMaxRaw);
+    scalarTransforms[uniformName] = {
+      scale: normalizeNumber(sourceTransform.scale, 1, -16, 16),
+      bias: normalizeNumber(sourceTransform.bias, 0, -4, 4),
+      clampEnabled,
+      clampMin,
+      clampMax,
+      smoothEnabled:
+        typeof sourceTransform.smoothEnabled === "boolean"
+          ? sourceTransform.smoothEnabled
+          : false,
+      smoothAttack: normalizeNumber(sourceTransform.smoothAttack, 0.35, 0, 1),
+      smoothRelease: normalizeNumber(sourceTransform.smoothRelease, 0.12, 0, 1),
+    };
+  }
+
+  return {
+    scalarBindings,
+    scalarTransforms,
+    samplerBindings,
+  };
+}
+
+function normalizeShaderLabConfig(value: unknown): MusicVisualizerShaderLab | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Record<string, unknown>;
+  const adapterModeRaw = source.adapterMode;
+  const previewFpsCapRaw = source.previewFpsCap;
+  const previewRenderLongEdgePxRaw = source.previewRenderLongEdgePx;
+  const previewInputSourceRaw = source.previewInputSource;
+
+  const adapterMode =
+    adapterModeRaw === "auto" ||
+    adapterModeRaw === "shadertoy" ||
+    adapterModeRaw === "glsl"
+      ? adapterModeRaw
+      : "auto";
+  const previewFpsCap =
+    previewFpsCapRaw === 30 || previewFpsCapRaw === 60 || previewFpsCapRaw === 120
+      ? previewFpsCapRaw
+      : 60;
+  const previewRenderLongEdgePx =
+    typeof previewRenderLongEdgePxRaw === "number" &&
+    Number.isFinite(previewRenderLongEdgePxRaw)
+      ? Math.max(240, Math.min(2048, Math.floor(previewRenderLongEdgePxRaw)))
+      : 1280;
+  const previewInputSource =
+    previewInputSourceRaw === "demo" || previewInputSourceRaw === "player"
+      ? previewInputSourceRaw
+      : "demo";
+
+  return {
+    adapterMode,
+    previewFpsCap,
+    previewRenderLongEdgePx,
+    previewInputSource,
+  };
+}
+
 function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   if (!value || typeof value !== "object") {
     return {};
@@ -198,6 +371,10 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     typeof next.paletteNightId === "string" ? next.paletteNightId.trim() : "";
   const rawUiLocale =
     typeof next.uiLocale === "string" ? next.uiLocale.trim() : "";
+  const rawSettingsPanelSection =
+    typeof next.settingsPanelSection === "string"
+      ? next.settingsPanelSection.trim()
+      : "";
   const rawSidebarLabelDisplayMode =
     typeof next.sidebarLabelDisplayMode === "string"
       ? next.sidebarLabelDisplayMode.trim()
@@ -224,6 +401,21 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.uiLocale = rawUiLocale;
   } else if ("uiLocale" in next) {
     delete next.uiLocale;
+  }
+  if (
+    rawSettingsPanelSection === "layout" ||
+    rawSettingsPanelSection === "performance" ||
+    rawSettingsPanelSection === "shader" ||
+    rawSettingsPanelSection === "audio" ||
+    rawSettingsPanelSection === "debug" ||
+    rawSettingsPanelSection === "system" ||
+    rawSettingsPanelSection === "model" ||
+    rawSettingsPanelSection === "database" ||
+    rawSettingsPanelSection === "shortcuts"
+  ) {
+    next.settingsPanelSection = rawSettingsPanelSection;
+  } else if ("settingsPanelSection" in next) {
+    delete next.settingsPanelSection;
   }
   if (
     rawSidebarLabelDisplayMode === "full" ||
@@ -847,6 +1039,14 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.musicVisualizerRenderer;
   }
 
+  if (
+    next.musicVisualizerRuntimeMode !== "legacy" &&
+    next.musicVisualizerRuntimeMode !== "plugin" &&
+    "musicVisualizerRuntimeMode" in next
+  ) {
+    delete next.musicVisualizerRuntimeMode;
+  }
+
   const normalizedShaderSettingsById: AppSettings["musicVisualizerShaderSettingsById"] =
     {};
   const rawShaderSettingsById = next.musicVisualizerShaderSettingsById;
@@ -927,6 +1127,68 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     next.musicVisualizerShaderSettingsById = normalizedShaderSettingsById;
   } else if ("musicVisualizerShaderSettingsById" in next) {
     delete next.musicVisualizerShaderSettingsById;
+  }
+
+  const normalizedPluginBindingsById: AppSettings["musicVisualizerPluginInputBindingsByShaderId"] =
+    {};
+  const rawPluginBindingsById = next.musicVisualizerPluginInputBindingsByShaderId;
+  if (rawPluginBindingsById && typeof rawPluginBindingsById === "object") {
+    for (const [rawShaderId, rawValue] of Object.entries(
+      rawPluginBindingsById as Record<string, unknown>,
+    )) {
+      const shaderId = rawShaderId.trim().slice(0, 64);
+      if (!shaderId) {
+        continue;
+      }
+      const normalizedEntry = normalizePluginInputBindingEntry(rawValue);
+      if (normalizedEntry) {
+        normalizedPluginBindingsById[shaderId] = normalizedEntry;
+      }
+    }
+  }
+
+  if (Object.keys(normalizedPluginBindingsById).length > 0) {
+    next.musicVisualizerPluginInputBindingsByShaderId = normalizedPluginBindingsById;
+  } else if ("musicVisualizerPluginInputBindingsByShaderId" in next) {
+    delete next.musicVisualizerPluginInputBindingsByShaderId;
+  }
+
+  const normalizedPluginCustomBindingsById: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"] =
+    {};
+  const rawPluginCustomBindingsById =
+    next.musicVisualizerPluginCustomBindingsByShaderId;
+  if (
+    rawPluginCustomBindingsById &&
+    typeof rawPluginCustomBindingsById === "object"
+  ) {
+    for (const [rawShaderId, rawValue] of Object.entries(
+      rawPluginCustomBindingsById as Record<string, unknown>,
+    )) {
+      const shaderId = rawShaderId.trim().slice(0, 64);
+      if (!shaderId) {
+        continue;
+      }
+      const normalizedEntry = normalizePluginCustomBindingEntry(rawValue);
+      if (normalizedEntry) {
+        normalizedPluginCustomBindingsById[shaderId] = normalizedEntry;
+      }
+    }
+  }
+
+  if (Object.keys(normalizedPluginCustomBindingsById).length > 0) {
+    next.musicVisualizerPluginCustomBindingsByShaderId =
+      normalizedPluginCustomBindingsById;
+  } else if ("musicVisualizerPluginCustomBindingsByShaderId" in next) {
+    delete next.musicVisualizerPluginCustomBindingsByShaderId;
+  }
+
+  const normalizedShaderLabConfig = normalizeShaderLabConfig(
+    next.musicVisualizerShaderLab,
+  );
+  if (normalizedShaderLabConfig) {
+    next.musicVisualizerShaderLab = normalizedShaderLabConfig;
+  } else if ("musicVisualizerShaderLab" in next) {
+    delete next.musicVisualizerShaderLab;
   }
 
   return next as Partial<AppSettings>;

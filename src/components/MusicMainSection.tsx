@@ -71,9 +71,13 @@ function MusicMainSection({
   paletteMode = 'day',
   onToggleFullscreen,
   musicVisualizerSelectedShaderId,
+  musicVisualizerRuntimeMode = 'legacy',
   musicVisualizerShaderSettings,
+  musicVisualizerPluginInputBinding,
+  musicVisualizerPluginCustomBinding,
   musicVisualizerLayeredBackgroundShaderSettings,
   musicVisualizerLayeredForegroundShaderSettings,
+  onOpenShaderSettingsPanel = () => undefined,
   onMusicVisualizerSelectedShaderIdChange = () => undefined,
   onMusicVisualizerShaderSettingsChange,
   onMusicVisualizerLayerShaderIdChange = () => undefined,
@@ -423,6 +427,9 @@ function MusicMainSection({
     toneMapExposure: runtimeToneMapExposure,
     toneMapStrength: runtimeToneMapStrength,
     selectedShaderId,
+    pluginInputBinding: musicVisualizerPluginInputBinding,
+    pluginCustomBinding: musicVisualizerPluginCustomBinding,
+    mode: musicVisualizerRuntimeMode,
   })
 
   useEffect(() => {
@@ -1421,6 +1428,7 @@ function MusicMainSection({
       toneMapExposureRangeStyle={toneMapExposureRangeStyle}
       toneMapStrengthRangeStyle={toneMapStrengthRangeStyle}
       onMusicVisualizerShaderSettingsChange={onMusicVisualizerShaderSettingsChange}
+      onOpenShaderSettingsPanel={onOpenShaderSettingsPanel}
       onToggleFullscreen={onToggleFullscreen}
       playTooltip={playTooltip}
       canPrevAudio={canPrevAudio}

@@ -48,9 +48,13 @@ export interface MusicMainSectionProps {
   paletteMode?: 'day' | 'night'
   onToggleFullscreen: () => void
   musicVisualizerSelectedShaderId: string
+  musicVisualizerRuntimeMode?: 'legacy' | 'plugin'
   musicVisualizerShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
+  musicVisualizerPluginInputBinding?: AppSettings['musicVisualizerPluginInputBindingsByShaderId'][string]
+  musicVisualizerPluginCustomBinding?: AppSettings['musicVisualizerPluginCustomBindingsByShaderId'][string]
   musicVisualizerLayeredBackgroundShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
   musicVisualizerLayeredForegroundShaderSettings: AppSettings['musicVisualizerShaderSettingsById'][string]
+  onOpenShaderSettingsPanel?: () => void
   onMusicVisualizerSelectedShaderIdChange?: (value: string) => void
   onMusicVisualizerShaderSettingsChange: (patch: Partial<AppSettings['musicVisualizerShaderSettingsById'][string]>) => void
   onMusicVisualizerLayerShaderIdChange?: (layer: 'foreground' | 'background', value: string) => void

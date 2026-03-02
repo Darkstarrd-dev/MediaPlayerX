@@ -15,6 +15,7 @@
 - i18n/a11y 约束：`07-i18n-aria-guardrails.md`
 - Shader 开发入口：`12-music-visualizer-shader-entry.md`
 - Shader 实施手册：`13-music-visualizer-shader-migration-playbook.md`
+- Shader 插件改造实施清单：`28-shader-plugin-implementation-checklist-v1.md`
 - Theme 规范（SSOT）：`08-theme-system-v2.md`
 - Theme 迭代入口：`09-theme-brainstorm-entry.md`
 - 疑难点记录：`27-Tips.md`

@@ -86,6 +86,13 @@
 - Tone Mapping / FPS / Render Long Edge 调整走运行时热更新（hot update），避免每次改动都重建渲染器。
 - 单帧渲染异常会被捕获并显示 runtime 错误，不会导致渲染循环直接中断。
 
+### 2.5 运行模式与入口收口
+
+- 全局运行模式：`musicVisualizerRuntimeMode = legacy | plugin`。
+- `legacy` 为默认稳定链路；`plugin` 分支异常时必须自动回退 `legacy`，不得中断主渲染。
+- 配置入口单一化：音乐主区不再承担 Shader 参数编辑，所有模式切换/输入映射/预览都在 `设置 > Shader` 分页完成。
+- `plugin` 模式下支持 Program 反射、uniform/sampler 自定义绑定、transform 链（`scale/bias/clamp/smooth`）与按 shader 的 JSON 导入/导出。
+
 ## 3. 标准迁移流程（SOP）
 
 1. **源 Shader 预审**
@@ -102,7 +109,7 @@
    - 宽高比适配优先在坐标映射层处理，不要在核心路径逻辑里叠加临时硬编码。
 
 4. **运行时联调**
-   - 在设置面板调节渲染长边（Render Long Edge）与 GPU/CPU 模式。
+   - 在 `设置 > Shader` 分页调节运行模式、渲染长边、GPU/CPU 后端与输入映射。
    - 同时验证非全屏与全屏。
 
 5. **回归测试**
@@ -344,3 +351,8 @@
   - 新增前景全局变换：`iForegroundOffset`、`iForegroundScale`。
   - 拆分 `galaxy/starfield/escape/tissue` 为背景 + `*foreground` 独立 shader。
   - 分层模式下 Tone Mapping 改为仅最终合成 pass 执行一次。
+- 2026-03-02
+  - 引入全局运行模式开关（`legacy/plugin`），并在 plugin 分支失败时自动回退到 legacy。
+  - Shader 配置入口收口到设置面板 `Shader` 分页，音乐主区仅保留“打开设置”快捷入口。
+  - 新增 Program 反射 + 通用绑定器（scalar/sampler）与 transform 链。
+  - 新增按当前 shader 的绑定 JSON 导入/导出与 custom bindings 一键清空。

@@ -13,10 +13,13 @@ import type {
   MusicVisualizerRenderer,
   MusicVisualizerRendererMode,
   MusicVisualizerFrameInput,
+  MusicVisualizerPluginCustomBinding,
+  MusicVisualizerPluginInputBinding,
   MusicVisualizerStats,
   MusicVisualizerToneMapMode,
 } from './types'
 import { WebglMusicVisualizerRenderer } from './webglRenderer'
+import { useMusicVisualizerPluginRuntime } from './useMusicVisualizerPluginRuntime'
 
 const MIN_RENDER_LONG_EDGE = 240
 const MAX_RENDER_LONG_EDGE = 4096
@@ -165,7 +168,7 @@ function resolveThemeBackgroundColor(canvas: HTMLCanvasElement, paletteMode: 'da
   return fallback
 }
 
-interface UseMusicVisualizerRuntimeParams {
+export interface UseMusicVisualizerRuntimeParams {
   canvasRef: RefObject<HTMLCanvasElement | null>
   cpuCanvasRef?: RefObject<HTMLCanvasElement | null>
   audioRef: RefObject<HTMLAudioElement | null>
@@ -198,9 +201,13 @@ interface UseMusicVisualizerRuntimeParams {
     audioLevel: number
     audioBeat: number
   } | null
+  pluginInputBinding?: MusicVisualizerPluginInputBinding | null
+  pluginCustomBinding?: MusicVisualizerPluginCustomBinding | null
+  resolvedShaderOverride?: MusicVisualizerShaderDefinition | null
+  mode?: 'legacy' | 'plugin'
 }
 
-interface UseMusicVisualizerRuntimeResult {
+export interface UseMusicVisualizerRuntimeResult {
   stats: MusicVisualizerStats | null
   activeBackend: MusicVisualizerRendererMode | null
   runtimeError: string | null
@@ -408,7 +415,7 @@ const TRANSPARENT_SHADER: MusicVisualizerShaderDefinition = {
   toneMapPolicy: 'force-off',
 }
 
-export function useMusicVisualizerRuntime({
+export function useMusicVisualizerLegacyRuntime({
   canvasRef,
   cpuCanvasRef,
   audioRef,
@@ -436,6 +443,8 @@ export function useMusicVisualizerRuntime({
   paletteMode = 'day',
   disableAudioAnalyser = false,
   externalAudioFrame = null,
+  resolvedShaderOverride = null,
+  mode = 'legacy',
 }: UseMusicVisualizerRuntimeParams): UseMusicVisualizerRuntimeResult {
   const { t } = useI18n()
   const [stats, setStats] = useState<MusicVisualizerStats | null>(null)
@@ -445,7 +454,8 @@ export function useMusicVisualizerRuntime({
 
   const shader = useMemo(() => {
     const defaultShader = resolveDefaultMusicVisualizerShader()
-    const fallbackShader = resolveMusicVisualizerShaderById(selectedShaderId) ?? defaultShader
+    const selectedShader = resolvedShaderOverride ?? resolveMusicVisualizerShaderById(selectedShaderId)
+    const fallbackShader = selectedShader ?? defaultShader
     const backgroundShader = resolveMusicVisualizerShaderById(layeredBackgroundShaderId) ?? fallbackShader
     const foregroundShader = resolveMusicVisualizerShaderById(layeredForegroundShaderId) ?? fallbackShader
 
@@ -476,6 +486,7 @@ export function useMusicVisualizerRuntime({
     layeredForegroundRenderScaleCoeff,
     layeredForegroundShaderId,
     selectedShaderId,
+    resolvedShaderOverride,
   ])
   const audioAnalyserRef = useRef<MusicAudioAnalyser | null>(null)
   const disableAudioAnalyserRef = useRef(disableAudioAnalyser)
@@ -634,7 +645,7 @@ export function useMusicVisualizerRuntime({
       const hasCanvas2d = Boolean(probe2dCanvas.getContext('2d'))
       const snapshot = resolveEffectiveToneMap()
       const shaderRenderScale = resolveShaderRenderScale()
-      return `shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
+      return `mode=${mode}, shader=${shader.id}, scale=${shaderRenderScale.toFixed(2)}, fpsCap=${runtimeSettingsRef.current.fpsCap}, toneMap=${snapshot.mode}@${snapshot.exposure.toFixed(2)}*${snapshot.strength.toFixed(2)}, dpr=${window.devicePixelRatio.toFixed(2)}, webgl2=${hasWebgl2 ? 'yes' : 'no'}, canvas2d=${hasCanvas2d ? 'yes' : 'no'}`
     }
 
     const runtimeProbeInfo = resolveRuntimeProbeInfo()
@@ -912,6 +923,7 @@ export function useMusicVisualizerRuntime({
     canvasInstanceVersion,
     canvasRef,
     cpuCanvasRef,
+    mode,
     preferredRenderer,
     compositeModeCode,
     shader,
@@ -931,4 +943,36 @@ export function useMusicVisualizerRuntime({
     runtimeError,
     resumeAudioAnalyser,
   }
+}
+
+export function useMusicVisualizerRuntime(
+  params: UseMusicVisualizerRuntimeParams,
+): UseMusicVisualizerRuntimeResult {
+  const mode = params.mode ?? 'legacy'
+  const pluginResult = useMusicVisualizerPluginRuntime({
+    ...params,
+    active: params.active && mode === 'plugin',
+  })
+  const shouldFallbackToLegacy =
+    mode === 'plugin' && (pluginResult.fatal || pluginResult.bridgeToLegacy)
+  const legacyResult = useMusicVisualizerLegacyRuntime({
+    ...params,
+    active: params.active && (mode === 'legacy' || shouldFallbackToLegacy),
+    resolvedShaderOverride: shouldFallbackToLegacy
+      ? pluginResult.bridgeShaderOverride
+      : params.resolvedShaderOverride,
+  })
+
+  if (mode === 'legacy') {
+    return legacyResult
+  }
+
+  if (shouldFallbackToLegacy) {
+    return {
+      ...legacyResult,
+      runtimeError: pluginResult.runtimeError ?? legacyResult.runtimeError,
+    }
+  }
+
+  return pluginResult
 }

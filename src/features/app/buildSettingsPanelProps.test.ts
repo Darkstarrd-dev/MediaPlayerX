@@ -13,6 +13,7 @@ describe("buildSettingsPanelProps", () => {
 
     const props = buildSettingsPanelProps({
       settingsOpen: true,
+      settingsPanelSection: "layout",
       uiLocale: "auto",
       styleId: "soft-skeuomorphic",
       paletteId: "skeuomorphic-luxury-white",
@@ -50,6 +51,56 @@ describe("buildSettingsPanelProps", () => {
       workspaceBottomPanelHeight: 164,
       fullscreenVideoControlsMaxWidth: 980,
       mediaPreloadMemoryBudgetMb: 1024,
+      musicVisualizerRuntimeMode: "legacy",
+      musicVisualizerSelectedShaderId: "mcs-szb",
+      musicVisualizerRenderLongEdgePx: 1280,
+      musicVisualizerFpsCap: 60,
+      musicVisualizerToneMapMode: "aces",
+      musicVisualizerToneMapExposure: 1,
+      musicVisualizerToneMapStrength: 0.55,
+      musicVisualizerShowFps: false,
+      musicVisualizerRenderer: "gpu",
+      musicVisualizerShaderSettingsById: {
+        "mcs-szb": {
+          renderLongEdgePx: 1280,
+          renderScaleCoeff: 2,
+          compositionMode: "single",
+          layeredBackgroundShaderId: "galaxy",
+          layeredForegroundShaderId: "mcs-szb",
+          layeredBackgroundEnabled: true,
+          layeredForegroundEnabled: true,
+          layeredForegroundOffsetX: 0,
+          layeredForegroundOffsetY: 0,
+          layeredForegroundScale: 1,
+          fpsCap: 60,
+          toneMapMode: "aces",
+          toneMapExposure: 1,
+          toneMapStrength: 0.55,
+          showFps: false,
+          renderer: "gpu",
+        },
+      },
+      musicVisualizerPluginInputBindingsByShaderId: {
+        "mcs-szb": {
+          audioLevelUniform: "iAudioLevel",
+          audioBeatUniform: "iAudioBeat",
+          timeUniform: "iTime",
+          audioTextureSampler: "iChannel0",
+        },
+      },
+      musicVisualizerPluginCustomBindingsByShaderId: {
+        "mcs-szb": {
+          scalarBindings: {},
+          scalarTransforms: {},
+          samplerBindings: {},
+        },
+      },
+      musicVisualizerShaderLab: {
+        adapterMode: "auto",
+        previewFpsCap: 60,
+        previewRenderLongEdgePx: 1280,
+        previewInputSource: "demo",
+      },
       thumbnailGap: 8,
       thumbnailQuality: 40,
       thumbnailWidth: 512,
@@ -180,6 +231,44 @@ describe("buildSettingsPanelProps", () => {
     props.onFullscreenResamplingEnabledChange(true);
     props.onFullscreenDownsamplingKernelChange("mitchell");
     props.onFullscreenUpsamplingKernelChange("nearest");
+    props.onMusicVisualizerPluginInputBindingChange({
+      audioLevelUniform: "uAudioLevel",
+    });
+    props.onMusicVisualizerPluginCustomBindingReplace({
+      pluginInputBinding: {
+        audioLevelUniform: "uLevel",
+        audioBeatUniform: "uBeat",
+        timeUniform: "uTime",
+        audioTextureSampler: "uTex0",
+      },
+      pluginCustomBinding: {
+        scalarBindings: {
+          uEnergy: "audioLevel",
+        },
+        scalarTransforms: {
+          uEnergy: {
+            scale: 1.5,
+            bias: 0.1,
+            clampEnabled: true,
+            clampMin: 0,
+            clampMax: 1,
+            smoothEnabled: true,
+            smoothAttack: 0.2,
+            smoothRelease: 0.15,
+          },
+        },
+        samplerBindings: {
+          uAudioSampler: "audioTexture",
+        },
+      },
+    });
+    props.onSettingsPanelSectionChange("shader");
+    props.onMusicVisualizerShaderLabChange({
+      previewInputSource: "player",
+      previewFpsCap: 120,
+      previewRenderLongEdgePx: 1600,
+      adapterMode: "shadertoy",
+    });
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 });
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 });
@@ -238,6 +327,59 @@ describe("buildSettingsPanelProps", () => {
     });
     expect(updateSettings).toHaveBeenNthCalledWith(19, {
       fullscreenUpsamplingKernel: "nearest",
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      musicVisualizerPluginInputBindingsByShaderId: {
+        "mcs-szb": {
+          audioLevelUniform: "uAudioLevel",
+          audioBeatUniform: "iAudioBeat",
+          timeUniform: "iTime",
+          audioTextureSampler: "iChannel0",
+        },
+      },
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      settingsPanelSection: "shader",
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      musicVisualizerShaderLab: {
+        adapterMode: "shadertoy",
+        previewFpsCap: 120,
+        previewRenderLongEdgePx: 1600,
+        previewInputSource: "player",
+      },
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      musicVisualizerPluginInputBindingsByShaderId: {
+        "mcs-szb": {
+          audioLevelUniform: "uLevel",
+          audioBeatUniform: "uBeat",
+          timeUniform: "uTime",
+          audioTextureSampler: "uTex0",
+        },
+      },
+      musicVisualizerPluginCustomBindingsByShaderId: {
+        "mcs-szb": {
+          scalarBindings: {
+            uEnergy: "audioLevel",
+          },
+          scalarTransforms: {
+            uEnergy: {
+              scale: 1.5,
+              bias: 0.1,
+              clampEnabled: true,
+              clampMin: 0,
+              clampMax: 1,
+              smoothEnabled: true,
+              smoothAttack: 0.2,
+              smoothRelease: 0.15,
+            },
+          },
+          samplerBindings: {
+            uAudioSampler: "audioTexture",
+          },
+        },
+      },
     });
 
     props.onThumbnailGapScaleCoeffChange(1.4);

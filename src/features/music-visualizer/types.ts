@@ -14,6 +14,38 @@ export type MusicVisualizerShaderTexturePreset =
   | 'noise-rgb-seamless'
   | 'rain-bg'
 
+export interface MusicVisualizerPluginInputBinding {
+  audioLevelUniform: string
+  audioBeatUniform: string
+  timeUniform: string
+  audioTextureSampler: string
+}
+
+export type MusicVisualizerPluginScalarSignal =
+  | 'none'
+  | 'audioLevel'
+  | 'audioBeat'
+  | 'timeSec'
+
+export type MusicVisualizerPluginSamplerSignal = 'none' | 'audioTexture'
+
+export interface MusicVisualizerPluginScalarTransform {
+  scale: number
+  bias: number
+  clampEnabled: boolean
+  clampMin: number
+  clampMax: number
+  smoothEnabled: boolean
+  smoothAttack: number
+  smoothRelease: number
+}
+
+export interface MusicVisualizerPluginCustomBinding {
+  scalarBindings: Record<string, MusicVisualizerPluginScalarSignal>
+  scalarTransforms: Record<string, MusicVisualizerPluginScalarTransform>
+  samplerBindings: Record<string, MusicVisualizerPluginSamplerSignal>
+}
+
 export interface MusicVisualizerShaderTextureDefinition {
   id: string
   preset: MusicVisualizerShaderTexturePreset
@@ -62,6 +94,8 @@ export interface MusicVisualizerShaderDefinition {
   renderScale?: number
   toneMapPolicy?: MusicVisualizerToneMapPolicy
   toneMapStrengthBias?: number
+  pluginInputBinding?: MusicVisualizerPluginInputBinding
+  pluginCustomBinding?: MusicVisualizerPluginCustomBinding
 }
 
 export interface MusicVisualizerFrameInput {

@@ -62,7 +62,10 @@ interface BuildMusicMainSectionPropsParams {
   musicVisualizerToneMapStrength: number
   musicVisualizerShowFps: boolean
   musicVisualizerRenderer: 'gpu' | 'cpu'
+  musicVisualizerRuntimeMode: 'legacy' | 'plugin'
   musicVisualizerShaderSettingsById: AppSettings['musicVisualizerShaderSettingsById']
+  musicVisualizerPluginInputBindingsByShaderId: AppSettings['musicVisualizerPluginInputBindingsByShaderId']
+  musicVisualizerPluginCustomBindingsByShaderId: AppSettings['musicVisualizerPluginCustomBindingsByShaderId']
   mediaPreloadMemoryBudgetMb: number
   fullscreenVideoControlsMaxWidth: number
   showNamesOnly: boolean
@@ -206,6 +209,19 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     renderer: params.musicVisualizerRenderer,
   }
   const selectedShaderSettings = params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallbackShaderSettings
+  const selectedPluginInputBinding =
+    params.musicVisualizerPluginInputBindingsByShaderId[selectedShaderId] ?? {
+      audioLevelUniform: 'iAudioLevel',
+      audioBeatUniform: 'iAudioBeat',
+      timeUniform: 'iTime',
+      audioTextureSampler: 'iChannel0',
+    }
+  const selectedPluginCustomBinding =
+    params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+      scalarBindings: {},
+      scalarTransforms: {},
+      samplerBindings: {},
+    }
   const layeredBackgroundShaderId = selectedShaderSettings.layeredBackgroundShaderId || 'galaxy'
   const layeredForegroundShaderId = selectedShaderSettings.layeredForegroundShaderId || 'mcs-szb'
   const layeredBackgroundShaderSettings = params.musicVisualizerShaderSettingsById[layeredBackgroundShaderId] ?? fallbackShaderSettings
@@ -310,9 +326,18 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       params.setFullscreenActiveWithAutoStop(!params.fullscreenActive)
     },
     musicVisualizerSelectedShaderId: selectedShaderId,
+    musicVisualizerRuntimeMode: params.musicVisualizerRuntimeMode,
     musicVisualizerShaderSettings: selectedShaderSettings,
+    musicVisualizerPluginInputBinding: selectedPluginInputBinding,
+    musicVisualizerPluginCustomBinding: selectedPluginCustomBinding,
     musicVisualizerLayeredBackgroundShaderSettings: layeredBackgroundShaderSettings,
     musicVisualizerLayeredForegroundShaderSettings: layeredForegroundShaderSettings,
+    onOpenShaderSettingsPanel: () => {
+      params.updateSettings({
+        settingsOpen: true,
+        settingsPanelSection: 'shader',
+      })
+    },
     onPrevAudio: () => {
       if (!canStepBetweenTracks) {
         return

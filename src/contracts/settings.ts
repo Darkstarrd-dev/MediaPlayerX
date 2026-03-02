@@ -25,12 +25,24 @@ export const musicVisualizerToneMapModeSchema = z.enum([
   "khronos",
 ]);
 export const musicVisualizerRendererSchema = z.enum(["gpu", "cpu"]);
+export const musicVisualizerRuntimeModeSchema = z.enum(["legacy", "plugin"]);
 export const musicVisualizerCompositionModeSchema = z.enum([
   "single",
   "layered",
 ]);
 export const paletteModeSchema = z.enum(["day", "night"]);
 export const uiLocaleSchema = z.enum(["auto", "zh-CN", "en-US"]);
+export const settingsPanelSectionSchema = z.enum([
+  "layout",
+  "performance",
+  "shader",
+  "audio",
+  "debug",
+  "system",
+  "model",
+  "database",
+  "shortcuts",
+]);
 export const sidebarLabelDisplayModeSchema = z.enum(["full", "leaf"]);
 export const sidebarTreeDisplayModeSchema = z.enum(["direct", "hierarchy"]);
 export const subtitleAccelerationSchema = z.enum(["auto", "cpu", "directml"]);
@@ -150,10 +162,85 @@ export const musicVisualizerShaderSettingsByIdSchema = z.record(
   musicVisualizerShaderSettingsSchema,
 );
 
+export const musicVisualizerPluginInputBindingSchema = z.object({
+  audioLevelUniform: z.string().max(64).default("iAudioLevel"),
+  audioBeatUniform: z.string().max(64).default("iAudioBeat"),
+  timeUniform: z.string().max(64).default("iTime"),
+  audioTextureSampler: z.string().max(64).default("iChannel0"),
+});
+
+export const musicVisualizerPluginScalarSignalSchema = z.enum([
+  "none",
+  "audioLevel",
+  "audioBeat",
+  "timeSec",
+]);
+
+export const musicVisualizerPluginSamplerSignalSchema = z.enum([
+  "none",
+  "audioTexture",
+]);
+
+export const musicVisualizerPluginScalarTransformSchema = z.object({
+  scale: z.number().min(-16).max(16).default(1),
+  bias: z.number().min(-4).max(4).default(0),
+  clampEnabled: z.boolean().default(false),
+  clampMin: z.number().min(-4).max(4).default(0),
+  clampMax: z.number().min(-4).max(4).default(1),
+  smoothEnabled: z.boolean().default(false),
+  smoothAttack: z.number().min(0).max(1).default(0.35),
+  smoothRelease: z.number().min(0).max(1).default(0.12),
+});
+
+export const musicVisualizerPluginCustomBindingSchema = z.object({
+  scalarBindings: z.record(
+    z.string().max(64),
+    musicVisualizerPluginScalarSignalSchema,
+  ),
+  scalarTransforms: z.record(
+    z.string().max(64),
+    musicVisualizerPluginScalarTransformSchema,
+  ),
+  samplerBindings: z.record(
+    z.string().max(64),
+    musicVisualizerPluginSamplerSignalSchema,
+  ),
+});
+
+export const musicVisualizerPluginInputBindingsByShaderIdSchema = z.record(
+  z.string().max(64),
+  musicVisualizerPluginInputBindingSchema,
+);
+
+export const musicVisualizerPluginCustomBindingsByShaderIdSchema = z.record(
+  z.string().max(64),
+  musicVisualizerPluginCustomBindingSchema,
+);
+
+export const musicVisualizerShaderLabAdapterModeSchema = z.enum([
+  "auto",
+  "shadertoy",
+  "glsl",
+]);
+
+export const musicVisualizerShaderLabPreviewInputSourceSchema = z.enum([
+  "demo",
+  "player",
+]);
+
+export const musicVisualizerShaderLabSchema = z.object({
+  adapterMode: musicVisualizerShaderLabAdapterModeSchema.default("auto"),
+  previewFpsCap: musicVisualizerFpsCapSchema.default(60),
+  previewRenderLongEdgePx: z.number().int().min(240).max(2048).default(1280),
+  previewInputSource:
+    musicVisualizerShaderLabPreviewInputSourceSchema.default("demo"),
+});
+
 export const appSettingsSchema = z.object({
   mode: browserModeSchema,
   vectorMode: z.boolean(),
   settingsOpen: z.boolean(),
+  settingsPanelSection: settingsPanelSectionSchema.default("layout"),
   helpOpen: z.boolean(),
   headerHeight: z.number().min(48).max(96),
   settingsBackdropOpacity: z.number().min(0).max(100),
@@ -239,7 +326,20 @@ export const appSettingsSchema = z.object({
   musicVisualizerToneMapStrength: z.number().min(0).max(1),
   musicVisualizerShowFps: z.boolean(),
   musicVisualizerRenderer: musicVisualizerRendererSchema,
+  musicVisualizerRuntimeMode: musicVisualizerRuntimeModeSchema.default(
+    "legacy",
+  ),
   musicVisualizerShaderSettingsById: musicVisualizerShaderSettingsByIdSchema,
+  musicVisualizerPluginInputBindingsByShaderId:
+    musicVisualizerPluginInputBindingsByShaderIdSchema.default({}),
+  musicVisualizerPluginCustomBindingsByShaderId:
+    musicVisualizerPluginCustomBindingsByShaderIdSchema.default({}),
+  musicVisualizerShaderLab: musicVisualizerShaderLabSchema.default({
+    adapterMode: "auto",
+    previewFpsCap: 60,
+    previewRenderLongEdgePx: 1280,
+    previewInputSource: "demo",
+  }),
   proxyServer: z.string().max(512),
   subtitleFeatureEnabled: z.boolean(),
   subtitleRenderMode: subtitleRenderModeSchema.default("advanced"),

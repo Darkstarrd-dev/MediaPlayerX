@@ -589,6 +589,7 @@ export function useAppTopLayerState({
 
   const settingsPanelProps = buildSettingsPanelProps({
     settingsOpen: appSettings.settingsOpen,
+    settingsPanelSection: appSettings.settingsPanelSection,
     uiLocale: appSettings.uiLocale,
     styleId: appSettings.styleId,
     paletteId: appSettings.paletteId,
@@ -624,6 +625,22 @@ export function useAppTopLayerState({
     fullscreenVideoControlsMaxWidth:
       appSettings.fullscreenVideoControlsMaxWidth,
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
+    musicVisualizerRuntimeMode: appSettings.musicVisualizerRuntimeMode,
+    musicVisualizerSelectedShaderId: appSettings.musicVisualizerSelectedShaderId,
+    musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: appSettings.musicVisualizerFpsCap,
+    musicVisualizerToneMapMode: appSettings.musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure: appSettings.musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength: appSettings.musicVisualizerToneMapStrength,
+    musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
+    musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
+    musicVisualizerShaderSettingsById:
+      appSettings.musicVisualizerShaderSettingsById,
+    musicVisualizerPluginInputBindingsByShaderId:
+      appSettings.musicVisualizerPluginInputBindingsByShaderId,
+    musicVisualizerPluginCustomBindingsByShaderId:
+      appSettings.musicVisualizerPluginCustomBindingsByShaderId,
+    musicVisualizerShaderLab: appSettings.musicVisualizerShaderLab,
     thumbnailGap: appSettings.thumbnailGap,
     thumbnailQuality: appSettings.thumbnailQuality,
     thumbnailAdaptiveResolution: appSettings.thumbnailAdaptiveResolution,

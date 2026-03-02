@@ -8,6 +8,7 @@ import type {
   ReadAudioTranscodeCapabilitiesResponseDto,
   ReadRuntimeInfoResponseDto,
 } from "../../contracts/backend";
+import type { AppSettings } from "../../contracts/settings";
 import type { RepositoryMode } from "../../features/backend/repository";
 import type { RuntimeMediaCapabilityProbeResult } from "../../features/app/useRuntimeInfoDiagnostics";
 import type { SubtitleModelSelectionId } from "../../features/subtitles/fixedModel";
@@ -17,6 +18,7 @@ import type { ShortcutConflict } from "../../shortcuts";
 export type SettingsSection =
   | "layout"
   | "performance"
+  | "shader"
   | "audio"
   | "debug"
   | "system"
@@ -27,6 +29,7 @@ export type SettingsSection =
 export interface RenderSettingsMainSectionParams {
   t: TranslateFn;
   activeSection: SettingsSection;
+  settingsPanelSection: SettingsSection;
   uiLocale: "auto" | "zh-CN" | "en-US";
   layoutLocked: boolean;
   headerHeight: number;
@@ -54,6 +57,28 @@ export interface RenderSettingsMainSectionParams {
   fullscreenVideoControlsMaxWidth: number;
   fullscreenVideoControlsMaxWidthScale: number;
   mediaPreloadMemoryBudgetMb: number;
+  musicVisualizerRuntimeMode: "legacy" | "plugin";
+  musicVisualizerSelectedShaderId: string;
+  musicVisualizerRenderLongEdgePx: number;
+  musicVisualizerFpsCap: 30 | 60 | 120;
+  musicVisualizerToneMapMode:
+    | "off"
+    | "reinhard"
+    | "aces"
+    | "filmic"
+    | "agx"
+    | "khronos";
+  musicVisualizerToneMapExposure: number;
+  musicVisualizerToneMapStrength: number;
+  musicVisualizerShowFps: boolean;
+  musicVisualizerRenderer: "gpu" | "cpu";
+  musicVisualizerShaderSettingsById:
+    AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId:
+    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId:
+    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailGapScale: number;
   thumbnailQuality: number;
@@ -221,6 +246,7 @@ export interface RenderSettingsMainSectionParams {
   } | null;
   renderBindingRows: () => JSX.Element;
   onResetShortcuts: () => void;
+  onSettingsPanelSectionChange: (value: SettingsSection) => void;
   onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
   onLayoutLockedChange: (value: boolean) => void;
   onHeaderHeightChange: (value: number) => void;
@@ -250,6 +276,34 @@ export interface RenderSettingsMainSectionParams {
   onWorkspaceBottomPanelHeightChange: (value: number) => void;
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void;
   onMediaPreloadMemoryBudgetMbChange: (value: number) => void;
+  onMusicVisualizerRuntimeModeChange: (value: "legacy" | "plugin") => void;
+  onMusicVisualizerSelectedShaderIdChange: (value: string) => void;
+  onMusicVisualizerShaderSettingsChange: (
+    patch: Partial<AppSettings["musicVisualizerShaderSettingsById"][string]>,
+  ) => void;
+  onMusicVisualizerPluginInputBindingChange: (
+    patch: Partial<
+      AppSettings["musicVisualizerPluginInputBindingsByShaderId"][string]
+    >,
+  ) => void;
+  onMusicVisualizerPluginCustomBindingChange: (
+    uniformName: string,
+    signal: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["scalarBindings"][string],
+  ) => void;
+  onMusicVisualizerPluginCustomSamplerBindingChange: (
+    uniformName: string,
+    signal: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["samplerBindings"][string],
+  ) => void;
+  onMusicVisualizerPluginCustomTransformChange: (
+    uniformName: string,
+    patch: Partial<
+      AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["scalarTransforms"][string]
+    >,
+  ) => void;
+  onMusicVisualizerPluginCustomBindingReplace: (value: unknown) => void;
+  onMusicVisualizerShaderLabChange: (
+    patch: Partial<AppSettings["musicVisualizerShaderLab"]>,
+  ) => void;
   onThumbnailGapChange: (value: number) => void;
   onThumbnailQualityChange: (value: number) => void;
   onResetThumbnailQuality: () => void;

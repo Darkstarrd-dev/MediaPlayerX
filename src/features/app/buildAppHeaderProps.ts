@@ -156,7 +156,11 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     popoverDebugPinned: params.popoverDebugPinned,
     onTogglePopoverDebugPinned: () => params.updateSettings({ popoverDebugPinned: !params.popoverDebugPinned }),
     onOpenHelp: () => params.updateSettings({ helpOpen: true }),
-    onOpenSettings: () => params.updateSettings({ settingsOpen: true }),
+    onOpenSettings: () =>
+      params.updateSettings({
+        settingsOpen: true,
+        settingsPanelSection: 'layout',
+      }),
     sidebarCollapsed: params.sidebarCollapsed ?? false,
     metadataCollapsed: params.metadataCollapsed ?? false,
     showPanelToggleControls: luxuryWhiteActive,

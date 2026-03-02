@@ -12,6 +12,7 @@ import { renderSettingsDatabaseSection } from "./renderSettingsDatabaseSection";
 import { renderSettingsDebugSection } from "./renderSettingsDebugSection";
 import { renderSettingsModelSection } from "./renderSettingsModelSection";
 import { renderSettingsPerformanceSection } from "./renderSettingsPerformanceSection";
+import { renderSettingsShaderSection } from "./renderSettingsShaderSection";
 import { renderSettingsShortcutsSection } from "./renderSettingsShortcutsSection";
 import { renderSettingsSystemSection } from "./renderSettingsSystemSection";
 import { formatScale, SIZE_SCALE_CONFIG, toAbsolutePx } from "./settingsScale";
@@ -572,6 +573,10 @@ export function renderSettingsMainSection(
 
   if (activeSection === "performance") {
     return renderSettingsPerformanceSection({ params, settingsTip });
+  }
+
+  if (activeSection === "shader") {
+    return renderSettingsShaderSection({ params });
   }
 
   if (activeSection === "audio") {

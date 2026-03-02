@@ -702,6 +702,123 @@ button.mpx-overlay-chip-btn:focus-visible {
   line-height: 1.5;
 }
 
+.settings-shader-preview-shell {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-shader-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-shader-preview-status {
+  color: var(--mpx-text-2);
+  font-size: 12px;
+}
+
+.settings-shader-preview-source-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mpx-text-2);
+}
+
+.settings-shader-preview-source-label > select {
+  min-width: 132px;
+}
+
+.settings-shader-preview-stage {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 10px;
+  border: 1px solid var(--mpx-border-1);
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mpx-bg-elevated) 82%, var(--mpx-accent-soft) 18%),
+    var(--mpx-bg-panel)
+  );
+}
+
+.settings-shader-preview-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.settings-shader-preview-canvas-cpu {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.settings-shader-preview-audio {
+  display: none;
+}
+
+.settings-shader-reflection-shell {
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--mpx-border-1);
+  padding-top: 10px;
+}
+
+.settings-shader-reflection-group {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-shader-binding-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-shader-binding-file {
+  display: none;
+}
+
+.settings-shader-binding-status {
+  margin: 0;
+  color: var(--mpx-text-2);
+  font-size: 12px;
+}
+
+.settings-shader-reflection-row {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.settings-shader-transform-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-shader-transform-presets {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-shader-transform-presets > button {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.settings-shader-reflection-group > strong {
+  color: var(--mpx-text-1);
+}
+
 .help-block {
   gap: 10px;
 }

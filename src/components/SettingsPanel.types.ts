@@ -1,4 +1,5 @@
 import type { ReadRuntimeInfoResponseDto } from "../contracts/backend";
+import type { AppSettings } from "../contracts/settings";
 import type { RepositoryMode } from "../features/backend/repository";
 import type { RuntimeMediaCapabilityProbeResult } from "../features/app/useRuntimeInfoDiagnostics";
 import type { SubtitleModelSelectionId } from "../features/subtitles/fixedModel";
@@ -10,6 +11,16 @@ import type {
 
 export interface SettingsPanelProps {
   settingsOpen: boolean;
+  settingsPanelSection:
+    | "layout"
+    | "performance"
+    | "shader"
+    | "audio"
+    | "debug"
+    | "system"
+    | "model"
+    | "database"
+    | "shortcuts";
   uiLocale: "auto" | "zh-CN" | "en-US";
   styleId: string;
   paletteId: string;
@@ -44,6 +55,28 @@ export interface SettingsPanelProps {
   workspaceBottomPanelHeight: number;
   fullscreenVideoControlsMaxWidth: number;
   mediaPreloadMemoryBudgetMb: number;
+  musicVisualizerRuntimeMode: "legacy" | "plugin";
+  musicVisualizerSelectedShaderId: string;
+  musicVisualizerRenderLongEdgePx: number;
+  musicVisualizerFpsCap: 30 | 60 | 120;
+  musicVisualizerToneMapMode:
+    | "off"
+    | "reinhard"
+    | "aces"
+    | "filmic"
+    | "agx"
+    | "khronos";
+  musicVisualizerToneMapExposure: number;
+  musicVisualizerToneMapStrength: number;
+  musicVisualizerShowFps: boolean;
+  musicVisualizerRenderer: "gpu" | "cpu";
+  musicVisualizerShaderSettingsById:
+    AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId:
+    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId:
+    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailQuality: number;
   thumbnailAdaptiveResolution: boolean;
@@ -159,6 +192,18 @@ export interface SettingsPanelProps {
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[];
   adReviewDeleteOverlayDebugActive: boolean;
   onClose: () => void;
+  onSettingsPanelSectionChange: (
+    value:
+      | "layout"
+      | "performance"
+      | "shader"
+      | "audio"
+      | "debug"
+      | "system"
+      | "model"
+      | "database"
+      | "shortcuts",
+  ) => void;
   onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
   onStyleChange: (value: string) => void;
   onPaletteModeChange: (value: "day" | "night") => void;
@@ -192,6 +237,34 @@ export interface SettingsPanelProps {
   onWorkspaceBottomPanelHeightChange: (value: number) => void;
   onFullscreenVideoControlsMaxWidthChange: (value: number) => void;
   onMediaPreloadMemoryBudgetMbChange: (value: number) => void;
+  onMusicVisualizerRuntimeModeChange: (value: "legacy" | "plugin") => void;
+  onMusicVisualizerSelectedShaderIdChange: (value: string) => void;
+  onMusicVisualizerShaderSettingsChange: (
+    patch: Partial<AppSettings["musicVisualizerShaderSettingsById"][string]>,
+  ) => void;
+  onMusicVisualizerPluginInputBindingChange: (
+    patch: Partial<
+      AppSettings["musicVisualizerPluginInputBindingsByShaderId"][string]
+    >,
+  ) => void;
+  onMusicVisualizerPluginCustomBindingChange: (
+    uniformName: string,
+    signal: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["scalarBindings"][string],
+  ) => void;
+  onMusicVisualizerPluginCustomSamplerBindingChange: (
+    uniformName: string,
+    signal: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["samplerBindings"][string],
+  ) => void;
+  onMusicVisualizerPluginCustomTransformChange: (
+    uniformName: string,
+    patch: Partial<
+      AppSettings["musicVisualizerPluginCustomBindingsByShaderId"][string]["scalarTransforms"][string]
+    >,
+  ) => void;
+  onMusicVisualizerPluginCustomBindingReplace: (value: unknown) => void;
+  onMusicVisualizerShaderLabChange: (
+    patch: Partial<AppSettings["musicVisualizerShaderLab"]>,
+  ) => void;
   onThumbnailGapChange: (value: number) => void;
   onThumbnailQualityChange: (value: number) => void;
   onResetThumbnailQuality: () => void;

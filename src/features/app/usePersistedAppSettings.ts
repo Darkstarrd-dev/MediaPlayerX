@@ -17,6 +17,7 @@ export function toPersistedAppSettings(
     mode: settings.mode,
     vectorMode: settings.vectorMode,
     settingsOpen: settings.settingsOpen,
+    settingsPanelSection: settings.settingsPanelSection,
     helpOpen: settings.helpOpen,
     headerHeight: settings.headerHeight,
     settingsBackdropOpacity: settings.settingsBackdropOpacity,
@@ -102,8 +103,14 @@ export function toPersistedAppSettings(
     musicVisualizerToneMapStrength: settings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: settings.musicVisualizerShowFps,
     musicVisualizerRenderer: settings.musicVisualizerRenderer,
+    musicVisualizerRuntimeMode: settings.musicVisualizerRuntimeMode,
     musicVisualizerShaderSettingsById:
       settings.musicVisualizerShaderSettingsById,
+    musicVisualizerPluginInputBindingsByShaderId:
+      settings.musicVisualizerPluginInputBindingsByShaderId,
+    musicVisualizerPluginCustomBindingsByShaderId:
+      settings.musicVisualizerPluginCustomBindingsByShaderId,
+    musicVisualizerShaderLab: settings.musicVisualizerShaderLab,
     proxyServer: settings.proxyServer,
     subtitleFeatureEnabled: settings.subtitleFeatureEnabled,
     subtitleRenderMode: settings.subtitleRenderMode,

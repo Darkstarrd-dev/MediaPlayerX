@@ -54,6 +54,7 @@ import type { SettingsPanelProps } from "./SettingsPanel.types";
 
 function SettingsPanel({
   settingsOpen,
+  settingsPanelSection,
   uiLocale,
   styleId,
   paletteMode,
@@ -87,6 +88,19 @@ function SettingsPanel({
   workspaceBottomPanelHeight,
   fullscreenVideoControlsMaxWidth,
   mediaPreloadMemoryBudgetMb,
+  musicVisualizerRuntimeMode,
+  musicVisualizerSelectedShaderId,
+  musicVisualizerRenderLongEdgePx,
+  musicVisualizerFpsCap,
+  musicVisualizerToneMapMode,
+  musicVisualizerToneMapExposure,
+  musicVisualizerToneMapStrength,
+  musicVisualizerShowFps,
+  musicVisualizerRenderer,
+  musicVisualizerShaderSettingsById,
+  musicVisualizerPluginInputBindingsByShaderId,
+  musicVisualizerPluginCustomBindingsByShaderId,
+  musicVisualizerShaderLab,
   thumbnailGap,
   thumbnailQuality,
   thumbnailAdaptiveResolution,
@@ -169,6 +183,7 @@ function SettingsPanel({
   mediaCapabilities,
   adReviewDeleteOverlayDebugActive,
   onClose,
+  onSettingsPanelSectionChange,
   onUiLocaleChange,
   onStyleChange,
   onPaletteModeChange,
@@ -202,6 +217,15 @@ function SettingsPanel({
   onWorkspaceBottomPanelHeightChange,
   onFullscreenVideoControlsMaxWidthChange,
   onMediaPreloadMemoryBudgetMbChange,
+  onMusicVisualizerRuntimeModeChange,
+  onMusicVisualizerSelectedShaderIdChange,
+  onMusicVisualizerShaderSettingsChange,
+  onMusicVisualizerPluginInputBindingChange,
+  onMusicVisualizerPluginCustomBindingChange,
+  onMusicVisualizerPluginCustomSamplerBindingChange,
+  onMusicVisualizerPluginCustomTransformChange,
+  onMusicVisualizerPluginCustomBindingReplace,
+  onMusicVisualizerShaderLabChange,
   onThumbnailGapChange,
   onThumbnailQualityChange,
   onResetThumbnailQuality,
@@ -274,8 +298,9 @@ function SettingsPanel({
   onPerformancePresetChange,
 }: SettingsPanelProps) {
   const { t } = useI18n();
-  const [activeSectionRaw, setActiveSection] =
-    useState<SettingsSection>("layout");
+  const [activeSectionRaw, setActiveSection] = useState<SettingsSection>(() =>
+    resolveSettingsSection(settingsPanelSection),
+  );
   const activeSection = resolveSettingsSection(activeSectionRaw);
   const [bindingTarget, setBindingTarget] = useState<BindingTarget | null>(
     null,
@@ -415,7 +440,7 @@ function SettingsPanel({
 
   useEffect(() => {
     if (!settingsOpen) {
-      setActiveSection("layout");
+      setActiveSection(resolveSettingsSection(settingsPanelSection));
       setBindingTarget(null);
       setCapturingTarget(null);
       setCapturedCombo("");
@@ -433,6 +458,7 @@ function SettingsPanel({
     }
   }, [
     settingsOpen,
+    settingsPanelSection,
     cpuTokenLimit,
     resetPreferenceDebugState,
     thumbnailGenerationConcurrency,
@@ -469,6 +495,13 @@ function SettingsPanel({
       setActiveSection(normalized);
     }
   }, [activeSectionRaw]);
+
+  useEffect(() => {
+    if (!settingsOpen) {
+      return;
+    }
+    setActiveSection(resolveSettingsSection(settingsPanelSection));
+  }, [settingsOpen, settingsPanelSection]);
 
   useEffect(() => {
     if (!capturingTarget) {
@@ -914,6 +947,7 @@ function SettingsPanel({
   const mainSection = renderSettingsMainSection({
     t,
     activeSection,
+    settingsPanelSection,
     uiLocale,
     layoutLocked,
     electronNativeChromeEnabled,
@@ -951,6 +985,19 @@ function SettingsPanel({
     fullscreenVideoControlsMaxWidth,
     fullscreenVideoControlsMaxWidthScale,
     mediaPreloadMemoryBudgetMb,
+    musicVisualizerRuntimeMode,
+    musicVisualizerSelectedShaderId,
+    musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap,
+    musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength,
+    musicVisualizerShowFps,
+    musicVisualizerRenderer,
+    musicVisualizerShaderSettingsById,
+    musicVisualizerPluginInputBindingsByShaderId,
+    musicVisualizerPluginCustomBindingsByShaderId,
+    musicVisualizerShaderLab,
     thumbnailGap: resolvedThumbnailGap,
     thumbnailGapScale,
     thumbnailQuality,
@@ -1065,6 +1112,7 @@ function SettingsPanel({
     preferenceDebugData,
     renderBindingRows,
     onResetShortcuts,
+    onSettingsPanelSectionChange,
     onUiLocaleChange,
     onLayoutLockedChange,
     onElectronNativeChromeEnabledChange,
@@ -1095,6 +1143,15 @@ function SettingsPanel({
     onWorkspaceBottomPanelHeightChange,
     onFullscreenVideoControlsMaxWidthChange,
     onMediaPreloadMemoryBudgetMbChange,
+    onMusicVisualizerRuntimeModeChange,
+    onMusicVisualizerSelectedShaderIdChange,
+    onMusicVisualizerShaderSettingsChange,
+    onMusicVisualizerPluginInputBindingChange,
+    onMusicVisualizerPluginCustomBindingChange,
+    onMusicVisualizerPluginCustomSamplerBindingChange,
+    onMusicVisualizerPluginCustomTransformChange,
+    onMusicVisualizerPluginCustomBindingReplace,
+    onMusicVisualizerShaderLabChange,
     onThumbnailGapChange,
     onThumbnailQualityChange,
     onResetThumbnailQuality,
@@ -1281,7 +1338,10 @@ function SettingsPanel({
                 key={section.id}
                 className={activeSection === section.id ? "is-active" : ""}
                 type="button"
-                onClick={() => setActiveSection(section.id)}
+                onClick={() => {
+                  setActiveSection(section.id);
+                  onSettingsPanelSectionChange(section.id);
+                }}
               >
                 {t(section.labelKey)}
               </button>

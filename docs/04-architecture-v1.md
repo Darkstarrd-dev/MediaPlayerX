@@ -1,6 +1,6 @@
 # MediaPlayer 架构设计 V1
 
-Last updated: 2026-02-22
+Last updated: 2026-03-02
 
 ## 设计原则
 
@@ -24,7 +24,8 @@ Last updated: 2026-02-22
 - SQLite 基座已启用（含 migration/init/version）；扫描产物以事务 upsert + stale 清理写入数据库，读取统一以 SQLite 为 SSOT。
 - 播放列表写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `readPlaylist/writePlaylist`，重启后可恢复。
 - 音频元数据写链路已下沉 Main：Renderer 通过 `Repository -> preload -> ipc` 调用 `writeAudioMetadata`，写入 SQLite `audio_metadata` 并回写快照。
-- 音乐模式可视化已接入 Shader 渲染链路：Renderer 通过独立 `music-visualizer` 模块提供 `WebGL2(GPU)` 与 `Canvas2D(CPU fallback)` 双后端运行时。
+- 音乐模式可视化已升级为双运行时架构：全局 `musicVisualizerRuntimeMode` 控制 `legacy | plugin`，并保留自动回退到 legacy 的安全阀。
+- Shader 参数入口已收口：音乐主区仅保留“打开设置”快捷入口，实际模式切换/输入映射/预览统一在设置面板 `Shader` 分页完成。
 - 缩略图变体链路已落地：`resolveMediaResource` 支持 `original/thumbnail` 变体，thumbnail 由 Main 使用 Sharp 生成 WebP 并落盘缓存。
 - 运行时依赖预检已落地：Main 暴露依赖可用性与降级策略矩阵（`sharp/ffmpeg/ffprobe/archive-wasm/powershell`），Renderer 在降级时显示告警。
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
@@ -81,7 +82,11 @@ Last updated: 2026-02-22
 - `src/features/music-visualizer/audioAnalyser.ts`：`AudioContext + AnalyserNode` 音频采样与频谱/波形缓冲。
 - `src/features/music-visualizer/webglRenderer.ts`：GPU 后端（WebGL2）渲染器，接收 `iChannel0` 音频纹理输入。
 - `src/features/music-visualizer/cpuRenderer.ts`：CPU 保底后端（Canvas2D），用于无硬件加速环境。
-- `src/features/music-visualizer/useMusicVisualizerRuntime.ts`：统一运行时调度层（后端切换、渲染循环、FPS/帧耗时统计、内部渲染分辨率控制）。
+- `src/features/music-visualizer/useMusicVisualizerRuntime.ts`：运行时 facade（`legacy/plugin` 分发 + 失败回退）。
+- `src/features/music-visualizer/useMusicVisualizerPluginRuntime.ts`：plugin 运行时分支（反射、绑定、桥接策略）。
+- `src/features/music-visualizer/plugin/programIntrospection.ts`：Program 反射（active uniforms/samplers）。
+- `src/features/music-visualizer/plugin/inputBinder.ts`：输入信号绑定与 transform 执行。
+- `src/features/music-visualizer/plugin/signalBank.ts`：统一信号源（audioLevel/audioBeat/time/audioTexture）。
 
 约束：播放器主组件只传递输入与配置，不直接耦合 Shader 细节；新增 Shader 时不允许改动 App 顶层编排。
 

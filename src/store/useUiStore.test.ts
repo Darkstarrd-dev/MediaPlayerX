@@ -1,3 +1,4 @@
+import type { AppSettings } from '../contracts/settings'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { resetUiStoreState, useUiStore } from './useUiStore'
@@ -10,6 +11,7 @@ describe('useUiStore visualizer settings', () => {
   it('provides visualizer defaults', () => {
     const state = useUiStore.getState()
     expect(state.uiLocale).toBe('auto')
+    expect(state.settingsPanelSection).toBe('layout')
     expect(state.musicVisualizerRenderLongEdgePx).toBe(1280)
     expect(state.musicVisualizerFpsCap).toBe(60)
     expect(state.musicVisualizerSelectedShaderId).toBe('')
@@ -36,6 +38,12 @@ describe('useUiStore visualizer settings', () => {
       showFps: false,
       renderer: 'gpu',
     })
+    expect(state.musicVisualizerShaderLab).toEqual({
+      adapterMode: 'auto',
+      previewFpsCap: 60,
+      previewRenderLongEdgePx: 1280,
+      previewInputSource: 'demo',
+    })
   })
 
   it('accepts valid visualizer settings updates', () => {
@@ -48,6 +56,13 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerToneMapStrength: 0.8,
       musicVisualizerShowFps: true,
       musicVisualizerRenderer: 'cpu',
+      settingsPanelSection: 'shader',
+      musicVisualizerShaderLab: {
+        adapterMode: 'shadertoy',
+        previewFpsCap: 120,
+        previewRenderLongEdgePx: 1600,
+        previewInputSource: 'player',
+      },
       uiLocale: 'en-US',
       musicVisualizerShaderSettingsById: {
         fungi: {
@@ -80,6 +95,13 @@ describe('useUiStore visualizer settings', () => {
     expect(state.musicVisualizerToneMapStrength).toBe(0.8)
     expect(state.musicVisualizerShowFps).toBe(true)
     expect(state.musicVisualizerRenderer).toBe('cpu')
+    expect(state.settingsPanelSection).toBe('shader')
+    expect(state.musicVisualizerShaderLab).toEqual({
+      adapterMode: 'shadertoy',
+      previewFpsCap: 120,
+      previewRenderLongEdgePx: 1600,
+      previewInputSource: 'player',
+    })
     expect(state.uiLocale).toBe('en-US')
     expect(state.musicVisualizerShaderSettingsById.fungi).toEqual({
       renderLongEdgePx: 1920,
@@ -112,6 +134,13 @@ describe('useUiStore visualizer settings', () => {
       musicVisualizerToneMapExposure: 99 as unknown as number,
       musicVisualizerToneMapStrength: -1 as unknown as number,
       musicVisualizerRenderer: 'invalid' as unknown as 'gpu',
+      settingsPanelSection: 'invalid' as unknown as 'layout',
+      musicVisualizerShaderLab: {
+        adapterMode: 'bad',
+        previewFpsCap: 999,
+        previewRenderLongEdgePx: 99999,
+        previewInputSource: 'bad',
+      } as unknown as AppSettings['musicVisualizerShaderLab'],
       uiLocale: 'de-DE' as unknown as 'auto',
     })
 

@@ -1,6 +1,11 @@
 import { buildShadertoyFragmentSource } from './shadertoyAdapter'
 import type {
   MusicVisualizerFrameInput,
+  MusicVisualizerPluginCustomBinding,
+  MusicVisualizerPluginInputBinding,
+  MusicVisualizerPluginScalarTransform,
+  MusicVisualizerPluginSamplerSignal,
+  MusicVisualizerPluginScalarSignal,
   MusicVisualizerRenderer,
   MusicVisualizerShaderChannelSource,
   MusicVisualizerShaderDefinition,
@@ -11,6 +16,7 @@ import type {
 const AUDIO_TEXTURE_WIDTH = 512
 const AUDIO_TEXTURE_HEIGHT = 2
 const MAX_CHANNEL_COUNT = 4
+const PLUGIN_AUDIO_TEXTURE_UNIT = 7
 
 const VERTEX_SHADER_SOURCE = `#version 300 es
 precision highp float;
@@ -51,6 +57,10 @@ interface PassUniformLocations {
   compositeMode: WebGLUniformLocation | null
   themeMode: WebGLUniformLocation | null
   themeBackgroundColor: WebGLUniformLocation | null
+  pluginTime: WebGLUniformLocation | null
+  pluginAudioLevel: WebGLUniformLocation | null
+  pluginAudioBeat: WebGLUniformLocation | null
+  pluginAudioTextureSampler: WebGLUniformLocation | null
 }
 
 interface PassRenderTarget {
@@ -72,8 +82,22 @@ interface NormalizedPassDescriptor {
 
 interface NormalizedShaderPipeline {
   commonSource?: string
+  pluginInputBinding: MusicVisualizerPluginInputBinding
+  pluginCustomBinding: MusicVisualizerPluginCustomBinding
   textures: readonly MusicVisualizerShaderTextureDefinition[]
   passes: NormalizedPassDescriptor[]
+}
+
+interface PluginScalarBindingRuntime {
+  location: WebGLUniformLocation
+  signal: MusicVisualizerPluginScalarSignal
+  transform: MusicVisualizerPluginScalarTransform
+  smoothedValue: number | null
+}
+
+interface PluginSamplerBindingRuntime {
+  location: WebGLUniformLocation
+  signal: MusicVisualizerPluginSamplerSignal
 }
 
 interface PassRuntime {
@@ -81,6 +105,8 @@ interface PassRuntime {
   program: WebGLProgram
   uniforms: PassUniformLocations
   activeUniformNames: string[]
+  pluginScalarBindings: PluginScalarBindingRuntime[]
+  pluginSamplerBindings: PluginSamplerBindingRuntime[]
   target: PassRenderTarget | null
 }
 
@@ -516,10 +542,97 @@ function normalizeChannels(
   return normalized
 }
 
+function normalizePluginInputBinding(
+  binding: MusicVisualizerPluginInputBinding | undefined,
+): MusicVisualizerPluginInputBinding {
+  const normalize = (value: string | undefined, fallback: string): string => {
+    if (typeof value !== 'string') {
+      return fallback
+    }
+    const token = value.trim().slice(0, 64)
+    return token.length > 0 ? token : fallback
+  }
+
+  return {
+    audioLevelUniform: normalize(binding?.audioLevelUniform, 'iAudioLevel'),
+    audioBeatUniform: normalize(binding?.audioBeatUniform, 'iAudioBeat'),
+    timeUniform: normalize(binding?.timeUniform, 'iTime'),
+    audioTextureSampler: normalize(binding?.audioTextureSampler, 'iChannel0'),
+  }
+}
+
+function normalizePluginCustomBinding(
+  binding: MusicVisualizerPluginCustomBinding | undefined,
+): MusicVisualizerPluginCustomBinding {
+  const scalarBindings: MusicVisualizerPluginCustomBinding['scalarBindings'] = {}
+  const scalarTransforms: MusicVisualizerPluginCustomBinding['scalarTransforms'] = {}
+  const samplerBindings: MusicVisualizerPluginCustomBinding['samplerBindings'] = {}
+
+  if (binding?.scalarBindings) {
+    for (const [rawName, rawSignal] of Object.entries(binding.scalarBindings)) {
+      const uniformName = rawName.trim().slice(0, 64)
+      if (!uniformName) {
+        continue
+      }
+      if (
+        rawSignal === 'none' ||
+        rawSignal === 'audioLevel' ||
+        rawSignal === 'audioBeat' ||
+        rawSignal === 'timeSec'
+      ) {
+        scalarBindings[uniformName] = rawSignal
+      }
+    }
+  }
+
+  if (binding?.samplerBindings) {
+    for (const [rawName, rawSignal] of Object.entries(binding.samplerBindings)) {
+      const uniformName = rawName.trim().slice(0, 64)
+      if (!uniformName) {
+        continue
+      }
+      if (rawSignal === 'none' || rawSignal === 'audioTexture') {
+        samplerBindings[uniformName] = rawSignal
+      }
+    }
+  }
+
+  if (binding?.scalarTransforms) {
+    for (const [rawName, rawTransform] of Object.entries(binding.scalarTransforms)) {
+      const uniformName = rawName.trim().slice(0, 64)
+      if (!uniformName || !rawTransform) {
+        continue
+      }
+      const clampMin = clamp(rawTransform.clampMin, -4, 4)
+      const clampMax = Math.max(clampMin, clamp(rawTransform.clampMax, -4, 4))
+      scalarTransforms[uniformName] = {
+        scale: clamp(rawTransform.scale, -16, 16),
+        bias: clamp(rawTransform.bias, -4, 4),
+        clampEnabled: Boolean(rawTransform.clampEnabled),
+        clampMin,
+        clampMax,
+        smoothEnabled: Boolean(rawTransform.smoothEnabled),
+        smoothAttack: clamp(rawTransform.smoothAttack, 0, 1),
+        smoothRelease: clamp(rawTransform.smoothRelease, 0, 1),
+      }
+    }
+  }
+
+  return {
+    scalarBindings,
+    scalarTransforms,
+    samplerBindings,
+  }
+}
+
 function normalizeShaderPipeline(shader: MusicVisualizerShaderDefinition): NormalizedShaderPipeline {
+  const pluginInputBinding = normalizePluginInputBinding(shader.pluginInputBinding)
+  const pluginCustomBinding = normalizePluginCustomBinding(shader.pluginCustomBinding)
   if (!shader.multiPass || shader.multiPass.passes.length === 0) {
     return {
       commonSource: shader.commonSource,
+      pluginInputBinding,
+      pluginCustomBinding,
       textures: [],
       passes: [
         {
@@ -567,12 +680,28 @@ function normalizeShaderPipeline(shader: MusicVisualizerShaderDefinition): Norma
 
   return {
     commonSource: shader.multiPass.commonSource ?? shader.commonSource,
+    pluginInputBinding,
+    pluginCustomBinding,
     textures: shader.multiPass.textures ?? [],
     passes: normalizedPasses,
   }
 }
 
-function resolvePassUniformLocations(gl: WebGL2RenderingContext, program: WebGLProgram): PassUniformLocations {
+function resolvePassUniformLocations(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  pluginInputBinding: MusicVisualizerPluginInputBinding,
+): PassUniformLocations {
+  const resolveAlias = (
+    aliasName: string,
+    defaultName: 'iTime' | 'iAudioLevel' | 'iAudioBeat' | 'iChannel0',
+  ): WebGLUniformLocation | null => {
+    if (aliasName === defaultName) {
+      return null
+    }
+    return gl.getUniformLocation(program, aliasName)
+  }
+
   return {
     resolution: gl.getUniformLocation(program, 'iResolution'),
     time: gl.getUniformLocation(program, 'iTime'),
@@ -595,7 +724,72 @@ function resolvePassUniformLocations(gl: WebGL2RenderingContext, program: WebGLP
     compositeMode: gl.getUniformLocation(program, 'iCompositeMode'),
     themeMode: gl.getUniformLocation(program, 'iThemeMode'),
     themeBackgroundColor: gl.getUniformLocation(program, 'iThemeBackgroundColor'),
+    pluginTime: resolveAlias(pluginInputBinding.timeUniform, 'iTime'),
+    pluginAudioLevel: resolveAlias(pluginInputBinding.audioLevelUniform, 'iAudioLevel'),
+    pluginAudioBeat: resolveAlias(pluginInputBinding.audioBeatUniform, 'iAudioBeat'),
+    pluginAudioTextureSampler: resolveAlias(pluginInputBinding.audioTextureSampler, 'iChannel0'),
   }
+}
+
+function resolvePluginScalarBindings(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  binding: MusicVisualizerPluginCustomBinding,
+): PluginScalarBindingRuntime[] {
+  const resolveTransform = (uniformName: string): MusicVisualizerPluginScalarTransform => {
+    return (
+      binding.scalarTransforms[uniformName] ?? {
+        scale: 1,
+        bias: 0,
+        clampEnabled: false,
+        clampMin: 0,
+        clampMax: 1,
+        smoothEnabled: false,
+        smoothAttack: 0.35,
+        smoothRelease: 0.12,
+      }
+    )
+  }
+
+  const resolved: PluginScalarBindingRuntime[] = []
+  for (const [uniformName, signal] of Object.entries(binding.scalarBindings)) {
+    if (signal === 'none') {
+      continue
+    }
+    const location = gl.getUniformLocation(program, uniformName)
+    if (!location) {
+      continue
+    }
+    resolved.push({
+      location,
+      signal,
+      transform: resolveTransform(uniformName),
+      smoothedValue: null,
+    })
+  }
+  return resolved
+}
+
+function resolvePluginSamplerBindings(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  binding: MusicVisualizerPluginCustomBinding,
+): PluginSamplerBindingRuntime[] {
+  const resolved: PluginSamplerBindingRuntime[] = []
+  for (const [uniformName, signal] of Object.entries(binding.samplerBindings)) {
+    if (signal === 'none') {
+      continue
+    }
+    const location = gl.getUniformLocation(program, uniformName)
+    if (!location) {
+      continue
+    }
+    resolved.push({
+      location,
+      signal,
+    })
+  }
+  return resolved
 }
 
 export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
@@ -682,14 +876,30 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
         includeToneMapping: descriptor.toneMap,
       })
       const program = createProgram(gl, fragmentSource)
-      const uniforms = resolvePassUniformLocations(gl, program)
+      const uniforms = resolvePassUniformLocations(
+        gl,
+        program,
+        pipeline.pluginInputBinding,
+      )
       const activeUniformNames = listActiveUniformNames(gl, program)
+      const pluginScalarBindings = resolvePluginScalarBindings(
+        gl,
+        program,
+        pipeline.pluginCustomBinding,
+      )
+      const pluginSamplerBindings = resolvePluginSamplerBindings(
+        gl,
+        program,
+        pipeline.pluginCustomBinding,
+      )
       const target = descriptor.output === 'buffer' ? createRenderTarget(gl, 1, 1) : null
       const runtime: PassRuntime = {
         descriptor,
         program,
         uniforms,
         activeUniformNames,
+        pluginScalarBindings,
+        pluginSamplerBindings,
         target,
       }
       this.passRuntimes.push(runtime)
@@ -782,7 +992,7 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
       gl.bindVertexArray(this.vao)
 
       this.bindPassChannels(runtime, renderedTexturesByPassId, previousTexturesByPassId)
-      this.updatePassUniforms(runtime.uniforms, {
+      this.updatePassUniforms(runtime.uniforms, runtime.pluginScalarBindings, {
         width: passWidth,
         height: passHeight,
         timeSec,
@@ -941,6 +1151,20 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     if (runtime.uniforms.channelResolution) {
       gl.uniform3fv(runtime.uniforms.channelResolution, this.channelResolutionData)
     }
+
+    if (runtime.uniforms.pluginAudioTextureSampler) {
+      gl.activeTexture(gl.TEXTURE0 + PLUGIN_AUDIO_TEXTURE_UNIT)
+      gl.bindTexture(gl.TEXTURE_2D, this.audioTexture)
+      gl.uniform1i(runtime.uniforms.pluginAudioTextureSampler, PLUGIN_AUDIO_TEXTURE_UNIT)
+    }
+
+    for (const binding of runtime.pluginSamplerBindings) {
+      if (binding.signal === 'audioTexture') {
+        gl.activeTexture(gl.TEXTURE0 + PLUGIN_AUDIO_TEXTURE_UNIT)
+        gl.bindTexture(gl.TEXTURE_2D, this.audioTexture)
+        gl.uniform1i(binding.location, PLUGIN_AUDIO_TEXTURE_UNIT)
+      }
+    }
   }
 
   private updateDateUniformData(): void {
@@ -957,13 +1181,20 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     this.dateData[3] = daySeconds
   }
 
-  private updatePassUniforms(uniforms: PassUniformLocations, input: PassUniformInput): void {
+  private updatePassUniforms(
+    uniforms: PassUniformLocations,
+    pluginScalarBindings: PluginScalarBindingRuntime[],
+    input: PassUniformInput,
+  ): void {
     const gl = this.gl
     if (uniforms.resolution) {
       gl.uniform3f(uniforms.resolution, input.width, input.height, 1)
     }
     if (uniforms.time) {
       gl.uniform1f(uniforms.time, input.timeSec)
+    }
+    if (uniforms.pluginTime) {
+      gl.uniform1f(uniforms.pluginTime, input.timeSec)
     }
     if (uniforms.frame) {
       gl.uniform1i(uniforms.frame, input.frame)
@@ -974,8 +1205,44 @@ export class WebglMusicVisualizerRenderer implements MusicVisualizerRenderer {
     if (uniforms.audioLevel) {
       gl.uniform1f(uniforms.audioLevel, input.audioLevel)
     }
+    if (uniforms.pluginAudioLevel) {
+      gl.uniform1f(uniforms.pluginAudioLevel, input.audioLevel)
+    }
     if (uniforms.audioBeat) {
       gl.uniform1f(uniforms.audioBeat, input.audioBeat)
+    }
+    if (uniforms.pluginAudioBeat) {
+      gl.uniform1f(uniforms.pluginAudioBeat, input.audioBeat)
+    }
+
+    for (const binding of pluginScalarBindings) {
+      let value = 0
+      if (binding.signal === 'audioLevel') {
+        value = input.audioLevel
+      } else if (binding.signal === 'audioBeat') {
+        value = input.audioBeat
+      } else if (binding.signal === 'timeSec') {
+        value = input.timeSec
+      }
+
+      const transformed = value * binding.transform.scale + binding.transform.bias
+      const clamped = binding.transform.clampEnabled
+        ? clamp(transformed, binding.transform.clampMin, binding.transform.clampMax)
+        : transformed
+
+      let output = clamped
+      if (binding.transform.smoothEnabled) {
+        const previous = binding.smoothedValue ?? clamped
+        const smoothing = clamped >= previous
+          ? binding.transform.smoothAttack
+          : binding.transform.smoothRelease
+        output = previous + (clamped - previous) * clamp(smoothing, 0, 1)
+        binding.smoothedValue = output
+      } else {
+        binding.smoothedValue = clamped
+      }
+
+      gl.uniform1f(binding.location, output)
     }
     if (uniforms.toneMapMode) {
       gl.uniform1i(uniforms.toneMapMode, input.toneMapModeCode)

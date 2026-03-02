@@ -28,6 +28,7 @@ export const SETTINGS_SECTIONS: Array<{
 }> = [
   { id: "layout", labelKey: "ui.settings.sectionLayout" },
   { id: "performance", labelKey: "ui.settings.sectionPerformance" },
+  { id: "shader", labelKey: "ui.settings.sectionShader" },
   { id: "audio", labelKey: "ui.settings.sectionAudio" },
   { id: "model", labelKey: "ui.settings.sectionModel" },
   { id: "debug", labelKey: "ui.settings.sectionDebug" },
@@ -157,6 +158,7 @@ export function resolveSettingsSection(raw: unknown): SettingsSection {
   if (
     raw === "layout" ||
     raw === "performance" ||
+    raw === "shader" ||
     raw === "audio" ||
     raw === "debug" ||
     raw === "system" ||

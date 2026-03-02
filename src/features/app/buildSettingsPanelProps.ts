@@ -1,4 +1,8 @@
-import type { AppSettings } from "../../contracts/settings";
+import {
+  musicVisualizerPluginCustomBindingSchema,
+  musicVisualizerPluginInputBindingSchema,
+  type AppSettings,
+} from "../../contracts/settings";
 import type { SettingsPanelProps } from "../../components/SettingsPanel";
 import {
   resolvePalettePairForStyle,
@@ -48,6 +52,7 @@ export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
 
 interface BuildSettingsPanelPropsParams {
   settingsOpen: boolean;
+  settingsPanelSection: AppSettings["settingsPanelSection"];
   uiLocale: AppSettings["uiLocale"];
   styleId: string;
   paletteId: string;
@@ -82,6 +87,22 @@ interface BuildSettingsPanelPropsParams {
   workspaceBottomPanelHeight: number;
   fullscreenVideoControlsMaxWidth: number;
   mediaPreloadMemoryBudgetMb: number;
+  musicVisualizerRuntimeMode: AppSettings["musicVisualizerRuntimeMode"];
+  musicVisualizerSelectedShaderId: string;
+  musicVisualizerRenderLongEdgePx: number;
+  musicVisualizerFpsCap: 30 | 60 | 120;
+  musicVisualizerToneMapMode: AppSettings["musicVisualizerToneMapMode"];
+  musicVisualizerToneMapExposure: number;
+  musicVisualizerToneMapStrength: number;
+  musicVisualizerShowFps: boolean;
+  musicVisualizerRenderer: AppSettings["musicVisualizerRenderer"];
+  musicVisualizerShaderSettingsById:
+    AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId:
+    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId:
+    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailQuality: number;
   thumbnailAdaptiveResolution: boolean;
@@ -190,8 +211,33 @@ interface BuildSettingsPanelPropsParams {
 export function buildSettingsPanelProps(
   params: BuildSettingsPanelPropsParams,
 ): SettingsPanelProps {
+  const resolveFallbackShaderSettings = (): AppSettings["musicVisualizerShaderSettingsById"][string] => ({
+    renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    renderScaleCoeff: 2,
+    compositionMode: "single",
+    layeredBackgroundShaderId: "galaxy",
+    layeredForegroundShaderId: "mcs-szb",
+    layeredBackgroundEnabled: true,
+    layeredForegroundEnabled: true,
+    layeredForegroundOffsetX: 0,
+    layeredForegroundOffsetY: 0,
+    layeredForegroundScale: 1,
+    fpsCap: params.musicVisualizerFpsCap,
+    toneMapMode: params.musicVisualizerToneMapMode,
+    toneMapExposure: params.musicVisualizerToneMapExposure,
+    toneMapStrength: params.musicVisualizerToneMapStrength,
+    showFps: params.musicVisualizerShowFps,
+    renderer: params.musicVisualizerRenderer,
+  });
+
+  const resolveSelectedShaderId = (): string => {
+    const trimmed = params.musicVisualizerSelectedShaderId.trim().slice(0, 64);
+    return trimmed || "mcs-szb";
+  };
+
   return {
     settingsOpen: params.settingsOpen,
+    settingsPanelSection: params.settingsPanelSection,
     uiLocale: params.uiLocale,
     styleId: params.styleId,
     paletteId: params.paletteId,
@@ -226,6 +272,21 @@ export function buildSettingsPanelProps(
     workspaceBottomPanelHeight: params.workspaceBottomPanelHeight,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
+    musicVisualizerRuntimeMode: params.musicVisualizerRuntimeMode,
+    musicVisualizerSelectedShaderId: params.musicVisualizerSelectedShaderId,
+    musicVisualizerRenderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+    musicVisualizerFpsCap: params.musicVisualizerFpsCap,
+    musicVisualizerToneMapMode: params.musicVisualizerToneMapMode,
+    musicVisualizerToneMapExposure: params.musicVisualizerToneMapExposure,
+    musicVisualizerToneMapStrength: params.musicVisualizerToneMapStrength,
+    musicVisualizerShowFps: params.musicVisualizerShowFps,
+    musicVisualizerRenderer: params.musicVisualizerRenderer,
+    musicVisualizerShaderSettingsById: params.musicVisualizerShaderSettingsById,
+    musicVisualizerPluginInputBindingsByShaderId:
+      params.musicVisualizerPluginInputBindingsByShaderId,
+    musicVisualizerPluginCustomBindingsByShaderId:
+      params.musicVisualizerPluginCustomBindingsByShaderId,
+    musicVisualizerShaderLab: params.musicVisualizerShaderLab,
     thumbnailGap: params.thumbnailGap,
     thumbnailQuality: params.thumbnailQuality,
     thumbnailAdaptiveResolution: params.thumbnailAdaptiveResolution,
@@ -310,6 +371,8 @@ export function buildSettingsPanelProps(
     adReviewDeleteOverlayDebugActive: params.adReviewDeleteOverlayDebugActive,
     onRefreshRuntimeInfo: params.refreshRuntimeInfo,
     onClose: () => params.updateSettings({ settingsOpen: false }),
+    onSettingsPanelSectionChange: (value) =>
+      params.updateSettings({ settingsPanelSection: value }),
     onUiLocaleChange: (value) => {
       params.updateSettings({ uiLocale: value });
     },
@@ -435,6 +498,303 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenVideoControlsMaxWidth: value }),
     onMediaPreloadMemoryBudgetMbChange: (value) =>
       params.updateSettings({ mediaPreloadMemoryBudgetMb: value }),
+    onMusicVisualizerRuntimeModeChange: (value) =>
+      params.updateSettings({ musicVisualizerRuntimeMode: value }),
+    onMusicVisualizerSelectedShaderIdChange: (value) => {
+      const nextShaderId = value.trim().slice(0, 64);
+      if (!nextShaderId) {
+        return;
+      }
+
+      const selectedShaderId = resolveSelectedShaderId();
+      const fallback = resolveFallbackShaderSettings();
+      const nextSettingsById = { ...params.musicVisualizerShaderSettingsById };
+      if (!nextSettingsById[nextShaderId]) {
+        nextSettingsById[nextShaderId] = {
+          ...(nextSettingsById[selectedShaderId] ?? fallback),
+        };
+      }
+
+      params.updateSettings({
+        musicVisualizerSelectedShaderId: nextShaderId,
+        musicVisualizerShaderSettingsById: nextSettingsById,
+      });
+    },
+    onMusicVisualizerShaderSettingsChange: (patch) => {
+      const selectedShaderId = resolveSelectedShaderId();
+      const fallback = resolveFallbackShaderSettings();
+      const currentSettings =
+        params.musicVisualizerShaderSettingsById[selectedShaderId] ?? fallback;
+      params.updateSettings({
+        musicVisualizerShaderSettingsById: {
+          ...params.musicVisualizerShaderSettingsById,
+          [selectedShaderId]: {
+            ...currentSettings,
+            ...patch,
+          },
+        },
+      });
+    },
+    onMusicVisualizerPluginInputBindingChange: (patch) => {
+      const selectedShaderId = resolveSelectedShaderId();
+      const currentBinding =
+        params.musicVisualizerPluginInputBindingsByShaderId[selectedShaderId] ?? {
+          audioLevelUniform: "iAudioLevel",
+          audioBeatUniform: "iAudioBeat",
+          timeUniform: "iTime",
+          audioTextureSampler: "iChannel0",
+        };
+      const normalizeUniformName = (
+        value: string | undefined,
+        fallback: string,
+      ): string => {
+        if (typeof value !== "string") {
+          return fallback;
+        }
+        const normalized = value.trim().slice(0, 64);
+        return normalized.length > 0 ? normalized : fallback;
+      };
+      params.updateSettings({
+        musicVisualizerPluginInputBindingsByShaderId: {
+          ...params.musicVisualizerPluginInputBindingsByShaderId,
+          [selectedShaderId]: {
+            audioLevelUniform: normalizeUniformName(
+              patch.audioLevelUniform,
+              patch.audioLevelUniform ? "iAudioLevel" : currentBinding.audioLevelUniform,
+            ),
+            audioBeatUniform: normalizeUniformName(
+              patch.audioBeatUniform,
+              patch.audioBeatUniform ? "iAudioBeat" : currentBinding.audioBeatUniform,
+            ),
+            timeUniform: normalizeUniformName(
+              patch.timeUniform,
+              patch.timeUniform ? "iTime" : currentBinding.timeUniform,
+            ),
+            audioTextureSampler: normalizeUniformName(
+              patch.audioTextureSampler,
+              patch.audioTextureSampler ? "iChannel0" : currentBinding.audioTextureSampler,
+            ),
+          },
+        },
+      });
+    },
+    onMusicVisualizerPluginCustomBindingChange: (uniformName, signal) => {
+      const selectedShaderId = resolveSelectedShaderId();
+      const normalizedName = uniformName.trim().slice(0, 64);
+      if (!normalizedName) {
+        return;
+      }
+      const currentBinding =
+        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+          scalarBindings: {},
+          scalarTransforms: {},
+          samplerBindings: {},
+        };
+      const nextScalarBindings = { ...currentBinding.scalarBindings };
+      const nextScalarTransforms = { ...currentBinding.scalarTransforms };
+      if (signal === "none") {
+        delete nextScalarBindings[normalizedName];
+        delete nextScalarTransforms[normalizedName];
+      } else {
+        nextScalarBindings[normalizedName] = signal;
+        if (!nextScalarTransforms[normalizedName]) {
+          nextScalarTransforms[normalizedName] = {
+            scale: 1,
+            bias: 0,
+            clampEnabled: false,
+            clampMin: 0,
+            clampMax: 1,
+            smoothEnabled: false,
+            smoothAttack: 0.35,
+            smoothRelease: 0.12,
+          };
+        }
+      }
+      params.updateSettings({
+        musicVisualizerPluginCustomBindingsByShaderId: {
+          ...params.musicVisualizerPluginCustomBindingsByShaderId,
+          [selectedShaderId]: {
+            ...currentBinding,
+            scalarBindings: nextScalarBindings,
+            scalarTransforms: nextScalarTransforms,
+          },
+        },
+      });
+    },
+    onMusicVisualizerPluginCustomSamplerBindingChange: (uniformName, signal) => {
+      const selectedShaderId = resolveSelectedShaderId();
+      const normalizedName = uniformName.trim().slice(0, 64);
+      if (!normalizedName) {
+        return;
+      }
+      const currentBinding =
+        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+          scalarBindings: {},
+          scalarTransforms: {},
+          samplerBindings: {},
+        };
+      const nextSamplerBindings = { ...currentBinding.samplerBindings };
+      if (signal === "none") {
+        delete nextSamplerBindings[normalizedName];
+      } else {
+        nextSamplerBindings[normalizedName] = signal;
+      }
+      params.updateSettings({
+        musicVisualizerPluginCustomBindingsByShaderId: {
+          ...params.musicVisualizerPluginCustomBindingsByShaderId,
+          [selectedShaderId]: {
+            ...currentBinding,
+            samplerBindings: nextSamplerBindings,
+          },
+        },
+      });
+    },
+    onMusicVisualizerPluginCustomTransformChange: (uniformName, patch) => {
+      const selectedShaderId = resolveSelectedShaderId();
+      const normalizedName = uniformName.trim().slice(0, 64);
+      if (!normalizedName) {
+        return;
+      }
+      const currentBinding =
+        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+          scalarBindings: {},
+          scalarTransforms: {},
+          samplerBindings: {},
+        };
+      const currentTransform =
+        currentBinding.scalarTransforms[normalizedName] ?? {
+          scale: 1,
+          bias: 0,
+          clampEnabled: false,
+          clampMin: 0,
+          clampMax: 1,
+          smoothEnabled: false,
+          smoothAttack: 0.35,
+          smoothRelease: 0.12,
+        };
+      const nextTransform = {
+        ...currentTransform,
+        ...patch,
+      };
+      const normalizeNumber = (
+        value: number,
+        fallback: number,
+        min: number,
+        max: number,
+      ): number => {
+        if (!Number.isFinite(value)) {
+          return fallback;
+        }
+        return Math.max(min, Math.min(max, value));
+      };
+      nextTransform.scale = normalizeNumber(nextTransform.scale, 1, -16, 16);
+      nextTransform.bias = normalizeNumber(nextTransform.bias, 0, -4, 4);
+      nextTransform.clampMin = normalizeNumber(
+        nextTransform.clampMin,
+        0,
+        -4,
+        4,
+      );
+      nextTransform.clampMax = normalizeNumber(
+        nextTransform.clampMax,
+        1,
+        -4,
+        4,
+      );
+      nextTransform.smoothAttack = normalizeNumber(
+        nextTransform.smoothAttack,
+        0.35,
+        0,
+        1,
+      );
+      nextTransform.smoothRelease = normalizeNumber(
+        nextTransform.smoothRelease,
+        0.12,
+        0,
+        1,
+      );
+      if (nextTransform.clampMax < nextTransform.clampMin) {
+        nextTransform.clampMax = nextTransform.clampMin;
+      }
+      params.updateSettings({
+        musicVisualizerPluginCustomBindingsByShaderId: {
+          ...params.musicVisualizerPluginCustomBindingsByShaderId,
+          [selectedShaderId]: {
+            ...currentBinding,
+            scalarTransforms: {
+              ...currentBinding.scalarTransforms,
+              [normalizedName]: nextTransform,
+            },
+          },
+        },
+      });
+    },
+    onMusicVisualizerPluginCustomBindingReplace: (value) => {
+      if (!value || typeof value !== "object") {
+        return;
+      }
+      const selectedShaderId = resolveSelectedShaderId();
+      const payload = value as Record<string, unknown>;
+
+      const importedInputCandidate =
+        payload.pluginInputBinding ?? payload.musicVisualizerPluginInputBinding;
+      const importedCustomCandidate =
+        payload.pluginCustomBinding ?? payload.musicVisualizerPluginCustomBinding;
+
+      const importedInput =
+        musicVisualizerPluginInputBindingSchema.safeParse(importedInputCandidate);
+      const importedCustom =
+        musicVisualizerPluginCustomBindingSchema.safeParse(importedCustomCandidate);
+
+      if (!importedInput.success && !importedCustom.success) {
+        return;
+      }
+
+      const patch: Partial<AppSettings> = {};
+      if (importedInput.success) {
+        patch.musicVisualizerPluginInputBindingsByShaderId = {
+          ...params.musicVisualizerPluginInputBindingsByShaderId,
+          [selectedShaderId]: importedInput.data,
+        };
+      }
+      if (importedCustom.success) {
+        patch.musicVisualizerPluginCustomBindingsByShaderId = {
+          ...params.musicVisualizerPluginCustomBindingsByShaderId,
+          [selectedShaderId]: importedCustom.data,
+        };
+      }
+      params.updateSettings(patch);
+    },
+    onMusicVisualizerShaderLabChange: (patch) => {
+      const current = params.musicVisualizerShaderLab;
+      const next: AppSettings["musicVisualizerShaderLab"] = {
+        adapterMode:
+          patch.adapterMode === "auto" ||
+          patch.adapterMode === "shadertoy" ||
+          patch.adapterMode === "glsl"
+            ? patch.adapterMode
+            : current.adapterMode,
+        previewFpsCap:
+          patch.previewFpsCap === 30 ||
+          patch.previewFpsCap === 60 ||
+          patch.previewFpsCap === 120
+            ? patch.previewFpsCap
+            : current.previewFpsCap,
+        previewRenderLongEdgePx:
+          typeof patch.previewRenderLongEdgePx === "number" &&
+          Number.isFinite(patch.previewRenderLongEdgePx)
+            ? Math.max(240, Math.min(2048, Math.round(patch.previewRenderLongEdgePx)))
+            : current.previewRenderLongEdgePx,
+        previewInputSource:
+          patch.previewInputSource === "demo" ||
+          patch.previewInputSource === "player"
+            ? patch.previewInputSource
+            : current.previewInputSource,
+      };
+      params.updateSettings({
+        musicVisualizerShaderLab: next,
+      });
+    },
     onThumbnailGapChange: (value) =>
       params.updateSettings({ thumbnailGap: value }),
     onThumbnailQualityChange: (value) =>

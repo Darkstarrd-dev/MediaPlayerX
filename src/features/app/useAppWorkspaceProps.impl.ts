@@ -1256,8 +1256,13 @@ export function useAppWorkspaceProps({
     musicVisualizerToneMapStrength: appSettings.musicVisualizerToneMapStrength,
     musicVisualizerShowFps: appSettings.musicVisualizerShowFps,
     musicVisualizerRenderer: appSettings.musicVisualizerRenderer,
+    musicVisualizerRuntimeMode: appSettings.musicVisualizerRuntimeMode,
     musicVisualizerShaderSettingsById:
       appSettings.musicVisualizerShaderSettingsById,
+    musicVisualizerPluginInputBindingsByShaderId:
+      appSettings.musicVisualizerPluginInputBindingsByShaderId,
+    musicVisualizerPluginCustomBindingsByShaderId:
+      appSettings.musicVisualizerPluginCustomBindingsByShaderId,
     updateSettings: appSettings.updateSettings,
     onToggleMetadataManageSelectionMode: toggleMetadataManageSelectionMode,
   });

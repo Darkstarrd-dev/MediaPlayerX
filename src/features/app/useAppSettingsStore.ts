@@ -8,6 +8,7 @@ export function useAppSettingsStore() {
       mode: state.mode,
       vectorMode: state.vectorMode,
       settingsOpen: state.settingsOpen,
+      settingsPanelSection: state.settingsPanelSection,
       helpOpen: state.helpOpen,
       headerHeight: state.headerHeight,
       settingsBackdropOpacity: state.settingsBackdropOpacity,
@@ -93,8 +94,14 @@ export function useAppSettingsStore() {
       musicVisualizerToneMapStrength: state.musicVisualizerToneMapStrength,
       musicVisualizerShowFps: state.musicVisualizerShowFps,
       musicVisualizerRenderer: state.musicVisualizerRenderer,
+      musicVisualizerRuntimeMode: state.musicVisualizerRuntimeMode,
       musicVisualizerShaderSettingsById:
         state.musicVisualizerShaderSettingsById,
+      musicVisualizerPluginInputBindingsByShaderId:
+        state.musicVisualizerPluginInputBindingsByShaderId,
+      musicVisualizerPluginCustomBindingsByShaderId:
+        state.musicVisualizerPluginCustomBindingsByShaderId,
+      musicVisualizerShaderLab: state.musicVisualizerShaderLab,
       proxyServer: state.proxyServer,
       subtitleFeatureEnabled: state.subtitleFeatureEnabled,
       subtitleRenderMode: state.subtitleRenderMode,
