@@ -124,17 +124,12 @@ export function useFocusedThumbOriginSync({
       return;
     }
 
-    const focusedThumb = container.querySelector(".thumb-card.is-focused");
-    if (!(focusedThumb instanceof HTMLElement)) {
+    if (
+      !(
+        container.querySelector(".thumb-card.is-focused") instanceof HTMLElement
+      )
+    ) {
       return;
-    }
-
-    if (typeof focusedThumb.scrollIntoView === "function") {
-      focusedThumb.scrollIntoView({
-        block: "nearest",
-        inline: "nearest",
-        behavior: "auto",
-      });
     }
     scheduleFocusedThumbOriginSync();
   }, [
