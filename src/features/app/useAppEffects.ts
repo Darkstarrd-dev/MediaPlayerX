@@ -608,13 +608,16 @@ export function useAppEffects({
     }
 
     if (videosForSidebar.length === 0) {
-      if (selectedVideoId !== "") {
+      if (videoQueueSource !== "playlist" && selectedVideoId !== "") {
         selectVideoFromBrowser("");
       }
       return;
     }
 
     if (!rootScopedVideoIds.has(selectedVideoId)) {
+      if (videoQueueSource === "playlist" && selectedVideoId.trim().length > 0) {
+        return;
+      }
       selectVideoFromBrowser(videosForSidebar[0].id);
     }
   }, [
@@ -625,6 +628,7 @@ export function useAppEffects({
     rootScopedVideoIds,
     selectVideoFromBrowser,
     selectedVideoId,
+    videoQueueSource,
     videosForSidebar,
   ]);
 

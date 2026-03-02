@@ -205,6 +205,7 @@ export interface UseAppWorkspacePropsParams {
   playlistIds: string[]
   selectedVideoId: string
   selectedAudioId: string
+  musicTimeSec: number
   audioPlaylistIds: string[]
   musicLoopMode: MusicLoopMode
   musicPlayRequestNonce: number
@@ -239,6 +240,7 @@ export interface UseAppWorkspacePropsParams {
   setSelectedSidebarNodeId: Dispatch<SetStateAction<string | null>>
   setSelectedPackageId: Dispatch<SetStateAction<string>>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
+  setMusicTimeSec: Dispatch<SetStateAction<number>>
   setMusicLoopMode: Dispatch<SetStateAction<MusicLoopMode>>
   collapseSidebar: () => void
   applyCurrentRootFromSelection: () => void

@@ -30,7 +30,6 @@ export function useAppRuntimeSources() {
 
   const playlistPersistence = usePlaylistPersistence({
     repository: mediaRepository,
-    videos: bootstrapVideos,
     playlistIds: mediaState.playlistIds,
     setPlaylistIds: mediaState.setPlaylistIds,
   })

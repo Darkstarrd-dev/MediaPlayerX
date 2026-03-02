@@ -1194,6 +1194,54 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   return next as Partial<AppSettings>;
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isSameHydrationValue(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) {
+    return true;
+  }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) {
+      return false;
+    }
+    for (let index = 0; index < left.length; index += 1) {
+      if (!isSameHydrationValue(left[index], right[index])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  if (isPlainObject(left) && isPlainObject(right)) {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    if (leftKeys.length !== rightKeys.length) {
+      return false;
+    }
+
+    for (const key of leftKeys) {
+      if (!(key in right)) {
+        return false;
+      }
+      if (!isSameHydrationValue(left[key], right[key])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 export function useSettingsPersistence({
   settings,
   repository,
@@ -1232,7 +1280,7 @@ export function useSettingsPersistence({
 
       // If the user (or other logic) has already modified a key before hydration completes,
       // do not let stale persisted values override it.
-      if (Object.is(latest[key], initial[key])) {
+      if (isSameHydrationValue(latest[key], initial[key])) {
         next[key] = persistedValue;
       }
     };

@@ -554,6 +554,72 @@ describe("useSettingsPersistence", () => {
     });
   });
 
+  it("hydrates object settings even when unrelated pre-hydration update recreates references", async () => {
+    const deferred: { resolve: (value: unknown) => void } = {
+      resolve: () => void 0,
+    };
+    const readAppState = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          deferred.resolve = resolve;
+        }),
+    );
+
+    const repository = {
+      readAppState,
+    } as unknown as Parameters<typeof useSettingsPersistence>[0]["repository"];
+
+    function useHarness() {
+      const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+      const updateSettings = (
+        patch: Parameters<
+          typeof useSettingsPersistence
+        >[0]["updateSettings"] extends (arg: infer A) => void
+          ? A
+          : never,
+      ) => {
+        setSettings((prev) => {
+          const candidate = {
+            ...prev,
+            ...patch,
+          };
+          return JSON.parse(JSON.stringify(candidate)) as typeof prev;
+        });
+      };
+
+      useSettingsPersistence({
+        settings,
+        repository,
+        updateSettings,
+      });
+
+      return {
+        settings,
+        updateSettings,
+      };
+    }
+
+    const { result } = renderHook(() => useHarness());
+
+    act(() => {
+      result.current.updateSettings({ settingsOpen: true });
+    });
+
+    deferred.resolve({
+      state_json: JSON.stringify({
+        videoSavedPlaylists: {
+          morning: ["video-a", "video-b"],
+        },
+      }),
+    });
+
+    await waitFor(() => {
+      expect(result.current.settings.videoSavedPlaylists).toEqual({
+        morning: ["video-a", "video-b"],
+      });
+    });
+  });
+
   it("still persists settings when readAppState is unavailable", async () => {
     vi.useFakeTimers();
     const writeAppState = vi.fn().mockResolvedValue({});

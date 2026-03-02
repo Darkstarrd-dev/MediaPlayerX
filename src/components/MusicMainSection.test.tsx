@@ -66,6 +66,8 @@ function createMusicMainSectionProps(
     audios,
     focusedAudio: audios[0],
     focusedAudioSrc: "mock://audio-1",
+    audioTimeSec: 0,
+    onAudioTimeUpdate: vi.fn(),
     mediaPreloadMemoryBudgetMb: 512,
     fullscreenVideoControlsMaxWidth: 980,
     audioPreloadItems: [{ id: audios[0].id, src: "mock://audio-1", sizeMb: 6 }],
@@ -194,11 +196,13 @@ describe("MusicMainSection", () => {
     ).toBeInTheDocument();
   });
 
-  it("支持播放控制、进度条与音量弹层调节", () => {
+  it("支持播放控制、进度条与音量弹层调节", async () => {
+    const onAudioTimeUpdate = vi.fn();
     const { container } = renderMusicMainSection({
       canPrevAudio: true,
       onPrevAudio: vi.fn(),
       onNextAudio: vi.fn(),
+      onAudioTimeUpdate,
     });
 
     fireEvent.click(screen.getByRole("button", { name: "播放" }));
@@ -215,8 +219,10 @@ describe("MusicMainSection", () => {
     fireEvent.change(volumeRange, { target: { value: "30" } });
 
     const audioElement = container.querySelector("audio") as HTMLAudioElement;
-    expect(audioElement.currentTime).toBe(25);
-    expect(audioElement.volume).toBeCloseTo(0.3, 3);
+    await waitFor(() => {
+      expect(onAudioTimeUpdate).toHaveBeenCalledWith(25);
+      expect(audioElement.volume).toBeCloseTo(0.3, 3);
+    });
   });
 
   it("循环模式按钮可触发状态切换", () => {

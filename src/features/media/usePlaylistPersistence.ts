@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 
 import { useI18n } from '../../i18n/useI18n'
 import type { MediaRepository } from '../backend/repository'
 import { toErrorDetailWithCode } from '../shared/errorCode'
-import type { VideoItem } from '../../types'
 
 const DEFAULT_PLAYLIST_TIMEOUT_MS = 8_000
 
-function normalizePlaylist(videoIds: string[], validVideoIds: Set<string>): string[] {
-  return Array.from(new Set(videoIds)).filter((id) => validVideoIds.has(id))
+function normalizePlaylist(videoIds: string[]): string[] {
+  return Array.from(
+    new Set(
+      videoIds
+        .map((id) => id.trim())
+        .filter(Boolean),
+    ),
+  )
 }
 
 function isSameList(left: string[], right: string[]): boolean {
@@ -25,7 +30,6 @@ function isSameList(left: string[], right: string[]): boolean {
 
 interface UsePlaylistPersistenceParams {
   repository: MediaRepository
-  videos: VideoItem[]
   playlistIds: string[]
   setPlaylistIds: Dispatch<SetStateAction<string[]>>
 }
@@ -54,14 +58,11 @@ function isSyncPlaylistRepository(repository: MediaRepository): repository is Sy
 
 export function usePlaylistPersistence({
   repository,
-  videos,
   playlistIds,
   setPlaylistIds,
 }: UsePlaylistPersistenceParams): UsePlaylistPersistenceResult {
   const { t } = useI18n()
   const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSyncPlaylistRepository(repository)
-  const validVideoIds = useMemo(() => new Set(videos.map((video) => video.id)), [videos])
-
   const [loading, setLoading] = useState(false)
   const [readError, setReadError] = useState<string | null>(null)
   const [writeError, setWriteError] = useState<string | null>(null)
@@ -79,7 +80,7 @@ export function usePlaylistPersistence({
   useEffect(() => {
     if (isSynchronousTestMode) {
       hydratedRef.current = true
-      persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current, validVideoIds)
+      persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current)
       return
     }
 
@@ -94,12 +95,12 @@ export function usePlaylistPersistence({
           return
         }
 
-        const normalized = normalizePlaylist(response.video_ids, validVideoIds)
+        const normalized = normalizePlaylist(response.video_ids)
         if (normalized.length > 0) {
           setPlaylistIds(normalized)
           persistedPlaylistRef.current = normalized
         } else {
-          persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current, validVideoIds)
+          persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current)
         }
 
         hydratedRef.current = true
@@ -111,7 +112,7 @@ export function usePlaylistPersistence({
         }
 
         hydratedRef.current = true
-        persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current, validVideoIds)
+        persistedPlaylistRef.current = normalizePlaylist(playlistIdsRef.current)
         setReadError(t('ui.playlist.readFailed', { message: toErrorDetailWithCode(error, t) }))
         setLoading(false)
       })
@@ -119,14 +120,14 @@ export function usePlaylistPersistence({
     return () => {
       disposed = true
     }
-  }, [isSynchronousTestMode, readNonce, repository, setPlaylistIds, t, validVideoIds])
+  }, [isSynchronousTestMode, readNonce, repository, setPlaylistIds, t])
 
   useEffect(() => {
     if (isSynchronousTestMode || !hydratedRef.current) {
       return
     }
 
-    const normalized = normalizePlaylist(playlistIds, validVideoIds)
+    const normalized = normalizePlaylist(playlistIds)
     if (isSameList(normalized, persistedPlaylistRef.current)) {
       return
     }
@@ -148,7 +149,7 @@ export function usePlaylistPersistence({
           return
         }
 
-        const accepted = normalizePlaylist(response.video_ids, validVideoIds)
+        const accepted = normalizePlaylist(response.video_ids)
         persistedPlaylistRef.current = accepted
         if (!isSameList(accepted, normalized)) {
           setPlaylistIds(accepted)
@@ -164,7 +165,7 @@ export function usePlaylistPersistence({
     return () => {
       disposed = true
     }
-  }, [isSynchronousTestMode, playlistIds, repository, setPlaylistIds, t, validVideoIds, writeNonce])
+  }, [isSynchronousTestMode, playlistIds, repository, setPlaylistIds, t, writeNonce])
 
   if (isSynchronousTestMode) {
     return {

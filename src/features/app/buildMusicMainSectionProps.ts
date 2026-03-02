@@ -42,10 +42,12 @@ interface BuildMusicMainSectionPropsParams {
   focusedAudioSrc: string | null
   audioUrlById: Record<string, string>
   selectedAudioId: string
+  musicTimeSec: number
   musicLoopMode: MusicLoopMode
   musicLoopModeLabels: Record<MusicLoopMode, string>
   audioByIdEffective: Map<string, AudioItem>
   setSelectedAudioId: Dispatch<SetStateAction<string>>
+  setMusicTimeSec: Dispatch<SetStateAction<number>>
   requestMusicPlay: () => void
   toggleImageChecked: (
     imageId: string,
@@ -254,6 +256,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     }
     if (targetId !== params.selectedAudioId) {
       params.setSelectedAudioId(targetId)
+      params.setMusicTimeSec(0)
     }
     params.updateSettings({ sidebarFocus: 'main' })
   }
@@ -298,6 +301,8 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
     audios: params.audiosForSidebar,
     focusedAudio: params.focusedAudio,
     focusedAudioSrc: params.focusedAudioSrc,
+    audioTimeSec: params.musicTimeSec,
+    onAudioTimeUpdate: params.setMusicTimeSec,
     mediaPreloadMemoryBudgetMb: params.mediaPreloadMemoryBudgetMb,
     fullscreenVideoControlsMaxWidth: params.fullscreenVideoControlsMaxWidth,
     showNamesOnly: params.showNamesOnly,
@@ -365,6 +370,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       }
       if (audioId !== params.selectedAudioId) {
         params.setSelectedAudioId(audioId)
+        params.setMusicTimeSec(0)
       }
       params.updateSettings({ sidebarFocus: 'main' })
     },
@@ -374,6 +380,7 @@ export function buildMusicMainSectionProps(params: BuildMusicMainSectionPropsPar
       }
       if (audioId !== params.selectedAudioId) {
         params.setSelectedAudioId(audioId)
+        params.setMusicTimeSec(0)
       }
       params.requestMusicPlay()
       params.updateSettings({ sidebarFocus: 'main' })

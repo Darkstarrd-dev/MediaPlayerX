@@ -58,6 +58,8 @@ function MusicMainSection({
   audios,
   focusedAudio,
   focusedAudioSrc,
+  audioTimeSec,
+  onAudioTimeUpdate,
   mediaPreloadMemoryBudgetMb,
   fullscreenVideoControlsMaxWidth,
   audioPreloadItems,
@@ -91,6 +93,7 @@ function MusicMainSection({
   onToggleAudioChecked,
 }: MusicMainSectionProps) {
   const AUDIO_ENGINE_MODE_CHANGED_EVENT = 'mpx:audio-engine-mode-changed'
+  const MPV_LOAD_STATUS_GUARD_MS = 2500
   const { t } = useI18n()
   const metadataSelectionToggleLabel =
     metadataManageSelectionMode === 'single'
@@ -140,13 +143,16 @@ function MusicMainSection({
   const fullscreenToggleWasPlayingRef = useRef(false)
   const audioEngineModeRef = useRef<'chromium' | 'mpv'>('chromium')
   const pendingMpvResumeStartSecRef = useRef<number | null>(null)
+  const mpvLastLoadRequestedAtRef = useRef(0)
+  const mpvExpectedStartSecRef = useRef<number | null>(null)
   const nameListDragToggleCleanupRef = useRef<(() => void) | null>(null)
   const suppressManageNameListClickRef = useRef(false)
   const [openPopover, setOpenPopover] = useState<MusicPopoverKey | null>(null)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioVolume, setAudioVolume] = useState(60)
   const [audioMuted, setAudioMuted] = useState(false)
-  const [audioTime, setAudioTime] = useState(0)
+  const [audioTime, setAudioTime] = useState(() => Math.max(0, audioTimeSec))
+  const audioTimeRef = useRef(audioTime)
   const [audioSeekDraftTime, setAudioSeekDraftTime] = useState<number | null>(null)
   const [audioDurationSec, setAudioDurationSec] = useState(0)
   const [renderLongEdgeDraft, setRenderLongEdgeDraft] = useState('')
@@ -857,6 +863,8 @@ function MusicMainSection({
       return
     }
     if (!focusedAudioSrc || !focusedAudio?.absolutePath) {
+      mpvLastLoadRequestedAtRef.current = 0
+      mpvExpectedStartSecRef.current = null
       if (typeof backendApi.audioEngineStopPlayback === 'function') {
         void backendApi.audioEngineStopPlayback().catch(() => undefined)
       }
@@ -883,6 +891,11 @@ function MusicMainSection({
       request.end_sec = cueEndSec
     }
 
+    mpvLastLoadRequestedAtRef.current = Date.now()
+    mpvExpectedStartSecRef.current =
+      typeof request.start_sec === 'number' && Number.isFinite(request.start_sec)
+        ? request.start_sec
+        : 0
     void backendApi.audioEngineLoadTrack(request).catch(() => undefined)
   }, [
     audioEngineMode,
@@ -977,12 +990,23 @@ function MusicMainSection({
           if (withinFullscreenToggleGuard && fullscreenToggleWasPlaying) {
             return
           }
+
+          const hasExpectedStart = (mpvExpectedStartSecRef.current ?? 0) > 0.05
+          const withinLoadGuard =
+            Date.now() - mpvLastLoadRequestedAtRef.current <=
+            MPV_LOAD_STATUS_GUARD_MS
+          if (withinLoadGuard && hasExpectedStart) {
+            return
+          }
+
           if (audioSeekDraftTime == null) {
             setAudioTime(0)
           }
           setAudioPlaying(false)
           return
         }
+
+        mpvExpectedStartSecRef.current = null
 
         if (typeof response.paused === 'boolean') {
           if (withinFullscreenToggleGuard && fullscreenToggleWasPlaying && response.paused) {
@@ -1066,15 +1090,68 @@ function MusicMainSection({
   }, [])
 
   useEffect(() => {
-    setAudioTime(0)
+    const focusedAudioDurationSec = hasCueSegment
+      ? cueSegmentDurationSec
+      : Math.max(0, focusedAudio?.durationSec ?? 0)
+    const nextInitialTime = clamp(audioTimeSec, 0, focusedAudioDurationSec)
+    setAudioTime(nextInitialTime)
     setAudioSeekDraftTime(null)
     lastAudioSeekPreviewAtRef.current = 0
     lastAudioSeekPreviewValueRef.current = null
-    setAudioDurationSec(hasCueSegment ? cueSegmentDurationSec : Math.max(0, focusedAudio?.durationSec ?? 0))
+    setAudioDurationSec(focusedAudioDurationSec)
+
+    const localCueStartSec = hasCueSegment ? cueStartSec : 0
+    const absoluteSeekTime = localCueStartSec > 0 ? localCueStartSec + nextInitialTime : nextInitialTime
+    pendingMpvResumeStartSecRef.current = absoluteSeekTime > 0.05 ? absoluteSeekTime : null
+
+    if (audioEngineMode !== 'mpv' && focusedAudioSrc) {
+      const audio = audioRef.current
+      if (audio) {
+        try {
+          audio.currentTime = absoluteSeekTime
+        } catch {
+          // ignore media seek failure during source switch
+        }
+      }
+    }
+
     if (!focusedAudio?.id && !focusedAudioSrc) {
       setAudioPlaying(false)
     }
-  }, [cueSegmentDurationSec, focusedAudio?.id, focusedAudio?.durationSec, focusedAudioSrc, hasCueSegment])
+  }, [audioEngineMode, audioTimeSec, cueSegmentDurationSec, cueStartSec, focusedAudio?.id, focusedAudio?.durationSec, focusedAudioSrc, hasCueSegment])
+
+  useEffect(() => {
+    audioTimeRef.current = audioTime
+  }, [audioTime])
+
+  useEffect(() => {
+    if (audioSeekDraftTime != null) {
+      return
+    }
+
+    const nextExternalTime = clamp(audioTimeSec, 0, Math.max(0, audioDurationSec))
+    if (Math.abs(nextExternalTime - audioTimeRef.current) <= 0.45) {
+      return
+    }
+
+    setAudioTime(nextExternalTime)
+
+    const localCueStartSec = hasCueSegment ? cueStartSec : 0
+    const absoluteSeekTime = localCueStartSec > 0 ? localCueStartSec + nextExternalTime : nextExternalTime
+    const audio = audioRef.current
+    if (audio && audioEngineMode !== 'mpv') {
+      try {
+        audio.currentTime = absoluteSeekTime
+      } catch {
+        // ignore external seek failure during synchronization
+      }
+    }
+
+    const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
+    if (audioEngineMode === 'mpv' && typeof backendApi?.audioEngineSeekTo === 'function') {
+      void backendApi.audioEngineSeekTo({ time_sec: absoluteSeekTime }).catch(() => undefined)
+    }
+  }, [audioDurationSec, audioEngineMode, audioSeekDraftTime, audioTimeSec, cueStartSec, hasCueSegment])
 
   useEffect(() => {
     if (!interruptByVideoPlayback) {
@@ -1118,6 +1195,10 @@ function MusicMainSection({
   useEffect(() => {
     emitMusicPlaybackState({ playing: audioPlaying })
   }, [audioPlaying])
+
+  useEffect(() => {
+    onAudioTimeUpdate(Math.max(0, audioTime))
+  }, [audioTime, onAudioTimeUpdate])
 
   useEffect(() => {
     return () => {
@@ -1657,12 +1738,15 @@ function MusicMainSection({
           }
         }}
         onTimeUpdate={() => {
+          if (audioEngineMode === 'mpv') {
+            return
+          }
           const currentTime = audioRef.current?.currentTime ?? 0
           if (hasCueSegment) {
             const relativeTime = Math.max(0, currentTime - cueStartSec)
             const clampedRelativeTime = cueEndSec != null ? Math.min(relativeTime, cueSegmentDurationSec) : relativeTime
             setAudioTime(clampedRelativeTime)
-            if (audioEngineMode !== 'mpv' && cueEndSec != null && currentTime >= cueEndSec - 0.01) {
+            if (cueEndSec != null && currentTime >= cueEndSec - 0.01) {
               const audio = audioRef.current
               if (audio && !audio.paused) {
                 audio.pause()
@@ -1677,6 +1761,9 @@ function MusicMainSection({
           setAudioTime(currentTime)
         }}
         onLoadedMetadata={() => {
+          if (audioEngineMode === 'mpv') {
+            return
+          }
           if (hasCueSegment) {
             if (audioRef.current) {
               audioRef.current.currentTime = cueStartSec
@@ -1694,6 +1781,9 @@ function MusicMainSection({
           setAudioTime(audioRef.current?.currentTime ?? 0)
         }}
         onEnded={() => {
+          if (audioEngineMode === 'mpv') {
+            return
+          }
           setAudioTime(0)
           const audio = audioRef.current
           const shouldRestartCurrent = Boolean(focusedAudioSrc) && (musicLoopMode === 'single' || !canNextAudio)

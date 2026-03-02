@@ -35,6 +35,8 @@ export interface MusicMainSectionProps {
   audios: AudioItem[]
   focusedAudio: AudioItem | null
   focusedAudioSrc: string | null
+  audioTimeSec: number
+  onAudioTimeUpdate: (timeSec: number) => void
   mediaPreloadMemoryBudgetMb: number
   fullscreenVideoControlsMaxWidth: number
   audioPreloadItems: Array<{ id: string; src: string; sizeMb: number }>

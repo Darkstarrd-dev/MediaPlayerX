@@ -360,6 +360,7 @@ export function useAppInteractionEffects({
     setSelectedPackageId,
     setSelectedSidebarNodeId,
     setSelectedAudioId,
+    setMusicTimeSec,
     setFullscreenEntryDisplay,
     imageSidebarLocateRequestNonce,
     videoSidebarLocateRequestNonce,
@@ -375,11 +376,13 @@ export function useAppInteractionEffects({
 
   const {
     selectedVideoId,
+    metadataTab,
     videoDurationById,
     videoPlaying,
     videoTime,
     setVideoPlaying,
     setVideoTime,
+    setMetadataTab,
     setVideoMuted,
     setPlaylistIds,
     videoQueueSource,
@@ -906,9 +909,16 @@ export function useAppInteractionEffects({
     rootScopedVideoIds,
     selectVideoFromBrowser,
     setVideoTime,
+    metadataTab,
+    setMetadataTab,
     selectedAudioId,
     rootScopedAudioIds,
     setSelectedAudioId,
+    setMusicTimeSec,
+    setSelectedSidebarNodeId,
+    imageSourceNodeIdMap,
+    videoNodeIdMap,
+    audioNodeIdMap,
   });
 
   usePreferenceMetricsBuffer({

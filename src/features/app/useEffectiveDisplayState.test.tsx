@@ -60,6 +60,9 @@ function createParams(
   audioById: ReadonlyMap<string, AudioItem> = new Map(
     audiosForSidebar.map((audio) => [audio.id, audio]),
   ),
+  videoById: ReadonlyMap<string, VideoItem> = new Map(
+    videosForSidebar.map((video) => [video.id, video]),
+  ),
 ): Parameters<typeof useEffectiveDisplayState>[0] {
   return {
     backendPageData: null,
@@ -82,6 +85,7 @@ function createParams(
     currentGrade: null,
     selectedVideoId,
     selectedAudioId,
+    videoById,
     audioById,
     videosForSidebar,
     audiosForSidebar,
@@ -118,6 +122,30 @@ describe('useEffectiveDisplayState', () => {
     )
 
     expect(result.current.focusedAudio?.id).toBe('audio-inside')
+  })
+
+  it('播放列表来源可保持侧栏范围外的视频焦点', () => {
+    const sidebarVideo = makeVideo('video-inside')
+    const playlistVideo = makeVideo('video-playlist')
+    const videoById = new Map<string, VideoItem>([
+      [sidebarVideo.id, sidebarVideo],
+      [playlistVideo.id, playlistVideo],
+    ])
+
+    const { result } = renderHook(() =>
+      useEffectiveDisplayState(
+        createParams(
+          [sidebarVideo],
+          [],
+          playlistVideo.id,
+          '',
+          new Map<string, AudioItem>(),
+          videoById,
+        ),
+      ),
+    )
+
+    expect(result.current.focusedVideo?.id).toBe('video-playlist')
   })
 
   it('非音乐模式侧栏为空时仍应保持已选音频焦点', () => {

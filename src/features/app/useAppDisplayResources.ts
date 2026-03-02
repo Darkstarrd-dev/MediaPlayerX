@@ -155,6 +155,7 @@ export function useAppDisplayResources({
     currentGrade,
     selectedVideoId,
     selectedAudioId,
+    videoById: videoByIdEffective,
     audioById: audioByIdEffective,
     videosForSidebar,
     audiosForSidebar,

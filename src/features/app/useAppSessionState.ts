@@ -50,6 +50,7 @@ export function useAppSessionState({
   const [selectedPackageId, setSelectedPackageId] = useState(imageSources[0]?.id ?? '')
   const [selectedSidebarNodeId, setSelectedSidebarNodeId] = useState<string | null>(null)
   const [selectedAudioId, setSelectedAudioId] = useState(audios[0]?.id ?? '')
+  const [musicTimeSec, setMusicTimeSec] = useState(0)
   const [audioPlaylistIds, setAudioPlaylistIds] = useState<string[]>(audios.slice(0, 3).map((audio) => audio.id))
   const [musicLoopMode, setMusicLoopMode] = useState<MusicLoopMode>('library')
   const [musicPlayRequestNonce, setMusicPlayRequestNonce] = useState(0)
@@ -133,6 +134,8 @@ export function useAppSessionState({
     setSelectedSidebarNodeId,
     selectedAudioId,
     setSelectedAudioId,
+    musicTimeSec,
+    setMusicTimeSec,
     audioPlaylistIds,
     setAudioPlaylistIds,
     musicLoopMode,
