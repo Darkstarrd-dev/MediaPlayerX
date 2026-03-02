@@ -1,0 +1,1 @@
+export const NAVIGATION_INPUT_SETTLE_MS = 100

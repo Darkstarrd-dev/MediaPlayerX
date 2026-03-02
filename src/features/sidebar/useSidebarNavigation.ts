@@ -1,7 +1,8 @@
-import { useCallback, useMemo, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from 'react'
 
 import type { AudioItem, BrowserMode, SidebarNode } from '../../types'
 import { clamp } from '../../utils/ui'
+import { NAVIGATION_INPUT_SETTLE_MS } from '../shared/interactionDelays'
 
 interface UseSidebarNavigationParams {
   mode: BrowserMode
@@ -229,6 +230,87 @@ export function useSidebarNavigation({
     [appBodyRef],
   )
 
+  const pendingSelectionNodeIdRef = useRef<string | null>(null)
+  const pendingSelectionTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+
+  const clearPendingSelectionTimer = useCallback(() => {
+    if (pendingSelectionTimerRef.current === null) {
+      return
+    }
+    window.clearTimeout(pendingSelectionTimerRef.current)
+    pendingSelectionTimerRef.current = null
+  }, [])
+
+  const applyNodeSelectionById = useCallback(
+    (nodeId: string) => {
+      const node = sidebarNodeById.get(nodeId)
+      if (!node) {
+        return
+      }
+
+      if (mode === 'image' && node.imageSourceId) {
+        onSelectPackage(node.imageSourceId)
+      }
+      if (mode === 'video' && node.videoId) {
+        onSelectVideo(node.videoId)
+      }
+      if (mode === 'music') {
+        const targetAudioId = resolveFirstAudioId(node)
+        if (targetAudioId) {
+          onSelectAudio(targetAudioId)
+        }
+      }
+    },
+    [mode, onSelectAudio, onSelectPackage, onSelectVideo, sidebarNodeById],
+  )
+
+  const flushPendingSelection = useCallback(() => {
+    const pendingNodeId = pendingSelectionNodeIdRef.current
+    pendingSelectionNodeIdRef.current = null
+    clearPendingSelectionTimer()
+    if (!pendingNodeId) {
+      return
+    }
+    applyNodeSelectionById(pendingNodeId)
+  }, [applyNodeSelectionById, clearPendingSelectionTimer])
+
+  const scheduleSettledSelection = useCallback(
+    (nodeId: string) => {
+      pendingSelectionNodeIdRef.current = nodeId
+      clearPendingSelectionTimer()
+      pendingSelectionTimerRef.current = window.setTimeout(() => {
+        pendingSelectionTimerRef.current = null
+        const settledNodeId = pendingSelectionNodeIdRef.current
+        pendingSelectionNodeIdRef.current = null
+        if (!settledNodeId) {
+          return
+        }
+        applyNodeSelectionById(settledNodeId)
+      }, NAVIGATION_INPUT_SETTLE_MS)
+    },
+    [applyNodeSelectionById, clearPendingSelectionTimer],
+  )
+
+  useEffect(() => {
+    const pendingNodeId = pendingSelectionNodeIdRef.current
+    if (!pendingNodeId) {
+      return
+    }
+    if (selectedSidebarNodeId === pendingNodeId) {
+      return
+    }
+    pendingSelectionNodeIdRef.current = null
+    clearPendingSelectionTimer()
+  }, [clearPendingSelectionTimer, selectedSidebarNodeId])
+
+  useEffect(
+    () => () => {
+      pendingSelectionNodeIdRef.current = null
+      clearPendingSelectionTimer()
+    },
+    [clearPendingSelectionTimer],
+  )
+
   const handleSidebarNavigationKey = useCallback(
     (event: KeyboardEvent): boolean => {
       if (flatSidebarNodes.length === 0) {
@@ -241,28 +323,19 @@ export function useSidebarNavigation({
         flatSidebarNodes.findIndex((node) => node.id === currentId),
       )
 
-      const applyNodeSelection = (node: SidebarNode) => {
-        if (mode === 'image' && node.imageSourceId) {
-          onSelectPackage(node.imageSourceId)
-        }
-        if (mode === 'video' && node.videoId) {
-          onSelectVideo(node.videoId)
-        }
-        if (mode === 'music') {
-          const targetAudioId = resolveFirstAudioId(node)
-          if (targetAudioId) {
-            onSelectAudio(targetAudioId)
-          }
-        }
-      }
-
       const moveSelection = (nextIndex: number) => {
         const nextNode = flatSidebarNodes[clamp(nextIndex, 0, flatSidebarNodes.length - 1)]
         if (!nextNode) {
           return false
         }
+
+        if (nextNode.id === selectedSidebarNodeId) {
+          requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
+          return true
+        }
+
         onSetSelectedSidebarNodeId(nextNode.id)
-        applyNodeSelection(nextNode)
+        scheduleSettledSelection(nextNode.id)
         requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
         return true
       }
@@ -312,6 +385,7 @@ export function useSidebarNavigation({
         return moveSelection(currentIndex - 1)
       }
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        flushPendingSelection()
         onSetSidebarFocusMain()
         return true
       }
@@ -334,8 +408,10 @@ export function useSidebarNavigation({
         if (!node) {
           return false
         }
+        pendingSelectionNodeIdRef.current = null
+        clearPendingSelectionTimer()
         onSetSelectedSidebarNodeId(node.id)
-        applyNodeSelection(node)
+        applyNodeSelectionById(node.id)
         requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
         return true
       }
@@ -346,12 +422,12 @@ export function useSidebarNavigation({
       appBodyRef,
       ensureSidebarNodeVisible,
       flatSidebarNodes,
-      mode,
-      onSelectPackage,
-      onSelectAudio,
-      onSelectVideo,
+      applyNodeSelectionById,
+      clearPendingSelectionTimer,
+      flushPendingSelection,
       onSetSelectedSidebarNodeId,
       onSetSidebarFocusMain,
+      scheduleSettledSelection,
       selectedSidebarNodeId,
       sidebarNodeById,
     ],

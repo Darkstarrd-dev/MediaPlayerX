@@ -32,10 +32,10 @@ import { useFocusedThumbOriginSync } from "./useFocusedThumbOriginSync";
 import { resolveTaskIdFromStartResponse } from "./imageMainSectionTasks";
 import { useNameListDimsLoader } from "./useNameListDimsLoader";
 import type { MetadataFetchTarget } from "../features/metadata/metadataFetchTargets";
+import { NAVIGATION_INPUT_SETTLE_MS } from "../features/shared/interactionDelays";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
 const EMPTY_IMAGE_ID_SET = new Set<string>();
-const WHEEL_SETTLE_MS = 100;
 
 type ImageConvertTaskStatus =
   | "pending"
@@ -1064,7 +1064,7 @@ function ImageMainSection({
       if (delta !== 0) {
         onThumbnailWheelTurnPage?.(delta);
       }
-    }, WHEEL_SETTLE_MS);
+    }, NAVIGATION_INPUT_SETTLE_MS);
   };
 
   return (
