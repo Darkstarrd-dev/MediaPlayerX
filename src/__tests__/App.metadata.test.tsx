@@ -612,7 +612,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       ).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "视频评分：开启收藏" }),
-      ).toBeDisabled();
+      ).toBeEnabled();
       expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
       expect(
         screen.queryByRole("button", { name: "同步文件名到作品名" }),

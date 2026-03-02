@@ -493,7 +493,7 @@ export function MetadataVideoEditor({
               data-tooltip-label={t("tip.common.rating")}
               groupAriaLabel={t("a11y.metadata.videoRating")}
               clearAriaLabel={t("a11y.metadata.clearVideoRating")}
-              pending={metadataPending || !editable}
+              pending={metadataPending}
               value={currentVideoGrade}
               onChange={onVideoGradeChange}
             />
