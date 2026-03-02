@@ -35,6 +35,7 @@
 | `27-Tips.md` | 经验沉淀 | 环境差异与疑难点处理记录 |
 | `26-开发启动清单.md` | 运行手册 | 新环境启动检查项 |
 | `28-shader-plugin-implementation-checklist-v1.md` | 当前计划 | Shader 插件模式改造实施清单（全局开关 + 设置面板 Shader 分页） |
+| `29-module-file-index.md` | 索引 | 模块到文件的半自动追踪索引（排障/改造入口） |
 | `01-README.md` | 入口 | docs 子目录导航 |
 | `02-DOCS_INDEX.md` | 说明 | 本文档，维护规则与目录说明 |
 
@@ -61,6 +62,7 @@
 
 - 新文档进入 `docs/` 根目录前，必须满足“SSOT 或当前必用”。
 - 文档若被替代或阶段结束，迁移到 `archive/` 对应子目录。
+- 新增功能若引入新模块/关键入口/跨层链路，必须同步更新 `29-module-file-index.md`。
 - 每次迁移后同步更新：
   - `README.md`（项目根）
   - `docs/01-README.md`

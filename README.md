@@ -132,6 +132,7 @@ npm run test
 - `docs/11-token_design.md`
 - `docs/25-windows-release-signing-runbook.md`
 - `docs/27-Tips.md`
+- `docs/29-module-file-index.md`
 - `docs/18-offline-auto-subtitle-implementation-plan.md`
 - `docs/14-project-evaluation-report-v17.md`
 - `docs/16-preference-metrics-spec-v1.md`
@@ -144,6 +145,8 @@ npm run test
 - `docs/ui/theme-playground.html`
 
 文档为当前阶段单一事实源（SSOT）；历史资料统一归档到 `docs/archive/`。
+
+新增功能若引入新模块、关键入口文件或跨层链路，必须同步更新 `docs/29-module-file-index.md`，确保排障与改造时可直接通过索引定位相关文件。
 
 UI 主题重构必须同时遵循两张表：
 

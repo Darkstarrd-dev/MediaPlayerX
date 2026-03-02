@@ -16,6 +16,7 @@
 - Shader 开发入口：`12-music-visualizer-shader-entry.md`
 - Shader 实施手册：`13-music-visualizer-shader-migration-playbook.md`
 - Shader 插件改造实施清单：`28-shader-plugin-implementation-checklist-v1.md`
+- 模块文件索引（半自动）：`29-module-file-index.md`
 - Theme 规范（SSOT）：`08-theme-system-v2.md`
 - Theme 迭代入口：`09-theme-brainstorm-entry.md`
 - 疑难点记录：`27-Tips.md`
@@ -55,6 +56,8 @@
 - 当实现“高级分页 / 加载性能”相关交互或默认值调整时，必须同步更新：
   - `05-interaction-v1.md`（交互、分组、参数语义、Tooltip 用途）
   - `17-thumb_acceleration_implementation_plan.md`（阶段、验收、回滚策略）
+- 当新增功能引入新模块、关键入口文件或跨层链路时，必须同步更新：
+  - `29-module-file-index.md`（模块到文件索引，用于排障与改造快速定位）
 
 ## UI 表维护约束
 
