@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate sync token
         shell: bash
@@ -37,14 +38,16 @@ jobs:
         env:
           SYNC_TOKEN: ${{ secrets.GENERAL_UI_FRAME_SYNC_TOKEN }}
         run: |
-          TARGET_REPO="https://x-access-token:${SYNC_TOKEN}@github.com/Darkstarrd-dev/GeneralUIFrame.git"
+          TARGET_REPO="https://github.com/Darkstarrd-dev/GeneralUIFrame.git"
+          BASIC_AUTH=$(printf "x-access-token:%s" "$SYNC_TOKEN" | base64 | tr -d '\n')
+          AUTH_HEADER="AUTHORIZATION: basic ${BASIC_AUTH}"
           SPLIT_SHA=$(git subtree split --prefix=apps/GeneralUIFrame HEAD)
 
-          REMOTE_LINE=$(git ls-remote "$TARGET_REPO" refs/heads/main)
+          REMOTE_LINE=$(git -c http.https://github.com/.extraheader="$AUTH_HEADER" ls-remote "$TARGET_REPO" refs/heads/main)
           REMOTE_SHA=${REMOTE_LINE%%$'\t'*}
           if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" = "$SPLIT_SHA" ]; then
             echo "GeneralUIFrame 子仓库已是最新，无需推送。"
             exit 0
           fi
 
-          git push "$TARGET_REPO" "${SPLIT_SHA}:main"
+          git -c http.https://github.com/.extraheader="$AUTH_HEADER" push "$TARGET_REPO" "${SPLIT_SHA}:main"
