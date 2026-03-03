@@ -45,12 +45,80 @@ export const MAX_SPLIT = 0.8
 export const MIN_ZOOM = 0.1
 export const MAX_ZOOM = 4
 export const ZOOM_STEP = 0.12
+const DUAL_ADAPTIVE_EPSILON_PX = 0.5
+
+export type DualAdaptiveSplitRule =
+  | 'expand-underfilled-pane'
+  | 'center-inward'
+  | 'center-balanced'
+
+interface ResolveDualAdaptiveSplitParams {
+  totalWidth: number
+  imageViewportHeight: number
+  videoViewportHeight: number
+  imageAspect: number
+  videoAspect: number
+}
+
+export interface DualAdaptiveSplitResult {
+  imageRatio: number
+  rule: DualAdaptiveSplitRule
+}
 
 export function resolveMediaAspect(width: number, height: number, fallback = 1): number {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
     return fallback
   }
   return width / height
+}
+
+export function resolveDualAdaptiveSplit({
+  totalWidth,
+  imageViewportHeight,
+  videoViewportHeight,
+  imageAspect,
+  videoAspect,
+}: ResolveDualAdaptiveSplitParams): DualAdaptiveSplitResult {
+  const safeTotalWidth = Math.max(1, totalWidth)
+  const safeImageHeight = Math.max(1, imageViewportHeight)
+  const safeVideoHeight = Math.max(1, videoViewportHeight)
+  const safeImageAspect = Number.isFinite(imageAspect) && imageAspect > 0 ? imageAspect : 1
+  const safeVideoAspect = Number.isFinite(videoAspect) && videoAspect > 0 ? videoAspect : 16 / 9
+
+  const halfWidth = safeTotalWidth / 2
+  const imageHeightFillThreshold = safeImageHeight * safeImageAspect
+  const videoHeightFillThreshold = safeVideoHeight * safeVideoAspect
+
+  const imageHasHorizontalGap = halfWidth > imageHeightFillThreshold + DUAL_ADAPTIVE_EPSILON_PX
+  const imageHeightNotFilled = halfWidth < imageHeightFillThreshold - DUAL_ADAPTIVE_EPSILON_PX
+  const videoHasHorizontalGap = halfWidth > videoHeightFillThreshold + DUAL_ADAPTIVE_EPSILON_PX
+  const videoHeightNotFilled = halfWidth < videoHeightFillThreshold - DUAL_ADAPTIVE_EPSILON_PX
+
+  if (imageHasHorizontalGap && videoHeightNotFilled) {
+    return {
+      imageRatio: clamp(imageHeightFillThreshold / safeTotalWidth, 0, 1),
+      rule: 'expand-underfilled-pane',
+    }
+  }
+
+  if (videoHasHorizontalGap && imageHeightNotFilled) {
+    return {
+      imageRatio: clamp(1 - videoHeightFillThreshold / safeTotalWidth, 0, 1),
+      rule: 'expand-underfilled-pane',
+    }
+  }
+
+  if (imageHasHorizontalGap && videoHasHorizontalGap) {
+    return {
+      imageRatio: 0.5,
+      rule: 'center-inward',
+    }
+  }
+
+  return {
+    imageRatio: 0.5,
+    rule: 'center-balanced',
+  }
 }
 
 export function computeMediaGeometry(viewport: PaneViewportSize, aspect: number, zoom: number): MediaGeometry {

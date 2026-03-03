@@ -42,6 +42,19 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     await flushUiUpdates();
   };
 
+  const readDualImagePaneRatio = () => {
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
+    if (!imagePane) {
+      return null;
+    }
+
+    const ratioText = imagePane.style.flex.trim().split(" ")[0] ?? "";
+    const ratio = Number(ratioText);
+    return Number.isFinite(ratio) ? ratio : null;
+  };
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -660,6 +673,146 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       expect(afterEndedSrc).not.toBe(beforeEndedSrc);
     });
   });
+
+  it(
+    "dual 分割条手动后，图片 autoplay 切图会恢复自适应",
+    async () => {
+      render(<App />);
+
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await keyDown(window, { key: "d", code: "KeyD" });
+      await waitFor(() => {
+        expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+      });
+
+      const fullscreenContent = document.querySelector(
+        ".fullscreen-content",
+      ) as HTMLElement | null;
+      expect(fullscreenContent).not.toBeNull();
+      const rectSpy = vi
+        .spyOn(fullscreenContent as HTMLElement, "getBoundingClientRect")
+        .mockReturnValue(new DOMRect(0, 0, 1200, 700));
+
+      const divider = screen.getByLabelText("调整全屏分屏比例");
+      await mouseDown(divider, { button: 0, clientX: 600, clientY: 120 });
+      fireEvent.mouseMove(window, { clientX: 1180, clientY: 120 });
+      fireEvent.mouseUp(window);
+      await flushUiUpdates();
+
+      const manualRatio = readDualImagePaneRatio();
+      expect(manualRatio).not.toBeNull();
+
+      const readImageSrc = () =>
+        (
+          document.querySelector(
+            ".fullscreen-media-image-element",
+          ) as HTMLImageElement | null
+        )?.getAttribute("src") ?? null;
+
+      const beforeAutoplaySrc = readImageSrc();
+      expect(beforeAutoplaySrc).not.toBeNull();
+
+      const fullscreenLayer = document.querySelector(
+        ".fullscreen-layer",
+      ) as HTMLElement | null;
+      expect(fullscreenLayer).not.toBeNull();
+      fireEvent.mouseMove(fullscreenLayer as Element, {
+        clientY: window.innerHeight - 4,
+      });
+      await flushUiUpdates();
+
+      const autoplayButton = screen.getByRole("button", {
+        name: /自动播放|autoplay/i,
+      });
+      await click(autoplayButton);
+      expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
+
+      await waitFor(
+        () => {
+          const afterAutoplaySrc = readImageSrc();
+          expect(afterAutoplaySrc).not.toBeNull();
+          expect(afterAutoplaySrc).not.toBe(beforeAutoplaySrc);
+        },
+        { timeout: 5200 },
+      );
+
+      await waitFor(() => {
+        const ratioAfterAutoplay = readDualImagePaneRatio();
+        expect(ratioAfterAutoplay).not.toBeNull();
+        expect(
+          Math.abs((ratioAfterAutoplay as number) - (manualRatio as number)),
+        ).toBeGreaterThan(0.03);
+      });
+
+      rectSpy.mockRestore();
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
+    "dual 分割条手动后，视频播放结束自动下一集会恢复自适应",
+    async () => {
+      render(<App />);
+
+      await click(screen.getByRole("button", { name: "视频模式" }));
+      await keyDown(window, { key: "f", code: "KeyF" });
+      await keyDown(window, { key: "d", code: "KeyD" });
+      await waitFor(() => {
+        expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+      });
+
+      const fullscreenContent = document.querySelector(
+        ".fullscreen-content",
+      ) as HTMLElement | null;
+      expect(fullscreenContent).not.toBeNull();
+      const rectSpy = vi
+        .spyOn(fullscreenContent as HTMLElement, "getBoundingClientRect")
+        .mockReturnValue(new DOMRect(0, 0, 1200, 700));
+
+      const divider = screen.getByLabelText("调整全屏分屏比例");
+      await mouseDown(divider, { button: 0, clientX: 600, clientY: 120 });
+      fireEvent.mouseMove(window, { clientX: 1180, clientY: 120 });
+      fireEvent.mouseUp(window);
+      await flushUiUpdates();
+
+      const manualRatio = readDualImagePaneRatio();
+      expect(manualRatio).not.toBeNull();
+
+      const readVideoSrc = () =>
+        (
+          document.querySelector(
+            ".fullscreen-media-video-element",
+          ) as HTMLVideoElement | null
+        )?.getAttribute("src") ?? null;
+
+      const beforeEndedSrc = readVideoSrc();
+      expect(beforeEndedSrc).not.toBeNull();
+
+      const video = document.querySelector(
+        ".fullscreen-media-video-element",
+      ) as HTMLVideoElement | null;
+      expect(video).not.toBeNull();
+      fireEvent.ended(video as HTMLVideoElement);
+      await flushUiUpdates();
+
+      await waitFor(() => {
+        const afterEndedSrc = readVideoSrc();
+        expect(afterEndedSrc).not.toBeNull();
+        expect(afterEndedSrc).not.toBe(beforeEndedSrc);
+      });
+
+      await waitFor(() => {
+        const ratioAfterNextVideo = readDualImagePaneRatio();
+        expect(ratioAfterNextVideo).not.toBeNull();
+        expect(
+          Math.abs((ratioAfterNextVideo as number) - (manualRatio as number)),
+        ).toBeGreaterThan(0.03);
+      });
+
+      rectSpy.mockRestore();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it("image已有焦点时从video进入dual后，快捷键P可切换autoplay", async () => {
     render(<App />);

@@ -40,9 +40,11 @@ import {
   MAX_ZOOM,
   MIN_SPLIT,
   MIN_ZOOM,
+  resolveDualAdaptiveSplit,
   resolveMediaAspect,
   ZOOM_STEP,
   type AlignDirection,
+  type DualAdaptiveSplitRule,
   type PaneAlign,
   type PaneKey,
   type PaneTransform,
@@ -303,11 +305,20 @@ function FullscreenLayer({
   } | null>(null);
   const [videoControlsVisible, setVideoControlsVisible] = useState(false);
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null);
+  const [dualSplitMode, setDualSplitMode] = useState<"auto" | "manual">(
+    "auto",
+  );
   const [footerHovering, setFooterHovering] = useState(false);
 
   useEffect(() => {
     setDisplayedImageNaturalSize(null);
   }, [displayedImageSrc]);
+
+  useEffect(() => {
+    if (!fullscreenActive || effectiveFullscreenDisplay !== "dual") {
+      setDualSplitMode("auto");
+    }
+  }, [effectiveFullscreenDisplay, fullscreenActive]);
 
   const {
     imageConvertAdjustPanelOpen,
@@ -375,6 +386,20 @@ function FullscreenLayer({
     focusedVideo?.height ?? 0,
     16 / 9,
   );
+  const focusedImageId = focusedImage?.id ?? null;
+  const focusedVideoId = focusedVideo?.id ?? null;
+
+  useEffect(() => {
+    if (!fullscreenActive || effectiveFullscreenDisplay !== "dual") {
+      return;
+    }
+    setDualSplitMode("auto");
+  }, [
+    effectiveFullscreenDisplay,
+    focusedImageId,
+    focusedVideoId,
+    fullscreenActive,
+  ]);
 
   const fallbackViewportWidth = fullscreenViewport.width;
   const fallbackViewportHeight = fullscreenViewport.height;
@@ -624,6 +649,7 @@ function FullscreenLayer({
       }
 
       event.preventDefault();
+      setDualSplitMode("manual");
 
       const onMouseMove = (moveEvent: MouseEvent) => {
         const rect = contentRef.current?.getBoundingClientRect();
@@ -926,6 +952,13 @@ function FullscreenLayer({
     1,
     effectiveImageViewportSize.width + effectiveVideoViewportSize.width,
   );
+  const dualAdaptiveSplit = resolveDualAdaptiveSplit({
+    totalWidth: dualAvailableWidth,
+    imageViewportHeight: effectiveImageViewportSize.height,
+    videoViewportHeight: effectiveVideoViewportSize.height,
+    imageAspect,
+    videoAspect,
+  });
   const minImageRatioByControls =
     DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS / dualAvailableWidth;
   const maxImageRatioByControls =
@@ -939,14 +972,94 @@ function FullscreenLayer({
     dualMaxImageRatio = fallbackRatio;
   }
 
+  const dualAdaptiveRule: DualAdaptiveSplitRule = dualAdaptiveSplit.rule;
+  const dualAutoImageRatio = clamp(
+    dualAdaptiveSplit.imageRatio,
+    dualMinImageRatio,
+    dualMaxImageRatio,
+  );
+  const dualManualImageRatio = clamp(
+    fullscreenSplit,
+    dualMinImageRatio,
+    dualMaxImageRatio,
+  );
+  const dualImageRatio =
+    dualSplitMode === "manual" ? dualManualImageRatio : dualAutoImageRatio;
   const imageRatio =
     effectiveFullscreenDisplay === "dual"
-      ? clamp(fullscreenSplit, dualMinImageRatio, dualMaxImageRatio)
+      ? dualImageRatio
       : clamp(fullscreenSplit, MIN_SPLIT, MAX_SPLIT);
   const videoRatio = 1 - imageRatio;
   const paneOrder: PaneKey[] = fullscreenSwapped
     ? ["video", "image"]
     : ["image", "video"];
+
+  const dualInwardAlignByPane = (() => {
+    if (
+      effectiveFullscreenDisplay !== "dual" ||
+      dualSplitMode !== "auto" ||
+      dualAdaptiveRule !== "center-inward"
+    ) {
+      return {
+        image: "center",
+        video: "center",
+      } as const;
+    }
+
+    const leftPane: PaneKey = fullscreenSwapped ? "video" : "image";
+    const rightPane: PaneKey = leftPane === "image" ? "video" : "image";
+
+    return {
+      image: leftPane === "image" ? "end" : rightPane === "image" ? "start" : "center",
+      video: leftPane === "video" ? "end" : rightPane === "video" ? "start" : "center",
+    } as const;
+  })();
+
+  const imageRenderTransform = (() => {
+    if (imageAlign.x !== "center") {
+      return imageTransform;
+    }
+
+    const targetAlignX = dualInwardAlignByPane.image;
+    const targetOffsetX =
+      targetAlignX === "start"
+        ? imageGeometry.diffX / 2
+        : targetAlignX === "end"
+          ? -imageGeometry.diffX / 2
+          : 0;
+
+    if (Math.abs(targetOffsetX - imageTransform.offsetX) < 0.0001) {
+      return imageTransform;
+    }
+
+    return {
+      ...imageTransform,
+      offsetX: targetOffsetX,
+    };
+  })();
+
+  const videoRenderTransform = (() => {
+    if (videoAlign.x !== "center") {
+      return videoTransform;
+    }
+
+    const targetAlignX = dualInwardAlignByPane.video;
+    const targetOffsetX =
+      targetAlignX === "start"
+        ? videoGeometry.diffX / 2
+        : targetAlignX === "end"
+          ? -videoGeometry.diffX / 2
+          : 0;
+
+    if (Math.abs(targetOffsetX - videoTransform.offsetX) < 0.0001) {
+      return videoTransform;
+    }
+
+    return {
+      ...videoTransform,
+      offsetX: targetOffsetX,
+    };
+  })();
 
   const activeSingleTransform =
     singlePane === "video" ? videoTransform : imageTransform;
@@ -1190,7 +1303,7 @@ function FullscreenLayer({
       singlePane={singlePane}
       draggingPane={draggingPane}
       imageGeometry={imageGeometry}
-      imageTransform={imageTransform}
+      imageTransform={imageRenderTransform}
       displayedImageSrc={displayedImageSrc}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
       controlsRows={imageControls}
@@ -1272,7 +1385,7 @@ function FullscreenLayer({
       singlePane={singlePane}
       draggingPane={draggingPane}
       videoGeometry={videoGeometry}
-      videoTransform={videoTransform}
+      videoTransform={videoRenderTransform}
       videoPlaying={videoPlaying}
       videoTime={clampedVideoTime}
       focusedVideoSrc={focusedVideoSrc}
