@@ -11,9 +11,31 @@
 
 ## 关键结论
 
-1. 主仓库 `git push origin ...` **不会自动**把 `apps/GeneralUIFrame` 推到子仓库。
-2. 推送到子仓库必须显式执行 `git subtree push --prefix=apps/GeneralUIFrame general-ui-frame <branch>`。
-3. 从子仓库同步回主仓库必须显式执行 `git subtree pull --prefix=apps/GeneralUIFrame general-ui-frame <branch> --squash`。
+1. 主仓库已经接入自动同步工作流：`main` 分支推送且命中 `apps/GeneralUIFrame/**` 时，会自动同步到子仓库 `GeneralUIFrame/main`。
+2. 日常开发默认只需要操作主仓库（`git pull` / `git commit` / `git push`）。
+3. 只有在需要“从子仓库反向拉回主仓库”或“手动应急同步”时，才需要执行 `git subtree pull/push`。
+
+## 自动同步（推荐）
+
+工作流文件：`.github/workflows/sync-generaluiframe.yml`
+
+触发条件：
+
+- `push` 到主仓库 `main`
+- 且本次提交包含 `apps/GeneralUIFrame/**` 变更
+- 或手动触发 `workflow_dispatch`
+
+必要配置：
+
+在主仓库 GitHub Actions Secrets 中配置：
+
+- `GENERAL_UI_FRAME_SYNC_TOKEN`
+
+建议该 Token 具备最小权限：
+
+- 对 `Darkstarrd-dev/GeneralUIFrame` 仓库的 `contents: write`
+
+> 未配置该 Token 时，工作流会明确失败并提示配置步骤。
 
 ## 常用命令
 
@@ -79,14 +101,19 @@ git diff -- apps/GeneralUIFrame
 
 1. 在主仓库里开发 `apps/GeneralUIFrame`。
 2. 在主仓库提交（保留完整上下文）。
-3. 主仓库正常 `git push origin <branch>`。
-4. 需要同步给独立仓库/Cloudflare 时，再执行 `git subtree push ...`。
+3. 正常 `git push origin main`。
+4. 等待 GitHub Actions 自动同步到 `GeneralUIFrame` 子仓库。
 
 ## FAQ
 
 ### Q1: 我 `git push origin` 了，为什么子仓库没更新？
 
-因为 `subtree` 不是自动双向镜像。主仓库 push 只会更新主仓库远端。
+先检查两点：
+
+1. 是否推送到 `main`（自动同步仅监听 `main`）
+2. 本次提交是否包含 `apps/GeneralUIFrame/**` 变更
+
+若都满足，请查看 Actions 中 `Sync GeneralUIFrame Subtree` 工作流日志。
 
 ### Q2: 可以只在子仓库改，再回同步主仓库吗？
 
@@ -96,9 +123,9 @@ git diff -- apps/GeneralUIFrame
 
 日常不需要。`subtree push` 已包含导出逻辑。只有在做高级 CI 自动化时才考虑单独 `git subtree split`。
 
-### Q4: 在另一台机器 `git pull` 主仓库后，子项目会自动更新到子仓库最新吗？
+### Q4: 在另一台机器上要不要额外做 subtree 同步？
 
-不会自动追子仓库最新。
+默认不需要。
 
-- `git pull` 主仓库后，你会拿到主仓库里记录的 `apps/GeneralUIFrame` 版本。
-- 若要额外同步子仓库最新，请再执行 `npm run subtree:pull:generaluiframe`。
+- 常规协作只要 `git pull` 主仓库即可。
+- 只在“子仓库被直接修改过”的特殊场景，才需要额外 `npm run subtree:pull:generaluiframe`。

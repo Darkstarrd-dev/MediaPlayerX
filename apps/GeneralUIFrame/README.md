@@ -131,6 +131,8 @@ npm run subtree:pull:generaluiframe
 npm run subtree:push:generaluiframe
 ```
 
+默认推荐流程：直接 `git push origin main`，由 GitHub Actions 自动同步 `apps/GeneralUIFrame` 到独立仓库。
+
 - 推送到独立仓库：
 
 ```bash

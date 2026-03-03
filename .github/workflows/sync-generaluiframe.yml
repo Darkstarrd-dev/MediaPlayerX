@@ -1,0 +1,50 @@
+name: Sync GeneralUIFrame Subtree
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/GeneralUIFrame/**'
+      - '.github/workflows/sync-generaluiframe.yml'
+  workflow_dispatch:
+
+jobs:
+  subtree-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate sync token
+        shell: bash
+        env:
+          SYNC_TOKEN: ${{ secrets.GENERAL_UI_FRAME_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "缺少仓库机密 GENERAL_UI_FRAME_SYNC_TOKEN，无法同步子仓库。"
+            echo "请在主仓库 Settings -> Secrets and variables -> Actions 中配置该机密。"
+            exit 1
+          fi
+
+      - name: Sync apps/GeneralUIFrame to standalone repo
+        shell: bash
+        env:
+          SYNC_TOKEN: ${{ secrets.GENERAL_UI_FRAME_SYNC_TOKEN }}
+        run: |
+          TARGET_REPO="https://x-access-token:${SYNC_TOKEN}@github.com/Darkstarrd-dev/GeneralUIFrame.git"
+          SPLIT_SHA=$(git subtree split --prefix=apps/GeneralUIFrame HEAD)
+
+          REMOTE_LINE=$(git ls-remote "$TARGET_REPO" refs/heads/main)
+          REMOTE_SHA=${REMOTE_LINE%%$'\t'*}
+          if [ -n "$REMOTE_SHA" ] && [ "$REMOTE_SHA" = "$SPLIT_SHA" ]; then
+            echo "GeneralUIFrame 子仓库已是最新，无需推送。"
+            exit 0
+          fi
+
+          git push "$TARGET_REPO" "${SPLIT_SHA}:main"
