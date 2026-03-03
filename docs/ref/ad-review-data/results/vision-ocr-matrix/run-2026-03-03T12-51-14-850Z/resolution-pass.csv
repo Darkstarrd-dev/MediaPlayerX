@@ -1,0 +1,16 @@
+image_name,resize_px,all_quality_pass,any_quality_pass,q40,q50,q60,q70,q80
+01.webp,256,false,false,false,false,false,false,false
+01.webp,384,false,false,false,false,false,false,false
+01.webp,512,true,true,true,true,true,true,true
+01.webp,768,true,true,true,true,true,true,true
+01.webp,1024,true,true,true,true,true,true,true
+02.jpg,256,false,false,false,false,false,false,false
+02.jpg,384,false,false,false,false,false,false,false
+02.jpg,512,false,false,false,false,false,false,false
+02.jpg,768,false,false,false,false,false,false,false
+02.jpg,1024,false,true,true,false,false,false,true
+03.webp,256,false,false,false,false,false,false,false
+03.webp,384,false,false,false,false,false,false,false
+03.webp,512,false,false,false,false,false,false,false
+03.webp,768,false,true,true,true,true,false,true
+03.webp,1024,false,true,false,true,true,true,true

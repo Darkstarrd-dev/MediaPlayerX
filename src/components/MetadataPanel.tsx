@@ -77,6 +77,7 @@ export interface MetadataPanelProps {
   selectedAdReviewCandidateCount: number;
   adReviewFocusTaskId: string | null;
   adReviewStrategyMode: "all" | "head-tail";
+  adReviewExecutionMode?: "normal" | "performance";
   adReviewMaxConcurrency: number;
   adReviewHeadN: number;
   adReviewTailN: number;
@@ -230,6 +231,7 @@ function MetadataPanel({
   selectedAdReviewCandidateCount,
   adReviewFocusTaskId,
   adReviewStrategyMode,
+  adReviewExecutionMode = "normal",
   adReviewMaxConcurrency,
   adReviewHeadN,
   adReviewTailN,
@@ -639,6 +641,7 @@ function MetadataPanel({
         selectedAdReviewCandidateCount={selectedAdReviewCandidateCount}
         adReviewFocusTaskId={adReviewFocusTaskId}
         adReviewStrategyMode={adReviewStrategyMode}
+        adReviewExecutionMode={adReviewExecutionMode}
         adReviewMaxConcurrency={adReviewMaxConcurrency}
         adReviewHeadN={adReviewHeadN}
         adReviewTailN={adReviewTailN}
@@ -914,10 +917,7 @@ function MetadataPanel({
         style={{ width: `${metadataRatio * 100}%` }}
         onContextMenu={handlePanelContextMenu}
       >
-        <div
-          className="metadata-head"
-          data-slot="fg-meta-toolbar"
-        >
+        <div className="metadata-head" data-slot="fg-meta-toolbar">
           <div className="metadata-toolbar-g3" data-slot="fg-meta-toolbar-g3">
             <button
               {...searchButtonA11y}

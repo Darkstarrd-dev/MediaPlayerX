@@ -113,6 +113,9 @@ export type ManageAdReviewImageSourceDto = Infer<
 export type ManageAdReviewTaskStatusDto = Infer<
   typeof Backend.manageAdReviewTaskStatusSchema
 >;
+export type ManageAdReviewExecutionModeDto = Infer<
+  typeof Backend.manageAdReviewExecutionModeSchema
+>;
 export type ManageAdReviewAllStrategyDto = Infer<
   typeof Backend.manageAdReviewAllStrategySchema
 >;
@@ -124,6 +127,9 @@ export type ManageAdReviewStrategyDto = Infer<
 >;
 export type ManageAdReviewTaskExecutionDto = Infer<
   typeof Backend.manageAdReviewTaskExecutionSchema
+>;
+export type ManageAdReviewPerformanceResultDto = Infer<
+  typeof Backend.manageAdReviewPerformanceResultSchema
 >;
 export type ManageAdReviewSourceDistributionDto = Infer<
   typeof Backend.manageAdReviewSourceDistributionSchema

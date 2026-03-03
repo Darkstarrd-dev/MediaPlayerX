@@ -1,0 +1,6 @@
+image_name,resize_px,jpeg_quality,requested_runs,ok_runs,avg_prompt_tokens,avg_latency_ms,avg_payload_bytes
+01.webp,512,60,1,1,233,462.62,51447
+02.webp,512,60,1,1,217,270.22,50535
+03.webp,512,60,1,1,217,256.51,54931
+04.webp,512,60,1,1,217,257.56,24759
+05.webp,512,60,1,1,217,303.19,34043

@@ -309,7 +309,9 @@ export function renderSettingsMainSection(
               }
             />
           </label>
-          <label data-tooltip-label={settingsTip("paneToolbarHeightScaleCoeff")}>
+          <label
+            data-tooltip-label={settingsTip("paneToolbarHeightScaleCoeff")}
+          >
             {t("ui.settings.paneToolbarHeightScaleCoeff", {
               value: paneToolbarHeightScaleCoeff.toFixed(2),
             })}
@@ -643,8 +645,9 @@ export function renderSettingsMainSection(
     });
   }
 
-  if (activeSection === "model") {
+  if (activeSection === "video") {
     return renderSettingsModelSection({
+      sectionMode: "video",
       t,
       subtitleFeatureEnabled: params.subtitleFeatureEnabled,
       subtitleRenderMode: params.subtitleRenderMode,
@@ -689,6 +692,7 @@ export function renderSettingsMainSection(
       subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
       subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
       subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
+      adReviewExecutionMode: params.adReviewExecutionMode,
       onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
       onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
       onSubtitleAdvancedVadPresetChange:
@@ -739,6 +743,109 @@ export function renderSettingsMainSection(
         params.onSubtitleCleanupLlmEndpointChange,
       onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
       onSubtitleCleanupLlmPromptChange: params.onSubtitleCleanupLlmPromptChange,
+      onAdReviewExecutionModeChange: params.onAdReviewExecutionModeChange,
+    });
+  }
+
+  if (activeSection === "model") {
+    return renderSettingsModelSection({
+      sectionMode: "ai",
+      t,
+      subtitleFeatureEnabled: params.subtitleFeatureEnabled,
+      subtitleRenderMode: params.subtitleRenderMode,
+      subtitleAdvancedVadPreset: params.subtitleAdvancedVadPreset,
+      subtitleAdvancedVadThreshold: params.subtitleAdvancedVadThreshold,
+      subtitleAdvancedVadMinSilenceSec: params.subtitleAdvancedVadMinSilenceSec,
+      subtitleAdvancedVadMinSpeechSec: params.subtitleAdvancedVadMinSpeechSec,
+      subtitleAdvancedVadMaxSpeechSec: params.subtitleAdvancedVadMaxSpeechSec,
+      subtitleAdvancedSpeakerThreshold: params.subtitleAdvancedSpeakerThreshold,
+      subtitleValidPlaybackRateThreshold:
+        params.subtitleValidPlaybackRateThreshold,
+      subtitleLanguage: params.subtitleLanguage,
+      subtitleSelectedModelId: params.subtitleSelectedModelId,
+      subtitleModelDir: params.subtitleModelDir,
+      subtitleTextFillMode: params.subtitleTextFillMode,
+      subtitleTextColor: params.subtitleTextColor,
+      subtitleGradientStartColor: params.subtitleGradientStartColor,
+      subtitleGradientEndColor: params.subtitleGradientEndColor,
+      subtitleGradientDirection: params.subtitleGradientDirection,
+      subtitleGradientCurve: params.subtitleGradientCurve,
+      subtitleStrokeColor: params.subtitleStrokeColor,
+      subtitleStrokeWidth: params.subtitleStrokeWidth,
+      subtitleStrokeShadowColor: params.subtitleStrokeShadowColor,
+      subtitleStrokeShadowRadius: params.subtitleStrokeShadowRadius,
+      subtitleFontSize: params.subtitleFontSize,
+      subtitleMaxLineChars: params.subtitleMaxLineChars,
+      subtitleOffsetY: params.subtitleOffsetY,
+      subtitleStylePanelExpanded: params.subtitleStylePanelExpanded,
+      subtitleModelsLoading: params.subtitleModelsLoading,
+      subtitleModelsError: params.subtitleModelsError,
+      subtitleModelsStatus: params.subtitleModelsStatus,
+      subtitleDownloadTask: params.subtitleDownloadTask,
+      subtitleDownloadPending: params.subtitleDownloadPending,
+      subtitleModelDownloadSupported: params.subtitleModelDownloadSupported,
+      adReviewVisionEndpoint: params.adReviewVisionEndpoint,
+      adReviewVisionModel: params.adReviewVisionModel,
+      adReviewVisionVerified: params.adReviewVisionVerified,
+      adReviewVisionTestPending: params.adReviewVisionTestPending,
+      adReviewVisionTestMessage: params.adReviewVisionTestMessage,
+      adReviewVisionSavePending: params.adReviewVisionSavePending,
+      adReviewVisionSaveMessage: params.adReviewVisionSaveMessage,
+      subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
+      subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
+      subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
+      adReviewExecutionMode: params.adReviewExecutionMode,
+      onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
+      onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
+      onSubtitleAdvancedVadPresetChange:
+        params.onSubtitleAdvancedVadPresetChange,
+      onSubtitleAdvancedVadThresholdChange:
+        params.onSubtitleAdvancedVadThresholdChange,
+      onSubtitleAdvancedVadMinSilenceSecChange:
+        params.onSubtitleAdvancedVadMinSilenceSecChange,
+      onSubtitleAdvancedVadMinSpeechSecChange:
+        params.onSubtitleAdvancedVadMinSpeechSecChange,
+      onSubtitleAdvancedVadMaxSpeechSecChange:
+        params.onSubtitleAdvancedVadMaxSpeechSecChange,
+      onSubtitleAdvancedSpeakerThresholdChange:
+        params.onSubtitleAdvancedSpeakerThresholdChange,
+      onSubtitleValidPlaybackRateThresholdChange:
+        params.onSubtitleValidPlaybackRateThresholdChange,
+      onSubtitleLanguageChange: params.onSubtitleLanguageChange,
+      onSubtitleSelectedModelIdChange: params.onSubtitleSelectedModelIdChange,
+      onSubtitleModelDirPick: params.onSubtitleModelDirPick,
+      onSubtitleTextFillModeChange: params.onSubtitleTextFillModeChange,
+      onSubtitleTextColorChange: params.onSubtitleTextColorChange,
+      onSubtitleGradientStartColorChange:
+        params.onSubtitleGradientStartColorChange,
+      onSubtitleGradientEndColorChange: params.onSubtitleGradientEndColorChange,
+      onSubtitleGradientDirectionChange:
+        params.onSubtitleGradientDirectionChange,
+      onSubtitleGradientCurveChange: params.onSubtitleGradientCurveChange,
+      onSubtitleStrokeColorChange: params.onSubtitleStrokeColorChange,
+      onSubtitleStrokeWidthChange: params.onSubtitleStrokeWidthChange,
+      onSubtitleStrokeShadowColorChange:
+        params.onSubtitleStrokeShadowColorChange,
+      onSubtitleStrokeShadowRadiusChange:
+        params.onSubtitleStrokeShadowRadiusChange,
+      onSubtitleFontSizeChange: params.onSubtitleFontSizeChange,
+      onSubtitleMaxLineCharsChange: params.onSubtitleMaxLineCharsChange,
+      onSubtitleOffsetYChange: params.onSubtitleOffsetYChange,
+      onSubtitleStylePanelExpandedChange:
+        params.onSubtitleStylePanelExpandedChange,
+      onRefreshSubtitleModels: params.onRefreshSubtitleModels,
+      onStartSubtitleModelDownload: params.onStartSubtitleModelDownload,
+      onCancelSubtitleModelDownload: params.onCancelSubtitleModelDownload,
+      onOpenSubtitleModelPage: params.onOpenSubtitleModelPage,
+      onAdReviewVisionEndpointChange: params.onAdReviewVisionEndpointChange,
+      onAdReviewVisionModelChange: params.onAdReviewVisionModelChange,
+      onTestAdReviewVisionModel: params.onTestAdReviewVisionModel,
+      onSaveAdReviewVisionModel: params.onSaveAdReviewVisionModel,
+      onSubtitleCleanupLlmEndpointChange:
+        params.onSubtitleCleanupLlmEndpointChange,
+      onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
+      onSubtitleCleanupLlmPromptChange: params.onSubtitleCleanupLlmPromptChange,
+      onAdReviewExecutionModeChange: params.onAdReviewExecutionModeChange,
     });
   }
 

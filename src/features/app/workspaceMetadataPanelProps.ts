@@ -218,6 +218,7 @@ export function buildWorkspaceMetadataPanelProps({
     selectedAdReviewCandidateCount: manageAdReview.selectedCandidateCount,
     adReviewFocusTaskId,
     adReviewStrategyMode: appSettings.adReviewStrategyMode,
+    adReviewExecutionMode: appSettings.adReviewExecutionMode,
     adReviewMaxConcurrency: appSettings.adReviewMaxConcurrency,
     adReviewHeadN: appSettings.adReviewHeadN,
     adReviewTailN: appSettings.adReviewTailN,

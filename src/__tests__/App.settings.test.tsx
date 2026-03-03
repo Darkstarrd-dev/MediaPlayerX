@@ -59,7 +59,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
         screen.getByRole("button", { name: "界面设置" }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: "AI模型设置" }),
+        screen.getByRole("button", { name: "AI辅助设置" }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole("button", { name: "快捷键设置" }),
@@ -109,7 +109,9 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       fireEvent.change(layoutGapSlider, { target: { value: "1.5" } });
       await waitFor(() => {
         expect(
-          document.documentElement.style.getPropertyValue("--mpx-layout-gap-scale"),
+          document.documentElement.style.getPropertyValue(
+            "--mpx-layout-gap-scale",
+          ),
         ).toBe("1.50");
       });
 
@@ -117,17 +119,19 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       fireEvent.change(paneInnerGapSlider, { target: { value: "0.6" } });
       await waitFor(() => {
         expect(
-          document.documentElement.style.getPropertyValue("--mpx-pane-inner-gap-scale"),
+          document.documentElement.style.getPropertyValue(
+            "--mpx-pane-inner-gap-scale",
+          ),
         ).toBe("0.60");
       });
 
-      const paneStackGapSlider = screen.getByLabelText(
-        /容器内上中下间距系数/,
-      );
+      const paneStackGapSlider = screen.getByLabelText(/容器内上中下间距系数/);
       fireEvent.change(paneStackGapSlider, { target: { value: "0.5" } });
       await waitFor(() => {
         expect(
-          document.documentElement.style.getPropertyValue("--mpx-pane-stack-gap-scale"),
+          document.documentElement.style.getPropertyValue(
+            "--mpx-pane-stack-gap-scale",
+          ),
         ).toBe("0.50");
       });
 
@@ -145,7 +149,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
         screen.getByRole("button", { name: /显示界面参数按钮/ }),
       ).toBeInTheDocument();
 
-      await click(screen.getByRole("button", { name: "AI模型设置" }));
+      await click(screen.getByRole("button", { name: "AI辅助设置" }));
       expect(screen.getByLabelText("视觉模型端口")).toBeInTheDocument();
       expect(screen.getByLabelText("视觉模型ID")).toBeInTheDocument();
       expect(screen.queryByLabelText("LM Studio Endpoint")).toBeNull();
@@ -357,7 +361,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
 
       render(<App />);
       await click(screen.getByRole("button", { name: "设置" }));
-      await click(screen.getByRole("button", { name: "AI模型设置" }));
+      await click(screen.getByRole("button", { name: "AI辅助设置" }));
 
       act(() => {
         useUiStore.getState().updateSettings({

@@ -126,6 +126,7 @@ function ImageMainSection({
   adReviewDeletePending = false,
   adReviewPanelOpen,
   manageReviewMode = "ad",
+  adReviewExecutionMode = "normal",
   canSwitchManageReviewMode = false,
   adReviewTask = null,
   adReviewFocusTaskId = null,
@@ -139,6 +140,7 @@ function ImageMainSection({
   selectedAdReviewCandidateCount = 0,
   checkedImageIds,
   adReviewCandidateImageIds = EMPTY_IMAGE_ID_SET,
+  adReviewNonBodyImageIds = EMPTY_IMAGE_ID_SET,
   adReviewResultsMode = false,
   adReviewGroupByPackageRows = false,
   onToggleImageChecked,
@@ -278,7 +280,10 @@ function ImageMainSection({
   ]);
 
   const handleSaveParsedMetadataByPackageId = useCallback(
-    async (packageId: string, parsed: Parameters<typeof onMetadataSaveParsed>[0]) => {
+    async (
+      packageId: string,
+      parsed: Parameters<typeof onMetadataSaveParsed>[0],
+    ) => {
       if (onMetadataSaveParsedByPackageId) {
         await onMetadataSaveParsedByPackageId(packageId, parsed);
         return;
@@ -738,14 +743,20 @@ function ImageMainSection({
     const onOpenByShortcut = () => {
       setImageConvertPanelOpen(true);
     };
-    window.addEventListener("mpx:image-convert-toggle-panel", onToggleByShortcut);
+    window.addEventListener(
+      "mpx:image-convert-toggle-panel",
+      onToggleByShortcut,
+    );
     window.addEventListener("mpx:image-convert-open-panel", onOpenByShortcut);
     return () => {
       window.removeEventListener(
         "mpx:image-convert-toggle-panel",
         onToggleByShortcut,
       );
-      window.removeEventListener("mpx:image-convert-open-panel", onOpenByShortcut);
+      window.removeEventListener(
+        "mpx:image-convert-open-panel",
+        onOpenByShortcut,
+      );
     };
   }, [toggleImageConvertPanel]);
 
@@ -807,6 +818,8 @@ function ImageMainSection({
   );
   const showAdReviewToolbarControls =
     manageMode && adReviewFeatureEnabled && adReviewPanelOpen;
+  const isAdReviewPerformanceMode =
+    manageReviewMode === "ad" && adReviewExecutionMode === "performance";
   const isReviewWithCandidates = Boolean(
     adReviewTask &&
     adReviewTask.status === "review" &&
@@ -990,18 +1003,18 @@ function ImageMainSection({
     setImageConvertTaskStatus("pending");
     setImageConvertTaskProgress(0);
     setImageConvertTaskMessage(null);
-                          const startResponse = (await onStartImageConvertTask({
-                            node_ids: [],
-                            scale_factor: imageConvertScale,
-                            ...(imageConvertLongestEdgePx != null
-                              ? { longest_edge_px: imageConvertLongestEdgePx }
-                              : {}),
-                            adjust: imageConvertPreviewMode
-                              ? imageConvertPreviewAdjustProfile
-                              : imageConvertAdjustProfile,
-                            target_format: imageConvertFormat,
-                            quality: imageConvertQuality,
-                            concurrency: imageConvertConcurrency,
+    const startResponse = (await onStartImageConvertTask({
+      node_ids: [],
+      scale_factor: imageConvertScale,
+      ...(imageConvertLongestEdgePx != null
+        ? { longest_edge_px: imageConvertLongestEdgePx }
+        : {}),
+      adjust: imageConvertPreviewMode
+        ? imageConvertPreviewAdjustProfile
+        : imageConvertAdjustProfile,
+      target_format: imageConvertFormat,
+      quality: imageConvertQuality,
+      concurrency: imageConvertConcurrency,
     })) as unknown;
     const nextTaskId = resolveTaskIdFromStartResponse(startResponse);
     if (!nextTaskId) {
@@ -1195,6 +1208,7 @@ function ImageMainSection({
                 convertInteractionLocked={convertInteractionLocked}
                 adReviewPending={adReviewPending}
                 pendingManageAction={pendingManageAction}
+                adReviewExecutionMode={adReviewExecutionMode}
                 manageReviewMode={manageReviewMode}
                 onManageReviewModeChange={onManageReviewModeChange}
                 openAdReviewStrategyPopover={openAdReviewStrategyPopover}
@@ -1308,17 +1322,17 @@ function ImageMainSection({
             </div>
           </>
         ) : metadataManageMode ? (
-            <ImageMainMetadataToolbar
-              t={t}
-              metadataPending={metadataPending}
-              metadataManageSelectionMode={metadataManageSelectionMode}
-              manageOperationHint={manageOperationHint}
-              onMetadataSyncName={onMetadataSyncName}
-              onToggleMetadataManageSelectionMode={
-                onToggleMetadataManageSelectionMode
-              }
-              onOpenMetadataFetch={() => setMetadataFetchOpen(true)}
-            />
+          <ImageMainMetadataToolbar
+            t={t}
+            metadataPending={metadataPending}
+            metadataManageSelectionMode={metadataManageSelectionMode}
+            manageOperationHint={manageOperationHint}
+            onMetadataSyncName={onMetadataSyncName}
+            onToggleMetadataManageSelectionMode={
+              onToggleMetadataManageSelectionMode
+            }
+            onOpenMetadataFetch={() => setMetadataFetchOpen(true)}
+          />
         ) : (
           <ImageMainNormalToolbar
             t={t}
@@ -1373,6 +1387,7 @@ function ImageMainSection({
         focusedRef={focusedRef}
         checkedImageIds={checkedImageIds}
         adReviewCandidateImageIds={adReviewCandidateImageIds}
+        adReviewNonBodyImageIds={adReviewNonBodyImageIds}
         onSelectImage={onSelectImage}
         onEnterFullscreen={onEnterFullscreen}
         refsInPageForRender={refsInPageForRender}
@@ -1380,6 +1395,7 @@ function ImageMainSection({
         imageUrlByIdForRender={imageUrlByIdForRender}
         pageStart={pageStart}
         adReviewGroupByPackageRows={adReviewGroupByPackageRows}
+        adReviewPerformanceMode={isAdReviewPerformanceMode}
         showSkeleton={showSkeleton}
         skeletonCount={skeletonCount}
         vectorMode={vectorMode}
@@ -1394,7 +1410,9 @@ function ImageMainSection({
         metadataProxyServer={metadataProxyServer}
         metadataPending={metadataPending}
         setMetadataFetchOpen={setMetadataFetchOpen}
-        handleSaveParsedMetadataByPackageId={handleSaveParsedMetadataByPackageId}
+        handleSaveParsedMetadataByPackageId={
+          handleSaveParsedMetadataByPackageId
+        }
       />
     </>
   );

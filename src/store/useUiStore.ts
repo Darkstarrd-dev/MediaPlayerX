@@ -241,6 +241,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   subtitleCleanupLlmModel: "",
   subtitleCleanupLlmPrompt:
     "You are a subtitle cleanup assistant. Keep timing lines and numbering valid SRT format. Only return cleaned full SRT content. Remove obvious ASR mistakes, fix punctuation and segmentation, do not invent content.",
+  adReviewExecutionMode: "normal",
   adReviewStrategyMode: "all",
   adReviewHeadN: 4,
   adReviewTailN: 4,
@@ -380,6 +381,7 @@ const SETTINGS_KEYS: (keyof AppSettings)[] = [
   "subtitleCleanupLlmEndpoint",
   "subtitleCleanupLlmModel",
   "subtitleCleanupLlmPrompt",
+  "adReviewExecutionMode",
   "adReviewStrategyMode",
   "adReviewHeadN",
   "adReviewTailN",

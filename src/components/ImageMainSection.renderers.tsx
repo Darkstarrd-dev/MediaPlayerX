@@ -42,6 +42,7 @@ interface RenderImageMainContentParams {
   focusedRef: FocusedImageRef | null;
   checkedImageIds: ReadonlySet<string>;
   adReviewCandidateImageIds: ReadonlySet<string>;
+  adReviewNonBodyImageIds: ReadonlySet<string>;
   onSelectImage: (
     packageId: string,
     imageIndex: number,
@@ -53,6 +54,7 @@ interface RenderImageMainContentParams {
   imageUrlByIdForRender: Record<string, string>;
   pageStart: number;
   adReviewGroupByPackageRows: boolean;
+  adReviewPerformanceMode: boolean;
   showSkeleton: boolean;
   skeletonCount: number;
   vectorMode: boolean;
@@ -86,6 +88,7 @@ export function renderImageMainContent({
   focusedRef,
   checkedImageIds,
   adReviewCandidateImageIds,
+  adReviewNonBodyImageIds,
   onSelectImage,
   onEnterFullscreen,
   refsInPageForRender,
@@ -93,6 +96,7 @@ export function renderImageMainContent({
   imageUrlByIdForRender,
   pageStart,
   adReviewGroupByPackageRows,
+  adReviewPerformanceMode,
   showSkeleton,
   skeletonCount,
   vectorMode,
@@ -230,7 +234,10 @@ export function renderImageMainContent({
                   }
                   onDoubleClick={!manageMode ? onEnterFullscreen : undefined}
                 >
-                  <span className="name-list-row-label" data-slot="fg-main-content-image-name-list-label">{`${manageMode && image.hidden ? `${t("ui.image.hiddenPrefix")} ` : ""}${fileName}`}</span>
+                  <span
+                    className="name-list-row-label"
+                    data-slot="fg-main-content-image-name-list-label"
+                  >{`${manageMode && image.hidden ? `${t("ui.image.hiddenPrefix")} ` : ""}${fileName}`}</span>
                   <span>{`${image.sizeKb}KB`}</span>
                   <span>
                     {resolvedWidth > 0 && resolvedHeight > 0
@@ -297,13 +304,37 @@ export function renderImageMainContent({
             const imageSrc = imageUrlByIdForRender[image.id] ?? "";
             const isChecked = checkedImageIds.has(image.id);
             const isAdReviewCandidate = adReviewCandidateImageIds.has(image.id);
+            const isAdReviewNonBody = adReviewNonBodyImageIds.has(image.id);
             const isAdReviewExcluded =
               manageMode && isAdReviewCandidate && !isChecked;
             const previousRef =
               pageIndex > 0 ? refsInPageForRender[pageIndex - 1] : null;
+            const previousImage = previousRef
+              ? packageById.get(previousRef.packageId)?.images[
+                  previousRef.imageIndex
+                ]
+              : null;
+            const currentGroup = isAdReviewCandidate
+              ? "ad"
+              : isAdReviewNonBody
+                ? "nonbody"
+                : "other";
+            const previousGroup = previousImage
+              ? adReviewCandidateImageIds.has(previousImage.id)
+                ? "ad"
+                : adReviewNonBodyImageIds.has(previousImage.id)
+                  ? "nonbody"
+                  : "other"
+              : "other";
             const startsNewPackageRow =
               adReviewGroupByPackageRows &&
               (pageIndex === 0 || previousRef?.packageId !== ref.packageId);
+            const startsNewIntraPackageGroupRow =
+              adReviewPerformanceMode &&
+              adReviewGroupByPackageRows &&
+              previousRef?.packageId === ref.packageId &&
+              ((previousGroup === "nonbody" && currentGroup === "ad") ||
+                (previousGroup === "ad" && currentGroup === "nonbody"));
             return (
               <div
                 key={`${ref.packageId}-${ref.imageIndex}`}
@@ -311,11 +342,14 @@ export function renderImageMainContent({
                 data-manage-package-id={ref.packageId}
                 data-manage-image-index={String(ref.imageIndex)}
                 data-manage-absolute-index={String(absoluteIndex)}
-                className={`thumb-card ${manageMode ? "is-manage" : ""} ${manageMode && isChecked ? "is-selected" : ""} ${manageMode && image.hidden ? "is-hidden" : ""} ${isFocused ? "is-focused" : ""} ${isAdReviewExcluded ? "is-ad-review-excluded" : ""}`}
+                className={`thumb-card ${manageMode ? "is-manage" : ""} ${manageMode && isChecked ? "is-selected" : ""} ${manageMode && image.hidden ? "is-hidden" : ""} ${isFocused ? "is-focused" : ""} ${isAdReviewExcluded ? "is-ad-review-excluded" : ""} ${startsNewIntraPackageGroupRow ? "is-ad-review-group-break" : ""}`}
                 data-slot="fg-main-content-image-grid-card"
                 style={{
                   width: `${actualCellWidth}px`,
-                  gridColumnStart: startsNewPackageRow ? 1 : undefined,
+                  gridColumnStart:
+                    startsNewPackageRow || startsNewIntraPackageGroupRow
+                      ? 1
+                      : undefined,
                 }}
               >
                 <button

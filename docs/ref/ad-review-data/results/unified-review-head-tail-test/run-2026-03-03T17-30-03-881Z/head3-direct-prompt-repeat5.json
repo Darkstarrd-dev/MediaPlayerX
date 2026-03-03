@@ -1,0 +1,138 @@
+{
+  "generated_at": "2026-03-03T17:30:03.880Z",
+  "config": {
+    "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+    "model": "huihui-qwen3-vl-8b-instruct-abliterated",
+    "repeats": 5,
+    "resize_px": 640,
+    "jpeg_quality": 40,
+    "image_ids": [
+      "01",
+      "02",
+      "03"
+    ]
+  },
+  "metrics": {
+    "duplicate_01_02_hit_rate": 1,
+    "overlay_01_hit_rate": 0.6,
+    "overlay_text_hit_rate": 0.4
+  },
+  "rows": [
+    {
+      "run_no": 1,
+      "ok": true,
+      "http_status": 200,
+      "has_expected_duplicate_01_02": true,
+      "has_expected_overlay_01": false,
+      "has_expected_overlay_text": true,
+      "overlay_texts_01": [
+        "“KOKOKORO个人汉化”。"
+      ],
+      "direct_parse": {
+        "duplicate_ids": [
+          "01",
+          "02"
+        ],
+        "overlay_ids": [],
+        "overlay_text": "“KOKOKORO个人汉化”。"
+      },
+      "error": null,
+      "raw": "属于同一张图的编号是：01、02。\n添加的广告信息是：“KOKOKORO个人汉化”。",
+      "parsed": null
+    },
+    {
+      "run_no": 2,
+      "ok": true,
+      "http_status": 200,
+      "has_expected_duplicate_01_02": true,
+      "has_expected_overlay_01": true,
+      "has_expected_overlay_text": false,
+      "overlay_texts_01": [
+        "DOJIN R18 虚人肉ぴ。"
+      ],
+      "direct_parse": {
+        "duplicate_ids": [
+          "01",
+          "02"
+        ],
+        "overlay_ids": [
+          "01"
+        ],
+        "overlay_text": "DOJIN R18 虚人肉ぴ。"
+      },
+      "error": null,
+      "raw": "属于同一张图的编号是：01、02。\n属于同一张图的图片中，加上了广告信息的图的编号是：01。\n添加的广告信息是：DOJIN R18 虚人肉ぴ。",
+      "parsed": null
+    },
+    {
+      "run_no": 3,
+      "ok": true,
+      "http_status": 200,
+      "has_expected_duplicate_01_02": true,
+      "has_expected_overlay_01": false,
+      "has_expected_overlay_text": true,
+      "overlay_texts_01": [
+        "“KOKOKORO个人汉化”。"
+      ],
+      "direct_parse": {
+        "duplicate_ids": [
+          "01",
+          "02"
+        ],
+        "overlay_ids": [],
+        "overlay_text": "“KOKOKORO个人汉化”。"
+      },
+      "error": null,
+      "raw": "属于同一张图的编号是：01、02。\n添加的广告信息是：“KOKOKORO个人汉化”。",
+      "parsed": null
+    },
+    {
+      "run_no": 4,
+      "ok": true,
+      "http_status": 200,
+      "has_expected_duplicate_01_02": true,
+      "has_expected_overlay_01": true,
+      "has_expected_overlay_text": false,
+      "overlay_texts_01": [
+        "DOJIN R18 虚人肉び。"
+      ],
+      "direct_parse": {
+        "duplicate_ids": [
+          "01",
+          "02"
+        ],
+        "overlay_ids": [
+          "01"
+        ],
+        "overlay_text": "DOJIN R18 虚人肉び。"
+      },
+      "error": null,
+      "raw": "属于同一张图的编号是：01、02。\n属于同一张图的图片中，加上了广告信息的图的编号是：01。\n添加的广告信息是：DOJIN R18 虚人肉び。",
+      "parsed": null
+    },
+    {
+      "run_no": 5,
+      "ok": true,
+      "http_status": 200,
+      "has_expected_duplicate_01_02": true,
+      "has_expected_overlay_01": true,
+      "has_expected_overlay_text": false,
+      "overlay_texts_01": [
+        "DOJIN R18 虚人肉ぴ。"
+      ],
+      "direct_parse": {
+        "duplicate_ids": [
+          "01",
+          "02"
+        ],
+        "overlay_ids": [
+          "01"
+        ],
+        "overlay_text": "DOJIN R18 虚人肉ぴ。"
+      },
+      "error": null,
+      "raw": "属于同一张图的编号是：01、02。\n属于同一张图的图片中，加上了广告信息的图的编号是：01。\n添加的广告信息是：DOJIN R18 虚人肉ぴ。",
+      "parsed": null
+    }
+  ]
+}

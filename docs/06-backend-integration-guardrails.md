@@ -114,6 +114,8 @@ Last updated: 2026-02-18
 5. 合约一致性
    - 新增审核相关 IPC 请求/响应必须走 Zod schema 校验。
    - `startManageAdReview` 的策略/并发参数必须显式透传并在 Main 统一归一化（禁止 Renderer 与 Main 口径分叉）。
+   - `startManageAdReview` 必须透传 `execution_mode`（`normal | performance`），不得在 IPC 边界丢失。
+   - 当 `execution_mode=performance` 时，前端发送策略必须强制为 `head-tail`，避免 UI 锁定与后端执行口径分叉。
    - DTO -> ViewModel 映射必须在适配层显式完成，禁止 UI 直接消费后端原始结构。
 
 ## 真实文件性能门禁（扫描/重处理强制）

@@ -630,8 +630,10 @@ export function useAppTopLayerState({
       appSettings.fullscreenVideoControlsMaxWidth,
     mediaPreloadMemoryBudgetMb: appSettings.mediaPreloadMemoryBudgetMb,
     musicVisualizerRuntimeMode: appSettings.musicVisualizerRuntimeMode,
-    musicVisualizerSelectedShaderId: appSettings.musicVisualizerSelectedShaderId,
-    musicVisualizerRenderLongEdgePx: appSettings.musicVisualizerRenderLongEdgePx,
+    musicVisualizerSelectedShaderId:
+      appSettings.musicVisualizerSelectedShaderId,
+    musicVisualizerRenderLongEdgePx:
+      appSettings.musicVisualizerRenderLongEdgePx,
     musicVisualizerFpsCap: appSettings.musicVisualizerFpsCap,
     musicVisualizerToneMapMode: appSettings.musicVisualizerToneMapMode,
     musicVisualizerToneMapExposure: appSettings.musicVisualizerToneMapExposure,
@@ -719,6 +721,7 @@ export function useAppTopLayerState({
     subtitleCleanupLlmEndpoint: appSettings.subtitleCleanupLlmEndpoint,
     subtitleCleanupLlmModel: appSettings.subtitleCleanupLlmModel,
     subtitleCleanupLlmPrompt: appSettings.subtitleCleanupLlmPrompt,
+    adReviewExecutionMode: appSettings.adReviewExecutionMode,
     shortcuts: appSettings.shortcuts,
     shortcutConflicts,
     databaseResetPending,

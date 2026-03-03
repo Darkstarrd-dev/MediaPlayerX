@@ -1,0 +1,2964 @@
+{
+  "generated_at": "2026-03-03T13:59:42.232Z",
+  "config": {
+    "advanced_dir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\src\\assets\\test\\advanced",
+    "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+    "model": "huihui-qwen3-vl-8b-instruct-abliterated",
+    "repeats": 5,
+    "resize_px": 640,
+    "jpeg_quality": 40,
+    "head_n": 6,
+    "tail_base_n": 10,
+    "tail_window_files": [
+      "29_zzz4.2.webp",
+      "29.webp",
+      "28.webp",
+      "27_zzz2.1.1.webp",
+      "27.webp",
+      "26_zzz1.3.webp",
+      "26.webp",
+      "25_zzz1.1.webp",
+      "25.webp",
+      "24.webp"
+    ],
+    "tail_window_ids": [
+      "29_zzz4.2",
+      "29",
+      "28",
+      "27_zzz2.1.1",
+      "27",
+      "26_zzz1.3",
+      "26",
+      "25_zzz1.1",
+      "25",
+      "24"
+    ],
+    "tail_known_hash_hit_ids": [
+      "29_zzz4.2",
+      "27_zzz2.1.1",
+      "26_zzz1.3",
+      "25_zzz1.1"
+    ],
+    "tail_llm_ids": [
+      "29",
+      "28",
+      "27",
+      "26",
+      "25",
+      "24"
+    ],
+    "tail_llm_quota": 6,
+    "sleep_ms": 120
+  },
+  "compare": {
+    "multi_avg_latency_ms": 16777.18,
+    "single_avg_latency_ms": 19698.01,
+    "speedup_single_div_multi": 1.174,
+    "multi_avg_total_tokens": 5257.4,
+    "single_avg_total_tokens": 8379.2,
+    "total_token_reduction_ratio": 0.3726
+  },
+  "multi_summary": {
+    "run_count": 5,
+    "parse_success_rate": 0,
+    "avg_latency_ms": 16777.18,
+    "avg_prompt_tokens": 3994,
+    "avg_total_tokens": 5257.4
+  },
+  "single_summary": {
+    "run_count": 5,
+    "parse_success_rate": 0,
+    "avg_latency_ms": 19698.01,
+    "avg_prompt_tokens": 6624,
+    "avg_total_tokens": 8379.2
+  },
+  "detail_rows": [
+    {
+      "run_no": 1,
+      "mode": "multi",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 7274.84,
+      "tail_latency_ms": 7428.9,
+      "total_latency_ms": 14703.74,
+      "head_prompt_tokens": 1999,
+      "tail_prompt_tokens": 1995,
+      "total_prompt_tokens": 3994,
+      "head_total_tokens": 2634,
+      "tail_total_tokens": 2623,
+      "total_tokens": 5257,
+      "head_duplicate_has_01_02": true,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"01\",\"02\",\"03\",\"29\",\"28\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 1,
+      "mode": "single",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 10613.5,
+      "tail_latency_ms": 10954.42,
+      "total_latency_ms": 21567.92,
+      "head_prompt_tokens": 3324,
+      "tail_prompt_tokens": 3300,
+      "total_prompt_tokens": 6624,
+      "head_total_tokens": 4186,
+      "tail_total_tokens": 4186,
+      "total_tokens": 8372,
+      "head_duplicate_has_01_02": false,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"03\",\"29\",\"28\",\"27\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 2,
+      "mode": "multi",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 8957.59,
+      "tail_latency_ms": 8781.31,
+      "total_latency_ms": 17738.9,
+      "head_prompt_tokens": 1999,
+      "tail_prompt_tokens": 1995,
+      "total_prompt_tokens": 3994,
+      "head_total_tokens": 2640,
+      "tail_total_tokens": 2622,
+      "total_tokens": 5262,
+      "head_duplicate_has_01_02": true,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"01\",\"02\",\"03\",\"29\",\"28\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 2,
+      "mode": "single",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 10004.34,
+      "tail_latency_ms": 9153.23,
+      "total_latency_ms": 19157.57,
+      "head_prompt_tokens": 3324,
+      "tail_prompt_tokens": 3300,
+      "total_prompt_tokens": 6624,
+      "head_total_tokens": 4195,
+      "tail_total_tokens": 4186,
+      "total_tokens": 8381,
+      "head_duplicate_has_01_02": false,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"03\",\"29\",\"28\",\"27\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 3,
+      "mode": "multi",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 8531.07,
+      "tail_latency_ms": 8701.29,
+      "total_latency_ms": 17232.36,
+      "head_prompt_tokens": 1999,
+      "tail_prompt_tokens": 1995,
+      "total_prompt_tokens": 3994,
+      "head_total_tokens": 2634,
+      "tail_total_tokens": 2622,
+      "total_tokens": 5256,
+      "head_duplicate_has_01_02": true,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"01\",\"02\",\"03\",\"29\",\"28\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 3,
+      "mode": "single",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 10061.99,
+      "tail_latency_ms": 9319.18,
+      "total_latency_ms": 19381.17,
+      "head_prompt_tokens": 3324,
+      "tail_prompt_tokens": 3300,
+      "total_prompt_tokens": 6624,
+      "head_total_tokens": 4195,
+      "tail_total_tokens": 4186,
+      "total_tokens": 8381,
+      "head_duplicate_has_01_02": false,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"03\",\"29\",\"28\",\"27\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 4,
+      "mode": "multi",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 8584.95,
+      "tail_latency_ms": 8656.71,
+      "total_latency_ms": 17241.66,
+      "head_prompt_tokens": 1999,
+      "tail_prompt_tokens": 1995,
+      "total_prompt_tokens": 3994,
+      "head_total_tokens": 2634,
+      "tail_total_tokens": 2622,
+      "total_tokens": 5256,
+      "head_duplicate_has_01_02": true,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"01\",\"02\",\"03\",\"29\",\"28\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 4,
+      "mode": "single",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 10075.29,
+      "tail_latency_ms": 9223.22,
+      "total_latency_ms": 19298.51,
+      "head_prompt_tokens": 3324,
+      "tail_prompt_tokens": 3300,
+      "total_prompt_tokens": 6624,
+      "head_total_tokens": 4195,
+      "tail_total_tokens": 4186,
+      "total_tokens": 8381,
+      "head_duplicate_has_01_02": false,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"03\",\"29\",\"28\",\"27\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 5,
+      "mode": "multi",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 8430.35,
+      "tail_latency_ms": 8538.87,
+      "total_latency_ms": 16969.22,
+      "head_prompt_tokens": 1999,
+      "tail_prompt_tokens": 1995,
+      "total_prompt_tokens": 3994,
+      "head_total_tokens": 2634,
+      "tail_total_tokens": 2622,
+      "total_tokens": 5256,
+      "head_duplicate_has_01_02": true,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"01\",\"02\",\"03\",\"29\",\"28\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    },
+    {
+      "run_no": 5,
+      "mode": "single",
+      "head_ok": true,
+      "tail_ok": true,
+      "merged_ok": true,
+      "head_latency_ms": 10018.58,
+      "tail_latency_ms": 9066.3,
+      "total_latency_ms": 19084.88,
+      "head_prompt_tokens": 3324,
+      "tail_prompt_tokens": 3300,
+      "total_prompt_tokens": 6624,
+      "head_total_tokens": 4195,
+      "tail_total_tokens": 4186,
+      "total_tokens": 8381,
+      "head_duplicate_has_01_02": false,
+      "head_overlay_precision": 0,
+      "head_overlay_recall": 0,
+      "head_overlay_f1": 0,
+      "ad_delete_ids": "[\"29_zzz4.2\",\"27_zzz2.1.1\",\"26_zzz1.3\",\"25_zzz1.1\"]",
+      "nonbody_hide_ids": "[\"03\",\"29\",\"28\",\"27\",\"24\"]",
+      "head_error": null,
+      "tail_error": null
+    }
+  ],
+  "run_outputs": [
+    {
+      "run_no": 1,
+      "mode": "multi",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 7274.84,
+        "usage": {
+          "prompt_tokens": 1999,
+          "completion_tokens": 635,
+          "total_tokens": 2634
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [\"01\", \"02\", \"03\", \"04\", \"05\", \"06\"],\n  \"duplicate_groups\": [\n    {\n      \"ids\": [\"01\", \"02\"],\n      \"ad_overlay_ids\": [],\n      \"ad_overlay_texts\": []\n    }\n  ],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [\"03\"],\n  \"body_image_ids\": [\"04\", \"05\", \"06\"],\n  \"non_body_image_ids\": [],\n  \"items\": [\n    {\n      \"image_id\": \"01\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"02\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"03\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black image; classified as blank.\",\n      \"confidence\": 0.99\n    },\n    {\n      \"image_id\": \"04\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"05\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"06\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [
+            {
+              "ids": [
+                "01",
+                "02"
+              ],
+              "ad_overlay_ids": [],
+              "ad_overlay_texts": []
+            }
+          ],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "01",
+            "02",
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black image; classified as blank.",
+              "confidence": 0.99
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 7428.9,
+        "usage": {
+          "prompt_tokens": 1995,
+          "completion_tokens": 628,
+          "total_tokens": 2623
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [29, 28, 27, 26, 25, 24],\n  \"duplicate_groups\": [],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [28, 24],\n  \"body_image_ids\": [26, 25, 27],\n  \"non_body_image_ids\": [29],\n  \"items\": [\n    {\n      \"image_id\": \"29\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains title and credits, typical of back cover or afterword page.\",\n      \"confidence\": 0.95\n    },\n    {\n      \"image_id\": \"28\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black page, likely a blank or separator page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"27\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains author's afterword and credits, part of the body content.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"26\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main story body.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"25\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main story body.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"24\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Black page with text indicating next guest illustration, likely a separator or transition page.\",\n      \"confidence\": 0.96\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "27",
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits, typical of back cover or afterword page.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black page, likely a blank or separator page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains author's afterword and credits, part of the body content.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main story body.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main story body.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest illustration, likely a separator or transition page.",
+              "confidence": 0.96
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "01",
+          "02",
+          "03",
+          "29",
+          "28",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 1,
+      "mode": "single",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 10613.5,
+        "usage": {
+          "prompt_tokens": 3324,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "01",
+            "02",
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Main artwork with title text overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Image is completely black, matching blank image criteria.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full manga panel with characters and dialogue, no ad overlay or blank space.",
+              "confidence": 0.98
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 10954.42,
+        "usage": {
+          "prompt_tokens": 3300,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "29",
+            "28",
+            "27",
+            "26",
+            "25",
+            "24"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "27",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits ('奥付') indicating it's a back cover or credit page, not part of the main body.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "The image is completely black, indicating it's a blank page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a transition or non-body page.",
+              "confidence": 0.95
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "03",
+          "29",
+          "28",
+          "27",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 2,
+      "mode": "multi",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 8957.59,
+        "usage": {
+          "prompt_tokens": 1999,
+          "completion_tokens": 641,
+          "total_tokens": 2640
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [\"01\", \"02\", \"03\", \"04\", \"05\", \"06\"],\n  \"duplicate_groups\": [\n    {\n      \"ids\": [\"01\", \"02\"],\n      \"ad_overlay_ids\": [],\n      \"ad_overlay_texts\": []\n    }\n  ],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [\"03\"],\n  \"body_image_ids\": [\"04\", \"05\", \"06\"],\n  \"non_body_image_ids\": [],\n  \"items\": [\n    {\n      \"image_id\": \"01\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"02\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"03\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black image; classified as blank.\",\n      \"confidence\": 0.99\n    },\n    {\n      \"image_id\": \"04\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Panel-based manga page with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"05\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Panel-based manga page with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"06\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Panel-based manga page with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [
+            {
+              "ids": [
+                "01",
+                "02"
+              ],
+              "ad_overlay_ids": [],
+              "ad_overlay_texts": []
+            }
+          ],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "01",
+            "02",
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black image; classified as blank.",
+              "confidence": 0.99
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Panel-based manga page with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Panel-based manga page with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Panel-based manga page with dialogue; classified as body.",
+              "confidence": 0.97
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 8781.31,
+        "usage": {
+          "prompt_tokens": 1995,
+          "completion_tokens": 627,
+          "total_tokens": 2622
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [29, 28, 27, 26, 25, 24],\n  \"duplicate_groups\": [],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [28, 24],\n  \"body_image_ids\": [26, 25, 27],\n  \"non_body_image_ids\": [29],\n  \"items\": [\n    {\n      \"image_id\": \"29\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains title and credits, typical of back cover or afterword page.\",\n      \"confidence\": 0.95\n    },\n    {\n      \"image_id\": \"28\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black page, likely a blank or separator page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"27\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains author's afterword text, part of the body content.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"26\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main story body.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"25\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main story body.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"24\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Black page with text indicating next guest illustration, likely a separator or transition page.\",\n      \"confidence\": 0.96\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "27",
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits, typical of back cover or afterword page.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black page, likely a blank or separator page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains author's afterword text, part of the body content.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main story body.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main story body.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest illustration, likely a separator or transition page.",
+              "confidence": 0.96
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "01",
+          "02",
+          "03",
+          "29",
+          "28",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 2,
+      "mode": "single",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 10004.34,
+        "usage": {
+          "prompt_tokens": 3324,
+          "total_tokens": 4195
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "01",
+            "02",
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Main artwork with title text overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full artwork with title overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Image is completely black, matching blank image criteria.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full manga panel with characters and dialogue, no ad overlay or blank space.",
+              "confidence": 0.98
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 9153.23,
+        "usage": {
+          "prompt_tokens": 3300,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "29",
+            "28",
+            "27",
+            "26",
+            "25",
+            "24"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "27",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits ('奥付') indicating it's a back cover or credit page, not part of the main body.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "The image is completely black, indicating it's a blank page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a transition or non-body page.",
+              "confidence": 0.95
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "03",
+          "29",
+          "28",
+          "27",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 3,
+      "mode": "multi",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 8531.07,
+        "usage": {
+          "prompt_tokens": 1999,
+          "completion_tokens": 635,
+          "total_tokens": 2634
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [\"01\", \"02\", \"03\", \"04\", \"05\", \"06\"],\n  \"duplicate_groups\": [\n    {\n      \"ids\": [\"01\", \"02\"],\n      \"ad_overlay_ids\": [],\n      \"ad_overlay_texts\": []\n    }\n  ],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [\"03\"],\n  \"body_image_ids\": [\"04\", \"05\", \"06\"],\n  \"non_body_image_ids\": [],\n  \"items\": [\n    {\n      \"image_id\": \"01\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"02\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"03\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black image; classified as blank.\",\n      \"confidence\": 0.99\n    },\n    {\n      \"image_id\": \"04\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"05\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"06\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [
+            {
+              "ids": [
+                "01",
+                "02"
+              ],
+              "ad_overlay_ids": [],
+              "ad_overlay_texts": []
+            }
+          ],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "01",
+            "02",
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black image; classified as blank.",
+              "confidence": 0.99
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 8701.29,
+        "usage": {
+          "prompt_tokens": 1995,
+          "completion_tokens": 627,
+          "total_tokens": 2622
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [29, 28, 27, 26, 25, 24],\n  \"duplicate_groups\": [],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [28, 24],\n  \"body_image_ids\": [26, 25, 27],\n  \"non_body_image_ids\": [29],\n  \"items\": [\n    {\n      \"image_id\": \"29\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains title and credits, typical of back cover or afterword page.\",\n      \"confidence\": 0.95\n    },\n    {\n      \"image_id\": \"28\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black page, likely a blank or separator page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"27\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains author's afterword and credits, part of the body content.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"26\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"25\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"24\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Black page with text indicating next guest page, likely a separator or transition.\",\n      \"confidence\": 0.96\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "27",
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits, typical of back cover or afterword page.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black page, likely a blank or separator page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains author's afterword and credits, part of the body content.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a separator or transition.",
+              "confidence": 0.96
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "01",
+          "02",
+          "03",
+          "29",
+          "28",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 3,
+      "mode": "single",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 10061.99,
+        "usage": {
+          "prompt_tokens": 3324,
+          "total_tokens": 4195
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "01",
+            "02",
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Main artwork with title text overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full artwork with title overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Image is completely black, matching blank image criteria.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full manga panel with characters and dialogue, no ad overlay or blank space.",
+              "confidence": 0.98
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 9319.18,
+        "usage": {
+          "prompt_tokens": 3300,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "29",
+            "28",
+            "27",
+            "26",
+            "25",
+            "24"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "27",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits ('奥付') indicating it's a back cover or credit page, not part of the main body.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "The image is completely black, indicating it's a blank page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a transition or non-body page.",
+              "confidence": 0.95
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "03",
+          "29",
+          "28",
+          "27",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 4,
+      "mode": "multi",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 8584.95,
+        "usage": {
+          "prompt_tokens": 1999,
+          "completion_tokens": 635,
+          "total_tokens": 2634
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [\"01\", \"02\", \"03\", \"04\", \"05\", \"06\"],\n  \"duplicate_groups\": [\n    {\n      \"ids\": [\"01\", \"02\"],\n      \"ad_overlay_ids\": [],\n      \"ad_overlay_texts\": []\n    }\n  ],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [\"03\"],\n  \"body_image_ids\": [\"04\", \"05\", \"06\"],\n  \"non_body_image_ids\": [],\n  \"items\": [\n    {\n      \"image_id\": \"01\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"02\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"03\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black image; classified as blank.\",\n      \"confidence\": 0.99\n    },\n    {\n      \"image_id\": \"04\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"05\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"06\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [
+            {
+              "ids": [
+                "01",
+                "02"
+              ],
+              "ad_overlay_ids": [],
+              "ad_overlay_texts": []
+            }
+          ],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "01",
+            "02",
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black image; classified as blank.",
+              "confidence": 0.99
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 8656.71,
+        "usage": {
+          "prompt_tokens": 1995,
+          "completion_tokens": 627,
+          "total_tokens": 2622
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [29, 28, 27, 26, 25, 24],\n  \"duplicate_groups\": [],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [28, 24],\n  \"body_image_ids\": [26, 25, 27],\n  \"non_body_image_ids\": [29],\n  \"items\": [\n    {\n      \"image_id\": \"29\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains title and credits, typical of back cover or afterword page.\",\n      \"confidence\": 0.95\n    },\n    {\n      \"image_id\": \"28\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black page, likely a blank or separator page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"27\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains author's afterword and credits, part of the body content.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"26\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"25\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"24\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Black page with text indicating next guest page, likely a separator or transition.\",\n      \"confidence\": 0.96\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "27",
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits, typical of back cover or afterword page.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black page, likely a blank or separator page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains author's afterword and credits, part of the body content.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a separator or transition.",
+              "confidence": 0.96
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "01",
+          "02",
+          "03",
+          "29",
+          "28",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 4,
+      "mode": "single",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 10075.29,
+        "usage": {
+          "prompt_tokens": 3324,
+          "total_tokens": 4195
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "01",
+            "02",
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Main artwork with title text overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full artwork with title overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Image is completely black, matching blank image criteria.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full manga panel with characters and dialogue, no ad overlay or blank space.",
+              "confidence": 0.98
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 9223.22,
+        "usage": {
+          "prompt_tokens": 3300,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "29",
+            "28",
+            "27",
+            "26",
+            "25",
+            "24"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "27",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits ('奥付') indicating it's a back cover or credit page, not part of the main body.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "The image is completely black, indicating it's a blank page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a transition or non-body page.",
+              "confidence": 0.95
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "03",
+          "29",
+          "28",
+          "27",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 5,
+      "mode": "multi",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 8430.35,
+        "usage": {
+          "prompt_tokens": 1999,
+          "completion_tokens": 635,
+          "total_tokens": 2634
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [\"01\", \"02\", \"03\", \"04\", \"05\", \"06\"],\n  \"duplicate_groups\": [\n    {\n      \"ids\": [\"01\", \"02\"],\n      \"ad_overlay_ids\": [],\n      \"ad_overlay_texts\": []\n    }\n  ],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [\"03\"],\n  \"body_image_ids\": [\"04\", \"05\", \"06\"],\n  \"non_body_image_ids\": [],\n  \"items\": [\n    {\n      \"image_id\": \"01\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"02\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Cover art with overlaid text; not a body page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"03\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black image; classified as blank.\",\n      \"confidence\": 0.99\n    },\n    {\n      \"image_id\": \"04\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"05\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"06\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Comic panel with dialogue; classified as body.\",\n      \"confidence\": 0.97\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [
+            {
+              "ids": [
+                "01",
+                "02"
+              ],
+              "ad_overlay_ids": [],
+              "ad_overlay_texts": []
+            }
+          ],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "01",
+            "02",
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Cover art with overlaid text; not a body page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black image; classified as blank.",
+              "confidence": 0.99
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Comic panel with dialogue; classified as body.",
+              "confidence": 0.97
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 8538.87,
+        "usage": {
+          "prompt_tokens": 1995,
+          "completion_tokens": 627,
+          "total_tokens": 2622
+        },
+        "raw_content": "{\n  \"protocol\": \"head_tail_review_v1\",\n  \"input_image_ids\": [29, 28, 27, 26, 25, 24],\n  \"duplicate_groups\": [],\n  \"ad_image_ids\": [],\n  \"blank_image_ids\": [28, 24],\n  \"body_image_ids\": [26, 25, 27],\n  \"non_body_image_ids\": [29],\n  \"items\": [\n    {\n      \"image_id\": \"29\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": true,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains title and credits, typical of back cover or afterword page.\",\n      \"confidence\": 0.95\n    },\n    {\n      \"image_id\": \"28\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Pure black page, likely a blank or separator page.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"27\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains author's afterword and credits, part of the body content.\",\n      \"confidence\": 0.97\n    },\n    {\n      \"image_id\": \"26\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"25\",\n      \"is_ad\": false,\n      \"is_blank\": false,\n      \"is_body\": true,\n      \"is_non_body\": false,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Contains manga panel, part of the main body content.\",\n      \"confidence\": 0.98\n    },\n    {\n      \"image_id\": \"24\",\n      \"is_ad\": false,\n      \"is_blank\": true,\n      \"is_body\": false,\n      \"is_non_body\": true,\n      \"is_cover_like\": false,\n      \"is_ad_overlay_cover\": false,\n      \"reason\": \"Black page with text indicating next guest page, likely a separator or transition.\",\n      \"confidence\": 0.96\n    }\n  ]\n}",
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "27",
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits, typical of back cover or afterword page.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Pure black page, likely a blank or separator page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains author's afterword and credits, part of the body content.",
+              "confidence": 0.97
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains manga panel, part of the main body content.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a separator or transition.",
+              "confidence": 0.96
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "01",
+          "02",
+          "03",
+          "29",
+          "28",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    },
+    {
+      "run_no": 5,
+      "mode": "single",
+      "head": {
+        "review_type": "head",
+        "image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "http_status": 200,
+        "latency_ms": 10018.58,
+        "usage": {
+          "prompt_tokens": 3324,
+          "total_tokens": 4195
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "03"
+          ],
+          "body_image_ids": [
+            "01",
+            "02",
+            "04",
+            "05",
+            "06"
+          ],
+          "non_body_image_ids": [
+            "03"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "01",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Main artwork with title text overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "02",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full artwork with title overlay, no ad overlay detected.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "03",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Image is completely black, matching blank image criteria.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "04",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "05",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 1
+            },
+            {
+              "image_id": "06",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains full manga panel with characters and dialogue, no ad overlay or blank space.",
+              "confidence": 0.98
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "tail": {
+        "review_type": "tail",
+        "image_ids": [
+          "29",
+          "28",
+          "27",
+          "26",
+          "25",
+          "24"
+        ],
+        "http_status": 200,
+        "latency_ms": 9066.3,
+        "usage": {
+          "prompt_tokens": 3300,
+          "total_tokens": 4186
+        },
+        "normalized": {
+          "protocol": "head_tail_review_v1",
+          "input_image_ids": [
+            "29",
+            "28",
+            "27",
+            "26",
+            "25",
+            "24"
+          ],
+          "duplicate_groups": [],
+          "ad_image_ids": [],
+          "blank_image_ids": [
+            "28",
+            "24"
+          ],
+          "body_image_ids": [
+            "26",
+            "25"
+          ],
+          "non_body_image_ids": [
+            "29",
+            "28",
+            "27",
+            "24"
+          ],
+          "ad_overlay_cover_image_ids": [],
+          "items": [
+            {
+              "image_id": "29",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": true,
+              "is_ad_overlay_cover": false,
+              "reason": "Contains title and credits ('奥付') indicating it's a back cover or credit page, not part of the main body.",
+              "confidence": 0.95
+            },
+            {
+              "image_id": "28",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "The image is completely black, indicating it's a blank page.",
+              "confidence": 0.98
+            },
+            {
+              "image_id": "27",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "26",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "25",
+              "is_ad": false,
+              "is_blank": false,
+              "is_body": true,
+              "is_non_body": false,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "",
+              "confidence": 0
+            },
+            {
+              "image_id": "24",
+              "is_ad": false,
+              "is_blank": true,
+              "is_body": false,
+              "is_non_body": true,
+              "is_cover_like": false,
+              "is_ad_overlay_cover": false,
+              "reason": "Black page with text indicating next guest page, likely a transition or non-body page.",
+              "confidence": 0.95
+            }
+          ],
+          "missing_image_ids": []
+        },
+        "error": null
+      },
+      "merged": {
+        "ad_delete_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "nonbody_hide_ids": [
+          "03",
+          "29",
+          "28",
+          "27",
+          "24"
+        ],
+        "expected_head_duplicate_pair": [
+          "01",
+          "02"
+        ],
+        "expected_head_overlay_ids": [
+          "01"
+        ],
+        "tail_known_hash_hit_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+image_name,source_format,source_width,source_height,source_bytes,resize_px,jpeg_quality,run_no,ok,status,encode_ms,latency_ms,payload_bytes,jpeg_width,jpeg_height,prompt_tokens,completion_tokens,total_tokens,error_detail
+01.webp,webp,2400,1800,546120,512,60,1,true,200,37.97,462.62,51447,512,384,233,16,249,
+02.webp,webp,1416,2000,694344,512,60,1,true,200,41.05,270.22,50535,362,512,217,12,229,
+03.webp,webp,1416,2000,635168,512,60,1,true,200,43.21,256.51,54931,362,512,217,12,229,
+04.webp,webp,1416,2000,103574,512,60,1,true,200,22.7,257.56,24759,362,512,217,12,229,
+05.webp,webp,1416,2000,161732,512,60,1,true,200,21.37,303.19,34043,362,512,217,16,233,

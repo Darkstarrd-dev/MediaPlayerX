@@ -13,6 +13,7 @@ interface ImageMainAdReviewControlsProps {
   convertInteractionLocked: boolean;
   adReviewPending: boolean;
   pendingManageAction: boolean;
+  adReviewExecutionMode: "normal" | "performance";
   manageReviewMode: NonNullable<ImageMainSectionProps["manageReviewMode"]>;
   onManageReviewModeChange: NonNullable<
     ImageMainSectionProps["onManageReviewModeChange"]
@@ -77,6 +78,7 @@ export function ImageMainAdReviewControls({
   convertInteractionLocked,
   adReviewPending,
   pendingManageAction,
+  adReviewExecutionMode,
   manageReviewMode,
   onManageReviewModeChange,
   openAdReviewStrategyPopover,
@@ -109,6 +111,12 @@ export function ImageMainAdReviewControls({
   onDeleteSelectedAdReviewCandidates,
   onDismissAdReviewTask,
 }: ImageMainAdReviewControlsProps) {
+  const isPerformanceMode =
+    manageReviewMode === "ad" && adReviewExecutionMode === "performance";
+  const effectiveStrategyMode = isPerformanceMode
+    ? "head-tail"
+    : adReviewStrategyMode;
+
   if (!showAdReviewToolbarControls) {
     return null;
   }
@@ -117,7 +125,8 @@ export function ImageMainAdReviewControls({
     <>
       {!isReviewRunningOrPaused &&
       !isReviewWithCandidates &&
-      canSwitchManageReviewMode ? (
+      canSwitchManageReviewMode &&
+      !isPerformanceMode ? (
         <button
           className="manage-ad-review-icon-btn main-icon-square-btn"
           type="button"
@@ -148,25 +157,27 @@ export function ImageMainAdReviewControls({
         >
           <button
             className={`manage-ad-review-icon-btn main-icon-square-btn header-popover-trigger ${
-              adReviewStrategyMode === "head-tail" ? "is-active" : ""
+              effectiveStrategyMode === "head-tail" ? "is-active" : ""
             }`}
             type="button"
             aria-pressed={openAdReviewStrategyPopover}
             aria-label={t("a11y.manage.strategyToggle")}
             data-tooltip-label={
-              adReviewStrategyMode === "head-tail"
+              effectiveStrategyMode === "head-tail"
                 ? t("tip.manage.strategyHeadTailToAll")
                 : t("tip.manage.strategyAllToHeadTail")
             }
-            disabled={pendingManageAction || adReviewPending}
+            disabled={
+              pendingManageAction || adReviewPending || isPerformanceMode
+            }
             onClick={() =>
               onAdReviewStrategyModeChange(
-                adReviewStrategyMode === "head-tail" ? "all" : "head-tail",
+                effectiveStrategyMode === "head-tail" ? "all" : "head-tail",
               )
             }
           >
             <span aria-hidden="true">
-              {adReviewStrategyMode === "head-tail" ? "H" : "A"}
+              {effectiveStrategyMode === "head-tail" ? "H" : "A"}
             </span>
           </button>
 
@@ -175,7 +186,7 @@ export function ImageMainAdReviewControls({
             data-slot="fg-main-toolbar-image-ad-review-strategy-pop"
             hidden={
               !openAdReviewStrategyPopover ||
-              adReviewStrategyMode !== "head-tail"
+              effectiveStrategyMode !== "head-tail"
             }
             role="dialog"
             aria-label={t("a11y.manage.strategyPanel")}
@@ -238,25 +249,29 @@ export function ImageMainAdReviewControls({
               {t("ui.manage.strategyHintTail")}
             </p>
 
-            <div className="main-toolbar-ad-review-slider-row">
-              <span>{t("ui.manage.tailStopClean")}</span>
-              <input
-                type="range"
-                min={1}
-                max={20}
-                step={1}
-                value={adReviewTailStopCleanStreak}
-                onChange={(event) =>
-                  onAdReviewTailStopCleanStreakChange(
-                    Number(event.target.value),
-                  )
-                }
-              />
-              <strong>{adReviewTailStopCleanStreak}</strong>
-            </div>
-            <p className="main-toolbar-ad-review-slider-hint">
-              {t("ui.manage.strategyHintTailStop")}
-            </p>
+            {isPerformanceMode ? null : (
+              <>
+                <div className="main-toolbar-ad-review-slider-row">
+                  <span>{t("ui.manage.tailStopClean")}</span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={20}
+                    step={1}
+                    value={adReviewTailStopCleanStreak}
+                    onChange={(event) =>
+                      onAdReviewTailStopCleanStreakChange(
+                        Number(event.target.value),
+                      )
+                    }
+                  />
+                  <strong>{adReviewTailStopCleanStreak}</strong>
+                </div>
+                <p className="main-toolbar-ad-review-slider-hint">
+                  {t("ui.manage.strategyHintTailStop")}
+                </p>
+              </>
+            )}
           </div>
         </div>
       ) : null}

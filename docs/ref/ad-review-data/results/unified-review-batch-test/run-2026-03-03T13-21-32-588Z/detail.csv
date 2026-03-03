@@ -1,0 +1,13 @@
+dataset,mode,run_no,image_count,http_status,latency_ms,prompt_tokens,completion_tokens,total_tokens,parse_ok,error
+head6,multi,1,6,200,6515.21,2097,685,2782,true,
+head6,multi,2,6,200,6543.47,2097,685,2782,true,
+head6,multi,3,6,200,6176.95,2097,685,2782,true,
+head6,single,1,6,200,8661.56,3912,970,4882,true,
+head6,single,2,6,200,8678.62,3912,970,4882,true,
+head6,single,3,6,200,8574.88,3912,970,4882,true,
+tail10,multi,1,10,200,10522.35,3255,1192,4447,true,
+tail10,multi,2,10,200,10449.08,3255,1192,4447,true,
+tail10,multi,3,10,200,10401.14,3255,1192,4447,true,
+tail10,single,1,10,200,15504.42,6522,1674,8196,true,
+tail10,single,2,10,200,16033.82,6522,1674,8196,true,
+tail10,single,3,10,200,16092.2,6522,1674,8196,true,

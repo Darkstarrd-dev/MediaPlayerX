@@ -171,6 +171,7 @@ export interface RenderSettingsMainSectionParams {
   subtitleCleanupLlmEndpoint: string;
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
+  adReviewExecutionMode: "normal" | "performance";
   styleId: string;
   paletteMode: SettingsPanelProps["paletteMode"];
   paletteDayId: string;
@@ -398,6 +399,7 @@ export interface RenderSettingsMainSectionParams {
   onSubtitleCleanupLlmEndpointChange: (value: string) => void;
   onSubtitleCleanupLlmModelChange: (value: string) => void;
   onSubtitleCleanupLlmPromptChange: (value: string) => void;
+  onAdReviewExecutionModeChange: (value: "normal" | "performance") => void;
   onStyleChange: SettingsPanelProps["onStyleChange"];
   onPaletteModeChange: SettingsPanelProps["onPaletteModeChange"];
   onPaletteDayChange: (value: string) => void;

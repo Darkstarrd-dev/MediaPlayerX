@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-03-03T14:04:06.881Z",
+  "cases": [
+    {
+      "tag": "resize640_q40",
+      "status": 200,
+      "latency_ms": 728.05,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "content": "{\"duplicate_groups\":[[\"01\",\"02\"]],\"ad_overlay_ids\":[\"01\"],\"ad_overlay_texts\":[{\"image_id\":\"01\",\"texts\":[\"KOKOKORO个人汉化\"]}]}",
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "tag": "resize640_q60",
+      "status": 200,
+      "latency_ms": 727.87,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "content": "{\"duplicate_groups\":[[\"01\",\"02\"]],\"ad_overlay_ids\":[\"01\"],\"ad_overlay_texts\":[{\"image_id\":\"01\",\"texts\":[\"KOKOKORO个人汉化\"]}]}",
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "tag": "resize640_q80",
+      "status": 200,
+      "latency_ms": 743.91,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "content": "{\"duplicate_groups\":[[\"01\",\"02\"]],\"ad_overlay_ids\":[\"01\"],\"ad_overlay_texts\":[{\"image_id\":\"01\",\"texts\":[\"KOKOKORO个人汉化\"]}]}",
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "tag": "fullsize_q90",
+      "status": 200,
+      "latency_ms": 2743.55,
+      "usage": {
+        "prompt_tokens": 5275,
+        "completion_tokens": 42,
+        "total_tokens": 5317
+      },
+      "content": "{\"duplicate_groups\":[[\"01\",\"02\"]],\"ad_overlay_ids\":[\"01\"],\"ad_overlay_texts\":[{\"image_id\":\"01\",\"texts\":[\"KOKOKORO个人汉化\"]}]}",
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

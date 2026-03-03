@@ -1,0 +1,1953 @@
+{
+  "generated_at": "2026-03-03T13:27:44.203Z",
+  "config": {
+    "advanced_dir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\src\\assets\\test\\advanced",
+    "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+    "model": "huihui-qwen3-vl-8b-instruct-abliterated",
+    "resize_px": 640,
+    "jpeg_quality": 40,
+    "repeats": 3,
+    "timeout_ms": 120000,
+    "datasets": {
+      "head6": [
+        "01.webp",
+        "02.webp",
+        "03.webp",
+        "04.webp",
+        "05.webp",
+        "06.webp"
+      ],
+      "tail10": [
+        "29_zzz4.2.webp",
+        "29.webp",
+        "28.webp",
+        "27_zzz2.1.1.webp",
+        "27.webp",
+        "26_zzz1.3.webp",
+        "26.webp",
+        "25_zzz1.1.webp",
+        "25.webp",
+        "24.webp"
+      ]
+    }
+  },
+  "summaries": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_count": 3,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 6093.77,
+      "avg_prompt_tokens": 2097,
+      "avg_total_tokens": 2768,
+      "img_per_sec": 0.985,
+      "stability": {
+        "runs": 3,
+        "label_consistency_ratio": 1,
+        "duplicate_pair_consistency_ratio": 1
+      },
+      "overlay_metrics": null,
+      "duplicate_metrics": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_count": 3,
+      "parse_success_rate": 0.6667,
+      "avg_item_coverage_ratio": 0.6667,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 11532.98,
+      "avg_prompt_tokens": 3694.67,
+      "avg_total_tokens": 4608.33,
+      "img_per_sec": 0.52,
+      "stability": {
+        "runs": 2,
+        "label_consistency_ratio": 1,
+        "duplicate_pair_consistency_ratio": 1
+      },
+      "overlay_metrics": null,
+      "duplicate_metrics": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_count": 3,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 10712.19,
+      "avg_prompt_tokens": 3255,
+      "avg_total_tokens": 4443.67,
+      "img_per_sec": 0.934,
+      "stability": {
+        "runs": 3,
+        "label_consistency_ratio": 0.9778,
+        "duplicate_pair_consistency_ratio": 1
+      },
+      "overlay_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "duplicate_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_count": 3,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 14963.85,
+      "avg_prompt_tokens": 6522,
+      "avg_total_tokens": 8202,
+      "img_per_sec": 0.668,
+      "stability": {
+        "runs": 3,
+        "label_consistency_ratio": 0.9944,
+        "duplicate_pair_consistency_ratio": 1
+      },
+      "overlay_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "duplicate_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "dataset": "head6",
+      "multi_avg_latency_ms": 6093.77,
+      "single_avg_latency_ms": 11532.98,
+      "speedup_single_div_multi": 1.893,
+      "multi_avg_total_tokens": 2768,
+      "single_avg_total_tokens": 4608.33,
+      "total_token_reduction_ratio": 0.3993
+    },
+    {
+      "dataset": "tail10",
+      "multi_avg_latency_ms": 10712.19,
+      "single_avg_latency_ms": 14963.85,
+      "speedup_single_div_multi": 1.397,
+      "multi_avg_total_tokens": 4443.67,
+      "single_avg_total_tokens": 8202,
+      "total_token_reduction_ratio": 0.4582
+    }
+  ],
+  "detail_rows": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 1,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 6606.42,
+      "prompt_tokens": 2097,
+      "completion_tokens": 671,
+      "total_tokens": 2768,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 2,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 5689.66,
+      "prompt_tokens": 2097,
+      "completion_tokens": 671,
+      "total_tokens": 2768,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 3,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 5985.22,
+      "prompt_tokens": 2097,
+      "completion_tokens": 671,
+      "total_tokens": 2768,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 1,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 9042.86,
+      "prompt_tokens": 3912,
+      "completion_tokens": 967,
+      "total_tokens": 4879,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 2,
+      "image_count": 6,
+      "http_status": 500,
+      "latency_ms": 17243.33,
+      "prompt_tokens": 3260,
+      "completion_tokens": 807,
+      "total_tokens": 4067,
+      "parse_ok": false,
+      "error": "[{\"image_id\":\"01\",\"error\":\"HTTP 400: {\\\"error\\\":\\\"The model has crashed without additional information. (Exit code: 18446744072635810000)\\\"}\"}]"
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 3,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 8312.74,
+      "prompt_tokens": 3912,
+      "completion_tokens": 967,
+      "total_tokens": 4879,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 1,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 11288.71,
+      "prompt_tokens": 3255,
+      "completion_tokens": 1182,
+      "total_tokens": 4437,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 2,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 10150.99,
+      "prompt_tokens": 3255,
+      "completion_tokens": 1192,
+      "total_tokens": 4447,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 3,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 10696.88,
+      "prompt_tokens": 3255,
+      "completion_tokens": 1192,
+      "total_tokens": 4447,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 1,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 15260.99,
+      "prompt_tokens": 6522,
+      "completion_tokens": 1694,
+      "total_tokens": 8216,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 2,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 14586.99,
+      "prompt_tokens": 6522,
+      "completion_tokens": 1673,
+      "total_tokens": 8195,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 3,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 15043.58,
+      "prompt_tokens": 6522,
+      "completion_tokens": 1673,
+      "total_tokens": 8195,
+      "parse_ok": true,
+      "error": null
+    }
+  ],
+  "run_outputs": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 6606.42,
+      "prompt_tokens": 2097,
+      "total_tokens": 2768,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [
+          {
+            "group_id": "g1",
+            "image_ids": [
+              "01",
+              "02"
+            ],
+            "ad_overlay_image_ids": []
+          }
+        ],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 2,
+      "http_status": 200,
+      "latency_ms": 5689.66,
+      "prompt_tokens": 2097,
+      "total_tokens": 2768,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [
+          {
+            "group_id": "g1",
+            "image_ids": [
+              "01",
+              "02"
+            ],
+            "ad_overlay_image_ids": []
+          }
+        ],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 3,
+      "http_status": 200,
+      "latency_ms": 5985.22,
+      "prompt_tokens": 2097,
+      "total_tokens": 2768,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [
+          {
+            "group_id": "g1",
+            "image_ids": [
+              "01",
+              "02"
+            ],
+            "ad_overlay_image_ids": []
+          }
+        ],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 9042.86,
+      "prompt_tokens": 3912,
+      "total_tokens": 4879,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 2,
+      "http_status": 500,
+      "latency_ms": 17243.33,
+      "prompt_tokens": 3260,
+      "total_tokens": 4067,
+      "error": "[{\"image_id\":\"01\",\"error\":\"HTTP 400: {\\\"error\\\":\\\"The model has crashed without additional information. (Exit code: 18446744072635810000)\\\"}\"}]",
+      "normalized": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 3,
+      "http_status": 200,
+      "latency_ms": 8312.74,
+      "prompt_tokens": 3912,
+      "total_tokens": 4879,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 11288.71,
+      "prompt_tokens": 3255,
+      "total_tokens": 4437,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "29",
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": true,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art|credits",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": true,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": true,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": true,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.94
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 2,
+      "http_status": 200,
+      "latency_ms": 10150.99,
+      "prompt_tokens": 3255,
+      "total_tokens": 4447,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "29",
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art|credits",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 3,
+      "http_status": 200,
+      "latency_ms": 10696.88,
+      "prompt_tokens": 3255,
+      "total_tokens": 4447,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "29",
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art|credits",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 15260.99,
+      "prompt_tokens": 6522,
+      "total_tokens": 8216,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 2,
+      "http_status": 200,
+      "latency_ms": 14586.99,
+      "prompt_tokens": 6522,
+      "total_tokens": 8195,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 3,
+      "http_status": 200,
+      "latency_ms": 15043.58,
+      "prompt_tokens": 6522,
+      "total_tokens": 8195,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.9
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.95
+          }
+        ]
+      }
+    }
+  ]
+}

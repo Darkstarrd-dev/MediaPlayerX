@@ -337,6 +337,8 @@ export function normalizeTaskExecution(
         };
 
   return manageAdReviewTaskExecutionSchema.parse({
+    execution_mode:
+      request.execution_mode === "performance" ? "performance" : "normal",
     strategy: normalizedStrategy,
     max_concurrency: normalizeMaxConcurrency(request.max_concurrency),
   });

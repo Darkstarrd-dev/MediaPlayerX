@@ -114,6 +114,7 @@ export class ManageCoverReviewService {
     const execution = normalizeTaskExecution(request);
     const normalizedRequest: StartManageCoverReviewRequestDto = {
       ...request,
+      execution_mode: "normal",
       strategy: execution.strategy,
       max_concurrency: execution.max_concurrency,
     };
@@ -688,6 +689,7 @@ export class ManageCoverReviewService {
             },
             concurrency: taskExecution.max_concurrency,
             strategy: toEngineStrategy(taskExecution),
+            executionMode: "normal",
             signal: runSignal,
             onEvent: (event) => {
               const currentTask = this.tasks.get(taskId);

@@ -72,11 +72,13 @@ function readNodeHashById(rawMap: unknown): Record<string, string> {
 }
 
 export function normalizeManageReviewStoredRequest<
+  TExecutionMode extends "normal" | "performance" | undefined,
   TStrategy,
   TConcurrency extends number | undefined,
 >(
   rawRequest: unknown,
   execution: {
+    execution_mode?: TExecutionMode;
     strategy?: TStrategy;
     max_concurrency?: TConcurrency;
   },
@@ -86,6 +88,7 @@ export function normalizeManageReviewStoredRequest<
   node_ids: string[] | undefined;
   llm_endpoint: string;
   llm_model: string;
+  execution_mode: TExecutionMode | undefined;
   strategy: TStrategy | undefined;
   max_concurrency: TConcurrency | undefined;
 } | null {
@@ -126,6 +129,7 @@ export function normalizeManageReviewStoredRequest<
     node_ids: nodeIds,
     llm_endpoint: llmEndpoint,
     llm_model: llmModel,
+    execution_mode: execution.execution_mode,
     strategy: execution.strategy,
     max_concurrency: execution.max_concurrency,
   };

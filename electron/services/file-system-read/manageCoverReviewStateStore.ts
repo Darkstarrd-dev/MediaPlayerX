@@ -36,6 +36,7 @@ function createStateStore(database: MediaLibraryDatabase) {
     taskParser: manageCoverReviewTaskSchema,
     normalizeStoredRequest: (rawRequest, task) =>
       normalizeManageReviewStoredRequest(rawRequest, {
+        execution_mode: task.execution?.execution_mode,
         strategy: task.execution?.strategy,
         max_concurrency: task.execution?.max_concurrency,
       }),

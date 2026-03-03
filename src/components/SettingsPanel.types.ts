@@ -168,6 +168,7 @@ export interface SettingsPanelProps {
   subtitleCleanupLlmEndpoint: string;
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
+  adReviewExecutionMode: "normal" | "performance";
   shortcuts: ShortcutMap;
   shortcutConflicts: ShortcutConflict[];
   databaseResetPending: boolean;
@@ -328,6 +329,7 @@ export interface SettingsPanelProps {
   onSubtitleCleanupLlmEndpointChange: (value: string) => void;
   onSubtitleCleanupLlmModelChange: (value: string) => void;
   onSubtitleCleanupLlmPromptChange: (value: string) => void;
+  onAdReviewExecutionModeChange: (value: "normal" | "performance") => void;
   onSetShortcut: (action: ShortcutAction, binding: string) => void;
   onResetShortcuts: () => void;
   onClearDatabase: () => void;

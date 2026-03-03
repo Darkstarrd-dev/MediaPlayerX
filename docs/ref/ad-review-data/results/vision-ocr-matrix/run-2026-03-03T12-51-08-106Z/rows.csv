@@ -1,0 +1,7 @@
+image_name,resize_px,jpeg_quality,run_no,ok,status,prompt_tokens,latency_ms,payload_bytes,ocr_text,similarity_to_baseline,error_detail
+01.webp,512,60,1,true,200,255,1246.28,51447,"鬼畜勇者と
+神官さん
+冒険中にハメられまくる
+隠れマジ聖職者の痴態記録
+作画 もり苔
+企画 dilettia",1,

@@ -18,6 +18,10 @@ export const manageAdReviewTaskStatusSchema = z.enum([
   "review",
   "failed",
 ]);
+export const manageAdReviewExecutionModeSchema = z.enum([
+  "normal",
+  "performance",
+]);
 export const manageAdReviewAllStrategySchema = z.object({
   mode: z.literal("all"),
 });
@@ -32,8 +36,19 @@ export const manageAdReviewStrategySchema = z.discriminatedUnion("mode", [
   manageAdReviewHeadTailStrategySchema,
 ]);
 export const manageAdReviewTaskExecutionSchema = z.object({
+  execution_mode: manageAdReviewExecutionModeSchema,
   strategy: manageAdReviewStrategySchema,
   max_concurrency: z.number().int().min(1).max(20),
+});
+export const manageAdReviewPerformanceResultSchema = z.object({
+  ad_delete_ids: z.array(z.string().min(1)),
+  nonbody_hide_ids: z.array(z.string().min(1)),
+  head_ad_overlay_ids: z.array(z.string().min(1)),
+  tail_ad_ids: z.array(z.string().min(1)),
+  hash_hit_ad_ids: z.array(z.string().min(1)),
+  tail_hash_hit_count: nonNegativeIntSchema,
+  tail_llm_quota: nonNegativeIntSchema,
+  tail_llm_image_ids: z.array(z.string().min(1)),
 });
 export const manageAdReviewSourceDistributionSchema = z.object({
   known_hash: nonNegativeIntSchema,
@@ -71,6 +86,7 @@ export const manageAdReviewTaskSchema = z.object({
   scope_image_ids: z.array(z.string().min(1)),
   image_source_by_id: z.record(z.string(), manageAdReviewImageSourceSchema),
   execution: manageAdReviewTaskExecutionSchema.optional(),
+  performance_result: manageAdReviewPerformanceResultSchema.optional(),
   audit: manageAdReviewTaskAuditSchema.optional(),
   message: z.string().min(1).nullable(),
   error_detail: z.string().min(1).nullable(),
@@ -85,6 +101,7 @@ export const startManageAdReviewRequestSchema = z.object({
   skip_reviewed_nodes: z.boolean().optional(),
   llm_endpoint: z.string().min(1),
   llm_model: z.string().min(1),
+  execution_mode: manageAdReviewExecutionModeSchema.optional(),
   strategy: manageAdReviewStrategySchema.optional(),
   max_concurrency: z.number().int().min(1).max(20).optional(),
 });

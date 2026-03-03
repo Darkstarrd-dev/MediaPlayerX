@@ -55,6 +55,7 @@ function createTask(
     scope_image_ids: ["pkg-1-img-1"],
     image_source_by_id: { "pkg-1-img-1": "llm" },
     execution: {
+      execution_mode: "normal",
       strategy: { mode: "all" },
       max_concurrency: 4,
     },

@@ -1,0 +1,5 @@
+dataset,mode,run_no,image_count,http_status,latency_ms,prompt_tokens,completion_tokens,total_tokens,parse_ok,error
+head6,multi,1,6,200,5661.97,2097,671,2768,true,
+head6,single,1,6,200,7743.24,3912,970,4882,true,
+tail10,multi,1,10,200,9471.28,3255,1192,4447,true,
+tail10,single,1,10,200,12660.22,6522,1670,8192,true,

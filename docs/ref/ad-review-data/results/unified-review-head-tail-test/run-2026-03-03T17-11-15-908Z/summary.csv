@@ -1,0 +1,4 @@
+mode,parse_success_rate,avg_latency_ms,avg_prompt_tokens,avg_total_tokens
+multi,1,9639.79,2549,3283
+single,1,8043.62,3862,4887
+compare,,0.834,,0.3282

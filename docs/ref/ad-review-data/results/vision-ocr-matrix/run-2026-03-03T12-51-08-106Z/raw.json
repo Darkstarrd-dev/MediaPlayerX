@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-03-03T12:51:09.422Z",
+  "config": {
+    "endpoint_base": "http://127.0.0.1:1234/v1",
+    "chat_endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+    "model": "huihui-qwen3-vl-8b-instruct-abliterated",
+    "images": [
+      "src/assets/test/01.webp"
+    ],
+    "resolutions": [
+      512
+    ],
+    "qualities": [
+      60
+    ],
+    "repeats": 1,
+    "timeout_ms": 120000,
+    "similarity_threshold": 0.9,
+    "baseline_resolution": 512,
+    "baseline_quality": 60
+  },
+  "baseline_by_image": {
+    "01.webp": "鬼畜勇者と\n神官さん\n冒険中にハメられまくる\n隠れマジ聖職者の痴態記録\n作画 もり苔\n企画 dilettia"
+  },
+  "minimal_resolution_by_image": [
+    {
+      "image_name": "01.webp",
+      "strict_min_resolution_all_qualities": 512,
+      "lenient_min_resolution_any_quality": 512
+    }
+  ],
+  "rows": [
+    {
+      "image_name": "01.webp",
+      "image_path": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\src\\assets\\test\\01.webp",
+      "source_width": 2400,
+      "source_height": 1800,
+      "source_format": "webp",
+      "source_bytes": 546120,
+      "resize_px": 512,
+      "jpeg_quality": 60,
+      "run_no": 1,
+      "ok": true,
+      "status": 200,
+      "latency_ms": 1246.28,
+      "encode_ms": 35.67,
+      "jpeg_width": 512,
+      "jpeg_height": 384,
+      "payload_bytes": 51447,
+      "prompt_tokens": 255,
+      "completion_tokens": 51,
+      "total_tokens": 306,
+      "raw_content": "{\"text\":\"鬼畜勇者と\\n神官さん\\n冒険中にハメられまくる\\n隠れマジ聖職者の痴態記録\\n作画 もり苔\\n企画 dilettia\"}",
+      "ocr_text": "鬼畜勇者と\n神官さん\n冒険中にハメられまくる\n隠れマジ聖職者の痴態記録\n作画 もり苔\n企画 dilettia",
+      "ocr_text_normalized": "鬼畜勇者と神官さん冒険中にハメられまくる隠れマジ聖職者の痴態記録作画もり苔企画dilettia",
+      "similarity_to_baseline": 1,
+      "error_detail": null
+    }
+  ],
+  "summary_by_case": [
+    {
+      "image_name": "01.webp",
+      "resize_px": 512,
+      "jpeg_quality": 60,
+      "requested_runs": 1,
+      "ok_runs": 1,
+      "non_empty_ocr_runs": 1,
+      "avg_prompt_tokens": 255,
+      "avg_latency_ms": 1246.28,
+      "avg_similarity_to_baseline": 1
+    }
+  ],
+  "resolution_pass_summary": [
+    {
+      "image_name": "01.webp",
+      "resize_px": 512,
+      "all_quality_pass": true,
+      "any_quality_pass": true,
+      "quality_pass_map": {
+        "q60": true
+      }
+    }
+  ]
+}

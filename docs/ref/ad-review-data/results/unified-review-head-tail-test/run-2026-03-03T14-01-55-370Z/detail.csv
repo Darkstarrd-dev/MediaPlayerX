@@ -1,0 +1,7 @@
+run_no,mode,head_ok,tail_ok,merged_ok,head_latency_ms,tail_latency_ms,total_latency_ms,head_prompt_tokens,tail_prompt_tokens,total_prompt_tokens,head_total_tokens,tail_total_tokens,total_tokens,head_duplicate_has_01_02,head_overlay_precision,head_overlay_recall,head_overlay_f1,ad_delete_ids,nonbody_hide_ids,head_error,tail_error
+1,multi,true,true,true,8521.2,8371.46,16892.66,1999,1995,3994,2640,2622,5262,true,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""01"",""02"",""03"",""29"",""28"",""24""]",,
+1,single,true,false,false,10110.34,12696.93,22807.27,3324,2750,6074,4195,3472,7667,false,0,0,0,[],[],,single tail contains failed request
+2,multi,true,true,true,4680.07,4924.39,9604.46,1999,1995,3994,2634,2623,5257,true,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""01"",""02"",""03"",""29"",""28"",""24""]",,
+2,single,true,true,true,6799.89,6492.29,13292.18,3324,3300,6624,4175,4210,8385,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28"",""27"",""24""]",,
+3,multi,true,true,true,4789.54,6713.85,11503.39,1999,1995,3994,2640,2623,5263,true,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""01"",""02"",""03"",""29"",""28"",""24""]",,
+3,single,true,true,true,6698.19,7716.67,14414.86,3324,3300,6624,4164,4210,8374,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28"",""27"",""24""]",,

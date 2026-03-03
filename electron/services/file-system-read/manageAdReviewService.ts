@@ -65,6 +65,19 @@ import {
   writeReviewedNodeHashState,
 } from "./manageAdReviewStateStore";
 
+function mergeUniqueIds(previous: string[], incoming: string[]): string[] {
+  const seen = new Set(previous);
+  const next = [...previous];
+  for (const id of incoming) {
+    if (seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    next.push(id);
+  }
+  return next;
+}
+
 const VISION_TEST_SYSTEM_PROMPT =
   'You are validating vision-model color recognition. Return JSON only: {"is_ad": false, "reason": "<dominant color>"}. The reason must be the dominant color you see in the image.';
 const VISION_TEST_USER_PROMPT =
@@ -109,6 +122,7 @@ export class ManageAdReviewService {
     const execution = normalizeTaskExecution(request);
     const normalizedRequest: StartManageAdReviewRequestDto = {
       ...request,
+      execution_mode: execution.execution_mode,
       strategy: execution.strategy,
       max_concurrency: execution.max_concurrency,
     };
@@ -657,6 +671,7 @@ export class ManageAdReviewService {
           total_count: selectedImageIds.length,
           scope_image_ids: selectedImageIds,
           execution: taskExecution,
+          performance_result: undefined,
           audit: toTaskAudit({
             sourceDistribution: createEmptySourceDistribution(),
             suspectedCount: 0,
@@ -678,6 +693,7 @@ export class ManageAdReviewService {
           known_hash_hits: 0,
           llm_calls: 0,
           image_source_by_id: {},
+          performance_result: undefined,
           audit: toTaskAudit({
             sourceDistribution: createEmptySourceDistribution(),
             suspectedCount: 0,
@@ -743,6 +759,7 @@ export class ManageAdReviewService {
             },
             concurrency: taskExecution.max_concurrency,
             strategy: toEngineStrategy(taskExecution),
+            executionMode: taskExecution.execution_mode,
             signal: runSignal,
             onEvent: (event) => {
               const currentTask = this.tasks.get(taskId);
@@ -851,6 +868,65 @@ export class ManageAdReviewService {
         );
       };
 
+      const mergePerformanceResult = (
+        previous: ManageAdReviewTaskDto["performance_result"],
+        incoming: ManageAdReviewTaskDto["performance_result"] | undefined,
+      ): ManageAdReviewTaskDto["performance_result"] => {
+        if (!incoming) {
+          return previous;
+        }
+        if (!previous) {
+          return incoming;
+        }
+        return {
+          ad_delete_ids: mergeUniqueIds(
+            previous.ad_delete_ids,
+            incoming.ad_delete_ids,
+          ),
+          nonbody_hide_ids: mergeUniqueIds(
+            previous.nonbody_hide_ids,
+            incoming.nonbody_hide_ids,
+          ),
+          head_ad_overlay_ids: mergeUniqueIds(
+            previous.head_ad_overlay_ids,
+            incoming.head_ad_overlay_ids,
+          ),
+          tail_ad_ids: mergeUniqueIds(
+            previous.tail_ad_ids,
+            incoming.tail_ad_ids,
+          ),
+          hash_hit_ad_ids: mergeUniqueIds(
+            previous.hash_hit_ad_ids,
+            incoming.hash_hit_ad_ids,
+          ),
+          tail_hash_hit_count:
+            previous.tail_hash_hit_count + incoming.tail_hash_hit_count,
+          tail_llm_quota: previous.tail_llm_quota + incoming.tail_llm_quota,
+          tail_llm_image_ids: mergeUniqueIds(
+            previous.tail_llm_image_ids,
+            incoming.tail_llm_image_ids,
+          ),
+        };
+      };
+
+      const toTaskPerformanceResult = (
+        result: Awaited<ReturnType<typeof runSelection>>,
+      ): ManageAdReviewTaskDto["performance_result"] | undefined => {
+        if (!result.performance) {
+          return undefined;
+        }
+        return {
+          ad_delete_ids: result.performance.adDeleteIds,
+          nonbody_hide_ids: result.performance.nonBodyHideIds,
+          head_ad_overlay_ids: result.performance.headAdOverlayIds,
+          tail_ad_ids: result.performance.tailAdIds,
+          hash_hit_ad_ids: result.performance.hashHitAdIds,
+          tail_hash_hit_count: result.performance.tailHashHitCount,
+          tail_llm_quota: result.performance.tailLlmQuota,
+          tail_llm_image_ids: result.performance.tailLlmImageIds,
+        };
+      };
+
       if (
         request.selection_scope === "sidebar" &&
         runtimeTask.effectiveNodeIds.length > 0
@@ -886,6 +962,10 @@ export class ManageAdReviewService {
           runtimeTask.task = {
             ...runtimeTask.task,
             candidates: nextCandidates,
+            performance_result: mergePerformanceResult(
+              runtimeTask.task.performance_result,
+              toTaskPerformanceResult(result),
+            ),
             message: `节点 ${nodeIndex + 1}/${totalNodeCount} 已完成，疑似 ${nextCandidates.length} 张`,
             updated_at_ms: Date.now(),
           };
@@ -901,6 +981,7 @@ export class ManageAdReviewService {
         runtimeTask.task = {
           ...runtimeTask.task,
           candidates,
+          performance_result: toTaskPerformanceResult(result),
           updated_at_ms: Date.now(),
         };
       }
@@ -1122,6 +1203,9 @@ export class ManageAdReviewService {
       image_source_by_id: resumeFromPaused
         ? pendingItem.task.image_source_by_id
         : {},
+      performance_result: resumeFromPaused
+        ? pendingItem.task.performance_result
+        : undefined,
       audit: resumeFromPaused
         ? pendingItem.task.audit
         : toTaskAudit({

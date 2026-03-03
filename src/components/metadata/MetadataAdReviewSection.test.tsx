@@ -26,6 +26,7 @@ function createTask(
       "img-2": "known-hash",
     },
     execution: {
+      execution_mode: "normal",
       strategy: { mode: "all" },
       max_concurrency: 4,
     },

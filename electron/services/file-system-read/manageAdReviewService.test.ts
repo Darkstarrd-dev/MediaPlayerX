@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import type {
   DeleteImageItemsRequestDto,
@@ -7,48 +7,52 @@ import type {
   ImagePackageDto,
   LibrarySnapshotDto,
   StartManageAdReviewRequestDto,
-} from '../../../src/contracts/backend'
-import { ManageAdReviewService } from './manageAdReviewService'
-import { runManageAdReview } from '../../manageAdReview'
-import type { MediaLibraryDatabase } from '../../mediaLibraryDatabase'
+} from "../../../src/contracts/backend";
+import { ManageAdReviewService } from "./manageAdReviewService";
+import { runManageAdReview } from "../../manageAdReview";
+import type { MediaLibraryDatabase } from "../../mediaLibraryDatabase";
 
-vi.mock('../../manageAdReview', () => {
+vi.mock("../../manageAdReview", () => {
   class OpenAiVisionClient {
     constructor(options: unknown) {
-      void options
+      void options;
     }
   }
 
   return {
     OpenAiVisionClient,
     runManageAdReview: vi.fn(),
-  }
-})
+  };
+});
 
-const QUEUE_STATE_KEY = 'manage_ad_review_queue_v1'
-const REVIEWED_NODE_HASH_STATE_KEY = 'manage_ad_review_reviewed_nodes_v1'
+const QUEUE_STATE_KEY = "manage_ad_review_queue_v1";
+const REVIEWED_NODE_HASH_STATE_KEY = "manage_ad_review_reviewed_nodes_v1";
 
 interface Deferred<T> {
-  promise: Promise<T>
-  resolve: (value: T) => void
-  reject: (error: unknown) => void
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (error: unknown) => void;
 }
 
 function createDeferred<T>(): Deferred<T> {
-  let resolve!: (value: T) => void
-  let reject!: (error: unknown) => void
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
   const promise = new Promise<T>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return { promise, resolve, reject }
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
 }
 
 function cloneValue<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function createImage(id: string, ordinal: number, absolutePath: string): ImageItemDto {
+function createImage(
+  id: string,
+  ordinal: number,
+  absolutePath: string,
+): ImageItemDto {
   return {
     id,
     ordinal,
@@ -56,63 +60,80 @@ function createImage(id: string, ordinal: number, absolutePath: string): ImageIt
     height: 100,
     size_kb: 10,
     cluster: 0,
-    color: '#000000',
+    color: "#000000",
     media_locator: {
-      kind: 'filesystem',
+      kind: "filesystem",
       absolute_path: absolutePath,
-      extension: '.jpg',
-      media_type: 'image',
-      mime_type: 'image/jpeg',
+      extension: ".jpg",
+      media_type: "image",
+      mime_type: "image/jpeg",
     },
     hidden: false,
-  }
+  };
 }
 
-function createSource(sourceId: string, treePath: string[], images: ImageItemDto[]): ImagePackageDto {
+function createSource(
+  sourceId: string,
+  treePath: string[],
+  images: ImageItemDto[],
+): ImagePackageDto {
   return {
     id: sourceId,
     package_name: sourceId,
     display_name: sourceId,
-    absolute_path: treePath.join('/'),
+    absolute_path: treePath.join("/"),
     tree_path: treePath,
     work_title: sourceId,
-    series_id: '',
-    circle: '',
-    author: '',
+    series_id: "",
+    circle: "",
+    author: "",
     tags: [],
     mock_grade: null,
     external_metadata: null,
     source_cover: null,
     images,
-  }
+  };
 }
 
 function createSnapshotForTests(): LibrarySnapshotDto {
   return {
     image_packages: [
-      createSource('pkg-1', ['C:', 'Users', 'A', 'Pkg-1'], [
-        createImage('img-1', 1, 'C:/Users/A/Pkg-1/001.jpg'),
-        createImage('img-2', 2, 'C:/Users/A/Pkg-1/002.jpg'),
-      ]),
-      createSource('pkg-2', ['C:', 'Users', 'A', 'Pkg-2'], [createImage('img-3', 1, 'C:/Users/A/Pkg-2/001.jpg')]),
+      createSource(
+        "pkg-1",
+        ["C:", "Users", "A", "Pkg-1"],
+        [
+          createImage("img-1", 1, "C:/Users/A/Pkg-1/001.jpg"),
+          createImage("img-2", 2, "C:/Users/A/Pkg-1/002.jpg"),
+        ],
+      ),
+      createSource(
+        "pkg-2",
+        ["C:", "Users", "A", "Pkg-2"],
+        [createImage("img-3", 1, "C:/Users/A/Pkg-2/001.jpg")],
+      ),
     ],
     image_directories: [],
     videos: [],
     audios: [],
-  }
+  };
 }
 
-function removeImagesFromSnapshot(snapshot: LibrarySnapshotDto, imageIds: string[]): void {
-  const deletedIdSet = new Set(imageIds)
+function removeImagesFromSnapshot(
+  snapshot: LibrarySnapshotDto,
+  imageIds: string[],
+): void {
+  const deletedIdSet = new Set(imageIds);
   const mutate = (source: ImagePackageDto) => {
-    source.images = source.images.filter((image) => !deletedIdSet.has(image.id))
-  }
+    source.images = source.images.filter(
+      (image) => !deletedIdSet.has(image.id),
+    );
+  };
 
   for (const source of snapshot.image_packages) {
-    mutate(source)
+    mutate(source);
   }
   for (const source of snapshot.image_directories) {
-    mutate(source)
+    mutate(source);
   }
 }
 
@@ -123,11 +144,11 @@ function buildReviewResult(imageIds: string[]) {
     ordinal: index + 1,
     fileName: `${imageId}.jpg`,
     hash: `hash-${imageId}`,
-    status: 'suspected' as const,
-    source: 'llm' as const,
-    reason: 'suspected',
+    status: "suspected" as const,
+    source: "llm" as const,
+    reason: "suspected",
     reviewedAtMs: Date.now(),
-  }))
+  }));
 
   return {
     items,
@@ -140,299 +161,346 @@ function buildReviewResult(imageIds: string[]) {
       knownHashHits: 0,
       llmCalls: items.length,
     },
-  }
+  };
 }
 
 function findTaskIdsByStatus(state: unknown, status: string): string[] {
-  if (!state || typeof state !== 'object') {
-    return []
+  if (!state || typeof state !== "object") {
+    return [];
   }
-  const items = Array.isArray((state as { items?: unknown }).items) ? ((state as { items: unknown[] }).items as unknown[]) : []
+  const items = Array.isArray((state as { items?: unknown }).items)
+    ? ((state as { items: unknown[] }).items as unknown[])
+    : [];
   return items
-    .filter((item) => item && typeof item === 'object' && (item as { task?: { status?: string } }).task?.status === status)
-    .map((item) => (item as { task: { task_id: string } }).task.task_id)
+    .filter(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        (item as { task?: { status?: string } }).task?.status === status,
+    )
+    .map((item) => (item as { task: { task_id: string } }).task.task_id);
 }
 
 function createServiceFixture(params?: {
-  snapshot?: LibrarySnapshotDto
-  deleteImageItems?: (request: DeleteImageItemsRequestDto, snapshot: LibrarySnapshotDto) => DeleteImageItemsResponseDto
+  snapshot?: LibrarySnapshotDto;
+  deleteImageItems?: (
+    request: DeleteImageItemsRequestDto,
+    snapshot: LibrarySnapshotDto,
+  ) => DeleteImageItemsResponseDto;
 }) {
   const snapshotRef = {
     current: params?.snapshot ?? createSnapshotForTests(),
-  }
-  const appState = new Map<string, unknown>()
+  };
+  const appState = new Map<string, unknown>();
 
   const database = {
     readAppState<T>(stateKey: string, fallback: T): T {
       if (!appState.has(stateKey)) {
-        return fallback
+        return fallback;
       }
-      return cloneValue(appState.get(stateKey) as T)
+      return cloneValue(appState.get(stateKey) as T);
     },
     writeAppState(stateKey: string, value: unknown): void {
-      appState.set(stateKey, cloneValue(value))
+      appState.set(stateKey, cloneValue(value));
     },
-  } as unknown as MediaLibraryDatabase
+  } as unknown as MediaLibraryDatabase;
 
   const service = new ManageAdReviewService({
     database,
     ensureSnapshotLoaded: async () => snapshotRef.current,
-    buildMediaAccessContext: () => ({
-      allowPath: () => true,
-    }) as never,
+    buildMediaAccessContext: () =>
+      ({
+        allowPath: () => true,
+      }) as never,
     getZipEntryIndexByPath: () => new Map(),
     deleteImageItems: async (request) => {
-      const response =
-        params?.deleteImageItems?.(request, snapshotRef.current) ?? {
-          deleted_count: request.image_ids.length,
-          failed: [],
-          updated_at_ms: Date.now(),
-        }
-      removeImagesFromSnapshot(snapshotRef.current, request.image_ids)
-      return response
+      const response = params?.deleteImageItems?.(
+        request,
+        snapshotRef.current,
+      ) ?? {
+        deleted_count: request.image_ids.length,
+        failed: [],
+        updated_at_ms: Date.now(),
+      };
+      removeImagesFromSnapshot(snapshotRef.current, request.image_ids);
+      return response;
     },
-  })
+  });
 
   return {
     service,
     snapshotRef,
     appState,
-  }
+  };
 }
 
-describe('ManageAdReviewService queue persistence', () => {
-  const runManageAdReviewMock = vi.mocked(runManageAdReview)
+describe("ManageAdReviewService queue persistence", () => {
+  const runManageAdReviewMock = vi.mocked(runManageAdReview);
 
   beforeEach(() => {
-    runManageAdReviewMock.mockReset()
+    runManageAdReviewMock.mockReset();
     runManageAdReviewMock.mockImplementation(async (input) => {
-      const imageIds = input.containers.flatMap((container) => container.images.map((image) => image.imageId))
-      return buildReviewResult(imageIds)
-    })
-  })
+      const imageIds = input.containers.flatMap((container) =>
+        container.images.map((image) => image.imageId),
+      );
+      return buildReviewResult(imageIds);
+    });
+  });
 
-  it('queues second task as pending and auto-starts after first completes', async () => {
-    const deferredFirst = createDeferred<ReturnType<typeof buildReviewResult>>()
-    const deferredSecond = createDeferred<ReturnType<typeof buildReviewResult>>()
+  it("queues second task as pending and auto-starts after first completes", async () => {
+    const deferredFirst =
+      createDeferred<ReturnType<typeof buildReviewResult>>();
+    const deferredSecond =
+      createDeferred<ReturnType<typeof buildReviewResult>>();
 
     runManageAdReviewMock
       .mockImplementationOnce(async () => deferredFirst.promise)
-      .mockImplementationOnce(async () => deferredSecond.promise)
+      .mockImplementationOnce(async () => deferredSecond.promise);
 
-    const { service } = createServiceFixture()
+    const { service } = createServiceFixture();
 
     const firstRequest: StartManageAdReviewRequestDto = {
-      selection_scope: 'image',
-      image_ids: ['img-1'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "image",
+      image_ids: ["img-1"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
     const secondRequest: StartManageAdReviewRequestDto = {
       ...firstRequest,
-      image_ids: ['img-2'],
-    }
+      image_ids: ["img-2"],
+    };
 
-    const firstResponse = await service.startManageAdReview(firstRequest)
-    const secondResponse = await service.startManageAdReview(secondRequest)
+    const firstResponse = await service.startManageAdReview(firstRequest);
+    const secondResponse = await service.startManageAdReview(secondRequest);
 
-    expect(firstResponse.task.status).toBe('running')
-    expect(secondResponse.task.status).toBe('pending')
+    expect(firstResponse.task.status).toBe("running");
+    expect(secondResponse.task.status).toBe("pending");
 
-    deferredFirst.resolve(buildReviewResult(['img-1']))
-
-    await vi.waitFor(async () => {
-      const secondTask = await service.readManageAdReviewTask({ task_id: secondResponse.task.task_id })
-      expect(secondTask.task?.status).toBe('running')
-    })
-
-    deferredSecond.resolve(buildReviewResult(['img-2']))
+    deferredFirst.resolve(buildReviewResult(["img-1"]));
 
     await vi.waitFor(async () => {
-      const secondTask = await service.readManageAdReviewTask({ task_id: secondResponse.task.task_id })
-      expect(secondTask.task?.status).toBe('review')
-    })
-  })
+      const secondTask = await service.readManageAdReviewTask({
+        task_id: secondResponse.task.task_id,
+      });
+      expect(secondTask.task?.status).toBe("running");
+    });
 
-  it('does not auto-start pending task when running task is paused', async () => {
-    const deferredFirst = createDeferred<ReturnType<typeof buildReviewResult>>()
-    runManageAdReviewMock.mockImplementationOnce(async () => deferredFirst.promise)
+    deferredSecond.resolve(buildReviewResult(["img-2"]));
 
-    const { service } = createServiceFixture()
+    await vi.waitFor(async () => {
+      const secondTask = await service.readManageAdReviewTask({
+        task_id: secondResponse.task.task_id,
+      });
+      expect(secondTask.task?.status).toBe("review");
+    });
+  });
+
+  it("does not auto-start pending task when running task is paused", async () => {
+    const deferredFirst =
+      createDeferred<ReturnType<typeof buildReviewResult>>();
+    runManageAdReviewMock.mockImplementationOnce(
+      async () => deferredFirst.promise,
+    );
+
+    const { service } = createServiceFixture();
 
     const request: StartManageAdReviewRequestDto = {
-      selection_scope: 'image',
-      image_ids: ['img-1'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "image",
+      image_ids: ["img-1"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
 
-    const first = await service.startManageAdReview(request)
-    const second = await service.startManageAdReview({ ...request, image_ids: ['img-2'] })
+    const first = await service.startManageAdReview(request);
+    const second = await service.startManageAdReview({
+      ...request,
+      image_ids: ["img-2"],
+    });
 
-    expect(first.task.status).toBe('running')
-    expect(second.task.status).toBe('pending')
+    expect(first.task.status).toBe("running");
+    expect(second.task.status).toBe("pending");
 
-    const paused = await service.pauseManageAdReviewTask({ task_id: first.task.task_id })
-    expect(paused.task.status).toBe('paused')
+    const paused = await service.pauseManageAdReviewTask({
+      task_id: first.task.task_id,
+    });
+    expect(paused.task.status).toBe("paused");
 
     await vi.waitFor(async () => {
-      const secondTask = await service.readManageAdReviewTask({ task_id: second.task.task_id })
-      expect(secondTask.task?.status).toBe('pending')
-    })
+      const secondTask = await service.readManageAdReviewTask({
+        task_id: second.task.task_id,
+      });
+      expect(secondTask.task?.status).toBe("pending");
+    });
 
-    expect(runManageAdReviewMock.mock.calls).toHaveLength(1)
-  })
+    expect(runManageAdReviewMock.mock.calls).toHaveLength(1);
+  });
 
-  it('updates running task candidates incrementally from image-reviewed events', async () => {
-    const deferred = createDeferred<ReturnType<typeof buildReviewResult>>()
+  it("updates running task candidates incrementally from image-reviewed events", async () => {
+    const deferred = createDeferred<ReturnType<typeof buildReviewResult>>();
     runManageAdReviewMock.mockImplementationOnce(async (_input, options) => {
-      ;(options as { onEvent?: (event: unknown) => void }).onEvent?.({
-        type: 'image-reviewed',
-        containerId: 'pkg-1',
-        imageId: 'img-1',
-        status: 'suspected',
-        source: 'llm',
-        hash: 'hash-img-1',
-        reason: 'mock_suspected',
-      })
-      return deferred.promise
-    })
+      (options as { onEvent?: (event: unknown) => void }).onEvent?.({
+        type: "image-reviewed",
+        containerId: "pkg-1",
+        imageId: "img-1",
+        status: "suspected",
+        source: "llm",
+        hash: "hash-img-1",
+        reason: "mock_suspected",
+      });
+      return deferred.promise;
+    });
 
-    const { service } = createServiceFixture()
+    const { service } = createServiceFixture();
     const request: StartManageAdReviewRequestDto = {
-      selection_scope: 'image',
-      image_ids: ['img-1'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "image",
+      image_ids: ["img-1"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
 
-    const started = await service.startManageAdReview(request)
-
-    await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: started.task.task_id })
-      expect(task.task?.status).toBe('running')
-      expect(task.task?.candidates).toHaveLength(1)
-      expect(task.task?.candidates[0]?.image_id).toBe('img-1')
-      expect(task.task?.candidates[0]?.reason).toBe('mock_suspected')
-    })
-
-    deferred.resolve(buildReviewResult(['img-1']))
+    const started = await service.startManageAdReview(request);
 
     await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: started.task.task_id })
-      expect(task.task?.status).toBe('review')
-    })
-  })
+      const task = await service.readManageAdReviewTask({
+        task_id: started.task.task_id,
+      });
+      expect(task.task?.status).toBe("running");
+      expect(task.task?.candidates).toHaveLength(1);
+      expect(task.task?.candidates[0]?.image_id).toBe("img-1");
+      expect(task.task?.candidates[0]?.reason).toBe("mock_suspected");
+    });
 
-  it('skips unchanged reviewed sidebar nodes on next run', async () => {
-    const { service } = createServiceFixture()
+    deferred.resolve(buildReviewResult(["img-1"]));
+
+    await vi.waitFor(async () => {
+      const task = await service.readManageAdReviewTask({
+        task_id: started.task.task_id,
+      });
+      expect(task.task?.status).toBe("review");
+    });
+  });
+
+  it("skips unchanged reviewed sidebar nodes on next run", async () => {
+    const { service } = createServiceFixture();
     const request: StartManageAdReviewRequestDto = {
-      selection_scope: 'sidebar',
-      node_ids: ['folder:C:/Users/A'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "sidebar",
+      node_ids: ["folder:C:/Users/A"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
 
-    const first = await service.startManageAdReview(request)
+    const first = await service.startManageAdReview(request);
     await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: first.task.task_id })
-      expect(task.task?.status).toBe('review')
-    })
+      const task = await service.readManageAdReviewTask({
+        task_id: first.task.task_id,
+      });
+      expect(task.task?.status).toBe("review");
+    });
 
-    const callCountAfterFirst = runManageAdReviewMock.mock.calls.length
-    const second = await service.startManageAdReview(request)
+    const callCountAfterFirst = runManageAdReviewMock.mock.calls.length;
+    const second = await service.startManageAdReview(request);
 
-    expect(second.task.status).toBe('review')
-    expect(second.task.total_count).toBe(0)
-    expect(second.task.message).toBe('已审核(未变更)，无需执行')
-    expect(runManageAdReviewMock.mock.calls.length).toBe(callCountAfterFirst)
-  })
+    expect(second.task.status).toBe("review");
+    expect(second.task.total_count).toBe(0);
+    expect(second.task.message).toBe("已审核(未变更)，无需执行");
+    expect(runManageAdReviewMock.mock.calls.length).toBe(callCountAfterFirst);
+  });
 
-  it('reruns reviewed sidebar nodes when skip_reviewed_nodes is false', async () => {
-    const { service } = createServiceFixture()
+  it("reruns reviewed sidebar nodes when skip_reviewed_nodes is false", async () => {
+    const { service } = createServiceFixture();
     const request: StartManageAdReviewRequestDto = {
-      selection_scope: 'sidebar',
-      node_ids: ['folder:C:/Users/A'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "sidebar",
+      node_ids: ["folder:C:/Users/A"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
 
-    const first = await service.startManageAdReview(request)
+    const first = await service.startManageAdReview(request);
     await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: first.task.task_id })
-      expect(task.task?.status).toBe('review')
-    })
+      const task = await service.readManageAdReviewTask({
+        task_id: first.task.task_id,
+      });
+      expect(task.task?.status).toBe("review");
+    });
 
-    const callCountAfterFirst = runManageAdReviewMock.mock.calls.length
+    const callCountAfterFirst = runManageAdReviewMock.mock.calls.length;
     const second = await service.startManageAdReview({
       ...request,
       skip_reviewed_nodes: false,
-    })
+    });
 
     await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: second.task.task_id })
-      expect(task.task?.status).toBe('review')
-    })
+      const task = await service.readManageAdReviewTask({
+        task_id: second.task.task_id,
+      });
+      expect(task.task?.status).toBe("review");
+    });
 
-    expect(second.task.total_count).toBeGreaterThan(0)
-    expect(second.task.message).not.toBe('已审核(未变更)，无需执行')
-    expect(runManageAdReviewMock.mock.calls.length).toBe(callCountAfterFirst + 1)
-  })
+    expect(second.task.total_count).toBeGreaterThan(0);
+    expect(second.task.message).not.toBe("已审核(未变更)，无需执行");
+    expect(runManageAdReviewMock.mock.calls.length).toBe(
+      callCountAfterFirst + 1,
+    );
+  });
 
-  it('recomputes reviewed node hash after deleting candidates', async () => {
-    const snapshot = createSnapshotForTests()
-    const { service, appState } = createServiceFixture({ snapshot })
+  it("recomputes reviewed node hash after deleting candidates", async () => {
+    const snapshot = createSnapshotForTests();
+    const { service, appState } = createServiceFixture({ snapshot });
     const request: StartManageAdReviewRequestDto = {
-      selection_scope: 'sidebar',
-      node_ids: ['folder:C:/Users/A'],
-      llm_endpoint: 'http://127.0.0.1:1234/v1',
-      llm_model: 'mock-model',
-      strategy: { mode: 'all' },
+      selection_scope: "sidebar",
+      node_ids: ["folder:C:/Users/A"],
+      llm_endpoint: "http://127.0.0.1:1234/v1",
+      llm_model: "mock-model",
+      strategy: { mode: "all" },
       max_concurrency: 4,
-    }
+    };
 
-    const started = await service.startManageAdReview(request)
+    const started = await service.startManageAdReview(request);
     await vi.waitFor(async () => {
-      const task = await service.readManageAdReviewTask({ task_id: started.task.task_id })
-      expect(task.task?.status).toBe('review')
-    })
+      const task = await service.readManageAdReviewTask({
+        task_id: started.task.task_id,
+      });
+      expect(task.task?.status).toBe("review");
+    });
 
     const reviewedBefore = appState.get(REVIEWED_NODE_HASH_STATE_KEY) as {
-      node_hash_by_id: Record<string, { node_hash: string }>
-    }
-    const hashBefore = reviewedBefore.node_hash_by_id['folder:C:/Users/A']?.node_hash
-    expect(typeof hashBefore).toBe('string')
+      node_hash_by_id: Record<string, { node_hash: string }>;
+    };
+    const hashBefore =
+      reviewedBefore.node_hash_by_id["folder:C:/Users/A"]?.node_hash;
+    expect(typeof hashBefore).toBe("string");
 
     const deleteResponse = await service.confirmManageAdReviewDelete({
       task_id: started.task.task_id,
-      image_ids: ['img-1'],
-    })
-    expect(deleteResponse.deleted_count).toBe(1)
+      image_ids: ["img-1"],
+    });
+    expect(deleteResponse.deleted_count).toBe(1);
 
     const reviewedAfter = appState.get(REVIEWED_NODE_HASH_STATE_KEY) as {
-      node_hash_by_id: Record<string, { node_hash: string }>
-    }
-    const hashAfter = reviewedAfter.node_hash_by_id['folder:C:/Users/A']?.node_hash
-    expect(hashAfter).not.toBe(hashBefore)
-  })
+      node_hash_by_id: Record<string, { node_hash: string }>;
+    };
+    const hashAfter =
+      reviewedAfter.node_hash_by_id["folder:C:/Users/A"]?.node_hash;
+    expect(hashAfter).not.toBe(hashBefore);
+  });
 
-  it('normalizes stale running queue entries to paused on service bootstrap', async () => {
-    const snapshot = createSnapshotForTests()
-    const appState = new Map<string, unknown>()
+  it("normalizes stale running queue entries to paused on service bootstrap", async () => {
+    const snapshot = createSnapshotForTests();
+    const appState = new Map<string, unknown>();
 
     const staleTask = {
-      task_id: 'stale-running-task',
-      status: 'running',
+      task_id: "stale-running-task",
+      status: "running",
       progress: 0.4,
       total_count: 10,
       reviewed_count: 4,
@@ -440,10 +508,11 @@ describe('ManageAdReviewService queue persistence', () => {
       failed_count: 0,
       known_hash_hits: 0,
       llm_calls: 4,
-      scope_image_ids: ['img-1'],
+      scope_image_ids: ["img-1"],
       image_source_by_id: {},
       execution: {
-        strategy: { mode: 'all' as const },
+        execution_mode: "normal" as const,
+        strategy: { mode: "all" as const },
         max_concurrency: 4,
       },
       audit: {
@@ -457,12 +526,12 @@ describe('ManageAdReviewService queue persistence', () => {
         llm_hit_rate: 0.25,
         overall_hit_rate: 0.1,
       },
-      message: '广告审核任务进行中',
+      message: "广告审核任务进行中",
       error_detail: null,
       candidates: [],
       created_at_ms: Date.now(),
       updated_at_ms: Date.now(),
-    }
+    };
 
     appState.set(QUEUE_STATE_KEY, {
       version: 1,
@@ -470,11 +539,11 @@ describe('ManageAdReviewService queue persistence', () => {
         {
           task: staleTask,
           request: {
-            selection_scope: 'image',
-            image_ids: ['img-1'],
-            llm_endpoint: 'http://127.0.0.1:1234/v1',
-            llm_model: 'mock-model',
-            strategy: { mode: 'all' },
+            selection_scope: "image",
+            image_ids: ["img-1"],
+            llm_endpoint: "http://127.0.0.1:1234/v1",
+            llm_model: "mock-model",
+            strategy: { mode: "all" },
             max_concurrency: 4,
           },
           effective_node_ids: [],
@@ -482,33 +551,39 @@ describe('ManageAdReviewService queue persistence', () => {
           node_hash_by_id: {},
         },
       ],
-    })
+    });
 
     const database = {
       readAppState<T>(stateKey: string, fallback: T): T {
         if (!appState.has(stateKey)) {
-          return fallback
+          return fallback;
         }
-        return cloneValue(appState.get(stateKey) as T)
+        return cloneValue(appState.get(stateKey) as T);
       },
       writeAppState(stateKey: string, value: unknown): void {
-        appState.set(stateKey, cloneValue(value))
+        appState.set(stateKey, cloneValue(value));
       },
-    } as unknown as MediaLibraryDatabase
+    } as unknown as MediaLibraryDatabase;
 
     const service = new ManageAdReviewService({
       database,
       ensureSnapshotLoaded: async () => snapshot,
       buildMediaAccessContext: () => ({ allowPath: () => true }) as never,
       getZipEntryIndexByPath: () => new Map(),
-      deleteImageItems: async () => ({ deleted_count: 0, failed: [], updated_at_ms: Date.now() }),
-    })
+      deleteImageItems: async () => ({
+        deleted_count: 0,
+        failed: [],
+        updated_at_ms: Date.now(),
+      }),
+    });
 
-    const response = await service.readManageAdReviewTask({ task_id: 'stale-running-task' })
-    expect(response.task?.status).toBe('paused')
+    const response = await service.readManageAdReviewTask({
+      task_id: "stale-running-task",
+    });
+    expect(response.task?.status).toBe("paused");
 
-    const queueState = appState.get(QUEUE_STATE_KEY)
-    const pausedTaskIds = findTaskIdsByStatus(queueState, 'paused')
-    expect(pausedTaskIds).toContain('stale-running-task')
-  })
-})
+    const queueState = appState.get(QUEUE_STATE_KEY);
+    const pausedTaskIds = findTaskIdsByStatus(queueState, "paused");
+    expect(pausedTaskIds).toContain("stale-running-task");
+  });
+});

@@ -37,6 +37,7 @@ export const settingsPanelSectionSchema = z.enum([
   "performance",
   "shader",
   "audio",
+  "video",
   "debug",
   "system",
   "model",
@@ -326,9 +327,8 @@ export const appSettingsSchema = z.object({
   musicVisualizerToneMapStrength: z.number().min(0).max(1),
   musicVisualizerShowFps: z.boolean(),
   musicVisualizerRenderer: musicVisualizerRendererSchema,
-  musicVisualizerRuntimeMode: musicVisualizerRuntimeModeSchema.default(
-    "legacy",
-  ),
+  musicVisualizerRuntimeMode:
+    musicVisualizerRuntimeModeSchema.default("legacy"),
   musicVisualizerShaderSettingsById: musicVisualizerShaderSettingsByIdSchema,
   musicVisualizerPluginInputBindingsByShaderId:
     musicVisualizerPluginInputBindingsByShaderIdSchema.default({}),
@@ -387,6 +387,7 @@ export const appSettingsSchema = z.object({
   subtitleCleanupLlmEndpoint: z.string().max(512),
   subtitleCleanupLlmModel: z.string().max(256),
   subtitleCleanupLlmPrompt: z.string().max(12000),
+  adReviewExecutionMode: z.enum(["normal", "performance"]),
   adReviewStrategyMode: z.enum(["all", "head-tail"]),
   adReviewHeadN: z.number().int().min(1).max(20),
   adReviewTailN: z.number().int().min(1).max(20),

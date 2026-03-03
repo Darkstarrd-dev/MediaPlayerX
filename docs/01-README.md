@@ -18,6 +18,7 @@
 - Shader 插件改造实施清单：`28-shader-plugin-implementation-checklist-v1.md`
 - 模块文件索引（半自动）：`29-module-file-index.md`
 - 全仓重复治理 PR 清单：`30-全仓重复治理PR拆分清单-v1.md`
+- Ad Review Performance 分阶段重实施计划：`31-ad-review-performance-mode-reimplementation-phased-plan-v1.md`
 - Theme 规范（SSOT）：`08-theme-system-v2.md`
 - Theme 迭代入口：`09-theme-brainstorm-entry.md`
 - 疑难点记录：`27-Tips.md`

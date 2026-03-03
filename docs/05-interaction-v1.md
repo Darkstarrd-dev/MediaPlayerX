@@ -140,7 +140,9 @@ Last updated: 2026-03-01
 - 审核完成后展示“疑似广告图片”复核列表，支持逐项勾选/取消、全选候选、清空候选与关闭结果。
 - 广告审核结果在用户确认前不会触发物理删除；删除按钮会先进入危险确认弹窗，确认后复用既有 `deleteImageItems` 链路执行。
 - 已确认删除候选会写入“图片哈希缓存”（known-hash）；后续命中可直接标记疑似并跳过 LLM。
-- 设置面板“模型参数”分组提供广告审核策略参数：`all/head-tail`、并发度，以及 head/tail/streak 窗口参数（head-tail 模式显示）。
+- 设置面板“AI辅助设置”分组提供广告审核视觉模型配置与执行模式切换（`normal/performance`）。
+- 广告审核策略参数仍保留并发度与 head/tail 窗口；`tailStopClean` 仅在 `normal`（且 head-tail）可见，`performance` 下不显示。
+- `performance` 下不显示 AD/C 切换，且策略锁定为 H（head-tail）；`normal` 下保留既有切换行为。
 - 管理面板的广告审核卡片显示审计统计：来源分布（known-hash / llm suspected-clean-failed / strategy-skip）与命中率（LLM/总体）。
 - 支持点击与键盘移动焦点。
 - 元数据面板随焦点实时更新。

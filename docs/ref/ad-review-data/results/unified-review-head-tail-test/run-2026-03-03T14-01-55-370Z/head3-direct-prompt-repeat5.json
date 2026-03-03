@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-03-03T14:04:30.544Z",
+  "runs": [
+    {
+      "run": 1,
+      "status": 200,
+      "latency_ms": 841.89,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": 2,
+      "status": 200,
+      "latency_ms": 473.55,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": 3,
+      "status": 200,
+      "latency_ms": 465.47,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": 4,
+      "status": 200,
+      "latency_ms": 483.43,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "run": 5,
+      "status": 200,
+      "latency_ms": 452.15,
+      "usage": {
+        "prompt_tokens": 970,
+        "completion_tokens": 42,
+        "total_tokens": 1012
+      },
+      "parsed": {
+        "duplicate_groups": [
+          [
+            "01",
+            "02"
+          ]
+        ],
+        "ad_overlay_ids": [
+          "01"
+        ],
+        "ad_overlay_texts": [
+          {
+            "image_id": "01",
+            "texts": [
+              "KOKOKORO个人汉化"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

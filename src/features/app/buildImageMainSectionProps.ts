@@ -1,176 +1,188 @@
-import type { RefObject } from 'react'
+import type { RefObject } from "react";
 
 import type {
   ManageAdReviewTaskDto,
   ManageReviewModeDto,
   StartImageConvertTaskRequestDto,
-} from '../../contracts/backend'
-import type { ImageConvertAdjustProfile } from './useAppSessionState'
-import type { AppSettings } from '../../contracts/settings'
-import type { MetadataFetchTarget } from '../metadata/metadataFetchTargets'
-import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
-import type { FocusedImageRef, ImagePackage, VectorCandidate } from '../../types'
+} from "../../contracts/backend";
+import type { ImageConvertAdjustProfile } from "./useAppSessionState";
+import type { AppSettings } from "../../contracts/settings";
+import type { MetadataFetchTarget } from "../metadata/metadataFetchTargets";
+import type { ParsedExternalMetadata } from "../metadata/parseExternalMetadata";
+import type {
+  FocusedImageRef,
+  ImagePackage,
+  VectorCandidate,
+} from "../../types";
 
 interface BuildImageMainSectionPropsParams {
-  popoverDebugPinned: boolean
-  fullscreenActive: boolean
-  vectorResultsActive: boolean
-  showNamesOnly: boolean
-  metadataManageMode: boolean
-  metadataManageSelectionMode?: 'single' | 'multiple'
-  thumbnailScaleLevel: number
-  thumbnailScaleLevelCount: number
-  canThumbnailScaleDown: boolean
-  canThumbnailScaleUp: boolean
-  imageConvertScale: number
-  imageConvertLongestEdgePx: number | null
-  imageConvertAdjustProfile: ImageConvertAdjustProfile
-  imageConvertFormat: 'webp' | 'jpeg' | 'png' | 'avif'
-  imageConvertQuality: number
-  imageConvertPreviewMode: boolean
-  imageConvertPreviewScale: number
-  imageConvertPreviewLongestEdgePx: number | null
-  imageConvertPreviewAdjustProfile: ImageConvertAdjustProfile
-  imageConvertPreviewFormat: 'webp' | 'jpeg' | 'png' | 'avif'
-  imageConvertPreviewQuality: number
-  backendPageLoading: boolean
-  pagedPageSize: number
-  enableLoadingSkeleton: boolean
-  activePackageForDisplay: ImagePackage | null
-  focusedRef: FocusedImageRef | null
-  focusedImageExists: boolean
-  visibleImageRefs: FocusedImageRef[]
-  refsInPageEffective: FocusedImageRef[]
-  pageStartEffective: number
-  actualCellWidth: number
-  actualMediaHeight: number
-  thumbnailColumns: number
-  actualThumbnailGap: number
-  actualThumbnailRowGap: number
-  vectorSearchResults: VectorCandidate[]
-  packageByIdEffective: Map<string, ImagePackage>
-  thumbnailImageUrlById: Record<string, string>
-  gridRef: RefObject<HTMLDivElement | null>
-  onGridElementChange: (element: HTMLDivElement | null) => void
-  manageMode: boolean
-  sidebarSelectedCount: number
-  imageSelectedCount: number
-  activeSelectionScope: 'sidebar' | 'image' | null
-  pendingManageAction: boolean
-  manageOperationHint: string | null
-  canManageDelete: boolean
-  canManageMoveNodes: boolean
-  canManageImageConvert: boolean
-  canManageHide: boolean
-  canManageUnhide: boolean
-  adReviewFeatureEnabled: boolean
-  adReviewPending: boolean
-  adReviewDeletePending?: boolean
-  adReviewPanelOpen: boolean
-  manageReviewMode: ManageReviewModeDto
-  canSwitchManageReviewMode: boolean
-  adReviewTask: ManageAdReviewTaskDto | null
-  adReviewFocusTaskId: string | null
-  adReviewStrategyMode: 'all' | 'head-tail'
-  adReviewMaxConcurrency: number
-  adReviewHeadN: number
-  adReviewTailN: number
-  adReviewTailStopCleanStreak: number
-  canExecuteAdReview: boolean
-  hasCheckedAdReviewCandidates: boolean
-  selectedAdReviewCandidateCount: number
-  checkedImageIdSet: Set<string>
-  adReviewScopeImageIdSet: Set<string>
-  adReviewLlmReviewedImageIdSet: Set<string>
-  adReviewNonLlmReviewedImageIdSet: Set<string>
-  adReviewCandidateImageIdSet: Set<string>
-  adReviewResultsMode: boolean
-  adReviewGroupByPackageRows: boolean
-  updateSettings: (patch: Partial<AppSettings>) => void
-  setFullscreenActiveWithAutoStop: (value: boolean) => void
-  setVectorFocusIndex: (value: number) => void
-  setImageFocus: (packageId: string, imageIndex: number) => void
-  onRequestSidebarLocateFromMain: () => void
-  canJumpToAnimation: boolean
-  canJumpToMusic: boolean
-  canJumpToMusicFromBooklet: boolean
-  onJumpToAnimation: () => void
-  onJumpToMusic: () => void
-  onJumpToMusicFromBooklet: () => void
-  metadataPending: boolean
-  metadataTargetPackageLabel: string
-  metadataFetchDefaultText: string
-  metadataFetchTargets: MetadataFetchTarget[]
-  metadataProxyServer: string
-  onMetadataSyncName: () => void
-  onToggleMetadataManageSelectionMode?: () => void
-  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>
-  onMetadataSaveParsedByPackageId: (packageId: string, parsed: ParsedExternalMetadata) => Promise<void>
+  popoverDebugPinned: boolean;
+  fullscreenActive: boolean;
+  vectorResultsActive: boolean;
+  showNamesOnly: boolean;
+  metadataManageMode: boolean;
+  metadataManageSelectionMode?: "single" | "multiple";
+  thumbnailScaleLevel: number;
+  thumbnailScaleLevelCount: number;
+  canThumbnailScaleDown: boolean;
+  canThumbnailScaleUp: boolean;
+  imageConvertScale: number;
+  imageConvertLongestEdgePx: number | null;
+  imageConvertAdjustProfile: ImageConvertAdjustProfile;
+  imageConvertFormat: "webp" | "jpeg" | "png" | "avif";
+  imageConvertQuality: number;
+  imageConvertPreviewMode: boolean;
+  imageConvertPreviewScale: number;
+  imageConvertPreviewLongestEdgePx: number | null;
+  imageConvertPreviewAdjustProfile: ImageConvertAdjustProfile;
+  imageConvertPreviewFormat: "webp" | "jpeg" | "png" | "avif";
+  imageConvertPreviewQuality: number;
+  backendPageLoading: boolean;
+  pagedPageSize: number;
+  enableLoadingSkeleton: boolean;
+  activePackageForDisplay: ImagePackage | null;
+  focusedRef: FocusedImageRef | null;
+  focusedImageExists: boolean;
+  visibleImageRefs: FocusedImageRef[];
+  refsInPageEffective: FocusedImageRef[];
+  pageStartEffective: number;
+  actualCellWidth: number;
+  actualMediaHeight: number;
+  thumbnailColumns: number;
+  actualThumbnailGap: number;
+  actualThumbnailRowGap: number;
+  vectorSearchResults: VectorCandidate[];
+  packageByIdEffective: Map<string, ImagePackage>;
+  thumbnailImageUrlById: Record<string, string>;
+  gridRef: RefObject<HTMLDivElement | null>;
+  onGridElementChange: (element: HTMLDivElement | null) => void;
+  manageMode: boolean;
+  sidebarSelectedCount: number;
+  imageSelectedCount: number;
+  activeSelectionScope: "sidebar" | "image" | null;
+  pendingManageAction: boolean;
+  manageOperationHint: string | null;
+  canManageDelete: boolean;
+  canManageMoveNodes: boolean;
+  canManageImageConvert: boolean;
+  canManageHide: boolean;
+  canManageUnhide: boolean;
+  adReviewFeatureEnabled: boolean;
+  adReviewPending: boolean;
+  adReviewDeletePending?: boolean;
+  adReviewPanelOpen: boolean;
+  manageReviewMode: ManageReviewModeDto;
+  adReviewExecutionMode: "normal" | "performance";
+  canSwitchManageReviewMode: boolean;
+  adReviewTask: ManageAdReviewTaskDto | null;
+  adReviewFocusTaskId: string | null;
+  adReviewStrategyMode: "all" | "head-tail";
+  adReviewMaxConcurrency: number;
+  adReviewHeadN: number;
+  adReviewTailN: number;
+  adReviewTailStopCleanStreak: number;
+  canExecuteAdReview: boolean;
+  hasCheckedAdReviewCandidates: boolean;
+  selectedAdReviewCandidateCount: number;
+  checkedImageIdSet: Set<string>;
+  adReviewScopeImageIdSet: Set<string>;
+  adReviewLlmReviewedImageIdSet: Set<string>;
+  adReviewNonLlmReviewedImageIdSet: Set<string>;
+  adReviewCandidateImageIdSet: Set<string>;
+  adReviewNonBodyImageIdSet: Set<string>;
+  adReviewResultsMode: boolean;
+  adReviewGroupByPackageRows: boolean;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+  setFullscreenActiveWithAutoStop: (value: boolean) => void;
+  setVectorFocusIndex: (value: number) => void;
+  setImageFocus: (packageId: string, imageIndex: number) => void;
+  onRequestSidebarLocateFromMain: () => void;
+  canJumpToAnimation: boolean;
+  canJumpToMusic: boolean;
+  canJumpToMusicFromBooklet: boolean;
+  onJumpToAnimation: () => void;
+  onJumpToMusic: () => void;
+  onJumpToMusicFromBooklet: () => void;
+  metadataPending: boolean;
+  metadataTargetPackageLabel: string;
+  metadataFetchDefaultText: string;
+  metadataFetchTargets: MetadataFetchTarget[];
+  metadataProxyServer: string;
+  onMetadataSyncName: () => void;
+  onToggleMetadataManageSelectionMode?: () => void;
+  onMetadataSaveParsed: (parsed: ParsedExternalMetadata) => Promise<void>;
+  onMetadataSaveParsedByPackageId: (
+    packageId: string,
+    parsed: ParsedExternalMetadata,
+  ) => Promise<void>;
   onToggleImageChecked: (
     imageId: string,
     checked?: boolean,
     options?: { shiftKey?: boolean; orderedIds?: readonly string[] },
-  ) => void
-  onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void
-  onManageDelete: () => void
-  onManageRename: () => void
-  onManageGroup: () => void
-  onManageMove: () => void
+  ) => void;
+  onReplaceCheckedImages: (imageIds: string[], append?: boolean) => void;
+  onManageDelete: () => void;
+  onManageRename: () => void;
+  onManageGroup: () => void;
+  onManageMove: () => void;
   onStartImageConvertTask: (
     request: StartImageConvertTaskRequestDto,
-  ) => Promise<unknown>
-  onManageHide: () => void
-  onManageUnhide: () => void
-  onToggleAdReviewPanel: () => void
-  onManageReviewModeChange: (nextMode: ManageReviewModeDto) => void
-  onToggleAdReviewFocus: () => void
-  onAdReviewStrategyModeChange: (value: 'all' | 'head-tail') => void
-  onAdReviewMaxConcurrencyChange: (value: number) => void
-  onAdReviewHeadNChange: (value: number) => void
-  onAdReviewTailNChange: (value: number) => void
-  onAdReviewTailStopCleanStreakChange: (value: number) => void
-  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void
-  onPauseAdReview: () => void
-  onRemoveAdReviewTask: (taskId: string) => void
-  onDeleteSelectedAdReviewCandidates: () => void
-  onDismissAdReviewTask: () => void
-  onClearManageSelection: () => void
-  onThumbnailScaleLevelChange: (level: number) => void
-  onImageConvertScaleChange: (value: number) => void
-  onImageConvertLongestEdgePxChange: (value: number | null) => void
-  onImageConvertFormatChange: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
-  onImageConvertQualityChange: (value: number) => void
-  onOpenImageConvertPreview: () => void
-  onConfirmImageConvertPreview: () => void
-  onCancelImageConvertPreview: () => void
-  nodeBrowseMode: boolean
-  nodeBrowseLabel: string
+  ) => Promise<unknown>;
+  onManageHide: () => void;
+  onManageUnhide: () => void;
+  onToggleAdReviewPanel: () => void;
+  onManageReviewModeChange: (nextMode: ManageReviewModeDto) => void;
+  onToggleAdReviewFocus: () => void;
+  onAdReviewStrategyModeChange: (value: "all" | "head-tail") => void;
+  onAdReviewMaxConcurrencyChange: (value: number) => void;
+  onAdReviewHeadNChange: (value: number) => void;
+  onAdReviewTailNChange: (value: number) => void;
+  onAdReviewTailStopCleanStreakChange: (value: number) => void;
+  onStartAdReview: (options?: { skipReviewedNodes?: boolean }) => void;
+  onPauseAdReview: () => void;
+  onRemoveAdReviewTask: (taskId: string) => void;
+  onDeleteSelectedAdReviewCandidates: () => void;
+  onDismissAdReviewTask: () => void;
+  onClearManageSelection: () => void;
+  onThumbnailScaleLevelChange: (level: number) => void;
+  onImageConvertScaleChange: (value: number) => void;
+  onImageConvertLongestEdgePxChange: (value: number | null) => void;
+  onImageConvertFormatChange: (value: "webp" | "jpeg" | "png" | "avif") => void;
+  onImageConvertQualityChange: (value: number) => void;
+  onOpenImageConvertPreview: () => void;
+  onConfirmImageConvertPreview: () => void;
+  onCancelImageConvertPreview: () => void;
+  nodeBrowseMode: boolean;
+  nodeBrowseLabel: string;
   nodeBrowseItems: Array<{
-    nodeId: string
-    imageSourceId?: string
-    imageNodeType: 'folder' | 'package' | 'directory'
-    label: string
-    packageCount: number
-    imageCount: number
-    descendantNodeCount: number
-    coverImageUrl: string | null
-  }>
-  nodeBrowsePageStart: number
-  nodeBrowsePageSize: number
-  onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void
-  onThumbnailWheelTurnPage: (delta: number) => void
-  onThumbnailWheelDeltaPreview: (accumulatedDelta: number) => void
-  onThumbnailWheelSwitchSidebarNode: (direction: 'next' | 'prev') => void
+    nodeId: string;
+    imageSourceId?: string;
+    imageNodeType: "folder" | "package" | "directory";
+    label: string;
+    packageCount: number;
+    imageCount: number;
+    descendantNodeCount: number;
+    coverImageUrl: string | null;
+  }>;
+  nodeBrowsePageStart: number;
+  nodeBrowsePageSize: number;
+  onSelectNodeBrowseItem: (nodeId: string, imageSourceId?: string) => void;
+  onThumbnailWheelTurnPage: (delta: number) => void;
+  onThumbnailWheelDeltaPreview: (accumulatedDelta: number) => void;
+  onThumbnailWheelSwitchSidebarNode: (direction: "next" | "prev") => void;
 }
 
-export function buildImageMainSectionProps(params: BuildImageMainSectionPropsParams) {
+export function buildImageMainSectionProps(
+  params: BuildImageMainSectionPropsParams,
+) {
   return {
     popoverDebugPinned: params.popoverDebugPinned,
     fullscreenActive: params.fullscreenActive,
     vectorMode: params.vectorResultsActive,
     showNamesOnly: params.showNamesOnly,
     metadataManageMode: params.metadataManageMode,
-    metadataManageSelectionMode: params.metadataManageSelectionMode ?? 'multiple',
+    metadataManageSelectionMode:
+      params.metadataManageSelectionMode ?? "multiple",
     thumbnailScaleLevel: params.thumbnailScaleLevel,
     thumbnailScaleLevelCount: params.thumbnailScaleLevelCount,
     canThumbnailScaleDown: params.canThumbnailScaleDown,
@@ -221,6 +233,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     adReviewDeletePending: params.adReviewDeletePending,
     adReviewPanelOpen: params.adReviewPanelOpen,
     manageReviewMode: params.manageReviewMode,
+    adReviewExecutionMode: params.adReviewExecutionMode,
     canSwitchManageReviewMode: params.canSwitchManageReviewMode,
     adReviewTask: params.adReviewTask,
     adReviewFocusTaskId: params.adReviewFocusTaskId,
@@ -237,6 +250,7 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     adReviewLlmReviewedImageIds: params.adReviewLlmReviewedImageIdSet,
     adReviewNonLlmReviewedImageIds: params.adReviewNonLlmReviewedImageIdSet,
     adReviewCandidateImageIds: params.adReviewCandidateImageIdSet,
+    adReviewNonBodyImageIds: params.adReviewNonBodyImageIdSet,
     adReviewResultsMode: params.adReviewResultsMode,
     adReviewGroupByPackageRows: params.adReviewGroupByPackageRows,
     onToggleImageChecked: params.onToggleImageChecked,
@@ -255,11 +269,13 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onAdReviewMaxConcurrencyChange: params.onAdReviewMaxConcurrencyChange,
     onAdReviewHeadNChange: params.onAdReviewHeadNChange,
     onAdReviewTailNChange: params.onAdReviewTailNChange,
-    onAdReviewTailStopCleanStreakChange: params.onAdReviewTailStopCleanStreakChange,
+    onAdReviewTailStopCleanStreakChange:
+      params.onAdReviewTailStopCleanStreakChange,
     onStartAdReview: params.onStartAdReview,
     onPauseAdReview: params.onPauseAdReview,
     onRemoveAdReviewTask: params.onRemoveAdReviewTask,
-    onDeleteSelectedAdReviewCandidates: params.onDeleteSelectedAdReviewCandidates,
+    onDeleteSelectedAdReviewCandidates:
+      params.onDeleteSelectedAdReviewCandidates,
     onDismissAdReviewTask: params.onDismissAdReviewTask,
     onClearManageSelection: params.onClearManageSelection,
     onThumbnailScaleLevelChange: params.onThumbnailScaleLevelChange,
@@ -270,7 +286,8 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onOpenImageConvertPreview: params.onOpenImageConvertPreview,
     onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
     onCancelImageConvertPreview: params.onCancelImageConvertPreview,
-    onToggleShowNamesOnly: () => params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
+    onToggleShowNamesOnly: () =>
+      params.updateSettings({ showNamesOnly: !params.showNamesOnly }),
     canJumpToAnimation: params.canJumpToAnimation,
     canJumpToMusic: params.canJumpToMusic,
     canJumpToMusicFromBooklet: params.canJumpToMusicFromBooklet,
@@ -278,19 +295,23 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onJumpToMusic: params.onJumpToMusic,
     onJumpToMusicFromBooklet: params.onJumpToMusicFromBooklet,
     onEnterFullscreen: () => params.setFullscreenActiveWithAutoStop(true),
-    onSelectImage: (packageId: string, imageIndex: number, absoluteIndex: number) => {
+    onSelectImage: (
+      packageId: string,
+      imageIndex: number,
+      absoluteIndex: number,
+    ) => {
       if (params.vectorResultsActive) {
-        params.setVectorFocusIndex(absoluteIndex)
+        params.setVectorFocusIndex(absoluteIndex);
       }
-      params.setImageFocus(packageId, imageIndex)
-      params.updateSettings({ sidebarFocus: 'main' })
+      params.setImageFocus(packageId, imageIndex);
+      params.updateSettings({ sidebarFocus: "main" });
       if (
-        !params.fullscreenActive
-        && !params.manageMode
-        && !params.metadataManageMode
-        && !params.adReviewPanelOpen
+        !params.fullscreenActive &&
+        !params.manageMode &&
+        !params.metadataManageMode &&
+        !params.adReviewPanelOpen
       ) {
-        params.onRequestSidebarLocateFromMain()
+        params.onRequestSidebarLocateFromMain();
       }
     },
     metadataPending: params.metadataPending,
@@ -299,7 +320,8 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     metadataFetchTargets: params.metadataFetchTargets,
     metadataProxyServer: params.metadataProxyServer,
     onMetadataSyncName: params.onMetadataSyncName,
-    onToggleMetadataManageSelectionMode: params.onToggleMetadataManageSelectionMode,
+    onToggleMetadataManageSelectionMode:
+      params.onToggleMetadataManageSelectionMode,
     onMetadataSaveParsed: params.onMetadataSaveParsed,
     onMetadataSaveParsedByPackageId: params.onMetadataSaveParsedByPackageId,
     nodeBrowseMode: params.nodeBrowseMode,
@@ -311,5 +333,5 @@ export function buildImageMainSectionProps(params: BuildImageMainSectionPropsPar
     onThumbnailWheelTurnPage: params.onThumbnailWheelTurnPage,
     onThumbnailWheelDeltaPreview: params.onThumbnailWheelDeltaPreview,
     onThumbnailWheelSwitchSidebarNode: params.onThumbnailWheelSwitchSidebarNode,
-  }
+  };
 }

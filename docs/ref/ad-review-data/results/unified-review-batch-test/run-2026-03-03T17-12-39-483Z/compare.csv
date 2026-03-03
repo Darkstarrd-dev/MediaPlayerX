@@ -1,0 +1,3 @@
+dataset,multi_avg_latency_ms,single_avg_latency_ms,speedup_single_div_multi,multi_avg_total_tokens,single_avg_total_tokens,total_token_reduction_ratio
+head6,5661.97,7743.24,1.368,2768,4882,0.433
+tail10,9471.28,12660.22,1.337,4447,8192,0.4572

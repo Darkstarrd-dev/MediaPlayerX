@@ -188,7 +188,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.sectionPerformance": "Advanced Paging",
   "ui.settings.sectionShader": "Shader",
   "ui.settings.sectionAudio": "Audio",
-  "ui.settings.sectionModel": "AI Model",
+  "ui.settings.sectionVideo": "Video",
+  "ui.settings.sectionModel": "AI Assist",
   "ui.settings.sectionDebug": "Debug",
   "ui.settings.sectionShortcuts": "Shortcuts",
   "ui.settings.sectionDatabase": "Database",
@@ -569,6 +570,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Endpoint URL used by ad-review vision model.",
   "ui.settings.tooltip.adReviewVisionModel":
     "Vision model identifier used by ad review.",
+  "ui.settings.tooltip.adReviewExecutionMode":
+    "Switch ad review mode: normal keeps legacy behavior, performance enables optimized path.",
   "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
     "LLM endpoint used for subtitle cleanup tasks.",
   "ui.settings.tooltip.subtitleCleanupLlmModel":
@@ -638,6 +641,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.mediaCapabilityUnsupportedWithError": "unsupported ({{error}})",
   "ui.settings.mediaCapabilityUnsupported": "unsupported",
   "ui.settings.adReviewVisionLegend": "AI ad review vision model",
+  "ui.settings.adReviewExecutionMode": "Ad review execution mode",
+  "ui.settings.adReviewModeNormal": "normal (default)",
+  "ui.settings.adReviewModePerformance": "performance",
   "ui.settings.subtitleCleanupLlmLegend": "Subtitle cleanup LLM",
   "ui.settings.subtitleCleanupLlmEndpoint": "Subtitle cleanup endpoint",
   "ui.settings.subtitleCleanupLlmModel": "Subtitle cleanup model",

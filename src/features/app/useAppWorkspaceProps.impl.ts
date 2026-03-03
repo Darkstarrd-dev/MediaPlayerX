@@ -764,6 +764,9 @@ export function useAppWorkspaceProps({
     adReviewTaskForDisplay?.candidates.map((candidate) => candidate.image_id) ??
       [],
   );
+  const adReviewNonBodyImageIdSet = new Set(
+    adReviewTaskForDisplay?.performance_result?.nonbody_hide_ids ?? [],
+  );
 
   const {
     musicBookletState,
@@ -916,6 +919,7 @@ export function useAppWorkspaceProps({
     adReviewDeletePending: manageAdReview.deletePending,
     adReviewPanelOpen,
     manageReviewMode: manageAdReview.reviewMode,
+    adReviewExecutionMode: appSettings.adReviewExecutionMode,
     canSwitchManageReviewMode: manageAdReview.supportsCoverReview,
     adReviewTask: manageAdReview.task,
     adReviewFocusTaskId,
@@ -935,6 +939,7 @@ export function useAppWorkspaceProps({
     adReviewLlmReviewedImageIdSet,
     adReviewNonLlmReviewedImageIdSet,
     adReviewCandidateImageIdSet,
+    adReviewNonBodyImageIdSet,
     adReviewResultsMode,
     adReviewGroupByPackageRows,
     updateSettings: appSettings.updateSettings,

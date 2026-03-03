@@ -1,21 +1,21 @@
-import { useCallback } from 'react'
+import { useCallback } from "react";
 
-import { useRuntimeCapabilities, useWriteDataAccess } from '../backend'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { AppSessionStateResult } from './useAppSessionState'
-import { useManageAdReviewActions } from './useManageAdReviewActions'
-import { useManageModeActions } from './useManageModeActions'
-import { useMetadataManageModeActions } from './useMetadataManageModeActions'
-import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
-import type { MediaStateResult } from '../media/useMediaState'
+import { useRuntimeCapabilities, useWriteDataAccess } from "../backend";
+import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { AppSessionStateResult } from "./useAppSessionState";
+import { useManageAdReviewActions } from "./useManageAdReviewActions";
+import { useManageModeActions } from "./useManageModeActions";
+import { useMetadataManageModeActions } from "./useMetadataManageModeActions";
+import type { RepositoryBootstrapDataResult } from "./useRepositoryBootstrapData";
+import type { MediaStateResult } from "../media/useMediaState";
 
 interface UseAppManageBindingsParams {
-  appSettings: AppSettingsStoreSnapshot
-  mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
-  sessionState: AppSessionStateResult
-  mediaState: MediaStateResult
-  readNavigationState: AppReadAndNavigationResult
+  appSettings: AppSettingsStoreSnapshot;
+  mediaRepository: RepositoryBootstrapDataResult["mediaRepository"];
+  sessionState: AppSessionStateResult;
+  mediaState: MediaStateResult;
+  readNavigationState: AppReadAndNavigationResult;
 }
 
 export function useAppManageBindings({
@@ -34,8 +34,9 @@ export function useAppManageBindings({
     adReviewTailN,
     adReviewTailStopCleanStreak,
     adReviewMaxConcurrency,
+    adReviewExecutionMode,
     updateSettings,
-  } = appSettings
+  } = appSettings;
 
   const {
     setGradeByPackage,
@@ -50,9 +51,9 @@ export function useAppManageBindings({
     adReviewFocusTaskId,
     setManageOperationHint,
     setDeleteConfirmOpen,
-  } = sessionState
+  } = sessionState;
 
-  const { setVideoCoverById, setVideoCoverImageById } = mediaState
+  const { setVideoCoverById, setVideoCoverImageById } = mediaState;
 
   const {
     imageCheckedIds,
@@ -61,21 +62,16 @@ export function useAppManageBindings({
     clearAllSelections,
     replaceImageCheckedIds,
     backendRead,
-  } = readNavigationState
+  } = readNavigationState;
 
-  const {
-    retryLibrary,
-    retrySidebar,
-    retryPage,
-    retryMetadata,
-  } = backendRead
+  const { retryLibrary, retrySidebar, retryPage, retryMetadata } = backendRead;
 
   const backendWrite = useWriteDataAccess({
     repository: mediaRepository,
     setGradeByPackage,
     setVideoCoverById,
     setVideoCoverImageById,
-  })
+  });
 
   const {
     toggleManageMode,
@@ -105,7 +101,7 @@ export function useAppManageBindings({
     setDeleteConfirmOpen,
     setManageOperationHint,
     updateSettings,
-  })
+  });
 
   const { toggleMetadataManageMode } = useMetadataManageModeActions({
     manageMode,
@@ -117,7 +113,7 @@ export function useAppManageBindings({
     setDeleteConfirmOpen,
     setManageOperationHint,
     updateSettings,
-  })
+  });
 
   const manageAdReview = useManageAdReviewActions({
     repository: mediaRepository,
@@ -133,6 +129,7 @@ export function useAppManageBindings({
     adReviewTailN,
     adReviewTailStopCleanStreak,
     adReviewMaxConcurrency,
+    adReviewExecutionMode,
     reviewMode: manageReviewMode,
     onReviewModeChange: setManageReviewMode,
     clearAllSelections,
@@ -141,38 +138,44 @@ export function useAppManageBindings({
     adReviewPanelOpen,
     adReviewFocusTaskId,
     onDeleteRoundCompleted: () => {
-      setAdReviewPanelOpen(false)
+      setAdReviewPanelOpen(false);
     },
-  })
+  });
 
   const confirmManageDeleteWithAdReview = useCallback(async () => {
     if (manageAdReview.deletePending) {
-      return
+      return;
     }
 
     try {
-      const reviewTask = manageAdReview.task
-      const isCoverApplyMode = manageAdReview.applyActionMode === 'cover'
-      const isReviewReady = reviewTask?.status === 'review'
+      const reviewTask = manageAdReview.task;
+      const isCoverApplyMode = manageAdReview.applyActionMode === "cover";
+      const isReviewReady = reviewTask?.status === "review";
       const shouldRouteToAdReviewDelete =
         isReviewReady &&
-        imageCheckedIds.some((imageId) => reviewTask.candidates.some((candidate) => candidate.image_id === imageId))
+        imageCheckedIds.some((imageId) =>
+          reviewTask.candidates.some(
+            (candidate) => candidate.image_id === imageId,
+          ),
+        );
 
-      const shouldRouteToCoverReviewHide = Boolean(isCoverApplyMode && isReviewReady)
+      const shouldRouteToCoverReviewHide = Boolean(
+        isCoverApplyMode && isReviewReady,
+      );
 
       if (shouldRouteToCoverReviewHide || shouldRouteToAdReviewDelete) {
-        setDeleteConfirmOpen(false)
-        setManageOperationHint(null)
-        await manageAdReview.confirmDeleteSelectedCandidates()
-        return
+        setDeleteConfirmOpen(false);
+        setManageOperationHint(null);
+        await manageAdReview.confirmDeleteSelectedCandidates();
+        return;
       }
 
-      await confirmManageDelete()
+      await confirmManageDelete();
     } finally {
-      retryLibrary()
-      retrySidebar()
-      retryPage()
-      retryMetadata()
+      retryLibrary();
+      retrySidebar();
+      retryPage();
+      retryMetadata();
     }
   }, [
     confirmManageDelete,
@@ -184,16 +187,16 @@ export function useAppManageBindings({
     retrySidebar,
     setDeleteConfirmOpen,
     setManageOperationHint,
-  ])
+  ]);
 
   const confirmManageRemoveOnlyWithRefresh = useCallback(async () => {
     try {
-      await confirmManageRemoveOnly()
+      await confirmManageRemoveOnly();
     } finally {
-      retryLibrary()
-      retrySidebar()
-      retryPage()
-      retryMetadata()
+      retryLibrary();
+      retrySidebar();
+      retryPage();
+      retryMetadata();
     }
   }, [
     confirmManageRemoveOnly,
@@ -201,11 +204,11 @@ export function useAppManageBindings({
     retryMetadata,
     retryPage,
     retrySidebar,
-  ])
+  ]);
 
   const runtimeCapabilities = useRuntimeCapabilities({
     repository: mediaRepository,
-  })
+  });
 
   return {
     backendWrite,
@@ -225,7 +228,7 @@ export function useAppManageBindings({
     confirmManageRemoveOnly: confirmManageRemoveOnlyWithRefresh,
     manageAdReview,
     runtimeCapabilities,
-  }
+  };
 }
 
-export type AppManageBindingsResult = ReturnType<typeof useAppManageBindings>
+export type AppManageBindingsResult = ReturnType<typeof useAppManageBindings>;

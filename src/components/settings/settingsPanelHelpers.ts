@@ -30,6 +30,7 @@ export const SETTINGS_SECTIONS: Array<{
   { id: "performance", labelKey: "ui.settings.sectionPerformance" },
   { id: "shader", labelKey: "ui.settings.sectionShader" },
   { id: "audio", labelKey: "ui.settings.sectionAudio" },
+  { id: "video", labelKey: "ui.settings.sectionVideo" },
   { id: "model", labelKey: "ui.settings.sectionModel" },
   { id: "debug", labelKey: "ui.settings.sectionDebug" },
   { id: "shortcuts", labelKey: "ui.settings.sectionShortcuts" },
@@ -160,6 +161,7 @@ export function resolveSettingsSection(raw: unknown): SettingsSection {
     raw === "performance" ||
     raw === "shader" ||
     raw === "audio" ||
+    raw === "video" ||
     raw === "debug" ||
     raw === "system" ||
     raw === "model" ||

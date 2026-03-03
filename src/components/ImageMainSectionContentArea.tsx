@@ -9,7 +9,9 @@ interface ImageMainSectionContentAreaProps {
   showNamesOnly: boolean;
   manageMode: boolean;
   gridRef: ImageMainSectionProps["gridRef"];
-  handleThumbnailContainerWheel: (event: React.WheelEvent<HTMLDivElement>) => void;
+  handleThumbnailContainerWheel: (
+    event: React.WheelEvent<HTMLDivElement>,
+  ) => void;
   thumbnailColumns: number;
   actualCellWidth: number;
   thumbnailGap: number;
@@ -31,6 +33,7 @@ interface ImageMainSectionContentAreaProps {
   focusedRef: ImageMainSectionProps["focusedRef"];
   checkedImageIds: NonNullable<ImageMainSectionProps["checkedImageIds"]>;
   adReviewCandidateImageIds: ReadonlySet<string>;
+  adReviewNonBodyImageIds: ReadonlySet<string>;
   onSelectImage: ImageMainSectionProps["onSelectImage"];
   onEnterFullscreen: ImageMainSectionProps["onEnterFullscreen"];
   refsInPageForRender: NonNullable<ImageMainSectionProps["refsInPage"]>;
@@ -38,17 +41,25 @@ interface ImageMainSectionContentAreaProps {
   imageUrlByIdForRender: NonNullable<ImageMainSectionProps["imageUrlById"]>;
   pageStart: number;
   adReviewGroupByPackageRows: boolean;
+  adReviewPerformanceMode: boolean;
   showSkeleton: boolean;
   skeletonCount: number;
   vectorMode: ImageMainSectionProps["vectorMode"];
   vectorCandidates: NonNullable<ImageMainSectionProps["vectorCandidates"]>;
-  marqueeStyle: { left: number; top: number; width: number; height: number } | null;
+  marqueeStyle: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null;
   adReviewStartDialogOpen: boolean;
   manageReviewMode: NonNullable<ImageMainSectionProps["manageReviewMode"]>;
   setAdReviewStartDialogOpen: (open: boolean) => void;
   startToolbarAdReviewWithOption: (skipReviewedNodes: boolean) => void;
   metadataFetchOpen: boolean;
-  effectiveMetadataFetchTargets: NonNullable<ImageMainSectionProps["metadataFetchTargets"]>;
+  effectiveMetadataFetchTargets: NonNullable<
+    ImageMainSectionProps["metadataFetchTargets"]
+  >;
   metadataProxyServer: ImageMainSectionProps["metadataProxyServer"];
   metadataPending: boolean;
   setMetadataFetchOpen: (open: boolean) => void;
@@ -89,7 +100,8 @@ export function ImageMainSectionContentArea({
         t,
         markThumbInputMouse: () => markThumbInputMouse(null),
         scrollFocusedThumbIntoView: () => scrollFocusedThumbIntoView(null),
-        scheduleFocusedThumbOriginSync: () => scheduleFocusedThumbOriginSync(null),
+        scheduleFocusedThumbOriginSync: () =>
+          scheduleFocusedThumbOriginSync(null),
       })}
 
       {marqueeStyle && marqueeStyle.width > 2 && marqueeStyle.height > 2 ? (

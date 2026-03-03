@@ -1,0 +1,631 @@
+{
+  "generated_at": "2026-03-03T13:25:06.626Z",
+  "config": {
+    "advanced_dir": "Z:\\Playground\\CurrentWorking\\MediaPlayerX\\src\\assets\\test\\advanced",
+    "endpoint": "http://127.0.0.1:1234/v1/chat/completions",
+    "model": "huihui-qwen3-vl-8b-instruct-abliterated",
+    "resize_px": 640,
+    "jpeg_quality": 40,
+    "repeats": 1,
+    "timeout_ms": 120000,
+    "datasets": {
+      "head6": [
+        "01.webp",
+        "02.webp",
+        "03.webp",
+        "04.webp",
+        "05.webp",
+        "06.webp"
+      ],
+      "tail10": [
+        "29_zzz4.2.webp",
+        "29.webp",
+        "28.webp",
+        "27_zzz2.1.1.webp",
+        "27.webp",
+        "26_zzz1.3.webp",
+        "26.webp",
+        "25_zzz1.1.webp",
+        "25.webp",
+        "24.webp"
+      ]
+    }
+  },
+  "summaries": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_count": 1,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 6072.75,
+      "avg_prompt_tokens": 2097,
+      "avg_total_tokens": 2782,
+      "img_per_sec": 0.988,
+      "stability": {
+        "runs": 1,
+        "label_consistency_ratio": null,
+        "duplicate_pair_consistency_ratio": null
+      },
+      "overlay_metrics": null,
+      "duplicate_metrics": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_count": 1,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 8777.73,
+      "avg_prompt_tokens": 3912,
+      "avg_total_tokens": 4882,
+      "img_per_sec": 0.684,
+      "stability": {
+        "runs": 1,
+        "label_consistency_ratio": null,
+        "duplicate_pair_consistency_ratio": null
+      },
+      "overlay_metrics": null,
+      "duplicate_metrics": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_count": 1,
+      "parse_success_rate": 1,
+      "avg_item_coverage_ratio": 1,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 10576.57,
+      "avg_prompt_tokens": 3255,
+      "avg_total_tokens": 4447,
+      "img_per_sec": 0.945,
+      "stability": {
+        "runs": 1,
+        "label_consistency_ratio": null,
+        "duplicate_pair_consistency_ratio": null
+      },
+      "overlay_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "duplicate_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_count": 1,
+      "parse_success_rate": 0,
+      "avg_item_coverage_ratio": 0,
+      "avg_logic_conflict_count": 0,
+      "avg_latency_ms": 21758.8,
+      "avg_prompt_tokens": 5845,
+      "avg_total_tokens": 7332,
+      "img_per_sec": 0.46,
+      "stability": {
+        "runs": 0,
+        "label_consistency_ratio": null,
+        "duplicate_pair_consistency_ratio": null
+      },
+      "overlay_metrics": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0,
+        "f1": 0
+      },
+      "duplicate_metrics": {
+        "tp": 4,
+        "fp": 41,
+        "fn": 0,
+        "precision": 0.0889,
+        "recall": 1,
+        "f1": 0.1633
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "dataset": "head6",
+      "multi_avg_latency_ms": 6072.75,
+      "single_avg_latency_ms": 8777.73,
+      "speedup_single_div_multi": 1.445,
+      "multi_avg_total_tokens": 2782,
+      "single_avg_total_tokens": 4882,
+      "total_token_reduction_ratio": 0.4302
+    },
+    {
+      "dataset": "tail10",
+      "multi_avg_latency_ms": 10576.57,
+      "single_avg_latency_ms": 21758.8,
+      "speedup_single_div_multi": 2.057,
+      "multi_avg_total_tokens": 4447,
+      "single_avg_total_tokens": 7332,
+      "total_token_reduction_ratio": 0.3935
+    }
+  ],
+  "detail_rows": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 1,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 6072.75,
+      "prompt_tokens": 2097,
+      "completion_tokens": 685,
+      "total_tokens": 2782,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 1,
+      "image_count": 6,
+      "http_status": 200,
+      "latency_ms": 8777.73,
+      "prompt_tokens": 3912,
+      "completion_tokens": 970,
+      "total_tokens": 4882,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 1,
+      "image_count": 10,
+      "http_status": 200,
+      "latency_ms": 10576.57,
+      "prompt_tokens": 3255,
+      "completion_tokens": 1192,
+      "total_tokens": 4447,
+      "parse_ok": true,
+      "error": null
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 1,
+      "image_count": 10,
+      "http_status": 500,
+      "latency_ms": 21758.8,
+      "prompt_tokens": 5845,
+      "completion_tokens": 1487,
+      "total_tokens": 7332,
+      "parse_ok": false,
+      "error": "[{\"image_id\":\"29_zzz4.2\",\"error\":\"HTTP 400: {\\\"error\\\":\\\"The model has crashed without additional information. (Exit code: 18446744072635810000)\\\"}\"}]"
+    }
+  ],
+  "run_outputs": [
+    {
+      "dataset": "head6",
+      "mode": "multi",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 6072.75,
+      "prompt_tokens": 2097,
+      "total_tokens": 2782,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [
+          {
+            "group_id": "g1",
+            "image_ids": [
+              "01",
+              "02"
+            ],
+            "ad_overlay_image_ids": []
+          }
+        ],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": "g1",
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.97
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "head6",
+      "mode": "single",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 8777.73,
+      "prompt_tokens": 3912,
+      "total_tokens": 4882,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "01",
+          "02",
+          "03",
+          "04",
+          "05",
+          "06"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [],
+        "blank_image_ids": [
+          "03"
+        ],
+        "body_image_ids": [
+          "04",
+          "05",
+          "06"
+        ],
+        "non_body_image_ids": [
+          "01",
+          "02",
+          "03"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "01",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "02",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "03",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "04",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "05",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "06",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "multi",
+      "run_no": 1,
+      "http_status": 200,
+      "latency_ms": 10576.57,
+      "prompt_tokens": 3255,
+      "total_tokens": 4447,
+      "error": null,
+      "normalized": {
+        "input_image_ids": [
+          "29_zzz4.2",
+          "29",
+          "28",
+          "27_zzz2.1.1",
+          "27",
+          "26_zzz1.3",
+          "26",
+          "25_zzz1.1",
+          "25",
+          "24"
+        ],
+        "ad_overlay_cover_image_ids": [],
+        "ad_image_ids": [
+          "29_zzz4.2",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1"
+        ],
+        "blank_image_ids": [
+          "28",
+          "24"
+        ],
+        "body_image_ids": [
+          "29",
+          "27",
+          "26",
+          "25"
+        ],
+        "non_body_image_ids": [
+          "29_zzz4.2",
+          "28",
+          "27_zzz2.1.1",
+          "26_zzz1.3",
+          "25_zzz1.1",
+          "24"
+        ],
+        "duplicate_cover_groups": [],
+        "missing_image_ids": [],
+        "items": [
+          {
+            "image_id": "29_zzz4.2",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "29",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": true,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "cover_art|credits",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "28",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.99
+          },
+          {
+            "image_id": "27_zzz2.1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "27",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.96
+          },
+          {
+            "image_id": "26_zzz1.3",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.98
+          },
+          {
+            "image_id": "26",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.95
+          },
+          {
+            "image_id": "25_zzz1.1",
+            "is_ad": true,
+            "is_blank": false,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "ad_text|ad_qr",
+            "confidence": 0.97
+          },
+          {
+            "image_id": "25",
+            "is_ad": false,
+            "is_blank": false,
+            "is_body": true,
+            "is_non_body": false,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "body_panel",
+            "confidence": 0.94
+          },
+          {
+            "image_id": "24",
+            "is_ad": false,
+            "is_blank": true,
+            "is_body": false,
+            "is_non_body": true,
+            "is_cover_like": false,
+            "is_ad_overlay_cover": false,
+            "duplicate_cover_group_id": null,
+            "reason_code": "blank_solid",
+            "confidence": 0.98
+          }
+        ]
+      }
+    },
+    {
+      "dataset": "tail10",
+      "mode": "single",
+      "run_no": 1,
+      "http_status": 500,
+      "latency_ms": 21758.8,
+      "prompt_tokens": 5845,
+      "total_tokens": 7332,
+      "error": "[{\"image_id\":\"29_zzz4.2\",\"error\":\"HTTP 400: {\\\"error\\\":\\\"The model has crashed without additional information. (Exit code: 18446744072635810000)\\\"}\"}]",
+      "normalized": null
+    }
+  ]
+}

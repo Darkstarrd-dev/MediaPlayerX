@@ -54,6 +54,7 @@ interface BuildMetadataPanelPropsParams {
   selectedAdReviewCandidateCount: number;
   adReviewFocusTaskId: string | null;
   adReviewStrategyMode: "all" | "head-tail";
+  adReviewExecutionMode?: "normal" | "performance";
   adReviewMaxConcurrency: number;
   adReviewHeadN: number;
   adReviewTailN: number;
@@ -182,6 +183,7 @@ export function buildMetadataPanelProps(
     selectedAdReviewCandidateCount: params.selectedAdReviewCandidateCount,
     adReviewFocusTaskId: params.adReviewFocusTaskId,
     adReviewStrategyMode: params.adReviewStrategyMode,
+    adReviewExecutionMode: params.adReviewExecutionMode,
     adReviewMaxConcurrency: params.adReviewMaxConcurrency,
     adReviewHeadN: params.adReviewHeadN,
     adReviewTailN: params.adReviewTailN,

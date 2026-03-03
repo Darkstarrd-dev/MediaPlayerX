@@ -1,0 +1,5 @@
+dataset,mode,run_no,image_count,http_status,latency_ms,prompt_tokens,completion_tokens,total_tokens,parse_ok,error
+head6,multi,1,6,200,6072.75,2097,685,2782,true,
+head6,single,1,6,200,8777.73,3912,970,4882,true,
+tail10,multi,1,10,200,10576.57,3255,1192,4447,true,
+tail10,single,1,10,500,21758.8,5845,1487,7332,false,"[{""image_id"":""29_zzz4.2"",""error"":""HTTP 400: {\""error\"":\""The model has crashed without additional information. (Exit code: 18446744072635810000)\""}""}]"

@@ -175,7 +175,8 @@ export const zhCnCatalogPart1 = {
   "ui.settings.sectionPerformance": "高级分页",
   "ui.settings.sectionShader": "Shader",
   "ui.settings.sectionAudio": "音频设置",
-  "ui.settings.sectionModel": "AI模型设置",
+  "ui.settings.sectionVideo": "视频设置",
+  "ui.settings.sectionModel": "AI辅助设置",
   "ui.settings.sectionDebug": "调试",
   "ui.settings.sectionShortcuts": "快捷键设置",
   "ui.settings.sectionDatabase": "数据库设置",
@@ -197,8 +198,10 @@ export const zhCnCatalogPart1 = {
   "ui.settings.shaderInputAudioBeat": "节拍映射 Uniform",
   "ui.settings.shaderInputTime": "时间映射 Uniform",
   "ui.settings.shaderInputAudioTexture": "音频纹理 Sampler",
-  "ui.settings.shaderProgramReflectionLoading": "正在分析 Shader Program Uniform...",
-  "ui.settings.shaderProgramReflectionUnavailable": "当前 Shader 不可用，无法反射。",
+  "ui.settings.shaderProgramReflectionLoading":
+    "正在分析 Shader Program Uniform...",
+  "ui.settings.shaderProgramReflectionUnavailable":
+    "当前 Shader 不可用，无法反射。",
   "ui.settings.shaderProgramReflectionFallbackError": "Shader Program 反射失败",
   "ui.settings.shaderProgramReflectionError": "反射失败：{{message}}",
   "ui.settings.shaderProgramReflectionSummary":
@@ -240,10 +243,8 @@ export const zhCnCatalogPart1 = {
   "ui.settings.shaderPreviewInputSource": "输入源",
   "ui.settings.shaderPreviewInputDemo": "Demo 音频",
   "ui.settings.shaderPreviewInputPlayer": "播放器音频",
-  "ui.settings.shaderPreviewInputPlayerUnavailable":
-    "播放器分析帧接口不可用",
-  "ui.settings.shaderPreviewInputPlayerIdle":
-    "播放器未就绪，请先开始播放音频",
+  "ui.settings.shaderPreviewInputPlayerUnavailable": "播放器分析帧接口不可用",
+  "ui.settings.shaderPreviewInputPlayerIdle": "播放器未就绪，请先开始播放音频",
   "ui.settings.shaderPreviewInputPlayerMessage": "播放器输入：{{message}}",
   "ui.settings.shaderPreviewPlaceholder":
     "预览画布将优先在 Plugin 模式下开放（当前阶段先完成配置收口）。",
@@ -532,6 +533,8 @@ export const zhCnCatalogPart1 = {
     "设置描边阴影扩散半径。",
   "ui.settings.tooltip.adReviewVisionEndpoint": "广告审核视觉模型接口地址。",
   "ui.settings.tooltip.adReviewVisionModel": "广告审核使用的视觉模型标识。",
+  "ui.settings.tooltip.adReviewExecutionMode":
+    "切换广告审核执行模式：normal 保持旧行为，performance 启用性能路径。",
   "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
     "字幕清洗任务使用的 LLM 接口地址。",
   "ui.settings.tooltip.subtitleCleanupLlmModel":
@@ -597,6 +600,9 @@ export const zhCnCatalogPart1 = {
   "ui.settings.mediaCapabilityUnsupportedWithError": "unsupported ({{error}})",
   "ui.settings.mediaCapabilityUnsupported": "unsupported",
   "ui.settings.adReviewVisionLegend": "AI广告审核视觉模型",
+  "ui.settings.adReviewExecutionMode": "广告审核执行模式",
+  "ui.settings.adReviewModeNormal": "normal（默认）",
+  "ui.settings.adReviewModePerformance": "performance（性能）",
   "ui.settings.subtitleCleanupLlmLegend": "字幕清洗 LLM",
   "ui.settings.subtitleCleanupLlmEndpoint": "字幕清洗接口地址",
   "ui.settings.subtitleCleanupLlmModel": "字幕清洗模型",

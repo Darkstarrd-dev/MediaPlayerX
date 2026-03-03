@@ -1,0 +1,6 @@
+image_name,requested_runs,ok_runs,min_prompt_tokens,max_prompt_tokens,min_latency_ms,max_latency_ms,min_payload_bytes,max_payload_bytes
+01.webp,1,1,233,233,462.62,462.62,51447,51447
+02.webp,1,1,217,217,270.22,270.22,50535,50535
+03.webp,1,1,217,217,256.51,256.51,54931,54931
+04.webp,1,1,217,217,257.56,257.56,24759,24759
+05.webp,1,1,217,217,303.19,303.19,34043,34043

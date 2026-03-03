@@ -92,6 +92,7 @@ export interface ImageMainSectionProps {
   adReviewDeletePending?: boolean;
   adReviewPanelOpen: boolean;
   manageReviewMode?: ManageReviewModeDto;
+  adReviewExecutionMode?: "normal" | "performance";
   canSwitchManageReviewMode?: boolean;
   adReviewTask?: ManageAdReviewTaskDto | null;
   adReviewFocusTaskId?: string | null;
@@ -108,6 +109,7 @@ export interface ImageMainSectionProps {
   adReviewLlmReviewedImageIds: ReadonlySet<string>;
   adReviewNonLlmReviewedImageIds: ReadonlySet<string>;
   adReviewCandidateImageIds?: ReadonlySet<string>;
+  adReviewNonBodyImageIds?: ReadonlySet<string>;
   adReviewResultsMode?: boolean;
   adReviewGroupByPackageRows?: boolean;
   onToggleImageChecked: (
@@ -142,7 +144,9 @@ export interface ImageMainSectionProps {
   onThumbnailScaleLevelChange?: (level: number) => void;
   onImageConvertScaleChange?: (value: number) => void;
   onImageConvertLongestEdgePxChange?: (value: number | null) => void;
-  onImageConvertFormatChange?: (value: "webp" | "jpeg" | "png" | "avif") => void;
+  onImageConvertFormatChange?: (
+    value: "webp" | "jpeg" | "png" | "avif",
+  ) => void;
   onImageConvertQualityChange?: (value: number) => void;
   onOpenImageConvertPreview?: () => void;
   onConfirmImageConvertPreview?: () => void;

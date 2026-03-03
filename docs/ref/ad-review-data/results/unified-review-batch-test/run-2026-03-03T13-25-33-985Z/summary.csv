@@ -1,0 +1,5 @@
+dataset,mode,run_count,parse_success_rate,avg_item_coverage_ratio,avg_logic_conflict_count,avg_latency_ms,avg_prompt_tokens,avg_total_tokens,img_per_sec,label_consistency_ratio,duplicate_pair_consistency_ratio,overlay_precision,overlay_recall,overlay_f1,dup_precision,dup_recall,dup_f1
+head6,multi,3,1,1,0,6093.77,2097,2768,0.985,1,1,,,,,,
+head6,single,3,0.6667,0.6667,0,11532.98,3694.67,4608.33,0.52,1,1,,,,,,
+tail10,multi,3,1,1,0,10712.19,3255,4443.67,0.934,0.9778,1,0,0,0,0,0,0
+tail10,single,3,1,1,0,14963.85,6522,8202,0.668,0.9944,1,0,0,0,0,0,0

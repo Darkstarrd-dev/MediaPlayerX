@@ -61,6 +61,7 @@ function createTask(taskId: string): ManageAdReviewTaskDto {
     scope_image_ids: ["img-1"],
     image_source_by_id: {},
     execution: {
+      execution_mode: "normal",
       strategy: { mode: "all" },
       max_concurrency: 2,
     },

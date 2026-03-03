@@ -96,12 +96,9 @@ interface BuildSettingsPanelPropsParams {
   musicVisualizerToneMapStrength: number;
   musicVisualizerShowFps: boolean;
   musicVisualizerRenderer: AppSettings["musicVisualizerRenderer"];
-  musicVisualizerShaderSettingsById:
-    AppSettings["musicVisualizerShaderSettingsById"];
-  musicVisualizerPluginInputBindingsByShaderId:
-    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
-  musicVisualizerPluginCustomBindingsByShaderId:
-    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderSettingsById: AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId: AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
   musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailQuality: number;
@@ -170,6 +167,7 @@ interface BuildSettingsPanelPropsParams {
   subtitleCleanupLlmEndpoint: string;
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
+  adReviewExecutionMode: AppSettings["adReviewExecutionMode"];
   shortcuts: SettingsPanelProps["shortcuts"];
   shortcutConflicts: SettingsPanelProps["shortcutConflicts"];
   databaseResetPending: boolean;
@@ -211,24 +209,25 @@ interface BuildSettingsPanelPropsParams {
 export function buildSettingsPanelProps(
   params: BuildSettingsPanelPropsParams,
 ): SettingsPanelProps {
-  const resolveFallbackShaderSettings = (): AppSettings["musicVisualizerShaderSettingsById"][string] => ({
-    renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
-    renderScaleCoeff: 2,
-    compositionMode: "single",
-    layeredBackgroundShaderId: "galaxy",
-    layeredForegroundShaderId: "mcs-szb",
-    layeredBackgroundEnabled: true,
-    layeredForegroundEnabled: true,
-    layeredForegroundOffsetX: 0,
-    layeredForegroundOffsetY: 0,
-    layeredForegroundScale: 1,
-    fpsCap: params.musicVisualizerFpsCap,
-    toneMapMode: params.musicVisualizerToneMapMode,
-    toneMapExposure: params.musicVisualizerToneMapExposure,
-    toneMapStrength: params.musicVisualizerToneMapStrength,
-    showFps: params.musicVisualizerShowFps,
-    renderer: params.musicVisualizerRenderer,
-  });
+  const resolveFallbackShaderSettings =
+    (): AppSettings["musicVisualizerShaderSettingsById"][string] => ({
+      renderLongEdgePx: params.musicVisualizerRenderLongEdgePx,
+      renderScaleCoeff: 2,
+      compositionMode: "single",
+      layeredBackgroundShaderId: "galaxy",
+      layeredForegroundShaderId: "mcs-szb",
+      layeredBackgroundEnabled: true,
+      layeredForegroundEnabled: true,
+      layeredForegroundOffsetX: 0,
+      layeredForegroundOffsetY: 0,
+      layeredForegroundScale: 1,
+      fpsCap: params.musicVisualizerFpsCap,
+      toneMapMode: params.musicVisualizerToneMapMode,
+      toneMapExposure: params.musicVisualizerToneMapExposure,
+      toneMapStrength: params.musicVisualizerToneMapStrength,
+      showFps: params.musicVisualizerShowFps,
+      renderer: params.musicVisualizerRenderer,
+    });
 
   const resolveSelectedShaderId = (): string => {
     const trimmed = params.musicVisualizerSelectedShaderId.trim().slice(0, 64);
@@ -354,6 +353,7 @@ export function buildSettingsPanelProps(
     subtitleCleanupLlmEndpoint: params.subtitleCleanupLlmEndpoint,
     subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
     subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
+    adReviewExecutionMode: params.adReviewExecutionMode,
     shortcuts: params.shortcuts,
     shortcutConflicts: params.shortcutConflicts,
     databaseResetPending: params.databaseResetPending,
@@ -537,13 +537,13 @@ export function buildSettingsPanelProps(
     },
     onMusicVisualizerPluginInputBindingChange: (patch) => {
       const selectedShaderId = resolveSelectedShaderId();
-      const currentBinding =
-        params.musicVisualizerPluginInputBindingsByShaderId[selectedShaderId] ?? {
-          audioLevelUniform: "iAudioLevel",
-          audioBeatUniform: "iAudioBeat",
-          timeUniform: "iTime",
-          audioTextureSampler: "iChannel0",
-        };
+      const currentBinding = params
+        .musicVisualizerPluginInputBindingsByShaderId[selectedShaderId] ?? {
+        audioLevelUniform: "iAudioLevel",
+        audioBeatUniform: "iAudioBeat",
+        timeUniform: "iTime",
+        audioTextureSampler: "iChannel0",
+      };
       const normalizeUniformName = (
         value: string | undefined,
         fallback: string,
@@ -560,11 +560,15 @@ export function buildSettingsPanelProps(
           [selectedShaderId]: {
             audioLevelUniform: normalizeUniformName(
               patch.audioLevelUniform,
-              patch.audioLevelUniform ? "iAudioLevel" : currentBinding.audioLevelUniform,
+              patch.audioLevelUniform
+                ? "iAudioLevel"
+                : currentBinding.audioLevelUniform,
             ),
             audioBeatUniform: normalizeUniformName(
               patch.audioBeatUniform,
-              patch.audioBeatUniform ? "iAudioBeat" : currentBinding.audioBeatUniform,
+              patch.audioBeatUniform
+                ? "iAudioBeat"
+                : currentBinding.audioBeatUniform,
             ),
             timeUniform: normalizeUniformName(
               patch.timeUniform,
@@ -572,7 +576,9 @@ export function buildSettingsPanelProps(
             ),
             audioTextureSampler: normalizeUniformName(
               patch.audioTextureSampler,
-              patch.audioTextureSampler ? "iChannel0" : currentBinding.audioTextureSampler,
+              patch.audioTextureSampler
+                ? "iChannel0"
+                : currentBinding.audioTextureSampler,
             ),
           },
         },
@@ -584,12 +590,12 @@ export function buildSettingsPanelProps(
       if (!normalizedName) {
         return;
       }
-      const currentBinding =
-        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
-          scalarBindings: {},
-          scalarTransforms: {},
-          samplerBindings: {},
-        };
+      const currentBinding = params
+        .musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+        scalarBindings: {},
+        scalarTransforms: {},
+        samplerBindings: {},
+      };
       const nextScalarBindings = { ...currentBinding.scalarBindings };
       const nextScalarTransforms = { ...currentBinding.scalarTransforms };
       if (signal === "none") {
@@ -621,18 +627,21 @@ export function buildSettingsPanelProps(
         },
       });
     },
-    onMusicVisualizerPluginCustomSamplerBindingChange: (uniformName, signal) => {
+    onMusicVisualizerPluginCustomSamplerBindingChange: (
+      uniformName,
+      signal,
+    ) => {
       const selectedShaderId = resolveSelectedShaderId();
       const normalizedName = uniformName.trim().slice(0, 64);
       if (!normalizedName) {
         return;
       }
-      const currentBinding =
-        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
-          scalarBindings: {},
-          scalarTransforms: {},
-          samplerBindings: {},
-        };
+      const currentBinding = params
+        .musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+        scalarBindings: {},
+        scalarTransforms: {},
+        samplerBindings: {},
+      };
       const nextSamplerBindings = { ...currentBinding.samplerBindings };
       if (signal === "none") {
         delete nextSamplerBindings[normalizedName];
@@ -655,23 +664,24 @@ export function buildSettingsPanelProps(
       if (!normalizedName) {
         return;
       }
-      const currentBinding =
-        params.musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
-          scalarBindings: {},
-          scalarTransforms: {},
-          samplerBindings: {},
-        };
-      const currentTransform =
-        currentBinding.scalarTransforms[normalizedName] ?? {
-          scale: 1,
-          bias: 0,
-          clampEnabled: false,
-          clampMin: 0,
-          clampMax: 1,
-          smoothEnabled: false,
-          smoothAttack: 0.35,
-          smoothRelease: 0.12,
-        };
+      const currentBinding = params
+        .musicVisualizerPluginCustomBindingsByShaderId[selectedShaderId] ?? {
+        scalarBindings: {},
+        scalarTransforms: {},
+        samplerBindings: {},
+      };
+      const currentTransform = currentBinding.scalarTransforms[
+        normalizedName
+      ] ?? {
+        scale: 1,
+        bias: 0,
+        clampEnabled: false,
+        clampMin: 0,
+        clampMax: 1,
+        smoothEnabled: false,
+        smoothAttack: 0.35,
+        smoothRelease: 0.12,
+      };
       const nextTransform = {
         ...currentTransform,
         ...patch,
@@ -739,12 +749,15 @@ export function buildSettingsPanelProps(
       const importedInputCandidate =
         payload.pluginInputBinding ?? payload.musicVisualizerPluginInputBinding;
       const importedCustomCandidate =
-        payload.pluginCustomBinding ?? payload.musicVisualizerPluginCustomBinding;
+        payload.pluginCustomBinding ??
+        payload.musicVisualizerPluginCustomBinding;
 
-      const importedInput =
-        musicVisualizerPluginInputBindingSchema.safeParse(importedInputCandidate);
-      const importedCustom =
-        musicVisualizerPluginCustomBindingSchema.safeParse(importedCustomCandidate);
+      const importedInput = musicVisualizerPluginInputBindingSchema.safeParse(
+        importedInputCandidate,
+      );
+      const importedCustom = musicVisualizerPluginCustomBindingSchema.safeParse(
+        importedCustomCandidate,
+      );
 
       if (!importedInput.success && !importedCustom.success) {
         return;
@@ -783,7 +796,10 @@ export function buildSettingsPanelProps(
         previewRenderLongEdgePx:
           typeof patch.previewRenderLongEdgePx === "number" &&
           Number.isFinite(patch.previewRenderLongEdgePx)
-            ? Math.max(240, Math.min(2048, Math.round(patch.previewRenderLongEdgePx)))
+            ? Math.max(
+                240,
+                Math.min(2048, Math.round(patch.previewRenderLongEdgePx)),
+              )
             : current.previewRenderLongEdgePx,
         previewInputSource:
           patch.previewInputSource === "demo" ||
@@ -962,6 +978,10 @@ export function buildSettingsPanelProps(
     onSubtitleCleanupLlmPromptChange: (value) =>
       params.updateSettings({
         subtitleCleanupLlmPrompt: value,
+      }),
+    onAdReviewExecutionModeChange: (value) =>
+      params.updateSettings({
+        adReviewExecutionMode: value,
       }),
     onSetShortcut: params.setShortcut,
     onResetShortcuts: params.resetShortcuts,

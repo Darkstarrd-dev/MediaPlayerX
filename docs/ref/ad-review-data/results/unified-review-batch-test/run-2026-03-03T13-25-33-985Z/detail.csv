@@ -1,0 +1,13 @@
+dataset,mode,run_no,image_count,http_status,latency_ms,prompt_tokens,completion_tokens,total_tokens,parse_ok,error
+head6,multi,1,6,200,6606.42,2097,671,2768,true,
+head6,multi,2,6,200,5689.66,2097,671,2768,true,
+head6,multi,3,6,200,5985.22,2097,671,2768,true,
+head6,single,1,6,200,9042.86,3912,967,4879,true,
+head6,single,2,6,500,17243.33,3260,807,4067,false,"[{""image_id"":""01"",""error"":""HTTP 400: {\""error\"":\""The model has crashed without additional information. (Exit code: 18446744072635810000)\""}""}]"
+head6,single,3,6,200,8312.74,3912,967,4879,true,
+tail10,multi,1,10,200,11288.71,3255,1182,4437,true,
+tail10,multi,2,10,200,10150.99,3255,1192,4447,true,
+tail10,multi,3,10,200,10696.88,3255,1192,4447,true,
+tail10,single,1,10,200,15260.99,6522,1694,8216,true,
+tail10,single,2,10,200,14586.99,6522,1673,8195,true,
+tail10,single,3,10,200,15043.58,6522,1673,8195,true,

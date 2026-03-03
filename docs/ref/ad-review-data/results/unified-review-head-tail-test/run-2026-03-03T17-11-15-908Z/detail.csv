@@ -1,0 +1,7 @@
+run_no,mode,head_ok,tail_ok,merged_ok,head_latency_ms,tail_latency_ms,total_latency_ms,head_prompt_tokens,tail_prompt_tokens,total_prompt_tokens,head_total_tokens,tail_total_tokens,total_tokens,head_duplicate_has_01_02,head_overlay_precision,head_overlay_recall,head_overlay_f1,ad_delete_ids,nonbody_hide_ids,head_error,tail_error
+1,multi,true,true,true,8579.46,3597.07,12176.53,1132,1417,2549,1428,1858,3286,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,
+1,single,true,true,true,3572.38,4784.12,8356.5,1662,2200,3862,2101,2786,4887,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,
+2,multi,true,true,true,3521.63,4747.26,8268.89,1132,1417,2549,1428,1855,3283,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,
+2,single,true,true,true,3453.53,4462.24,7915.77,1662,2200,3862,2101,2786,4887,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,
+3,multi,true,true,true,3518.04,4955.9,8473.94,1132,1417,2549,1428,1852,3280,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,
+3,single,true,true,true,3461.65,4396.94,7858.59,1662,2200,3862,2101,2786,4887,false,0,0,0,"[""29_zzz4.2"",""27_zzz2.1.1"",""26_zzz1.3"",""25_zzz1.1""]","[""03"",""29"",""28""]",,

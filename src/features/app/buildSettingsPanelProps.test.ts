@@ -168,6 +168,7 @@ describe("buildSettingsPanelProps", () => {
       subtitleCleanupLlmEndpoint: "http://127.0.0.1:1234/v1/chat/completions",
       subtitleCleanupLlmModel: "",
       subtitleCleanupLlmPrompt: "cleanup prompt",
+      adReviewExecutionMode: "normal",
       shortcuts: { ...DEFAULT_SHORTCUTS },
       shortcutConflicts: [],
       databaseResetPending: false,
@@ -269,6 +270,7 @@ describe("buildSettingsPanelProps", () => {
       previewRenderLongEdgePx: 1600,
       adapterMode: "shadertoy",
     });
+    props.onAdReviewExecutionModeChange("performance");
 
     expect(updateSettings).toHaveBeenNthCalledWith(1, { thumbnailWidth: 1024 });
     expect(updateSettings).toHaveBeenNthCalledWith(2, { thumbnailQuality: 65 });
@@ -348,6 +350,9 @@ describe("buildSettingsPanelProps", () => {
         previewRenderLongEdgePx: 1600,
         previewInputSource: "player",
       },
+    });
+    expect(updateSettings).toHaveBeenCalledWith({
+      adReviewExecutionMode: "performance",
     });
     expect(updateSettings).toHaveBeenCalledWith({
       musicVisualizerPluginInputBindingsByShaderId: {
