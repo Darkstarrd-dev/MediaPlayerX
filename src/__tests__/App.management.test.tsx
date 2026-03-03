@@ -45,6 +45,19 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     await flushUiUpdates();
   };
 
+  const pointerDown = async (
+    target: Element | Window,
+    init?: PointerEventInit,
+  ) => {
+    fireEvent.pointerDown(target as Element, init);
+    await flushUiUpdates();
+  };
+
+  const pointerUp = async (target: Element | Window, init?: PointerEventInit) => {
+    fireEvent.pointerUp(target as Element, init);
+    await flushUiUpdates();
+  };
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -108,6 +121,57 @@ describe("MediaPlayer 虚拟 UI - management", () => {
       expect(screen.getByText("未选择条目")).toBeInTheDocument();
     });
   });
+
+  it(
+    "通过文件管理按钮进入后，Sidebar focus 变化会同步缩略图与元数据面板",
+    async () => {
+      render(<App />);
+
+      const packageNameInput = screen.getByLabelText("图包名") as HTMLInputElement;
+      const initialPackageName = packageNameInput.value;
+
+      await click(screen.getByRole("button", { name: "文件管理" }));
+      expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
+
+      const focusTarget =
+        initialPackageName.includes("海岸")
+          ? {
+              nodeLabel: "画廊A",
+              packageName: "[DIR] 画廊A",
+              thumbLabel: "画廊A（目录直读） #1",
+            }
+          : {
+              nodeLabel: "海岸",
+              packageName: "[DIR] 海岸",
+              thumbLabel: "海岸（目录直读） #1",
+            };
+
+      const targetSidebarButton = screen.getByRole("button", {
+        name: focusTarget.nodeLabel,
+      });
+
+      await pointerDown(targetSidebarButton, {
+        button: 0,
+        pointerId: 11,
+        clientX: 200,
+        clientY: 120,
+      });
+      await pointerUp(window, {
+        button: 0,
+        pointerId: 11,
+        clientX: 200,
+        clientY: 120,
+      });
+
+      await waitFor(() => {
+        expect((screen.getByLabelText("图包名") as HTMLInputElement).value).toBe(
+          focusTarget.packageName,
+        );
+        expect(screen.getByText(focusTarget.thumbLabel)).toBeInTheDocument();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "检索/文件管理/元数据管理快速切换不会抛出运行时错误",

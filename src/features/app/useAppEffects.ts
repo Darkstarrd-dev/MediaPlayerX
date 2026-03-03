@@ -9,7 +9,10 @@ import {
 } from "react";
 
 import type { AppSettings } from "../../contracts/settings";
-import { resolveAncestorNodeIds } from "../../components/sidebarPanelTreeUtils";
+import {
+  resolveAncestorNodeIds,
+  resolveFirstAudioId,
+} from "../../components/sidebarPanelTreeUtils";
 import type {
   AudioItem,
   BrowserMode,
@@ -457,6 +460,53 @@ export function useAppEffects({
     setSelectedSidebarNodeId,
     vectorResultPackageNodeIdMap,
     vectorResultsActive,
+  ]);
+
+  useEffect(() => {
+    if (!manageMode || metadataManageMode || !selectedSidebarNodeId) {
+      return;
+    }
+
+    const selectedNode = sidebarNodeById.get(selectedSidebarNodeId);
+    if (!selectedNode) {
+      return;
+    }
+
+    if (mode === "image") {
+      const nextPackageId = selectedNode.imageSourceId?.trim() ?? "";
+      if (!nextPackageId || nextPackageId === selectedPackageId) {
+        return;
+      }
+      setSelectedPackageId(nextPackageId);
+      return;
+    }
+
+    if (mode === "video") {
+      const nextVideoId = selectedNode.videoId?.trim() ?? "";
+      if (!nextVideoId || nextVideoId === selectedVideoId) {
+        return;
+      }
+      selectVideoFromBrowser(nextVideoId);
+      return;
+    }
+
+    const nextAudioId = resolveFirstAudioId(selectedNode)?.trim() ?? "";
+    if (!nextAudioId || nextAudioId === selectedAudioId) {
+      return;
+    }
+    setSelectedAudioId(nextAudioId);
+  }, [
+    manageMode,
+    metadataManageMode,
+    mode,
+    selectVideoFromBrowser,
+    selectedAudioId,
+    selectedPackageId,
+    selectedSidebarNodeId,
+    selectedVideoId,
+    setSelectedAudioId,
+    setSelectedPackageId,
+    sidebarNodeById,
   ]);
 
   useEffect(() => {
