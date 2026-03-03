@@ -46,6 +46,7 @@ export const MIN_ZOOM = 0.1
 export const MAX_ZOOM = 4
 export const ZOOM_STEP = 0.12
 const DUAL_ADAPTIVE_EPSILON_PX = 0.5
+export const DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO = 0.07
 
 export type DualAdaptiveSplitRule =
   | 'expand-underfilled-pane'
@@ -63,6 +64,31 @@ interface ResolveDualAdaptiveSplitParams {
 export interface DualAdaptiveSplitResult {
   imageRatio: number
   rule: DualAdaptiveSplitRule
+}
+
+export function resolveDualAdaptiveStickySplit(
+  previous: DualAdaptiveSplitResult | null,
+  candidate: DualAdaptiveSplitResult,
+  horizontalDiffThresholdRatio = DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO,
+): DualAdaptiveSplitResult {
+  if (!previous) {
+    return candidate
+  }
+
+  const safeThreshold = clamp(
+    Number.isFinite(horizontalDiffThresholdRatio)
+      ? horizontalDiffThresholdRatio
+      : DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO,
+    0,
+    1,
+  )
+  const diffRatio = Math.abs(candidate.imageRatio - previous.imageRatio)
+
+  if (diffRatio <= safeThreshold) {
+    return previous
+  }
+
+  return candidate
 }
 
 export function resolveMediaAspect(width: number, height: number, fallback = 1): number {
@@ -134,6 +160,31 @@ export function computeMediaGeometry(viewport: PaneViewportSize, aspect: number,
   const mediaWidth = fitWidth * safeZoom
   const mediaHeight = fitHeight * safeZoom
 
+  const diffX = mediaWidth - width
+  const diffY = mediaHeight - height
+
+  return {
+    width: mediaWidth,
+    height: mediaHeight,
+    diffX,
+    diffY,
+    maxOffsetX: Math.abs(diffX) / 2,
+    maxOffsetY: Math.abs(diffY) / 2,
+  }
+}
+
+export function computeMediaGeometryHeightAnchored(
+  viewport: PaneViewportSize,
+  aspect: number,
+  zoom: number,
+): MediaGeometry {
+  const width = Math.max(1, viewport.width)
+  const height = Math.max(1, viewport.height)
+  const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 1
+  const safeZoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM)
+
+  const mediaHeight = height * safeZoom
+  const mediaWidth = mediaHeight * safeAspect
   const diffX = mediaWidth - width
   const diffY = mediaHeight - height
 

@@ -34,16 +34,20 @@ import {
   applyAlignedOffset,
   clampPaneTransform,
   computeMediaGeometry,
+  computeMediaGeometryHeightAnchored,
   DEFAULT_PANE_ALIGN,
   DEFAULT_PANE_TRANSFORM,
+  DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO,
   MAX_SPLIT,
   MAX_ZOOM,
   MIN_SPLIT,
   MIN_ZOOM,
   resolveDualAdaptiveSplit,
+  resolveDualAdaptiveStickySplit,
   resolveMediaAspect,
   ZOOM_STEP,
   type AlignDirection,
+  type DualAdaptiveSplitResult,
   type DualAdaptiveSplitRule,
   type PaneAlign,
   type PaneKey,
@@ -308,6 +312,8 @@ function FullscreenLayer({
   const [dualSplitMode, setDualSplitMode] = useState<"auto" | "manual">(
     "auto",
   );
+  const [dualAppliedAutoSplit, setDualAppliedAutoSplit] =
+    useState<DualAdaptiveSplitResult | null>(null);
   const [footerHovering, setFooterHovering] = useState(false);
 
   useEffect(() => {
@@ -317,6 +323,7 @@ function FullscreenLayer({
   useEffect(() => {
     if (!fullscreenActive || effectiveFullscreenDisplay !== "dual") {
       setDualSplitMode("auto");
+      setDualAppliedAutoSplit(null);
     }
   }, [effectiveFullscreenDisplay, fullscreenActive]);
 
@@ -386,6 +393,10 @@ function FullscreenLayer({
     focusedVideo?.height ?? 0,
     16 / 9,
   );
+  const [previousImageAspectForSuppression, setPreviousImageAspectForSuppression] =
+    useState(imageAspect);
+  const [dualSuppressedImageAspectLock, setDualSuppressedImageAspectLock] =
+    useState<number | null>(null);
   const focusedImageId = focusedImage?.id ?? null;
   const focusedVideoId = focusedVideo?.id ?? null;
 
@@ -944,10 +955,6 @@ function FullscreenLayer({
     onToggleVideoPlay();
   }, [onToggleVideoPlay, onVideoTimeUpdate, videoPlaying]);
 
-  if (!fullscreenActive || mode === "music") {
-    return null;
-  }
-
   const dualAvailableWidth = Math.max(
     1,
     effectiveImageViewportSize.width + effectiveVideoViewportSize.width,
@@ -972,12 +979,106 @@ function FullscreenLayer({
     dualMaxImageRatio = fallbackRatio;
   }
 
-  const dualAdaptiveRule: DualAdaptiveSplitRule = dualAdaptiveSplit.rule;
-  const dualAutoImageRatio = clamp(
-    dualAdaptiveSplit.imageRatio,
-    dualMinImageRatio,
-    dualMaxImageRatio,
+  const dualAdaptiveCandidate: DualAdaptiveSplitResult = useMemo(
+    () => ({
+      imageRatio: clamp(
+        dualAdaptiveSplit.imageRatio,
+        dualMinImageRatio,
+        dualMaxImageRatio,
+      ),
+      rule: dualAdaptiveSplit.rule,
+    }),
+    [
+      dualAdaptiveSplit.imageRatio,
+      dualAdaptiveSplit.rule,
+      dualMaxImageRatio,
+      dualMinImageRatio,
+    ],
   );
+  const dualResolvedAutoSplit = resolveDualAdaptiveStickySplit(
+    dualAppliedAutoSplit,
+    dualAdaptiveCandidate,
+  );
+  const dualAdaptiveDiffRatio =
+    dualAppliedAutoSplit === null
+      ? null
+      : Math.abs(
+          dualAdaptiveCandidate.imageRatio - dualAppliedAutoSplit.imageRatio,
+        );
+  const dualAdaptiveSuppressedByThreshold =
+    fullscreenActive &&
+    effectiveFullscreenDisplay === "dual" &&
+    dualSplitMode === "auto" &&
+    dualAppliedAutoSplit !== null &&
+    (dualAdaptiveDiffRatio ?? Number.POSITIVE_INFINITY) <=
+      DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO;
+  const dualSuppressedImageAspect = dualAdaptiveSuppressedByThreshold
+    ? dualSuppressedImageAspectLock ?? previousImageAspectForSuppression
+    : imageAspect;
+  const imageSuppressedGeometry = computeMediaGeometryHeightAnchored(
+    effectiveImageViewportSize,
+    dualSuppressedImageAspect,
+    imageTransform.zoom,
+  );
+
+  useEffect(() => {
+    if (
+      !fullscreenActive ||
+      effectiveFullscreenDisplay !== "dual" ||
+      dualSplitMode !== "auto"
+    ) {
+      return;
+    }
+
+    setDualAppliedAutoSplit((previous) =>
+      resolveDualAdaptiveStickySplit(previous, dualAdaptiveCandidate),
+    );
+  }, [
+    dualAdaptiveCandidate,
+    dualAdaptiveCandidate.imageRatio,
+    dualAdaptiveCandidate.rule,
+    dualSplitMode,
+    effectiveFullscreenDisplay,
+    fullscreenActive,
+  ]);
+
+  useEffect(() => {
+    if (!dualAdaptiveSuppressedByThreshold) {
+      setDualSuppressedImageAspectLock((previous) =>
+        previous === null ? previous : null,
+      );
+      return;
+    }
+
+    if (dualSuppressedImageAspectLock !== null) {
+      return;
+    }
+
+    const previousAspect = previousImageAspectForSuppression;
+    setDualSuppressedImageAspectLock(
+      Number.isFinite(previousAspect) && previousAspect > 0
+        ? previousAspect
+        : imageAspect,
+    );
+  }, [
+    dualAdaptiveSuppressedByThreshold,
+    dualSuppressedImageAspectLock,
+    imageAspect,
+    previousImageAspectForSuppression,
+  ]);
+
+  useEffect(() => {
+    setPreviousImageAspectForSuppression((previous) =>
+      Math.abs(previous - imageAspect) < 0.0001 ? previous : imageAspect,
+    );
+  }, [imageAspect]);
+
+  if (!fullscreenActive || mode === "music") {
+    return null;
+  }
+
+  const dualAdaptiveRule: DualAdaptiveSplitRule = dualResolvedAutoSplit.rule;
+  const dualAutoImageRatio = dualResolvedAutoSplit.imageRatio;
   const dualManualImageRatio = clamp(
     fullscreenSplit,
     dualMinImageRatio,
@@ -993,11 +1094,16 @@ function FullscreenLayer({
   const paneOrder: PaneKey[] = fullscreenSwapped
     ? ["video", "image"]
     : ["image", "video"];
+  const imageRenderGeometry =
+    effectiveFullscreenDisplay === "dual" && dualAdaptiveSuppressedByThreshold
+      ? imageSuppressedGeometry
+      : imageGeometry;
 
   const dualInwardAlignByPane = (() => {
     if (
       effectiveFullscreenDisplay !== "dual" ||
       dualSplitMode !== "auto" ||
+      dualAdaptiveSuppressedByThreshold ||
       dualAdaptiveRule !== "center-inward"
     ) {
       return {
@@ -1023,9 +1129,9 @@ function FullscreenLayer({
     const targetAlignX = dualInwardAlignByPane.image;
     const targetOffsetX =
       targetAlignX === "start"
-        ? imageGeometry.diffX / 2
+        ? imageRenderGeometry.diffX / 2
         : targetAlignX === "end"
-          ? -imageGeometry.diffX / 2
+          ? -imageRenderGeometry.diffX / 2
           : 0;
 
     if (Math.abs(targetOffsetX - imageTransform.offsetX) < 0.0001) {
@@ -1302,7 +1408,7 @@ function FullscreenLayer({
       fullscreenDisplay={effectiveFullscreenDisplay}
       singlePane={singlePane}
       draggingPane={draggingPane}
-      imageGeometry={imageGeometry}
+      imageGeometry={imageRenderGeometry}
       imageTransform={imageRenderTransform}
       displayedImageSrc={displayedImageSrc}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
