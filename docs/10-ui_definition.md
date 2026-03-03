@@ -39,6 +39,7 @@
 | `fg.header.g1.toggle.metadata` | `.panel-toggle-btn` (R) | `data-slot="fg-header-g1-toggle-metadata"` | `showPanelToggleControls` | 元数据面板开关按钮 | R 按钮 |
 | `fg.header.g1.task.importTask.panel` | `.import-task-panel` | `data-slot="fg-header-g1-task-import-task-panel"` | `importTaskPanelOpen` | 导入任务面板 | 渲染在 `fg.sysinfo` 容器 |
 | `fg.header.g1.task.importTask.error.panel` | `.import-task-panel > p`（错误行） | `data-slot="fg-header-g1-task-import-task-error-panel"` | `taskError != null` | 任务面板错误区 | clear 按钮 |
+| `fg.header.g1.task.importTask.hint.panel` | `.import-task-panel > p`（提示行） | `data-slot="fg-header-g1-task-import-task-hint-panel"` | `operationHint != null` | 任务面板提示区 | clear 按钮 |
 | `fg.header.g1.palette` | `.window-control-btn` (palette) | `data-slot="fg-header-g1-palette"` | always | 昼夜切换按钮 | 无 popover |
 | `fg.header.g1.settings` | `.window-control-btn` (settings) | `data-slot="fg-header-g1-settings"` | always | 设置按钮 | 触发设置面板 |
 | `fg.header.g1.settings.root.ovl` | `.settings-mask` | `data-slot="fg-header-g1-settings-root-ovl"` | `settingsOpen` | 设置面板遮罩层 | 全屏遮罩 |
@@ -181,8 +182,6 @@
 | `fg.main.content.music.controls.left` | `.music-controls-group.is-left` | `data-slot="fg-main-content-music-controls-left"` | 同上 | 左控制组 | |
 | `fg.main.content.music.controls.center` | `.music-controls-group.is-center` | `data-slot="fg-main-content-music-controls-center"` | 同上 | 中控制组 | |
 | `fg.main.content.music.controls.right` | `.music-controls-group.is-right` | `data-slot="fg-main-content-music-controls-right"` | 同上 | 右控制组 | |
-| `fg.main.content.music.controls.shader.pop` | `#music-main-popover-shader.music-ctrl-panel` | `data-slot="fg-main-content-music-controls-shader-pop"` | shader open | shader 列表弹层 | 上弹定位 |
-| `fg.main.content.music.controls.shaderSettings.pop` | `#music-main-popover-shader-settings.music-ctrl-panel` | `data-slot="fg-main-content-music-controls-shader-settings-pop"` | shaderSettings open | shader 参数弹层 | 上弹定位 |
 | `fg.main.content.music.controls.volume.pop` | `#music-main-popover-volume.music-ctrl-panel.is-volume` | `data-slot="fg-main-content-music-controls-volume-pop"` | volume open | 音量弹层 | 纵向轴（旋转） |
 
 ### 5.4 Main / Footer

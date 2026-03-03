@@ -18,7 +18,9 @@
 | `13-music-visualizer-shader-migration-playbook.md` | SSOT | Shader 迁移流程、约束与验收标准 |
 | `08-theme-system-v2.md` | SSOT | 主题系统规范与 token 契约 |
 | `09-theme-brainstorm-entry.md` | SSOT | Theme 迭代提示词入口与执行流程 |
-| `14-project-evaluation-report-v17.md` | 质量基线 | 当前项目评估结果 |
+| `14-project-evalutation-template.md` | 模板 | 项目评估模板（P0/P1/P2 + 逻辑重复 + 稳定性） |
+| `14-project-evaluation-report-v18.md` | 质量基线 | 上一版项目评估结果 |
+| `14-project-evaluation-report-v19.md` | 质量基线 | 当前项目评估结果 |
 | `15-dependency-risk-register.md` | 风险治理 | 依赖风险台账 |
 | `16-preference-metrics-spec-v1.md` | 规范 | 偏好指标采集与存储规范 |
 | `18-offline-auto-subtitle-implementation-plan.md` | 当前计划 | 离线自动字幕实施计划 |

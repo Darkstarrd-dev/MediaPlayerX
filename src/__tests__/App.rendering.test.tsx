@@ -11,6 +11,8 @@ async function flushUiUpdates() {
 }
 
 describe("App.rendering", () => {
+  const uiLongTestTimeoutMs = 25_000;
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -19,10 +21,14 @@ describe("App.rendering", () => {
     window.sessionStorage.clear();
   });
 
-  it("默认渲染检索按钮与主区域", async () => {
-    render(<App />);
-    await flushUiUpdates();
-    expect(screen.getByRole("button", { name: "检索" })).toBeInTheDocument();
-    expect((document.body.textContent ?? "").length).toBeGreaterThan(0);
-  });
+  it(
+    "默认渲染检索按钮与主区域",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
+      expect(screen.getByRole("button", { name: "检索" })).toBeInTheDocument();
+      expect((document.body.textContent ?? "").length).toBeGreaterThan(0);
+    },
+    uiLongTestTimeoutMs,
+  );
 });

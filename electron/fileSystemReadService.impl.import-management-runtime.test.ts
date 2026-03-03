@@ -30,6 +30,23 @@ describe("FileSystemMediaReadService", () => {
   const createdRoots: string[] = [];
   const createdServices: FileSystemMediaReadService[] = [];
 
+  const readSnapshotUntil = async (
+    service: FileSystemMediaReadService,
+    predicate: (snapshot: Awaited<ReturnType<typeof service.readLibrarySnapshot>>) => boolean,
+    timeoutMs = 5_000,
+  ) => {
+    const deadline = Date.now() + timeoutMs;
+    let latest = await service.readLibrarySnapshot();
+    while (Date.now() < deadline) {
+      if (predicate(latest)) {
+        return latest;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      latest = await service.readLibrarySnapshot();
+    }
+    return latest;
+  };
+
   afterEach(async () => {
     for (const service of createdServices) {
       service.dispose();
@@ -176,7 +193,17 @@ describe("FileSystemMediaReadService", () => {
       createdServices.push(service);
 
       await enqueueImportAndWait(service, "dialog-folders-music", [albumRoot]);
-      const snapshot = await service.readLibrarySnapshot();
+      const snapshot = await readSnapshotUntil(service, (candidate) => {
+        const imageSources = candidate.image_directories.filter((source) =>
+          path
+            .resolve(source.absolute_path)
+            .startsWith(path.resolve(albumRoot)),
+        );
+        return (
+          imageSources.length > 0 &&
+          imageSources.every((source) => source.tree_path[0] === "CD Booklet")
+        );
+      });
 
       const imageSourcesInAlbumRoot = snapshot.image_directories.filter(
         (source) =>

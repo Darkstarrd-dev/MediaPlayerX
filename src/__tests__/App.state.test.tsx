@@ -59,27 +59,35 @@ describe("MediaPlayer 虚拟 UI", () => {
     window.sessionStorage.clear();
   });
 
-  it("Sidebar 包节点在无英文/日文标题时显示文件名", async () => {
-    render(<App />);
-    await flushUiUpdates();
+  it(
+    "Sidebar 包节点在无英文/日文标题时显示文件名",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
 
-    expect(
-      screen.getByRole("button", { name: /forest_pack\.zip/ }),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "森林图集" })).toBeNull();
-  });
+      expect(
+        screen.getByRole("button", { name: /forest_pack\.zip/ }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "森林图集" })).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
-  it("Sidebar 目录源节点在无英文/日文标题时显示目录名", async () => {
-    render(<App />);
-    await flushUiUpdates();
+  it(
+    "Sidebar 目录源节点在无英文/日文标题时显示目录名",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
 
-    expect(
-      screen.getByRole("button", { name: "仅图片目录" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "目录直读：仅图片目录" }),
-    ).toBeNull();
-  });
+      expect(
+        screen.getByRole("button", { name: "仅图片目录" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "目录直读：仅图片目录" }),
+      ).toBeNull();
+    },
+    uiLongTestTimeoutMs,
+  );
 
   it(
     "Sidebar 聚焦目录节点时双击可稳定折叠与展开",

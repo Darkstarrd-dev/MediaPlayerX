@@ -23,7 +23,8 @@
 - 疑难点记录：`27-Tips.md`
 - UI 稳定路径表：`10-ui_definition.md`
 - UI 槽位 Token 前缀表：`11-token_design.md`
-- 当前评估：`14-project-evaluation-report-v17.md`
+- 评估模板：`14-project-evalutation-template.md`
+- 当前评估：`14-project-evaluation-report-v19.md`
 - 风险台账：`15-dependency-risk-register.md`
 - 性能实施计划：`17-thumb_acceleration_implementation_plan.md`
 - 音频增强与转码计划：`19-mpv-增强模式与转码实施计划-v1.md`

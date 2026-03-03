@@ -34,6 +34,7 @@
 | `fg.header.g1.toggle.metadata` | `--mpx-slot-fg-header-g1-toggle-metadata-*` |
 | `fg.header.g1.task.importTask.panel` | `--mpx-slot-fg-header-g1-task-import-task-panel-*` |
 | `fg.header.g1.task.importTask.error.panel` | `--mpx-slot-fg-header-g1-task-import-task-error-panel-*` |
+| `fg.header.g1.task.importTask.hint.panel` | `--mpx-slot-fg-header-g1-task-import-task-hint-panel-*` |
 | `fg.header.g1.palette` | `--mpx-slot-fg-header-g1-palette-*` |
 | `fg.header.g1.settings` | `--mpx-slot-fg-header-g1-settings-*` |
 | `fg.header.g1.settings.root.ovl` | `--mpx-slot-fg-header-g1-settings-root-ovl-*` |
@@ -146,8 +147,6 @@
 | `fg.main.content.music.controls.left` | `--mpx-slot-fg-main-content-music-controls-left-*` |
 | `fg.main.content.music.controls.center` | `--mpx-slot-fg-main-content-music-controls-center-*` |
 | `fg.main.content.music.controls.right` | `--mpx-slot-fg-main-content-music-controls-right-*` |
-| `fg.main.content.music.controls.shader.pop` | `--mpx-slot-fg-main-content-music-controls-shader-pop-*` |
-| `fg.main.content.music.controls.shaderSettings.pop` | `--mpx-slot-fg-main-content-music-controls-shader-settings-pop-*` |
 | `fg.main.content.music.controls.volume.pop` | `--mpx-slot-fg-main-content-music-controls-volume-pop-*` |
 | `fg.main.footer` | `--mpx-slot-fg-main-footer-*` |
 | `fg.main.footer.meta` | `--mpx-slot-fg-main-footer-meta-*` |

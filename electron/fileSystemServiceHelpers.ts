@@ -88,7 +88,17 @@ export function isPathInsideRoot(
   rootDir: string,
   absolutePath: string,
 ): boolean {
-  const relative = path.relative(rootDir, absolutePath);
+  const normalizedRoot = path.resolve(rootDir);
+  const normalizedTarget = path.resolve(absolutePath);
+  const comparableRoot =
+    process.platform === "win32"
+      ? normalizedRoot.toLowerCase()
+      : normalizedRoot;
+  const comparableTarget =
+    process.platform === "win32"
+      ? normalizedTarget.toLowerCase()
+      : normalizedTarget;
+  const relative = path.relative(comparableRoot, comparableTarget);
   if (relative.length === 0) {
     return true;
   }

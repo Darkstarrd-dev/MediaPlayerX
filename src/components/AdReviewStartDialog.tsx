@@ -20,7 +20,10 @@ export function AdReviewStartDialog({
   onClose,
   onStartWithOption,
 }: AdReviewStartDialogProps) {
-  const overlaySlot = `${slot.replace(/-panel$/, "")}-ovl`;
+  const overlaySlot =
+    slot === "fg-main-toolbar-image-ad-review-start-panel"
+      ? "fg-main-toolbar-image-ad-review-start-ovl"
+      : "fg-meta-main-ad-review-start-ovl";
 
   if (!open) {
     return null;

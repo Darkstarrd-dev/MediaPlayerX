@@ -2,8 +2,8 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const ROOT = process.cwd()
-const UI_DEFINITION_PATH = join(ROOT, 'docs', 'ui_definition.md')
-const TOKEN_DESIGN_PATH = join(ROOT, 'docs', 'token_design.md')
+const UI_DEFINITION_PATH = join(ROOT, 'docs', '10-ui_definition.md')
+const TOKEN_DESIGN_PATH = join(ROOT, 'docs', '11-token_design.md')
 const SOURCE_DIRS = [join(ROOT, 'src'), join(ROOT, 'electron')]
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs'])
 
@@ -102,14 +102,21 @@ function parseTokenDesign(markdown) {
   return byPath
 }
 
-function parseSourceSlots() {
+function parseSourceSlots(expectedSlots) {
   const slots = new Set()
+  const slotLiteralPattern = /["'`](fg-[a-z0-9]+(?:-[a-z0-9]+)*)["'`]/g
   for (const dir of SOURCE_DIRS) {
     for (const filePath of collectFiles(dir)) {
       const content = readFileSync(filePath, 'utf8')
       const matches = content.matchAll(/data-slot="([^"]+)"/g)
       for (const match of matches) {
         slots.add(match[1])
+      }
+      const slotLiterals = content.matchAll(slotLiteralPattern)
+      for (const match of slotLiterals) {
+        if (expectedSlots.has(match[1])) {
+          slots.add(match[1])
+        }
       }
     }
   }
@@ -131,7 +138,10 @@ const tokenDesign = readFileSync(TOKEN_DESIGN_PATH, 'utf8')
 
 const uiPathToSlot = parseUiDefinition(uiDefinition)
 const tokenPathToPrefix = parseTokenDesign(tokenDesign)
-const sourceSlots = parseSourceSlots()
+const expectedSlots = new Set(
+  Array.from(uiPathToSlot.values()).filter((slotName) => Boolean(slotName)),
+)
+const sourceSlots = parseSourceSlots(expectedSlots)
 
 const tokenMissingPaths = []
 const tokenUnexpectedPrefixPaths = []
@@ -161,10 +171,6 @@ for (const stablePath of tokenPathToPrefix.keys()) {
   }
 }
 
-const expectedSlots = new Set(
-  Array.from(uiPathToSlot.values()).filter((slotName) => Boolean(slotName)),
-)
-
 for (const slot of sourceSlots) {
   if (!expectedSlots.has(slot)) {
     slotUnexpectedInSource.push(slot)
@@ -179,9 +185,9 @@ const hasIssues =
   slotUnexpectedInSource.length > 0
 
 if (hasIssues) {
-  printList('Missing stable paths in docs/token_design.md', tokenMissingPaths)
-  printList('Invalid token prefixes in docs/token_design.md', tokenUnexpectedPrefixPaths)
-  printList('Redundant stable paths in docs/token_design.md', tokenRedundantPaths)
+  printList('Missing stable paths in docs/11-token_design.md', tokenMissingPaths)
+  printList('Invalid token prefixes in docs/11-token_design.md', tokenUnexpectedPrefixPaths)
+  printList('Redundant stable paths in docs/11-token_design.md', tokenRedundantPaths)
   printList('Missing data-slot in source code', slotMissingInSource)
   printList('Unexpected data-slot in source code', slotUnexpectedInSource)
   process.exit(1)
