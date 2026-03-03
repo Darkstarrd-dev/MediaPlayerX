@@ -1,261 +1,164 @@
-import { parentPort, workerData } from 'node:worker_threads'
+import { parentPort, workerData } from "node:worker_threads";
 
-import { normalizeArchiveToStoreZipInPlace } from './archiveWasmExtractor'
+import { normalizeArchiveToStoreZipInPlace } from "./archiveWasmExtractor";
 import {
   TASK_WORKER_HEARTBEAT_INTERVAL_MS,
-  type TaskWorkerProgressEnvelope,
-  type TaskWorkerRequestEnvelope,
   type TaskWorkerResponseEnvelope,
-} from './services/task-orchestrator/taskWorkerProtocol'
+} from "./services/task-orchestrator/taskWorkerProtocol";
+import {
+  createTaskWorkerQueueController,
+  maybeExit,
+  parseRequest,
+  postHeartbeat,
+  postProgress,
+  postResponse,
+  postWorkerPayload,
+  registerWorkerMessageHandlers,
+} from "./services/task-orchestrator/taskWorkerRuntime";
 
 interface WorkerData {
-  sourceArchivePath?: unknown
-  webpQuality?: unknown
+  sourceArchivePath?: unknown;
+  webpQuality?: unknown;
 }
 
 interface WorkerResult {
-  ok: boolean
-  outputZipPath?: string
-  error?: string
+  ok: boolean;
+  outputZipPath?: string;
+  error?: string;
 }
 
-interface ParsedRequest {
-  requestId: string
-  payload: unknown
-  legacy: boolean
-}
-
-const cancelledRequestIds = new Set<string>()
-
-const queuedMessages: unknown[] = []
-
-let workerRunning = false
-
-function normalizePayload(raw: unknown): { sourceArchivePath: string; webpQuality: number | undefined } {
-  const payload = (raw ?? {}) as WorkerData
-  const sourceArchivePath = typeof payload.sourceArchivePath === 'string' ? payload.sourceArchivePath : ''
+function normalizePayload(raw: unknown): {
+  sourceArchivePath: string;
+  webpQuality: number | undefined;
+} {
+  const payload = (raw ?? {}) as WorkerData;
+  const sourceArchivePath =
+    typeof payload.sourceArchivePath === "string"
+      ? payload.sourceArchivePath
+      : "";
   const webpQuality =
-    typeof payload.webpQuality === 'number' && Number.isFinite(payload.webpQuality) ? payload.webpQuality : undefined
+    typeof payload.webpQuality === "number" &&
+    Number.isFinite(payload.webpQuality)
+      ? payload.webpQuality
+      : undefined;
   return {
     sourceArchivePath,
     webpQuality,
-  }
+  };
 }
 
-function postResult(result: WorkerResult): void {
-  if (parentPort) {
-    parentPort.postMessage(result)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(result)
-  }
+function postLegacyResult(result: WorkerResult): void {
+  postWorkerPayload(parentPort, result);
 }
 
-function postResponse(response: TaskWorkerResponseEnvelope): void {
-  if (parentPort) {
-    parentPort.postMessage(response)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(response)
-  }
+function postErrorResponse(requestId: string, error: string): void {
+  const response: TaskWorkerResponseEnvelope = {
+    kind: "response",
+    request_id: requestId,
+    ok: false,
+    error,
+  };
+  postResponse(parentPort, response);
 }
 
-function postProgress(progress: TaskWorkerProgressEnvelope): void {
-  if (parentPort) {
-    parentPort.postMessage(progress)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(progress)
-  }
-}
-
-function postHeartbeat(): void {
-  const payload = {
-    kind: 'heartbeat',
-    worker_pid: process.pid,
-    at_ms: Date.now(),
-  }
-  if (parentPort) {
-    parentPort.postMessage(payload)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(payload)
-  }
-}
-
-function parseRequest(raw: unknown): ParsedRequest {
-  if (raw && typeof raw === 'object') {
-    const request = raw as Partial<TaskWorkerRequestEnvelope>
-    if (request.kind === 'request' && typeof request.request_id === 'string') {
-      return {
-        requestId: request.request_id,
-        payload: request.payload,
-        legacy: false,
-      }
-    }
-  }
-
-  return {
-    requestId: 'legacy-request',
-    payload: raw,
-    legacy: true,
-  }
-}
-
-function maybeExit(code: number): void {
-  if (!parentPort && process.env.MEDIA_PLAYERX_TASK_WORKER_ONESHOT === '1') {
-    process.exitCode = code
-  }
-}
-
-async function runNormalize(rawPayload: unknown): Promise<void> {
-  const parsedRequest = parseRequest(rawPayload)
+async function runNormalize(
+  rawPayload: unknown,
+  cancelledRequestIds: Set<string>,
+): Promise<void> {
+  const parsedRequest = parseRequest(rawPayload);
 
   if (cancelledRequestIds.has(parsedRequest.requestId)) {
-    cancelledRequestIds.delete(parsedRequest.requestId)
-    return
+    cancelledRequestIds.delete(parsedRequest.requestId);
+    return;
   }
 
-  const payload = normalizePayload(parsedRequest.payload)
+  const payload = normalizePayload(parsedRequest.payload);
   const heartbeatTimer = setInterval(() => {
-    postHeartbeat()
-  }, TASK_WORKER_HEARTBEAT_INTERVAL_MS)
-  heartbeatTimer.unref?.()
+    postHeartbeat(parentPort);
+  }, TASK_WORKER_HEARTBEAT_INTERVAL_MS);
+  heartbeatTimer.unref?.();
 
   if (!payload.sourceArchivePath) {
-    const error = 'archive normalization worker missing sourceArchivePath'
+    const error = "archive normalization worker missing sourceArchivePath";
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error })
+      postLegacyResult({ ok: false, error });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error,
-      })
+      postErrorResponse(parsedRequest.requestId, error);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
-    return
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
+    return;
   }
 
   try {
     if (!parsedRequest.legacy) {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 0.1,
-        message: 'archive-normalize-started',
-      })
+        message: "archive-normalize-started",
+      });
     }
 
-    const result = await normalizeArchiveToStoreZipInPlace(payload.sourceArchivePath, {
-      webpQuality: payload.webpQuality,
-    })
+    const result = await normalizeArchiveToStoreZipInPlace(
+      payload.sourceArchivePath,
+      {
+        webpQuality: payload.webpQuality,
+      },
+    );
 
     if (cancelledRequestIds.has(parsedRequest.requestId)) {
-      cancelledRequestIds.delete(parsedRequest.requestId)
-      clearInterval(heartbeatTimer)
-      return
+      cancelledRequestIds.delete(parsedRequest.requestId);
+      clearInterval(heartbeatTimer);
+      return;
     }
 
     if (!parsedRequest.legacy) {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 0.95,
-        message: 'archive-normalize-finalizing',
-      })
+        message: "archive-normalize-finalizing",
+      });
     }
 
     if (parsedRequest.legacy) {
-      postResult({ ok: true, outputZipPath: result.outputZipPath })
+      postLegacyResult({ ok: true, outputZipPath: result.outputZipPath });
     } else {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 1,
-        message: 'archive-normalize-complete',
-      })
-      postResponse({
-        kind: 'response',
+        message: "archive-normalize-complete",
+      });
+      postResponse(parentPort, {
+        kind: "response",
         request_id: parsedRequest.requestId,
         ok: true,
         payload: {
           outputZipPath: result.outputZipPath,
         },
-      })
+      });
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(0)
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 0);
   } catch (error: unknown) {
-    const message = error instanceof Error && error.message ? error.message : String(error)
+    const message =
+      error instanceof Error && error.message ? error.message : String(error);
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error: message })
+      postLegacyResult({ ok: false, error: message });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error: message,
-      })
+      postErrorResponse(parsedRequest.requestId, message);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
   }
 }
 
-function enqueueMessage(message: unknown): void {
-  if (message && typeof message === 'object') {
-    const cancelEnvelope = message as { kind?: unknown; request_id?: unknown }
-    if (cancelEnvelope.kind === 'cancel' && typeof cancelEnvelope.request_id === 'string') {
-      cancelledRequestIds.add(cancelEnvelope.request_id)
-      return
-    }
-  }
+const queueController = createTaskWorkerQueueController(runNormalize);
 
-  queuedMessages.push(message)
-  void drainQueue()
-}
-
-async function drainQueue(): Promise<void> {
-  if (workerRunning) {
-    return
-  }
-
-  const next = queuedMessages.shift()
-  if (typeof next === 'undefined') {
-    return
-  }
-
-  workerRunning = true
-  try {
-    await runNormalize(next)
-  } finally {
-    workerRunning = false
-    if (queuedMessages.length > 0) {
-      void drainQueue()
-    }
-  }
-}
-
-if (parentPort) {
-  if (typeof workerData !== 'undefined') {
-    enqueueMessage(workerData)
-  }
-  parentPort.on('message', (message) => {
-    enqueueMessage(message)
-  })
-} else {
-  process.on('message', (message) => {
-    enqueueMessage(message)
-  })
-}
+registerWorkerMessageHandlers({
+  parentPort,
+  workerData,
+  enqueueMessage: queueController.enqueueMessage,
+});

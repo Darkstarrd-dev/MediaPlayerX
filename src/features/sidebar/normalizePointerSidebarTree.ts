@@ -1,16 +1,12 @@
 import type { SidebarNode } from "../../types";
 
+import { resolvePathLeaf } from "./sidebarTreePredicates";
+
 interface NormalizePointerSidebarTreeOptions {
   isPointerFolderNode: (node: SidebarNode) => boolean;
   isMediaNode: (node: SidebarNode) => boolean;
   pointerLabelMode?: "path" | "segment";
   siblingOrder?: "media-first" | "folder-first";
-}
-
-function resolvePathLeaf(pathKey: string, fallbackLabel: string): string {
-  const segments = pathKey.split("/");
-  const leaf = segments[segments.length - 1]?.trim();
-  return leaf && leaf.length > 0 ? leaf : fallbackLabel;
 }
 
 function compareSiblingNodes(

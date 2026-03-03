@@ -1,27 +1,26 @@
-export const VISION_TEST_RED_IMAGE_BASE64 =
-  '/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q=='
+import { normalizeOptionalPath } from "./pathNormalizationUtils";
 
-export function normalizeOptionalPath(value: string): string | undefined {
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : undefined
-}
+export const VISION_TEST_RED_IMAGE_BASE64 =
+  "/9j/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCABkAGQDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAcJ/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AnQBDGqYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/2Q==";
+
+export { normalizeOptionalPath };
 
 export function toDirectoryDefaultPath(value: string): string | undefined {
-  const normalized = normalizeOptionalPath(value)
+  const normalized = normalizeOptionalPath(value);
   if (!normalized) {
-    return undefined
+    return undefined;
   }
 
-  const withoutFragment = normalized.split('#')[0].trim()
+  const withoutFragment = normalized.split("#")[0].trim();
   if (!withoutFragment) {
-    return undefined
+    return undefined;
   }
 
-  const normalizedSlashes = withoutFragment.replace(/\\/g, '/')
-  const lastSlashIndex = normalizedSlashes.lastIndexOf('/')
+  const normalizedSlashes = withoutFragment.replace(/\\/g, "/");
+  const lastSlashIndex = normalizedSlashes.lastIndexOf("/");
   if (lastSlashIndex < 2) {
-    return withoutFragment
+    return withoutFragment;
   }
 
-  return withoutFragment.slice(0, lastSlashIndex)
+  return withoutFragment.slice(0, lastSlashIndex);
 }

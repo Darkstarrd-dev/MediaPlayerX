@@ -14,23 +14,18 @@ import type { RuntimeMediaCapabilityProbeResult } from "../../features/app/useRu
 import type { SubtitleModelSelectionId } from "../../features/subtitles/fixedModel";
 import type { TranslateFn } from "../../i18n/context";
 import type { ShortcutConflict } from "../../shortcuts";
+import type {
+  SettingsPanelProps,
+  SettingsSection,
+} from "../SettingsPanel.types";
 
-export type SettingsSection =
-  | "layout"
-  | "performance"
-  | "shader"
-  | "audio"
-  | "debug"
-  | "system"
-  | "model"
-  | "database"
-  | "shortcuts";
+export type { SettingsSection } from "../SettingsPanel.types";
 
 export interface RenderSettingsMainSectionParams {
   t: TranslateFn;
   activeSection: SettingsSection;
   settingsPanelSection: SettingsSection;
-  uiLocale: "auto" | "zh-CN" | "en-US";
+  uiLocale: SettingsPanelProps["uiLocale"];
   layoutLocked: boolean;
   headerHeight: number;
   headerHeightScale: number;
@@ -72,12 +67,9 @@ export interface RenderSettingsMainSectionParams {
   musicVisualizerToneMapStrength: number;
   musicVisualizerShowFps: boolean;
   musicVisualizerRenderer: "gpu" | "cpu";
-  musicVisualizerShaderSettingsById:
-    AppSettings["musicVisualizerShaderSettingsById"];
-  musicVisualizerPluginInputBindingsByShaderId:
-    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
-  musicVisualizerPluginCustomBindingsByShaderId:
-    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderSettingsById: AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId: AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
   musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailGapScale: number;
@@ -180,7 +172,7 @@ export interface RenderSettingsMainSectionParams {
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
   styleId: string;
-  paletteMode: "day" | "night";
+  paletteMode: SettingsPanelProps["paletteMode"];
   paletteDayId: string;
   paletteNightId: string;
   shortcutConflicts: ShortcutConflict[];
@@ -247,7 +239,7 @@ export interface RenderSettingsMainSectionParams {
   renderBindingRows: () => JSX.Element;
   onResetShortcuts: () => void;
   onSettingsPanelSectionChange: (value: SettingsSection) => void;
-  onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
+  onUiLocaleChange: SettingsPanelProps["onUiLocaleChange"];
   onLayoutLockedChange: (value: boolean) => void;
   onHeaderHeightChange: (value: number) => void;
   onSettingsBackdropOpacityChange: (value: number) => void;
@@ -406,8 +398,8 @@ export interface RenderSettingsMainSectionParams {
   onSubtitleCleanupLlmEndpointChange: (value: string) => void;
   onSubtitleCleanupLlmModelChange: (value: string) => void;
   onSubtitleCleanupLlmPromptChange: (value: string) => void;
-  onStyleChange: (value: string) => void;
-  onPaletteModeChange: (value: "day" | "night") => void;
+  onStyleChange: SettingsPanelProps["onStyleChange"];
+  onPaletteModeChange: SettingsPanelProps["onPaletteModeChange"];
   onPaletteDayChange: (value: string) => void;
   onPaletteNightChange: (value: string) => void;
   onClearDatabase: () => void;

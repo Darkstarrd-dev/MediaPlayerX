@@ -1,148 +1,86 @@
-import { parentPort, workerData } from 'node:worker_threads'
-import { promises as fs } from 'node:fs'
+import { promises as fs } from "node:fs";
+import { parentPort, workerData } from "node:worker_threads";
 
-import { getSharpModule } from './fileSystemRuntimeHelpers'
+import { getSharpModule } from "./fileSystemRuntimeHelpers";
 import {
   TASK_WORKER_HEARTBEAT_INTERVAL_MS,
-  type TaskWorkerProgressEnvelope,
-  type TaskWorkerRequestEnvelope,
   type TaskWorkerResponseEnvelope,
-} from './services/task-orchestrator/taskWorkerProtocol'
+} from "./services/task-orchestrator/taskWorkerProtocol";
+import {
+  createTaskWorkerQueueController,
+  maybeExit,
+  parseRequest,
+  postHeartbeat,
+  postProgress,
+  postResponse,
+  postWorkerPayload,
+  registerWorkerMessageHandlers,
+} from "./services/task-orchestrator/taskWorkerRuntime";
 
 interface ThumbnailRenderPayload {
-  sourceBuffer?: unknown
-  maxEdge?: unknown
-  quality?: unknown
-  tempPath?: unknown
-  cachePath?: unknown
+  sourceBuffer?: unknown;
+  maxEdge?: unknown;
+  quality?: unknown;
+  tempPath?: unknown;
+  cachePath?: unknown;
 }
 
 interface JsonSerializedBuffer {
-  type?: unknown
-  data?: unknown
+  type?: unknown;
+  data?: unknown;
 }
 
 interface ThumbnailRenderResult {
-  ok: boolean
-  error?: string
+  ok: boolean;
+  error?: string;
 }
 
-interface ParsedRequest {
-  requestId: string
-  payload: unknown
-  legacy: boolean
+function postLegacyResult(payload: ThumbnailRenderResult): void {
+  postWorkerPayload(parentPort, payload);
 }
 
-const cancelledRequestIds = new Set<string>()
-
-const queuedMessages: unknown[] = []
-
-let workerRunning = false
-
-function postResult(payload: ThumbnailRenderResult): void {
-  if (parentPort) {
-    parentPort.postMessage(payload)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(payload)
-  }
-}
-
-function postResponse(response: TaskWorkerResponseEnvelope): void {
-  if (parentPort) {
-    parentPort.postMessage(response)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(response)
-  }
-}
-
-function postProgress(progress: TaskWorkerProgressEnvelope): void {
-  if (parentPort) {
-    parentPort.postMessage(progress)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(progress)
-  }
-}
-
-function postHeartbeat(): void {
-  const payload = {
-    kind: 'heartbeat',
-    worker_pid: process.pid,
-    at_ms: Date.now(),
-  }
-
-  if (parentPort) {
-    parentPort.postMessage(payload)
-    return
-  }
-
-  if (typeof process.send === 'function') {
-    process.send(payload)
-  }
-}
-
-function parseRequest(raw: unknown): ParsedRequest {
-  if (raw && typeof raw === 'object') {
-    const request = raw as Partial<TaskWorkerRequestEnvelope>
-    if (request.kind === 'request' && typeof request.request_id === 'string') {
-      return {
-        requestId: request.request_id,
-        payload: request.payload,
-        legacy: false,
-      }
-    }
-  }
-
-  return {
-    requestId: 'legacy-request',
-    payload: raw,
-    legacy: true,
-  }
-}
-
-function maybeExit(code: number): void {
-  if (!parentPort && process.env.MEDIA_PLAYERX_TASK_WORKER_ONESHOT === '1') {
-    process.exitCode = code
-  }
+function postErrorResponse(requestId: string, error: string): void {
+  const response: TaskWorkerResponseEnvelope = {
+    kind: "response",
+    request_id: requestId,
+    ok: false,
+    error,
+  };
+  postResponse(parentPort, response);
 }
 
 function normalizePayload(raw: unknown): {
-  sourceBuffer: Buffer | null
-  maxEdge: number
-  quality: number
-  tempPath: string
-  cachePath: string
+  sourceBuffer: Buffer | null;
+  maxEdge: number;
+  quality: number;
+  tempPath: string;
+  cachePath: string;
 } {
-  const payload = (raw ?? {}) as ThumbnailRenderPayload
-  const rawSourceBuffer = payload.sourceBuffer
+  const payload = (raw ?? {}) as ThumbnailRenderPayload;
+  const rawSourceBuffer = payload.sourceBuffer;
   const sourceBuffer = Buffer.isBuffer(rawSourceBuffer)
     ? rawSourceBuffer
-    : typeof rawSourceBuffer === 'string'
-      ? Buffer.from(rawSourceBuffer, 'base64')
+    : typeof rawSourceBuffer === "string"
+      ? Buffer.from(rawSourceBuffer, "base64")
       : (() => {
-          const serialized = (rawSourceBuffer ?? {}) as JsonSerializedBuffer
-          if (serialized.type !== 'Buffer' || !Array.isArray(serialized.data)) {
-            return null
+          const serialized = (rawSourceBuffer ?? {}) as JsonSerializedBuffer;
+          if (serialized.type !== "Buffer" || !Array.isArray(serialized.data)) {
+            return null;
           }
-          return Buffer.from(serialized.data as number[])
-        })()
+          return Buffer.from(serialized.data as number[]);
+        })();
 
-  const maxEdge = typeof payload.maxEdge === 'number' && Number.isFinite(payload.maxEdge)
-    ? Math.max(1, Math.round(payload.maxEdge))
-    : 320
-  const quality = typeof payload.quality === 'number' && Number.isFinite(payload.quality)
-    ? Math.max(1, Math.min(100, Math.round(payload.quality)))
-    : 82
-  const tempPath = typeof payload.tempPath === 'string' ? payload.tempPath : ''
-  const cachePath = typeof payload.cachePath === 'string' ? payload.cachePath : ''
+  const maxEdge =
+    typeof payload.maxEdge === "number" && Number.isFinite(payload.maxEdge)
+      ? Math.max(1, Math.round(payload.maxEdge))
+      : 320;
+  const quality =
+    typeof payload.quality === "number" && Number.isFinite(payload.quality)
+      ? Math.max(1, Math.min(100, Math.round(payload.quality)))
+      : 82;
+  const tempPath = typeof payload.tempPath === "string" ? payload.tempPath : "";
+  const cachePath =
+    typeof payload.cachePath === "string" ? payload.cachePath : "";
 
   return {
     sourceBuffer,
@@ -150,195 +88,142 @@ function normalizePayload(raw: unknown): {
     quality,
     tempPath,
     cachePath,
-  }
+  };
 }
 
-async function runThumbnailRender(rawPayload: unknown): Promise<void> {
-  const parsedRequest = parseRequest(rawPayload)
+async function runThumbnailRender(
+  rawPayload: unknown,
+  cancelledRequestIds: Set<string>,
+): Promise<void> {
+  const parsedRequest = parseRequest(rawPayload);
 
   if (cancelledRequestIds.has(parsedRequest.requestId)) {
-    cancelledRequestIds.delete(parsedRequest.requestId)
-    return
+    cancelledRequestIds.delete(parsedRequest.requestId);
+    return;
   }
 
-  const payload = normalizePayload(parsedRequest.payload)
+  const payload = normalizePayload(parsedRequest.payload);
   const heartbeatTimer = setInterval(() => {
-    postHeartbeat()
-  }, TASK_WORKER_HEARTBEAT_INTERVAL_MS)
-  heartbeatTimer.unref?.()
+    postHeartbeat(parentPort);
+  }, TASK_WORKER_HEARTBEAT_INTERVAL_MS);
+  heartbeatTimer.unref?.();
 
   if (!payload.sourceBuffer || payload.sourceBuffer.length <= 0) {
-    const error = 'thumbnail worker missing sourceBuffer'
+    const error = "thumbnail worker missing sourceBuffer";
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error })
+      postLegacyResult({ ok: false, error });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error,
-      })
+      postErrorResponse(parsedRequest.requestId, error);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
-    return
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
+    return;
   }
   if (!payload.tempPath || !payload.cachePath) {
-    const error = 'thumbnail worker missing target path'
+    const error = "thumbnail worker missing target path";
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error })
+      postLegacyResult({ ok: false, error });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error,
-      })
+      postErrorResponse(parsedRequest.requestId, error);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
-    return
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
+    return;
   }
 
-  const sharpModule = await getSharpModule()
-  if (!sharpModule?.default) {
-    const error = 'thumbnail worker sharp unavailable'
+  const sharpModule = await getSharpModule();
+  const sharp =
+    (sharpModule as { default?: typeof import("sharp") } | null)?.default ??
+    sharpModule;
+  if (!sharp) {
+    const error = "thumbnail worker sharp unavailable";
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error })
+      postLegacyResult({ ok: false, error });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error,
-      })
+      postErrorResponse(parsedRequest.requestId, error);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
-    return
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
+    return;
   }
 
   try {
-    const sharp = sharpModule.default
     if (!parsedRequest.legacy) {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 0.3,
-        message: 'thumbnail-render-encoding',
-      })
+        message: "thumbnail-render-encoding",
+      });
     }
-    await sharp(payload.sourceBuffer, { failOn: 'none' })
+    await sharp(payload.sourceBuffer, { failOn: "none" })
       .rotate()
       .resize({
         width: payload.maxEdge,
         height: payload.maxEdge,
-        fit: 'inside',
+        fit: "inside",
         withoutEnlargement: true,
       })
       .webp({ quality: payload.quality })
-      .toFile(payload.tempPath)
+      .toFile(payload.tempPath);
 
     if (cancelledRequestIds.has(parsedRequest.requestId)) {
-      cancelledRequestIds.delete(parsedRequest.requestId)
-      await fs.rm(payload.tempPath, { force: true }).catch(() => undefined)
-      clearInterval(heartbeatTimer)
-      return
+      cancelledRequestIds.delete(parsedRequest.requestId);
+      await fs.rm(payload.tempPath, { force: true }).catch(() => undefined);
+      clearInterval(heartbeatTimer);
+      return;
     }
 
     if (!parsedRequest.legacy) {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 0.85,
-        message: 'thumbnail-render-moving-cache',
-      })
+        message: "thumbnail-render-moving-cache",
+      });
     }
 
     await fs.rename(payload.tempPath, payload.cachePath).catch(async () => {
-      await fs.rm(payload.tempPath, { force: true })
-    })
+      await fs.rm(payload.tempPath, { force: true });
+    });
     if (parsedRequest.legacy) {
-      postResult({ ok: true })
+      postLegacyResult({ ok: true });
     } else {
-      postProgress({
-        kind: 'progress',
+      postProgress(parentPort, {
+        kind: "progress",
         request_id: parsedRequest.requestId,
         progress: 1,
-        message: 'thumbnail-render-complete',
-      })
-      postResponse({
-        kind: 'response',
+        message: "thumbnail-render-complete",
+      });
+      postResponse(parentPort, {
+        kind: "response",
         request_id: parsedRequest.requestId,
         ok: true,
         payload: {
           cachePath: payload.cachePath,
         },
-      })
+      });
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(0)
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 0);
   } catch (error) {
-    const reason = error instanceof Error && error.message ? error.message : String(error)
-    await fs.rm(payload.tempPath, { force: true }).catch(() => undefined)
+    const reason =
+      error instanceof Error && error.message ? error.message : String(error);
+    await fs.rm(payload.tempPath, { force: true }).catch(() => undefined);
     if (parsedRequest.legacy) {
-      postResult({ ok: false, error: reason })
+      postLegacyResult({ ok: false, error: reason });
     } else {
-      postResponse({
-        kind: 'response',
-        request_id: parsedRequest.requestId,
-        ok: false,
-        error: reason,
-      })
+      postErrorResponse(parsedRequest.requestId, reason);
     }
-    clearInterval(heartbeatTimer)
-    maybeExit(1)
+    clearInterval(heartbeatTimer);
+    maybeExit(parentPort, 1);
   }
 }
 
-function enqueueMessage(message: unknown): void {
-  if (message && typeof message === 'object') {
-    const cancelEnvelope = message as { kind?: unknown; request_id?: unknown }
-    if (cancelEnvelope.kind === 'cancel' && typeof cancelEnvelope.request_id === 'string') {
-      cancelledRequestIds.add(cancelEnvelope.request_id)
-      return
-    }
-  }
+const queueController = createTaskWorkerQueueController(runThumbnailRender);
 
-  queuedMessages.push(message)
-  void drainQueue()
-}
-
-async function drainQueue(): Promise<void> {
-  if (workerRunning) {
-    return
-  }
-
-  const next = queuedMessages.shift()
-  if (typeof next === 'undefined') {
-    return
-  }
-
-  workerRunning = true
-  try {
-    await runThumbnailRender(next)
-  } finally {
-    workerRunning = false
-    if (queuedMessages.length > 0) {
-      void drainQueue()
-    }
-  }
-}
-
-if (parentPort) {
-  if (typeof workerData !== 'undefined') {
-    enqueueMessage(workerData)
-  }
-  parentPort.on('message', (message) => {
-    enqueueMessage(message)
-  })
-} else {
-  process.on('message', (message) => {
-    enqueueMessage(message)
-  })
-}
+registerWorkerMessageHandlers({
+  parentPort,
+  workerData,
+  enqueueMessage: queueController.enqueueMessage,
+});

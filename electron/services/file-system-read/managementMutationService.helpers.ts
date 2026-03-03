@@ -5,11 +5,13 @@ import type {
   StartImageConvertTaskRequestDto,
 } from "../../../src/contracts/backend";
 import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
+import {
+  parseSidebarNodeId,
+  pathKeyHasPrefix,
+  type ParsedSidebarNodeRef,
+} from "./sidebarNodeRef.utils";
 
-export interface ParsedSidebarNodeRef {
-  kind: "folder" | "package" | "video" | "audio";
-  pathKey: string;
-}
+export { parseSidebarNodeId, pathKeyHasPrefix, type ParsedSidebarNodeRef };
 
 export const ZIP_IMAGE_ENTRY_EXTENSIONS = new Set<string>([
   ".jpg",
@@ -27,9 +29,7 @@ export const ZIP_IMAGE_ENTRY_EXTENSIONS = new Set<string>([
  * 重命名服务用此集合判断字段是否为真实元数据。
  * 新增语言或调整占位符策略时，仅需维护此集合。
  */
-export const METADATA_UNKNOWN_TOKENS: ReadonlySet<string> = new Set([
-  "未知",
-]);
+export const METADATA_UNKNOWN_TOKENS: ReadonlySet<string> = new Set(["未知"]);
 
 export function isMetadataUnknownToken(value: string): boolean {
   return METADATA_UNKNOWN_TOKENS.has(value);
@@ -54,42 +54,6 @@ export function sanitizeTemplateHint(value: string): string {
 
 function trimResult(value: string): string {
   return value.replace(/\s+/g, " ").trim();
-}
-
-export function parseSidebarNodeId(
-  nodeId: string,
-): ParsedSidebarNodeRef | null {
-  const delimiterIndex = nodeId.indexOf(":");
-  if (delimiterIndex <= 0) {
-    return null;
-  }
-
-  const rawKind = nodeId.slice(0, delimiterIndex);
-  if (
-    rawKind !== "folder" &&
-    rawKind !== "package" &&
-    rawKind !== "video" &&
-    rawKind !== "audio"
-  ) {
-    return null;
-  }
-
-  const pathKey = nodeId.slice(delimiterIndex + 1);
-  if (pathKey.length === 0) {
-    return null;
-  }
-
-  return {
-    kind: rawKind,
-    pathKey,
-  };
-}
-
-export function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
-  if (pathKey === prefix) {
-    return true;
-  }
-  return pathKey.startsWith(`${prefix}/`);
 }
 
 export function resolveAbsolutePathFromPathKey(pathKey: string): string {

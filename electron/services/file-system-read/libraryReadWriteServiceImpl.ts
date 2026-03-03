@@ -78,7 +78,7 @@ import {
   toSafeSizeKb,
 } from "../../fileSystemServiceHelpers";
 import { MediaLibraryDatabase } from "../../mediaLibraryDatabase";
-import type { PersistedVideoCoverRecord } from "./librarySnapshotService";
+import type { PersistedVideoCoverRecord } from "./librarySnapshotService.types";
 import { LibrarySubtitleCleanupTaskService } from "./librarySubtitleCleanupTaskService";
 import {
   XP_PREFERENCE_METRICS_STATE_KEY,
@@ -97,6 +97,10 @@ import {
 } from "./libraryReadWriteServiceHelpers";
 import type { RuntimeDependencySnapshot } from "./runtimeDependencyService";
 import { detectSubtitleLanguageLabel } from "./subtitleCleanupHelpers";
+import {
+  convertSrtTextToVtt,
+  decodeSubtitleText,
+} from "../../subtitles/subtitleSrtVttConverter";
 
 interface LibraryReadWriteServiceOptions {
   database: MediaLibraryDatabase;
@@ -211,20 +215,34 @@ export class LibraryReadWriteService {
     });
   }
 
-  private async convertSubtitleToVtt(
-    sourcePath: string,
-    subtitleId: string,
-  ): Promise<string> {
+  private resolveSubtitleCacheOutputPath(subtitleId: string): string {
     const outputDir = path.join(
       this.options.rootDir,
       ".mediaplayerx",
       "subtitle-cache",
     );
-    const outputPath = path.join(
-      outputDir,
-      `${makeStableId("subtitle", subtitleId)}.vtt`,
-    );
-    await fs.mkdir(outputDir, { recursive: true });
+    return path.join(outputDir, `${makeStableId("subtitle", subtitleId)}.vtt`);
+  }
+
+  private async convertSrtToVtt(
+    sourcePath: string,
+    subtitleId: string,
+  ): Promise<string> {
+    const outputPath = this.resolveSubtitleCacheOutputPath(subtitleId);
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    const rawBuffer = await fs.readFile(sourcePath);
+    const rawText = decodeSubtitleText(rawBuffer);
+    const vttText = convertSrtTextToVtt(rawText);
+    await fs.writeFile(outputPath, vttText, "utf8");
+    return outputPath;
+  }
+
+  private async convertSubtitleToVttWithFfmpeg(
+    sourcePath: string,
+    subtitleId: string,
+  ): Promise<string> {
+    const outputPath = this.resolveSubtitleCacheOutputPath(subtitleId);
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
     const result = await runProcess(
       this.options.ffmpegBin,
       ["-y", "-i", sourcePath, outputPath],
@@ -530,7 +548,11 @@ export class LibraryReadWriteService {
           cover_image_path: outputPath,
           updated_at_ms: updatedAtMs,
         };
-        this.options.database.writeSourceCover(source.id, coverColor, outputPath);
+        this.options.database.writeSourceCover(
+          source.id,
+          coverColor,
+          outputPath,
+        );
       } catch (error) {
         void error;
       }
@@ -807,15 +829,24 @@ export class LibraryReadWriteService {
       });
     }
 
-    const runtimeDependencies = await this.options.ensureRuntimeDependencies();
-    if (!runtimeDependencies.ffmpeg) {
-      throw new Error("字幕准备失败：ffmpeg 不可用，无法转换为 vtt");
+    if (request.format !== "srt") {
+      const runtimeDependencies =
+        await this.options.ensureRuntimeDependencies();
+      if (!runtimeDependencies.ffmpeg) {
+        throw new Error("字幕准备失败：ffmpeg 不可用，无法转换为 vtt");
+      }
     }
 
-    const outputPath = await this.convertSubtitleToVtt(
-      request.locator.absolute_path,
-      request.subtitle_id,
-    );
+    const outputPath =
+      request.format === "srt"
+        ? await this.convertSrtToVtt(
+            request.locator.absolute_path,
+            request.subtitle_id,
+          )
+        : await this.convertSubtitleToVttWithFfmpeg(
+            request.locator.absolute_path,
+            request.subtitle_id,
+          );
     return prepareSubtitleTrackResponseSchema.parse({
       locator: {
         kind: "filesystem",
@@ -837,7 +868,10 @@ export class LibraryReadWriteService {
     if (!video) {
       throw new Error(`字幕清洗失败：video 不存在 ${request.video_id}`);
     }
-    return this.subtitleCleanupTaskService.startTask(video.id, video.absolute_path);
+    return this.subtitleCleanupTaskService.startTask(
+      video.id,
+      video.absolute_path,
+    );
   }
 
   async readManageSubtitleCleanupTask(

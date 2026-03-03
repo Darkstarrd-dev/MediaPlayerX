@@ -9,22 +9,17 @@ import type {
   ShortcutMap,
 } from "../shortcuts";
 
+export type SettingsSection = AppSettings["settingsPanelSection"];
+export type UiLocale = AppSettings["uiLocale"];
+export type PaletteMode = AppSettings["paletteMode"];
+
 export interface SettingsPanelProps {
   settingsOpen: boolean;
-  settingsPanelSection:
-    | "layout"
-    | "performance"
-    | "shader"
-    | "audio"
-    | "debug"
-    | "system"
-    | "model"
-    | "database"
-    | "shortcuts";
-  uiLocale: "auto" | "zh-CN" | "en-US";
+  settingsPanelSection: SettingsSection;
+  uiLocale: UiLocale;
   styleId: string;
   paletteId: string;
-  paletteMode: "day" | "night";
+  paletteMode: PaletteMode;
   paletteDayId: string;
   paletteNightId: string;
   headerHeight: number;
@@ -70,12 +65,9 @@ export interface SettingsPanelProps {
   musicVisualizerToneMapStrength: number;
   musicVisualizerShowFps: boolean;
   musicVisualizerRenderer: "gpu" | "cpu";
-  musicVisualizerShaderSettingsById:
-    AppSettings["musicVisualizerShaderSettingsById"];
-  musicVisualizerPluginInputBindingsByShaderId:
-    AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
-  musicVisualizerPluginCustomBindingsByShaderId:
-    AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
+  musicVisualizerShaderSettingsById: AppSettings["musicVisualizerShaderSettingsById"];
+  musicVisualizerPluginInputBindingsByShaderId: AppSettings["musicVisualizerPluginInputBindingsByShaderId"];
+  musicVisualizerPluginCustomBindingsByShaderId: AppSettings["musicVisualizerPluginCustomBindingsByShaderId"];
   musicVisualizerShaderLab: AppSettings["musicVisualizerShaderLab"];
   thumbnailGap: number;
   thumbnailQuality: number;
@@ -192,21 +184,10 @@ export interface SettingsPanelProps {
   mediaCapabilities: RuntimeMediaCapabilityProbeResult[];
   adReviewDeleteOverlayDebugActive: boolean;
   onClose: () => void;
-  onSettingsPanelSectionChange: (
-    value:
-      | "layout"
-      | "performance"
-      | "shader"
-      | "audio"
-      | "debug"
-      | "system"
-      | "model"
-      | "database"
-      | "shortcuts",
-  ) => void;
-  onUiLocaleChange: (value: "auto" | "zh-CN" | "en-US") => void;
+  onSettingsPanelSectionChange: (value: SettingsSection) => void;
+  onUiLocaleChange: (value: UiLocale) => void;
   onStyleChange: (value: string) => void;
-  onPaletteModeChange: (value: "day" | "night") => void;
+  onPaletteModeChange: (value: PaletteMode) => void;
   onPaletteDayChange: (value: string) => void;
   onPaletteNightChange: (value: string) => void;
   onHeaderHeightChange: (value: number) => void;

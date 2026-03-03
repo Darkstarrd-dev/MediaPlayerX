@@ -5,36 +5,18 @@ import { useUiStore } from "../../store/useUiStore";
 import type { SidebarNode, SidebarTreeDisplayMode } from "../../types";
 import { compactSidebarTree } from "../sidebar/compactSidebarTree";
 import { normalizePointerSidebarTree } from "../sidebar/normalizePointerSidebarTree";
+import {
+  createImageSidebarModePredicates,
+  resolvePathLeaf,
+} from "../sidebar/sidebarTreePredicates";
 
 const MUSIC_BOOKLET_ROOT_LABEL = "CD Booklet";
 
-function isCompressibleImageFolderNode(node: SidebarNode): boolean {
-  if (node.kind !== "folder") {
-    return false;
-  }
-
-  if (node.imageNodeType && node.imageNodeType !== "folder") {
-    return false;
-  }
-
-  if (node.imageSourceId || node.packageId || node.videoId || node.audioId) {
-    return false;
-  }
-
-  return (node.directImageCount ?? 0) === 0;
-}
-
-function isImagePointerFolderNode(node: SidebarNode): boolean {
-  return isCompressibleImageFolderNode(node);
-}
-
-function isImageMediaNode(node: SidebarNode): boolean {
-  return (
-    node.kind === "package" ||
-    node.imageNodeType === "package" ||
-    node.imageNodeType === "directory"
-  );
-}
+const imageSidebarPredicates = createImageSidebarModePredicates();
+const isCompressibleImageFolderNode =
+  imageSidebarPredicates.isCompressibleFolderNode;
+const isImagePointerFolderNode = imageSidebarPredicates.isPointerFolderNode;
+const isImageMediaNode = imageSidebarPredicates.isMediaNode;
 
 function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
   return compactSidebarTree(nodes, {
@@ -146,12 +128,6 @@ function buildImageSourceNodeIdMap(nodes: SidebarNode[]): Map<string, string> {
   }
 
   return map;
-}
-
-function resolvePathLeaf(pathKey: string, fallbackLabel: string): string {
-  const segments = pathKey.split("/");
-  const leaf = segments[segments.length - 1]?.trim();
-  return leaf && leaf.length > 0 ? leaf : fallbackLabel;
 }
 
 function normalizeHierarchyLabels(nodes: SidebarNode[]): SidebarNode[] {

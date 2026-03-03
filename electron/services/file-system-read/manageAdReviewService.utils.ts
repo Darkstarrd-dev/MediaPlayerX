@@ -13,6 +13,10 @@ import {
   type StartManageAdReviewRequestDto,
 } from "../../../src/contracts/backend";
 import type { ManageAdReviewDecision } from "../../manageAdReview";
+import {
+  parseSidebarNodeId as parseSidebarNodeIdShared,
+  pathKeyHasPrefix,
+} from "./sidebarNodeRef.utils";
 
 const DEFAULT_REVIEW_MAX_CONCURRENCY = 4;
 const REVIEW_MIN_CONCURRENCY_LIMIT = 1;
@@ -29,35 +33,23 @@ export interface ParsedSidebarNodeRef {
   pathKey: string;
 }
 
+const AD_REVIEW_ALLOWED_NODE_KINDS = new Set<"folder" | "package" | "video">([
+  "folder",
+  "package",
+  "video",
+]);
+
 export function parseSidebarNodeId(
   nodeId: string,
 ): ParsedSidebarNodeRef | null {
-  const delimiterIndex = nodeId.indexOf(":");
-  if (delimiterIndex <= 0) {
+  const parsed = parseSidebarNodeIdShared(nodeId, AD_REVIEW_ALLOWED_NODE_KINDS);
+  if (!parsed) {
     return null;
   }
-
-  const kind = nodeId.slice(0, delimiterIndex);
-  if (kind !== "folder" && kind !== "package" && kind !== "video") {
-    return null;
-  }
-
-  const pathKey = nodeId.slice(delimiterIndex + 1);
-  if (!pathKey) {
-    return null;
-  }
-
   return {
-    kind,
-    pathKey,
+    kind: parsed.kind as ParsedSidebarNodeRef["kind"],
+    pathKey: parsed.pathKey,
   };
-}
-
-export function pathKeyHasPrefix(pathKey: string, prefix: string): boolean {
-  if (pathKey === prefix) {
-    return true;
-  }
-  return pathKey.startsWith(`${prefix}/`);
 }
 
 export function toSourcePathKey(

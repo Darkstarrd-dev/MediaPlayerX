@@ -9,6 +9,7 @@ import type {
 import { collectLeafIds } from "../../utils/mediaHelpers";
 import { compactSidebarTree } from "../sidebar/compactSidebarTree";
 import { normalizePointerSidebarTree } from "../sidebar/normalizePointerSidebarTree";
+import { createVideoSidebarModePredicates } from "../sidebar/sidebarTreePredicates";
 
 interface UseVideoSidebarStateParams {
   videos: VideoItem[];
@@ -52,23 +53,11 @@ function resolveVideoLeafLabel(
     : undefined;
 }
 
-function isCompressibleVideoFolderNode(node: SidebarNode): boolean {
-  if (node.kind !== "folder") {
-    return false;
-  }
-
-  return (
-    !node.imageSourceId && !node.packageId && !node.videoId && !node.audioId
-  );
-}
-
-function isVideoPointerFolderNode(node: SidebarNode): boolean {
-  return isCompressibleVideoFolderNode(node);
-}
-
-function isVideoMediaNode(node: SidebarNode): boolean {
-  return node.kind === "video";
-}
+const videoSidebarPredicates = createVideoSidebarModePredicates();
+const isCompressibleVideoFolderNode =
+  videoSidebarPredicates.isCompressibleFolderNode;
+const isVideoPointerFolderNode = videoSidebarPredicates.isPointerFolderNode;
+const isVideoMediaNode = videoSidebarPredicates.isMediaNode;
 
 function pruneProceduralVideoPathNodes(nodes: SidebarNode[]): SidebarNode[] {
   const next: SidebarNode[] = [];

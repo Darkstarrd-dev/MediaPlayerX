@@ -6,70 +6,48 @@ import type {
   ImageSourceLiteDto,
   LibrarySnapshotDto,
   LibrarySnapshotLiteDto,
-  MediaLocatorDto,
   ReadImageMetadataResponseDto,
   ReadImagePageResponseDto,
   ReadImageSidebarTreeResponseDto,
   SidebarNodeDto,
   VideoItemDto,
-} from '../../contracts/backend'
+} from "../../contracts/backend";
+import { deriveWorkTitleFromFileName } from "../../contracts/backend.shared";
 import type {
   AudioItem,
   FocusedImageRef,
   ImageItem,
   ImagePackage,
-  MediaLocator,
   SidebarNode,
   VideoItem,
-} from '../../types'
+} from "../../types";
+import { mapMediaLocatorDto } from "./mediaLocator";
 
 export interface LibrarySnapshotViewModel {
-  imagePackages: ImagePackage[]
-  imageDirectories: ImagePackage[]
-  videos: VideoItem[]
-  audios: AudioItem[]
+  imagePackages: ImagePackage[];
+  imageDirectories: ImagePackage[];
+  videos: VideoItem[];
+  audios: AudioItem[];
 }
 
 export interface ImageSidebarTreeViewModel {
-  imagePackages: ImagePackage[]
-  imageDirectories: ImagePackage[]
-  tree: SidebarNode[]
+  imagePackages: ImagePackage[];
+  imageDirectories: ImagePackage[];
+  tree: SidebarNode[];
 }
 
 export interface ImagePageViewModel {
-  sourceId: string | null
-  totalItems: number
-  pageIndex: number
-  pageSize: number
-  refs: FocusedImageRef[]
+  sourceId: string | null;
+  totalItems: number;
+  pageIndex: number;
+  pageSize: number;
+  refs: FocusedImageRef[];
 }
 
 export interface ImageMetadataViewModel {
-  package: ImagePackage
-  image: ImageItem
-  grade: number | null
-}
-
-export function mapMediaLocatorDto(locator: MediaLocatorDto): MediaLocator {
-  if (locator.kind === 'filesystem') {
-    return {
-      kind: 'filesystem',
-      absolutePath: locator.absolute_path,
-      extension: locator.extension,
-      mediaType: locator.media_type,
-      mimeType: locator.mime_type,
-    }
-  }
-
-  return {
-    kind: 'archive-entry',
-    archivePath: locator.archive_path,
-    archiveFormat: locator.archive_format,
-    entryName: locator.entry_name,
-    extension: locator.extension,
-    mediaType: locator.media_type,
-    mimeType: locator.mime_type,
-  }
+  package: ImagePackage;
+  image: ImageItem;
+  grade: number | null;
 }
 
 export function mapImageItemDto(item: ImageItemDto): ImageItem {
@@ -83,7 +61,7 @@ export function mapImageItemDto(item: ImageItemDto): ImageItem {
     color: item.color,
     mediaLocator: mapMediaLocatorDto(item.media_locator),
     hidden: item.hidden ?? false,
-  }
+  };
 }
 
 export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
@@ -94,7 +72,7 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
     absolutePath: source.absolute_path,
     treePath: [...source.tree_path],
     workTitle: source.work_title,
-    seriesId: source.series_id ?? '',
+    seriesId: source.series_id ?? "",
     circle: source.circle,
     author: source.author,
     tags: [...source.tags],
@@ -136,10 +114,12 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
         }
       : null,
     images: source.images.map(mapImageItemDto),
-  }
+  };
 }
 
-export function mapImageSourceLiteDto(source: ImageSourceLiteDto): ImagePackage {
+export function mapImageSourceLiteDto(
+  source: ImageSourceLiteDto,
+): ImagePackage {
   return {
     id: source.id,
     packageName: source.package_name,
@@ -147,7 +127,7 @@ export function mapImageSourceLiteDto(source: ImageSourceLiteDto): ImagePackage 
     absolutePath: source.absolute_path,
     treePath: [...source.tree_path],
     workTitle: source.work_title,
-    seriesId: source.series_id ?? '',
+    seriesId: source.series_id ?? "",
     circle: source.circle,
     author: source.author,
     tags: [...source.tags],
@@ -189,11 +169,11 @@ export function mapImageSourceLiteDto(source: ImageSourceLiteDto): ImagePackage 
         }
       : null,
     images: [],
-  }
+  };
 }
 
 export function mapVideoItemDto(video: VideoItemDto): VideoItem {
-  const fallbackWorkTitle = video.file_name.replace(/\.[^./\\]+$/, '')
+  const fallbackWorkTitle = deriveWorkTitleFromFileName(video.file_name);
   return {
     id: video.id,
     fileName: video.file_name,
@@ -205,13 +185,15 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
     sizeMb: video.size_mb,
     coverColor: video.cover_color,
     coverImagePath: video.cover_image_path ?? null,
-    workTitle: video.work_title?.trim().length ? video.work_title : fallbackWorkTitle,
-    workTitleJpn: video.work_title_jpn ?? '',
-    seriesId: video.series_id ?? '',
-    circle: video.circle?.trim().length ? video.circle : '未知',
-    circleJpn: video.circle_jpn ?? '',
-    author: video.author?.trim().length ? video.author : '未知',
-    authorJpn: video.author_jpn ?? '',
+    workTitle: video.work_title?.trim().length
+      ? video.work_title
+      : fallbackWorkTitle,
+    workTitleJpn: video.work_title_jpn ?? "",
+    seriesId: video.series_id ?? "",
+    circle: video.circle?.trim().length ? video.circle : "未知",
+    circleJpn: video.circle_jpn ?? "",
+    author: video.author?.trim().length ? video.author : "未知",
+    authorJpn: video.author_jpn ?? "",
     tags: [...(video.tags ?? [])],
     grade: video.grade ?? null,
     preferenceMetrics: video.preference_metrics
@@ -225,11 +207,11 @@ export function mapVideoItemDto(video: VideoItemDto): VideoItem {
         }
       : null,
     mediaLocator: mapMediaLocatorDto(video.media_locator),
-  }
+  };
 }
 
 export function mapAudioItemDto(audio: AudioItemDto): AudioItem {
-  const fallbackTrackTitle = audio.file_name.replace(/\.[^./\\]+$/, '')
+  const fallbackTrackTitle = deriveWorkTitleFromFileName(audio.file_name);
   return {
     id: audio.id,
     fileName: audio.file_name,
@@ -237,16 +219,18 @@ export function mapAudioItemDto(audio: AudioItemDto): AudioItem {
     treePath: [...audio.tree_path],
     durationSec: audio.duration_sec,
     sizeMb: audio.size_mb,
-    album: audio.album ?? '',
-    author: audio.author ?? '',
-    trackTitle: audio.track_title?.trim().length ? audio.track_title : fallbackTrackTitle,
-    seriesId: audio.series_id ?? '',
+    album: audio.album ?? "",
+    author: audio.author ?? "",
+    trackTitle: audio.track_title?.trim().length
+      ? audio.track_title
+      : fallbackTrackTitle,
+    seriesId: audio.series_id ?? "",
     cueSourcePath: audio.cue_source_path,
     cueTrackNo: audio.cue_track_no,
     cueStartSec: audio.cue_start_sec,
     cueEndSec: audio.cue_end_sec,
     mediaLocator: mapMediaLocatorDto(audio.media_locator),
-  }
+  };
 }
 
 export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
@@ -267,34 +251,39 @@ export function mapSidebarNodeDto(node: SidebarNodeDto): SidebarNode {
     descendantImageCount: node.descendant_image_count,
     descendantNodeCount: node.descendant_node_count,
     pathKey: node.path_key,
-  }
+  };
 }
 
 function resolvePreferredSidebarTitle(source: ImagePackage): string | null {
-  const jpnTitle = source.externalMetadata?.titleJpn?.trim() ?? ''
+  const jpnTitle = source.externalMetadata?.titleJpn?.trim() ?? "";
   if (jpnTitle.length > 0) {
-    return jpnTitle
+    return jpnTitle;
   }
 
-  const enTitle = source.externalMetadata?.title?.trim() ?? ''
+  const enTitle = source.externalMetadata?.title?.trim() ?? "";
   if (enTitle.length > 0) {
-    return enTitle
+    return enTitle;
   }
 
-  return null
+  return null;
 }
 
-function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<string, ImagePackage>): SidebarNode {
-  const mappedChildren = (node.children as SidebarNodeDto[]).map((child) => mapSidebarNodeDtoWithSourceLabel(child, sourceById))
-  let label = node.label
+function mapSidebarNodeDtoWithSourceLabel(
+  node: SidebarNodeDto,
+  sourceById: Map<string, ImagePackage>,
+): SidebarNode {
+  const mappedChildren = (node.children as SidebarNodeDto[]).map((child) =>
+    mapSidebarNodeDtoWithSourceLabel(child, sourceById),
+  );
+  let label = node.label;
 
-  const sourceId = node.package_id ?? node.image_source_id
+  const sourceId = node.package_id ?? node.image_source_id;
   if (sourceId) {
-    const source = sourceById.get(sourceId)
+    const source = sourceById.get(sourceId);
     if (source) {
-      const preferredTitle = resolvePreferredSidebarTitle(source)
+      const preferredTitle = resolvePreferredSidebarTitle(source);
       if (preferredTitle) {
-        label = preferredTitle
+        label = preferredTitle;
       }
     }
   }
@@ -316,75 +305,92 @@ function mapSidebarNodeDtoWithSourceLabel(node: SidebarNodeDto, sourceById: Map<
     descendantImageCount: node.descendant_image_count,
     descendantNodeCount: node.descendant_node_count,
     pathKey: node.path_key,
-  }
+  };
 }
 
-export function mapFocusedImageRefDto(ref: FocusedImageRefDto): FocusedImageRef {
+export function mapFocusedImageRefDto(
+  ref: FocusedImageRefDto,
+): FocusedImageRef {
   return {
     packageId: ref.package_id,
     imageIndex: ref.image_index,
-  }
+  };
 }
 
-export function mapLibrarySnapshotDto(snapshot: LibrarySnapshotDto): LibrarySnapshotViewModel {
+export function mapLibrarySnapshotDto(
+  snapshot: LibrarySnapshotDto,
+): LibrarySnapshotViewModel {
   return {
     imagePackages: snapshot.image_packages.map(mapImagePackageDto),
     imageDirectories: snapshot.image_directories.map(mapImagePackageDto),
     videos: snapshot.videos.map(mapVideoItemDto),
     audios: (snapshot.audios ?? []).map(mapAudioItemDto),
-  }
+  };
 }
 
-export function mapLibrarySnapshotLiteDto(snapshot: LibrarySnapshotLiteDto): LibrarySnapshotViewModel {
+export function mapLibrarySnapshotLiteDto(
+  snapshot: LibrarySnapshotLiteDto,
+): LibrarySnapshotViewModel {
   return {
     imagePackages: snapshot.image_packages.map(mapImageSourceLiteDto),
     imageDirectories: snapshot.image_directories.map(mapImageSourceLiteDto),
     videos: snapshot.videos.map(mapVideoItemDto),
     audios: (snapshot.audios ?? []).map(mapAudioItemDto),
-  }
+  };
 }
 
-export function mapLibrarySnapshotAnyDto(snapshot: LibrarySnapshotDto | LibrarySnapshotLiteDto): LibrarySnapshotViewModel {
-  const firstImageSource = snapshot.image_packages[0] ?? snapshot.image_directories[0]
-  if (firstImageSource && 'images' in firstImageSource) {
-    return mapLibrarySnapshotDto(snapshot as LibrarySnapshotDto)
+export function mapLibrarySnapshotAnyDto(
+  snapshot: LibrarySnapshotDto | LibrarySnapshotLiteDto,
+): LibrarySnapshotViewModel {
+  const firstImageSource =
+    snapshot.image_packages[0] ?? snapshot.image_directories[0];
+  if (firstImageSource && "images" in firstImageSource) {
+    return mapLibrarySnapshotDto(snapshot as LibrarySnapshotDto);
   }
-  return mapLibrarySnapshotLiteDto(snapshot as LibrarySnapshotLiteDto)
+  return mapLibrarySnapshotLiteDto(snapshot as LibrarySnapshotLiteDto);
 }
 
-export function mapImageSidebarTreeDto(response: ReadImageSidebarTreeResponseDto): ImageSidebarTreeViewModel {
-  const imagePackages = response.image_packages.map(mapImagePackageDto)
-  const imageDirectories = response.image_directories.map(mapImagePackageDto)
+export function mapImageSidebarTreeDto(
+  response: ReadImageSidebarTreeResponseDto,
+): ImageSidebarTreeViewModel {
+  const imagePackages = response.image_packages.map(mapImagePackageDto);
+  const imageDirectories = response.image_directories.map(mapImagePackageDto);
   const sourceById = new Map<string, ImagePackage>([
     ...imagePackages.map((source) => [source.id, source] as const),
     ...imageDirectories.map((source) => [source.id, source] as const),
-  ])
+  ]);
 
   return {
     imagePackages,
     imageDirectories,
-    tree: response.tree.map((node) => mapSidebarNodeDtoWithSourceLabel(node, sourceById)),
-  }
+    tree: response.tree.map((node) =>
+      mapSidebarNodeDtoWithSourceLabel(node, sourceById),
+    ),
+  };
 }
 
-export function mapImagePageDto(response: ReadImagePageResponseDto): ImagePageViewModel {
+export function mapImagePageDto(
+  response: ReadImagePageResponseDto,
+): ImagePageViewModel {
   return {
     sourceId: response.source_id,
     totalItems: response.total_items,
     pageIndex: response.page_index,
     pageSize: response.page_size,
     refs: response.refs.map(mapFocusedImageRefDto),
-  }
+  };
 }
 
-export function mapImageMetadataDto(response: ReadImageMetadataResponseDto): ImageMetadataViewModel | null {
+export function mapImageMetadataDto(
+  response: ReadImageMetadataResponseDto,
+): ImageMetadataViewModel | null {
   if (!response) {
-    return null
+    return null;
   }
 
   return {
     package: mapImagePackageDto(response.package),
     image: mapImageItemDto(response.image),
     grade: response.grade,
-  }
+  };
 }

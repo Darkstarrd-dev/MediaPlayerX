@@ -1,21 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { buildMetadataPanelProps } from "./buildMetadataPanelProps";
 import { createAdReviewSettingHandlers } from "./workspaceAdReviewHandlers";
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { ManageAdReviewActionsResult } from "./useManageAdReviewActions";
+import type { MetadataWriteBindingsResult } from "./useMetadataWriteBindings";
+import type { MusicBookletBindingsResult } from "./useMusicBookletBindings";
+import type { UseAppWorkspacePropsParams } from "./useAppWorkspaceProps.types";
+import type { MusicBookletResolvedState } from "./workspaceMusicBooklet";
+import type { ParsedExternalMetadata } from "../metadata/parseExternalMetadata";
+
+type QuickFeatureSearchPatch = Parameters<
+  UseAppWorkspacePropsParams["applyQuickFeatureSearch"]
+>[0];
+type StartManageAdReviewOptions = Parameters<
+  ManageAdReviewActionsResult["startManageAdReview"]
+>[0];
 
 interface BuildWorkspaceMetadataPanelPropsParams {
-  appSettings: any;
-  manageAdReview: any;
-  metadataWriteBindings: any;
-  musicBookletState: any;
-  musicBookletBindings: any;
-  mode: any;
+  appSettings: AppSettingsStoreSnapshot;
+  manageAdReview: ManageAdReviewActionsResult;
+  metadataWriteBindings: MetadataWriteBindingsResult;
+  musicBookletState: MusicBookletResolvedState;
+  musicBookletBindings: MusicBookletBindingsResult;
+  mode: UseAppWorkspacePropsParams["mode"];
   manageMode: boolean;
   vectorMode: boolean;
   metadataManageMode: boolean;
   videosForSidebarCount: number;
   audiosForSidebarCount: number;
-  scopedImageSourcesEffective: unknown[];
+  scopedImageSourcesEffective: UseAppWorkspacePropsParams["scopedImageSourcesEffective"];
   featureNameQuery: string;
   setFeatureNameQuery: (value: string) => void;
   featureWorkTitleQuery: string;
@@ -34,7 +46,7 @@ interface BuildWorkspaceMetadataPanelPropsParams {
   featureGradeFilter: number | null;
   setFeatureGradeFilter: (value: number | null) => void;
   adReviewPanelOpen: boolean;
-  activeSelectionScope: any;
+  activeSelectionScope: UseAppWorkspacePropsParams["activeSelectionScope"];
   sidebarCheckedNodeIds: string[];
   imageCheckedIds: string[];
   adReviewFocusTaskId: string | null;
@@ -44,39 +56,34 @@ interface BuildWorkspaceMetadataPanelPropsParams {
   setAdReviewPageIndex: (value: number) => void;
   setSelectedSidebarNodeId: (nodeId: string | null) => void;
   imageFocusActive: boolean;
-  metadataImageEffective: any;
+  metadataImageEffective: UseAppWorkspacePropsParams["metadataImageEffective"];
   metadataImageSrc: string | null;
-  metadataImagePackageEffective: any;
+  metadataImagePackageEffective: UseAppWorkspacePropsParams["metadataImagePackageEffective"];
   currentGradeEffective: number | null;
-  focusedVideoEffective: any;
-  focusedAudio: any;
+  focusedVideoEffective: UseAppWorkspacePropsParams["focusedVideoEffective"];
+  focusedAudio: UseAppWorkspacePropsParams["focusedAudio"];
   metadataMusicPlaylistIds: string[];
-  selectedAudioId: string | null;
-  audioByIdEffective: Map<string, any>;
+  selectedAudioId: UseAppWorkspacePropsParams["selectedAudioId"];
+  audioByIdEffective: UseAppWorkspacePropsParams["audioByIdEffective"];
   openMusicCoverSourceId: string | null;
   openMusicBookletSourceId: string | null;
-  metadataTab: any;
+  metadataTab: UseAppWorkspacePropsParams["metadataTab"];
   playlistIds: string[];
-  selectedVideoId: string | null;
+  selectedVideoId: UseAppWorkspacePropsParams["selectedVideoId"];
   dragVideoId: string | null;
-  videoByIdEffective: Map<string, any>;
-  saveParsedMetadata: any;
-  applyQuickFeatureSearch: (patch: {
-    workTitle?: string;
-    circle?: string;
-    author?: string;
-    tag?: string;
-  }) => void;
-  setMetadataTab: (tab: any) => void;
-  selectVideoFromBrowser: (videoId: string, options?: any) => void;
-  setSelectedAudioId: any;
+  videoByIdEffective: UseAppWorkspacePropsParams["videoByIdEffective"];
+  saveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>;
+  applyQuickFeatureSearch: (patch: QuickFeatureSearchPatch) => void;
+  setMetadataTab: UseAppWorkspacePropsParams["setMetadataTab"];
+  selectVideoFromBrowser: UseAppWorkspacePropsParams["selectVideoFromBrowser"];
+  setSelectedAudioId: UseAppWorkspacePropsParams["setSelectedAudioId"];
   requestMusicPlay: () => void;
-  updateMusicCoverBinding: any;
-  updateMusicBookletBinding: any;
+  updateMusicCoverBinding: (bindingValue: string) => void;
+  updateMusicBookletBinding: (bindingValue: string) => void;
   jumpMusicToCover: () => void;
   jumpMusicToBooklet: () => void;
-  setPlaylistIds: any;
-  setDragVideoId: any;
+  setPlaylistIds: UseAppWorkspacePropsParams["setPlaylistIds"];
+  setDragVideoId: UseAppWorkspacePropsParams["setDragVideoId"];
   videoQueueSource: "sidebar" | "playlist";
   titleCollapseEnabled?: boolean;
 }
@@ -184,11 +191,11 @@ export function buildWorkspaceMetadataPanelProps({
     featureTagPickerOpen,
     onToggleFeatureTagPicker: () => setFeatureTagPickerOpen((value) => !value),
     featureTags,
-    onSetFeatureTags: (tags: any[]) => {
+    onSetFeatureTags: (tags: string[]) => {
       const normalized = Array.from(
-        new Set(tags.map((tag: any) => String(tag).trim()).filter(Boolean)),
+        new Set(tags.map((tag) => tag.trim()).filter(Boolean)),
       );
-      setFeatureTags(normalized as string[]);
+      setFeatureTags(normalized);
     },
     onClearFeatureTags: () => setFeatureTags([]),
     featureGradeFilter,
@@ -215,7 +222,7 @@ export function buildWorkspaceMetadataPanelProps({
     adReviewHeadN: appSettings.adReviewHeadN,
     adReviewTailN: appSettings.adReviewTailN,
     adReviewTailStopCleanStreak: appSettings.adReviewTailStopCleanStreak,
-    onStartAdReview: async (options: any) => {
+    onStartAdReview: async (options?: StartManageAdReviewOptions) => {
       const startedTask = await manageAdReview.startManageAdReview(options);
       if (!startedTask) {
         return;
@@ -229,11 +236,11 @@ export function buildWorkspaceMetadataPanelProps({
     },
     onToggleHideUncheckedNonChecked:
       manageAdReview.toggleHideUncheckedNonChecked,
-    onSelectAdReviewTask: (taskId: any) => {
+    onSelectAdReviewTask: (taskId: string) => {
       manageAdReview.selectTask(taskId);
       setAdReviewPageIndex(0);
     },
-    onRemoveAdReviewTask: (taskId: any) => {
+    onRemoveAdReviewTask: (taskId: string) => {
       void manageAdReview.removeTask(taskId);
     },
     onDeleteSelectedAdReviewCandidates: () => {
@@ -285,13 +292,11 @@ export function buildWorkspaceMetadataPanelProps({
     selectedAudioId,
     audioById: audioByIdEffective,
     musicBookletAlbumRootPath: musicBookletState.albumRootPath,
-    musicBookletCandidates: musicBookletState.candidates.map(
-      (candidate: any) => ({
-        sourceId: candidate.sourceId,
-        label: candidate.label,
-        imageCount: candidate.imageCount,
-      }),
-    ),
+    musicBookletCandidates: musicBookletState.candidates.map((candidate) => ({
+      sourceId: candidate.sourceId,
+      label: candidate.label,
+      imageCount: candidate.imageCount,
+    })),
     musicCoverBindingValue: musicBookletState.coverBindingValue,
     musicBookletBindingValue: musicBookletState.bookletBindingValue,
     canOpenMusicCover: Boolean(openMusicCoverSourceId),
@@ -309,30 +314,30 @@ export function buildWorkspaceMetadataPanelProps({
     onSavePackageParsedMetadata: saveParsedMetadata,
     onSaveVideoMetadata: metadataWriteBindings.applyVideoMetadata,
     onSaveAudioMetadata: metadataWriteBindings.applyAudioMetadata,
-    onSearchByWorkTitle: (value: any) => {
+    onSearchByWorkTitle: (value: string) => {
       applyMetadataFeatureSearch({ workTitle: value });
     },
-    onSearchByCircle: (value: any) => {
+    onSearchByCircle: (value: string) => {
       applyMetadataFeatureSearch({ circle: value });
     },
-    onSearchByAuthor: (value: any) => {
+    onSearchByAuthor: (value: string) => {
       applyMetadataFeatureSearch({ author: value });
     },
-    onSearchByTag: (value: any) => {
+    onSearchByTag: (value: string) => {
       applyMetadataFeatureSearch({ tag: value });
     },
     onMetadataTabChange: setMetadataTab,
-    onSelectVideo: (videoId: any) => {
+    onSelectVideo: (videoId: string) => {
       selectVideoFromBrowser(videoId, { queueSource: "playlist" });
     },
-    onSelectVideoAndPlay: (videoId: any) => {
+    onSelectVideoAndPlay: (videoId: string) => {
       selectVideoFromBrowser(videoId, { play: true, queueSource: "playlist" });
     },
-    onSelectAudio: (audioId: any) => {
+    onSelectAudio: (audioId: string) => {
       setSelectedAudioId(audioId);
       appSettings.updateSettings({ sidebarFocus: "main" });
     },
-    onSelectAudioAndPlay: (audioId: any) => {
+    onSelectAudioAndPlay: (audioId: string) => {
       setSelectedAudioId(audioId);
       requestMusicPlay();
       appSettings.updateSettings({ sidebarFocus: "main" });
@@ -352,5 +357,5 @@ export function buildWorkspaceMetadataPanelProps({
     setPlaylistIds,
     setDragVideoId,
     titleCollapseEnabled,
-  } as any);
+  });
 }

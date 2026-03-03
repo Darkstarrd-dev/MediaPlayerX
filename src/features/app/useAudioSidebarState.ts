@@ -8,6 +8,7 @@ import type {
 } from "../../types";
 import { compactSidebarTree } from "../sidebar/compactSidebarTree";
 import { normalizePointerSidebarTree } from "../sidebar/normalizePointerSidebarTree";
+import { createAudioSidebarModePredicates } from "../sidebar/sidebarTreePredicates";
 
 interface UseAudioSidebarStateParams {
   audios: AudioItem[];
@@ -23,17 +24,11 @@ interface UseAudioSidebarStateResult {
   audioTreeForSidebar: SidebarNode[];
 }
 
-function isCompressibleAudioFolderNode(node: SidebarNode): boolean {
-  if (node.kind !== "folder") {
-    return false;
-  }
-
-  if (node.imageSourceId || node.packageId || node.videoId) {
-    return false;
-  }
-
-  return (node.directAudioCount ?? 0) === 0;
-}
+const audioSidebarPredicates = createAudioSidebarModePredicates();
+const isCompressibleAudioFolderNode =
+  audioSidebarPredicates.isCompressibleFolderNode;
+const isAudioPointerFolderNode = audioSidebarPredicates.isPointerFolderNode;
+const isAudioMediaNode = audioSidebarPredicates.isMediaNode;
 
 function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
   const directAudioCountByPath = new Map<string, number>();
@@ -108,14 +103,6 @@ function buildAudioFolderTree(audios: AudioItem[]): SidebarNode[] {
 
   hydrateDescendantAudioCounts(tree);
   return tree;
-}
-
-function isAudioPointerFolderNode(node: SidebarNode): boolean {
-  return isCompressibleAudioFolderNode(node);
-}
-
-function isAudioMediaNode(node: SidebarNode): boolean {
-  return node.kind === "folder" && (node.directAudioCount ?? 0) > 0;
 }
 
 export function useAudioSidebarState({
