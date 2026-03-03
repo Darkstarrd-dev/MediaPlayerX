@@ -182,7 +182,7 @@ function createBaseProps(
 }
 
 describe("MetadataPanel auto original-image mode", () => {
-  it("non-manage模式下焦点图片变化会自动切回原图显示", () => {
+  it("non-manage模式下焦点图片变化后保持当前显示模式", () => {
     const firstPkg = createPackage("a");
     const secondPkg = createPackage("b");
     const { rerender } = render(
@@ -211,7 +211,7 @@ describe("MetadataPanel auto original-image mode", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: "切换到元数据显示" }),
+      screen.getByRole("button", { name: "切换到原图显示" }),
     ).toBeInTheDocument();
   });
 

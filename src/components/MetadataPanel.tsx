@@ -341,9 +341,7 @@ function MetadataPanel({
   );
   const featureTagGroupsRef = useRef<HTMLDivElement | null>(null);
   const imagePreloadSeqRef = useRef(0);
-  const lastFocusedImageIdRef = useRef<string | null>(null);
   const autoOriginalImageMode = mode === "image" && !manageMode && !editable;
-  const focusedImageId = focusedImage?.id ?? null;
 
   const groupedFeatureTagOptions = useMemo(() => {
     const groups = new Map<string, string[]>();
@@ -488,19 +486,6 @@ function MetadataPanel({
       setShowImagePreview(false);
     }
   }, [editable, showImagePreview]);
-
-  useEffect(() => {
-    const previousFocusedImageId = lastFocusedImageIdRef.current;
-    lastFocusedImageIdRef.current = focusedImageId;
-
-    if (!autoOriginalImageMode || !focusedImageId) {
-      return;
-    }
-
-    if (previousFocusedImageId !== focusedImageId) {
-      setShowImagePreview(true);
-    }
-  }, [autoOriginalImageMode, focusedImageId]);
 
   useEffect(() => {
     if (!autoOriginalImageMode) {

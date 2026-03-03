@@ -491,6 +491,42 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
   );
 
   it(
+    "通过元数据切换按钮选择显示模式后，切换 Sidebar 节点保持该模式",
+    async () => {
+      render(<App />);
+
+      await click(
+        screen.getByRole("button", { name: /forest_pack\.zip/ }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "切换到元数据显示" }),
+        ).toBeInTheDocument();
+      });
+
+      await click(screen.getByRole("button", { name: "切换到元数据显示" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "切换到原图显示" }),
+        ).toBeInTheDocument();
+      });
+
+      await click(
+        screen.getByRole("button", { name: /retro_collection\.zip/ }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "切换到原图显示" }),
+        ).toBeInTheDocument();
+      });
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
     "元数据评分支持清空到空星，并可继续点击设星",
     async () => {
       render(<App />);
