@@ -164,6 +164,41 @@ describe("MediaPlayer 虚拟 UI", () => {
   );
 
   it(
+    "非管理模式下 Delete 总是以当前焦点 Sidebar 节点重建待删列表",
+    async () => {
+      render(<App />);
+      await flushUiUpdates();
+
+      const wideScopeNodeButton = screen.getByRole("button", {
+        name: /X盘\/收藏/,
+      });
+      await click(wideScopeNodeButton);
+      await keyDown(wideScopeNodeButton, { key: "Delete", code: "Delete" });
+
+      let deleteDialog = screen.getByRole("dialog", { name: "永久删除确认" });
+      await click(within(deleteDialog).getByRole("button", { name: "取消" }));
+
+      const focusedPackageButton = screen.getByRole("button", {
+        name: /forest_pack\.zip/,
+      });
+      await click(focusedPackageButton);
+      await keyDown(focusedPackageButton, { key: "Delete", code: "Delete" });
+
+      deleteDialog = screen.getByRole("dialog", { name: "永久删除确认" });
+      const targetList = within(deleteDialog).getByRole("list");
+      const targetItems = within(targetList)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent?.trim() ?? "");
+
+      expect(targetItems).toContain("X:/精选/森林主题/forest_pack.zip");
+      expect(targetItems.some((item) => item.startsWith("X:/收藏"))).toBe(
+        false,
+      );
+    },
+    uiLongTestTimeoutMs,
+  );
+
+  it(
     "Esc 可关闭设置与检索状态，且主区右键不误关闭检索",
     async () => {
       render(<App />);

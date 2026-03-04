@@ -282,6 +282,93 @@ describe("FileSystemMediaReadService", () => {
     expect(nodeStillExists).toBe(false);
   });
 
+  it("管理仅移除父级 folder 且联选子级节点时不应将子节点记为失败", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-manage-remove-only-folder-parent-"),
+    );
+    createdRoots.push(root);
+
+    const parentFolderPath = path.join(root, "parent-remove-only");
+    for (let index = 1; index <= 8; index += 1) {
+      const childFolderPath = path.join(
+        parentFolderPath,
+        `child-${String(index).padStart(2, "0")}`,
+      );
+      await writeBinary(
+        path.join(childFolderPath, "img_01.jpg"),
+        [0xff, 0xd8, 0xff, 0xd9],
+      );
+    }
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const sidebarBefore = await service.readImageSidebarTree({
+      feature_filter: {
+        name_query: "",
+        work_title_query: "",
+        series_id_query: "",
+        circle_query: "",
+        author_query: "",
+        tags: [],
+        grade: null,
+      },
+      grade_overrides: {},
+    });
+
+    const childSources = sidebarBefore.image_directories.filter(
+      (item) =>
+        path.resolve(path.dirname(item.absolute_path)) ===
+        path.resolve(parentFolderPath),
+    );
+    expect(childSources).toHaveLength(8);
+    const firstChild = childSources[0];
+    expect(firstChild).toBeTruthy();
+    if (!firstChild) {
+      throw new Error("child source not found");
+    }
+
+    const parentNodeId = `folder:${firstChild.tree_path.slice(0, -1).join("/")}`;
+    const childNodeIds = childSources.map(
+      (source) => `folder:${source.tree_path.join("/")}`,
+    );
+
+    const result = await service.deleteSidebarNodes({
+      node_ids: [parentNodeId, ...childNodeIds],
+      delete_files: false,
+    });
+
+    expect(result.deleted_count).toBe(1);
+    expect(result.failed).toHaveLength(0);
+
+    const parentFolderStat = await fs.stat(parentFolderPath).catch(() => null);
+    const childImageStat = await fs
+      .stat(path.join(parentFolderPath, "child-01", "img_01.jpg"))
+      .catch(() => null);
+    expect(parentFolderStat?.isDirectory()).toBe(true);
+    expect(childImageStat?.isFile()).toBe(true);
+
+    const sidebarAfter = await service.readImageSidebarTree({
+      feature_filter: {
+        name_query: "",
+        work_title_query: "",
+        series_id_query: "",
+        circle_query: "",
+        author_query: "",
+        tags: [],
+        grade: null,
+      },
+      grade_overrides: {},
+    });
+    const childNodesStillExist = sidebarAfter.image_directories.some(
+      (item) =>
+        path.resolve(path.dirname(item.absolute_path)) ===
+        path.resolve(parentFolderPath),
+    );
+    expect(childNodesStillExist).toBe(false);
+  });
+
 
 
   it("管理删除 Sidebar 节点部分失败时返回 deleted_count 与 failed[] 明细", async () => {

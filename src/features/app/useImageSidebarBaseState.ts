@@ -22,6 +22,7 @@ function compactImageSidebarTree(nodes: SidebarNode[]): SidebarNode[] {
   return compactSidebarTree(nodes, {
     shouldCompressFolderNode: isCompressibleImageFolderNode,
     includeRoot: true,
+    shouldMergeParentIntoChild: (_parent, child) => !isImageMediaNode(child),
   });
 }
 

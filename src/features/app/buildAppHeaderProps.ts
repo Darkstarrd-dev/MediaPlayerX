@@ -32,7 +32,6 @@ interface BuildAppHeaderPropsParams {
   importMenuOpen: boolean
   taskStatusLabel: string
   taskStatusBusy: boolean
-  importReviewAlerting?: boolean
   importTaskPanelOpen: boolean
   autoPlayPresets: number[]
   thumbnailScale: number
@@ -76,7 +75,6 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
     importMenuOpen: params.importMenuOpen,
     taskStatusLabel: params.taskStatusLabel,
     taskStatusBusy: params.taskStatusBusy,
-    importReviewAlerting: Boolean(params.importReviewAlerting),
     importTaskPanelOpen: params.importTaskPanelOpen,
     autoPlayPresets: params.autoPlayPresets,
     onToggleImportMenu: () => params.setImportMenuOpen((value) => !value),

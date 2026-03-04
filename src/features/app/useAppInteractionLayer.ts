@@ -740,15 +740,23 @@ export function useAppInteractionLayer({
           if (sidebarShortcutActive && event.code === "Delete") {
             const hasManageSelection =
               sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0;
-            if (!hasManageSelection) {
-              const targetNodeId =
-                selectedSidebarNodeId &&
-                sidebarNodeById.has(selectedSidebarNodeId)
-                  ? selectedSidebarNodeId
-                  : null;
+            const targetNodeId =
+              selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)
+                ? selectedSidebarNodeId
+                : null;
+
+            if (!manageMode && !metadataManageMode) {
               if (!targetNodeId) {
                 return;
               }
+
+              clearAllSelections();
+              checkSidebarNode(targetNodeId);
+            } else if (!hasManageSelection) {
+              if (!targetNodeId) {
+                return;
+              }
+
               clearAllSelections();
               checkSidebarNode(targetNodeId);
             }

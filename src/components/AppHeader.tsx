@@ -233,7 +233,6 @@ export interface AppHeaderProps {
   importMenuOpen: boolean;
   taskStatusLabel: string;
   taskStatusBusy: boolean;
-  importReviewAlerting?: boolean;
   importTaskPanelOpen: boolean;
   autoPlayPresets: number[];
   onToggleImportMenu: () => void;
@@ -281,7 +280,6 @@ function AppHeader(props: AppHeaderProps) {
     importMenuOpen,
     taskStatusLabel,
     taskStatusBusy,
-    importReviewAlerting = false,
     importTaskPanelOpen,
     onToggleImportMenu,
     onToggleImportTaskPanel,
@@ -421,8 +419,6 @@ function AppHeader(props: AppHeaderProps) {
       : "windowMaximize";
   const taskStateSlot = importTaskPanelOpen
     ? "fg-header-logo-state-open"
-    : importReviewAlerting
-      ? "fg-header-logo-state-review-alert"
     : taskStatusBusy
       ? "fg-header-logo-state-busy"
       : "fg-header-logo-state-idle";
@@ -459,7 +455,7 @@ function AppHeader(props: AppHeaderProps) {
           >
             <button
               aria-label={taskStatusLabel}
-              className={`logo-btn mpx-random-sheen-host ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""} ${importReviewAlerting ? "is-review-alert" : ""} ${logoSweeping ? "is-sweeping" : ""}`}
+              className={`logo-btn mpx-random-sheen-host ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""} ${logoSweeping ? "is-sweeping" : ""}`}
               data-slot="fg-header-logo"
               data-slot-state={taskStateSlot}
               data-tooltip-label={taskStatusLabel}

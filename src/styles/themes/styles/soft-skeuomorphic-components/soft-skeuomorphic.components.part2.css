@@ -124,13 +124,6 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-logo"].is-review-alert {
-  border-color: #d6a39b;
-  background: linear-gradient(135deg, #fbecea 0%, #f6dfdb 50%, #fcefeb 100%);
-  color: #6d3129;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .mode-switch
   button.is-active {
   border-color: #b8b2a6;

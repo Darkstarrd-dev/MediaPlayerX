@@ -57,7 +57,7 @@ describe("useImageSidebarBaseState", () => {
 
     expect(
       result.current.imageTreeForSidebarNormal.map((node) => node.pathKey),
-    ).toEqual(["D:/pkg-d", "X:/pkg-x", "CD Booklet/pkg-cd"]);
+    ).toEqual(["D:", "X:", "CD Booklet"]);
   });
 
   it("压缩根路径后仍将 CD Booklet 分支放到末尾", () => {
@@ -132,11 +132,11 @@ describe("useImageSidebarBaseState", () => {
     const pathKeys = result.current.imageTreeForSidebarNormal.map(
       (node) => node.pathKey,
     );
-    expect(pathKeys[0]).toBe("D:/Gallery/pkg-b");
-    expect(pathKeys[1]).toBe("CD Booklet/Vol.1/pkg-a");
+    expect(pathKeys[0]).toBe("D:/Gallery");
+    expect(pathKeys[1]).toBe("CD Booklet/Vol.1");
   });
 
-  it("compacts single-branch folder chain into one path node", () => {
+  it("单文件单链路压缩会停在父目录节点", () => {
     const imageTreeRaw: SidebarNode[] = [
       {
         id: "folder:C:",
@@ -204,9 +204,11 @@ describe("useImageSidebarBaseState", () => {
     );
 
     const root = result.current.imageTreeForSidebarNormal[0];
-    expect(root?.label).toBe("C:/Users/Houpy/Desktop/20260215/demo.zip");
-    expect(root?.pathKey).toBe("C:/Users/Houpy/Desktop/20260215/demo.zip");
-    expect(root?.children).toHaveLength(0);
+    expect(root?.label).toBe("C:/Users/Houpy/Desktop/20260215");
+    expect(root?.pathKey).toBe("C:/Users/Houpy/Desktop/20260215");
+    expect(root?.children.map((node) => node.pathKey)).toEqual([
+      "C:/Users/Houpy/Desktop/20260215/demo.zip",
+    ]);
   });
 
   it("指针目录显示完整路径并优先展示直属图包", () => {
@@ -309,7 +311,7 @@ describe("useImageSidebarBaseState", () => {
     ]);
     expect(root?.children[2]?.children.map((node) => node.label)).toEqual([
       "2.zip",
-      "cooler/3.zip",
+      "D:/Gallery/cool/cooler",
     ]);
   });
 
@@ -467,7 +469,7 @@ describe("useImageSidebarBaseState", () => {
 
     expect(
       result.current.imageTreeForSidebarNormal.map((node) => node.pathKey),
-    ).toEqual(["Z:/#Sorted/Transit/Media/1.zip"]);
+    ).toEqual(["Z:/#Sorted/Transit/Media"]);
   });
 
   it("层级模式下保留过程性路径节点", () => {
@@ -678,8 +680,10 @@ describe("useImageSidebarBaseState", () => {
     );
 
     const root = result.current.imageTreeForSidebarNormal[0];
-    expect(root?.pathKey).toBe("Z:/Gallery/DirSet");
-    expect(root?.children).toEqual([]);
+    expect(root?.pathKey).toBe("Z:/Gallery");
+    expect(root?.children.map((node) => node.pathKey)).toEqual([
+      "Z:/Gallery/DirSet",
+    ]);
     expect(result.current.normalImageSourceNodeIdMap.get("dir-set")).toBe(
       "folder:Z:/Gallery/DirSet",
     );

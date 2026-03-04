@@ -221,4 +221,5 @@ describe("AppHeader music quick actions", () => {
     );
     expect(header?.style.marginInline).toBe("auto");
   });
+
 });

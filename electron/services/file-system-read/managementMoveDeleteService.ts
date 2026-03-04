@@ -357,7 +357,7 @@ export class ManagementMoveDeleteService {
       pathKey: string,
       kind: "package" | "directory" | "video" | "audio",
       absolutePath: string,
-    ): boolean => {
+    ): void => {
       for (const target of validTargets) {
         const parsed = target.parsed;
         if (!parsed) {
@@ -368,7 +368,6 @@ export class ManagementMoveDeleteService {
           if (pathKeyHasPrefix(pathKey, parsed.pathKey)) {
             target.matched = true;
             rememberSelectedPath(absolutePath, target.nodeId);
-            return true;
           }
           continue;
         }
@@ -380,7 +379,7 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
 
         if (
@@ -390,7 +389,7 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
 
         if (
@@ -400,11 +399,9 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
       }
-
-      return false;
     };
 
     for (const source of snapshot.image_packages) {
@@ -669,7 +666,7 @@ export class ManagementMoveDeleteService {
       pathKey: string,
       kind: "package" | "directory" | "video" | "audio",
       absolutePath: string,
-    ): boolean => {
+    ): void => {
       for (const target of validTargets) {
         const parsed = target.parsed;
         if (!parsed) {
@@ -680,7 +677,6 @@ export class ManagementMoveDeleteService {
           if (pathKeyHasPrefix(pathKey, parsed.pathKey)) {
             target.matched = true;
             rememberSelectedPath(absolutePath, target.nodeId);
-            return true;
           }
           continue;
         }
@@ -692,7 +688,7 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
 
         if (
@@ -702,7 +698,7 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
 
         if (
@@ -712,11 +708,9 @@ export class ManagementMoveDeleteService {
         ) {
           target.matched = true;
           rememberSelectedPath(absolutePath, target.nodeId);
-          return true;
+          continue;
         }
       }
-
-      return false;
     };
 
     for (const source of snapshot.image_packages) {

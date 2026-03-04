@@ -55,6 +55,23 @@ interface ImportStageReviewLogItem {
   created_at_ms: number;
 }
 
+export function resolvePendingReviewNoticeToken(
+  latestCreatedAtMs: number | null,
+): number | null {
+  return latestCreatedAtMs;
+}
+
+export function resolvePendingReviewNoticeVisible(
+  pendingReviewNoticeToken: number | null,
+  dismissedPendingReviewTokenMs: number | null,
+): boolean {
+  return Boolean(
+    pendingReviewNoticeToken !== null &&
+      (dismissedPendingReviewTokenMs === null ||
+        pendingReviewNoticeToken > dismissedPendingReviewTokenMs),
+  );
+}
+
 function parseImportStageReviewLogItems(stateJson: string): ImportStageReviewLogItem[] {
   try {
     const parsed = JSON.parse(stateJson) as unknown
@@ -203,7 +220,6 @@ interface UseAppTopLayerStateParams {
   retryImportTask: (taskId: string) => Promise<void>;
   adReviewRunning: boolean;
   adReviewDeleting: boolean;
-  adReviewQueueTasks: ManageAdReviewTaskDto[];
   onOpenAdReviewFromImportNotice: (taskId: string | null) => void;
   manageOperationHint: string | null;
   clearManageOperationHint: () => void;
@@ -348,7 +364,6 @@ export function useAppTopLayerState({
   retryImportTask,
   adReviewRunning,
   adReviewDeleting,
-  adReviewQueueTasks,
   onOpenAdReviewFromImportNotice,
   manageOperationHint,
   clearManageOperationHint,
@@ -583,29 +598,15 @@ export function useAppTopLayerState({
   const [adReviewQueueTasksFromState, setAdReviewQueueTasksFromState] =
     useState<ManageAdReviewTaskDto[]>([]);
 
-  const mergedAdReviewQueueTasks = useMemo(() => {
-    const taskById = new Map<string, ManageAdReviewTaskDto>();
-    for (const task of adReviewQueueTasksFromState) {
-      taskById.set(task.task_id, task);
-    }
-    for (const task of adReviewQueueTasks) {
-      const previous = taskById.get(task.task_id);
-      if (!previous || task.updated_at_ms >= previous.updated_at_ms) {
-        taskById.set(task.task_id, task);
-      }
-    }
-    return Array.from(taskById.values());
-  }, [adReviewQueueTasks, adReviewQueueTasksFromState]);
-
   const pendingReviewTasks = useMemo(
     () =>
-      mergedAdReviewQueueTasks.filter(
+      adReviewQueueTasksFromState.filter(
         (task) =>
           task.task_id.startsWith("manage-ad-review-import-") &&
           task.status === "review" &&
           task.candidates.length > 0,
       ),
-    [mergedAdReviewQueueTasks],
+    [adReviewQueueTasksFromState],
   );
   const pendingReviewSummary = useMemo(() => {
     const sortedTasks = [...pendingReviewTasks].sort(
@@ -646,17 +647,21 @@ export function useAppTopLayerState({
   const pendingReviewImageCount = pendingReviewSummary.uniqueImageCount;
   const latestPendingReviewTaskId = pendingReviewSummary.latestEffectiveTaskId;
 
-  const [pendingReviewNoticeToken, setPendingReviewNoticeToken] = useState<
-    number | null
-  >(null);
-  const [dismissedPendingReviewToken, setDismissedPendingReviewToken] =
+  const [dismissedPendingReviewTokenMs, setDismissedPendingReviewTokenMs] =
     useState<number | null>(null);
-  const [lastImportPanelOpenedAtMs, setLastImportPanelOpenedAtMs] =
-    useState(0);
   const [importStageReviewLogs, setImportStageReviewLogs] = useState<
     ImportStageReviewLogItem[]
   >([]);
-  const previousImportTaskPanelOpenRef = useRef(importTaskPanelOpen);
+  const previousAdReviewDeletingRef = useRef(adReviewDeleting);
+  const previousImportPipelineBusyRef = useRef(false);
+
+  const latestPendingReviewCreatedAtMs =
+    pendingReviewSummary.latestEffectiveCreatedAtMs > 0
+      ? pendingReviewSummary.latestEffectiveCreatedAtMs
+      : null;
+  const pendingReviewNoticeToken = resolvePendingReviewNoticeToken(
+    latestPendingReviewCreatedAtMs,
+  );
 
   const loadAdReviewQueueTasksForNotice = useCallback(async () => {
     const readAppState = mediaRepository.readAppState;
@@ -679,56 +684,59 @@ export function useAppTopLayerState({
   }, [mediaRepository.readAppState]);
 
   useEffect(() => {
-    const latestCreatedAtMs =
-      pendingReviewSummary.latestEffectiveCreatedAtMs > 0
-        ? pendingReviewSummary.latestEffectiveCreatedAtMs
-        : null;
-    if (latestCreatedAtMs === null) {
-      setPendingReviewNoticeToken(null);
-      setDismissedPendingReviewToken(null);
+    if (pendingReviewNoticeToken !== null || dismissedPendingReviewTokenMs === null) {
       return;
     }
-
-    setPendingReviewNoticeToken((previous) => {
-      if (previous === null) {
-        return latestCreatedAtMs;
-      }
-      return Math.max(previous, latestCreatedAtMs);
-    });
-  }, [pendingReviewSummary.latestEffectiveCreatedAtMs]);
+    setDismissedPendingReviewTokenMs(null);
+  }, [dismissedPendingReviewTokenMs, pendingReviewNoticeToken]);
 
   useEffect(() => {
-    const previous = previousImportTaskPanelOpenRef.current;
-    previousImportTaskPanelOpenRef.current = importTaskPanelOpen;
-    if (!previous && importTaskPanelOpen) {
-      setLastImportPanelOpenedAtMs(Date.now());
+    const previous = previousAdReviewDeletingRef.current;
+    previousAdReviewDeletingRef.current = adReviewDeleting;
+    if (previous && !adReviewDeleting) {
+      void loadAdReviewQueueTasksForNotice();
     }
-  }, [importTaskPanelOpen]);
+  }, [adReviewDeleting, loadAdReviewQueueTasksForNotice]);
 
-  const pendingReviewNoticeVisible = Boolean(
-    pendingReviewNoticeToken !== null &&
-      dismissedPendingReviewToken !== pendingReviewNoticeToken,
+  const importPipelineBusy =
+    enqueuePending ||
+    activeImportTaskCount > 0 ||
+    normalizedPendingArchivePathSet.size > 0 ||
+    normalizedRunningArchivePath !== null ||
+    thumbnailRunningCount > 0;
+
+  useEffect(() => {
+    const previous = previousImportPipelineBusyRef.current;
+    previousImportPipelineBusyRef.current = importPipelineBusy;
+    if (previous && !importPipelineBusy && importTasksForPanel.length > 0) {
+      setImportTaskPanelOpen(true);
+    }
+  }, [
+    importPipelineBusy,
+    importTasksForPanel.length,
+    setImportTaskPanelOpen,
+  ]);
+
+  const pendingReviewNoticeVisible = resolvePendingReviewNoticeVisible(
+    pendingReviewNoticeToken,
+    dismissedPendingReviewTokenMs,
   );
-  const importReviewAlerting =
-    pendingReviewNoticeVisible &&
-    pendingReviewNoticeToken !== null &&
-    pendingReviewNoticeToken > lastImportPanelOpenedAtMs;
 
   const openAdReviewFromImportPanelNotice = useCallback(() => {
-    setLastImportPanelOpenedAtMs(Date.now());
     onOpenAdReviewFromImportNotice(latestPendingReviewTaskId);
   }, [
     latestPendingReviewTaskId,
     onOpenAdReviewFromImportNotice,
   ]);
 
-  const dismissPendingReviewNotice = useCallback(() => {
+  const dismissPendingReviewNotice = () => {
     if (pendingReviewNoticeToken === null) {
       return;
     }
-    setDismissedPendingReviewToken(pendingReviewNoticeToken);
-    setLastImportPanelOpenedAtMs(Date.now());
-  }, [pendingReviewNoticeToken]);
+    setDismissedPendingReviewTokenMs((current) =>
+      current === pendingReviewNoticeToken ? current : pendingReviewNoticeToken,
+    );
+  };
 
   const loadImportStageReviewLogs = useCallback(async () => {
     const readAppState = mediaRepository.readAppState;
@@ -765,7 +773,7 @@ export function useAppTopLayerState({
     if (!onLibraryChanged) {
       return;
     }
-    return onLibraryChanged((payload) => {
+    const unsubscribe = onLibraryChanged((payload) => {
       if (payload.reason === "import-hash-review-updated") {
         void loadAdReviewQueueTasksForNotice();
         void loadImportStageReviewLogs();
@@ -775,6 +783,8 @@ export function useAppTopLayerState({
         void loadAdReviewQueueTasksForNotice();
       }
     });
+
+    return unsubscribe;
   }, [
     loadAdReviewQueueTasksForNotice,
     loadImportStageReviewLogs,
@@ -1148,7 +1158,6 @@ export function useAppTopLayerState({
     importMenuOpen,
     taskStatusLabel,
     taskStatusBusy,
-    importReviewAlerting,
     importTaskPanelOpen,
     autoPlayPresets,
     thumbnailScale: appSettings.thumbnailScale,

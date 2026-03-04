@@ -171,6 +171,247 @@
 
 ## 8. 当前请求结论
 
-- 现阶段功能主链路已具备，但“红闪告警”与“删除后自动清除提示”仍未收敛。
-- 这两个问题本质上都与“队列状态聚合 + 事件时序 + 告警 token 状态机”相关。
+- 现阶段功能主链路已具备，但”红闪告警”与”删除后自动清除提示”仍未收敛。
+- 这两个问题本质上都与”队列状态聚合 + 事件时序 + 告警 token 状态机”相关。
 - 请求专家提供最小改动可落地方案，并附带可执行回归测试矩阵。
+
+---
+
+## 9. 专家诊断结论（2026-03-04）
+
+### 9.0 总体判断
+
+两个问题的核心根因均为 **双数据源合并（`adReviewQueueTasks` + `adReviewQueueTasksFromState`）与事件时序不一致**。具体来说，持久化队列快照 `adReviewQueueTasksFromState` 的刷新时机依赖事件驱动，但关键写操作（如 `removeTaskInternal`）完成后**不会触发重新加载**，导致合并结果残留已失效的任务数据。
+
+---
+
+### 9.1 问题 B 根因（审核删除后提示不自动清除）— 确定性根因
+
+**根因：`adReviewQueueTasksFromState` 在任务被移除前加载，且移除后无事件触发重新加载。**
+
+完整时序如下：
+
+```
+T0: 用户点击删除确认 → confirmDeleteSelectedCandidates() 开始
+T1: 前端调用 IPC confirmManageAdReviewDelete
+T2: 后端 deleteImageItems() 执行 → 删除文件
+T3: 后端 emitLibraryChanged({ reason: “manage-delete-image-items” }) ← 事件发出
+T4: 后端 updateQueueTask() → 更新持久化队列（任务仍存在，candidates 减少）
+T5: 后端返回 IPC 响应
+    ──────────────────────────────────────────────────
+T3': 前端收到 “manage-delete-image-items” 事件
+     → loadAdReviewQueueTasksForNotice() → 读取持久化队列
+     → ⚠️ 此时读到的是 T3 时刻的数据（T4 的 updateQueueTask 尚未执行）
+     → adReviewQueueTasksFromState = 旧版本任务（含全部 candidates）
+    ──────────────────────────────────────────────────
+T6: 前端收到 IPC 响应，执行：
+     → updateTaskInQueue(response.task)     — 更新内存队列 ✓
+     → loadQueueTasks({ silent: true })     — 重载内存队列 ✓
+     → removeTaskInternal(taskId)           — 从持久化 + 内存移除任务 ✓
+T7: removeTaskInternal 完成，写入持久化队列（任务已删除）
+    但 ⚠️ 无事件触发 loadAdReviewQueueTasksForNotice() 重新加载
+```
+
+**结果：**
+- `adReviewQueueTasks`（内存队列，来自 `useManageAdReviewActions`）：任务已正确移除 ✓
+- `adReviewQueueTasksFromState`（持久化快照，来自 `useAppTopLayerState`）：**保留 T3' 时刻加载的旧任务** ✗
+- `mergedAdReviewQueueTasks` 合并逻辑（`useAppTopLayerState.ts:586-598`）：先加载 `adReviewQueueTasksFromState`（含旧任务），再用 `adReviewQueueTasks` 覆盖同 ID 更新版本。由于内存队列已不含该任务，无法覆盖 → **旧任务残留在合并结果中**
+- `pendingReviewTasks` 仍能匹配残留任务 → `pendingReviewSummary` 不归零 → 提示不消失
+
+**涉及代码：**
+- `useManageAdReviewActions.ts:1194` — `removeTaskInternal` 不发出任何事件
+- `useAppTopLayerState.ts:774-776` — `manage-delete-image-items` 事件监听，在任务移除前触发加载
+- `useAppTopLayerState.ts:586-598` — 合并逻辑无法清除仅存于 `adReviewQueueTasksFromState` 中的残留任务
+
+---
+
+### 9.2 问题 A 根因（红闪不触发）— 高置信度推断
+
+经过完整链路追踪，红闪状态机逻辑本身是正确的：
+
+- 任务 ID 前缀 `manage-ad-review-import-`（`manageAdReviewService.ts:978`）与过滤条件（`useAppTopLayerState.ts:604`）**匹配** ✓
+- Zod schema 验证路径正确 ✓
+- `pendingReviewNoticeToken` 设置逻辑正确 ✓
+- `importReviewAlerting` 计算逻辑正确 ✓
+- CSS 动画定义正确（`layout.part1.css:258-277`）✓
+- `buildAppHeaderProps` 透传正确（`buildAppHeaderProps.ts:79`）✓
+- `AppHeader.tsx` class 绑定正确（`AppHeader.tsx:462`）✓
+
+**最可能的根因是问题 B 的衍生效应：**
+
+当用户执行过一次删除操作后，`adReviewQueueTasksFromState` 残留旧任务（问题 B）。此时 `pendingReviewNoticeToken` 被设为旧任务的 `created_at_ms`。用户在操作过程中打开过面板，`lastImportPanelOpenedAtMs` 被更新为接近当前的时间戳。
+
+随后的新导入产生新任务时：
+1. `import-hash-review-updated` 事件触发 `loadAdReviewQueueTasksForNotice()`
+2. 新任务进入 `adReviewQueueTasksFromState`
+3. `pendingReviewSummary.latestEffectiveCreatedAtMs` 更新为新任务的 `created_at_ms`
+4. `pendingReviewNoticeToken` 通过 `Math.max(previous, latestCreatedAtMs)` 更新
+
+但如果残留旧任务的 `created_at_ms` 与新任务的 `created_at_ms` 存在交叉（例如旧任务残留导致 token 未正确重置），或者用户在两次导入之间打开过面板使 `lastImportPanelOpenedAtMs` > 新 token，则 `importReviewAlerting` 为 `false`。
+
+**另一个可能的根因：`pendingReviewNoticeToken` 使用 `useEffect` 延迟设置。**
+
+`pendingReviewNoticeToken` 通过 `useEffect`（`useAppTopLayerState.ts:681-698`）更新，而非 `useMemo`。这导致：
+- 当 `adReviewQueueTasksFromState` 更新后，第一次 render 中 `mergedAdReviewQueueTasks` → `pendingReviewTasks` → `pendingReviewSummary` 全部正确计算
+- 但 `pendingReviewNoticeToken` 仍为旧值（`null` 或旧时间戳）
+- `importReviewAlerting` 在第一次 render 为 `false`
+- `useEffect` 在 render 后执行，更新 `pendingReviewNoticeToken` → 触发第二次 render
+- 第二次 render 中 `importReviewAlerting` 才为 `true`
+
+**这个两次 render 延迟本身不应导致”永不触发”，但如果与其他状态更新（如面板开关、导入完成通知等）产生竞态，可能导致 token 在第二次 render 前被覆盖或面板状态已改变。**
+
+---
+
+### 9.3 单一事实源建议
+
+**建议：Import 面板待审核提示应仅依赖持久化队列（`adReviewQueueTasksFromState`），不应做双源合并。**
+
+理由：
+- 导入阶段 known-hash 审核任务仅在后端创建和管理，前端 `useManageAdReviewActions` 的内存队列是为用户交互式审核设计的
+- 双源合并是问题 B 的直接根因，且增加了状态一致性维护的复杂度
+- 前端通知只需要”是否有待审核任务”这一只读信息，不需要实时的内存队列
+
+---
+
+### 9.4 最小可落地修复方案（P0）
+
+#### 修复点 1：`removeTaskInternal` 完成后强制刷新 `adReviewQueueTasksFromState`
+
+**文件：** `src/features/app/useAppTopLayerState.ts`
+
+**方案：** 在 `manage-delete-image-items` 事件处理中，增加延迟重新加载机制，确保在 `removeTaskInternal` 写入持久化后再读取。
+
+```typescript
+// useAppTopLayerState.ts — 事件监听部分（约 763-782 行）
+// 现有代码：
+if (payload.reason === “manage-delete-image-items”) {
+  void loadAdReviewQueueTasksForNotice();
+}
+
+// 修改为：添加延迟二次加载，覆盖 removeTaskInternal 的写入
+if (payload.reason === “manage-delete-image-items”) {
+  void loadAdReviewQueueTasksForNotice();
+  // removeTaskInternal 在 IPC 响应处理后异步执行，
+  // 延迟再读一次以确保持久化状态已更新
+  setTimeout(() => {
+    void loadAdReviewQueueTasksForNotice();
+  }, 300);
+}
+```
+
+**更优的替代方案：** 让 `removeTaskInternal` 完成后主动通知 `useAppTopLayerState` 刷新。
+
+```typescript
+// useManageAdReviewActions.ts — removeTaskInternal 完成后
+// 在 setQueueTasks 之后（约 1042 行）添加事件通知：
+
+setQueueTasks((previous) =>
+  previous.filter((item) => item.task_id !== taskId),
+);
+// 新增：通知顶层状态刷新持久化快照
+onQueueTaskRemoved?.();
+```
+
+在 `useAppTopLayerState` 接收此回调并调用 `loadAdReviewQueueTasksForNotice()`。
+
+#### 修复点 2：将 `pendingReviewNoticeToken` 从 `useEffect` 改为同步计算
+
+**文件：** `src/features/app/useAppTopLayerState.ts`
+
+**方案：** 将 token 的设置从 `useEffect` 改为 `useRef` + 同步计算，消除两次 render 延迟：
+
+```typescript
+// 替换 useEffect 方案（约 681-698 行），改为 useRef 管理
+const pendingReviewNoticeTokenRef = useRef<number | null>(null);
+
+const latestEffective = pendingReviewSummary.latestEffectiveCreatedAtMs;
+if (latestEffective <= 0) {
+  pendingReviewNoticeTokenRef.current = null;
+  // 同步重置 dismissed token
+} else if (pendingReviewNoticeTokenRef.current === null) {
+  pendingReviewNoticeTokenRef.current = latestEffective;
+} else {
+  pendingReviewNoticeTokenRef.current = Math.max(
+    pendingReviewNoticeTokenRef.current,
+    latestEffective,
+  );
+}
+const pendingReviewNoticeToken = pendingReviewNoticeTokenRef.current;
+```
+
+这样 `importReviewAlerting` 在第一次 render 就能正确计算，消除竞态窗口。
+
+#### 修复点 3：合并逻辑改进 — 已删除任务不参与合并
+
+**文件：** `src/features/app/useAppTopLayerState.ts`
+
+**方案：** 在 `mergedAdReviewQueueTasks` 合并逻辑中，如果 `adReviewQueueTasks`（内存队列）不含某任务但 `adReviewQueueTasksFromState`（持久化快照）包含，在内存队列已初始化（非空数组或已有加载记录）的前提下，**以内存队列为准移除该任务**：
+
+```typescript
+const mergedAdReviewQueueTasks = useMemo(() => {
+  const taskById = new Map<string, ManageAdReviewTaskDto>();
+  for (const task of adReviewQueueTasksFromState) {
+    taskById.set(task.task_id, task);
+  }
+  // 内存队列中的任务覆盖持久化快照
+  const memoryTaskIds = new Set(adReviewQueueTasks.map(t => t.task_id));
+  for (const task of adReviewQueueTasks) {
+    const previous = taskById.get(task.task_id);
+    if (!previous || task.updated_at_ms >= previous.updated_at_ms) {
+      taskById.set(task.task_id, task);
+    }
+  }
+  // 如果内存队列已有数据（非初始空状态），
+  // 则持久化快照中 “仅存于快照” 的 import 任务视为残留，过滤掉
+  if (adReviewQueueTasks.length > 0) {
+    for (const [taskId, task] of taskById) {
+      if (
+        task.task_id.startsWith(“manage-ad-review-import-”) &&
+        !memoryTaskIds.has(taskId)
+      ) {
+        taskById.delete(taskId);
+      }
+    }
+  }
+  return Array.from(taskById.values());
+}, [adReviewQueueTasks, adReviewQueueTasksFromState]);
+```
+
+> **注意：** 此方案有局限性 — 在 `useManageAdReviewActions` 尚未加载时（`adReviewQueueTasks` 为空），会误删合法的导入任务。因此修复点 1（刷新时机保证）是更根本的修复，修复点 3 是防御性补充。
+
+---
+
+### 9.5 推荐实施优先级
+
+| 优先级 | 修复点 | 修复目标 | 影响范围 |
+|--------|--------|----------|----------|
+| P0 | 修复点 1 | 消除 `adReviewQueueTasksFromState` 残留 | 问题 B 根治，问题 A 衍生场景修复 |
+| P0 | 修复点 2 | 消除 token 两次 render 延迟 | 问题 A 竞态窗口消除 |
+| P1 | 修复点 3 | 防御性合并过滤 | 兜底方案，防止任何残留 |
+
+---
+
+### 9.6 回归测试矩阵
+
+| 场景 | 前置条件 | 操作 | 预期结果 |
+|------|----------|------|----------|
+| 1. 首次导入命中 | 空队列，面板关闭 | 导入含 known-hash 命中图片 | Logo 红闪，面板显示待审核摘要 |
+| 2. 首次导入命中（面板打开） | 空队列，面板打开 | 导入含 known-hash 命中图片 | 面板显示待审核摘要，Logo 不闪（面板已打开） |
+| 3. 关闭面板后红闪 | 场景 2 之后 | 关闭面板 | Logo 红闪 |
+| 4. 打开面板后停止红闪 | 场景 3 之后 | 打开面板 | Logo 停止红闪 |
+| 5. 审核删除后提示自动清除 | 有待审核任务 | 选中所有候选 → 确认删除 | 面板待审核摘要自动消失 |
+| 6. 审核删除后红闪停止 | 有待审核任务，Logo 红闪 | 打开面板 → 删除全部候选 | Logo 停止红闪 |
+| 7. 重复导入去重 | 已有待审核任务 A | 再次导入相同图片 | 不产生重复任务 |
+| 8. 手动清除提示 | 有待审核摘要 | 点击清除按钮 | 摘要消失，新导入再次触发 |
+| 9. 部分删除 | 任务有 3 张候选 | 只删除 2 张 | 任务被整体移除，待审核提示根据剩余队列状态更新 |
+| 10. 应用重启后一致性 | 有待审核任务 → 重启应用 | 启动后检查面板和 Logo | 与重启前一致（待审核摘要仍在，如未处理则 Logo 红闪） |
+| 11. 空导入（无命中） | 空队列 | 导入不含命中的图片 | 无待审核任务，Logo 不闪 |
+| 12. silent-delete 模式 | `hitAction=silent-delete` | 导入含命中图片 | 直接删除，无待审核任务，不触发红闪 |
+
+---
+
+### 9.7 附加建议
+
+1. **添加 console.debug 日志**：在 `loadAdReviewQueueTasksForNotice` 的入口和出口添加日志（含加载到的任务数和 task_id 列表），便于在开发模式下追踪事件时序。
+2. **后续重构方向**：中期考虑将 `pendingReviewNoticeToken` 改为基于递增序列号（而非任务时间戳），降低对时间戳比较的敏感度。序列号由后端在每次队列变更时递增并通过事件传播。
+3. **端到端测试**：为”导入 → 命中 → 通知 → 删除 → 通知清除”这条完整链路编写集成测试，使用 `MockMediaRepository` 模拟后端事件流。

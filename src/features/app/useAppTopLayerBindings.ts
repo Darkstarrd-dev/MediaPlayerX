@@ -614,7 +614,6 @@ export function useAppTopLayerBindings({
     retryImportTask: importState.retryImportTask,
     adReviewRunning: displayState.manageAdReview.hasRunningTask,
     adReviewDeleting: displayState.manageAdReview.deletePending,
-    adReviewQueueTasks: displayState.manageAdReview.queueTasks,
     onOpenAdReviewFromImportNotice: openAdReviewFromImportNotice,
     manageOperationHint,
     clearManageOperationHint: () => setManageOperationHint(null),

@@ -3,6 +3,7 @@ import type { SidebarNode } from '../../types'
 interface CompactSidebarTreeOptions {
   shouldCompressFolderNode: (node: SidebarNode) => boolean
   includeRoot?: boolean
+  shouldMergeParentIntoChild?: (parent: SidebarNode, child: SidebarNode) => boolean
 }
 
 function compactSidebarNode(
@@ -17,6 +18,9 @@ function compactSidebarNode(
   if (!isRoot || shouldCompactCurrentRoot) {
     while (options.shouldCompressFolderNode(cursor) && cursor.children.length === 1) {
       const child = cursor.children[0]
+      if (options.shouldMergeParentIntoChild && !options.shouldMergeParentIntoChild(cursor, child)) {
+        break
+      }
       mergedLabels.push(child.label)
       cursor = child
       if (!options.shouldCompressFolderNode(cursor)) {

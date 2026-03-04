@@ -39,6 +39,10 @@ function buildManageDeleteTargetPaths(
       ? readNavigationState.packageByIdEffective.get(node.packageId)
           ?.absolutePath
       : null;
+    const imageSourcePath = node.imageSourceId
+      ? readNavigationState.packageByIdEffective.get(node.imageSourceId)
+          ?.absolutePath
+      : null;
     const videoPath = node.videoId
       ? readNavigationState.videoByIdEffective.get(node.videoId)?.absolutePath
       : null;
@@ -46,7 +50,8 @@ function buildManageDeleteTargetPaths(
       ? readNavigationState.audioByIdEffective.get(node.audioId)?.absolutePath
       : null;
     const fallbackPath = node.pathKey;
-    const resolvedPath = packagePath ?? videoPath ?? audioPath ?? fallbackPath;
+    const resolvedPath =
+      packagePath ?? imageSourcePath ?? videoPath ?? audioPath ?? fallbackPath;
     if (resolvedPath && !pathSet.has(resolvedPath)) {
       pathSet.add(resolvedPath);
       targetPaths.push(resolvedPath);
