@@ -454,6 +454,51 @@
   --mpx-sysinfo-card-transform-origin: var(--mpx-header-transform-origin);
   --mpx-sysinfo-card-transition: var(--mpx-header-transition);
 
+  /* 大面板层（3.0）：整体 / head / shell / side / main */
+  --mpx-large-panel-width: 80vw;
+  --mpx-large-panel-height: 80vh;
+  --mpx-large-panel-max-width: none;
+  --mpx-large-panel-max-height: none;
+  --mpx-large-panel-border-width: 1px;
+  --mpx-large-panel-border-color: var(
+    --mpx-overlay-surface-border,
+    var(--mpx-border-2)
+  );
+  --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
+  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app));
+  --mpx-large-panel-shadow: var(
+    --mpx-overlay-surface-shadow,
+    var(--mpx-shadow-panel)
+  );
+
+  --mpx-large-panel-head-border-width: 1px;
+  --mpx-large-panel-head-border-color: var(--mpx-border-1);
+  --mpx-large-panel-head-padding-y: 10px;
+  --mpx-large-panel-head-padding-x: 14px;
+  --mpx-large-panel-head-bg: transparent;
+  --mpx-large-panel-head-text: inherit;
+
+  --mpx-large-panel-shell-columns: minmax(180px, 20%) 1fr;
+  --mpx-large-panel-shell-no-side-columns: 1fr;
+  --mpx-large-panel-shell-gap: 10px;
+  --mpx-large-panel-shell-padding: 10px;
+
+  --mpx-large-panel-side-border-width: 1px;
+  --mpx-large-panel-side-border-color: var(--mpx-border-1);
+  --mpx-large-panel-side-radius: 10px;
+  --mpx-large-panel-side-bg: var(--mpx-bg-elevated);
+  --mpx-large-panel-side-padding: 10px;
+  --mpx-large-panel-side-gap: 8px;
+
+  --mpx-large-panel-main-border-width: 1px;
+  --mpx-large-panel-main-border-color: var(--mpx-border-1);
+  --mpx-large-panel-main-radius: 10px;
+  --mpx-large-panel-main-bg: var(--mpx-bg-elevated);
+  --mpx-large-panel-main-padding-y: 14px;
+  --mpx-large-panel-main-padding-x: 16px;
+  --mpx-large-panel-main-align-items: flex-start;
+  --mpx-large-panel-main-justify-content: flex-start;
+
   /* 内卡统一 */
   --mpx-card-radius: 10px;
   --mpx-card-shadow: none;

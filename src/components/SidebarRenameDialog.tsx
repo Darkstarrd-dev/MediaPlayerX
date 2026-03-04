@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import { MainUiIcon } from './MainUiIcon'
+import { useDraggablePanel } from './useDraggablePanel'
 
 interface SidebarRenameDialogProps {
   open: boolean
@@ -138,6 +139,7 @@ function SidebarRenameDialog({
   onConfirm,
   onCancel,
 }: SidebarRenameDialogProps) {
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open)
   const previewListRef = useRef<HTMLDivElement | null>(null)
   const [previewListViewportHeight, setPreviewListViewportHeight] = useState(0)
   const [previewListScrollTop, setPreviewListScrollTop] = useState(0)
@@ -239,8 +241,9 @@ function SidebarRenameDialog({
   return (
     <div className="settings-floating-mask" data-slot="fg-sidebar-shortcut-rename-ovl" role="dialog" aria-modal="true" aria-label={inputLabel} data-overlay-close="sidebar-rename-dialog">
       <section
-        className="settings-floating-panel manage-group-dialog sidebar-rename-dialog"
+        className={`mpx-large-panel mpx-large-panel--sidebar-rename manage-group-dialog sidebar-rename-dialog ${panelDragging ? 'is-dragging' : ''}`}
         data-slot="fg-sidebar-shortcut-rename-panel"
+        style={{ transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)` }}
         role="document"
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
@@ -254,7 +257,7 @@ function SidebarRenameDialog({
           }
         }}
       >
-        <div className="sidebar-rename-header">
+        <header className="mpx-large-panel-head settings-head settings-head-draggable sidebar-rename-header" {...headHandlers}>
           <div className="sidebar-rename-header-main">
             <h3 className="sidebar-rename-title">{inputLabel}</h3>
             {previewSummaryText ? <p className="sidebar-rename-preview-summary">{previewSummaryText}</p> : null}
@@ -270,10 +273,12 @@ function SidebarRenameDialog({
           >
             ×
           </button>
-        </div>
-        {batchModeActive ? (
-          <>
-            <div className="sidebar-rename-merge-shell mpx-overlay-merged-stack">
+        </header>
+        <div className="mpx-large-panel-shell settings-shell is-no-side sidebar-rename-shell">
+          <main className="mpx-large-panel-main settings-main sidebar-rename-main">
+            {batchModeActive ? (
+              <>
+                <div className="sidebar-rename-merge-shell mpx-overlay-merged-stack">
               {mode === 'replace' ? (
                 <div className="sidebar-rename-replace-controls mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={modeLabel}>
                   <label className="sidebar-rename-seamless-control sidebar-rename-mode-control">
@@ -517,40 +522,42 @@ function SidebarRenameDialog({
                   ) : null}
                 </div>
               </div>
+                </div>
+              </>
+            ) : (
+              <input
+                className="mpx-overlay-input mpx-overlay-input-compact"
+                aria-label={inputLabel}
+                type="text"
+                value={value}
+                placeholder={inputPlaceholder}
+                disabled={pending}
+                onChange={(event) => onChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    if (!singleConfirmDisabled) {
+                      onConfirm()
+                    }
+                    return
+                  }
+                  if (event.key === 'Escape') {
+                    event.preventDefault()
+                    onCancel()
+                  }
+                }}
+                autoFocus
+              />
+            )}
+            <div className="mpx-overlay-actions mpx-overlay-footer-actions">
+              <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={pending} onClick={onCancel}>
+                {cancelLabel}
+              </button>
+              <button className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
+                {confirmLabel}
+              </button>
             </div>
-          </>
-        ) : (
-          <input
-            className="mpx-overlay-input mpx-overlay-input-compact"
-            aria-label={inputLabel}
-            type="text"
-            value={value}
-            placeholder={inputPlaceholder}
-            disabled={pending}
-            onChange={(event) => onChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                if (!singleConfirmDisabled) {
-                  onConfirm()
-                }
-                return
-              }
-              if (event.key === 'Escape') {
-                event.preventDefault()
-                onCancel()
-              }
-            }}
-            autoFocus
-          />
-        )}
-        <div className="mpx-overlay-actions mpx-overlay-footer-actions">
-          <button className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={pending} onClick={onCancel}>
-            {cancelLabel}
-          </button>
-          <button className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn" type="button" disabled={batchModeActive ? pending : singleConfirmDisabled} onClick={onConfirm}>
-            {confirmLabel}
-          </button>
+          </main>
         </div>
       </section>
     </div>

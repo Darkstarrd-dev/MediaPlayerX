@@ -19,6 +19,7 @@ export interface ThemeParameterDefinition {
   id: string;
   labelKey: string;
   labelTokenKeys?: Record<string, string>;
+  cssVarName?: string;
   min: number;
   max: number;
   step: number;
@@ -53,6 +54,7 @@ function createCssPxParameter({
   return {
     id,
     labelKey,
+    cssVarName: variableName,
     min,
     max,
     step,
@@ -61,6 +63,44 @@ function createCssPxParameter({
     read: (computed) => readCssPxVariable(computed, variableName, fallback),
     apply: (root, value) => {
       root.style.setProperty(variableName, `${value}px`);
+    },
+    reset: (root) => {
+      root.style.removeProperty(variableName);
+    },
+  };
+}
+
+function createCssPercentParameter({
+  id,
+  labelKey,
+  variableName,
+  min,
+  max,
+  step,
+  fallback,
+  valueSuffix,
+}: {
+  id: string;
+  labelKey: string;
+  variableName: string;
+  min: number;
+  max: number;
+  step: number;
+  fallback: number;
+  valueSuffix: "%" | "vw" | "vh";
+}): ThemeParameterDefinition {
+  return {
+    id,
+    labelKey,
+    cssVarName: variableName,
+    min,
+    max,
+    step,
+    fallback,
+    unit: "%",
+    read: (computed) => parseNumber(computed.getPropertyValue(variableName).trim(), fallback),
+    apply: (root, value) => {
+      root.style.setProperty(variableName, `${value}${valueSuffix}`);
     },
     reset: (root) => {
       root.style.removeProperty(variableName);
@@ -551,6 +591,164 @@ export const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
     id: "control-border-width",
     labelKey: "ui.themeParameter.controlBorderWidth",
     variableName: "--mpx-control-border-width",
+    min: 0,
+    max: 6,
+    step: 1,
+    fallback: 1,
+  }),
+];
+
+export const LARGE_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
+  createCssPercentParameter({
+    id: "large-panel-width",
+    labelKey: "ui.themeParameter.largePanelWidth",
+    variableName: "--mpx-large-panel-width",
+    min: 50,
+    max: 98,
+    step: 1,
+    fallback: 80,
+    valueSuffix: "vw",
+  }),
+  createCssPercentParameter({
+    id: "large-panel-height",
+    labelKey: "ui.themeParameter.largePanelHeight",
+    variableName: "--mpx-large-panel-height",
+    min: 50,
+    max: 98,
+    step: 1,
+    fallback: 80,
+    valueSuffix: "vh",
+  }),
+  createCssPxParameter({
+    id: "large-panel-radius",
+    labelKey: "ui.themeParameter.largePanelRadius",
+    variableName: "--mpx-large-panel-radius",
+    min: 0,
+    max: 32,
+    step: 1,
+    fallback: 14,
+  }),
+  createCssPxParameter({
+    id: "large-panel-border-width",
+    labelKey: "ui.themeParameter.largePanelBorderWidth",
+    variableName: "--mpx-large-panel-border-width",
+    min: 0,
+    max: 6,
+    step: 1,
+    fallback: 1,
+  }),
+  createCssPxParameter({
+    id: "large-panel-head-padding-y",
+    labelKey: "ui.themeParameter.largePanelHeadPaddingY",
+    variableName: "--mpx-large-panel-head-padding-y",
+    min: 0,
+    max: 28,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-head-padding-x",
+    labelKey: "ui.themeParameter.largePanelHeadPaddingX",
+    variableName: "--mpx-large-panel-head-padding-x",
+    min: 0,
+    max: 32,
+    step: 1,
+    fallback: 14,
+  }),
+  createCssPxParameter({
+    id: "large-panel-head-border-width",
+    labelKey: "ui.themeParameter.largePanelHeadBorderWidth",
+    variableName: "--mpx-large-panel-head-border-width",
+    min: 0,
+    max: 6,
+    step: 1,
+    fallback: 1,
+  }),
+  createCssPxParameter({
+    id: "large-panel-shell-padding",
+    labelKey: "ui.themeParameter.largePanelShellPadding",
+    variableName: "--mpx-large-panel-shell-padding",
+    min: 0,
+    max: 28,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-shell-gap",
+    labelKey: "ui.themeParameter.largePanelShellGap",
+    variableName: "--mpx-large-panel-shell-gap",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-side-padding",
+    labelKey: "ui.themeParameter.largePanelSidePadding",
+    variableName: "--mpx-large-panel-side-padding",
+    min: 0,
+    max: 36,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-side-gap",
+    labelKey: "ui.themeParameter.largePanelSideGap",
+    variableName: "--mpx-large-panel-side-gap",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 8,
+  }),
+  createCssPxParameter({
+    id: "large-panel-side-radius",
+    labelKey: "ui.themeParameter.largePanelSideRadius",
+    variableName: "--mpx-large-panel-side-radius",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-side-border-width",
+    labelKey: "ui.themeParameter.largePanelSideBorderWidth",
+    variableName: "--mpx-large-panel-side-border-width",
+    min: 0,
+    max: 6,
+    step: 1,
+    fallback: 1,
+  }),
+  createCssPxParameter({
+    id: "large-panel-main-padding-y",
+    labelKey: "ui.themeParameter.largePanelMainPaddingY",
+    variableName: "--mpx-large-panel-main-padding-y",
+    min: 0,
+    max: 36,
+    step: 1,
+    fallback: 14,
+  }),
+  createCssPxParameter({
+    id: "large-panel-main-padding-x",
+    labelKey: "ui.themeParameter.largePanelMainPaddingX",
+    variableName: "--mpx-large-panel-main-padding-x",
+    min: 0,
+    max: 36,
+    step: 1,
+    fallback: 16,
+  }),
+  createCssPxParameter({
+    id: "large-panel-main-radius",
+    labelKey: "ui.themeParameter.largePanelMainRadius",
+    variableName: "--mpx-large-panel-main-radius",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 10,
+  }),
+  createCssPxParameter({
+    id: "large-panel-main-border-width",
+    labelKey: "ui.themeParameter.largePanelMainBorderWidth",
+    variableName: "--mpx-large-panel-main-border-width",
     min: 0,
     max: 6,
     step: 1,

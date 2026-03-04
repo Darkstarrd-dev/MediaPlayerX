@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 
 import { MainUiIcon } from '../MainUiIcon'
+import { useDraggablePanel } from '../useDraggablePanel'
 import { useI18n } from '../../i18n/useI18n'
 import type { ExternalMetadataResultItemDto, SearchExternalMetadataDebugDto } from '../../contracts/backend'
 import type { MetadataFetchTarget } from '../../features/metadata/metadataFetchTargets'
@@ -199,6 +200,7 @@ function MetadataFetchPanel({
   onClose,
   onSaveParsedMetadataToTarget,
 }: MetadataFetchPanelProps) {
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open)
   const { t } = useI18n()
   const resetTargetsRef = useRef<MetadataFetchTarget[]>(targets)
   const resetTargetIdentityKeyRef = useRef<string | null>(null)
@@ -511,8 +513,13 @@ function MetadataFetchPanel({
 
   return (
     <div className="settings-mask" data-slot="fg-main-header-image-metadata-fetch-ovl" role="dialog" aria-modal="true" aria-label={t('a11y.metadata.fetchDialog')} data-overlay-close="metadata-fetch-panel">
-      <section className="settings-panel metadata-fetch-panel" data-slot="fg-main-header-image-metadata-fetch-panel" data-overlay-close="metadata-fetch-panel">
-        <header className="settings-head metadata-fetch-head">
+      <section
+        className={`mpx-large-panel mpx-large-panel--metadata-fetch settings-panel metadata-fetch-panel ${panelDragging ? 'is-dragging' : ''}`}
+        data-slot="fg-main-header-image-metadata-fetch-panel"
+        data-overlay-close="metadata-fetch-panel"
+        style={{ transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)` }}
+      >
+        <header className="mpx-large-panel-head settings-head settings-head-draggable metadata-fetch-head" {...headHandlers}>
           <div className="metadata-fetch-head-main">
             <h2>{t('ui.metadata.fetchTitle')}</h2>
             <p className="settings-placeholder metadata-fetch-head-placeholder">
@@ -524,8 +531,10 @@ function MetadataFetchPanel({
           </button>
         </header>
 
-        <div className="metadata-fetch-shell settings-block mpx-scrollbar-hidden mpx-overlay-merged-stack">
-          <div className="metadata-fetch-search-row mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={t('ui.metadata.fetchSearchParams')}>
+        <div className="mpx-large-panel-shell settings-shell is-no-side metadata-fetch-shell-wrap">
+          <main className="mpx-large-panel-main settings-main metadata-fetch-main mpx-scrollbar-hidden">
+            <div className="metadata-fetch-shell settings-block mpx-overlay-merged-stack">
+              <div className="metadata-fetch-search-row mpx-overlay-merged-top mpx-overlay-seamless-row" aria-label={t('ui.metadata.fetchSearchParams')}>
             <div className="metadata-fetch-source-group" role="group" aria-label={t('a11y.metadata.fetchSourceSwitch')}>
               <button type="button" className={`metadata-fetch-mode-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn ${sourceMode === 'nhentai' ? 'is-active' : ''}`} aria-pressed={sourceMode === 'nhentai'} onClick={() => setSourceMode('nhentai')}>
                 N
@@ -597,10 +606,10 @@ function MetadataFetchPanel({
               </button>
             </div>
           </div>
-          {currentRuntime.error ? <p className="settings-danger-text">{currentRuntime.error}</p> : null}
+              {currentRuntime.error ? <p className="settings-danger-text">{currentRuntime.error}</p> : null}
 
-          <div className="metadata-fetch-results mpx-overlay-merged-bottom">
-            {SOURCE_KEYS.map((source) => {
+              <div className="metadata-fetch-results mpx-overlay-merged-bottom">
+                {SOURCE_KEYS.map((source) => {
               const list = currentRuntime.sourceLists[source]
               const selectedIndex = currentRuntime.selectedIndexBySource[source] ?? 0
               const isActiveSource = selectedSource === source
@@ -884,8 +893,10 @@ function MetadataFetchPanel({
                   </div>
                 </section>
               )
-            })}
-          </div>
+                })}
+              </div>
+            </div>
+          </main>
         </div>
       </section>
     </div>

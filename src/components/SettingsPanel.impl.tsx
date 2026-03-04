@@ -1,10 +1,8 @@
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
-  type PointerEvent as ReactPointerEvent,
 } from "react";
 
 import {
@@ -24,6 +22,7 @@ import { buildA11yProps } from "../i18n/a11y";
 import { a11yRegistry } from "../i18n/ariaRegistry";
 import { useI18n } from "../i18n/useI18n";
 import { MainUiIcon } from "./MainUiIcon";
+import { useDraggablePanel } from "./useDraggablePanel";
 import { SettingsShortcutBindingDialog } from "./settings/SettingsShortcutBindingDialog";
 import { SettingsShortcutCaptureDialog } from "./settings/SettingsShortcutCaptureDialog";
 import {
@@ -31,8 +30,6 @@ import {
   CPU_TOKEN_LIMIT_MIN,
   MOUSE_CAPTURE_PRESETS,
   type BindingTarget,
-  type PanelDragState,
-  type PanelOffset,
   SETTINGS_SECTIONS,
   THUMBNAIL_GENERATION_CONCURRENCY_MAX,
   THUMBNAIL_GENERATION_CONCURRENCY_MIN,
@@ -43,7 +40,6 @@ import {
   THUMBNAIL_WIDTH_MAX,
   THUMBNAIL_WIDTH_MIN,
   resolveSettingsSection,
-  shouldIgnoreSettingsPanelDragStart,
 } from "./settings/settingsPanelHelpers";
 import {
   resolveRuntimeSpacing,
@@ -328,13 +324,9 @@ function SettingsPanel({
   const [cpuTokenLimitInput, setCpuTokenLimitInput] = useState(() =>
     String(cpuTokenLimit),
   );
-  const settingsPanelRef = useRef<HTMLElement>(null);
-  const panelDragStateRef = useRef<PanelDragState | null>(null);
-  const [settingsPanelOffset, setSettingsPanelOffset] = useState<PanelOffset>({
-    x: 0,
-    y: 0,
-  });
-  const [settingsPanelDragging, setSettingsPanelDragging] = useState(false);
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(
+    settingsOpen,
+  );
   const {
     preferenceDebugLoading,
     preferenceDebugError,
@@ -453,9 +445,6 @@ function SettingsPanel({
       setThumbnailResolveConcurrencyInput(String(thumbnailResolveConcurrency));
       setThumbnailQueueSizeInput(String(thumbnailQueueSize));
       setCpuTokenLimitInput(String(cpuTokenLimit));
-      panelDragStateRef.current = null;
-      setSettingsPanelOffset({ x: 0, y: 0 });
-      setSettingsPanelDragging(false);
       resetPreferenceDebugState();
     }
   }, [
@@ -860,92 +849,6 @@ function SettingsPanel({
     }
   };
 
-  const stopSettingsPanelDragging = () => {
-    panelDragStateRef.current = null;
-    setSettingsPanelDragging(false);
-  };
-
-  const handleSettingsHeadPointerDown = (
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    if (event.button !== 0) {
-      return;
-    }
-    if (shouldIgnoreSettingsPanelDragStart(event.target)) {
-      return;
-    }
-
-    panelDragStateRef.current = {
-      pointerId: event.pointerId,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      startOffsetX: settingsPanelOffset.x,
-      startOffsetY: settingsPanelOffset.y,
-    };
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setSettingsPanelDragging(true);
-    event.preventDefault();
-  };
-
-  const handleSettingsHeadPointerMove = (
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    const dragState = panelDragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const nextOffset = {
-      x: dragState.startOffsetX + (event.clientX - dragState.startClientX),
-      y: dragState.startOffsetY + (event.clientY - dragState.startClientY),
-    };
-
-    setSettingsPanelOffset((previousOffset) => {
-      if (
-        Math.abs(previousOffset.x - nextOffset.x) < 0.5 &&
-        Math.abs(previousOffset.y - nextOffset.y) < 0.5
-      ) {
-        return previousOffset;
-      }
-      return nextOffset;
-    });
-
-    event.preventDefault();
-  };
-
-  const handleSettingsHeadPointerUp = (
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    const dragState = panelDragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    stopSettingsPanelDragging();
-  };
-
-  const handleSettingsHeadPointerCancel = (
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) => {
-    const dragState = panelDragStateRef.current;
-    if (!dragState || dragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    stopSettingsPanelDragging();
-  };
-
-  const handleSettingsHeadLostPointerCapture = () => {
-    stopSettingsPanelDragging();
-  };
-
   const mainSection = renderSettingsMainSection({
     t,
     activeSection,
@@ -1303,23 +1206,18 @@ function SettingsPanel({
       data-overlay-close="settings"
     >
       <section
-        ref={settingsPanelRef}
-        className={`settings-panel ${settingsPanelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--settings settings-panel ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g1-settings-root-panel"
         style={{
           fontSize: `${settingsFontSize}px`,
-          transform: `translate(${settingsPanelOffset.x}px, ${settingsPanelOffset.y}px)`,
+          transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)`,
         }}
       >
         <div
-          className="settings-head settings-head-draggable"
-          onPointerDown={handleSettingsHeadPointerDown}
-          onPointerMove={handleSettingsHeadPointerMove}
-          onPointerUp={handleSettingsHeadPointerUp}
-          onPointerCancel={handleSettingsHeadPointerCancel}
-          onLostPointerCapture={handleSettingsHeadLostPointerCapture}
+          className="mpx-large-panel-head settings-head settings-head-draggable"
+          {...headHandlers}
         >
-          <span className="settings-head-spacer" aria-hidden="true" />
+          <span className="mpx-large-panel-head-spacer settings-head-spacer" aria-hidden="true" />
           <h2>{t("ui.settings.panel")}</h2>
           <button
             {...settingsCloseA11y}
@@ -1332,9 +1230,9 @@ function SettingsPanel({
           </button>
         </div>
 
-        <div className="settings-shell">
+        <div className="mpx-large-panel-shell settings-shell">
           <aside
-            className="settings-side"
+            className="mpx-large-panel-side settings-side"
             aria-label={t(a11yRegistry.settingsGroups.labelKey)}
           >
             {SETTINGS_SECTIONS.map((section) => (
@@ -1352,7 +1250,7 @@ function SettingsPanel({
             ))}
           </aside>
 
-          <main className="settings-main mpx-scroll-area">{mainSection}</main>
+          <main className="mpx-large-panel-main settings-main mpx-scroll-area">{mainSection}</main>
         </div>
 
         {bindingTarget ? (

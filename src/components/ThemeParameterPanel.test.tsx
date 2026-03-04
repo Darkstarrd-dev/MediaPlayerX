@@ -105,6 +105,7 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-panel-radius"),
     ).toBe("18px");
 
+    fireEvent.click(screen.getByRole("button", { name: "操作" }));
     fireEvent.click(screen.getByRole("button", { name: "重置当前风格参数" }));
     expect(
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
@@ -172,6 +173,11 @@ describe("ThemeParameterPanel", () => {
     fireEvent.change(getSliderByLabelText("布局内边距"), {
       target: { value: "14" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-bg-app" }), {
+      target: { value: "#123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
 
     const snapshotTextarea = screen.getByLabelText(
@@ -179,6 +185,8 @@ describe("ThemeParameterPanel", () => {
     ) as HTMLTextAreaElement;
     expect(snapshotTextarea.value).toContain('"styleId": "soft-skeuomorphic"');
     expect(snapshotTextarea.value).toContain('"layout-padding": 14');
+    expect(snapshotTextarea.value).toContain('"debugColors"');
+    expect(snapshotTextarea.value).toContain('"container-bg-app": "#123456"');
 
     fireEvent.change(snapshotTextarea, {
       target: {
@@ -189,6 +197,9 @@ describe("ThemeParameterPanel", () => {
             values: {
               "layout-padding": 9,
               "skeuo-shadow-strength": 26,
+            },
+            debugColors: {
+              "container-bg-app": "#112233",
             },
           },
           null,
@@ -207,6 +218,9 @@ describe("ThemeParameterPanel", () => {
         "--mpx-skeuo-shadow-dark",
       ),
     ).toContain("26%");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-bg-app").trim(),
+    ).toBe("#112233");
     expect(screen.getByText(/快照来自风格 liquid-glass/)).toBeInTheDocument();
   });
 
@@ -226,6 +240,8 @@ describe("ThemeParameterPanel", () => {
       .mockImplementation(() => {});
 
     renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
 
     fireEvent.click(screen.getByRole("button", { name: "下载 JSON文件" }));
     expect(createObjectUrl).toHaveBeenCalledTimes(1);
@@ -279,5 +295,75 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "关闭主题参数面板" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("支持大容器层与大面板层全局预览开关，并在面板关闭后恢复", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.click(screen.getByRole("button", { name: "仅背景层预览" }));
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBe("bg-only");
+
+    fireEvent.click(screen.getByRole("button", { name: "仅背景层预览" }));
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "背景层 + 大容器层预览" }),
+    );
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBe("bg-plus-container");
+
+    fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "背景层 + 大面板层预览" }),
+    );
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBe("bg-plus-large-panel");
+    expect(
+      document.querySelector(".theme-debug-large-panel-preview-side"),
+    ).not.toBeNull();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBeNull();
+  });
+
+  it("大容器层颜色项支持复位到主题默认值", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-bg-app" }), {
+      target: { value: "#abcdef" },
+    });
+
+    const fieldInput = screen.getByRole("textbox", { name: "--mpx-bg-app" });
+    const control = fieldInput.closest(".theme-parameter-color-control");
+    expect(control).not.toBeNull();
+    const resetButton = control?.querySelector(".theme-parameter-reset-btn") as
+      | HTMLButtonElement
+      | null;
+    expect(resetButton).not.toBeNull();
+    fireEvent.click(resetButton as HTMLButtonElement);
+
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-bg-app").trim(),
+    ).toBe("");
   });
 });

@@ -602,9 +602,19 @@
 }
 
 .metadata-fetch-panel {
-  width: min(1280px, 96vw);
-  height: min(88vh, 900px);
+  --mpx-large-panel-width: 80vw;
+  --mpx-large-panel-height: 80vh;
   overflow: hidden;
+}
+
+.metadata-fetch-shell-wrap {
+  min-height: 0;
+}
+
+.metadata-fetch-main {
+  align-items: stretch;
+  overflow: hidden;
+  padding: 0;
 }
 
 [data-slot="fg-main-header-image-metadata-fetch-panel"] .metadata-fetch-head {
@@ -1032,8 +1042,8 @@
 
 @media (max-width: 960px) {
   .metadata-fetch-panel {
-    width: min(96vw, 96vw);
-    height: min(92vh, 92vh);
+    --mpx-large-panel-width: 96vw;
+    --mpx-large-panel-height: 92vh;
   }
 
   .metadata-fetch-search-row {

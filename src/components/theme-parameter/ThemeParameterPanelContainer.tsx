@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
+import { useDraggablePanel } from "../useDraggablePanel";
 import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
+import type {
+  ThemeParameterPageId,
+  ThemeParameterPreviewMode,
+} from "./ThemeParameterPanelMain";
 import { includesSearch, readFileAsText } from "./themeParameterUtils";
 import {
   COMMON_PARAMETERS,
   EMPTY_PARAMETERS,
+  LARGE_PANEL_PARAMETERS,
   readParameterValues,
   resolveParameterLabel,
   resolveStyleGroup,
@@ -15,6 +21,33 @@ import {
   type ThemeParameterDefinition,
   type ThemeParameterValues,
 } from "./themeParameterDefinitions";
+
+const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
+
+const CONTAINER_LAYER_PARAMETER_IDS = new Set([
+  "layout-padding",
+  "splitter-width",
+  "panel-radius",
+  "header-radius",
+  "card-radius",
+  "panel-border-width",
+  "skeuo-pane-elevation",
+  "skeuo-container-elevation",
+  "skeuo-header-gap",
+  "liquid-glass-surface-opacity",
+  "neobrutalism-shadow-offset",
+  "neobrutalism-border-width",
+  "neobrutalism-corner-radius",
+]);
+
+function isContainerLayerParameter(
+  parameter: ThemeParameterDefinition,
+): boolean {
+  if (CONTAINER_LAYER_PARAMETER_IDS.has(parameter.id)) {
+    return true;
+  }
+  return parameter.id.includes("-pane-");
+}
 
 interface ThemeParameterPanelProps {
   open: boolean;
@@ -27,6 +60,123 @@ interface ThemeParameterSnapshot {
   version: 1;
   styleId: string;
   values: Record<string, number>;
+  debugColors?: Record<string, string>;
+}
+
+interface SnapshotColorField {
+  id: string;
+  cssVar: string;
+  fallback: string;
+}
+
+const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
+  { id: "container-bg-app", cssVar: "--mpx-bg-app", fallback: "#f2eee7" },
+  {
+    id: "container-bg-workspace",
+    cssVar: "--mpx-bg-workspace",
+    fallback: "#f3f0ea",
+  },
+  {
+    id: "container-bg-panel",
+    cssVar: "--mpx-bg-panel",
+    fallback: "#fbf8f3",
+  },
+  {
+    id: "container-bg-elevated",
+    cssVar: "--mpx-bg-elevated",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-metal-light",
+    cssVar: "--mpx-metal-light",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-metal-base",
+    cssVar: "--mpx-metal-base",
+    fallback: "#e6e2da",
+  },
+  {
+    id: "container-border-1",
+    cssVar: "--mpx-border-1",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "container-border-2",
+    cssVar: "--mpx-border-2",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "large-panel-border-color",
+    cssVar: "--mpx-large-panel-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-bg",
+    cssVar: "--mpx-large-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-head-border-color",
+    cssVar: "--mpx-large-panel-head-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-head-bg",
+    cssVar: "--mpx-large-panel-head-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-side-border-color",
+    cssVar: "--mpx-large-panel-side-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-side-bg",
+    cssVar: "--mpx-large-panel-side-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-main-border-color",
+    cssVar: "--mpx-large-panel-main-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-main-bg",
+    cssVar: "--mpx-large-panel-main-bg",
+    fallback: "#ffffff",
+  },
+];
+
+function normalizeHexColor(value: string): string | null {
+  const normalized = value.trim();
+  if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+    return normalized.toLowerCase();
+  }
+  if (/^#[0-9a-f]{3}$/i.test(normalized)) {
+    const [r, g, b] = normalized.slice(1).split("");
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  const rgbMatch = normalized.match(
+    /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/i,
+  );
+  if (!rgbMatch) {
+    return null;
+  }
+  const [r, g, b] = rgbMatch.slice(1, 4).map((item) =>
+    Math.max(0, Math.min(255, Number(item))),
+  );
+  const toHex = (channel: number) => channel.toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function readCssColorAsHex(
+  computed: CSSStyleDeclaration,
+  cssVar: string,
+  fallback: string,
+): string {
+  const raw = computed.getPropertyValue(cssVar).trim();
+  return normalizeHexColor(raw) ?? fallback;
 }
 
 function ThemeParameterPanel({
@@ -42,17 +192,32 @@ function ThemeParameterPanel({
   const parameters = useMemo(
     () =>
       styleGroup === "default"
-        ? COMMON_PARAMETERS
-        : [...COMMON_PARAMETERS, ...STYLE_PARAMETERS[styleGroup]],
+        ? [...COMMON_PARAMETERS, ...LARGE_PANEL_PARAMETERS]
+        : [
+            ...COMMON_PARAMETERS,
+            ...STYLE_PARAMETERS[styleGroup],
+            ...LARGE_PANEL_PARAMETERS,
+          ],
     [styleGroup],
   );
   const [values, setValues] = useState<ThemeParameterValues>({});
+  const [activePage, setActivePage] = useState<ThemeParameterPageId>(
+    "parameters",
+  );
+  const [activePreviewMode, setActivePreviewMode] =
+    useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
   const [commonExpanded, setCommonExpanded] = useState(true);
   const [styleExpanded, setStyleExpanded] = useState(true);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotMessage, setSnapshotMessage] = useState("");
   const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
+
+  const containerLayerParameters = useMemo(
+    () => parameters.filter(isContainerLayerParameter),
+    [parameters],
+  );
 
   const filteredCommonParameters = useMemo(() => {
     const keyword = searchText.trim();
@@ -78,9 +243,22 @@ function ThemeParameterPanel({
     if (!open) {
       return;
     }
+    setActivePage("parameters");
+    setActivePreviewMode("none");
     setValues(readParameterValues(parameters));
     setSnapshotMessage("");
   }, [open, parameters, styleId]);
+
+  useEffect(() => {
+    if (!open || activePreviewMode === "none") {
+      document.documentElement.removeAttribute(PREVIEW_MODE_ATTR);
+      return;
+    }
+    document.documentElement.setAttribute(PREVIEW_MODE_ATTR, activePreviewMode);
+    return () => {
+      document.documentElement.removeAttribute(PREVIEW_MODE_ATTR);
+    };
+  }, [activePreviewMode, open]);
 
   if (!open) {
     return null;
@@ -125,6 +303,7 @@ function ThemeParameterPanel({
   };
 
   const buildSnapshotPayload = (): ThemeParameterSnapshot => {
+    const computed = getComputedStyle(document.documentElement);
     return {
       version: 1,
       styleId,
@@ -132,6 +311,12 @@ function ThemeParameterPanel({
         parameters.map((parameter) => [
           parameter.id,
           values[parameter.id] ?? parameter.fallback,
+        ]),
+      ),
+      debugColors: Object.fromEntries(
+        SNAPSHOT_COLOR_FIELDS.map((field) => [
+          field.id,
+          readCssColorAsHex(computed, field.cssVar, field.fallback),
         ]),
       ),
     };
@@ -250,6 +435,20 @@ function ThemeParameterPanel({
       nextValues[parameter.id] = normalized;
       parameter.apply(root, normalized, nextValues);
     }
+    if (payload.debugColors && typeof payload.debugColors === "object") {
+      const debugColors = payload.debugColors as Record<string, unknown>;
+      for (const field of SNAPSHOT_COLOR_FIELDS) {
+        const rawColor = debugColors[field.id];
+        if (typeof rawColor !== "string") {
+          continue;
+        }
+        const normalizedColor = normalizeHexColor(rawColor);
+        if (!normalizedColor) {
+          continue;
+        }
+        root.style.setProperty(field.cssVar, normalizedColor);
+      }
+    }
     setValues(nextValues);
     if (payload.styleId && payload.styleId !== styleId) {
       setSnapshotMessage(
@@ -267,11 +466,41 @@ function ThemeParameterPanel({
     for (const parameter of parameters) {
       parameter.reset(root);
     }
+    for (const field of SNAPSHOT_COLOR_FIELDS) {
+      root.style.removeProperty(field.cssVar);
+    }
     setValues(readParameterValues(parameters));
+  };
+
+  const isParameterChanged = (parameter: ThemeParameterDefinition): boolean => {
+    if (parameter.cssVarName) {
+      return document.documentElement.style
+        .getPropertyValue(parameter.cssVarName)
+        .trim().length > 0;
+    }
+    const value = values[parameter.id] ?? parameter.fallback;
+    return Math.abs(value - parameter.fallback) > 1e-6;
+  };
+
+  const resetSingleParameter = (parameter: ThemeParameterDefinition) => {
+    const root = document.documentElement;
+    parameter.reset(root);
+    const computed = getComputedStyle(root);
+    const nextValue = parameter.read(computed);
+    setValues((previous) => ({
+      ...previous,
+      [parameter.id]: nextValue,
+    }));
   };
 
   const resolveLabel = (parameter: ThemeParameterDefinition): string => {
     return resolveParameterLabel(parameter, t);
+  };
+
+  const togglePreviewMode = (
+    mode: Exclude<ThemeParameterPreviewMode, "none">,
+  ) => {
+    setActivePreviewMode((previous) => (previous === mode ? "none" : mode));
   };
 
   return (
@@ -283,13 +512,33 @@ function ThemeParameterPanel({
       aria-modal="true"
       data-overlay-close="theme-parameter"
     >
+      {activePreviewMode === "bg-plus-large-panel" ? (
+        <div className="theme-debug-large-panel-preview-layer" aria-hidden="true">
+          <section className="mpx-large-panel theme-debug-large-panel-preview">
+            <header className="mpx-large-panel-head theme-debug-large-panel-preview-head" />
+            <div className="mpx-large-panel-shell theme-debug-large-panel-preview-shell">
+              <aside className="mpx-large-panel-side theme-debug-large-panel-preview-side" />
+              <main className="mpx-large-panel-main theme-debug-large-panel-preview-main" />
+            </div>
+          </section>
+        </div>
+      ) : null}
       <section
-        className="settings-panel theme-parameter-panel"
+        className={`mpx-large-panel mpx-large-panel--theme-parameter settings-panel theme-parameter-panel ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g3-theme-parameter-root-panel"
-        style={{ fontSize: `${settingsFontSize}px` }}
+        style={{
+          fontSize: `${settingsFontSize}px`,
+          transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)`,
+        }}
       >
-        <div className="settings-head">
-          <span className="settings-head-spacer" aria-hidden="true" />
+        <div
+          className="mpx-large-panel-head settings-head settings-head-draggable"
+          {...headHandlers}
+        >
+          <span
+            className="mpx-large-panel-head-spacer settings-head-spacer"
+            aria-hidden="true"
+          />
           <h2>{t("ui.themeParameter.panel")}</h2>
           <button
             {...closeA11y}
@@ -304,6 +553,10 @@ function ThemeParameterPanel({
         <ThemeParameterPanelMain
           t={t}
           styleId={styleId}
+          activePage={activePage}
+          setActivePage={setActivePage}
+          activePreviewMode={activePreviewMode}
+          togglePreviewMode={togglePreviewMode}
           searchText={searchText}
           setSearchText={setSearchText}
           snapshotJson={snapshotJson}
@@ -324,8 +577,12 @@ function ThemeParameterPanel({
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}
+          containerLayerParameters={containerLayerParameters}
+          largePanelLayerParameters={LARGE_PANEL_PARAMETERS}
           values={values}
           applyParameter={applyParameter}
+          isParameterChanged={isParameterChanged}
+          resetSingleParameter={resetSingleParameter}
           resolveLabel={resolveLabel}
           resetCurrentStyleParameters={resetCurrentStyleParameters}
         />

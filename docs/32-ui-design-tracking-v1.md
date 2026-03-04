@@ -219,3 +219,296 @@ css 的触发点
 
 说明
 Import Task 已独立为 `2.5`，不再走 `fg-header-g1-task-*` 命名；同时保留与 `2.0` 通用壳层一致的外壳风格。
+
+## 3.0 大面板层（基架）
+
+用在什么地方
+定义“设置面板风格”的通用大面板骨架，覆盖 `root / head / shell / side / main` 五个层级。
+本阶段仅建立通用链路，不把 `3.1~3.6` 全量面板强制切到新结构。
+
+css 的触发点
+`src/styles/themes/contract.css`（新增 3.0 通用语义 token）
+`src/styles/themes/styles/_style-template.css`（新增 style 模板同构 token）
+`src/styles/app/settings/settings.part1.css`（新增 `.mpx-large-panel*` 基础类，并让 `.settings-*` 走 3.0 token）
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+`--mpx-large-panel-border-width`（大面板边框宽度）
+`--mpx-large-panel-border-color`（大面板边框颜色）
+`--mpx-large-panel-radius`（大面板圆角）
+`--mpx-large-panel-bg`（大面板背景）
+`--mpx-large-panel-shadow`（大面板阴影）
+
+`--mpx-large-panel-width = 80vw`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-height = 80vh`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-border-width = 1px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-border-color = var(--mpx-overlay-surface-border, var(--mpx-border-2))`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-radius = var(--mpx-radius-overlay-pop, 14px)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-bg = var(--mpx-overlay-surface-bg, var(--mpx-bg-app))`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-shadow = var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-head-border-width`（head 分割线宽度）
+`--mpx-large-panel-head-border-color`（head 分割线颜色）
+`--mpx-large-panel-head-padding-y`（head 纵向内边距）
+`--mpx-large-panel-head-padding-x`（head 横向内边距）
+`--mpx-large-panel-head-bg`（head 背景）
+`--mpx-large-panel-head-text`（head 文本色）
+
+`--mpx-large-panel-head-border-width = 1px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-head-border-color = var(--mpx-border-1)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-head-padding-y = 10px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-head-padding-x = 14px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-head-bg = transparent`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-head-text = inherit`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-shell-columns`（shell 双栏网格）
+`--mpx-large-panel-shell-no-side-columns`（无 side 时单栏网格）
+`--mpx-large-panel-shell-gap`（shell 栏间距）
+`--mpx-large-panel-shell-padding`（shell 内边距）
+
+`--mpx-large-panel-shell-columns = minmax(180px, 20%) 1fr`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-shell-no-side-columns = 1fr`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-shell-gap = 10px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-shell-padding = 10px`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-side-border-width`（side 边框宽度）
+`--mpx-large-panel-side-border-color`（side 边框颜色）
+`--mpx-large-panel-side-radius`（side 圆角）
+`--mpx-large-panel-side-bg`（side 背景）
+`--mpx-large-panel-side-padding`（side 内边距）
+`--mpx-large-panel-side-gap`（side 按钮间距）
+
+`--mpx-large-panel-side-border-width = 1px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-side-border-color = var(--mpx-border-1)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-side-radius = 10px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-side-bg = var(--mpx-bg-elevated)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-side-padding = 10px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-side-gap = 8px`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-main-border-width`（main 边框宽度）
+`--mpx-large-panel-main-border-color`（main 边框颜色）
+`--mpx-large-panel-main-radius`（main 圆角）
+`--mpx-large-panel-main-bg`（main 背景）
+`--mpx-large-panel-main-padding-y`（main 纵向内边距）
+`--mpx-large-panel-main-padding-x`（main 横向内边距）
+`--mpx-large-panel-main-align-items`（main 纵轴对齐）
+`--mpx-large-panel-main-justify-content`（main 横轴对齐）
+
+`--mpx-large-panel-main-border-width = 1px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-border-color = var(--mpx-border-1)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-radius = 10px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-bg = var(--mpx-bg-elevated)`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-padding-y = 14px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-padding-x = 16px`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-align-items = flex-start`（`src/styles/themes/contract.css`）
+`--mpx-large-panel-main-justify-content = flex-start`（`src/styles/themes/contract.css`）
+
+说明
+当前阶段只完成 3.0 基架：
+1) 统一参数入口已建立（可全局调节大面板整体与 `head/side/main`）。
+2) `settings-*` 已接入同一套 3.0 token，现有视觉保持不变。
+3) `3.1~3.6` 的具体结构迁移与差异收口，留在后续步骤逐项执行。
+
+当前统一能力（3.1~3.6）
+1) 六个大面板遮罩层统一受 `--mpx-settings-backdrop-opacity` 影响。
+2) 六个大面板头部均支持拖拽移动（交互规则与设置面板一致，按钮/输入等控件不触发拖拽）。
+
+## 3.1 设置面板
+
+用在什么地方
+`fg-header-g1-settings-root-panel`（`SettingsPanel`）已接入 3.0 大面板骨架，使用 `head + side + main`。
+
+css 的触发点
+`src/components/SettingsPanel.impl.tsx`
+`src/styles/app/settings/settings.part1.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`settings-panel` 走 `--mpx-large-panel-width/height`
+默认值沿用 3.0：`80vw / 80vh`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-side-bg`（side 背景）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-header-g1-settings-root-panel']` 已建立 slot -> 3.0 token 映射（`src/styles/app/settings/settings.part1.css`）。
+
+说明
+设置面板当前作为 3.0 基架基准实现，后续面板默认向该骨架收口。
+
+## 3.2 主题参数面板
+
+用在什么地方
+`ThemeParameterPanel` 已接入 3.0 大面板基架，并拆分为 side 分页导航 + main 分页内容。
+
+css 的触发点
+`src/components/theme-parameter/ThemeParameterPanelContainer.tsx`（接入大面板骨架类）
+`src/components/theme-parameter/ThemeParameterPanelMain.tsx`（side 分页按钮与 main 分页内容）
+`src/styles/app/settings/settings.part1.css`（`theme-parameter` 的 side 按钮与面板尺寸统一）
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`theme-parameter-panel` 现在走 `--mpx-large-panel-width/height`（`src/styles/app/settings/settings.part1.css`）
+默认值沿用 3.0：`80vw / 80vh`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-border-color`（面板边框颜色）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线颜色）
+`--mpx-large-panel-side-bg`（side 背景）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-header-g3-theme-parameter-root-panel']` 已建立 slot -> 3.0 token 映射（`src/styles/app/settings/settings.part1.css`）
+
+实际值（当前）
+分页导航共 6 页：
+1) 参数调节
+2) 快照工具
+3) 大容器层调试
+4) 大面板层调试
+5) 按钮状态样例
+6) 操作
+
+临时预览模式（全局）
+1) 大容器层页：
+   - 仅背景层预览（`bg-only`）
+   - 背景层 + 大容器层预览（`bg-plus-container`）
+2) 大面板层页：
+   - 背景层 + 大面板层预览（`bg-plus-large-panel`）
+
+关闭预览按钮或关闭主题参数面板时，预览模式都会恢复为 `none`。
+
+说明
+本次只做 `3.2` 的结构归并与分页拆分：
+1) 主题参数面板大小、配色、布局与设置/帮助面板同源。
+2) 原来单页内容已按功能分流到 side 分页。
+3) 新增大容器层/大面板层调试分页，支持全局临时预览模式。
+4) `bg-plus-large-panel` 预览改为真实 `head + side + main` 骨架，不再使用伪元素近似。
+5) 调试参数按 F12 属性聚合展示（Box / Border / Shadow / Root / Head / Shell / Side / Main）。
+6) 数值参数支持“滑条 + 数字输入 + 当前值显示”；颜色参数支持“颜色选择器 + HEX 输入”。
+7) 参数应用、导入导出、重置功能保持等价。
+
+补充
+`快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 两个调试分页中的颜色调节结果。
+`3.2` 两个调试分页里每个已改动字段都显示“复位”按钮，点击后恢复到主题默认值（移除对应 inline 覆写）。
+
+## 3.3 帮助面板
+
+用在什么地方
+`fg-header-g3-help-root-panel`（`HelpPanel`）已接入 3.0 大面板骨架，使用 `head + side + main`。
+
+css 的触发点
+`src/components/HelpPanel.tsx`
+`src/styles/app/settings/settings.part1.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`settings-panel` 走 `--mpx-large-panel-width/height`
+默认值沿用 3.0：`80vw / 80vh`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-side-bg`（side 背景）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-header-g3-help-root-panel']` 已建立 slot -> 3.0 token 映射（`src/styles/app/settings/settings.part1.css`）。
+
+说明
+帮助面板与设置面板已经完全同构，后续仅在帮助内容层做功能调整，不再拆分骨架实现。
+
+## 3.4 Sidebar 更名面板
+
+用在什么地方
+`fg-sidebar-shortcut-rename-panel`（`SidebarRenameDialog`）已接入 3.0 大面板骨架，并使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/SidebarRenameDialog.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/settings/settings.part2.css`
+`src/styles/app/settings/settings.part3.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`--mpx-large-panel-width = 80vw`（`sidebar-rename-dialog`）
+`--mpx-large-panel-height = 80vh`（`sidebar-rename-dialog`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-sidebar-shortcut-rename-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+本阶段先统一尺寸与 `head/main` 骨架，重命名业务内部控件细节样式保持原行为。
+
+## 3.5 元数据获取面板
+
+用在什么地方
+`fg-main-header-image-metadata-fetch-panel`（`MetadataFetchPanel`）已接入 3.0 大面板骨架，并使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/metadata/MetadataFetchPanel.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/manage.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`--mpx-large-panel-width = 80vw`（`metadata-fetch-panel`）
+`--mpx-large-panel-height = 80vh`（`metadata-fetch-panel`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-main-header-image-metadata-fetch-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+本阶段仅统一外层尺寸与 `head/main`，内部双列检索结果区与预览区布局保持原逻辑。
+
+## 3.6 标签检索面板
+
+用在什么地方
+`fg-meta-main-search-feature-tag-picker-panel`（`FeatureTagPickerModal`）已接入 3.0 大面板骨架，并使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/metadata/FeatureTagPickerModal.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/metadata.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+`--mpx-large-panel-width = 80vw`（`feature-tag-modal-panel`）
+`--mpx-large-panel-height = 80vh`（`feature-tag-modal-panel`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-meta-main-search-feature-tag-picker-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+本阶段先统一为“同尺寸 + 同 head/main 骨架”；标签组与操作区仅做结构承接，后续再做细节微调。

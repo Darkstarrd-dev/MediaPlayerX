@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import type { ShortcutMap } from '../shortcuts'
 import { MainUiIcon } from './MainUiIcon'
+import { useDraggablePanel } from './useDraggablePanel'
 import { buildA11yProps } from '../i18n/a11y'
 import { useI18n } from '../i18n/useI18n'
 
@@ -28,6 +29,7 @@ function renderShortcutBinding(binding: string | undefined, fallback: string): s
 function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanelProps) {
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<HelpSectionId>('image')
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(helpOpen)
 
   const imageModeShortcutRows = useMemo(
     () => [
@@ -276,17 +278,17 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
 
   return (
     <div {...helpPanelA11y} className="settings-mask" data-slot="fg-header-g3-help-root-ovl" role="dialog" aria-modal="true" data-overlay-close="help">
-      <section className="settings-panel" data-slot="fg-header-g3-help-root-panel" style={{ fontSize: `${settingsFontSize}px` }}>
-        <div className="settings-head">
-          <span className="settings-head-spacer" aria-hidden="true" />
+      <section className={`mpx-large-panel mpx-large-panel--help settings-panel ${panelDragging ? 'is-dragging' : ''}`} data-slot="fg-header-g3-help-root-panel" style={{ fontSize: `${settingsFontSize}px`, transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)` }}>
+        <div className="mpx-large-panel-head settings-head settings-head-draggable" {...headHandlers}>
+          <span className="mpx-large-panel-head-spacer settings-head-spacer" aria-hidden="true" />
           <h2>{t('ui.help.panel')}</h2>
           <button {...helpCloseA11y} className="settings-icon-btn main-icon-square-btn" type="button" onClick={onClose}>
             <MainUiIcon name="close" />
           </button>
         </div>
 
-        <div className="settings-shell">
-          <aside className="settings-side" aria-label={t('a11y.help.sections')}>
+        <div className="mpx-large-panel-shell settings-shell">
+          <aside className="mpx-large-panel-side settings-side" aria-label={t('a11y.help.sections')}>
             <button
               type="button"
               className={activeSection === 'image' ? 'is-active' : ''}
@@ -310,7 +312,7 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
             </button>
           </aside>
 
-          <main className="settings-main mpx-scroll-area">
+          <main className="mpx-large-panel-main settings-main mpx-scroll-area">
             {activeSection === 'image' ? (
               <section className="settings-block help-block">
                 <p className="settings-group-head">{t('ui.help.image.sectionTitle')}</p>
