@@ -647,6 +647,7 @@ function VideoMainSection({
   useEffect(() => {
     if (
       nodeBrowseMode ||
+      !active ||
       !focusedVideo?.id ||
       !videoSourceUrl ||
       coverImageUrl ||
@@ -667,7 +668,6 @@ function VideoMainSection({
         return;
       }
       autoSavedCoverVideoIdSetRef.current.add(focusedVideo.id);
-      onVideoTimeUpdate(captureAtSec);
       onSaveCoverAtTime(captureAtSec);
     };
 
@@ -696,11 +696,11 @@ function VideoMainSection({
       video.removeEventListener("seeked", onSeeked);
     };
   }, [
+    active,
     coverImageUrl,
     focusedVideo?.id,
     nodeBrowseMode,
     onSaveCoverAtTime,
-    onVideoTimeUpdate,
     videoSourceUrl,
   ]);
 
@@ -980,7 +980,9 @@ function VideoMainSection({
                     if (currentTime > 0.05) {
                       setHasSeekPreviewCurrentSource(true);
                     }
-                    onVideoTimeUpdate(currentTime);
+                    if (active) {
+                      onVideoTimeUpdate(currentTime);
+                    }
                   }}
                   onLoadedMetadata={() => {
                     const duration = videoRef.current?.duration ?? 0;
@@ -1014,7 +1016,9 @@ function VideoMainSection({
                     if (currentTime > 0.05) {
                       setHasSeekPreviewCurrentSource(true);
                     }
-                    onVideoTimeUpdate(currentTime);
+                    if (active) {
+                      onVideoTimeUpdate(currentTime);
+                    }
                   }}
                   onEnded={() => {
                     onVideoEnded();

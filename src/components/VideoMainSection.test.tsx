@@ -454,4 +454,39 @@ describe("VideoMainSection 节点浏览交互", () => {
       });
     });
   });
+
+  it("非激活状态下不会通过隐藏视频回写播放进度或触发自动封面抓帧", async () => {
+    const onVideoTimeUpdate = vi.fn();
+    const onSaveCoverAtTime = vi.fn();
+
+    render(
+      <VideoMainSection
+        {...buildProps({
+          nodeBrowseMode: false,
+          videoSourceUrl: "file:///C:/videos/a.mp4",
+          active: false,
+          fullscreenActive: true,
+          onVideoTimeUpdate,
+          onSaveCoverAtTime,
+        })}
+      />,
+    );
+
+    const video = document.querySelector(".video-screen-media") as
+      | HTMLVideoElement
+      | null;
+    expect(video).not.toBeNull();
+
+    if (video) {
+      video.currentTime = 12.34;
+      fireEvent.timeUpdate(video);
+      fireEvent.seeked(video);
+    }
+
+    expect(onVideoTimeUpdate).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(onSaveCoverAtTime).not.toHaveBeenCalled();
+    });
+  });
 });

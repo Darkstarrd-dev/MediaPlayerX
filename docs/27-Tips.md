@@ -84,3 +84,47 @@
 
 - 若后续恢复全局强制 `scrollbar-color`（非 `auto`），可能再次压制 WebKit 自定义滚动条效果。
 - 若改动全局 `*::-webkit-scrollbar-button` 规则，需要同步验证 `.sidebar-tree` 的覆盖优先级。
+
+---
+
+## 2. 全屏 dual 模式视频偶发重复/回跳片首（隐藏主播放器串写进度）
+
+#### 现象
+
+- 全屏 `dual` 模式下，视频结束后偶发不切下一个而是重复当前视频（通常只出现一次）。
+- 播放过程中偶发提前跳回片首附近，从头播放。
+
+#### 触发条件
+
+- 进入全屏后，`FullscreenLayer` 与 `AppWorkspace` 同时挂载。
+- 主区 `VideoMainSection` 在全屏时未卸载，仅 `active=false`。
+- 当前视频尚未生成封面图时，会触发自动封面抓帧副作用。
+
+#### 根因分析
+
+- 根因 1：主区 `VideoMainSection` 的自动封面抓帧逻辑会执行 `onVideoTimeUpdate(0.1)`，把全局 `videoTime` 改写到片首附近。
+- 根因 2：即使主区已非激活，隐藏 `<video>` 的 `timeupdate/seeked` 仍会持续回写全局 `videoTime`。
+- 根因 3：全屏层监听到 `videoTime` 跳变后会执行同步 seek，表现为当前视频被拉回片首，形成“重复一次/中途回跳”。
+
+#### 处理方案
+
+- 方案 1：自动封面抓帧仅允许在 `active=true`（主区激活）时运行，避免全屏期间隐藏主播放器介入。
+- 方案 2：移除自动封面抓帧中的 `onVideoTimeUpdate(0.1)`，封面保存与播放进度解耦。
+- 方案 3：`onTimeUpdate/onSeeked` 增加 `active` 守卫，非激活状态不再回写全局进度。
+
+#### 本项目落地（文件与要点）
+
+- `src/components/VideoMainSection.tsx:647`：自动封面抓帧 effect 增加 `!active` 早退。
+- `src/components/VideoMainSection.tsx:670`：删除 `onVideoTimeUpdate(captureAtSec)`，避免抓帧串写播放进度。
+- `src/components/VideoMainSection.tsx:980`：`onTimeUpdate/onSeeked` 仅在 `active` 时回写 `onVideoTimeUpdate`。
+- `src/components/VideoMainSection.test.tsx:457`：新增回归用例，验证非激活状态不会回写进度、不会触发自动封面抓帧。
+
+#### 验证方式
+
+- 执行：`npx vitest run src/components/VideoMainSection.test.tsx src/features/app/buildFullscreenLayerProps.test.ts`。
+- 人工验证：视频模式进入全屏 `dual`，连续播放多条视频，确认不再出现“中途回片首”与“结束后重复当前一次”。
+
+#### 注意事项 / 回归风险
+
+- 该修复刻意禁止“非激活主区”回写视频进度；若未来引入画中画/后台预览，需要单独设计进度同步通道，不能复用当前回写路径。
+- 自动封面抓帧不再驱动 `videoTime`，如后续依赖该副作用做其他逻辑（例如 UI 时间戳提示），需改为显式事件而非复用播放进度状态。
