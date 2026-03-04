@@ -744,6 +744,18 @@ css 的触发点
 `--mpx-dialog-panel-padding = 14px`（小面板内边距）
 `--mpx-dialog-panel-gap = 10px`（小面板内部间距）
 
+`--mpx-overlay-surface-border = #b8ac9b`（`src/styles/themes/styles/soft-skeuomorphic.css:267`）
+`--mpx-overlay-surface-bg = #f5f2ec`（`src/styles/themes/styles/soft-skeuomorphic.css:268`）
+`--mpx-overlay-surface-shadow = 0 0 0 1px rgba(247, 242, 232, 0.96), 0 0 0 2px rgba(190, 176, 154, 0.42), 0 1px 0 rgba(255, 255, 255, 0.96), 0 2px 0 rgba(172, 155, 129, 0.68), 0 12px 30px rgba(120, 110, 100, 0.3), 0 4px 10px rgba(120, 110, 100, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(165, 146, 119, 0.45)`（`src/styles/themes/styles/soft-skeuomorphic.css:269`）
+
+`--mpx-dialog-panel-border-color = #b8ac9b`（当前主题实际命中）
+`--mpx-dialog-panel-bg = #f5f2ec`（当前主题实际命中）
+`--mpx-dialog-panel-shadow = 0 0 0 1px rgba(247, 242, 232, 0.96), 0 0 0 2px rgba(190, 176, 154, 0.42), 0 1px 0 rgba(255, 255, 255, 0.96), 0 2px 0 rgba(172, 155, 129, 0.68), 0 12px 30px rgba(120, 110, 100, 0.3), 0 4px 10px rgba(120, 110, 100, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(165, 146, 119, 0.45)`（当前主题实际命中）
+
+`--mpx-border-2 = #b08d5c`（回退值，`src/styles/themes/palettes/skeuomorphic-luxury-white.css:54`）
+`--mpx-bg-elevated = #fffcf8`（回退值，`src/styles/themes/palettes/skeuomorphic-luxury-white.css:41`）
+`--mpx-shadow-panel = 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent)`（回退值，`src/styles/themes/styles/soft-skeuomorphic.css:157`）
+
 说明
 
 1. 所有纳入项统一挂到 `mpx-dialog-mask + mpx-dialog-panel` 基架。
