@@ -614,6 +614,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Vision model identifier used by ad review.",
   "ui.settings.tooltip.adReviewExecutionMode":
     "Switch ad review mode: normal keeps legacy behavior, performance enables optimized path.",
+  "ui.settings.tooltip.adReviewHashCompareStage":
+    "Choose when known-hash comparison runs: ad-review stage or import stage.",
+  "ui.settings.tooltip.adReviewHashHitAction":
+    "Choose how known-hash hits are handled: silent delete or user confirmation.",
   "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
     "LLM endpoint used for subtitle cleanup tasks.",
   "ui.settings.tooltip.subtitleCleanupLlmModel":
@@ -684,6 +688,30 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.mediaCapabilityUnsupported": "unsupported",
   "ui.settings.adReviewVisionLegend": "AI ad review vision model",
   "ui.settings.adReviewExecutionMode": "Ad review execution mode",
+  "ui.settings.adReviewHashCompareStage": "Known-hash compare stage",
+  "ui.settings.adReviewHashCompareStageAdReview": "ad-review (review stage)",
+  "ui.settings.adReviewHashCompareStageImport": "import (import stage)",
+  "ui.settings.adReviewHashHitAction": "Known-hash hit action",
+  "ui.settings.adReviewHashHitActionSilentDelete": "silent-delete",
+  "ui.settings.adReviewHashHitActionUserConfirm": "user-confirm",
+  "ui.settings.adReviewKnownHashesImport": "Import known-hash",
+  "ui.settings.adReviewKnownHashesExport": "Export known-hash",
+  "ui.settings.adReviewKnownHashesPickImportFile": "Select known-hash JSON",
+  "ui.settings.adReviewKnownHashesPickExportDirectory": "Select export directory",
+  "ui.settings.adReviewKnownHashesImportUnsupported":
+    "Known-hash import is not supported in current environment.",
+  "ui.settings.adReviewKnownHashesExportUnsupported":
+    "Known-hash export is not supported in current environment.",
+  "ui.settings.adReviewKnownHashesImporting": "Importing known-hash...",
+  "ui.settings.adReviewKnownHashesExporting": "Exporting known-hash...",
+  "ui.settings.adReviewKnownHashesImportDone":
+    "Import completed: total {{total}}, imported {{imported}}, duplicates {{duplicate}}.",
+  "ui.settings.adReviewKnownHashesExportDone":
+    "Export completed: {{total}} hashes, file {{path}}.",
+  "ui.settings.adReviewKnownHashesImportFailed":
+    "Known-hash import failed: {{message}}",
+  "ui.settings.adReviewKnownHashesExportFailed":
+    "Known-hash export failed: {{message}}",
   "ui.settings.adReviewModeNormal": "normal (default)",
   "ui.settings.adReviewModePerformance": "performance",
   "ui.settings.subtitleCleanupLlmLegend": "Subtitle cleanup LLM",

@@ -112,6 +112,7 @@ interface ExecuteImportTaskParams {
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
   importTaskUpdatedMinIntervalMs: number
+  handleImportStageKnownHashHits?: (sourcePaths: string[]) => Promise<unknown>
 }
 
 export async function executeImportTask(params: ExecuteImportTaskParams): Promise<ImportTaskRecord> {
@@ -162,6 +163,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
 
   let processedCount = 0
   let acceptedCount = 0
+  const acceptedPaths: string[] = []
   const failedMessages: string[] = []
 
   const internalMetaDir = path.join(params.rootDir, '.mediaplayerx')
@@ -253,6 +255,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
 
         if (pathSucceeded) {
           acceptedCount += 1
+          acceptedPaths.push(absolutePath)
         }
       } catch (error) {
         const reason = error instanceof Error && error.message ? error.message : '未知错误'
@@ -393,6 +396,18 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   const finalTask = params.database.readTask(params.taskId)
   if (!finalTask) {
     throw new Error(`导入任务状态丢失: ${params.taskId}`)
+  }
+
+  if (params.handleImportStageKnownHashHits && acceptedPaths.length > 0) {
+    void params
+      .handleImportStageKnownHashHits(acceptedPaths)
+      .catch((error) => {
+        const reason = error instanceof Error && error.message ? error.message : '未知错误'
+        console.warn('known-hash import-stage handling failed', {
+          taskId: params.taskId,
+          reason,
+        })
+      })
   }
 
   return finalTask

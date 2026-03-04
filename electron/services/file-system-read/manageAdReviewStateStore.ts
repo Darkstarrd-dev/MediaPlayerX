@@ -83,3 +83,10 @@ export function persistKnownHashes(
     candidateHashByImageId,
   );
 }
+
+export function writeKnownHashes(
+  database: MediaLibraryDatabase,
+  hashes: Iterable<string>,
+): void {
+  createStateStore(database).writeKnownHashes(hashes);
+}

@@ -27,6 +27,7 @@ interface ImportTaskServiceOptions {
   invalidateSnapshotCache: () => void
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
+  handleImportStageKnownHashHits?: (sourcePaths: string[]) => Promise<unknown>
 }
 
 export class ImportTaskService {
@@ -252,6 +253,7 @@ export class ImportTaskService {
       refreshSnapshot: this.options.refreshSnapshot,
       emitLibraryChanged: this.options.emitLibraryChanged,
       importTaskUpdatedMinIntervalMs: IMPORT_TASK_UPDATED_MIN_INTERVAL_MS,
+      handleImportStageKnownHashHits: this.options.handleImportStageKnownHashHits,
     })
 
     return this.toImportTaskDto(finalTask)

@@ -141,6 +141,8 @@ export function useAppSettingsStore() {
       subtitleCleanupLlmModel: state.subtitleCleanupLlmModel,
       subtitleCleanupLlmPrompt: state.subtitleCleanupLlmPrompt,
       adReviewExecutionMode: state.adReviewExecutionMode,
+      adReviewHashCompareStage: state.adReviewHashCompareStage,
+      adReviewHashHitAction: state.adReviewHashHitAction,
       adReviewStrategyMode: state.adReviewStrategyMode,
       adReviewHeadN: state.adReviewHeadN,
       adReviewTailN: state.adReviewTailN,

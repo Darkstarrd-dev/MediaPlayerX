@@ -71,6 +71,11 @@ import type {
   TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
+  ReadManageAdReviewKnownHashesResponseDto,
+  ImportManageAdReviewKnownHashesRequestDto,
+  ImportManageAdReviewKnownHashesResponseDto,
+  ExportManageAdReviewKnownHashesRequestDto,
+  ExportManageAdReviewKnownHashesResponseDto,
   StartManageCoverReviewRequestDto,
   StartManageCoverReviewResponseDto,
   ReadManageCoverReviewTaskRequestDto,
@@ -235,6 +240,17 @@ export interface MediaRepository {
     request: ConfirmManageAdReviewDeleteRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto>;
+  readManageAdReviewKnownHashes?(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageAdReviewKnownHashesResponseDto>;
+  importManageAdReviewKnownHashes?(
+    request: ImportManageAdReviewKnownHashesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ImportManageAdReviewKnownHashesResponseDto>;
+  exportManageAdReviewKnownHashes?(
+    request: ExportManageAdReviewKnownHashesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ExportManageAdReviewKnownHashesResponseDto>;
   startManageCoverReview?(
     request: StartManageCoverReviewRequestDto,
     options?: RepositoryRequestOptions,

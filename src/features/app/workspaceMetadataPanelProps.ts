@@ -200,7 +200,11 @@ export function buildWorkspaceMetadataPanelProps({
     onClearFeatureTags: () => setFeatureTags([]),
     featureGradeFilter,
     onFeatureGradeFilterChange: setFeatureGradeFilter,
-    adReviewFeatureVisible: appSettings.adReviewVisionVerified,
+    adReviewFeatureVisible:
+      appSettings.adReviewVisionVerified ||
+      manageAdReview.queueTasks.some(
+        (task) => task.status === "review" && task.candidates.length > 0,
+      ),
     adReviewPanelOpen,
     manageReviewMode: manageAdReview.reviewMode,
     canSwitchManageReviewMode: manageAdReview.supportsCoverReview,

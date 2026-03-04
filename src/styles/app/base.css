@@ -446,6 +446,41 @@ select option {
   color: var(--mpx-slot-fg-import-task-error-text, inherit);
 }
 
+.import-task-panel-review-notice {
+  border: 1px solid var(--mpx-status-warning-border);
+  background: var(--mpx-status-warning-bg);
+  color: var(--mpx-status-warning-text);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.import-task-panel-review-notice-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.import-task-panel-hash-log-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.import-task-panel-hash-log-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--mpx-status-info-border);
+  background: var(--mpx-status-info-bg);
+  color: var(--mpx-status-info-text);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
 .import-task-panel ul {
   margin: 0;
   padding: 0;

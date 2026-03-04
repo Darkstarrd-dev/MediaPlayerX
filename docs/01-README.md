@@ -34,6 +34,7 @@
 - 音频增强专家咨询申请：`22-mpv-增强模式专家咨询申请-2026-02-27.md`
 - 全屏重采样 SSOT 草案：`23-fullscreen_resampling_ssot_draft.md`
 - 高优化需求项目表：`24-high-optimization-demand-table.md`
+- Ad Review 导入哈希专家咨询申请：`33-ad-review-import-known-hash-专家技术支持请求-2026-03-04.md`
 
 ## 待办
 

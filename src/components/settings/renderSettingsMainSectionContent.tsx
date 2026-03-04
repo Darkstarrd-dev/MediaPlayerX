@@ -693,6 +693,12 @@ export function renderSettingsMainSection(
       subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
       subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
       adReviewExecutionMode: params.adReviewExecutionMode,
+      adReviewHashCompareStage: params.adReviewHashCompareStage,
+      adReviewHashHitAction: params.adReviewHashHitAction,
+      adReviewKnownHashImportPending: params.adReviewKnownHashImportPending,
+      adReviewKnownHashImportMessage: params.adReviewKnownHashImportMessage,
+      adReviewKnownHashExportPending: params.adReviewKnownHashExportPending,
+      adReviewKnownHashExportMessage: params.adReviewKnownHashExportMessage,
       onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
       onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
       onSubtitleAdvancedVadPresetChange:
@@ -744,6 +750,11 @@ export function renderSettingsMainSection(
       onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
       onSubtitleCleanupLlmPromptChange: params.onSubtitleCleanupLlmPromptChange,
       onAdReviewExecutionModeChange: params.onAdReviewExecutionModeChange,
+      onAdReviewHashCompareStageChange:
+        params.onAdReviewHashCompareStageChange,
+      onAdReviewHashHitActionChange: params.onAdReviewHashHitActionChange,
+      onImportAdReviewKnownHashes: params.onImportAdReviewKnownHashes,
+      onExportAdReviewKnownHashes: params.onExportAdReviewKnownHashes,
     });
   }
 
@@ -795,6 +806,12 @@ export function renderSettingsMainSection(
       subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
       subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
       adReviewExecutionMode: params.adReviewExecutionMode,
+      adReviewHashCompareStage: params.adReviewHashCompareStage,
+      adReviewHashHitAction: params.adReviewHashHitAction,
+      adReviewKnownHashImportPending: params.adReviewKnownHashImportPending,
+      adReviewKnownHashImportMessage: params.adReviewKnownHashImportMessage,
+      adReviewKnownHashExportPending: params.adReviewKnownHashExportPending,
+      adReviewKnownHashExportMessage: params.adReviewKnownHashExportMessage,
       onSubtitleFeatureEnabledChange: params.onSubtitleFeatureEnabledChange,
       onSubtitleRenderModeChange: params.onSubtitleRenderModeChange,
       onSubtitleAdvancedVadPresetChange:
@@ -846,6 +863,11 @@ export function renderSettingsMainSection(
       onSubtitleCleanupLlmModelChange: params.onSubtitleCleanupLlmModelChange,
       onSubtitleCleanupLlmPromptChange: params.onSubtitleCleanupLlmPromptChange,
       onAdReviewExecutionModeChange: params.onAdReviewExecutionModeChange,
+      onAdReviewHashCompareStageChange:
+        params.onAdReviewHashCompareStageChange,
+      onAdReviewHashHitActionChange: params.onAdReviewHashHitActionChange,
+      onImportAdReviewKnownHashes: params.onImportAdReviewKnownHashes,
+      onExportAdReviewKnownHashes: params.onExportAdReviewKnownHashes,
     });
   }
 

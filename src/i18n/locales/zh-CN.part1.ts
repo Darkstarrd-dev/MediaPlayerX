@@ -571,6 +571,10 @@ export const zhCnCatalogPart1 = {
   "ui.settings.tooltip.adReviewVisionModel": "广告审核使用的视觉模型标识。",
   "ui.settings.tooltip.adReviewExecutionMode":
     "切换广告审核执行模式：normal 保持旧行为，performance 启用性能路径。",
+  "ui.settings.tooltip.adReviewHashCompareStage":
+    "选择 known-hash 对比执行阶段：审核阶段或导入阶段。",
+  "ui.settings.tooltip.adReviewHashHitAction":
+    "选择 known-hash 命中后的处理方式：静默删除或用户确认。",
   "ui.settings.tooltip.subtitleCleanupLlmEndpoint":
     "字幕清洗任务使用的 LLM 接口地址。",
   "ui.settings.tooltip.subtitleCleanupLlmModel":
@@ -637,6 +641,30 @@ export const zhCnCatalogPart1 = {
   "ui.settings.mediaCapabilityUnsupported": "unsupported",
   "ui.settings.adReviewVisionLegend": "AI广告审核视觉模型",
   "ui.settings.adReviewExecutionMode": "广告审核执行模式",
+  "ui.settings.adReviewHashCompareStage": "known-hash 对比阶段",
+  "ui.settings.adReviewHashCompareStageAdReview": "ad-review（审核时）",
+  "ui.settings.adReviewHashCompareStageImport": "import（导入时）",
+  "ui.settings.adReviewHashHitAction": "known-hash 命中动作",
+  "ui.settings.adReviewHashHitActionSilentDelete": "silent-delete（静默删除）",
+  "ui.settings.adReviewHashHitActionUserConfirm": "user-confirm（用户确认）",
+  "ui.settings.adReviewKnownHashesImport": "导入 known-hash",
+  "ui.settings.adReviewKnownHashesExport": "导出 known-hash",
+  "ui.settings.adReviewKnownHashesPickImportFile": "选择 known-hash JSON 文件",
+  "ui.settings.adReviewKnownHashesPickExportDirectory": "选择导出目录",
+  "ui.settings.adReviewKnownHashesImportUnsupported":
+    "当前环境不支持 known-hash 导入。",
+  "ui.settings.adReviewKnownHashesExportUnsupported":
+    "当前环境不支持 known-hash 导出。",
+  "ui.settings.adReviewKnownHashesImporting": "known-hash 导入中...",
+  "ui.settings.adReviewKnownHashesExporting": "known-hash 导出中...",
+  "ui.settings.adReviewKnownHashesImportDone":
+    "导入完成：总计 {{total}}，新增 {{imported}}，重复 {{duplicate}}。",
+  "ui.settings.adReviewKnownHashesExportDone":
+    "导出完成：共 {{total}} 条，文件 {{path}}。",
+  "ui.settings.adReviewKnownHashesImportFailed":
+    "known-hash 导入失败：{{message}}",
+  "ui.settings.adReviewKnownHashesExportFailed":
+    "known-hash 导出失败：{{message}}",
   "ui.settings.adReviewModeNormal": "normal（默认）",
   "ui.settings.adReviewModePerformance": "performance（性能）",
   "ui.settings.subtitleCleanupLlmLegend": "字幕清洗 LLM",

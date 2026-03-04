@@ -914,7 +914,11 @@ export function useAppWorkspaceProps({
     canManageImageConvert,
     canManageHide: mode === "image" && imageCheckedIds.length > 0,
     canManageUnhide: mode === "image" && imageCheckedIds.length > 0,
-    adReviewFeatureEnabled: appSettings.adReviewVisionVerified,
+    adReviewFeatureEnabled:
+      appSettings.adReviewVisionVerified ||
+      manageAdReview.queueTasks.some(
+        (task) => task.status === "review" && task.candidates.length > 0,
+      ),
     adReviewPending: manageAdReview.pending,
     adReviewDeletePending: manageAdReview.deletePending,
     adReviewPanelOpen,

@@ -54,6 +54,12 @@ export function renderSettingsModelSection({
   subtitleCleanupLlmModel,
   subtitleCleanupLlmPrompt,
   adReviewExecutionMode,
+  adReviewHashCompareStage,
+  adReviewHashHitAction,
+  adReviewKnownHashImportPending,
+  adReviewKnownHashImportMessage,
+  adReviewKnownHashExportPending,
+  adReviewKnownHashExportMessage,
   onSubtitleFeatureEnabledChange,
   onSubtitleRenderModeChange,
   onSubtitleAdvancedVadPresetChange,
@@ -92,9 +98,19 @@ export function renderSettingsModelSection({
   onSubtitleCleanupLlmModelChange,
   onSubtitleCleanupLlmPromptChange,
   onAdReviewExecutionModeChange,
+  onAdReviewHashCompareStageChange,
+  onAdReviewHashHitActionChange,
+  onImportAdReviewKnownHashes,
+  onExportAdReviewKnownHashes,
 }: Pick<
   RenderSettingsMainSectionParams,
   | "adReviewExecutionMode"
+  | "adReviewHashCompareStage"
+  | "adReviewHashHitAction"
+  | "adReviewKnownHashImportPending"
+  | "adReviewKnownHashImportMessage"
+  | "adReviewKnownHashExportPending"
+  | "adReviewKnownHashExportMessage"
   | "t"
   | "subtitleFeatureEnabled"
   | "subtitleRenderMode"
@@ -176,6 +192,10 @@ export function renderSettingsModelSection({
   | "onSubtitleCleanupLlmModelChange"
   | "onSubtitleCleanupLlmPromptChange"
   | "onAdReviewExecutionModeChange"
+  | "onAdReviewHashCompareStageChange"
+  | "onAdReviewHashHitActionChange"
+  | "onImportAdReviewKnownHashes"
+  | "onExportAdReviewKnownHashes"
 > & {
   sectionMode: "ai" | "video";
 }): JSX.Element {
@@ -872,6 +892,42 @@ export function renderSettingsModelSection({
               }
             />
           </label>
+          <label data-tooltip-label={settingsTip("adReviewHashCompareStage")}>
+            {t("ui.settings.adReviewHashCompareStage")}
+            <select
+              value={adReviewHashCompareStage}
+              onChange={(event) =>
+                onAdReviewHashCompareStageChange(
+                  event.target.value as "ad-review" | "import",
+                )
+              }
+            >
+              <option value="ad-review">
+                {t("ui.settings.adReviewHashCompareStageAdReview")}
+              </option>
+              <option value="import">
+                {t("ui.settings.adReviewHashCompareStageImport")}
+              </option>
+            </select>
+          </label>
+          <label data-tooltip-label={settingsTip("adReviewHashHitAction")}>
+            {t("ui.settings.adReviewHashHitAction")}
+            <select
+              value={adReviewHashHitAction}
+              onChange={(event) =>
+                onAdReviewHashHitActionChange(
+                  event.target.value as "silent-delete" | "user-confirm",
+                )
+              }
+            >
+              <option value="silent-delete">
+                {t("ui.settings.adReviewHashHitActionSilentDelete")}
+              </option>
+              <option value="user-confirm">
+                {t("ui.settings.adReviewHashHitActionUserConfirm")}
+              </option>
+            </select>
+          </label>
           <div className="settings-test-row">
             <button
               className="settings-icon-btn main-icon-square-btn"
@@ -918,6 +974,34 @@ export function renderSettingsModelSection({
                   : t("ui.settings.adReviewVisionUntested"))}
             </span>
           </div>
+          <div className="settings-test-row">
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={adReviewKnownHashImportPending}
+              aria-label={t("ui.settings.adReviewKnownHashesImport")}
+              data-tooltip-label={t("ui.settings.adReviewKnownHashesImport")}
+              onClick={onImportAdReviewKnownHashes}
+            >
+              <MainUiIcon name="refresh" />
+            </button>
+            <button
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              disabled={adReviewKnownHashExportPending}
+              aria-label={t("ui.settings.adReviewKnownHashesExport")}
+              data-tooltip-label={t("ui.settings.adReviewKnownHashesExport")}
+              onClick={onExportAdReviewKnownHashes}
+            >
+              <MainUiIcon name="save" />
+            </button>
+          </div>
+          {adReviewKnownHashImportMessage ? (
+            <p className="settings-placeholder">{adReviewKnownHashImportMessage}</p>
+          ) : null}
+          {adReviewKnownHashExportMessage ? (
+            <p className="settings-placeholder">{adReviewKnownHashExportMessage}</p>
+          ) : null}
           {adReviewVisionSaveMessage ? (
             <p className="settings-placeholder">{adReviewVisionSaveMessage}</p>
           ) : null}

@@ -1,7 +1,10 @@
 import type { Dispatch, SetStateAction } from 'react'
 
 import type { ImportTaskDto } from '../../contracts/backend'
-import type { ImportTaskPanelProps } from '../../components/ImportTaskPanel'
+import type {
+  ImportHashReviewLogItem,
+  ImportTaskPanelProps,
+} from '../../components/ImportTaskPanel'
 
 interface BuildImportTaskPanelPropsParams {
   open: boolean
@@ -17,6 +20,13 @@ interface BuildImportTaskPanelPropsParams {
   manageOperationHint: string | null
   taskError: string | null
   tasks: ImportTaskDto[]
+  pendingReviewNoticeVisible: boolean
+  pendingReviewTaskCount: number
+  pendingReviewImageCount: number
+  onOpenAdReviewFromPendingNotice: () => void
+  onDismissPendingReviewNotice: () => void
+  hashReviewLogs: ImportHashReviewLogItem[]
+  onRemoveHashReviewLog: (logId: string) => void
   setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>
   clearFinishedImportTasks: () => void
   clearAllImportTasks: () => void
@@ -41,6 +51,13 @@ export function buildImportTaskPanelProps(params: BuildImportTaskPanelPropsParam
     operationHint: params.manageOperationHint,
     taskError: params.taskError,
     tasks: params.tasks,
+    pendingReviewNoticeVisible: params.pendingReviewNoticeVisible,
+    pendingReviewTaskCount: params.pendingReviewTaskCount,
+    pendingReviewImageCount: params.pendingReviewImageCount,
+    onOpenAdReviewFromPendingNotice: params.onOpenAdReviewFromPendingNotice,
+    onDismissPendingReviewNotice: params.onDismissPendingReviewNotice,
+    hashReviewLogs: params.hashReviewLogs,
+    onRemoveHashReviewLog: params.onRemoveHashReviewLog,
     onClose: () => params.setImportTaskPanelOpen(false),
     onClearFinished: params.clearFinishedImportTasks,
     onClearAll: params.clearAllImportTasks,

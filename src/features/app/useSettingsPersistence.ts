@@ -781,6 +781,22 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   delete next.vectorPanelHeight;
 
   if (
+    next.adReviewHashCompareStage !== "ad-review" &&
+    next.adReviewHashCompareStage !== "import" &&
+    "adReviewHashCompareStage" in next
+  ) {
+    delete next.adReviewHashCompareStage;
+  }
+
+  if (
+    next.adReviewHashHitAction !== "silent-delete" &&
+    next.adReviewHashHitAction !== "user-confirm" &&
+    "adReviewHashHitAction" in next
+  ) {
+    delete next.adReviewHashHitAction;
+  }
+
+  if (
     typeof next.adReviewMaxConcurrency === "number" &&
     Number.isFinite(next.adReviewMaxConcurrency)
   ) {

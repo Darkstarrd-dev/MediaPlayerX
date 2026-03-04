@@ -1,4 +1,6 @@
 import { promises as fs } from "node:fs";
+import path from "node:path";
+import { createHash } from "node:crypto";
 
 import {
   confirmManageAdReviewDeleteResponseSchema,
@@ -16,11 +18,19 @@ import {
   type ReadManageAdReviewTaskRequestDto,
   type ReadManageAdReviewTaskResponseDto,
   pauseManageAdReviewTaskResponseSchema,
+  readManageAdReviewKnownHashesResponseSchema,
   testAdReviewVisionModelResponseSchema,
   type StartManageAdReviewRequestDto,
   type StartManageAdReviewResponseDto,
+  type ReadManageAdReviewKnownHashesResponseDto,
   type PauseManageAdReviewTaskRequestDto,
   type PauseManageAdReviewTaskResponseDto,
+  exportManageAdReviewKnownHashesResponseSchema,
+  importManageAdReviewKnownHashesResponseSchema,
+  type ExportManageAdReviewKnownHashesRequestDto,
+  type ExportManageAdReviewKnownHashesResponseDto,
+  type ImportManageAdReviewKnownHashesRequestDto,
+  type ImportManageAdReviewKnownHashesResponseDto,
   type TestAdReviewVisionModelRequestDto,
   type TestAdReviewVisionModelResponseDto,
 } from "../../../src/contracts/backend";
@@ -35,6 +45,7 @@ import {
   createEmptySourceDistribution,
   decodeVisionTestImageBytes,
   isValidVisionDescription,
+  normalizeHashes,
   mergeAdReviewCandidates,
   normalizeImageSource,
   normalizeTaskExecution,
@@ -47,6 +58,7 @@ import {
   toImageFileName,
   toTaskAudit,
 } from "./manageAdReviewService.utils";
+import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
 import type {
   ImageEntryRef,
   ManageAdReviewServiceOptions,
@@ -61,6 +73,7 @@ import {
   readKnownHashes,
   readQueueStateInternal,
   readReviewedNodeHashState,
+  writeKnownHashes,
   writeQueueState,
   writeReviewedNodeHashState,
 } from "./manageAdReviewStateStore";
@@ -82,6 +95,29 @@ const VISION_TEST_SYSTEM_PROMPT =
   'You are validating vision-model color recognition. Return JSON only: {"is_ad": false, "reason": "<dominant color>"}. The reason must be the dominant color you see in the image.';
 const VISION_TEST_USER_PROMPT =
   "What is the dominant color of this image? Return JSON only with is_ad and reason.";
+const SETTINGS_STATE_KEY = "ui_settings_v1";
+const IMPORT_STAGE_LOG_STATE_KEY = "manage_ad_review_import_stage_log_v1";
+
+interface PersistedUiSettingsLike {
+  adReviewHashCompareStage?: unknown;
+  adReviewHashHitAction?: unknown;
+}
+
+interface ImportStageReviewLogItem {
+  id: string;
+  mode: "silent-delete" | "user-confirm";
+  compared_count: number;
+  hit_count: number;
+  deleted_count: number;
+  enqueued_count: number;
+  failed_count: number;
+  created_at_ms: number;
+}
+
+interface ImportStageReviewLogState {
+  version: 1;
+  items: ImportStageReviewLogItem[];
+}
 
 export class ManageAdReviewService {
   private readonly tasks = new Map<string, RuntimeTaskState>();
@@ -342,6 +378,86 @@ export class ManageAdReviewService {
     }
   }
 
+  async readManageAdReviewKnownHashes(): Promise<ReadManageAdReviewKnownHashesResponseDto> {
+    const hashes = Array.from(this.readKnownHashes()).sort((a, b) =>
+      a.localeCompare(b),
+    );
+    return readManageAdReviewKnownHashesResponseSchema.parse({
+      hashes,
+      total_count: hashes.length,
+      updated_at_ms: Date.now(),
+    });
+  }
+
+  async importManageAdReviewKnownHashes(
+    request: ImportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ImportManageAdReviewKnownHashesResponseDto> {
+    const inputPath = request.file_path.trim();
+    if (!inputPath) {
+      throw new Error("known-hash 导入失败：文件路径为空");
+    }
+
+    const rawText = await fs.readFile(inputPath, "utf8");
+    const parsed = JSON.parse(rawText) as unknown;
+    const importedHashes = this.extractHashesFromImportPayload(parsed);
+    const existing = this.readKnownHashes();
+    const next = new Set(existing);
+
+    let importedCount = 0;
+    let duplicateCount = 0;
+    for (const hash of importedHashes) {
+      if (next.has(hash)) {
+        duplicateCount += 1;
+        continue;
+      }
+      next.add(hash);
+      importedCount += 1;
+    }
+
+    if (importedCount > 0) {
+      writeKnownHashes(this.options.database, next);
+    }
+
+    return importManageAdReviewKnownHashesResponseSchema.parse({
+      total_count: importedHashes.length,
+      imported_count: importedCount,
+      duplicate_count: duplicateCount,
+      updated_at_ms: Date.now(),
+    });
+  }
+
+  async exportManageAdReviewKnownHashes(
+    request: ExportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ExportManageAdReviewKnownHashesResponseDto> {
+    const outputDirectory = request.output_directory.trim();
+    if (!outputDirectory) {
+      throw new Error("known-hash 导出失败：输出目录为空");
+    }
+
+    const hashes = Array.from(this.readKnownHashes()).sort((a, b) =>
+      a.localeCompare(b),
+    );
+    await fs.mkdir(outputDirectory, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const outputPath = path.join(
+      outputDirectory,
+      `ad-review-known-hashes-${timestamp}.json`,
+    );
+    const payload = {
+      version: 1,
+      hashes,
+      exported_at_ms: Date.now(),
+    };
+    await fs.writeFile(outputPath, JSON.stringify(payload, null, 2), "utf8");
+
+    return exportManageAdReviewKnownHashesResponseSchema.parse({
+      output_path: outputPath,
+      total_count: hashes.length,
+      updated_at_ms: Date.now(),
+    });
+  }
+
   async confirmManageAdReviewDelete(
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
@@ -441,6 +557,161 @@ export class ManageAdReviewService {
     });
   }
 
+  async handleImportStageKnownHashHits(sourcePaths: string[]): Promise<{
+    compared_count: number;
+    hit_count: number;
+    deleted_count: number;
+    enqueued_count: number;
+    failed_count: number;
+  }> {
+    const settings = this.readHashCompareSettings();
+    if (settings.stage !== "import") {
+      return {
+        compared_count: 0,
+        hit_count: 0,
+        deleted_count: 0,
+        enqueued_count: 0,
+        failed_count: 0,
+      };
+    }
+
+    const normalizedSourcePaths = Array.from(
+      new Set(sourcePaths.map((value) => value.trim()).filter(Boolean)),
+    );
+    if (normalizedSourcePaths.length === 0) {
+      return {
+        compared_count: 0,
+        hit_count: 0,
+        deleted_count: 0,
+        enqueued_count: 0,
+        failed_count: 0,
+      };
+    }
+
+    const knownHashes = this.readKnownHashes();
+    if (knownHashes.size === 0) {
+      return {
+        compared_count: 0,
+        hit_count: 0,
+        deleted_count: 0,
+        enqueued_count: 0,
+        failed_count: 0,
+      };
+    }
+
+    const snapshot = await this.options.ensureSnapshotLoaded();
+    const importedImageRefs = await this.collectImportedImageRefs(
+      snapshot,
+      normalizedSourcePaths,
+    );
+    if (importedImageRefs.length === 0) {
+      return {
+        compared_count: 0,
+        hit_count: 0,
+        deleted_count: 0,
+        enqueued_count: 0,
+        failed_count: 0,
+      };
+    }
+
+    const hitCandidates: ManageAdReviewCandidateDto[] = [];
+    const failedImageIds: string[] = [];
+    const imageSourceById: Record<string, ManageAdReviewImageSourceDto> = {};
+    const candidateHashByImageId = new Map<string, string>();
+
+    for (const imageRef of importedImageRefs) {
+      try {
+        const imageBytes = await this.readImageBytes(imageRef.image);
+        const hash = this.computeSha256Hex(imageBytes);
+        if (!knownHashes.has(hash)) {
+          continue;
+        }
+
+        const candidate: ManageAdReviewCandidateDto = {
+          image_id: imageRef.image.id,
+          package_id: imageRef.source.id,
+          package_name: imageRef.source.package_name,
+          display_name: imageRef.source.display_name,
+          ordinal: imageRef.image.ordinal,
+          file_name: toImageFileName(imageRef.image),
+          reason: "known_hash",
+          source: "known-hash",
+          hash,
+        };
+        hitCandidates.push(candidate);
+        candidateHashByImageId.set(candidate.image_id, hash);
+        imageSourceById[candidate.image_id] = "known-hash";
+      } catch {
+        failedImageIds.push(imageRef.image.id);
+      }
+    }
+
+    hitCandidates.sort((left, right) => {
+      if (left.package_id !== right.package_id) {
+        return left.package_id.localeCompare(right.package_id);
+      }
+      return left.ordinal - right.ordinal;
+    });
+
+    if (hitCandidates.length === 0) {
+      return {
+        compared_count: importedImageRefs.length,
+        hit_count: 0,
+        deleted_count: 0,
+        enqueued_count: 0,
+        failed_count: failedImageIds.length,
+      };
+    }
+
+    if (settings.hitAction === "silent-delete") {
+      const response = await this.options.deleteImageItems({
+        image_ids: hitCandidates.map((candidate) => candidate.image_id),
+      });
+      const deletedImageIds = hitCandidates
+        .map((candidate) => candidate.image_id)
+        .filter(
+          (imageId) =>
+            !response.failed.some((failed) => failed.image_id === imageId),
+        );
+      if (deletedImageIds.length > 0) {
+        await this.persistKnownHashes(deletedImageIds, candidateHashByImageId);
+      }
+      const result = {
+        compared_count: importedImageRefs.length,
+        hit_count: hitCandidates.length,
+        deleted_count: deletedImageIds.length,
+        enqueued_count: 0,
+        failed_count: failedImageIds.length + response.failed.length,
+      };
+      this.appendImportStageReviewLog({
+        mode: "silent-delete",
+        comparedCount: result.compared_count,
+        hitCount: result.hit_count,
+        deletedCount: result.deleted_count,
+        enqueuedCount: result.enqueued_count,
+        failedCount: result.failed_count,
+      });
+      this.emitImportStageReviewUpdated();
+      return result;
+    }
+
+    const enqueuedCount = this.enqueueImportHashReviewTask({
+      candidates: hitCandidates,
+      imageSourceById,
+    });
+    const result = {
+      compared_count: importedImageRefs.length,
+      hit_count: hitCandidates.length,
+      deleted_count: 0,
+      enqueued_count: enqueuedCount,
+      failed_count: failedImageIds.length,
+    };
+    if (enqueuedCount > 0) {
+      this.emitImportStageReviewUpdated();
+    }
+    return result;
+  }
+
   private buildImageById(
     snapshot: LibrarySnapshotDto,
   ): Map<string, ImageEntryRef> {
@@ -457,6 +728,301 @@ export class ManageAdReviewService {
       }
     }
     return imageById;
+  }
+
+  private readHashCompareSettings(): {
+    stage: "ad-review" | "import";
+    hitAction: "silent-delete" | "user-confirm";
+  } {
+    const raw = this.options.database.readAppState<unknown>(
+      SETTINGS_STATE_KEY,
+      null,
+    );
+    const settings =
+      raw && typeof raw === "object"
+        ? (raw as PersistedUiSettingsLike)
+        : ({} as PersistedUiSettingsLike);
+
+    const stage =
+      settings.adReviewHashCompareStage === "import" ? "import" : "ad-review";
+    const hitAction =
+      settings.adReviewHashHitAction === "user-confirm"
+        ? "user-confirm"
+        : "silent-delete";
+
+    return { stage, hitAction };
+  }
+
+  private readImportStageReviewLogState(): ImportStageReviewLogState {
+    const fallback: ImportStageReviewLogState = {
+      version: 1,
+      items: [],
+    };
+    const raw = this.options.database.readAppState<unknown>(
+      IMPORT_STAGE_LOG_STATE_KEY,
+      fallback,
+    );
+    if (!raw || typeof raw !== "object") {
+      return fallback;
+    }
+
+    const version =
+      (raw as { version?: unknown }).version === 1 ? 1 : (1 as const);
+    const rawItems = Array.isArray((raw as { items?: unknown }).items)
+      ? ((raw as { items: unknown[] }).items as unknown[])
+      : [];
+    const items: ImportStageReviewLogItem[] = [];
+    for (const item of rawItems) {
+      if (!item || typeof item !== "object") {
+        continue;
+      }
+      const id =
+        typeof (item as { id?: unknown }).id === "string"
+          ? (item as { id: string }).id.trim()
+          : "";
+      const mode = (item as { mode?: unknown }).mode;
+      if (!id || (mode !== "silent-delete" && mode !== "user-confirm")) {
+        continue;
+      }
+      const createdAtMs =
+        typeof (item as { created_at_ms?: unknown }).created_at_ms === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { created_at_ms: number }).created_at_ms),
+            )
+          : 0;
+      const comparedCount =
+        typeof (item as { compared_count?: unknown }).compared_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { compared_count: number }).compared_count),
+            )
+          : 0;
+      const hitCount =
+        typeof (item as { hit_count?: unknown }).hit_count === "number"
+          ? Math.max(0, Math.floor((item as { hit_count: number }).hit_count))
+          : 0;
+      const deletedCount =
+        typeof (item as { deleted_count?: unknown }).deleted_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { deleted_count: number }).deleted_count),
+            )
+          : 0;
+      const enqueuedCount =
+        typeof (item as { enqueued_count?: unknown }).enqueued_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { enqueued_count: number }).enqueued_count),
+            )
+          : 0;
+      const failedCount =
+        typeof (item as { failed_count?: unknown }).failed_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { failed_count: number }).failed_count),
+            )
+          : 0;
+      items.push({
+        id,
+        mode,
+        compared_count: comparedCount,
+        hit_count: hitCount,
+        deleted_count: deletedCount,
+        enqueued_count: enqueuedCount,
+        failed_count: failedCount,
+        created_at_ms: createdAtMs,
+      });
+    }
+
+    return {
+      version,
+      items,
+    };
+  }
+
+  private appendImportStageReviewLog(params: {
+    mode: "silent-delete" | "user-confirm";
+    comparedCount: number;
+    hitCount: number;
+    deletedCount: number;
+    enqueuedCount: number;
+    failedCount: number;
+  }): void {
+    const previous = this.readImportStageReviewLogState();
+    const now = Date.now();
+    const nextItem: ImportStageReviewLogItem = {
+      id: `import-hash-log-${now}-${Math.round(Math.random() * 1_000_000)}`,
+      mode: params.mode,
+      compared_count: params.comparedCount,
+      hit_count: params.hitCount,
+      deleted_count: params.deletedCount,
+      enqueued_count: params.enqueuedCount,
+      failed_count: params.failedCount,
+      created_at_ms: now,
+    };
+    const maxItems = 40;
+    const nextItems = [...previous.items, nextItem].slice(-maxItems);
+    this.options.database.writeAppState(IMPORT_STAGE_LOG_STATE_KEY, {
+      version: 1,
+      items: nextItems,
+    } satisfies ImportStageReviewLogState);
+  }
+
+  private emitImportStageReviewUpdated(): void {
+    this.options.emitLibraryChanged?.({
+      reason: "import-hash-review-updated",
+      updated_at_ms: Date.now(),
+    });
+  }
+
+  private async collectImportedImageRefs(
+    snapshot: LibrarySnapshotDto,
+    sourcePaths: string[],
+  ): Promise<ImageEntryRef[]> {
+    const filePathKeySet = new Set<string>();
+    const directoryPathKeySet = new Set<string>();
+
+    for (const sourcePath of sourcePaths) {
+      const absolutePath = path.resolve(sourcePath);
+      const stat = await fs.stat(absolutePath).catch(() => null);
+      if (!stat) {
+        continue;
+      }
+      const pathKey = normalizeAllowlistKey(absolutePath);
+      if (stat.isDirectory()) {
+        directoryPathKeySet.add(pathKey);
+      } else {
+        filePathKeySet.add(pathKey);
+      }
+    }
+
+    if (filePathKeySet.size === 0 && directoryPathKeySet.size === 0) {
+      return [];
+    }
+
+    const isInsideImportedDirectory = (targetPathKey: string): boolean => {
+      for (const directoryPathKey of directoryPathKeySet) {
+        if (
+          targetPathKey === directoryPathKey ||
+          targetPathKey.startsWith(`${directoryPathKey}/`)
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const imageRefs: ImageEntryRef[] = [];
+    for (const source of [
+      ...snapshot.image_packages,
+      ...snapshot.image_directories,
+    ]) {
+      for (const image of source.images) {
+        if (image.media_locator.kind === "filesystem") {
+          const pathKey = normalizeAllowlistKey(image.media_locator.absolute_path);
+          if (filePathKeySet.has(pathKey) || isInsideImportedDirectory(pathKey)) {
+            imageRefs.push({ source, image });
+          }
+          continue;
+        }
+
+        const archivePathKey = normalizeAllowlistKey(
+          image.media_locator.archive_path,
+        );
+        if (
+          filePathKeySet.has(archivePathKey) ||
+          isInsideImportedDirectory(archivePathKey)
+        ) {
+          imageRefs.push({ source, image });
+        }
+      }
+    }
+
+    return imageRefs;
+  }
+
+  private enqueueImportHashReviewTask(params: {
+    candidates: ManageAdReviewCandidateDto[];
+    imageSourceById: Record<string, ManageAdReviewImageSourceDto>;
+  }): number {
+    if (params.candidates.length === 0) {
+      return 0;
+    }
+
+    const queue = this.readQueueState();
+    const queuedImageIdSet = new Set<string>();
+    for (const item of queue.items) {
+      for (const candidate of item.task.candidates) {
+        queuedImageIdSet.add(candidate.image_id);
+      }
+    }
+
+    const dedupedCandidates = params.candidates.filter(
+      (candidate) => !queuedImageIdSet.has(candidate.image_id),
+    );
+    if (dedupedCandidates.length === 0) {
+      return 0;
+    }
+
+    const dedupedImageSourceById: Record<string, ManageAdReviewImageSourceDto> =
+      {};
+    for (const candidate of dedupedCandidates) {
+      const source = params.imageSourceById[candidate.image_id];
+      if (source) {
+        dedupedImageSourceById[candidate.image_id] = source;
+      }
+    }
+
+    const now = Date.now();
+    const taskId = `manage-ad-review-import-${now}-${Math.round(Math.random() * 1_000_000)}`;
+    const sourceDistribution = createEmptySourceDistribution();
+    sourceDistribution.known_hash = dedupedCandidates.length;
+    const task: ManageAdReviewTaskDto = {
+      task_id: taskId,
+      status: "review",
+      progress: 1,
+      total_count: dedupedCandidates.length,
+      reviewed_count: dedupedCandidates.length,
+      suspected_count: dedupedCandidates.length,
+      failed_count: 0,
+      known_hash_hits: dedupedCandidates.length,
+      llm_calls: 0,
+      scope_image_ids: dedupedCandidates.map((candidate) => candidate.image_id),
+      image_source_by_id: dedupedImageSourceById,
+      audit: toTaskAudit({
+        sourceDistribution,
+        suspectedCount: dedupedCandidates.length,
+        totalCount: dedupedCandidates.length,
+      }),
+      message: `导入命中 known-hash，待确认 ${dedupedCandidates.length} 张`,
+      error_detail: null,
+      candidates: dedupedCandidates,
+      created_at_ms: now,
+      updated_at_ms: now,
+    };
+
+    const request: StartManageAdReviewRequestDto = {
+      selection_scope: "image",
+      image_ids: task.scope_image_ids,
+      llm_endpoint: "import://known-hash",
+      llm_model: "known-hash",
+      skip_reviewed_nodes: true,
+    };
+
+    queue.items.push({
+      task,
+      request,
+      effective_node_ids: [],
+      skipped_node_ids: [],
+      node_hash_by_id: {},
+    });
+    this.writeQueueState(queue);
+    return dedupedCandidates.length;
+  }
+
+  private computeSha256Hex(bytes: Uint8Array): string {
+    return createHash("sha256").update(bytes).digest("hex");
   }
 
   private resolveStartSelection(
@@ -709,7 +1275,11 @@ export class ManageAdReviewService {
         return;
       }
 
-      const knownHashes = this.readKnownHashes();
+      const hashCompareSettings = this.readHashCompareSettings();
+      const knownHashes =
+        hashCompareSettings.stage === "ad-review"
+          ? this.readKnownHashes()
+          : new Set<string>();
       const client = new OpenAiVisionClient({
         endpoint: request.llm_endpoint,
         model: request.llm_model,
@@ -1249,6 +1819,17 @@ export class ManageAdReviewService {
     this.tasks.set(nextTask.task_id, runtimeTask);
 
     void this.executeTask(nextTask.task_id, selectedImageIds, imageById);
+  }
+
+  private extractHashesFromImportPayload(input: unknown): string[] {
+    if (Array.isArray(input)) {
+      return Array.from(normalizeHashes(input));
+    }
+    if (input && typeof input === "object") {
+      const hashes = (input as { hashes?: unknown }).hashes;
+      return Array.from(normalizeHashes(hashes));
+    }
+    return [];
   }
 
   private readKnownHashes(): Set<string> {

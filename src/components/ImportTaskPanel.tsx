@@ -2,6 +2,15 @@ import type { ImportTaskDto } from '../contracts/backend'
 import { useI18n } from '../i18n/useI18n'
 import { clamp } from '../utils/ui'
 
+export interface ImportHashReviewLogItem {
+  id: string
+  compared_count: number
+  hit_count: number
+  deleted_count: number
+  failed_count: number
+  created_at_ms: number
+}
+
 export interface ImportTaskPanelProps {
   open: boolean
   activeTaskCount: number
@@ -16,6 +25,13 @@ export interface ImportTaskPanelProps {
   operationHint: string | null
   taskError: string | null
   tasks: ImportTaskDto[]
+  pendingReviewNoticeVisible?: boolean
+  pendingReviewTaskCount?: number
+  pendingReviewImageCount?: number
+  onOpenAdReviewFromPendingNotice?: () => void
+  onDismissPendingReviewNotice?: () => void
+  hashReviewLogs?: ImportHashReviewLogItem[]
+  onRemoveHashReviewLog?: (logId: string) => void
   onClose: () => void
   onClearFinished: () => void
   onClearAll: () => void
@@ -71,6 +87,13 @@ function ImportTaskPanel({
   operationHint,
   taskError,
   tasks,
+  pendingReviewNoticeVisible = false,
+  pendingReviewTaskCount = 0,
+  pendingReviewImageCount = 0,
+  onOpenAdReviewFromPendingNotice,
+  onDismissPendingReviewNotice,
+  hashReviewLogs = [],
+  onRemoveHashReviewLog,
   onClose,
   onClearFinished,
   onClearAll,
@@ -146,6 +169,42 @@ function ImportTaskPanel({
             {t('ui.common.clear')}
           </button>
         </p>
+      ) : null}
+      {pendingReviewNoticeVisible ? (
+        <p className="import-task-panel-review-notice" data-slot="fg-import-task-review-notice">
+          <span>
+            {t('ui.importTask.reviewPendingSummary', {
+              taskCount: Math.max(1, pendingReviewTaskCount),
+              imageCount: Math.max(1, pendingReviewImageCount),
+            })}
+          </span>
+          <span className="import-task-panel-review-notice-actions">
+            <button type="button" onClick={() => onOpenAdReviewFromPendingNotice?.()}>
+              {t('ui.importTask.openReviewMode')}
+            </button>
+            <button type="button" onClick={() => onDismissPendingReviewNotice?.()}>
+              {t('ui.common.clear')}
+            </button>
+          </span>
+        </p>
+      ) : null}
+      {hashReviewLogs.length > 0 ? (
+        <ul className="import-task-panel-hash-log-list" data-slot="fg-import-task-hash-log-list">
+          {hashReviewLogs.map((item) => (
+            <li key={item.id}>
+              <span>
+                {t('ui.importTask.hashSilentDeleteSummary', {
+                  deletedCount: item.deleted_count,
+                  hitCount: item.hit_count,
+                  failedCount: item.failed_count,
+                })}
+              </span>
+              <button type="button" onClick={() => onRemoveHashReviewLog?.(item.id)}>
+                {t('ui.common.clear')}
+              </button>
+            </li>
+          ))}
+        </ul>
       ) : null}
       {tasks.length > 0 ? (
         <ul>

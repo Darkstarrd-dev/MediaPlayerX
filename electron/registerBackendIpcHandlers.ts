@@ -115,6 +115,11 @@ import {
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  readManageAdReviewKnownHashesResponseSchema,
+  importManageAdReviewKnownHashesRequestSchema,
+  importManageAdReviewKnownHashesResponseSchema,
+  exportManageAdReviewKnownHashesRequestSchema,
+  exportManageAdReviewKnownHashesResponseSchema,
   startManageCoverReviewRequestSchema,
   startManageCoverReviewResponseSchema,
   readManageCoverReviewTaskRequestSchema,
@@ -619,6 +624,26 @@ export function registerBackendIpcHandlers(): void {
     confirmManageAdReviewDeleteRequestSchema,
     confirmManageAdReviewDeleteResponseSchema,
     (request) => ensureService().confirmManageAdReviewDelete(request),
+  );
+
+  registerIpcQuery(
+    BACKEND_CHANNELS.readManageAdReviewKnownHashes,
+    readManageAdReviewKnownHashesResponseSchema,
+    () => ensureService().readManageAdReviewKnownHashes(),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.importManageAdReviewKnownHashes,
+    importManageAdReviewKnownHashesRequestSchema,
+    importManageAdReviewKnownHashesResponseSchema,
+    (request) => ensureService().importManageAdReviewKnownHashes(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.exportManageAdReviewKnownHashes,
+    exportManageAdReviewKnownHashesRequestSchema,
+    exportManageAdReviewKnownHashesResponseSchema,
+    (request) => ensureService().exportManageAdReviewKnownHashes(request),
   );
 
   registerIpcCommand(

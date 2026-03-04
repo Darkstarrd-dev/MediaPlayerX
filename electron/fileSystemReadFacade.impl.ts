@@ -67,6 +67,11 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ReadManageAdReviewKnownHashesResponseDto,
+  type ImportManageAdReviewKnownHashesRequestDto,
+  type ImportManageAdReviewKnownHashesResponseDto,
+  type ExportManageAdReviewKnownHashesRequestDto,
+  type ExportManageAdReviewKnownHashesResponseDto,
   type StartManageCoverReviewRequestDto,
   type StartManageCoverReviewResponseDto,
   type ReadManageCoverReviewTaskRequestDto,
@@ -392,6 +397,8 @@ export class FileSystemMediaReadService {
       invalidateSnapshotCache: () => this.invalidateSnapshotCache(),
       refreshSnapshot: (options) => this.refreshSnapshotFromFilesystem(options),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
+      handleImportStageKnownHashHits: async (sourcePaths) =>
+        this.manageAdReviewService.handleImportStageKnownHashHits(sourcePaths),
     });
 
     this.libraryReadWriteService = new LibraryReadWriteService({
@@ -449,6 +456,7 @@ export class FileSystemMediaReadService {
       getZipEntryIndexByPath: () =>
         this.librarySnapshotService.getZipEntryIndexByPath(),
       deleteImageItems: (request) => this.deleteImageItems(request),
+      emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
     });
 
     this.manageCoverReviewService = new ManageCoverReviewService({
@@ -1305,6 +1313,19 @@ export class FileSystemMediaReadService {
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
     return this.managementHandlers.confirmManageAdReviewDelete(request);
+  }
+  async readManageAdReviewKnownHashes(): Promise<ReadManageAdReviewKnownHashesResponseDto> {
+    return this.managementHandlers.readManageAdReviewKnownHashes();
+  }
+  async importManageAdReviewKnownHashes(
+    request: ImportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ImportManageAdReviewKnownHashesResponseDto> {
+    return this.managementHandlers.importManageAdReviewKnownHashes(request);
+  }
+  async exportManageAdReviewKnownHashes(
+    request: ExportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ExportManageAdReviewKnownHashesResponseDto> {
+    return this.managementHandlers.exportManageAdReviewKnownHashes(request);
   }
   async startManageCoverReview(
     request: StartManageCoverReviewRequestDto,

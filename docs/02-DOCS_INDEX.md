@@ -40,6 +40,7 @@
 | `29-module-file-index.md` | 索引 | 模块到文件的半自动追踪索引（排障/改造入口） |
 | `30-全仓重复治理PR拆分清单-v1.md` | 当前计划 | 重复治理重构的 PR 级拆分清单与回归检查门禁 |
 | `31-ad-review-performance-mode-reimplementation-phased-plan-v1.md` | 当前计划 | Ad Review Performance 模式分阶段重实施计划（增量执行、防上下文压缩） |
+| `33-ad-review-import-known-hash-专家技术支持请求-2026-03-04.md` | 当前计划 | Ad Review 导入哈希告警/清理问题专家技术支持请求 |
 | `01-README.md` | 入口 | docs 子目录导航 |
 | `02-DOCS_INDEX.md` | 说明 | 本文档，维护规则与目录说明 |
 

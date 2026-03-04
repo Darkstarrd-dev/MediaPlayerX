@@ -169,6 +169,12 @@ export interface SettingsPanelProps {
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
   adReviewExecutionMode: "normal" | "performance";
+  adReviewHashCompareStage: "ad-review" | "import";
+  adReviewHashHitAction: "silent-delete" | "user-confirm";
+  adReviewKnownHashImportPending: boolean;
+  adReviewKnownHashImportMessage: string | null;
+  adReviewKnownHashExportPending: boolean;
+  adReviewKnownHashExportMessage: string | null;
   shortcuts: ShortcutMap;
   shortcutConflicts: ShortcutConflict[];
   databaseResetPending: boolean;
@@ -330,6 +336,10 @@ export interface SettingsPanelProps {
   onSubtitleCleanupLlmModelChange: (value: string) => void;
   onSubtitleCleanupLlmPromptChange: (value: string) => void;
   onAdReviewExecutionModeChange: (value: "normal" | "performance") => void;
+  onAdReviewHashCompareStageChange: (value: "ad-review" | "import") => void;
+  onAdReviewHashHitActionChange: (value: "silent-delete" | "user-confirm") => void;
+  onImportAdReviewKnownHashes: () => void;
+  onExportAdReviewKnownHashes: () => void;
   onSetShortcut: (action: ShortcutAction, binding: string) => void;
   onResetShortcuts: () => void;
   onClearDatabase: () => void;

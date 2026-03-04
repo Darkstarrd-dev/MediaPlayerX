@@ -106,6 +106,11 @@ import {
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteRequestSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  readManageAdReviewKnownHashesResponseSchema,
+  importManageAdReviewKnownHashesRequestSchema,
+  importManageAdReviewKnownHashesResponseSchema,
+  exportManageAdReviewKnownHashesRequestSchema,
+  exportManageAdReviewKnownHashesResponseSchema,
   startManageCoverReviewRequestSchema,
   startManageCoverReviewResponseSchema,
   readManageCoverReviewTaskRequestSchema,
@@ -331,6 +336,28 @@ const backendApi = {
       parsed,
     );
     return confirmManageAdReviewDeleteResponseSchema.parse(response);
+  },
+  readManageAdReviewKnownHashes: async () => {
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.readManageAdReviewKnownHashes,
+    );
+    return readManageAdReviewKnownHashesResponseSchema.parse(response);
+  },
+  importManageAdReviewKnownHashes: async (request: unknown) => {
+    const parsed = importManageAdReviewKnownHashesRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.importManageAdReviewKnownHashes,
+      parsed,
+    );
+    return importManageAdReviewKnownHashesResponseSchema.parse(response);
+  },
+  exportManageAdReviewKnownHashes: async (request: unknown) => {
+    const parsed = exportManageAdReviewKnownHashesRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.exportManageAdReviewKnownHashes,
+      parsed,
+    );
+    return exportManageAdReviewKnownHashesResponseSchema.parse(response);
   },
   startManageCoverReview: async (request: unknown) => {
     const parsed = startManageCoverReviewRequestSchema.parse(request);

@@ -145,6 +145,28 @@ export const confirmManageAdReviewDeleteResponseSchema = z.object({
   ),
   updated_at_ms: z.number().int().positive(),
 });
+export const readManageAdReviewKnownHashesResponseSchema = z.object({
+  hashes: z.array(z.string().min(1)),
+  total_count: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+});
+export const importManageAdReviewKnownHashesRequestSchema = z.object({
+  file_path: z.string().min(1),
+});
+export const importManageAdReviewKnownHashesResponseSchema = z.object({
+  total_count: nonNegativeIntSchema,
+  imported_count: nonNegativeIntSchema,
+  duplicate_count: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+});
+export const exportManageAdReviewKnownHashesRequestSchema = z.object({
+  output_directory: z.string().min(1),
+});
+export const exportManageAdReviewKnownHashesResponseSchema = z.object({
+  output_path: z.string().min(1),
+  total_count: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+});
 
 export const manageCoverReviewTaskSchema = manageAdReviewTaskSchema;
 export const startManageCoverReviewRequestSchema =

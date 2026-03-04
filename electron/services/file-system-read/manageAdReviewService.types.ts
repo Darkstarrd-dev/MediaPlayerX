@@ -25,6 +25,10 @@ export interface ManageAdReviewServiceOptions {
   deleteImageItems: (
     request: DeleteImageItemsRequestDto,
   ) => Promise<DeleteImageItemsResponseDto>;
+  emitLibraryChanged?: (payload: {
+    reason: string;
+    updated_at_ms: number;
+  }) => void;
 }
 
 export interface RuntimeTaskState {

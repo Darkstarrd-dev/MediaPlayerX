@@ -529,6 +529,19 @@ export function useManageAdReviewActions({
     void loadQueueTasks({ silent: true });
   }, [loadQueueTasks]);
 
+  useEffect(() => {
+    if (!repository.readAppState || !repository.onLibraryChanged) {
+      return;
+    }
+
+    return repository.onLibraryChanged((payload) => {
+      if (payload.reason !== "import-hash-review-updated") {
+        return;
+      }
+      void loadQueueTasks({ silent: true });
+    });
+  }, [loadQueueTasks, repository]);
+
   const task = useMemo(() => {
     if (queueTasks.length === 0) {
       return null;

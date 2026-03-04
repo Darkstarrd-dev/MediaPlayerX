@@ -530,6 +530,13 @@ export function useAppEffects({
   ]);
 
   useEffect(() => {
+    if (mode !== "image" || !adReviewPanelOpen || !showNamesOnly) {
+      return;
+    }
+    updateSettings({ showNamesOnly: false });
+  }, [adReviewPanelOpen, mode, showNamesOnly, updateSettings]);
+
+  useEffect(() => {
     if (
       mode !== "image" ||
       fullscreenActive ||

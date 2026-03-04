@@ -575,6 +575,11 @@ export const enUsCatalogPart2: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.importTask.dragPathResolveFailed":
     "Drag-drop import failed: local absolute path not resolved",
   "ui.importTask.progressSummary": "{{source}} | {{processed}}/{{total}}",
+  "ui.importTask.reviewPendingSummary":
+    "Pending review: {{taskCount}} tasks, {{imageCount}} images",
+  "ui.importTask.openReviewMode": "Open review mode",
+  "ui.importTask.hashSilentDeleteSummary":
+    "Silent delete removed {{deletedCount}} ad images (hit {{hitCount}}, failed {{failedCount}})",
   "ui.importTask.source.folder": "Folder",
   "ui.importTask.source.dragDrop": "Drag and drop",
   "ui.importTask.source.paste": "Paste",

@@ -112,6 +112,11 @@ import type {
   TestAdReviewVisionModelResponseDto,
   ConfirmManageAdReviewDeleteRequestDto,
   ConfirmManageAdReviewDeleteResponseDto,
+  ReadManageAdReviewKnownHashesResponseDto,
+  ImportManageAdReviewKnownHashesRequestDto,
+  ImportManageAdReviewKnownHashesResponseDto,
+  ExportManageAdReviewKnownHashesRequestDto,
+  ExportManageAdReviewKnownHashesResponseDto,
   StartManageCoverReviewRequestDto,
   StartManageCoverReviewResponseDto,
   ReadManageCoverReviewTaskRequestDto,
@@ -230,6 +235,13 @@ interface MediaPlayerBackendApi {
   confirmManageAdReviewDelete?: (
     request: ConfirmManageAdReviewDeleteRequestDto,
   ) => Promise<ConfirmManageAdReviewDeleteResponseDto>;
+  readManageAdReviewKnownHashes?: () => Promise<ReadManageAdReviewKnownHashesResponseDto>;
+  importManageAdReviewKnownHashes?: (
+    request: ImportManageAdReviewKnownHashesRequestDto,
+  ) => Promise<ImportManageAdReviewKnownHashesResponseDto>;
+  exportManageAdReviewKnownHashes?: (
+    request: ExportManageAdReviewKnownHashesRequestDto,
+  ) => Promise<ExportManageAdReviewKnownHashesResponseDto>;
   startManageCoverReview?: (
     request: StartManageCoverReviewRequestDto,
   ) => Promise<StartManageCoverReviewResponseDto>;

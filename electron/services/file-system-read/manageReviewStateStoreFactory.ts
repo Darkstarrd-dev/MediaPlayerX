@@ -143,6 +143,7 @@ export function createManageReviewStateStore<TTask, TRequest>(
   readReviewedNodeHashState: () => ReviewedNodeHashStateLike;
   writeReviewedNodeHashState: (state: ReviewedNodeHashStateLike) => void;
   readKnownHashes: () => Set<string>;
+  writeKnownHashes: (hashes: Iterable<string>) => void;
   persistKnownHashes: (
     imageIds: string[],
     candidateHashByImageId: Map<string, string>,
@@ -316,12 +317,24 @@ export function createManageReviewStateStore<TTask, TRequest>(
     database.writeAppState(keys.knownHashesStateKey, Array.from(hashes));
   }
 
+  function writeKnownHashes(hashes: Iterable<string>): void {
+    const normalized = new Set<string>();
+    for (const hash of hashes) {
+      const value = hash.trim().toLowerCase();
+      if (value) {
+        normalized.add(value);
+      }
+    }
+    database.writeAppState(keys.knownHashesStateKey, Array.from(normalized));
+  }
+
   return {
     readQueueStateInternal,
     writeQueueState,
     readReviewedNodeHashState,
     writeReviewedNodeHashState,
     readKnownHashes,
+    writeKnownHashes,
     persistKnownHashes,
   };
 }

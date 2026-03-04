@@ -77,6 +77,9 @@ import {
   pauseManageAdReviewTaskResponseSchema,
   testAdReviewVisionModelResponseSchema,
   confirmManageAdReviewDeleteResponseSchema,
+  readManageAdReviewKnownHashesResponseSchema,
+  importManageAdReviewKnownHashesResponseSchema,
+  exportManageAdReviewKnownHashesResponseSchema,
   startManageCoverReviewResponseSchema,
   readManageCoverReviewTaskResponseSchema,
   pauseManageCoverReviewTaskResponseSchema,
@@ -207,6 +210,11 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ReadManageAdReviewKnownHashesResponseDto,
+  type ImportManageAdReviewKnownHashesRequestDto,
+  type ImportManageAdReviewKnownHashesResponseDto,
+  type ExportManageAdReviewKnownHashesRequestDto,
+  type ExportManageAdReviewKnownHashesResponseDto,
   type StartManageCoverReviewRequestDto,
   type StartManageCoverReviewResponseDto,
   type ReadManageCoverReviewTaskRequestDto,
@@ -486,6 +494,47 @@ export class RealMediaRepository implements MediaRepository {
       options,
     );
     return confirmManageAdReviewDeleteResponseSchema.parse(response);
+  }
+
+  async readManageAdReviewKnownHashes(
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadManageAdReviewKnownHashesResponseDto> {
+    const readManageAdReviewKnownHashes = requireBackendMethod(
+      "readManageAdReviewKnownHashes",
+    );
+
+    const response = await withAbort(readManageAdReviewKnownHashes(), options);
+    return readManageAdReviewKnownHashesResponseSchema.parse(response);
+  }
+
+  async importManageAdReviewKnownHashes(
+    request: ImportManageAdReviewKnownHashesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ImportManageAdReviewKnownHashesResponseDto> {
+    const importManageAdReviewKnownHashes = requireBackendMethod(
+      "importManageAdReviewKnownHashes",
+    );
+
+    const response = await withAbort(
+      importManageAdReviewKnownHashes(request),
+      options,
+    );
+    return importManageAdReviewKnownHashesResponseSchema.parse(response);
+  }
+
+  async exportManageAdReviewKnownHashes(
+    request: ExportManageAdReviewKnownHashesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ExportManageAdReviewKnownHashesResponseDto> {
+    const exportManageAdReviewKnownHashes = requireBackendMethod(
+      "exportManageAdReviewKnownHashes",
+    );
+
+    const response = await withAbort(
+      exportManageAdReviewKnownHashes(request),
+      options,
+    );
+    return exportManageAdReviewKnownHashesResponseSchema.parse(response);
   }
 
   async startManageCoverReview(

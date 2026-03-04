@@ -498,6 +498,11 @@ export const zhCnCatalogPart2 = {
   "ui.importTask.pathResolveFailed": "导入失败：未获取到本地绝对路径",
   "ui.importTask.dragPathResolveFailed": "拖拽导入失败：未获取到本地绝对路径",
   "ui.importTask.progressSummary": "{{source}} | {{processed}}/{{total}}",
+  "ui.importTask.reviewPendingSummary":
+    "待审核内容：任务 {{taskCount}} 个，图片 {{imageCount}} 张",
+  "ui.importTask.openReviewMode": "打开审核模式",
+  "ui.importTask.hashSilentDeleteSummary":
+    "静默删除广告图 {{deletedCount}} 张（命中 {{hitCount}}，失败 {{failedCount}}）",
   "ui.importTask.source.folder": "文件夹",
   "ui.importTask.source.dragDrop": "拖拽",
   "ui.importTask.source.paste": "粘贴",

@@ -23,6 +23,11 @@ import {
   type TestAdReviewVisionModelResponseDto,
   type ConfirmManageAdReviewDeleteRequestDto,
   type ConfirmManageAdReviewDeleteResponseDto,
+  type ReadManageAdReviewKnownHashesResponseDto,
+  type ImportManageAdReviewKnownHashesRequestDto,
+  type ImportManageAdReviewKnownHashesResponseDto,
+  type ExportManageAdReviewKnownHashesRequestDto,
+  type ExportManageAdReviewKnownHashesResponseDto,
   type StartManageCoverReviewRequestDto,
   type StartManageCoverReviewResponseDto,
   type ReadManageCoverReviewTaskRequestDto,
@@ -546,6 +551,26 @@ export class FileSystemManagementHandlers {
     request: ConfirmManageAdReviewDeleteRequestDto,
   ): Promise<ConfirmManageAdReviewDeleteResponseDto> {
     return this.context.manageAdReviewService.confirmManageAdReviewDelete(
+      request,
+    );
+  }
+
+  async readManageAdReviewKnownHashes(): Promise<ReadManageAdReviewKnownHashesResponseDto> {
+    return this.context.manageAdReviewService.readManageAdReviewKnownHashes();
+  }
+
+  async importManageAdReviewKnownHashes(
+    request: ImportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ImportManageAdReviewKnownHashesResponseDto> {
+    return this.context.manageAdReviewService.importManageAdReviewKnownHashes(
+      request,
+    );
+  }
+
+  async exportManageAdReviewKnownHashes(
+    request: ExportManageAdReviewKnownHashesRequestDto,
+  ): Promise<ExportManageAdReviewKnownHashesResponseDto> {
+    return this.context.manageAdReviewService.exportManageAdReviewKnownHashes(
       request,
     );
   }

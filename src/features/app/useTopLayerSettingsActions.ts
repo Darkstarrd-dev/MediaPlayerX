@@ -28,6 +28,10 @@ interface TopLayerSettingsActionsResult {
   adReviewVisionTestMessage: string | null
   adReviewVisionSavePending: boolean
   adReviewVisionSaveMessage: string | null
+  adReviewKnownHashImportPending: boolean
+  adReviewKnownHashImportMessage: string | null
+  adReviewKnownHashExportPending: boolean
+  adReviewKnownHashExportMessage: string | null
   runtimePathUpdatePending: boolean
   runtimePathUpdateMessage: string | null
   ehentaiAuthStatus: ExternalAuthStatusResponseDto | null
@@ -37,6 +41,8 @@ interface TopLayerSettingsActionsResult {
   applyElectronNativeChromeEnabled: (value: boolean) => void
   testAdReviewVisionModel: () => Promise<void>
   saveAdReviewVisionModel: () => Promise<void>
+  importAdReviewKnownHashes: () => Promise<void>
+  exportAdReviewKnownHashes: () => Promise<void>
   refreshEhentaiAuthStatus: () => Promise<void>
   connectEhentaiAuth: () => Promise<void>
   disconnectEhentaiAuth: () => Promise<void>
@@ -99,6 +105,10 @@ export function useTopLayerSettingsActions({
   const [adReviewVisionTestMessage, setAdReviewVisionTestMessage] = useState<string | null>(null)
   const [adReviewVisionSavePending, setAdReviewVisionSavePending] = useState(false)
   const [adReviewVisionSaveMessage, setAdReviewVisionSaveMessage] = useState<string | null>(null)
+  const [adReviewKnownHashImportPending, setAdReviewKnownHashImportPending] = useState(false)
+  const [adReviewKnownHashImportMessage, setAdReviewKnownHashImportMessage] = useState<string | null>(null)
+  const [adReviewKnownHashExportPending, setAdReviewKnownHashExportPending] = useState(false)
+  const [adReviewKnownHashExportMessage, setAdReviewKnownHashExportMessage] = useState<string | null>(null)
   const [runtimePathUpdatePending, setRuntimePathUpdatePending] = useState(false)
   const [runtimePathUpdateMessage, setRuntimePathUpdateMessage] = useState<string | null>(null)
   const [ehentaiAuthStatus, setEhentaiAuthStatus] = useState<ExternalAuthStatusResponseDto | null>(null)
@@ -254,6 +264,80 @@ export function useTopLayerSettingsActions({
       setAdReviewVisionSavePending(false)
     }
   }, [adReviewVisionEndpoint, adReviewVisionModel, adReviewVisionVerified, appSettings, mediaRepository, t, updateSettings])
+
+  const importAdReviewKnownHashes = useCallback(async () => {
+    if (!mediaRepository.pickFilePath || !mediaRepository.importManageAdReviewKnownHashes) {
+      setAdReviewKnownHashImportMessage(t('ui.settings.adReviewKnownHashesImportUnsupported'))
+      return
+    }
+
+    const picked = await mediaRepository.pickFilePath({
+      title: t('ui.settings.adReviewKnownHashesPickImportFile'),
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    })
+    if (picked.canceled || !picked.path) {
+      return
+    }
+
+    setAdReviewKnownHashImportPending(true)
+    setAdReviewKnownHashImportMessage(t('ui.settings.adReviewKnownHashesImporting'))
+    try {
+      const response = await mediaRepository.importManageAdReviewKnownHashes({
+        file_path: picked.path,
+      })
+      setAdReviewKnownHashImportMessage(
+        t('ui.settings.adReviewKnownHashesImportDone', {
+          imported: String(response.imported_count),
+          duplicate: String(response.duplicate_count),
+          total: String(response.total_count),
+        }),
+      )
+    } catch (error) {
+      setAdReviewKnownHashImportMessage(
+        t('ui.settings.adReviewKnownHashesImportFailed', {
+          message: toErrorDetailWithCode(error, t),
+        }),
+      )
+    } finally {
+      setAdReviewKnownHashImportPending(false)
+    }
+  }, [mediaRepository, t])
+
+  const exportAdReviewKnownHashes = useCallback(async () => {
+    if (!mediaRepository.pickDirectoryPath || !mediaRepository.exportManageAdReviewKnownHashes) {
+      setAdReviewKnownHashExportMessage(t('ui.settings.adReviewKnownHashesExportUnsupported'))
+      return
+    }
+
+    const picked = await mediaRepository.pickDirectoryPath({
+      title: t('ui.settings.adReviewKnownHashesPickExportDirectory'),
+    })
+    if (picked.canceled || !picked.path) {
+      return
+    }
+
+    setAdReviewKnownHashExportPending(true)
+    setAdReviewKnownHashExportMessage(t('ui.settings.adReviewKnownHashesExporting'))
+    try {
+      const response = await mediaRepository.exportManageAdReviewKnownHashes({
+        output_directory: picked.path,
+      })
+      setAdReviewKnownHashExportMessage(
+        t('ui.settings.adReviewKnownHashesExportDone', {
+          total: String(response.total_count),
+          path: response.output_path,
+        }),
+      )
+    } catch (error) {
+      setAdReviewKnownHashExportMessage(
+        t('ui.settings.adReviewKnownHashesExportFailed', {
+          message: toErrorDetailWithCode(error, t),
+        }),
+      )
+    } finally {
+      setAdReviewKnownHashExportPending(false)
+    }
+  }, [mediaRepository, t])
 
   const refreshEhentaiAuthStatus = useCallback(async () => {
     const backendApi = typeof window !== 'undefined' ? window.mediaPlayerBackend : undefined
@@ -759,6 +843,10 @@ export function useTopLayerSettingsActions({
     adReviewVisionTestMessage,
     adReviewVisionSavePending,
     adReviewVisionSaveMessage,
+    adReviewKnownHashImportPending,
+    adReviewKnownHashImportMessage,
+    adReviewKnownHashExportPending,
+    adReviewKnownHashExportMessage,
     runtimePathUpdatePending,
     runtimePathUpdateMessage,
     ehentaiAuthStatus,
@@ -768,6 +856,8 @@ export function useTopLayerSettingsActions({
     applyElectronNativeChromeEnabled,
     testAdReviewVisionModel,
     saveAdReviewVisionModel,
+    importAdReviewKnownHashes,
+    exportAdReviewKnownHashes,
     refreshEhentaiAuthStatus,
     connectEhentaiAuth,
     disconnectEhentaiAuth,

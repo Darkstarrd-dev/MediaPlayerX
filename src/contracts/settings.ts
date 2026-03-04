@@ -388,6 +388,8 @@ export const appSettingsSchema = z.object({
   subtitleCleanupLlmModel: z.string().max(256),
   subtitleCleanupLlmPrompt: z.string().max(12000),
   adReviewExecutionMode: z.enum(["normal", "performance"]),
+  adReviewHashCompareStage: z.enum(["ad-review", "import"]),
+  adReviewHashHitAction: z.enum(["silent-delete", "user-confirm"]),
   adReviewStrategyMode: z.enum(["all", "head-tail"]),
   adReviewHeadN: z.number().int().min(1).max(20),
   adReviewTailN: z.number().int().min(1).max(20),

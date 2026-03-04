@@ -1,5 +1,9 @@
 import {
+  useCallback,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
   type CSSProperties,
   type Dispatch,
   type SetStateAction,
@@ -7,7 +11,11 @@ import {
 
 import { findShortcutConflicts } from "../../shortcuts";
 import type { BrowserMode, ImageItem, VideoItem } from "../../types";
-import type { ImportTaskDto } from "../../contracts/backend";
+import {
+  manageAdReviewTaskSchema,
+  type ImportTaskDto,
+  type ManageAdReviewTaskDto,
+} from "../../contracts/backend";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { ImageConvertAdjustProfile } from "./useAppSessionState";
 import type { MediaRepository, RepositoryMode } from "../backend/repository";
@@ -33,6 +41,116 @@ import type {
 
 type SearchPanelMode = "vector" | "feature";
 type FullscreenAlignDirection = "up" | "down" | "left" | "right";
+const IMPORT_STAGE_LOG_STATE_KEY = "manage_ad_review_import_stage_log_v1";
+const AD_REVIEW_QUEUE_STATE_KEY = "manage_ad_review_queue_v1";
+
+interface ImportStageReviewLogItem {
+  id: string;
+  mode: "silent-delete" | "user-confirm";
+  compared_count: number;
+  hit_count: number;
+  deleted_count: number;
+  enqueued_count: number;
+  failed_count: number;
+  created_at_ms: number;
+}
+
+function parseImportStageReviewLogItems(stateJson: string): ImportStageReviewLogItem[] {
+  try {
+    const parsed = JSON.parse(stateJson) as unknown
+    if (!parsed || typeof parsed !== 'object') {
+      return []
+    }
+    const rawItems = Array.isArray((parsed as { items?: unknown }).items)
+      ? ((parsed as { items: unknown[] }).items as unknown[])
+      : []
+
+    const items: ImportStageReviewLogItem[] = []
+    for (const item of rawItems) {
+      if (!item || typeof item !== 'object') {
+        continue
+      }
+      const id =
+        typeof (item as { id?: unknown }).id === 'string'
+          ? (item as { id: string }).id.trim()
+          : ''
+      const mode = (item as { mode?: unknown }).mode
+      if (!id || (mode !== 'silent-delete' && mode !== 'user-confirm')) {
+        continue
+      }
+      const createdAtMs =
+        typeof (item as { created_at_ms?: unknown }).created_at_ms === 'number'
+          ? Math.max(0, Math.floor((item as { created_at_ms: number }).created_at_ms))
+          : 0
+      const comparedCount =
+        typeof (item as { compared_count?: unknown }).compared_count === 'number'
+          ? Math.max(0, Math.floor((item as { compared_count: number }).compared_count))
+          : 0
+      const hitCount =
+        typeof (item as { hit_count?: unknown }).hit_count === 'number'
+          ? Math.max(0, Math.floor((item as { hit_count: number }).hit_count))
+          : 0
+      const deletedCount =
+        typeof (item as { deleted_count?: unknown }).deleted_count === 'number'
+          ? Math.max(0, Math.floor((item as { deleted_count: number }).deleted_count))
+          : 0
+      const enqueuedCount =
+        typeof (item as { enqueued_count?: unknown }).enqueued_count === 'number'
+          ? Math.max(0, Math.floor((item as { enqueued_count: number }).enqueued_count))
+          : 0
+      const failedCount =
+        typeof (item as { failed_count?: unknown }).failed_count === 'number'
+          ? Math.max(0, Math.floor((item as { failed_count: number }).failed_count))
+          : 0
+
+      items.push({
+        id,
+        mode,
+        compared_count: comparedCount,
+        hit_count: hitCount,
+        deleted_count: deletedCount,
+        enqueued_count: enqueuedCount,
+        failed_count: failedCount,
+        created_at_ms: createdAtMs,
+      })
+    }
+    return items
+  } catch {
+    return []
+  }
+}
+
+function parseAdReviewTasksFromQueueStateJson(
+  stateJson: string,
+): ManageAdReviewTaskDto[] {
+  try {
+    const parsed = JSON.parse(stateJson) as unknown;
+    if (!parsed || typeof parsed !== "object") {
+      return [];
+    }
+
+    const rawItems = Array.isArray((parsed as { items?: unknown }).items)
+      ? ((parsed as { items: unknown[] }).items as unknown[])
+      : [];
+    const tasks: ManageAdReviewTaskDto[] = [];
+
+    for (const item of rawItems) {
+      if (!item || typeof item !== "object") {
+        continue;
+      }
+      const parsedTask = manageAdReviewTaskSchema.safeParse(
+        (item as { task?: unknown }).task,
+      );
+      if (!parsedTask.success) {
+        continue;
+      }
+      tasks.push(parsedTask.data);
+    }
+    return tasks;
+  } catch {
+    return [];
+  }
+}
 
 interface UseAppTopLayerStateParams {
   appSettings: AppSettingsStoreSnapshot;
@@ -85,6 +203,8 @@ interface UseAppTopLayerStateParams {
   retryImportTask: (taskId: string) => Promise<void>;
   adReviewRunning: boolean;
   adReviewDeleting: boolean;
+  adReviewQueueTasks: ManageAdReviewTaskDto[];
+  onOpenAdReviewFromImportNotice: (taskId: string | null) => void;
   manageOperationHint: string | null;
   clearManageOperationHint: () => void;
   taskError: string | null;
@@ -228,6 +348,8 @@ export function useAppTopLayerState({
   retryImportTask,
   adReviewRunning,
   adReviewDeleting,
+  adReviewQueueTasks,
+  onOpenAdReviewFromImportNotice,
   manageOperationHint,
   clearManageOperationHint,
   taskError,
@@ -458,6 +580,231 @@ export function useAppTopLayerState({
     },
   });
 
+  const [adReviewQueueTasksFromState, setAdReviewQueueTasksFromState] =
+    useState<ManageAdReviewTaskDto[]>([]);
+
+  const mergedAdReviewQueueTasks = useMemo(() => {
+    const taskById = new Map<string, ManageAdReviewTaskDto>();
+    for (const task of adReviewQueueTasksFromState) {
+      taskById.set(task.task_id, task);
+    }
+    for (const task of adReviewQueueTasks) {
+      const previous = taskById.get(task.task_id);
+      if (!previous || task.updated_at_ms >= previous.updated_at_ms) {
+        taskById.set(task.task_id, task);
+      }
+    }
+    return Array.from(taskById.values());
+  }, [adReviewQueueTasks, adReviewQueueTasksFromState]);
+
+  const pendingReviewTasks = useMemo(
+    () =>
+      mergedAdReviewQueueTasks.filter(
+        (task) =>
+          task.task_id.startsWith("manage-ad-review-import-") &&
+          task.status === "review" &&
+          task.candidates.length > 0,
+      ),
+    [mergedAdReviewQueueTasks],
+  );
+  const pendingReviewSummary = useMemo(() => {
+    const sortedTasks = [...pendingReviewTasks].sort(
+      (left, right) => left.created_at_ms - right.created_at_ms,
+    );
+    const seenImageIds = new Set<string>();
+    let effectiveTaskCount = 0;
+    let latestEffectiveCreatedAtMs = 0;
+    let latestEffectiveTaskId: string | null = null;
+
+    for (const task of sortedTasks) {
+      let taskAddsNewCandidate = false;
+      for (const candidate of task.candidates) {
+        if (seenImageIds.has(candidate.image_id)) {
+          continue;
+        }
+        seenImageIds.add(candidate.image_id);
+        taskAddsNewCandidate = true;
+      }
+      if (!taskAddsNewCandidate) {
+        continue;
+      }
+      effectiveTaskCount += 1;
+      if (task.created_at_ms >= latestEffectiveCreatedAtMs) {
+        latestEffectiveCreatedAtMs = task.created_at_ms;
+        latestEffectiveTaskId = task.task_id;
+      }
+    }
+
+    return {
+      effectiveTaskCount,
+      uniqueImageCount: seenImageIds.size,
+      latestEffectiveCreatedAtMs,
+      latestEffectiveTaskId,
+    };
+  }, [pendingReviewTasks]);
+  const pendingReviewTaskCount = pendingReviewSummary.effectiveTaskCount;
+  const pendingReviewImageCount = pendingReviewSummary.uniqueImageCount;
+  const latestPendingReviewTaskId = pendingReviewSummary.latestEffectiveTaskId;
+
+  const [pendingReviewNoticeToken, setPendingReviewNoticeToken] = useState<
+    number | null
+  >(null);
+  const [dismissedPendingReviewToken, setDismissedPendingReviewToken] =
+    useState<number | null>(null);
+  const [lastImportPanelOpenedAtMs, setLastImportPanelOpenedAtMs] =
+    useState(0);
+  const [importStageReviewLogs, setImportStageReviewLogs] = useState<
+    ImportStageReviewLogItem[]
+  >([]);
+  const previousImportTaskPanelOpenRef = useRef(importTaskPanelOpen);
+
+  const loadAdReviewQueueTasksForNotice = useCallback(async () => {
+    const readAppState = mediaRepository.readAppState;
+    if (!readAppState) {
+      setAdReviewQueueTasksFromState([]);
+      return;
+    }
+
+    try {
+      const response = await readAppState({
+        state_key: AD_REVIEW_QUEUE_STATE_KEY,
+        fallback_json: JSON.stringify({ version: 1, items: [] }),
+      });
+      setAdReviewQueueTasksFromState(
+        parseAdReviewTasksFromQueueStateJson(response.state_json),
+      );
+    } catch {
+      setAdReviewQueueTasksFromState([]);
+    }
+  }, [mediaRepository.readAppState]);
+
+  useEffect(() => {
+    const latestCreatedAtMs =
+      pendingReviewSummary.latestEffectiveCreatedAtMs > 0
+        ? pendingReviewSummary.latestEffectiveCreatedAtMs
+        : null;
+    if (latestCreatedAtMs === null) {
+      setPendingReviewNoticeToken(null);
+      setDismissedPendingReviewToken(null);
+      return;
+    }
+
+    setPendingReviewNoticeToken((previous) => {
+      if (previous === null) {
+        return latestCreatedAtMs;
+      }
+      return Math.max(previous, latestCreatedAtMs);
+    });
+  }, [pendingReviewSummary.latestEffectiveCreatedAtMs]);
+
+  useEffect(() => {
+    const previous = previousImportTaskPanelOpenRef.current;
+    previousImportTaskPanelOpenRef.current = importTaskPanelOpen;
+    if (!previous && importTaskPanelOpen) {
+      setLastImportPanelOpenedAtMs(Date.now());
+    }
+  }, [importTaskPanelOpen]);
+
+  const pendingReviewNoticeVisible = Boolean(
+    pendingReviewNoticeToken !== null &&
+      dismissedPendingReviewToken !== pendingReviewNoticeToken,
+  );
+  const importReviewAlerting =
+    pendingReviewNoticeVisible &&
+    pendingReviewNoticeToken !== null &&
+    pendingReviewNoticeToken > lastImportPanelOpenedAtMs;
+
+  const openAdReviewFromImportPanelNotice = useCallback(() => {
+    setLastImportPanelOpenedAtMs(Date.now());
+    onOpenAdReviewFromImportNotice(latestPendingReviewTaskId);
+  }, [
+    latestPendingReviewTaskId,
+    onOpenAdReviewFromImportNotice,
+  ]);
+
+  const dismissPendingReviewNotice = useCallback(() => {
+    if (pendingReviewNoticeToken === null) {
+      return;
+    }
+    setDismissedPendingReviewToken(pendingReviewNoticeToken);
+    setLastImportPanelOpenedAtMs(Date.now());
+  }, [pendingReviewNoticeToken]);
+
+  const loadImportStageReviewLogs = useCallback(async () => {
+    const readAppState = mediaRepository.readAppState;
+    if (!readAppState) {
+      setImportStageReviewLogs([]);
+      return;
+    }
+
+    try {
+      const response = await readAppState({
+        state_key: IMPORT_STAGE_LOG_STATE_KEY,
+        fallback_json: JSON.stringify({ version: 1, items: [] }),
+      });
+      const nextItems = parseImportStageReviewLogItems(response.state_json)
+        .filter((item) => item.mode === "silent-delete")
+        .sort((left, right) => right.created_at_ms - left.created_at_ms)
+        .slice(0, 20);
+      setImportStageReviewLogs(nextItems);
+    } catch {
+      setImportStageReviewLogs([]);
+    }
+  }, [mediaRepository.readAppState]);
+
+  useEffect(() => {
+    void loadAdReviewQueueTasksForNotice();
+  }, [loadAdReviewQueueTasksForNotice]);
+
+  useEffect(() => {
+    void loadImportStageReviewLogs();
+  }, [loadImportStageReviewLogs]);
+
+  useEffect(() => {
+    const onLibraryChanged = mediaRepository.onLibraryChanged;
+    if (!onLibraryChanged) {
+      return;
+    }
+    return onLibraryChanged((payload) => {
+      if (payload.reason === "import-hash-review-updated") {
+        void loadAdReviewQueueTasksForNotice();
+        void loadImportStageReviewLogs();
+        return;
+      }
+      if (payload.reason === "manage-delete-image-items") {
+        void loadAdReviewQueueTasksForNotice();
+      }
+    });
+  }, [
+    loadAdReviewQueueTasksForNotice,
+    loadImportStageReviewLogs,
+    mediaRepository.onLibraryChanged,
+  ]);
+
+  const removeImportStageReviewLog = useCallback(
+    (logId: string) => {
+      if (!logId.trim()) {
+        return;
+      }
+
+      setImportStageReviewLogs((previous) => {
+        const next = previous.filter((item) => item.id !== logId);
+        const writeAppState = mediaRepository.writeAppState;
+        if (writeAppState) {
+          void writeAppState({
+            state_key: IMPORT_STAGE_LOG_STATE_KEY,
+            state_json: JSON.stringify({
+              version: 1,
+              items: next,
+            }),
+          });
+        }
+        return next;
+      });
+    },
+    [mediaRepository.writeAppState],
+  );
+
   const { databaseResetPending, databaseResetError, clearDatabaseForDev } =
     useDatabaseResetAction({
       mediaRepository,
@@ -472,6 +819,10 @@ export function useAppTopLayerState({
     adReviewVisionTestMessage,
     adReviewVisionSavePending,
     adReviewVisionSaveMessage,
+    adReviewKnownHashImportPending,
+    adReviewKnownHashImportMessage,
+    adReviewKnownHashExportPending,
+    adReviewKnownHashExportMessage,
     runtimePathUpdatePending,
     runtimePathUpdateMessage,
     ehentaiAuthStatus,
@@ -496,6 +847,8 @@ export function useAppTopLayerState({
     openSubtitleModelPage,
     testAdReviewVisionModel,
     saveAdReviewVisionModel,
+    importAdReviewKnownHashes,
+    exportAdReviewKnownHashes,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
     pickSubtitleModelDirectoryPath,
@@ -722,6 +1075,12 @@ export function useAppTopLayerState({
     subtitleCleanupLlmModel: appSettings.subtitleCleanupLlmModel,
     subtitleCleanupLlmPrompt: appSettings.subtitleCleanupLlmPrompt,
     adReviewExecutionMode: appSettings.adReviewExecutionMode,
+    adReviewHashCompareStage: appSettings.adReviewHashCompareStage,
+    adReviewHashHitAction: appSettings.adReviewHashHitAction,
+    adReviewKnownHashImportPending,
+    adReviewKnownHashImportMessage,
+    adReviewKnownHashExportPending,
+    adReviewKnownHashExportMessage,
     shortcuts: appSettings.shortcuts,
     shortcutConflicts,
     databaseResetPending,
@@ -747,6 +1106,8 @@ export function useAppTopLayerState({
     clearDatabaseForDev,
     testAdReviewVisionModel,
     saveAdReviewVisionModel,
+    importAdReviewKnownHashes,
+    exportAdReviewKnownHashes,
     pickDatabaseDirectoryPath,
     pickThumbnailCacheDirectoryPath,
     pickSubtitleModelDirectoryPath,
@@ -787,6 +1148,7 @@ export function useAppTopLayerState({
     importMenuOpen,
     taskStatusLabel,
     taskStatusBusy,
+    importReviewAlerting,
     importTaskPanelOpen,
     autoPlayPresets,
     thumbnailScale: appSettings.thumbnailScale,
@@ -847,6 +1209,13 @@ export function useAppTopLayerState({
     clearAllImportTasks,
     clearTaskError,
     retryImportTaskFromPanel,
+    pendingReviewNoticeVisible,
+    pendingReviewTaskCount,
+    pendingReviewImageCount,
+    onOpenAdReviewFromPendingNotice: openAdReviewFromImportPanelNotice,
+    onDismissPendingReviewNotice: dismissPendingReviewNotice,
+    hashReviewLogs: importStageReviewLogs,
+    onRemoveHashReviewLog: removeImportStageReviewLog,
     setDismissedImportTaskIds,
   });
 

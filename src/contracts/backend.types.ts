@@ -183,6 +183,21 @@ export type ConfirmManageAdReviewDeleteRequestDto = Infer<
 export type ConfirmManageAdReviewDeleteResponseDto = Infer<
   typeof Backend.confirmManageAdReviewDeleteResponseSchema
 >;
+export type ReadManageAdReviewKnownHashesResponseDto = Infer<
+  typeof Backend.readManageAdReviewKnownHashesResponseSchema
+>;
+export type ImportManageAdReviewKnownHashesRequestDto = Infer<
+  typeof Backend.importManageAdReviewKnownHashesRequestSchema
+>;
+export type ImportManageAdReviewKnownHashesResponseDto = Infer<
+  typeof Backend.importManageAdReviewKnownHashesResponseSchema
+>;
+export type ExportManageAdReviewKnownHashesRequestDto = Infer<
+  typeof Backend.exportManageAdReviewKnownHashesRequestSchema
+>;
+export type ExportManageAdReviewKnownHashesResponseDto = Infer<
+  typeof Backend.exportManageAdReviewKnownHashesResponseSchema
+>;
 export type ManageCoverReviewTaskDto = Infer<
   typeof Backend.manageCoverReviewTaskSchema
 >;

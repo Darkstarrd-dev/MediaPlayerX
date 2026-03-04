@@ -168,6 +168,12 @@ interface BuildSettingsPanelPropsParams {
   subtitleCleanupLlmModel: string;
   subtitleCleanupLlmPrompt: string;
   adReviewExecutionMode: AppSettings["adReviewExecutionMode"];
+  adReviewHashCompareStage: AppSettings["adReviewHashCompareStage"];
+  adReviewHashHitAction: AppSettings["adReviewHashHitAction"];
+  adReviewKnownHashImportPending: boolean;
+  adReviewKnownHashImportMessage: string | null;
+  adReviewKnownHashExportPending: boolean;
+  adReviewKnownHashExportMessage: string | null;
   shortcuts: SettingsPanelProps["shortcuts"];
   shortcutConflicts: SettingsPanelProps["shortcutConflicts"];
   databaseResetPending: boolean;
@@ -193,6 +199,8 @@ interface BuildSettingsPanelPropsParams {
   clearDatabaseForDev: () => void;
   testAdReviewVisionModel: () => void;
   saveAdReviewVisionModel: () => void;
+  importAdReviewKnownHashes: () => void;
+  exportAdReviewKnownHashes: () => void;
   pickDatabaseDirectoryPath: () => void;
   pickThumbnailCacheDirectoryPath: () => void;
   pickSubtitleModelDirectoryPath: () => void;
@@ -354,6 +362,12 @@ export function buildSettingsPanelProps(
     subtitleCleanupLlmModel: params.subtitleCleanupLlmModel,
     subtitleCleanupLlmPrompt: params.subtitleCleanupLlmPrompt,
     adReviewExecutionMode: params.adReviewExecutionMode,
+    adReviewHashCompareStage: params.adReviewHashCompareStage,
+    adReviewHashHitAction: params.adReviewHashHitAction,
+    adReviewKnownHashImportPending: params.adReviewKnownHashImportPending,
+    adReviewKnownHashImportMessage: params.adReviewKnownHashImportMessage,
+    adReviewKnownHashExportPending: params.adReviewKnownHashExportPending,
+    adReviewKnownHashExportMessage: params.adReviewKnownHashExportMessage,
     shortcuts: params.shortcuts,
     shortcutConflicts: params.shortcutConflicts,
     databaseResetPending: params.databaseResetPending,
@@ -983,6 +997,20 @@ export function buildSettingsPanelProps(
       params.updateSettings({
         adReviewExecutionMode: value,
       }),
+    onAdReviewHashCompareStageChange: (
+      value: AppSettings["adReviewHashCompareStage"],
+    ) =>
+      params.updateSettings({
+        adReviewHashCompareStage: value,
+      }),
+    onAdReviewHashHitActionChange: (
+      value: AppSettings["adReviewHashHitAction"],
+    ) =>
+      params.updateSettings({
+        adReviewHashHitAction: value,
+      }),
+    onImportAdReviewKnownHashes: params.importAdReviewKnownHashes,
+    onExportAdReviewKnownHashes: params.exportAdReviewKnownHashes,
     onSetShortcut: params.setShortcut,
     onResetShortcuts: params.resetShortcuts,
     onClearDatabase: params.clearDatabaseForDev,

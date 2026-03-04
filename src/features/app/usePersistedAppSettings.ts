@@ -150,6 +150,8 @@ export function toPersistedAppSettings(
     subtitleCleanupLlmModel: settings.subtitleCleanupLlmModel,
     subtitleCleanupLlmPrompt: settings.subtitleCleanupLlmPrompt,
     adReviewExecutionMode: settings.adReviewExecutionMode,
+    adReviewHashCompareStage: settings.adReviewHashCompareStage,
+    adReviewHashHitAction: settings.adReviewHashHitAction,
     adReviewStrategyMode: settings.adReviewStrategyMode,
     adReviewHeadN: settings.adReviewHeadN,
     adReviewTailN: settings.adReviewTailN,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   normalizePathForCompare,
@@ -278,6 +278,8 @@ export function useAppTopLayerBindings({
 
   const {
     manageMode,
+    setManageMode,
+    setManageReviewMode,
     metadataManageMode,
     importMenuOpen,
     setImportMenuOpen,
@@ -285,6 +287,9 @@ export function useAppTopLayerBindings({
     setDismissedImportTaskIds,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
+    setAdReviewPanelOpen,
+    setAdReviewFocusTaskId,
+    setAdReviewPageIndex,
     manageOperationHint,
     setManageOperationHint,
     helpOverlayOpen,
@@ -531,6 +536,33 @@ export function useAppTopLayerBindings({
     }
   }
 
+  const openAdReviewFromImportNotice = useCallback(
+    (taskId: string | null) => {
+      if (mode !== 'image') {
+        appSettings.updateSettings({ mode: 'image' })
+      }
+      if (!manageMode) {
+        setManageMode(true)
+      }
+      setManageReviewMode('ad')
+      setAdReviewPanelOpen(true)
+      setAdReviewFocusTaskId(taskId)
+      setAdReviewPageIndex(0)
+      setSelectedSidebarNodeId(null)
+    },
+    [
+      appSettings,
+      manageMode,
+      mode,
+      setAdReviewFocusTaskId,
+      setAdReviewPageIndex,
+      setAdReviewPanelOpen,
+      setManageMode,
+      setManageReviewMode,
+      setSelectedSidebarNodeId,
+    ],
+  )
+
   return useAppTopLayerState({
     appSettings,
     mediaRepository,
@@ -582,6 +614,8 @@ export function useAppTopLayerBindings({
     retryImportTask: importState.retryImportTask,
     adReviewRunning: displayState.manageAdReview.hasRunningTask,
     adReviewDeleting: displayState.manageAdReview.deletePending,
+    adReviewQueueTasks: displayState.manageAdReview.queueTasks,
+    onOpenAdReviewFromImportNotice: openAdReviewFromImportNotice,
     manageOperationHint,
     clearManageOperationHint: () => setManageOperationHint(null),
     taskError: importState.taskError,
