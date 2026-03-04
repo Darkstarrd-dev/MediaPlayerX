@@ -8,6 +8,7 @@ import {
   type ShortcutMap,
 } from "../../shortcuts";
 import type { BrowserMode } from "../../types";
+import { dispatchFullscreenRatingFeedback } from "../../utils/fullscreenRatingFeedback";
 import { isEditableTarget } from "../../utils/ui";
 
 const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72;
@@ -131,6 +132,42 @@ export function useShortcutEngine({
   const autoplayShortcutEnabled =
     fullscreenActive && fullscreenDisplay !== "video-only";
 
+  const emitFullscreenRatingFeedback = useCallback(
+    (grade: number | null) => {
+      if (!fullscreenActive || (mode !== "image" && mode !== "video")) {
+        return;
+      }
+
+      const pane =
+        fullscreenDisplay === "dual"
+          ? fullscreenVideoFocus
+            ? "video"
+            : "image"
+          : fullscreenDisplay === "video-only"
+            ? "video"
+            : "image";
+
+      dispatchFullscreenRatingFeedback({
+        grade,
+        pane,
+      });
+    },
+    [fullscreenActive, fullscreenDisplay, fullscreenVideoFocus, mode],
+  );
+
+  const applyRatingShortcut = useCallback(
+    (grade: number | null) => {
+      if (mode === "video") {
+        onSetVideoGrade(grade);
+      } else {
+        onSetPackageGrade(grade);
+      }
+
+      emitFullscreenRatingFeedback(grade);
+    },
+    [emitFullscreenRatingFeedback, mode, onSetPackageGrade, onSetVideoGrade],
+  );
+
   const executeShortcut = useCallback(
     (action: ShortcutAction) => {
       switch (action) {
@@ -216,46 +253,22 @@ export function useShortcutEngine({
           }
           return;
         case "rating0":
-          if (mode === "video") {
-            onSetVideoGrade(null);
-            return;
-          }
-          onSetPackageGrade(null);
+          applyRatingShortcut(null);
           return;
         case "rating1":
-          if (mode === "video") {
-            onSetVideoGrade(1);
-            return;
-          }
-          onSetPackageGrade(1);
+          applyRatingShortcut(1);
           return;
         case "rating2":
-          if (mode === "video") {
-            onSetVideoGrade(2);
-            return;
-          }
-          onSetPackageGrade(2);
+          applyRatingShortcut(2);
           return;
         case "rating3":
-          if (mode === "video") {
-            onSetVideoGrade(3);
-            return;
-          }
-          onSetPackageGrade(3);
+          applyRatingShortcut(3);
           return;
         case "rating4":
-          if (mode === "video") {
-            onSetVideoGrade(4);
-            return;
-          }
-          onSetPackageGrade(4);
+          applyRatingShortcut(4);
           return;
         case "rating5":
-          if (mode === "video") {
-            onSetVideoGrade(5);
-            return;
-          }
-          onSetPackageGrade(5);
+          applyRatingShortcut(5);
           return;
         case "enterFullscreen":
           onSetFullscreenActive(true);
@@ -385,6 +398,8 @@ export function useShortcutEngine({
     [
       autoplayShortcutEnabled,
       fullscreenActive,
+      fullscreenDisplay,
+      fullscreenVideoFocus,
       mode,
       onAdjustVideoRate,
       onAdjustVideoVolume,
@@ -398,8 +413,7 @@ export function useShortcutEngine({
       onAlignFocus,
       onSetFullscreenActive,
       onToggleWindowFullscreen,
-      onSetPackageGrade,
-      onSetVideoGrade,
+      applyRatingShortcut,
       onRequestManageOrganize,
       onAddFocusedVideoToPlaylist,
       onRemoveFocusedVideoFromPlaylist,
@@ -472,7 +486,7 @@ export function useShortcutEngine({
       }
 
       if (
-        event.key === "Tab" &&
+        (event.key === "Tab" || event.code === "NumpadDecimal") &&
         fullscreenActive &&
         fullscreenDisplay === "dual"
       ) {

@@ -2,6 +2,10 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DEFAULT_SHORTCUTS } from '../../shortcuts'
+import {
+  FULLSCREEN_RATING_FEEDBACK_EVENT,
+  type FullscreenRatingFeedbackDetail,
+} from '../../utils/fullscreenRatingFeedback'
 import { useShortcutEngine } from './useShortcutEngine'
 
 afterEach(() => {
@@ -65,6 +69,25 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onImageCtrlWheelNavigateSidebar: vi.fn(),
     onCopyFocusedImageToClipboard: vi.fn(() => true),
     onCopyFocusedVideoFrameToClipboard: vi.fn(() => true),
+  }
+}
+
+function listenFullscreenRatingFeedback() {
+  const events: FullscreenRatingFeedbackDetail[] = []
+  const onEvent = (event: Event) => {
+    const detail = (event as CustomEvent<FullscreenRatingFeedbackDetail>).detail
+    if (!detail) {
+      return
+    }
+    events.push(detail)
+  }
+
+  window.addEventListener(FULLSCREEN_RATING_FEEDBACK_EVENT, onEvent)
+  return {
+    events,
+    dispose: () => {
+      window.removeEventListener(FULLSCREEN_RATING_FEEDBACK_EVENT, onEvent)
+    },
   }
 }
 
@@ -221,6 +244,54 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(1, 2)
     expect(params.onSetVideoGrade).toHaveBeenNthCalledWith(2, null)
     expect(params.onSetPackageGrade).not.toHaveBeenCalled()
+  })
+
+  it('fullscreen 单屏评分会发出居中 pane 的反馈事件', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'image-only'
+    const feedback = listenFullscreenRatingFeedback()
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '4', code: 'Digit4', bubbles: true, cancelable: true }))
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '0', code: 'Digit0', bubbles: true, cancelable: true }))
+    })
+
+    feedback.dispose()
+    expect(feedback.events).toEqual([
+      { grade: 4, pane: 'image' },
+      { grade: null, pane: 'image' },
+    ])
+  })
+
+  it('fullscreen dual 按焦点侧发出评分反馈事件', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    params.fullscreenVideoFocus = true
+    const feedback = listenFullscreenRatingFeedback()
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '5', code: 'Digit5', bubbles: true, cancelable: true }))
+    })
+
+    feedback.dispose()
+    expect(feedback.events).toEqual([{ grade: 5, pane: 'video' }])
+  })
+
+  it('非全屏评分不发出反馈事件', () => {
+    const params = createBaseParams()
+    const feedback = listenFullscreenRatingFeedback()
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '3', code: 'Digit3', bubbles: true, cancelable: true }))
+    })
+
+    feedback.dispose()
+    expect(feedback.events).toEqual([])
   })
 
   it('video mode A/D shortcuts add and remove focused video in playlist', () => {
@@ -426,6 +497,19 @@ describe('useShortcutEngine ctrl+arrow image mapping', () => {
     })
 
     expect(params.onToggleFullscreenSwapSides).toHaveBeenCalledTimes(1)
+  })
+
+  it('fullscreen dual mode maps Numpad . to pane focus switch handler', () => {
+    const params = createBaseParams()
+    params.fullscreenActive = true
+    params.fullscreenDisplay = 'dual'
+    renderHook(() => useShortcutEngine(params))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '.', code: 'NumpadDecimal', bubbles: true, cancelable: true }))
+    })
+
+    expect(params.onToggleFullscreenPaneFocus).toHaveBeenCalledTimes(1)
   })
 
   it('non-fullscreen image mode + main focus maps Ctrl+C to image clipboard copy', () => {

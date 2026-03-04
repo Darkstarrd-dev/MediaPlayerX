@@ -20,6 +20,7 @@ import { buildA11yPropsByRegistry } from "../i18n/a11y";
 import { useI18n } from "../i18n/useI18n";
 import { FullscreenFooter } from "./fullscreen/FullscreenFooter";
 import { FullscreenImageAdjustPanel } from "./fullscreen/FullscreenImageAdjustPanel";
+import { RatingFavoriteControl } from "./metadata/RatingFavoriteControl";
 import {
   FullscreenImagePane,
   FullscreenVideoPane,
@@ -63,6 +64,7 @@ import {
   resolveImageConvertTargetSize,
   resolveMediaPathForFooter,
 } from "./fullscreen/fullscreenImageAdjustUtils";
+import { onFullscreenRatingFeedback } from "../utils/fullscreenRatingFeedback";
 
 const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980;
 const DUAL_IMAGE_CONTROLS_COMPACT_WIDTH = 700;
@@ -72,6 +74,17 @@ const DUAL_VIDEO_CONTROLS_MIN_WITH_LEFT_GROUP = 500;
 const DUAL_IMAGE_CONTROLS_MIN_TWO_GROUPS = 460;
 const DUAL_VIDEO_CONTROLS_MIN_TWO_GROUPS = 360;
 const FULLSCREEN_DIVIDER_WIDTH = 8;
+const FULLSCREEN_RATING_FEEDBACK_HOLD_MS = 1000;
+const FULLSCREEN_RATING_FEEDBACK_FADE_MS = 500;
+const FULLSCREEN_RATING_FEEDBACK_REMOVE_BUFFER_MS = 80;
+const NOOP_RATING_CHANGE = () => undefined;
+
+interface FullscreenRatingFeedbackState {
+  id: number;
+  grade: number | null;
+  pane: PaneKey;
+  fading: boolean;
+}
 
 export interface FullscreenLayerProps {
   mode: BrowserMode;
@@ -274,6 +287,9 @@ function FullscreenLayer({
   const previousVideoTimePropRef = useRef(videoTime);
   const explicitSeekAtMsRef = useRef(0);
   const hideVideoControlsTimerRef = useRef<number | null>(null);
+  const ratingFeedbackHoldTimerRef = useRef<number | null>(null);
+  const ratingFeedbackFadeTimerRef = useRef<number | null>(null);
+  const ratingFeedbackNonceRef = useRef(0);
   const imageConvertPreviewActive = mode === "image" && imageConvertPreviewMode;
   const effectiveFullscreenDisplay = imageConvertPreviewActive
     ? "image-only"
@@ -315,10 +331,86 @@ function FullscreenLayer({
   const [dualAppliedAutoSplit, setDualAppliedAutoSplit] =
     useState<DualAdaptiveSplitResult | null>(null);
   const [footerHovering, setFooterHovering] = useState(false);
+  const [ratingFeedback, setRatingFeedback] =
+    useState<FullscreenRatingFeedbackState | null>(null);
 
   useEffect(() => {
     setDisplayedImageNaturalSize(null);
   }, [displayedImageSrc]);
+
+  const clearRatingFeedbackTimers = useCallback(() => {
+    if (ratingFeedbackHoldTimerRef.current !== null) {
+      window.clearTimeout(ratingFeedbackHoldTimerRef.current);
+      ratingFeedbackHoldTimerRef.current = null;
+    }
+
+    if (ratingFeedbackFadeTimerRef.current !== null) {
+      window.clearTimeout(ratingFeedbackFadeTimerRef.current);
+      ratingFeedbackFadeTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!fullscreenActive || mode === "music") {
+      clearRatingFeedbackTimers();
+      setRatingFeedback((previous) => (previous === null ? previous : null));
+      return;
+    }
+
+    return onFullscreenRatingFeedback((detail) => {
+      const defaultPane =
+        effectiveFullscreenDisplay === "video-only" ? "video" : "image";
+      const targetPane =
+        effectiveFullscreenDisplay === "dual" ? detail.pane : defaultPane;
+      const nextGrade =
+        detail.grade === null ? null : Math.max(1, Math.min(5, detail.grade));
+      ratingFeedbackNonceRef.current += 1;
+      const feedbackId = ratingFeedbackNonceRef.current;
+
+      clearRatingFeedbackTimers();
+      setRatingFeedback({
+        id: feedbackId,
+        grade: nextGrade,
+        pane: targetPane,
+        fading: false,
+      });
+
+      ratingFeedbackHoldTimerRef.current = window.setTimeout(() => {
+        setRatingFeedback((previous) => {
+          if (!previous || previous.id !== feedbackId) {
+            return previous;
+          }
+          return {
+            ...previous,
+            fading: true,
+          };
+        });
+        ratingFeedbackHoldTimerRef.current = null;
+
+        ratingFeedbackFadeTimerRef.current = window.setTimeout(() => {
+          setRatingFeedback((previous) => {
+            if (!previous || previous.id !== feedbackId) {
+              return previous;
+            }
+            return null;
+          });
+          ratingFeedbackFadeTimerRef.current = null;
+        }, FULLSCREEN_RATING_FEEDBACK_FADE_MS + FULLSCREEN_RATING_FEEDBACK_REMOVE_BUFFER_MS);
+      }, FULLSCREEN_RATING_FEEDBACK_HOLD_MS);
+    });
+  }, [
+    clearRatingFeedbackTimers,
+    effectiveFullscreenDisplay,
+    fullscreenActive,
+    mode,
+  ]);
+
+  useEffect(
+    () => () => {
+      clearRatingFeedbackTimers();
+    },
+    [clearRatingFeedbackTimers],
+  );
 
   useEffect(() => {
     if (!fullscreenActive || effectiveFullscreenDisplay !== "dual") {
@@ -1332,6 +1424,35 @@ function FullscreenLayer({
     ? `${resolveMediaPathForFooter(focusedVideo)} | ${focusedVideo.width} x ${focusedVideo.height} | ${formatVideoSizeForFooter(focusedVideo.sizeMb)}`
     : t("ui.fullscreen.noVideo");
 
+  const ratingFeedbackNode = ratingFeedback ? (
+    <div
+      className={`fullscreen-rating-feedback ${ratingFeedback.grade === null ? "is-clear" : "is-rated"} ${ratingFeedback.fading ? "is-fading" : ""}`}
+      key={ratingFeedback.id}
+    >
+      <div className="metadata-rating-stars-wrap">
+        <RatingFavoriteControl
+          className="metadata-rating-stars fullscreen-rating-feedback-stars"
+          groupAriaLabel={t("ui.metadata.ratingFavorited")}
+          value={ratingFeedback.grade}
+          pending
+          allowDrag={false}
+          evaluationLabel={t("ui.metadata.ratingEvaluationLabel")}
+          sweepEnabled={false}
+          onChange={NOOP_RATING_CHANGE}
+        />
+      </div>
+    </div>
+  ) : null;
+
+  const imagePaneOverlay =
+    ratingFeedbackNode && ratingFeedback?.pane === "image"
+      ? ratingFeedbackNode
+      : null;
+  const videoPaneOverlay =
+    ratingFeedbackNode && ratingFeedback?.pane === "video"
+      ? ratingFeedbackNode
+      : null;
+
   const imageControls =
     showFullscreenFooter && !imageConvertAdjustPanelOpen ? (
       <FullscreenFooter
@@ -1413,6 +1534,7 @@ function FullscreenLayer({
       displayedImageSrc={displayedImageSrc}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
       controlsRows={imageControls}
+      overlayContent={imagePaneOverlay}
       imageConvertPreviewMode={imageConvertPreviewActive}
       imageConvertPreviewSrc={imageConvertPreviewRenderedSrc}
       imageConvertPreviewError={imageConvertPreviewError}
@@ -1511,6 +1633,7 @@ function FullscreenLayer({
       videoControlsLeft={videoControlsLeft}
       videoControlsWidth={videoControlsWidth}
       controlsRows={controlsRows}
+      overlayContent={videoPaneOverlay}
       onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel("video", event)}
       onMouseDown={(event) => startPaneDrag("video", event)}

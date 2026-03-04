@@ -176,7 +176,7 @@ function HelpPanel({ helpOpen, settingsFontSize, shortcuts, onClose }: HelpPanel
       },
       {
         key: 'fullscreen-tab-dual',
-        shortcut: 'Tab',
+        shortcut: 'Tab / Numpad .',
         action: t('ui.help.fullscreen.keyboard.tabDualFocusSwitch'),
       },
       {

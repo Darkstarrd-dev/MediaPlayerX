@@ -28,6 +28,7 @@ interface RatingFavoriteControlProps {
   pending?: boolean
   allowDrag?: boolean
   toggleScoreOnRepeat?: boolean
+  sweepEnabled?: boolean
   evaluationLabel: string
   onChange: (next: number | null) => void
 }
@@ -229,6 +230,7 @@ export function RatingFavoriteControl({
   pending = false,
   allowDrag = false,
   toggleScoreOnRepeat = false,
+  sweepEnabled = true,
   evaluationLabel,
   onChange,
 }: RatingFavoriteControlProps) {
@@ -287,7 +289,8 @@ export function RatingFavoriteControl({
 
   const selectedValue = localValue
   const activeRating = hoverRating > 0 ? hoverRating : selectedValue ?? 0
-  const sweepingEnabled = expanded && (selectedValue === 4 || selectedValue === 5)
+  const sweepingEnabled =
+    sweepEnabled && expanded && (selectedValue === 4 || selectedValue === 5)
   const { sweeping: starSweeping, onAnimationEnd: handleStarSweepAnimationEnd } =
     useRandomSweepAnimation({
       enabled: sweepingEnabled,

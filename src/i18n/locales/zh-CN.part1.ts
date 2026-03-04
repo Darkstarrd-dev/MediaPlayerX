@@ -77,7 +77,7 @@ export const zhCnCatalogPart1 = {
     "单显示图片且已缩放时，左键拖拽平移图片。",
   "ui.help.fullscreen.mouse.dragVideoDual": "双显示下可左键拖拽视频窗格内容。",
   "ui.help.fullscreen.mouse.clickPaneFocus":
-    "双显示下鼠标移动到图片/视频窗格会切换焦点窗格（Tab 也可切换）。",
+    "双显示下鼠标移动到图片/视频窗格会切换焦点窗格（Tab 或小键盘 . 也可切换）。",
   "ui.help.fullscreen.mouse.dragSplitDivider":
     "双显示下拖拽中间分割条可调整分屏比例。",
   "ui.help.fullscreen.mouse.moveBottomShowFooter":
@@ -93,7 +93,7 @@ export const zhCnCatalogPart1 = {
   "ui.help.fullscreen.keyboard.toggleFullscreen": "切换全屏。",
   "ui.help.fullscreen.keyboard.escapeExit": "退出全屏。",
   "ui.help.fullscreen.keyboard.tabDualFocusSwitch":
-    "双显示模式下切换焦点窗格（图片/视频）。",
+    "双显示模式下切换焦点窗格（图片/视频，Tab 或小键盘 .）。",
   "ui.help.fullscreen.keyboard.fixedCtrlCShortcut": "Ctrl+C",
   "ui.help.fullscreen.keyboard.copyFocusedMediaToClipboard":
     "复制当前焦点媒体到剪贴板（图片复制当前图像，视频复制当前帧；双显示按焦点窗格决定）。",
@@ -931,7 +931,7 @@ export const zhCnCatalogPart1 = {
   "ui.fullscreen.singleDisplay": "单显示",
   "ui.fullscreen.dualDisplay": "双显示",
   "ui.fullscreen.swapSides": "调换左右",
-  "ui.fullscreen.focusDual": "焦点：{{focus}}（点击区域或 Tab 切换）",
+  "ui.fullscreen.focusDual": "焦点：{{focus}}（点击区域或 Tab / 小键盘 . 切换）",
   "ui.fullscreen.focusVideo": "视频",
   "ui.fullscreen.focusImage": "图片",
   "ui.fullscreen.focusSingle": "焦点：单显示",

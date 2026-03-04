@@ -85,7 +85,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.fullscreen.mouse.dragVideoDual":
     "In dual display, left-drag to pan video pane content.",
   "ui.help.fullscreen.mouse.clickPaneFocus":
-    "In dual display, moving cursor into image/video pane switches focused pane (Tab also works).",
+    "In dual display, moving cursor into image/video pane switches focused pane (Tab or Numpad . also works).",
   "ui.help.fullscreen.mouse.dragSplitDivider":
     "In dual display, drag center divider to adjust split ratio.",
   "ui.help.fullscreen.mouse.moveBottomShowFooter":
@@ -103,7 +103,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.fullscreen.keyboard.toggleFullscreen": "Toggle fullscreen.",
   "ui.help.fullscreen.keyboard.escapeExit": "Exit fullscreen.",
   "ui.help.fullscreen.keyboard.tabDualFocusSwitch":
-    "In dual display, switch focused pane (image/video).",
+    "In dual display, switch focused pane (image/video, via Tab or Numpad .).",
   "ui.help.fullscreen.keyboard.fixedCtrlCShortcut": "Ctrl+C",
   "ui.help.fullscreen.keyboard.copyFocusedMediaToClipboard":
     "Copy focused media to clipboard (image copies current image, video copies current frame; in dual mode it follows focused pane).",
@@ -991,7 +991,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.fullscreen.dualDisplay": "Dual",
   "ui.fullscreen.swapSides": "Swap sides",
   "ui.fullscreen.focusDual":
-    "Focus: {{focus}} (click pane or press Tab to switch)",
+    "Focus: {{focus}} (click pane or press Tab / Numpad . to switch)",
   "ui.fullscreen.focusVideo": "Video",
   "ui.fullscreen.focusImage": "Image",
   "ui.fullscreen.focusSingle": "Focus: single display",

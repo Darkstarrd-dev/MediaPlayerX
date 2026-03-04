@@ -128,3 +128,44 @@
 
 - 该修复刻意禁止“非激活主区”回写视频进度；若未来引入画中画/后台预览，需要单独设计进度同步通道，不能复用当前回写路径。
 - 自动封面抓帧不再驱动 `videoTime`，如后续依赖该副作用做其他逻辑（例如 UI 时间戳提示），需改为显式事件而非复用播放进度状态。
+
+---
+
+## 3. 全屏评分反馈“突然消失”（期望线性淡出未生效）
+
+#### 现象
+
+- 全屏按数字评分后，反馈图标停留结束时表现为“突然消失”，而不是按预期进行 0.5 秒线性透明渐隐。
+
+#### 触发条件
+
+- 反馈节点使用入场 keyframes 动画（包含 `opacity`）+ 状态类触发的 `opacity transition` 组合。
+- 入场动画配置了 `animation-fill-mode: both`。
+- JS 定时器在淡出持续时间结束时立即卸载节点。
+
+#### 根因分析
+
+- 根因 1：`animation-fill-mode: both` 会在入场动画结束后继续占用关键帧最终样式；当同一元素后续再通过 `transition` 改 `opacity` 时，过渡可能被动画层覆盖，视觉上看不到线性淡出。
+- 根因 2：卸载定时器与 CSS 淡出时长完全对齐时，在低帧率或主线程抖动场景中，最后几帧可能被截断，进一步放大“突兀消失”感。
+
+#### 处理方案
+
+- 方案 1：去掉入场动画的 `both` 填充模式，避免动画结束后继续占用 `opacity`。
+- 方案 2：在淡出态显式 `animation: none`，确保淡出阶段只由 `opacity: 0` + `transition: opacity 500ms linear` 驱动。
+- 方案 3：节点卸载时间在淡出时长基础上增加小缓冲（80ms），降低末帧被截断概率。
+
+#### 本项目落地（文件与要点）
+
+- `src/styles/app/layout/layout.part2.css`：评分反馈入场动画移除 `both`；淡出态增加 `animation: none`；淡出统一为 `opacity` 线性 500ms。
+- `src/components/FullscreenLayer.tsx`：评分反馈移除定时器增加 `FULLSCREEN_RATING_FEEDBACK_REMOVE_BUFFER_MS`，从“刚好 500ms 卸载”改为“500ms + 缓冲后卸载”。
+- `src/__tests__/App.fullscreen.test.tsx`：补充淡出时序断言（淡出中仍存在，随后才移除），覆盖回归。
+
+#### 验证方式
+
+- 执行：`npx vitest run src/__tests__/App.fullscreen.test.tsx -t "全屏数字评分显示星级反馈"`。
+- 人工验证：全屏按评分键后观察反馈，确认“停留 1s -> 0.5s 线性透明渐隐 -> 消失”。
+
+#### 注意事项 / 回归风险
+
+- 若后续再次给 `.fullscreen-rating-feedback` 增加带 `opacity` 的 keyframes 且使用 `forwards/both`，可能重现过渡被覆盖问题。
+- 若调整淡出时长，需要同步更新卸载缓冲与测试断言窗口，避免“视觉没播完就卸载”。

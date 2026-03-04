@@ -440,6 +440,38 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     expect(afterImageFirst).toBe(!beforeImageFirst);
   });
 
+  it("全屏 dual 下小键盘 . 可切换焦点窗格", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
+    const videoPane = document.querySelector(
+      ".fullscreen-video",
+    ) as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    expect(videoPane).not.toBeNull();
+
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+    expect((imagePane as HTMLElement).classList.contains("is-pane-focus")).toBe(
+      true,
+    );
+
+    await keyDown(window, { key: ".", code: "NumpadDecimal" });
+    expect((videoPane as HTMLElement).classList.contains("is-pane-focus")).toBe(
+      true,
+    );
+  });
+
   it("从video模式进入dual模式时，image pane应自动加载图片且autoplay按钮可用", async () => {
     render(<App />);
 
@@ -851,5 +883,92 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     await waitFor(() => {
       expect(autoplayButton).toHaveAttribute("aria-pressed", "true");
     });
+  });
+
+  it("全屏数字评分显示星级反馈，0 显示空心 heart，并在 1s 后淡出", async () => {
+    vi.useFakeTimers();
+    try {
+      render(<App />);
+
+      await keyDown(window, { key: "f", code: "KeyF" });
+
+      await keyDown(window, { key: "3", code: "Digit3" });
+      const ratedFeedback = document.querySelector(
+        ".fullscreen-rating-feedback.is-rated",
+      ) as HTMLElement | null;
+      expect(ratedFeedback).not.toBeNull();
+      expect(
+        ratedFeedback?.querySelectorAll(".feature-rating-star-btn.is-active")
+          .length,
+      ).toBe(3);
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(ratedFeedback?.classList.contains("is-fading")).toBe(true);
+
+      await act(async () => {
+        vi.advanceTimersByTime(250);
+      });
+      expect(document.querySelector(".fullscreen-rating-feedback")).not.toBeNull();
+
+      await act(async () => {
+        vi.advanceTimersByTime(400);
+      });
+      expect(document.querySelector(".fullscreen-rating-feedback")).toBeNull();
+
+      await keyDown(window, { key: "0", code: "Digit0" });
+      const clearFeedbackHeart = document.querySelector(
+        ".fullscreen-rating-feedback.is-clear .feature-rating-heart",
+      ) as HTMLElement | null;
+      expect(clearFeedbackHeart).not.toBeNull();
+      expect(clearFeedbackHeart?.classList.contains("is-active")).toBe(false);
+    } finally {
+      await act(async () => {
+        vi.runOnlyPendingTimers();
+      });
+      vi.useRealTimers();
+    }
+  });
+
+  it("全屏 dual 下评分反馈显示在 focus 的一侧", async () => {
+    render(<App />);
+
+    await click(screen.getByRole("button", { name: "视频模式" }));
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await keyDown(window, { key: "d", code: "KeyD" });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("调整全屏分屏比例")).toBeInTheDocument();
+    });
+
+    const imagePane = document.querySelector(
+      ".fullscreen-image",
+    ) as HTMLElement | null;
+    const videoPane = document.querySelector(
+      ".fullscreen-video",
+    ) as HTMLElement | null;
+    expect(imagePane).not.toBeNull();
+    expect(videoPane).not.toBeNull();
+
+    fireEvent.mouseMove(imagePane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+    await keyDown(window, { key: "2", code: "Digit2" });
+    expect(
+      (imagePane as HTMLElement).querySelector(".fullscreen-rating-feedback"),
+    ).not.toBeNull();
+    expect(
+      (videoPane as HTMLElement).querySelector(".fullscreen-rating-feedback"),
+    ).toBeNull();
+
+    fireEvent.mouseMove(videoPane as HTMLElement, { clientX: 24, clientY: 24 });
+    await flushUiUpdates();
+    await keyDown(window, { key: "4", code: "Digit4" });
+    expect(
+      (videoPane as HTMLElement).querySelector(".fullscreen-rating-feedback"),
+    ).not.toBeNull();
+    expect(
+      (imagePane as HTMLElement).querySelector(".fullscreen-rating-feedback"),
+    ).toBeNull();
   });
 });

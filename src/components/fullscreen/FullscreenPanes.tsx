@@ -25,6 +25,7 @@ interface FullscreenImagePaneProps {
   displayedImageSrc: string | null
   focusedImageOrdinal: number | null
   controlsRows: ReactNode
+  overlayContent?: ReactNode
   imageConvertPreviewMode?: boolean
   imageConvertPreviewSrc?: string | null
   imageConvertPreviewError?: string | null
@@ -49,6 +50,7 @@ export function FullscreenImagePane({
   displayedImageSrc,
   focusedImageOrdinal,
   controlsRows,
+  overlayContent,
   imageConvertPreviewMode = false,
   imageConvertPreviewSrc,
   imageConvertPreviewError,
@@ -165,6 +167,8 @@ export function FullscreenImagePane({
           ) : null}
         </div>
 
+        {overlayContent ? <div className="fullscreen-pane-overlay">{overlayContent}</div> : null}
+
         {fullscreenDisplay !== 'video-only' ? controlsRows : null}
       </div>
     </section>
@@ -201,6 +205,7 @@ interface FullscreenVideoPaneProps {
   videoControlsLeft: number
   videoControlsWidth: number
   controlsRows: ReactNode
+  overlayContent?: ReactNode
   onSetVideoFocus: (enabled: boolean) => void
   onWheel: (event: ReactWheelEvent<HTMLElement>) => void
   onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void
@@ -241,6 +246,7 @@ export function FullscreenVideoPane({
   videoControlsLeft,
   videoControlsWidth,
   controlsRows,
+  overlayContent,
   onSetVideoFocus,
   onWheel,
   onMouseDown,
@@ -385,6 +391,8 @@ export function FullscreenVideoPane({
 
           {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
         </div>
+
+        {overlayContent ? <div className="fullscreen-pane-overlay">{overlayContent}</div> : null}
 
         {fullscreenDisplay !== 'image-only' ? (
           <>
