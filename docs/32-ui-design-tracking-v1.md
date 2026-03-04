@@ -224,7 +224,7 @@ Import Task 已独立为 `2.5`，不再走 `fg-header-g1-task-*` 命名；同时
 
 用在什么地方
 定义“设置面板风格”的通用大面板骨架，覆盖 `root / head / shell / side / main` 五个层级。
-本阶段仅建立通用链路，不把 `3.1~3.6` 全量面板强制切到新结构。
+本阶段建立通用链路，并按分层逐步把 `3.1~3.9` 归并到同一骨架。
 
 css 的触发点
 `src/styles/themes/contract.css`（新增 3.0 通用语义 token）
@@ -306,13 +306,15 @@ css 的触发点
 
 说明
 当前阶段只完成 3.0 基架：
-1) 统一参数入口已建立（可全局调节大面板整体与 `head/side/main`）。
-2) `settings-*` 已接入同一套 3.0 token，现有视觉保持不变。
-3) `3.1~3.6` 的具体结构迁移与差异收口，留在后续步骤逐项执行。
 
-当前统一能力（3.1~3.6）
-1) 六个大面板遮罩层统一受 `--mpx-settings-backdrop-opacity` 影响。
-2) 六个大面板头部均支持拖拽移动（交互规则与设置面板一致，按钮/输入等控件不触发拖拽）。
+1. 统一参数入口已建立（可全局调节大面板整体与 `head/side/main`）。
+2. `settings-*` 已接入同一套 3.0 token，现有视觉保持不变。
+3. `3.1~3.9` 的具体结构迁移与差异收口，按面板逐项执行。
+
+当前统一能力（3.1~3.9）
+
+1. 大面板遮罩层统一受 `--mpx-settings-backdrop-opacity` 影响。
+2. 大面板可统一复用 `mpx-large-panel` 基架并通过 slot 局部覆写差异。
 
 ## 3.1 设置面板
 
@@ -370,31 +372,34 @@ css 的触发点
 
 实际值（当前）
 分页导航共 6 页：
-1) 参数调节
-2) 快照工具
-3) 大容器层调试
-4) 大面板层调试
-5) 按钮状态样例
-6) 操作
+
+1. 参数调节
+2. 快照工具
+3. 大容器层调试
+4. 大面板层调试
+5. 按钮状态样例
+6. 操作
 
 临时预览模式（全局）
-1) 大容器层页：
+
+1. 大容器层页：
    - 仅背景层预览（`bg-only`）
    - 背景层 + 大容器层预览（`bg-plus-container`）
-2) 大面板层页：
+2. 大面板层页：
    - 背景层 + 大面板层预览（`bg-plus-large-panel`）
 
 关闭预览按钮或关闭主题参数面板时，预览模式都会恢复为 `none`。
 
 说明
 本次只做 `3.2` 的结构归并与分页拆分：
-1) 主题参数面板大小、配色、布局与设置/帮助面板同源。
-2) 原来单页内容已按功能分流到 side 分页。
-3) 新增大容器层/大面板层调试分页，支持全局临时预览模式。
-4) `bg-plus-large-panel` 预览改为真实 `head + side + main` 骨架，不再使用伪元素近似。
-5) 调试参数按 F12 属性聚合展示（Box / Border / Shadow / Root / Head / Shell / Side / Main）。
-6) 数值参数支持“滑条 + 数字输入 + 当前值显示”；颜色参数支持“颜色选择器 + HEX 输入”。
-7) 参数应用、导入导出、重置功能保持等价。
+
+1. 主题参数面板大小、配色、布局与设置/帮助面板同源。
+2. 原来单页内容已按功能分流到 side 分页。
+3. 新增大容器层/大面板层调试分页，支持全局临时预览模式。
+4. `bg-plus-large-panel` 预览改为真实 `head + side + main` 骨架，不再使用伪元素近似。
+5. 调试参数按 F12 属性聚合展示（Box / Border / Shadow / Root / Head / Shell / Side / Main）。
+6. 数值参数支持“滑条 + 数字输入 + 当前值显示”；颜色参数支持“颜色选择器 + HEX 输入”。
+7. 参数应用、导入导出、重置功能保持等价。
 
 补充
 `快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 两个调试分页中的颜色调节结果。
@@ -433,7 +438,7 @@ css 的触发点
 ## 3.4 Sidebar 更名面板
 
 用在什么地方
-`fg-sidebar-shortcut-rename-panel`（`SidebarRenameDialog`）已接入 3.0 大面板骨架，并使用 `head + main`（无 side）。
+`fg-sidebar-shortcut-rename-panel`（`SidebarRenameDialog`）在**批量更名模式**下接入 3.0 大面板骨架，使用 `head + main`（无 side）。
 
 css 的触发点
 `src/components/SidebarRenameDialog.tsx`
@@ -457,7 +462,7 @@ css 的触发点
 `[data-slot='fg-sidebar-shortcut-rename-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
 说明
-本阶段先统一尺寸与 `head/main` 骨架，重命名业务内部控件细节样式保持原行为。
+批量更名保持 3.0 链路；单文件更名已拆分到 `5.0 小面板（基架）`，不再占用 3.0 大面板。
 
 ## 3.5 元数据获取面板
 
@@ -515,14 +520,96 @@ css 的触发点
 说明
 本阶段先统一为“同尺寸 + 同 head/main 骨架”；标签组与操作区仅做结构承接，后续再做细节微调。
 
+## 3.7 字幕清理面板
+
+用在什么地方
+`fg-main-header-manage-subtitle-cleanup-panel`（`SubtitleCleanupPanel`）已归并到 3.0 大面板骨架，使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/subtitles/SubtitleCleanupPanel.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/manage.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width`（大面板宽度）
+`--mpx-large-panel-height`（大面板高度）
+
+默认值沿用 3.0：`80vw / 80vh`（`src/styles/themes/contract.css`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-main-header-manage-subtitle-cleanup-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+字幕清理保留原有参数与预览交互，仅将外层容器统一到 3.0 骨架。
+
+## 3.8 音频转码面板
+
+用在什么地方
+`fg-main-header-manage-music-transcode-panel`（`MusicAudioTranscodePanel`）已归并到 3.0 大面板骨架，使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/MusicAudioTranscodePanel.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/settings/settings.part2.css`
+`src/styles/app/settings/settings.part3.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width = min(960px, 94vw)`（`music-audio-transcode-dialog`）
+`--mpx-large-panel-height = min(760px, 86vh)`（`music-audio-transcode-dialog`）
+`--mpx-large-panel-radius = 26px`（`music-audio-transcode-dialog`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-main-header-manage-music-transcode-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+音频转码继续复用原业务内部表单与历史任务区，仅统一到 3.0 外层骨架链路。
+
+## 3.9 视频转码面板
+
+用在什么地方
+`fg-main-header-manage-video-transcode-panel`（`VideoTranscodePanel`）已归并到 3.0 大面板骨架，使用 `head + main`（无 side）。
+
+css 的触发点
+`src/components/VideoTranscodePanel.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/settings/settings.part2.css`
+`src/styles/app/settings/settings.part3.css`
+
+变量与变量对应的值（按组）
+`--mpx-large-panel-width = min(960px, 94vw)`（`video-transcode-panel`）
+`--mpx-large-panel-height = min(760px, 86vh)`（`video-transcode-panel`）
+`--mpx-large-panel-radius = 26px`（`video-transcode-panel`）
+
+`--mpx-large-panel-border-color`（面板边框）
+`--mpx-large-panel-bg`（面板背景）
+`--mpx-large-panel-shadow`（面板阴影）
+`--mpx-large-panel-head-border-color`（head 分割线）
+`--mpx-large-panel-main-bg`（main 背景）
+
+`[data-slot='fg-main-header-manage-video-transcode-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
+
+说明
+视频转码参数区、估算区与任务状态逻辑保持原行为，外层切到 3.0 基架。
+
 ## 4.0 按钮层（基架）
 
 用在什么地方
 统一全局按钮视觉链路，覆盖默认按钮、播放器按钮、overlay cell 按钮与 ThemeParameter side 分页按钮。
 
 目标
-1) 调整少量基架变量即可批量影响大多数按钮。
-2) 特殊场景仍可通过变体与 slot 精细调节。
+
+1. 调整少量基架变量即可批量影响大多数按钮。
+2. 特殊场景仍可通过变体与 slot 精细调节。
 
 css 的触发点
 `src/styles/themes/contract.css`（4.0 按钮基架与变体 token 定义）
@@ -614,7 +701,48 @@ css 的触发点
 
 说明
 4.0 已完成“基架 + 变体 + slot 微调”三层收口：
-1) 全局按钮主链路统一到 `core/default/player/overlay-cell`。
-2) 旧命名（`btn-template/player-btn/overlay-cell-btn`）已完成迁移并移除。
-3) ThemeParameter side 分页按钮保留独立状态级调参能力，同时保持与 default 变体同链路。
-4) 命名索引已同步到 `docs/10-ui_definition.md` 与 `docs/11-token_design.md`。
+
+1. 全局按钮主链路统一到 `core/default/player/overlay-cell`。
+2. 旧命名（`btn-template/player-btn/overlay-cell-btn`）已完成迁移并移除。
+3. ThemeParameter side 分页按钮保留独立状态级调参能力，同时保持与 default 变体同链路。
+4. 命名索引已同步到 `docs/10-ui_definition.md` 与 `docs/11-token_design.md`。
+
+## 5.0 小面板（基架）
+
+用在什么地方
+定义事件处理类弹出 dialog 的通用链路（确认/输入/选择）。
+基架模板来源：`ImageConvertSettingsPanel`（`fg-main-header-image-convert-panel`）。
+
+当前纳入范围
+
+1. `DangerConfirmDialog`（删除确认）
+2. `GroupNameDialog`（分组/移动命名）
+3. `SidebarRenameDialog` 的单文件更名分支（`fg-sidebar-shortcut-rename-single-*`）
+4. `SettingsShortcutCaptureDialog`
+5. `SettingsShortcutBindingDialog`
+6. `MetadataVideoEditor` 播放列表命名弹窗
+7. `AdReviewStartDialog`（主区与 Meta 两个入口）
+
+css 的触发点
+`src/styles/themes/contract.css`（5.0 通用 token）
+`src/styles/themes/styles/_style-template.css`（style 模板同构 token）
+`src/styles/app/settings/settings.part2.css`（`.mpx-dialog-mask` / `.mpx-dialog-panel` 与 slot 映射）
+`src/styles/app/metadata.css`（播放列表命名弹窗接入 5.0 并做 inline 微调）
+
+变量与变量对应的值（按组）
+`--mpx-dialog-panel-width = min(520px, 92vw)`（小面板宽度）
+`--mpx-dialog-panel-max-width = 92vw`（小面板最大宽度）
+`--mpx-dialog-panel-max-height = 80vh`（小面板最大高度）
+`--mpx-dialog-panel-border-width = 1px`（小面板边框宽度）
+`--mpx-dialog-panel-border-color = var(--mpx-overlay-surface-border, var(--mpx-border-2))`（小面板边框颜色）
+`--mpx-dialog-panel-radius = 12px`（小面板圆角）
+`--mpx-dialog-panel-bg = var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))`（小面板背景）
+`--mpx-dialog-panel-shadow = var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))`（小面板阴影）
+`--mpx-dialog-panel-padding = 14px`（小面板内边距）
+`--mpx-dialog-panel-gap = 10px`（小面板内部间距）
+
+说明
+
+1. 所有纳入项统一挂到 `mpx-dialog-mask + mpx-dialog-panel` 基架。
+2. 各 dialog 仍可通过各自 slot 变量做局部覆写（边框/背景/文字/阴影/尺寸）。
+3. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。

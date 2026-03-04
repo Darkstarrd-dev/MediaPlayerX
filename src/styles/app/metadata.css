@@ -625,21 +625,31 @@
 }
 
 .metadata-playlist-save-dialog {
-  border: 1px solid
-    var(
-      --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border,
-      var(--mpx-border-1)
-    );
-  border-radius: var(--mpx-radius-metadata-card, 10px);
-  background: var(
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border,
+    var(--mpx-border-1)
+  );
+  --mpx-dialog-panel-bg: var(
     --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg,
     var(--mpx-bg-elevated)
   );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow,
+    var(--mpx-shadow-panel)
+  );
+  --mpx-dialog-panel-radius: var(--mpx-radius-metadata-card, 10px);
+  --mpx-dialog-panel-width: auto;
+  --mpx-dialog-panel-max-width: none;
+  --mpx-dialog-panel-max-height: none;
+  --mpx-dialog-panel-padding: 8px;
+  --mpx-dialog-panel-gap: 8px;
   color: var(
     --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text,
     inherit
   );
-  padding: 8px;
+  width: auto;
+  max-width: none;
+  max-height: none;
   margin-bottom: 10px;
 }
 

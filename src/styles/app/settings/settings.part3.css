@@ -289,10 +289,15 @@
   }
 
   .music-audio-transcode-dialog {
-    width: min(960px, 96vw);
-    height: min(760px, 90vh);
-    border-radius: 18px;
-    padding: 16px;
+    --mpx-large-panel-width: min(960px, 96vw);
+    --mpx-large-panel-height: min(760px, 90vh);
+    --mpx-large-panel-radius: 18px;
+  }
+
+  .video-transcode-panel {
+    --mpx-large-panel-width: min(960px, 96vw);
+    --mpx-large-panel-height: min(760px, 90vh);
+    --mpx-large-panel-radius: 18px;
   }
 
   .music-audio-transcode-path-row {

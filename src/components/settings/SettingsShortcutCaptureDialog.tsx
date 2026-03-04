@@ -21,23 +21,30 @@ export function SettingsShortcutCaptureDialog({
 }: SettingsShortcutCaptureDialogProps): JSX.Element {
   return (
     <div
-      className="settings-floating-mask"
+      className="settings-floating-mask mpx-dialog-mask"
       data-slot="fg-header-g1-settings-shortcut-capture-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}
     >
       <section
-        className="settings-floating-panel"
+        className="settings-floating-panel mpx-dialog-panel"
         data-slot="fg-header-g1-settings-shortcut-capture-panel"
       >
         <h3>{t("ui.settings.shortcutCaptureTitle")}</h3>
-        <p className="mpx-overlay-caption">{t("ui.settings.shortcutCaptureHint")}</p>
+        <p className="mpx-overlay-caption">
+          {t("ui.settings.shortcutCaptureHint")}
+        </p>
         <p className="mpx-overlay-content-surface mpx-overlay-mono-preview">
           {capturedCombo || t("ui.settings.shortcutCaptureWaiting")}
         </p>
-        <div className="mpx-overlay-content-surface mpx-overlay-padded-stack" data-capture-ignore="true">
-          <span className="mpx-overlay-caption">{t("ui.settings.shortcutMousePresets")}</span>
+        <div
+          className="mpx-overlay-content-surface mpx-overlay-padded-stack"
+          data-capture-ignore="true"
+        >
+          <span className="mpx-overlay-caption">
+            {t("ui.settings.shortcutMousePresets")}
+          </span>
           <div className="mpx-overlay-chip-list">
             {mouseCapturePresets.map((preset) => (
               <button

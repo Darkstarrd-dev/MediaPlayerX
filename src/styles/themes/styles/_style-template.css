@@ -152,6 +152,24 @@
   --mpx-large-panel-main-align-items: flex-start;
   --mpx-large-panel-main-justify-content: flex-start;
 
+  /* ---------- Dialog panel layer (5.0) ---------- */
+  --mpx-dialog-panel-width: min(520px, 92vw);
+  --mpx-dialog-panel-max-width: 92vw;
+  --mpx-dialog-panel-max-height: 80vh;
+  --mpx-dialog-panel-border-width: 1px;
+  --mpx-dialog-panel-border-color: var(
+    --mpx-overlay-surface-border,
+    var(--mpx-border-2)
+  );
+  --mpx-dialog-panel-radius: 12px;
+  --mpx-dialog-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
+  --mpx-dialog-panel-shadow: var(
+    --mpx-overlay-surface-shadow,
+    var(--mpx-shadow-panel)
+  );
+  --mpx-dialog-panel-padding: 14px;
+  --mpx-dialog-panel-gap: 10px;
+
   /* ---------- Button foundation (4.0) ---------- */
   --mpx-btn-core-border: var(--mpx-border-2);
   --mpx-btn-core-bg-idle: var(--mpx-bg-elevated);

@@ -488,6 +488,99 @@
   );
 }
 
+[data-slot="fg-main-header-manage-subtitle-cleanup-panel"] {
+  --mpx-large-panel-border-color: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-large-panel-bg: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-app))
+  );
+  --mpx-large-panel-shadow: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  --mpx-large-panel-head-border-color: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-border,
+    var(--mpx-border-1)
+  );
+  --mpx-large-panel-head-bg: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-bg,
+    transparent
+  );
+  --mpx-large-panel-head-text: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-text,
+    inherit
+  );
+  --mpx-large-panel-main-bg: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+}
+
+[data-slot="fg-main-header-manage-video-transcode-panel"] {
+  --mpx-large-panel-border-color: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-large-panel-bg: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-app))
+  );
+  --mpx-large-panel-shadow: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  --mpx-large-panel-head-border-color: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-border,
+    var(--mpx-border-1)
+  );
+  --mpx-large-panel-head-bg: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-bg,
+    transparent
+  );
+  --mpx-large-panel-head-text: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-text,
+    inherit
+  );
+  --mpx-large-panel-main-bg: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+}
+
+[data-slot="fg-main-header-manage-music-transcode-panel"] {
+  --mpx-large-panel-border-color: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-large-panel-bg: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-app))
+  );
+  --mpx-large-panel-shadow: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  --mpx-large-panel-head-border-color: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-border,
+    var(--mpx-border-1)
+  );
+  --mpx-large-panel-head-bg: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-bg,
+    transparent
+  );
+  --mpx-large-panel-head-text: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-text,
+    inherit
+  );
+  --mpx-large-panel-main-bg: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+}
+
 [data-slot="fg-meta-main-search-feature-tag-picker-panel"] {
   --mpx-large-panel-border-color: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-border,

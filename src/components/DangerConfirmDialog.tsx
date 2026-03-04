@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 export interface DangerConfirmDialogProps {
-  open: boolean
-  title: string
-  description: string
-  targetListTitle?: string
-  targetPaths?: string[]
-  acknowledgeLabel: string
-  confirmLabel: string
-  removeOnlyLabel?: string
-  removeOnlyEnabled?: boolean
-  cancelLabel: string
-  pending?: boolean
-  onRemoveOnly?: () => void
-  onConfirm: () => void
-  onCancel: () => void
+  open: boolean;
+  title: string;
+  description: string;
+  targetListTitle?: string;
+  targetPaths?: string[];
+  acknowledgeLabel: string;
+  confirmLabel: string;
+  removeOnlyLabel?: string;
+  removeOnlyEnabled?: boolean;
+  cancelLabel: string;
+  pending?: boolean;
+  onRemoveOnly?: () => void;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 function DangerConfirmDialog({
@@ -33,21 +33,31 @@ function DangerConfirmDialog({
   onConfirm,
   onCancel,
 }: DangerConfirmDialogProps) {
-  const [acknowledged, setAcknowledged] = useState(false)
+  const [acknowledged, setAcknowledged] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setAcknowledged(false)
+      setAcknowledged(false);
     }
-  }, [open])
+  }, [open]);
 
   if (!open) {
-    return null
+    return null;
   }
 
   return (
-    <div className="settings-floating-mask" data-slot="fg-main-header-manage-delete-confirm-ovl" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="delete-confirm">
-      <section className="settings-floating-panel manage-confirm-dialog" data-slot="fg-main-header-manage-delete-confirm-panel">
+    <div
+      className="settings-floating-mask mpx-dialog-mask"
+      data-slot="fg-main-header-manage-delete-confirm-ovl"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      data-overlay-close="delete-confirm"
+    >
+      <section
+        className="settings-floating-panel mpx-dialog-panel manage-confirm-dialog"
+        data-slot="fg-main-header-manage-delete-confirm-panel"
+      >
         <h3>{title}</h3>
         <p className="mpx-overlay-description">{description}</p>
 
@@ -56,7 +66,13 @@ function DangerConfirmDialog({
             <p className="mpx-overlay-caption">{targetListTitle}</p>
             <ul className="mpx-overlay-list-surface mpx-overlay-scroll-list mpx-scrollbar-hidden">
               {targetPaths.map((path) => (
-                <li key={path} className="mpx-overlay-list-item-truncate" data-tooltip-label={path}>{path}</li>
+                <li
+                  key={path}
+                  className="mpx-overlay-list-item-truncate"
+                  data-tooltip-label={path}
+                >
+                  {path}
+                </li>
               ))}
             </ul>
           </section>
@@ -74,11 +90,19 @@ function DangerConfirmDialog({
 
         <div className="mpx-overlay-actions">
           {onRemoveOnly && removeOnlyLabel ? (
-            <button type="button" disabled={!removeOnlyEnabled || pending} onClick={onRemoveOnly}>
+            <button
+              type="button"
+              disabled={!removeOnlyEnabled || pending}
+              onClick={onRemoveOnly}
+            >
               {removeOnlyLabel}
             </button>
           ) : null}
-          <button type="button" disabled={!acknowledged || pending} onClick={onConfirm}>
+          <button
+            type="button"
+            disabled={!acknowledged || pending}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </button>
           <button type="button" disabled={pending} onClick={onCancel}>
@@ -87,7 +111,7 @@ function DangerConfirmDialog({
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default DangerConfirmDialog
+export default DangerConfirmDialog;

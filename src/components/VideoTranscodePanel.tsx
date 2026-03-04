@@ -166,7 +166,7 @@ export function VideoTranscodePanel({
 
   return (
     <div
-      className="settings-floating-mask"
+      className="settings-mask"
       data-slot="fg-main-header-manage-video-transcode-ovl"
       role="dialog"
       aria-modal="true"
@@ -179,16 +179,18 @@ export function VideoTranscodePanel({
       }}
     >
       <section
-        className="settings-floating-panel manage-group-dialog"
+        className="mpx-large-panel mpx-large-panel--video-transcode settings-panel music-audio-transcode-dialog video-transcode-panel"
         data-slot="fg-main-header-manage-video-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
-        <div className="music-audio-transcode-header">
-          <h3 className="main-header-image-convert-title sidebar-rename-title">
-            {t("ui.media.videoTranscodeTitle")}
-          </h3>
+        <header className="mpx-large-panel-head settings-head video-transcode-head">
+          <span
+            className="mpx-large-panel-head-spacer settings-head-spacer"
+            aria-hidden="true"
+          />
+          <h2>{t("ui.media.videoTranscodeTitle")}</h2>
           <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn"
+            className="feature-action-btn main-icon-square-btn settings-icon-btn"
             type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
@@ -196,403 +198,419 @@ export function VideoTranscodePanel({
           >
             <MainUiIcon name="close" />
           </button>
-        </div>
-        <div className="music-audio-transcode-body">
-          <section className="mpx-overlay-section">
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeContainer")}</span>
-              <select
-                value={container}
-                disabled={executing || capabilitiesLoading}
-                onChange={(event) =>
-                  onContainerChange(
-                    event.target.value as "mp4" | "mkv" | "webm",
-                  )
-                }
-              >
-                <option
-                  value="mp4"
-                  disabled={Boolean(
-                    capabilities && !capabilities.containers.mp4.available,
-                  )}
-                >
-                  MP4
-                </option>
-                <option
-                  value="mkv"
-                  disabled={Boolean(
-                    capabilities && !capabilities.containers.mkv.available,
-                  )}
-                >
-                  MKV
-                </option>
-                <option
-                  value="webm"
-                  disabled={Boolean(
-                    capabilities && !capabilities.containers.webm.available,
-                  )}
-                >
-                  WebM
-                </option>
-              </select>
-            </label>
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeCodec")}</span>
-              <select
-                value={videoCodec}
-                disabled={executing || capabilitiesLoading}
-                onChange={(event) =>
-                  onVideoCodecChange(
-                    event.target.value as
-                      | "h264"
-                      | "h265"
-                      | "vp9"
-                      | "av1"
-                      | "copy",
-                  )
-                }
-              >
-                <option
-                  value="h264"
-                  disabled={Boolean(
-                    capabilities && !capabilities.video_codecs.h264.available,
-                  )}
-                >
-                  H.264
-                </option>
-                <option
-                  value="h265"
-                  disabled={Boolean(
-                    capabilities && !capabilities.video_codecs.h265.available,
-                  )}
-                >
-                  H.265
-                </option>
-                <option
-                  value="vp9"
-                  disabled={Boolean(
-                    capabilities && !capabilities.video_codecs.vp9.available,
-                  )}
-                >
-                  VP9
-                </option>
-                <option
-                  value="av1"
-                  disabled={Boolean(
-                    capabilities && !capabilities.video_codecs.av1.available,
-                  )}
-                >
-                  AV1
-                </option>
-                <option
-                  value="copy"
-                  disabled={Boolean(
-                    capabilities && !capabilities.video_codecs.copy.available,
-                  )}
-                >
-                  {t("ui.media.videoTranscodeCopyStream")}
-                </option>
-              </select>
-            </label>
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeQualityMode")}</span>
-              <select
-                value={qualityMode}
-                disabled={executing}
-                onChange={(event) =>
-                  onQualityModeChange(
-                    event.target.value as "copy" | "crf" | "bitrate",
-                  )
-                }
-              >
-                <option value="copy">
-                  {t("ui.media.videoTranscodeQualityCopy")}
-                </option>
-                <option value="crf">CRF</option>
-                <option value="bitrate">
-                  {t("ui.media.videoTranscodeQualityBitrate")}
-                </option>
-              </select>
-            </label>
-            {qualityMode === "crf" ? (
-              <label className="main-header-image-convert-row mpx-overlay-field-row">
-                <span>CRF</span>
+        </header>
+        <div className="mpx-large-panel-shell settings-shell is-no-side video-transcode-shell">
+          <main className="mpx-large-panel-main settings-main video-transcode-main">
+            <div className="music-audio-transcode-body">
+              <section className="mpx-overlay-section">
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeContainer")}</span>
+                  <select
+                    value={container}
+                    disabled={executing || capabilitiesLoading}
+                    onChange={(event) =>
+                      onContainerChange(
+                        event.target.value as "mp4" | "mkv" | "webm",
+                      )
+                    }
+                  >
+                    <option
+                      value="mp4"
+                      disabled={Boolean(
+                        capabilities && !capabilities.containers.mp4.available,
+                      )}
+                    >
+                      MP4
+                    </option>
+                    <option
+                      value="mkv"
+                      disabled={Boolean(
+                        capabilities && !capabilities.containers.mkv.available,
+                      )}
+                    >
+                      MKV
+                    </option>
+                    <option
+                      value="webm"
+                      disabled={Boolean(
+                        capabilities && !capabilities.containers.webm.available,
+                      )}
+                    >
+                      WebM
+                    </option>
+                  </select>
+                </label>
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeCodec")}</span>
+                  <select
+                    value={videoCodec}
+                    disabled={executing || capabilitiesLoading}
+                    onChange={(event) =>
+                      onVideoCodecChange(
+                        event.target.value as
+                          | "h264"
+                          | "h265"
+                          | "vp9"
+                          | "av1"
+                          | "copy",
+                      )
+                    }
+                  >
+                    <option
+                      value="h264"
+                      disabled={Boolean(
+                        capabilities &&
+                        !capabilities.video_codecs.h264.available,
+                      )}
+                    >
+                      H.264
+                    </option>
+                    <option
+                      value="h265"
+                      disabled={Boolean(
+                        capabilities &&
+                        !capabilities.video_codecs.h265.available,
+                      )}
+                    >
+                      H.265
+                    </option>
+                    <option
+                      value="vp9"
+                      disabled={Boolean(
+                        capabilities &&
+                        !capabilities.video_codecs.vp9.available,
+                      )}
+                    >
+                      VP9
+                    </option>
+                    <option
+                      value="av1"
+                      disabled={Boolean(
+                        capabilities &&
+                        !capabilities.video_codecs.av1.available,
+                      )}
+                    >
+                      AV1
+                    </option>
+                    <option
+                      value="copy"
+                      disabled={Boolean(
+                        capabilities &&
+                        !capabilities.video_codecs.copy.available,
+                      )}
+                    >
+                      {t("ui.media.videoTranscodeCopyStream")}
+                    </option>
+                  </select>
+                </label>
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeQualityMode")}</span>
+                  <select
+                    value={qualityMode}
+                    disabled={executing}
+                    onChange={(event) =>
+                      onQualityModeChange(
+                        event.target.value as "copy" | "crf" | "bitrate",
+                      )
+                    }
+                  >
+                    <option value="copy">
+                      {t("ui.media.videoTranscodeQualityCopy")}
+                    </option>
+                    <option value="crf">CRF</option>
+                    <option value="bitrate">
+                      {t("ui.media.videoTranscodeQualityBitrate")}
+                    </option>
+                  </select>
+                </label>
+                {qualityMode === "crf" ? (
+                  <label className="main-header-image-convert-row mpx-overlay-field-row">
+                    <span>CRF</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={51}
+                      step={1}
+                      value={crf}
+                      disabled={executing}
+                      onChange={(event) =>
+                        onCrfChange(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                ) : null}
+                {qualityMode === "bitrate" ? (
+                  <label className="main-header-image-convert-row mpx-overlay-field-row">
+                    <span>{t("ui.media.videoTranscodeVideoBitrateKbps")}</span>
+                    <input
+                      type="number"
+                      min={100}
+                      max={200000}
+                      step={1}
+                      value={videoBitrateKbps ?? ""}
+                      disabled={executing}
+                      onChange={(event) => {
+                        const raw = event.target.value.trim();
+                        onVideoBitrateKbpsChange(raw ? Number(raw) : null);
+                      }}
+                    />
+                  </label>
+                ) : null}
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeEncoderPreset")}</span>
+                  <select
+                    value={encoderPreset}
+                    disabled={
+                      executing ||
+                      (videoCodec !== "h264" && videoCodec !== "h265")
+                    }
+                    onChange={(event) =>
+                      onEncoderPresetChange(
+                        event.target.value as NonNullable<
+                          NonNullable<
+                            StartVideoTranscodeTaskRequestDto["params_override"]
+                          >["encoder_preset"]
+                        >,
+                      )
+                    }
+                  >
+                    {encoderPresetOptions.map((preset) => (
+                      <option key={preset} value={preset}>
+                        {preset}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeScaleLongEdge")}</span>
+                  <input
+                    type="number"
+                    min={240}
+                    max={7680}
+                    step={1}
+                    value={scaleLongEdgePx ?? ""}
+                    disabled={executing}
+                    onChange={(event) => {
+                      const raw = event.target.value.trim();
+                      onScaleLongEdgePxChange(raw ? Number(raw) : null);
+                    }}
+                  />
+                </label>
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeFps")}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={240}
+                    step={0.001}
+                    value={fps ?? ""}
+                    disabled={executing}
+                    onChange={(event) => {
+                      const raw = event.target.value.trim();
+                      onFpsChange(raw ? Number(raw) : null);
+                    }}
+                  />
+                </label>
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeAudioMode")}</span>
+                  <select
+                    value={audioMode}
+                    disabled={executing}
+                    onChange={(event) =>
+                      onAudioModeChange(
+                        event.target.value as "copy" | "encode" | "drop",
+                      )
+                    }
+                  >
+                    <option value="copy">
+                      {t("ui.media.videoTranscodeAudioCopy")}
+                    </option>
+                    <option value="encode">
+                      {t("ui.media.videoTranscodeAudioEncode")}
+                    </option>
+                    <option value="drop">
+                      {t("ui.media.videoTranscodeAudioDrop")}
+                    </option>
+                  </select>
+                </label>
+                {audioMode === "encode" ? (
+                  <label className="main-header-image-convert-row mpx-overlay-field-row">
+                    <span>{t("ui.media.videoTranscodeAudioBitrateKbps")}</span>
+                    <input
+                      type="number"
+                      min={16}
+                      max={1536}
+                      step={1}
+                      value={audioBitrateKbps ?? ""}
+                      disabled={executing}
+                      onChange={(event) => {
+                        const raw = event.target.value.trim();
+                        onAudioBitrateKbpsChange(raw ? Number(raw) : null);
+                      }}
+                    />
+                  </label>
+                ) : null}
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
+                  <span>{t("ui.media.videoTranscodeFaststart")}</span>
+                  <input
+                    type="checkbox"
+                    checked={faststart}
+                    disabled={executing || container !== "mp4"}
+                    onChange={(event) =>
+                      onFaststartChange(event.target.checked)
+                    }
+                  />
+                </label>
+              </section>
+
+              <div className="music-audio-transcode-path-row mpx-overlay-seamless-row">
                 <input
-                  type="number"
-                  min={0}
-                  max={51}
-                  step={1}
-                  value={crf}
+                  className="sidebar-rename-seamless-control music-audio-transcode-output-input"
+                  type="text"
+                  value={outputDir}
                   disabled={executing}
-                  onChange={(event) => onCrfChange(Number(event.target.value))}
+                  placeholder={t(
+                    "ui.media.videoTranscodeOutputDirectoryPlaceholder",
+                  )}
+                  onChange={(event) => onOutputDirChange(event.target.value)}
+                />
+                <button
+                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+                  type="button"
+                  disabled={executing || pickingOutputDir}
+                  onClick={() => void onPickOutputDir()}
+                >
+                  {pickingOutputDir
+                    ? t("ui.media.videoTranscodePickingOutputDirectory")
+                    : t("ui.media.videoTranscodePickOutputDirectory")}
+                </button>
+                <button
+                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+                  type="button"
+                  disabled={executing || outputDir.trim().length <= 0}
+                  onClick={() => onOutputDirChange("")}
+                >
+                  {t("ui.common.clear")}
+                </button>
+              </div>
+
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
+                <span>{t("ui.media.videoTranscodeOverwrite")}</span>
+                <input
+                  type="checkbox"
+                  checked={overwrite}
+                  disabled={executing}
+                  onChange={(event) => onOverwriteChange(event.target.checked)}
                 />
               </label>
-            ) : null}
-            {qualityMode === "bitrate" ? (
+
               <label className="main-header-image-convert-row mpx-overlay-field-row">
-                <span>{t("ui.media.videoTranscodeVideoBitrateKbps")}</span>
+                <span>{t("ui.media.videoTranscodeAddOutputToSources")}</span>
                 <input
-                  type="number"
-                  min={100}
-                  max={200000}
-                  step={1}
-                  value={videoBitrateKbps ?? ""}
+                  type="checkbox"
+                  checked={addOutputToSources}
                   disabled={executing}
-                  onChange={(event) => {
-                    const raw = event.target.value.trim();
-                    onVideoBitrateKbpsChange(raw ? Number(raw) : null);
-                  }}
+                  onChange={(event) =>
+                    onAddOutputToSourcesChange(event.target.checked)
+                  }
                 />
               </label>
-            ) : null}
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeEncoderPreset")}</span>
-              <select
-                value={encoderPreset}
-                disabled={
-                  executing || (videoCodec !== "h264" && videoCodec !== "h265")
-                }
-                onChange={(event) =>
-                  onEncoderPresetChange(
-                    event.target.value as NonNullable<
-                      NonNullable<
-                        StartVideoTranscodeTaskRequestDto["params_override"]
-                      >["encoder_preset"]
-                    >,
-                  )
-                }
-              >
-                {encoderPresetOptions.map((preset) => (
-                  <option key={preset} value={preset}>
-                    {preset}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeScaleLongEdge")}</span>
-              <input
-                type="number"
-                min={240}
-                max={7680}
-                step={1}
-                value={scaleLongEdgePx ?? ""}
-                disabled={executing}
-                onChange={(event) => {
-                  const raw = event.target.value.trim();
-                  onScaleLongEdgePxChange(raw ? Number(raw) : null);
-                }}
-              />
-            </label>
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeFps")}</span>
-              <input
-                type="number"
-                min={1}
-                max={240}
-                step={0.001}
-                value={fps ?? ""}
-                disabled={executing}
-                onChange={(event) => {
-                  const raw = event.target.value.trim();
-                  onFpsChange(raw ? Number(raw) : null);
-                }}
-              />
-            </label>
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeAudioMode")}</span>
-              <select
-                value={audioMode}
-                disabled={executing}
-                onChange={(event) =>
-                  onAudioModeChange(
-                    event.target.value as "copy" | "encode" | "drop",
-                  )
-                }
-              >
-                <option value="copy">
-                  {t("ui.media.videoTranscodeAudioCopy")}
-                </option>
-                <option value="encode">
-                  {t("ui.media.videoTranscodeAudioEncode")}
-                </option>
-                <option value="drop">
-                  {t("ui.media.videoTranscodeAudioDrop")}
-                </option>
-              </select>
-            </label>
-            {audioMode === "encode" ? (
-              <label className="main-header-image-convert-row mpx-overlay-field-row">
-                <span>{t("ui.media.videoTranscodeAudioBitrateKbps")}</span>
-                <input
-                  type="number"
-                  min={16}
-                  max={1536}
-                  step={1}
-                  value={audioBitrateKbps ?? ""}
-                  disabled={executing}
-                  onChange={(event) => {
-                    const raw = event.target.value.trim();
-                    onAudioBitrateKbpsChange(raw ? Number(raw) : null);
-                  }}
-                />
-              </label>
-            ) : null}
-            <label className="main-header-image-convert-row mpx-overlay-field-row">
-              <span>{t("ui.media.videoTranscodeFaststart")}</span>
-              <input
-                type="checkbox"
-                checked={faststart}
-                disabled={executing || container !== "mp4"}
-                onChange={(event) => onFaststartChange(event.target.checked)}
-              />
-            </label>
-          </section>
 
-          <div className="music-audio-transcode-path-row mpx-overlay-seamless-row">
-            <input
-              className="sidebar-rename-seamless-control music-audio-transcode-output-input"
-              type="text"
-              value={outputDir}
-              disabled={executing}
-              placeholder={t(
-                "ui.media.videoTranscodeOutputDirectoryPlaceholder",
-              )}
-              onChange={(event) => onOutputDirChange(event.target.value)}
-            />
-            <button
-              className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
-              type="button"
-              disabled={executing || pickingOutputDir}
-              onClick={() => void onPickOutputDir()}
-            >
-              {pickingOutputDir
-                ? t("ui.media.videoTranscodePickingOutputDirectory")
-                : t("ui.media.videoTranscodePickOutputDirectory")}
-            </button>
-            <button
-              className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
-              type="button"
-              disabled={executing || outputDir.trim().length <= 0}
-              onClick={() => onOutputDirChange("")}
-            >
-              {t("ui.common.clear")}
-            </button>
-          </div>
+              {capabilitiesLoading ? (
+                <p className="mpx-overlay-caption">
+                  {t("ui.media.videoTranscodeCapabilityLoading")}
+                </p>
+              ) : null}
+              {confirmDisabledReason ? (
+                <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
+              ) : null}
 
-          <label className="main-header-image-convert-row mpx-overlay-field-row">
-            <span>{t("ui.media.videoTranscodeOverwrite")}</span>
-            <input
-              type="checkbox"
-              checked={overwrite}
-              disabled={executing}
-              onChange={(event) => onOverwriteChange(event.target.checked)}
-            />
-          </label>
-
-          <label className="main-header-image-convert-row mpx-overlay-field-row">
-            <span>{t("ui.media.videoTranscodeAddOutputToSources")}</span>
-            <input
-              type="checkbox"
-              checked={addOutputToSources}
-              disabled={executing}
-              onChange={(event) =>
-                onAddOutputToSourcesChange(event.target.checked)
-              }
-            />
-          </label>
-
-          {capabilitiesLoading ? (
-            <p className="mpx-overlay-caption">
-              {t("ui.media.videoTranscodeCapabilityLoading")}
-            </p>
-          ) : null}
-          {confirmDisabledReason ? (
-            <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
-          ) : null}
-
-          <section className="mpx-overlay-section">
-            <p className="mpx-overlay-caption">
-              {t("ui.media.videoTranscodeEstimateTitle")}
-            </p>
-            {estimateLoading ? (
-              <p className="mpx-overlay-caption">{t("ui.common.loading")}</p>
-            ) : null}
-            {estimateMessage ? (
-              <p className="mpx-overlay-caption">{estimateMessage}</p>
-            ) : null}
-            {estimateResult ? (
-              <div className="mpx-overlay-caption">
-                <div>
-                  {t("ui.media.videoTranscodeEstimateSourceSize", {
-                    value: formatBytes(sourceBytes),
-                  })}
-                </div>
-                <div>
-                  {t("ui.media.videoTranscodeEstimateOutputSize", {
-                    value: formatBytes(estimatedBytes),
-                  })}
-                </div>
-                {estimateResult.range ? (
-                  <div>
-                    {t("ui.media.videoTranscodeEstimateRange", {
-                      low: formatBytes(estimateResult.range.low_bytes),
-                      high: formatBytes(estimateResult.range.high_bytes),
-                    })}
+              <section className="mpx-overlay-section">
+                <p className="mpx-overlay-caption">
+                  {t("ui.media.videoTranscodeEstimateTitle")}
+                </p>
+                {estimateLoading ? (
+                  <p className="mpx-overlay-caption">
+                    {t("ui.common.loading")}
+                  </p>
+                ) : null}
+                {estimateMessage ? (
+                  <p className="mpx-overlay-caption">{estimateMessage}</p>
+                ) : null}
+                {estimateResult ? (
+                  <div className="mpx-overlay-caption">
+                    <div>
+                      {t("ui.media.videoTranscodeEstimateSourceSize", {
+                        value: formatBytes(sourceBytes),
+                      })}
+                    </div>
+                    <div>
+                      {t("ui.media.videoTranscodeEstimateOutputSize", {
+                        value: formatBytes(estimatedBytes),
+                      })}
+                    </div>
+                    {estimateResult.range ? (
+                      <div>
+                        {t("ui.media.videoTranscodeEstimateRange", {
+                          low: formatBytes(estimateResult.range.low_bytes),
+                          high: formatBytes(estimateResult.range.high_bytes),
+                        })}
+                      </div>
+                    ) : null}
+                    <div>
+                      {t("ui.media.videoTranscodeEstimateCompressRatio", {
+                        ratio: Math.round(compressRatio),
+                      })}
+                    </div>
+                    <div>
+                      {t("ui.media.videoTranscodeEstimateMethod", {
+                        method: estimateResult.method,
+                        confidence: estimateResult.confidence,
+                      })}
+                    </div>
                   </div>
                 ) : null}
-                <div>
-                  {t("ui.media.videoTranscodeEstimateCompressRatio", {
-                    ratio: Math.round(compressRatio),
-                  })}
-                </div>
-                <div>
-                  {t("ui.media.videoTranscodeEstimateMethod", {
-                    method: estimateResult.method,
-                    confidence: estimateResult.confidence,
-                  })}
-                </div>
-              </div>
-            ) : null}
-          </section>
+              </section>
 
-          {taskStatus && taskStatusLabel ? (
-            <p className="main-header-hint">
-              {`${t("ui.media.videoTranscodeTaskSummary", {
-                status: taskStatusLabel,
-                progress: Math.round(taskProgress * 100),
-                count: outputCount,
-              })}${taskMessage ? ` | ${taskMessage}` : ""}`}
-            </p>
-          ) : null}
-        </div>
+              {taskStatus && taskStatusLabel ? (
+                <p className="main-header-hint">
+                  {`${t("ui.media.videoTranscodeTaskSummary", {
+                    status: taskStatusLabel,
+                    progress: Math.round(taskProgress * 100),
+                    count: outputCount,
+                  })}${taskMessage ? ` | ${taskMessage}` : ""}`}
+                </p>
+              ) : null}
+            </div>
 
-        <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
-          <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
-            type="button"
-            disabled={executing || !canOpenOutputDirectory}
-            onClick={() => void onOpenOutputDirectory()}
-          >
-            {t("ui.media.videoTranscodeOpenOutputDirectory")}
-          </button>
-          <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
-            type="button"
-            disabled={executing || Boolean(confirmDisabledReason)}
-            onClick={() => void onConfirm()}
-          >
-            {t("ui.media.videoTranscodeStart")}
-          </button>
-          <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
-            type="button"
-            onClick={() => void onCancel()}
-          >
-            {executing
-              ? t("ui.media.videoTranscodeCancelTask")
-              : t("ui.media.videoTranscodeClose")}
-          </button>
+            <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
+              <button
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                type="button"
+                disabled={executing || !canOpenOutputDirectory}
+                onClick={() => void onOpenOutputDirectory()}
+              >
+                {t("ui.media.videoTranscodeOpenOutputDirectory")}
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                type="button"
+                disabled={executing || Boolean(confirmDisabledReason)}
+                onClick={() => void onConfirm()}
+              >
+                {t("ui.media.videoTranscodeStart")}
+              </button>
+              <button
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                type="button"
+                onClick={() => void onCancel()}
+              >
+                {executing
+                  ? t("ui.media.videoTranscodeCancelTask")
+                  : t("ui.media.videoTranscodeClose")}
+              </button>
+            </div>
+          </main>
         </div>
       </section>
     </div>

@@ -71,7 +71,7 @@ export function ImageConvertSettingsPanel({
 
   return (
     <div
-      className="settings-floating-mask"
+      className="settings-floating-mask mpx-dialog-mask"
       data-slot="fg-main-header-image-convert-ovl"
       role="dialog"
       aria-modal="true"
@@ -84,7 +84,7 @@ export function ImageConvertSettingsPanel({
       }}
     >
       <section
-        className="settings-floating-panel main-header-image-convert-panel main-header-image-convert-dialog"
+        className="settings-floating-panel mpx-dialog-panel main-header-image-convert-panel main-header-image-convert-dialog"
         data-slot="fg-main-header-image-convert-panel"
         onMouseDown={onPanelMouseDown}
       >

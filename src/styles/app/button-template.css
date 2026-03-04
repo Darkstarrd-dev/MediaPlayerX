@@ -417,7 +417,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel
+  :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
     ):not(.mpx-overlay-cell-btn),
@@ -433,7 +433,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
     button.main-icon-square-btn,
-    .settings-floating-panel
+    :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
       ):not(.mpx-overlay-cell-btn),
@@ -446,7 +446,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
     button.main-icon-square-btn,
-    .settings-floating-panel
+    :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
       ):not(.mpx-overlay-cell-btn),
@@ -459,7 +459,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel
+  :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
     ):not(.mpx-overlay-cell-btn),
@@ -470,7 +470,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
   button.main-icon-square-btn,
-  .settings-floating-panel
+  :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
     ):not(.mpx-overlay-cell-btn),
@@ -485,7 +485,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 
 :is(
     button.main-icon-square-btn,
-    .settings-floating-panel
+    :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
       ):not(.mpx-overlay-cell-btn),
@@ -520,7 +520,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel
+  :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
     ):not(.mpx-overlay-cell-btn),
@@ -539,7 +539,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   button.main-icon-square-btn,
   .mode-switch > button,
-  .settings-floating-panel
+  :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
     ):not(.mpx-overlay-cell-btn),
@@ -561,7 +561,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     button.settings-icon-btn,
     button.main-icon-square-btn,
     .mode-switch > button,
-    .settings-floating-panel
+    :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
       ):not(.mpx-overlay-cell-btn),
@@ -584,7 +584,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     button.settings-icon-btn,
     button.main-icon-square-btn,
     .mode-switch > button,
-    .settings-floating-panel
+    :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
       ):not(.mpx-overlay-cell-btn),

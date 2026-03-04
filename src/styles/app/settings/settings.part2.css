@@ -1,4 +1,3 @@
-
 .theme-parameter-actions {
   display: flex;
   flex-wrap: wrap;
@@ -31,7 +30,7 @@
   gap: 8px;
 }
 
-.settings-compact-control-actions > input[type='number'] {
+.settings-compact-control-actions > input[type="number"] {
   width: 100%;
   min-width: 0;
 }
@@ -148,6 +147,7 @@
   padding-left: 16px;
 }
 
+.mpx-dialog-mask,
 .settings-floating-mask {
   position: fixed;
   inset: 0;
@@ -158,65 +158,295 @@
   z-index: 3002;
 }
 
-[data-slot='fg-main-header-manage-group-name-ovl'] {
-  background: var(--mpx-slot-fg-main-header-manage-group-name-ovl-bg, var(--mpx-slot-fg-main-header-manage-group-name-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
-  color: var(--mpx-slot-fg-main-header-manage-group-name-ovl-text, var(--mpx-slot-fg-main-header-manage-group-name-panel-text, inherit));
+[data-slot="fg-main-header-manage-group-name-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-manage-group-name-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-manage-group-name-panel-bg,
+      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-manage-group-name-ovl-text,
+    var(--mpx-slot-fg-main-header-manage-group-name-panel-text, inherit)
+  );
 }
 
-[data-slot='fg-main-header-manage-delete-confirm-ovl'] {
-  background: var(--mpx-slot-fg-main-header-manage-delete-confirm-ovl-bg, var(--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
-  color: var(--mpx-slot-fg-main-header-manage-delete-confirm-ovl-text, var(--mpx-slot-fg-main-header-manage-delete-confirm-panel-text, inherit));
+[data-slot="fg-main-header-manage-delete-confirm-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-manage-delete-confirm-panel-bg,
+      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-ovl-text,
+    var(--mpx-slot-fg-main-header-manage-delete-confirm-panel-text, inherit)
+  );
 }
 
-[data-slot='fg-main-header-image-convert-ovl'] {
-  background: var(--mpx-slot-fg-main-header-image-convert-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+[data-slot="fg-sidebar-shortcut-rename-single-ovl"] {
+  background: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-ovl-bg,
+    var(
+      --mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg,
+      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-ovl-text,
+    var(--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text, inherit)
+  );
+}
+
+[data-slot="fg-main-header-image-convert-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-image-convert-ovl-bg,
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
+  );
   color: var(--mpx-slot-fg-main-header-image-convert-ovl-text, inherit);
 }
 
-[data-slot='fg-main-header-manage-music-transcode-ovl'] {
-  background: var(--mpx-slot-fg-main-header-manage-music-transcode-ovl-bg, var(--mpx-slot-fg-main-header-manage-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)));
-  color: var(--mpx-slot-fg-main-header-manage-music-transcode-ovl-text, var(--mpx-slot-fg-main-header-manage-music-transcode-panel-text, inherit));
+[data-slot="fg-main-header-manage-music-transcode-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-manage-music-transcode-panel-bg,
+      color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-ovl-text,
+    var(--mpx-slot-fg-main-header-manage-music-transcode-panel-text, inherit)
+  );
 }
 
-[data-slot='fg-main-header-image-metadata-fetch-ovl'] {
-  background: var(--mpx-slot-fg-main-header-image-metadata-fetch-ovl-bg, var(--mpx-slot-fg-main-header-image-metadata-fetch-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
-  color: var(--mpx-slot-fg-main-header-image-metadata-fetch-ovl-text, var(--mpx-slot-fg-main-header-image-metadata-fetch-panel-text, inherit));
+[data-slot="fg-main-header-image-metadata-fetch-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-image-metadata-fetch-panel-bg,
+      color-mix(
+        in srgb,
+        var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%),
+        transparent
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-ovl-text,
+    var(--mpx-slot-fg-main-header-image-metadata-fetch-panel-text, inherit)
+  );
 }
 
-[data-slot='fg-main-header-manage-subtitle-cleanup-ovl'] {
-  background: var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-bg, var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
-  color: var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-text, var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-text, inherit));
+[data-slot="fg-main-header-manage-subtitle-cleanup-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg,
+      color-mix(
+        in srgb,
+        var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%),
+        transparent
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-text,
+    var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-text, inherit)
+  );
 }
 
-[data-slot='fg-main-header-manage-video-transcode-ovl'] {
-  background: var(--mpx-slot-fg-main-header-manage-video-transcode-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
-  color: var(--mpx-slot-fg-main-header-manage-video-transcode-ovl-text, inherit);
+[data-slot="fg-main-header-manage-video-transcode-ovl"] {
+  background: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-ovl-bg,
+    var(
+      --mpx-slot-fg-main-header-manage-video-transcode-panel-bg,
+      color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)
+    )
+  );
+  color: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-ovl-text,
+    var(--mpx-slot-fg-main-header-manage-video-transcode-panel-text, inherit)
+  );
 }
 
+.mpx-dialog-panel,
 .settings-floating-panel {
-  width: min(540px, 92%);
-  border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-2));
-  border-radius: 12px;
-  background: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
-  box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel));
-  padding: 14px;
+  width: var(--mpx-dialog-panel-width, min(520px, 92vw));
+  max-width: var(--mpx-dialog-panel-max-width, 92vw);
+  max-height: var(--mpx-dialog-panel-max-height, 80vh);
+  border: var(--mpx-dialog-panel-border-width, 1px) solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
+  background: var(
+    --mpx-dialog-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  box-shadow: var(
+    --mpx-dialog-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  padding: var(--mpx-dialog-panel-padding, 14px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--mpx-dialog-panel-gap, 10px);
 }
 
-[data-slot='fg-header-g1-settings-shortcut-edit-panel'] {
-  border-color: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border, var(--mpx-overlay-surface-border, var(--mpx-border-2)));
-  background: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
-  color: var(--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text, inherit);
+[data-slot="fg-main-header-image-convert-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-main-header-image-convert-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-main-header-image-convert-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-main-header-image-convert-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  --mpx-dialog-panel-width: min(520px, 92vw);
 }
 
-[data-slot='fg-header-g1-settings-shortcut-capture-panel'] {
-  border-color: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border, var(--mpx-overlay-surface-border, var(--mpx-border-2)));
-  background: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
-  color: var(--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text, inherit);
+[data-slot="fg-main-header-manage-group-name-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
 }
 
+[data-slot="fg-main-header-manage-delete-confirm-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+}
+
+[data-slot="fg-header-g1-settings-shortcut-edit-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  color: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text,
+    inherit
+  );
+}
+
+[data-slot="fg-header-g1-settings-shortcut-capture-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  color: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text,
+    inherit
+  );
+}
+
+[data-slot="fg-sidebar-shortcut-rename-single-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  --mpx-dialog-panel-width: min(520px, 92vw);
+}
+
+[data-slot="fg-main-header-image-ad-review-start-panel"],
+[data-slot="fg-meta-main-ad-review-start-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-overlay-surface-border,
+    var(--mpx-border-2)
+  );
+  --mpx-dialog-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
+  --mpx-dialog-panel-shadow: var(
+    --mpx-overlay-surface-shadow,
+    var(--mpx-shadow-panel)
+  );
+  --mpx-dialog-panel-width: min(480px, 92vw);
+}
+
+[data-slot="fg-main-header-image-ad-review-start-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  color: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-text,
+    inherit
+  );
+}
+
+[data-slot="fg-meta-main-ad-review-start-panel"] {
+  --mpx-dialog-panel-border-color: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+  );
+  --mpx-dialog-panel-bg: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  --mpx-dialog-panel-shadow: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  color: var(--mpx-slot-fg-meta-main-ad-review-start-panel-text, inherit);
+}
+
+.mpx-dialog-panel h3,
 .settings-floating-panel h3 {
   margin: 0;
 }
@@ -228,7 +458,10 @@
 }
 
 .manage-group-dialog {
-  background: var(--mpx-overlay-surface-bg, var(--mpx-main-bg));
+  background: var(
+    --mpx-dialog-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-main-bg))
+  );
 }
 
 .sidebar-rename-dialog {
@@ -262,53 +495,46 @@
   --sidebar-rename-soft-input-bg: var(--mpx-overlay-soft-bg);
   --sidebar-rename-soft-input-hover-bg: var(--mpx-overlay-soft-hover-bg);
   --sidebar-rename-soft-input-focus-bg: var(--mpx-overlay-soft-focus-bg);
-  width: min(960px, 94vw);
-  height: min(760px, 86vh);
+  --mpx-large-panel-width: min(960px, 94vw);
+  --mpx-large-panel-height: min(760px, 86vh);
+  --mpx-large-panel-radius: 26px;
+  --mpx-large-panel-main-padding-y: 0;
+  --mpx-large-panel-main-padding-x: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 24px 26px;
-  border-color: var(
-    --mpx-slot-fg-main-content-music-controls-shader-pop-border,
-    var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
-  );
-  border-radius: 26px;
-  background: var(
-    --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
-  );
-  color: var(
-    --mpx-slot-fg-main-content-music-controls-shader-pop-text,
-    var(--mpx-player-hud-text)
-  );
-  box-shadow: var(
-    --mpx-slot-fg-main-content-music-controls-shader-pop-shadow,
-    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
-  );
 }
 
-.music-audio-transcode-header {
-  display: flex;
-  align-items: flex-end;
+.video-transcode-panel {
+  --mpx-large-panel-width: min(960px, 94vw);
+  --mpx-large-panel-height: min(760px, 86vh);
+  --mpx-large-panel-radius: 26px;
+  --mpx-large-panel-main-padding-y: 0;
+  --mpx-large-panel-main-padding-x: 0;
+}
+
+.music-audio-transcode-shell,
+.video-transcode-shell {
+  min-height: 0;
+}
+
+.music-audio-transcode-main,
+.video-transcode-main {
+  align-items: stretch;
   justify-content: flex-start;
-  gap: 8px;
-  padding-bottom: 4px;
+  overflow: hidden;
+}
+
+.music-audio-transcode-head,
+.video-transcode-head {
+  align-items: center;
 }
 
 .music-audio-transcode-header-caption {
   margin: 0;
   min-width: 0;
-  flex: 1;
-  padding-left: 2ch;
+  padding: 0 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.music-audio-transcode-header > .feature-action-btn {
-  margin-left: auto;
-  align-self: center;
 }
 
 .music-audio-transcode-body {
@@ -321,7 +547,9 @@
 }
 
 .music-audio-transcode-path-row {
-  grid-template-columns: var(--sidebar-rename-mode-col-width) minmax(0, 1fr) auto auto;
+  grid-template-columns:
+    var(--sidebar-rename-mode-col-width) minmax(0, 1fr)
+    auto auto;
 }
 
 .music-audio-transcode-path-row > * {
@@ -367,7 +595,10 @@ button.music-audio-transcode-seamless-btn:disabled {
   border: var(--mpx-control-border-width) solid
     var(--mpx-slot-fg-header-g2-mode-image-border, var(--mpx-border-2));
   border-radius: calc(var(--mpx-header-btn-radius) - 2px);
-  background: var(--mpx-slot-fg-header-g2-mode-image-bg, var(--mpx-bg-elevated));
+  background: var(
+    --mpx-slot-fg-header-g2-mode-image-bg,
+    var(--mpx-bg-elevated)
+  );
   color: var(--mpx-slot-fg-header-g2-mode-image-text, var(--mpx-text-1));
   box-shadow: var(--mpx-header-btn-shadow);
   transition: var(--mpx-control-transition);
@@ -452,7 +683,10 @@ button.music-audio-transcode-seamless-btn:disabled {
   border: var(--mpx-control-border-width) solid
     var(--mpx-slot-fg-header-g2-mode-image-border, var(--mpx-border-2));
   border-radius: calc(var(--mpx-header-btn-radius) - 2px);
-  background: var(--mpx-slot-fg-header-g2-mode-image-bg, var(--mpx-bg-elevated));
+  background: var(
+    --mpx-slot-fg-header-g2-mode-image-bg,
+    var(--mpx-bg-elevated)
+  );
   color: var(--mpx-slot-fg-header-g2-mode-image-text, var(--mpx-text-1));
   box-shadow: var(--mpx-header-btn-shadow);
   transition: var(--mpx-control-transition);
@@ -475,7 +709,9 @@ button.music-audio-transcode-seamless-btn:disabled {
 }
 
 .sidebar-rename-replace-controls {
-  grid-template-columns: var(--sidebar-rename-mode-col-width) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns:
+    var(--sidebar-rename-mode-col-width) minmax(0, 1fr)
+    minmax(0, 1fr);
 }
 
 .sidebar-rename-seamless-control {
@@ -597,7 +833,9 @@ button.music-audio-transcode-seamless-btn:disabled {
   padding: 0;
 }
 
-.sidebar-rename-numbering-controls .sidebar-rename-numbering-control:not(.is-name) .sidebar-rename-numbering-field {
+.sidebar-rename-numbering-controls
+  .sidebar-rename-numbering-control:not(.is-name)
+  .sidebar-rename-numbering-field {
   flex: 0 0 2.8ch;
   width: 2.8ch;
   min-width: 2.8ch;

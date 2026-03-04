@@ -182,7 +182,9 @@ export function MetadataVideoEditor({
           hour12: false,
         })
       : "-";
-  const playlistItemButtonByIdRef = useRef(new Map<string, HTMLButtonElement>());
+  const playlistItemButtonByIdRef = useRef(
+    new Map<string, HTMLButtonElement>(),
+  );
 
   const savedPlaylistEntries = useMemo(
     () =>
@@ -386,7 +388,9 @@ export function MetadataVideoEditor({
 
           <div className="metadata-music-playlist mpx-scroll-area">
             {playlistIds.length === 0 ? (
-              <p className="metadata-empty-tip">{t("ui.metadata.noPlaylistEntries")}</p>
+              <p className="metadata-empty-tip">
+                {t("ui.metadata.noPlaylistEntries")}
+              </p>
             ) : null}
             {playlistIds.map((videoId, index) => {
               const video = videoById.get(videoId);
@@ -397,7 +401,7 @@ export function MetadataVideoEditor({
               return (
                 <div
                   key={videoId}
-                  className={`metadata-playlist-row name-list-row ${selectedVideoId === videoId ? 'is-focused' : ''}`}
+                  className={`metadata-playlist-row name-list-row ${selectedVideoId === videoId ? "is-focused" : ""}`}
                   draggable
                   onDragStart={() => onDragStart(videoId)}
                   onDragEnd={onDragEnd}
@@ -443,7 +447,7 @@ export function MetadataVideoEditor({
 
       {playlistNameDialogMode ? (
         <div
-          className="metadata-playlist-save-dialog"
+          className="metadata-playlist-save-dialog mpx-dialog-panel mpx-dialog-panel--inline"
           data-slot="fg-meta-main-video-editor-playlist-name-dialog-panel"
           role="dialog"
           aria-label={
@@ -488,285 +492,299 @@ export function MetadataVideoEditor({
         <div className="metadata-video-body">
           {focusedVideo ? (
             <>
-            <MetadataRatingGroup
-              title={t("a11y.metadata.videoRating")}
-              data-tooltip-label={t("tip.common.rating")}
-              groupAriaLabel={t("a11y.metadata.videoRating")}
-              clearAriaLabel={t("a11y.metadata.clearVideoRating")}
-              pending={metadataPending}
-              value={currentVideoGrade}
-              onChange={onVideoGradeChange}
-            />
+              <MetadataRatingGroup
+                title={t("a11y.metadata.videoRating")}
+                data-tooltip-label={t("tip.common.rating")}
+                groupAriaLabel={t("a11y.metadata.videoRating")}
+                clearAriaLabel={t("a11y.metadata.clearVideoRating")}
+                pending={metadataPending}
+                value={currentVideoGrade}
+                onChange={onVideoGradeChange}
+              />
 
-            <div className="metadata-edit-grid metadata-video-grid mpx-scroll-area">
-              <label>
-                <span>{t("ui.metadata.fileName")}</span>
-                <input readOnly value={focusedVideo.fileName} />
-              </label>
-              <label>
-                <span>
-                  {editable
-                    ? t("ui.metadata.japaneseTitle")
-                    : t("ui.metadata.workTitle")}
-                </span>
-                {editable ? (
-                  <input
-                    value={videoWorkTitleJpnDraft}
-                    onChange={(event) =>
-                      onVideoWorkTitleJpnDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoWorkTitleJpn);
-                    }}
-                  />
-                ) : (
-                  <div className="metadata-localized-field">
-                    <p
-                      className="metadata-localized-value is-clickable"
-                      onClick={() => {
-                        const value = normalizeSearchValue(resolvedWorkTitle);
-                        if (!value) {
-                          return;
-                        }
-                        onSearchByWorkTitle(value);
-                      }}
-                    >
-                      {resolvedWorkTitle}
-                    </p>
-                    <button
-                      type="button"
-                      className="metadata-lang-toggle-btn feature-action-btn"
-                      onClick={() => {
-                        if (!hasDualWorkTitle) {
-                          return;
-                        }
-                        setPreferWorkTitleJpn((value) => !value);
-                      }}
-                    >
-                      {workTitleToggleLabel}
-                    </button>
-                  </div>
-                )}
-              </label>
-              {editable ? (
+              <div className="metadata-edit-grid metadata-video-grid mpx-scroll-area">
                 <label>
-                  <span>{t("ui.metadata.englishTitle")}</span>
-                  <input
-                    value={videoWorkTitleDraft}
-                    onChange={(event) =>
-                      onVideoWorkTitleDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoWorkTitle);
-                    }}
-                  />
+                  <span>{t("ui.metadata.fileName")}</span>
+                  <input readOnly value={focusedVideo.fileName} />
                 </label>
-              ) : null}
-              {editable ? (
                 <label>
-                  <span>{t("ui.metadata.seriesId")}</span>
-                  <input
-                    value={videoSeriesIdDraft}
-                    onChange={(event) =>
-                      onVideoSeriesIdDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoSeriesId);
-                    }}
-                  />
+                  <span>
+                    {editable
+                      ? t("ui.metadata.japaneseTitle")
+                      : t("ui.metadata.workTitle")}
+                  </span>
+                  {editable ? (
+                    <input
+                      value={videoWorkTitleJpnDraft}
+                      onChange={(event) =>
+                        onVideoWorkTitleJpnDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoWorkTitleJpn);
+                      }}
+                    />
+                  ) : (
+                    <div className="metadata-localized-field">
+                      <p
+                        className="metadata-localized-value is-clickable"
+                        onClick={() => {
+                          const value = normalizeSearchValue(resolvedWorkTitle);
+                          if (!value) {
+                            return;
+                          }
+                          onSearchByWorkTitle(value);
+                        }}
+                      >
+                        {resolvedWorkTitle}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn feature-action-btn"
+                        onClick={() => {
+                          if (!hasDualWorkTitle) {
+                            return;
+                          }
+                          setPreferWorkTitleJpn((value) => !value);
+                        }}
+                      >
+                        {workTitleToggleLabel}
+                      </button>
+                    </div>
+                  )}
                 </label>
-              ) : null}
-              {!editable ? (
-                <details
-                  className="metadata-preference-record"
-                  data-slot="fg-meta-main-video-editor-preference-metrics-panel"
-                >
-                  <summary>{t("ui.metadata.preferenceRecordTitle")}</summary>
-                  <div className="metadata-preference-record-content">
-                    <label>
-                      <span>{t("ui.metadata.preferenceEventCount")}</span>
-                      <input readOnly value={videoEventCount} />
-                      <small className="metadata-field-hint" aria-hidden="true">
-                        preference_metrics.event_count (read-only)
-                      </small>
-                    </label>
-                    <label>
-                      <span>{t("ui.metadata.preferenceWatchSeconds")}</span>
-                      <input readOnly value={videoWatchSecondsText} />
-                      <small className="metadata-field-hint" aria-hidden="true">
-                        preference_metrics.watch_seconds / total_seconds (read-only)
-                      </small>
-                    </label>
-                    <label>
-                      <span>{t("ui.metadata.preferenceCompletionRatio")}</span>
-                      <input readOnly value={videoCompletionPercentText} />
-                      <small className="metadata-field-hint" aria-hidden="true">
-                        preference_metrics.completion_ratio (read-only)
-                      </small>
-                    </label>
-                    <label>
-                      <span>{t("ui.metadata.preferenceLastEventAt")}</span>
-                      <input readOnly value={videoLastEventTimeText} />
-                      <small className="metadata-field-hint" aria-hidden="true">
-                        preference_metrics.last_event_time_ms (read-only)
-                      </small>
-                    </label>
-                  </div>
-                </details>
-              ) : null}
-              <label>
-                <span>
-                  {editable
-                    ? t("ui.metadata.japaneseCircle")
-                    : t("ui.metadata.circle")}
-                </span>
                 {editable ? (
-                  <input
-                    value={videoCircleJpnDraft}
-                    onChange={(event) =>
-                      onVideoCircleJpnDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoCircleJpn);
-                    }}
-                  />
-                ) : (
-                  <div className="metadata-localized-field">
-                    <p
-                      className="metadata-localized-value is-clickable"
-                      onClick={() => {
-                        const value = normalizeSearchValue(resolvedCircle);
-                        if (!value) {
-                          return;
-                        }
-                        onSearchByCircle(value);
+                  <label>
+                    <span>{t("ui.metadata.englishTitle")}</span>
+                    <input
+                      value={videoWorkTitleDraft}
+                      onChange={(event) =>
+                        onVideoWorkTitleDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoWorkTitle);
                       }}
-                    >
-                      {resolvedCircle}
-                    </p>
-                    <button
-                      type="button"
-                      className="metadata-lang-toggle-btn feature-action-btn"
-                      onClick={() => {
-                        if (!hasDualCircle) {
-                          return;
-                        }
-                        setPreferCircleJpn((value) => !value);
+                    />
+                  </label>
+                ) : null}
+                {editable ? (
+                  <label>
+                    <span>{t("ui.metadata.seriesId")}</span>
+                    <input
+                      value={videoSeriesIdDraft}
+                      onChange={(event) =>
+                        onVideoSeriesIdDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoSeriesId);
                       }}
-                    >
-                      {circleToggleLabel}
-                    </button>
-                  </div>
-                )}
-              </label>
-              {editable ? (
+                    />
+                  </label>
+                ) : null}
+                {!editable ? (
+                  <details
+                    className="metadata-preference-record"
+                    data-slot="fg-meta-main-video-editor-preference-metrics-panel"
+                  >
+                    <summary>{t("ui.metadata.preferenceRecordTitle")}</summary>
+                    <div className="metadata-preference-record-content">
+                      <label>
+                        <span>{t("ui.metadata.preferenceEventCount")}</span>
+                        <input readOnly value={videoEventCount} />
+                        <small
+                          className="metadata-field-hint"
+                          aria-hidden="true"
+                        >
+                          preference_metrics.event_count (read-only)
+                        </small>
+                      </label>
+                      <label>
+                        <span>{t("ui.metadata.preferenceWatchSeconds")}</span>
+                        <input readOnly value={videoWatchSecondsText} />
+                        <small
+                          className="metadata-field-hint"
+                          aria-hidden="true"
+                        >
+                          preference_metrics.watch_seconds / total_seconds
+                          (read-only)
+                        </small>
+                      </label>
+                      <label>
+                        <span>
+                          {t("ui.metadata.preferenceCompletionRatio")}
+                        </span>
+                        <input readOnly value={videoCompletionPercentText} />
+                        <small
+                          className="metadata-field-hint"
+                          aria-hidden="true"
+                        >
+                          preference_metrics.completion_ratio (read-only)
+                        </small>
+                      </label>
+                      <label>
+                        <span>{t("ui.metadata.preferenceLastEventAt")}</span>
+                        <input readOnly value={videoLastEventTimeText} />
+                        <small
+                          className="metadata-field-hint"
+                          aria-hidden="true"
+                        >
+                          preference_metrics.last_event_time_ms (read-only)
+                        </small>
+                      </label>
+                    </div>
+                  </details>
+                ) : null}
                 <label>
-                  <span>{t("ui.metadata.englishCircle")}</span>
-                  <input
-                    value={videoCircleDraft}
-                    onChange={(event) =>
-                      onVideoCircleDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoCircle);
-                    }}
-                  />
+                  <span>
+                    {editable
+                      ? t("ui.metadata.japaneseCircle")
+                      : t("ui.metadata.circle")}
+                  </span>
+                  {editable ? (
+                    <input
+                      value={videoCircleJpnDraft}
+                      onChange={(event) =>
+                        onVideoCircleJpnDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoCircleJpn);
+                      }}
+                    />
+                  ) : (
+                    <div className="metadata-localized-field">
+                      <p
+                        className="metadata-localized-value is-clickable"
+                        onClick={() => {
+                          const value = normalizeSearchValue(resolvedCircle);
+                          if (!value) {
+                            return;
+                          }
+                          onSearchByCircle(value);
+                        }}
+                      >
+                        {resolvedCircle}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn feature-action-btn"
+                        onClick={() => {
+                          if (!hasDualCircle) {
+                            return;
+                          }
+                          setPreferCircleJpn((value) => !value);
+                        }}
+                      >
+                        {circleToggleLabel}
+                      </button>
+                    </div>
+                  )}
                 </label>
-              ) : null}
-              <label>
-                <span>
-                  {editable
-                    ? t("ui.metadata.japaneseAuthor")
-                    : t("ui.metadata.author")}
-                </span>
                 {editable ? (
-                  <input
-                    value={videoAuthorJpnDraft}
-                    onChange={(event) =>
-                      onVideoAuthorJpnDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoAuthorJpn);
-                    }}
-                  />
-                ) : (
-                  <div className="metadata-localized-field">
-                    <p
-                      className="metadata-localized-value is-clickable"
-                      onClick={() => {
-                        const value = normalizeSearchValue(resolvedAuthor);
-                        if (!value) {
-                          return;
-                        }
-                        onSearchByAuthor(value);
+                  <label>
+                    <span>{t("ui.metadata.englishCircle")}</span>
+                    <input
+                      value={videoCircleDraft}
+                      onChange={(event) =>
+                        onVideoCircleDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoCircle);
                       }}
-                    >
-                      {resolvedAuthor}
-                    </p>
-                    <button
-                      type="button"
-                      className="metadata-lang-toggle-btn feature-action-btn"
-                      onClick={() => {
-                        if (!hasDualAuthor) {
-                          return;
-                        }
-                        setPreferAuthorJpn((value) => !value);
-                      }}
-                    >
-                      {authorToggleLabel}
-                    </button>
-                  </div>
-                )}
-              </label>
-              {editable ? (
+                    />
+                  </label>
+                ) : null}
                 <label>
-                  <span>{t("ui.metadata.englishAuthor")}</span>
-                  <input
-                    value={videoAuthorDraft}
-                    onChange={(event) =>
-                      onVideoAuthorDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoAuthor);
-                    }}
-                  />
+                  <span>
+                    {editable
+                      ? t("ui.metadata.japaneseAuthor")
+                      : t("ui.metadata.author")}
+                  </span>
+                  {editable ? (
+                    <input
+                      value={videoAuthorJpnDraft}
+                      onChange={(event) =>
+                        onVideoAuthorJpnDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoAuthorJpn);
+                      }}
+                    />
+                  ) : (
+                    <div className="metadata-localized-field">
+                      <p
+                        className="metadata-localized-value is-clickable"
+                        onClick={() => {
+                          const value = normalizeSearchValue(resolvedAuthor);
+                          if (!value) {
+                            return;
+                          }
+                          onSearchByAuthor(value);
+                        }}
+                      >
+                        {resolvedAuthor}
+                      </p>
+                      <button
+                        type="button"
+                        className="metadata-lang-toggle-btn feature-action-btn"
+                        onClick={() => {
+                          if (!hasDualAuthor) {
+                            return;
+                          }
+                          setPreferAuthorJpn((value) => !value);
+                        }}
+                      >
+                        {authorToggleLabel}
+                      </button>
+                    </div>
+                  )}
                 </label>
-              ) : null}
-              <label>
-                <span>{t("ui.metadata.tags")}</span>
                 {editable ? (
-                  <input
-                    value={videoTagsDraft}
-                    placeholder={t("ui.metadata.tagsPlaceholder")}
-                    onChange={(event) =>
-                      onVideoTagsDraftChange(event.target.value)
-                    }
-                    onKeyDown={(event) => {
-                      commitOnEnter(event, onSubmitVideoTags);
-                    }}
-                  />
-                ) : (
-                  <div className="metadata-tag-chip-list">
-                    {readOnlyTags.length > 0
-                      ? readOnlyTags.map((tag) => (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => onSearchByTag(tag)}
-                          >
-                            {tag}
-                          </button>
-                        ))
-                      : "-"}
-                  </div>
-                )}
-              </label>
-            </div>
+                  <label>
+                    <span>{t("ui.metadata.englishAuthor")}</span>
+                    <input
+                      value={videoAuthorDraft}
+                      onChange={(event) =>
+                        onVideoAuthorDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoAuthor);
+                      }}
+                    />
+                  </label>
+                ) : null}
+                <label>
+                  <span>{t("ui.metadata.tags")}</span>
+                  {editable ? (
+                    <input
+                      value={videoTagsDraft}
+                      placeholder={t("ui.metadata.tagsPlaceholder")}
+                      onChange={(event) =>
+                        onVideoTagsDraftChange(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        commitOnEnter(event, onSubmitVideoTags);
+                      }}
+                    />
+                  ) : (
+                    <div className="metadata-tag-chip-list">
+                      {readOnlyTags.length > 0
+                        ? readOnlyTags.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => onSearchByTag(tag)}
+                            >
+                              {tag}
+                            </button>
+                          ))
+                        : "-"}
+                    </div>
+                  )}
+                </label>
+              </div>
             </>
           ) : null}
         </div>
       ) : null}
-
     </div>
   );
 }

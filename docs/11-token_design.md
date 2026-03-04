@@ -2,23 +2,23 @@
 
 ## 规则
 
-| 项 | 规则 |
-|---|---|
-| Token 前缀基线 | `--mpx-slot-<path>-*` |
-| path 生成 | 稳定路径按 `.` 拆分后用 `-` 连接 |
-| 命名归一化 | 段内 `camelCase` 转 `kebab-case`（如 `importMenu` -> `import-menu`） |
-| token 落地方式 | 具体 token 在前缀后追加语义后缀（如 `bg` / `text` / `border` / `shadow` / `gap`） |
-| 按钮层 4.0 例外 | 全局按钮基架/变体不走 slot 前缀：`--mpx-btn-core-*`、`--mpx-btn-variant-<name>-*` |
-| 按钮层局部覆盖 | 业务按钮的局部覆盖仍走 slot 前缀（`--mpx-slot-<path>-*`），并回落到 `variant/core` |
-| 示例 | `fg.main.content.video.controls.volume.pop` -> `--mpx-slot-fg-main-content-video-controls-volume-pop-*` |
+| 项              | 规则                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| Token 前缀基线  | `--mpx-slot-<path>-*`                                                                                   |
+| path 生成       | 稳定路径按 `.` 拆分后用 `-` 连接                                                                        |
+| 命名归一化      | 段内 `camelCase` 转 `kebab-case`（如 `importMenu` -> `import-menu`）                                    |
+| token 落地方式  | 具体 token 在前缀后追加语义后缀（如 `bg` / `text` / `border` / `shadow` / `gap`）                       |
+| 按钮层 4.0 例外 | 全局按钮基架/变体不走 slot 前缀：`--mpx-btn-core-*`、`--mpx-btn-variant-<name>-*`                       |
+| 按钮层局部覆盖  | 业务按钮的局部覆盖仍走 slot 前缀（`--mpx-slot-<path>-*`），并回落到 `variant/core`                      |
+| 示例            | `fg.main.content.video.controls.volume.pop` -> `--mpx-slot-fg-main-content-video-controls-volume-pop-*` |
 
 ## 按钮层 4.0 命名索引
 
-| 层级 | 命名模式 | 说明 |
-|---|---|---|
-| Core | `--mpx-btn-core-<semantic>` | 按钮基础语义层（颜色、阴影、变换、危险态） |
-| Variant | `--mpx-btn-variant-<variant>-<semantic>` | 按钮变体层（如 `default` / `player` / `overlay-cell`） |
-| Slot override | `--mpx-slot-<path>-<semantic>` | 业务路径局部覆写，最终映射到 variant/core |
+| 层级          | 命名模式                                 | 说明                                                   |
+| ------------- | ---------------------------------------- | ------------------------------------------------------ |
+| Core          | `--mpx-btn-core-<semantic>`              | 按钮基础语义层（颜色、阴影、变换、危险态）             |
+| Variant       | `--mpx-btn-variant-<variant>-<semantic>` | 按钮变体层（如 `default` / `player` / `overlay-cell`） |
+| Slot override | `--mpx-slot-<path>-<semantic>`           | 业务路径局部覆写，最终映射到 variant/core              |
 
 示例（ThemeParameter side 按钮）
 `--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg`
@@ -30,205 +30,207 @@
 
 ## 稳定路径到 Token 前缀
 
-| 稳定路径 | Token 前缀 |
-|---|---|
-| `bg.app.root` | `--mpx-slot-bg-app-root-*` |
-| `bg.app.workspace` | `--mpx-slot-bg-app-workspace-*` |
-| `fg.header.root` | `--mpx-slot-fg-header-root-*` |
-| `fg.sidebar.root` | `--mpx-slot-fg-sidebar-root-*` |
-| `fg.main.root` | `--mpx-slot-fg-main-root-*` |
-| `fg.meta.root` | `--mpx-slot-fg-meta-root-*` |
-| `fs.layer.root` | `--mpx-slot-fs-layer-root-*` |
-| `fg.app.dragImport.ovl` | `--mpx-slot-fg-app-drag-import-ovl-*` |
-| `fg.app.tooltip.ovl` | `--mpx-slot-fg-app-tooltip-ovl-*` |
-| `fg.header.logo` | `--mpx-slot-fg-header-logo-*` |
-| `fg.header.logo.importMenu.panel` | `--mpx-slot-fg-header-logo-import-menu-panel-*` |
-| `fg.header.logo.state.idle` | `--mpx-slot-fg-header-logo-state-idle-*` |
-| `fg.header.logo.state.busy` | `--mpx-slot-fg-header-logo-state-busy-*` |
-| `fg.header.logo.state.open` | `--mpx-slot-fg-header-logo-state-open-*` |
-| `fg.header.g1` | `--mpx-slot-fg-header-g1-*` |
-| `fg.header.g1.panelToggles` | `--mpx-slot-fg-header-g1-panel-toggles-*` |
-| `fg.header.g1.toggle.sidebar` | `--mpx-slot-fg-header-g1-toggle-sidebar-*` |
-| `fg.header.g1.toggle.metadata` | `--mpx-slot-fg-header-g1-toggle-metadata-*` |
-| `fg.header.g1.task.importTask.panel` | `--mpx-slot-fg-import-task-root-*` |
-| `fg.header.g1.task.importTask.error.panel` | `--mpx-slot-fg-import-task-error-*` |
-| `fg.header.g1.task.importTask.hint.panel` | `--mpx-slot-fg-import-task-hint-*` |
-| `fg.header.g1.palette` | `--mpx-slot-fg-header-g1-palette-*` |
-| `fg.header.g1.settings` | `--mpx-slot-fg-header-g1-settings-*` |
-| `fg.header.g1.settings.root.ovl` | `--mpx-slot-fg-header-g1-settings-root-ovl-*` |
-| `fg.header.g1.settings.root.panel` | `--mpx-slot-fg-header-g1-settings-root-panel-*` |
-| `fg.header.g1.settings.shortcutEdit.ovl` | `--mpx-slot-fg-header-g1-settings-shortcut-edit-ovl-*` |
-| `fg.header.g1.settings.shortcutEdit.panel` | `--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-*` |
-| `fg.header.g1.settings.shortcutCapture.ovl` | `--mpx-slot-fg-header-g1-settings-shortcut-capture-ovl-*` |
-| `fg.header.g1.settings.shortcutCapture.panel` | `--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-*` |
-| `fg.header.g2` | `--mpx-slot-fg-header-g2-*` |
-| `fg.header.g2.mode.image` | `--mpx-slot-fg-header-g2-mode-image-*` |
-| `fg.header.g2.mode.video` | `--mpx-slot-fg-header-g2-mode-video-*` |
-| `fg.header.g2.mode.music` | `--mpx-slot-fg-header-g2-mode-music-*` |
-| `fg.header.g2.musicQuick` | `--mpx-slot-fg-header-g2-music-quick-*` |
-| `fg.header.gDebug` | `--mpx-slot-fg-header-g-debug-*` |
-| `fg.header.gDebug.tooltips` | `--mpx-slot-fg-header-g-debug-tooltips-*` |
-| `fg.header.gDebug.nativeChrome` | `--mpx-slot-fg-header-g-debug-native-chrome-*` |
-| `fg.header.gDebug.themeParameter` | `--mpx-slot-fg-header-g-debug-theme-parameter-*` |
-| `fg.header.g3` | `--mpx-slot-fg-header-g3-*` |
-| `fg.header.g3.popoverDebugPin` | `--mpx-slot-fg-header-g3-popover-debug-pin-*` |
-| `fg.header.g3.themeParameter` | `--mpx-slot-fg-header-g3-theme-parameter-*` |
-| `fg.header.g3.themeParameter.root.ovl` | `--mpx-slot-fg-header-g3-theme-parameter-root-ovl-*` |
-| `fg.header.g3.themeParameter.root.panel` | `--mpx-slot-fg-header-g3-theme-parameter-root-panel-*` |
-| `fg.header.g3.help` | `--mpx-slot-fg-header-g3-help-*` |
-| `fg.header.g3.help.root.ovl` | `--mpx-slot-fg-header-g3-help-root-ovl-*` |
-| `fg.header.g3.help.root.panel` | `--mpx-slot-fg-header-g3-help-root-panel-*` |
-| `fg.header.g3.help.root.buttonOverlay.ovl` | `--mpx-slot-fg-header-g3-help-root-button-overlay-ovl-*` |
-| `fg.header.g3.window.min` | `--mpx-slot-fg-header-g3-window-min-*` |
-| `fg.header.g3.window.maxrestore` | `--mpx-slot-fg-header-g3-window-maxrestore-*` |
-| `fg.header.g3.window.close` | `--mpx-slot-fg-header-g3-window-close-*` |
-| `fg.sysinfo.root` | `--mpx-slot-fg-sysinfo-root-*` |
-| `fg.sysinfo.backendError` | `--mpx-slot-fg-sysinfo-backend-error-*` |
-| `fg.sysinfo.runtimeWarning` | `--mpx-slot-fg-sysinfo-runtime-warning-*` |
-| `fg.sidebar.expand` | `--mpx-slot-fg-sidebar-expand-*` |
-| `fg.sidebar.toolbar` | `--mpx-slot-fg-sidebar-header-*` |
-| `fg.sidebar.toolbar.title` | `--mpx-slot-fg-sidebar-header-title-*` |
-| `fg.sidebar.toolbar.back` | `--mpx-slot-fg-sidebar-header-back-*` |
-| `fg.sidebar.toolbar.clear` | `--mpx-slot-fg-sidebar-header-clear-*` |
-| `fg.sidebar.toolbar.labelModeToggle` | `--mpx-slot-fg-sidebar-header-label-mode-toggle-*` |
-| `fg.sidebar.toolbar.collapseAll` | `--mpx-slot-fg-sidebar-header-collapse-all-*` |
-| `fg.sidebar.toolbar.prevImageParent` | `--mpx-slot-fg-sidebar-header-prev-image-parent-*` |
-| `fg.sidebar.toolbar.nextImageParent` | `--mpx-slot-fg-sidebar-header-next-image-parent-*` |
-| `fg.sidebar.toolbar.rootToggle` | `--mpx-slot-fg-sidebar-header-root-toggle-*` |
-| `fg.sidebar.main` | `--mpx-slot-fg-sidebar-main-*` |
-| `fg.sidebar.main.label` | `--mpx-slot-fg-sidebar-main-label-*` |
-| `fg.sidebar.shortcut.rename.ovl` | `--mpx-slot-fg-sidebar-shortcut-rename-ovl-*` |
-| `fg.sidebar.shortcut.rename.panel` | `--mpx-slot-fg-sidebar-shortcut-rename-panel-*` |
-| `fg.sidebar.footer` | `--mpx-slot-fg-sidebar-footer-*` |
-| `fg.main.toolbar` | `--mpx-slot-fg-main-header-*` |
-| `fg.main.toolbar.state.manage` | `--mpx-slot-fg-main-header-state-manage-*` |
-| `fg.main.toolbar.state.metadata` | `--mpx-slot-fg-main-header-state-metadata-*` |
-| `fg.main.toolbar.state.normal` | `--mpx-slot-fg-main-header-state-normal-*` |
-| `fg.main.toolbar.manage.groupName.ovl` | `--mpx-slot-fg-main-header-manage-group-name-ovl-*` |
-| `fg.main.toolbar.manage.groupName.panel` | `--mpx-slot-fg-main-header-manage-group-name-panel-*` |
-| `fg.main.toolbar.manage.deleteConfirm.ovl` | `--mpx-slot-fg-main-header-manage-delete-confirm-ovl-*` |
-| `fg.main.toolbar.manage.deleteConfirm.panel` | `--mpx-slot-fg-main-header-manage-delete-confirm-panel-*` |
-| `fg.main.toolbar.manage.videoTranscode.ovl` | `--mpx-slot-fg-main-header-manage-video-transcode-ovl-*` |
-| `fg.main.toolbar.manage.videoTranscode.panel` | `--mpx-slot-fg-main-header-manage-video-transcode-panel-*` |
-| `fg.main.toolbar.manage.musicTranscode.ovl` | `--mpx-slot-fg-main-header-manage-music-transcode-ovl-*` |
-| `fg.main.toolbar.manage.musicTranscode.panel` | `--mpx-slot-fg-main-header-manage-music-transcode-panel-*` |
-| `fg.main.content.image.grid` | `--mpx-slot-fg-main-content-image-grid-*` |
-| `fg.main.content.image.grid.card` | `--mpx-slot-fg-main-content-image-grid-card-*` |
-| `fg.main.content.image.nodeGrid` | `--mpx-slot-fg-main-content-image-node-grid-*` |
-| `fg.main.content.image.nodeGrid.card` | `--mpx-slot-fg-main-content-image-node-grid-card-*` |
-| `fg.main.content.image.nameList` | `--mpx-slot-fg-main-content-image-name-list-*` |
-| `fg.main.content.image.nameList.row` | `--mpx-slot-fg-main-content-image-name-list-row-*` |
-| `fg.main.content.image.nameList.label` | `--mpx-slot-fg-main-content-image-name-list-label-*` |
-| `fg.main.content.image.marquee.ovl` | `--mpx-slot-fg-main-content-image-marquee-ovl-*` |
-| `fg.main.toolbar.image.scale.control` | `--mpx-slot-fg-main-header-image-scale-control-*` |
-| `fg.main.toolbar.image.scale.pop` | `--mpx-slot-fg-main-header-image-scale-pop-*` |
-| `fg.main.toolbar.image.adReviewStrategy.pop` | `--mpx-slot-fg-main-header-image-ad-review-strategy-pop-*` |
-| `fg.main.toolbar.image.adReviewProgress.pop` | `--mpx-slot-fg-main-header-image-ad-review-progress-pop-*` |
-| `fg.main.toolbar.image.adReviewStart.ovl` | `--mpx-slot-fg-main-header-image-ad-review-start-ovl-*` |
-| `fg.main.toolbar.image.adReviewStart.panel` | `--mpx-slot-fg-main-header-image-ad-review-start-panel-*` |
-| `fg.main.toolbar.image.metadataFetch.ovl` | `--mpx-slot-fg-main-header-image-metadata-fetch-ovl-*` |
-| `fg.main.toolbar.image.metadataFetch.panel` | `--mpx-slot-fg-main-header-image-metadata-fetch-panel-*` |
-| `fg.main.toolbar.image.deleteProgress.ovl` | `--mpx-slot-fg-main-header-image-delete-progress-ovl-*` |
-| `fg.main.toolbar.image.convert.ovl` | `--mpx-slot-fg-main-header-image-convert-ovl-*` |
-| `fg.main.toolbar.image.convert.panel` | `--mpx-slot-fg-main-header-image-convert-panel-*` |
-| `fg.main.content.video.preview` | `--mpx-slot-fg-main-content-video-preview-*` |
-| `fg.main.content.video.preview.screen` | `--mpx-slot-fg-main-content-video-preview-screen-*` |
-| `fg.main.content.video.preview.media` | `--mpx-slot-fg-main-content-video-preview-media-*` |
-| `fg.main.content.video.preview.cover` | `--mpx-slot-fg-main-content-video-preview-cover-*` |
-| `fg.main.content.video.preview.empty` | `--mpx-slot-fg-main-content-video-preview-empty-*` |
-| `fg.main.content.video.preview.subtitle.ovl` | `--mpx-slot-fg-main-content-video-preview-subtitle-ovl-*` |
-| `fg.main.content.video.controls` | `--mpx-slot-fg-main-content-video-controls-*` |
-| `fg.main.content.video.controls.progress` | `--mpx-slot-fg-main-content-video-controls-progress-*` |
-| `fg.main.content.video.controls.left` | `--mpx-slot-fg-main-content-video-controls-left-*` |
-| `fg.main.content.video.controls.center` | `--mpx-slot-fg-main-content-video-controls-center-*` |
-| `fg.main.content.video.controls.right` | `--mpx-slot-fg-main-content-video-controls-right-*` |
-| `fg.main.content.video.controls.fit.pop` | `--mpx-slot-fg-main-content-video-controls-fit-pop-*` |
-| `fg.main.content.video.controls.subtitle.pop` | `--mpx-slot-fg-main-content-video-controls-subtitle-pop-*` |
-| `fg.main.content.video.controls.speed.pop` | `--mpx-slot-fg-main-content-video-controls-speed-pop-*` |
-| `fg.main.content.video.controls.playlist.pop` | `--mpx-slot-fg-main-content-video-controls-playlist-pop-*` |
-| `fg.main.content.video.controls.volume.pop` | `--mpx-slot-fg-main-content-video-controls-volume-pop-*` |
-| `fg.main.toolbar.manage.subtitleCleanup.ovl` | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-*` |
-| `fg.main.toolbar.manage.subtitleCleanup.panel` | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-*` |
-| `fg.main.toolbar.manage.subtitleCleanup.rawPreview.panel` | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-*` |
+| 稳定路径                                                    | Token 前缀                                                                |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `bg.app.root`                                               | `--mpx-slot-bg-app-root-*`                                                |
+| `bg.app.workspace`                                          | `--mpx-slot-bg-app-workspace-*`                                           |
+| `fg.header.root`                                            | `--mpx-slot-fg-header-root-*`                                             |
+| `fg.sidebar.root`                                           | `--mpx-slot-fg-sidebar-root-*`                                            |
+| `fg.main.root`                                              | `--mpx-slot-fg-main-root-*`                                               |
+| `fg.meta.root`                                              | `--mpx-slot-fg-meta-root-*`                                               |
+| `fs.layer.root`                                             | `--mpx-slot-fs-layer-root-*`                                              |
+| `fg.app.dragImport.ovl`                                     | `--mpx-slot-fg-app-drag-import-ovl-*`                                     |
+| `fg.app.tooltip.ovl`                                        | `--mpx-slot-fg-app-tooltip-ovl-*`                                         |
+| `fg.header.logo`                                            | `--mpx-slot-fg-header-logo-*`                                             |
+| `fg.header.logo.importMenu.panel`                           | `--mpx-slot-fg-header-logo-import-menu-panel-*`                           |
+| `fg.header.logo.state.idle`                                 | `--mpx-slot-fg-header-logo-state-idle-*`                                  |
+| `fg.header.logo.state.busy`                                 | `--mpx-slot-fg-header-logo-state-busy-*`                                  |
+| `fg.header.logo.state.open`                                 | `--mpx-slot-fg-header-logo-state-open-*`                                  |
+| `fg.header.g1`                                              | `--mpx-slot-fg-header-g1-*`                                               |
+| `fg.header.g1.panelToggles`                                 | `--mpx-slot-fg-header-g1-panel-toggles-*`                                 |
+| `fg.header.g1.toggle.sidebar`                               | `--mpx-slot-fg-header-g1-toggle-sidebar-*`                                |
+| `fg.header.g1.toggle.metadata`                              | `--mpx-slot-fg-header-g1-toggle-metadata-*`                               |
+| `fg.header.g1.task.importTask.panel`                        | `--mpx-slot-fg-import-task-root-*`                                        |
+| `fg.header.g1.task.importTask.error.panel`                  | `--mpx-slot-fg-import-task-error-*`                                       |
+| `fg.header.g1.task.importTask.hint.panel`                   | `--mpx-slot-fg-import-task-hint-*`                                        |
+| `fg.header.g1.palette`                                      | `--mpx-slot-fg-header-g1-palette-*`                                       |
+| `fg.header.g1.settings`                                     | `--mpx-slot-fg-header-g1-settings-*`                                      |
+| `fg.header.g1.settings.root.ovl`                            | `--mpx-slot-fg-header-g1-settings-root-ovl-*`                             |
+| `fg.header.g1.settings.root.panel`                          | `--mpx-slot-fg-header-g1-settings-root-panel-*`                           |
+| `fg.header.g1.settings.shortcutEdit.ovl`                    | `--mpx-slot-fg-header-g1-settings-shortcut-edit-ovl-*`                    |
+| `fg.header.g1.settings.shortcutEdit.panel`                  | `--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-*`                  |
+| `fg.header.g1.settings.shortcutCapture.ovl`                 | `--mpx-slot-fg-header-g1-settings-shortcut-capture-ovl-*`                 |
+| `fg.header.g1.settings.shortcutCapture.panel`               | `--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-*`               |
+| `fg.header.g2`                                              | `--mpx-slot-fg-header-g2-*`                                               |
+| `fg.header.g2.mode.image`                                   | `--mpx-slot-fg-header-g2-mode-image-*`                                    |
+| `fg.header.g2.mode.video`                                   | `--mpx-slot-fg-header-g2-mode-video-*`                                    |
+| `fg.header.g2.mode.music`                                   | `--mpx-slot-fg-header-g2-mode-music-*`                                    |
+| `fg.header.g2.musicQuick`                                   | `--mpx-slot-fg-header-g2-music-quick-*`                                   |
+| `fg.header.gDebug`                                          | `--mpx-slot-fg-header-g-debug-*`                                          |
+| `fg.header.gDebug.tooltips`                                 | `--mpx-slot-fg-header-g-debug-tooltips-*`                                 |
+| `fg.header.gDebug.nativeChrome`                             | `--mpx-slot-fg-header-g-debug-native-chrome-*`                            |
+| `fg.header.gDebug.themeParameter`                           | `--mpx-slot-fg-header-g-debug-theme-parameter-*`                          |
+| `fg.header.g3`                                              | `--mpx-slot-fg-header-g3-*`                                               |
+| `fg.header.g3.popoverDebugPin`                              | `--mpx-slot-fg-header-g3-popover-debug-pin-*`                             |
+| `fg.header.g3.themeParameter`                               | `--mpx-slot-fg-header-g3-theme-parameter-*`                               |
+| `fg.header.g3.themeParameter.root.ovl`                      | `--mpx-slot-fg-header-g3-theme-parameter-root-ovl-*`                      |
+| `fg.header.g3.themeParameter.root.panel`                    | `--mpx-slot-fg-header-g3-theme-parameter-root-panel-*`                    |
+| `fg.header.g3.help`                                         | `--mpx-slot-fg-header-g3-help-*`                                          |
+| `fg.header.g3.help.root.ovl`                                | `--mpx-slot-fg-header-g3-help-root-ovl-*`                                 |
+| `fg.header.g3.help.root.panel`                              | `--mpx-slot-fg-header-g3-help-root-panel-*`                               |
+| `fg.header.g3.help.root.buttonOverlay.ovl`                  | `--mpx-slot-fg-header-g3-help-root-button-overlay-ovl-*`                  |
+| `fg.header.g3.window.min`                                   | `--mpx-slot-fg-header-g3-window-min-*`                                    |
+| `fg.header.g3.window.maxrestore`                            | `--mpx-slot-fg-header-g3-window-maxrestore-*`                             |
+| `fg.header.g3.window.close`                                 | `--mpx-slot-fg-header-g3-window-close-*`                                  |
+| `fg.sysinfo.root`                                           | `--mpx-slot-fg-sysinfo-root-*`                                            |
+| `fg.sysinfo.backendError`                                   | `--mpx-slot-fg-sysinfo-backend-error-*`                                   |
+| `fg.sysinfo.runtimeWarning`                                 | `--mpx-slot-fg-sysinfo-runtime-warning-*`                                 |
+| `fg.sidebar.expand`                                         | `--mpx-slot-fg-sidebar-expand-*`                                          |
+| `fg.sidebar.toolbar`                                        | `--mpx-slot-fg-sidebar-header-*`                                          |
+| `fg.sidebar.toolbar.title`                                  | `--mpx-slot-fg-sidebar-header-title-*`                                    |
+| `fg.sidebar.toolbar.back`                                   | `--mpx-slot-fg-sidebar-header-back-*`                                     |
+| `fg.sidebar.toolbar.clear`                                  | `--mpx-slot-fg-sidebar-header-clear-*`                                    |
+| `fg.sidebar.toolbar.labelModeToggle`                        | `--mpx-slot-fg-sidebar-header-label-mode-toggle-*`                        |
+| `fg.sidebar.toolbar.collapseAll`                            | `--mpx-slot-fg-sidebar-header-collapse-all-*`                             |
+| `fg.sidebar.toolbar.prevImageParent`                        | `--mpx-slot-fg-sidebar-header-prev-image-parent-*`                        |
+| `fg.sidebar.toolbar.nextImageParent`                        | `--mpx-slot-fg-sidebar-header-next-image-parent-*`                        |
+| `fg.sidebar.toolbar.rootToggle`                             | `--mpx-slot-fg-sidebar-header-root-toggle-*`                              |
+| `fg.sidebar.main`                                           | `--mpx-slot-fg-sidebar-main-*`                                            |
+| `fg.sidebar.main.label`                                     | `--mpx-slot-fg-sidebar-main-label-*`                                      |
+| `fg.sidebar.shortcut.rename.batch.ovl`                      | `--mpx-slot-fg-sidebar-shortcut-rename-ovl-*`                             |
+| `fg.sidebar.shortcut.rename.batch.panel`                    | `--mpx-slot-fg-sidebar-shortcut-rename-panel-*`                           |
+| `fg.sidebar.shortcut.rename.single.ovl`                     | `--mpx-slot-fg-sidebar-shortcut-rename-single-ovl-*`                      |
+| `fg.sidebar.shortcut.rename.single.panel`                   | `--mpx-slot-fg-sidebar-shortcut-rename-single-panel-*`                    |
+| `fg.sidebar.footer`                                         | `--mpx-slot-fg-sidebar-footer-*`                                          |
+| `fg.main.toolbar`                                           | `--mpx-slot-fg-main-header-*`                                             |
+| `fg.main.toolbar.state.manage`                              | `--mpx-slot-fg-main-header-state-manage-*`                                |
+| `fg.main.toolbar.state.metadata`                            | `--mpx-slot-fg-main-header-state-metadata-*`                              |
+| `fg.main.toolbar.state.normal`                              | `--mpx-slot-fg-main-header-state-normal-*`                                |
+| `fg.main.toolbar.manage.groupName.ovl`                      | `--mpx-slot-fg-main-header-manage-group-name-ovl-*`                       |
+| `fg.main.toolbar.manage.groupName.panel`                    | `--mpx-slot-fg-main-header-manage-group-name-panel-*`                     |
+| `fg.main.toolbar.manage.deleteConfirm.ovl`                  | `--mpx-slot-fg-main-header-manage-delete-confirm-ovl-*`                   |
+| `fg.main.toolbar.manage.deleteConfirm.panel`                | `--mpx-slot-fg-main-header-manage-delete-confirm-panel-*`                 |
+| `fg.main.toolbar.manage.videoTranscode.ovl`                 | `--mpx-slot-fg-main-header-manage-video-transcode-ovl-*`                  |
+| `fg.main.toolbar.manage.videoTranscode.panel`               | `--mpx-slot-fg-main-header-manage-video-transcode-panel-*`                |
+| `fg.main.toolbar.manage.musicTranscode.ovl`                 | `--mpx-slot-fg-main-header-manage-music-transcode-ovl-*`                  |
+| `fg.main.toolbar.manage.musicTranscode.panel`               | `--mpx-slot-fg-main-header-manage-music-transcode-panel-*`                |
+| `fg.main.content.image.grid`                                | `--mpx-slot-fg-main-content-image-grid-*`                                 |
+| `fg.main.content.image.grid.card`                           | `--mpx-slot-fg-main-content-image-grid-card-*`                            |
+| `fg.main.content.image.nodeGrid`                            | `--mpx-slot-fg-main-content-image-node-grid-*`                            |
+| `fg.main.content.image.nodeGrid.card`                       | `--mpx-slot-fg-main-content-image-node-grid-card-*`                       |
+| `fg.main.content.image.nameList`                            | `--mpx-slot-fg-main-content-image-name-list-*`                            |
+| `fg.main.content.image.nameList.row`                        | `--mpx-slot-fg-main-content-image-name-list-row-*`                        |
+| `fg.main.content.image.nameList.label`                      | `--mpx-slot-fg-main-content-image-name-list-label-*`                      |
+| `fg.main.content.image.marquee.ovl`                         | `--mpx-slot-fg-main-content-image-marquee-ovl-*`                          |
+| `fg.main.toolbar.image.scale.control`                       | `--mpx-slot-fg-main-header-image-scale-control-*`                         |
+| `fg.main.toolbar.image.scale.pop`                           | `--mpx-slot-fg-main-header-image-scale-pop-*`                             |
+| `fg.main.toolbar.image.adReviewStrategy.pop`                | `--mpx-slot-fg-main-header-image-ad-review-strategy-pop-*`                |
+| `fg.main.toolbar.image.adReviewProgress.pop`                | `--mpx-slot-fg-main-header-image-ad-review-progress-pop-*`                |
+| `fg.main.toolbar.image.adReviewStart.ovl`                   | `--mpx-slot-fg-main-header-image-ad-review-start-ovl-*`                   |
+| `fg.main.toolbar.image.adReviewStart.panel`                 | `--mpx-slot-fg-main-header-image-ad-review-start-panel-*`                 |
+| `fg.main.toolbar.image.metadataFetch.ovl`                   | `--mpx-slot-fg-main-header-image-metadata-fetch-ovl-*`                    |
+| `fg.main.toolbar.image.metadataFetch.panel`                 | `--mpx-slot-fg-main-header-image-metadata-fetch-panel-*`                  |
+| `fg.main.toolbar.image.deleteProgress.ovl`                  | `--mpx-slot-fg-main-header-image-delete-progress-ovl-*`                   |
+| `fg.main.toolbar.image.convert.ovl`                         | `--mpx-slot-fg-main-header-image-convert-ovl-*`                           |
+| `fg.main.toolbar.image.convert.panel`                       | `--mpx-slot-fg-main-header-image-convert-panel-*`                         |
+| `fg.main.content.video.preview`                             | `--mpx-slot-fg-main-content-video-preview-*`                              |
+| `fg.main.content.video.preview.screen`                      | `--mpx-slot-fg-main-content-video-preview-screen-*`                       |
+| `fg.main.content.video.preview.media`                       | `--mpx-slot-fg-main-content-video-preview-media-*`                        |
+| `fg.main.content.video.preview.cover`                       | `--mpx-slot-fg-main-content-video-preview-cover-*`                        |
+| `fg.main.content.video.preview.empty`                       | `--mpx-slot-fg-main-content-video-preview-empty-*`                        |
+| `fg.main.content.video.preview.subtitle.ovl`                | `--mpx-slot-fg-main-content-video-preview-subtitle-ovl-*`                 |
+| `fg.main.content.video.controls`                            | `--mpx-slot-fg-main-content-video-controls-*`                             |
+| `fg.main.content.video.controls.progress`                   | `--mpx-slot-fg-main-content-video-controls-progress-*`                    |
+| `fg.main.content.video.controls.left`                       | `--mpx-slot-fg-main-content-video-controls-left-*`                        |
+| `fg.main.content.video.controls.center`                     | `--mpx-slot-fg-main-content-video-controls-center-*`                      |
+| `fg.main.content.video.controls.right`                      | `--mpx-slot-fg-main-content-video-controls-right-*`                       |
+| `fg.main.content.video.controls.fit.pop`                    | `--mpx-slot-fg-main-content-video-controls-fit-pop-*`                     |
+| `fg.main.content.video.controls.subtitle.pop`               | `--mpx-slot-fg-main-content-video-controls-subtitle-pop-*`                |
+| `fg.main.content.video.controls.speed.pop`                  | `--mpx-slot-fg-main-content-video-controls-speed-pop-*`                   |
+| `fg.main.content.video.controls.playlist.pop`               | `--mpx-slot-fg-main-content-video-controls-playlist-pop-*`                |
+| `fg.main.content.video.controls.volume.pop`                 | `--mpx-slot-fg-main-content-video-controls-volume-pop-*`                  |
+| `fg.main.toolbar.manage.subtitleCleanup.ovl`                | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-*`                 |
+| `fg.main.toolbar.manage.subtitleCleanup.panel`              | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-*`               |
+| `fg.main.toolbar.manage.subtitleCleanup.rawPreview.panel`   | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-*`   |
 | `fg.main.toolbar.manage.subtitleCleanup.cleanPreview.panel` | `--mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-*` |
-| `fg.main.content.music.preview` | `--mpx-slot-fg-main-content-music-preview-*` |
-| `fg.main.content.music.preview.canvas.gpu` | `--mpx-slot-fg-main-content-music-preview-canvas-gpu-*` |
-| `fg.main.content.music.preview.canvas.cpu` | `--mpx-slot-fg-main-content-music-preview-canvas-cpu-*` |
-| `fg.main.content.music.nameList` | `--mpx-slot-fg-main-content-music-name-list-*` |
-| `fg.main.content.music.nameList.row` | `--mpx-slot-fg-main-content-music-name-list-row-*` |
-| `fg.main.content.music.preview.hud.ovl` | `--mpx-slot-fg-main-content-music-preview-hud-ovl-*` |
-| `fg.main.content.music.preview.fullscreenHotzone.ovl` | `--mpx-slot-fg-main-content-music-preview-fullscreen-hotzone-ovl-*` |
-| `fg.main.content.music.fullscreen.ovl` | `--mpx-slot-fg-main-content-music-fullscreen-ovl-*` |
-| `fg.main.content.music.controls` | `--mpx-slot-fg-main-content-music-controls-*` |
-| `fg.main.content.music.controls.fullscreenFloating.panel` | `--mpx-slot-fg-main-content-music-controls-fullscreen-floating-panel-*` |
-| `fg.main.content.music.controls.progress` | `--mpx-slot-fg-main-content-music-controls-progress-*` |
-| `fg.main.content.music.controls.left` | `--mpx-slot-fg-main-content-music-controls-left-*` |
-| `fg.main.content.music.controls.center` | `--mpx-slot-fg-main-content-music-controls-center-*` |
-| `fg.main.content.music.controls.right` | `--mpx-slot-fg-main-content-music-controls-right-*` |
-| `fg.main.content.music.controls.volume.pop` | `--mpx-slot-fg-main-content-music-controls-volume-pop-*` |
-| `fg.main.footer` | `--mpx-slot-fg-main-footer-*` |
-| `fg.main.footer.meta` | `--mpx-slot-fg-main-footer-meta-*` |
-| `fg.main.footer.pagination` | `--mpx-slot-fg-main-footer-pagination-*` |
-| `fg.meta.restore` | `--mpx-slot-fg-meta-restore-*` |
-| `fg.meta.toolbar` | `--mpx-slot-fg-meta-header-*` |
-| `fg.meta.toolbar.g3` | `--mpx-slot-fg-meta-header-g3-*` |
-| `fg.meta.toolbar.g3.search` | `--mpx-slot-fg-meta-header-g3-search-*` |
-| `fg.meta.toolbar.g3.manage` | `--mpx-slot-fg-meta-header-g3-manage-*` |
-| `fg.meta.toolbar.g3.metadata` | `--mpx-slot-fg-meta-header-g3-metadata-*` |
-| `fg.meta.toolbar.g3.playlist` | `--mpx-slot-fg-meta-header-g3-playlist-*` |
-| `fg.meta.toolbar.toggle` | `--mpx-slot-fg-meta-header-toggle-*` |
-| `fg.meta.main` | `--mpx-slot-fg-meta-main-*` |
-| `fg.meta.main.imageEditor` | `--mpx-slot-fg-meta-main-image-editor-*` |
-| `fg.meta.main.imageEditor.preferenceMetrics.panel` | `--mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-*` |
-| `fg.meta.main.videoEditor` | `--mpx-slot-fg-meta-main-video-editor-*` |
-| `fg.meta.main.videoEditor.preferenceMetrics.panel` | `--mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-*` |
-| `fg.meta.main.videoEditor.playlistNameDialog.panel` | `--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-*` |
-| `fg.meta.main.musicEditor` | `--mpx-slot-fg-meta-main-music-editor-*` |
-| `fg.meta.main.musicEditor.bookletBinding.panel` | `--mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-*` |
-| `fg.meta.main.search` | `--mpx-slot-fg-meta-main-search-*` |
-| `fg.meta.main.search.featureTagPicker.ovl` | `--mpx-slot-fg-meta-main-search-feature-tag-picker-ovl-*` |
-| `fg.meta.main.search.featureTagPicker.panel` | `--mpx-slot-fg-meta-main-search-feature-tag-picker-panel-*` |
-| `fg.meta.main.adReview` | `--mpx-slot-fg-meta-main-ad-review-*` |
-| `fg.meta.main.adReview.start.ovl` | `--mpx-slot-fg-meta-main-ad-review-start-ovl-*` |
-| `fg.meta.main.adReview.start.panel` | `--mpx-slot-fg-meta-main-ad-review-start-panel-*` |
-| `fg.meta.footer` | `--mpx-slot-fg-meta-footer-*` |
-| `bg.fs.mask` | `--mpx-slot-bg-fs-mask-*` |
-| `fs.layer.content` | `--mpx-slot-fs-layer-content-*` |
-| `fs.nondual.root` | `--mpx-slot-fs-nondual-root-*` |
-| `fs.dual.root` | `--mpx-slot-fs-dual-root-*` |
-| `fs.dual.pane.image` | `--mpx-slot-fs-dual-pane-image-*` |
-| `fs.dual.pane.video` | `--mpx-slot-fs-dual-pane-video-*` |
-| `fs.video.controls.shell` | `--mpx-slot-fs-video-controls-shell-*` |
-| `fs.video.controls.fit.pop` | `--mpx-slot-fs-video-controls-fit-pop-*` |
-| `fs.video.controls.subtitle.pop` | `--mpx-slot-fs-video-controls-subtitle-pop-*` |
-| `fs.video.controls.speed.pop` | `--mpx-slot-fs-video-controls-speed-pop-*` |
-| `fs.video.controls.playlist.pop` | `--mpx-slot-fs-video-controls-playlist-pop-*` |
-| `fs.video.controls.volume.pop` | `--mpx-slot-fs-video-controls-volume-pop-*` |
-| `fs.video.controls.hotzone.ovl` | `--mpx-slot-fs-video-controls-hotzone-ovl-*` |
-| `fs.video.controls.float.panel` | `--mpx-slot-fs-video-controls-float-panel-*` |
-| `fs.image.controls.shell` | `--mpx-slot-fs-image-controls-shell-*` |
-| `fs.image.controls.autoplay.pop` | `--mpx-slot-fs-image-controls-autoplay-pop-*` |
-| `fs.image.controls.zoom.pop` | `--mpx-slot-fs-image-controls-zoom-pop-*` |
-| `fs.image.controls.adjust.ovl` | `--mpx-slot-fs-image-controls-adjust-ovl-*` |
-| `fs.image.controls.adjust.panel` | `--mpx-slot-fs-image-controls-adjust-panel-*` |
-| `fs.image.convertPreview.panel` | `--mpx-slot-fs-image-convert-preview-panel-*` |
-| `fs.image.convertPreview.scale.pop` | `--mpx-slot-fs-image-convert-preview-scale-pop-*` |
-| `fs.image.convertPreview.format.pop` | `--mpx-slot-fs-image-convert-preview-format-pop-*` |
-| `fs.image.convertPreview.quality.pop` | `--mpx-slot-fs-image-convert-preview-quality-pop-*` |
-| `fs.image.convertPreview.splitter` | `--mpx-slot-fs-image-convert-preview-splitter-*` |
-| `fs.image.convertPreview.error.ovl` | `--mpx-slot-fs-image-convert-preview-error-ovl-*` |
-| `boot.splash.window` | `--mpx-slot-boot-splash-window-*` |
-| `boot.splash.root` | `--mpx-slot-boot-splash-root-*` |
-| `boot.splash.stage` | `--mpx-slot-boot-splash-stage-*` |
-| `boot.splash.stage.cardStage` | `--mpx-slot-boot-splash-stage-card-stage-*` |
-| `boot.splash.stage.character` | `--mpx-slot-boot-splash-stage-character-*` |
-| `boot.splash.card` | `--mpx-slot-boot-splash-card-*` |
-| `boot.splash.card.track` | `--mpx-slot-boot-splash-card-track-*` |
+| `fg.main.content.music.preview`                             | `--mpx-slot-fg-main-content-music-preview-*`                              |
+| `fg.main.content.music.preview.canvas.gpu`                  | `--mpx-slot-fg-main-content-music-preview-canvas-gpu-*`                   |
+| `fg.main.content.music.preview.canvas.cpu`                  | `--mpx-slot-fg-main-content-music-preview-canvas-cpu-*`                   |
+| `fg.main.content.music.nameList`                            | `--mpx-slot-fg-main-content-music-name-list-*`                            |
+| `fg.main.content.music.nameList.row`                        | `--mpx-slot-fg-main-content-music-name-list-row-*`                        |
+| `fg.main.content.music.preview.hud.ovl`                     | `--mpx-slot-fg-main-content-music-preview-hud-ovl-*`                      |
+| `fg.main.content.music.preview.fullscreenHotzone.ovl`       | `--mpx-slot-fg-main-content-music-preview-fullscreen-hotzone-ovl-*`       |
+| `fg.main.content.music.fullscreen.ovl`                      | `--mpx-slot-fg-main-content-music-fullscreen-ovl-*`                       |
+| `fg.main.content.music.controls`                            | `--mpx-slot-fg-main-content-music-controls-*`                             |
+| `fg.main.content.music.controls.fullscreenFloating.panel`   | `--mpx-slot-fg-main-content-music-controls-fullscreen-floating-panel-*`   |
+| `fg.main.content.music.controls.progress`                   | `--mpx-slot-fg-main-content-music-controls-progress-*`                    |
+| `fg.main.content.music.controls.left`                       | `--mpx-slot-fg-main-content-music-controls-left-*`                        |
+| `fg.main.content.music.controls.center`                     | `--mpx-slot-fg-main-content-music-controls-center-*`                      |
+| `fg.main.content.music.controls.right`                      | `--mpx-slot-fg-main-content-music-controls-right-*`                       |
+| `fg.main.content.music.controls.volume.pop`                 | `--mpx-slot-fg-main-content-music-controls-volume-pop-*`                  |
+| `fg.main.footer`                                            | `--mpx-slot-fg-main-footer-*`                                             |
+| `fg.main.footer.meta`                                       | `--mpx-slot-fg-main-footer-meta-*`                                        |
+| `fg.main.footer.pagination`                                 | `--mpx-slot-fg-main-footer-pagination-*`                                  |
+| `fg.meta.restore`                                           | `--mpx-slot-fg-meta-restore-*`                                            |
+| `fg.meta.toolbar`                                           | `--mpx-slot-fg-meta-header-*`                                             |
+| `fg.meta.toolbar.g3`                                        | `--mpx-slot-fg-meta-header-g3-*`                                          |
+| `fg.meta.toolbar.g3.search`                                 | `--mpx-slot-fg-meta-header-g3-search-*`                                   |
+| `fg.meta.toolbar.g3.manage`                                 | `--mpx-slot-fg-meta-header-g3-manage-*`                                   |
+| `fg.meta.toolbar.g3.metadata`                               | `--mpx-slot-fg-meta-header-g3-metadata-*`                                 |
+| `fg.meta.toolbar.g3.playlist`                               | `--mpx-slot-fg-meta-header-g3-playlist-*`                                 |
+| `fg.meta.toolbar.toggle`                                    | `--mpx-slot-fg-meta-header-toggle-*`                                      |
+| `fg.meta.main`                                              | `--mpx-slot-fg-meta-main-*`                                               |
+| `fg.meta.main.imageEditor`                                  | `--mpx-slot-fg-meta-main-image-editor-*`                                  |
+| `fg.meta.main.imageEditor.preferenceMetrics.panel`          | `--mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-*`         |
+| `fg.meta.main.videoEditor`                                  | `--mpx-slot-fg-meta-main-video-editor-*`                                  |
+| `fg.meta.main.videoEditor.preferenceMetrics.panel`          | `--mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-*`         |
+| `fg.meta.main.videoEditor.playlistNameDialog.panel`         | `--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-*`       |
+| `fg.meta.main.musicEditor`                                  | `--mpx-slot-fg-meta-main-music-editor-*`                                  |
+| `fg.meta.main.musicEditor.bookletBinding.panel`             | `--mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-*`            |
+| `fg.meta.main.search`                                       | `--mpx-slot-fg-meta-main-search-*`                                        |
+| `fg.meta.main.search.featureTagPicker.ovl`                  | `--mpx-slot-fg-meta-main-search-feature-tag-picker-ovl-*`                 |
+| `fg.meta.main.search.featureTagPicker.panel`                | `--mpx-slot-fg-meta-main-search-feature-tag-picker-panel-*`               |
+| `fg.meta.main.adReview`                                     | `--mpx-slot-fg-meta-main-ad-review-*`                                     |
+| `fg.meta.main.adReview.start.ovl`                           | `--mpx-slot-fg-meta-main-ad-review-start-ovl-*`                           |
+| `fg.meta.main.adReview.start.panel`                         | `--mpx-slot-fg-meta-main-ad-review-start-panel-*`                         |
+| `fg.meta.footer`                                            | `--mpx-slot-fg-meta-footer-*`                                             |
+| `bg.fs.mask`                                                | `--mpx-slot-bg-fs-mask-*`                                                 |
+| `fs.layer.content`                                          | `--mpx-slot-fs-layer-content-*`                                           |
+| `fs.nondual.root`                                           | `--mpx-slot-fs-nondual-root-*`                                            |
+| `fs.dual.root`                                              | `--mpx-slot-fs-dual-root-*`                                               |
+| `fs.dual.pane.image`                                        | `--mpx-slot-fs-dual-pane-image-*`                                         |
+| `fs.dual.pane.video`                                        | `--mpx-slot-fs-dual-pane-video-*`                                         |
+| `fs.video.controls.shell`                                   | `--mpx-slot-fs-video-controls-shell-*`                                    |
+| `fs.video.controls.fit.pop`                                 | `--mpx-slot-fs-video-controls-fit-pop-*`                                  |
+| `fs.video.controls.subtitle.pop`                            | `--mpx-slot-fs-video-controls-subtitle-pop-*`                             |
+| `fs.video.controls.speed.pop`                               | `--mpx-slot-fs-video-controls-speed-pop-*`                                |
+| `fs.video.controls.playlist.pop`                            | `--mpx-slot-fs-video-controls-playlist-pop-*`                             |
+| `fs.video.controls.volume.pop`                              | `--mpx-slot-fs-video-controls-volume-pop-*`                               |
+| `fs.video.controls.hotzone.ovl`                             | `--mpx-slot-fs-video-controls-hotzone-ovl-*`                              |
+| `fs.video.controls.float.panel`                             | `--mpx-slot-fs-video-controls-float-panel-*`                              |
+| `fs.image.controls.shell`                                   | `--mpx-slot-fs-image-controls-shell-*`                                    |
+| `fs.image.controls.autoplay.pop`                            | `--mpx-slot-fs-image-controls-autoplay-pop-*`                             |
+| `fs.image.controls.zoom.pop`                                | `--mpx-slot-fs-image-controls-zoom-pop-*`                                 |
+| `fs.image.controls.adjust.ovl`                              | `--mpx-slot-fs-image-controls-adjust-ovl-*`                               |
+| `fs.image.controls.adjust.panel`                            | `--mpx-slot-fs-image-controls-adjust-panel-*`                             |
+| `fs.image.convertPreview.panel`                             | `--mpx-slot-fs-image-convert-preview-panel-*`                             |
+| `fs.image.convertPreview.scale.pop`                         | `--mpx-slot-fs-image-convert-preview-scale-pop-*`                         |
+| `fs.image.convertPreview.format.pop`                        | `--mpx-slot-fs-image-convert-preview-format-pop-*`                        |
+| `fs.image.convertPreview.quality.pop`                       | `--mpx-slot-fs-image-convert-preview-quality-pop-*`                       |
+| `fs.image.convertPreview.splitter`                          | `--mpx-slot-fs-image-convert-preview-splitter-*`                          |
+| `fs.image.convertPreview.error.ovl`                         | `--mpx-slot-fs-image-convert-preview-error-ovl-*`                         |
+| `boot.splash.window`                                        | `--mpx-slot-boot-splash-window-*`                                         |
+| `boot.splash.root`                                          | `--mpx-slot-boot-splash-root-*`                                           |
+| `boot.splash.stage`                                         | `--mpx-slot-boot-splash-stage-*`                                          |
+| `boot.splash.stage.cardStage`                               | `--mpx-slot-boot-splash-stage-card-stage-*`                               |
+| `boot.splash.stage.character`                               | `--mpx-slot-boot-splash-stage-character-*`                                |
+| `boot.splash.card`                                          | `--mpx-slot-boot-splash-card-*`                                           |
+| `boot.splash.card.track`                                    | `--mpx-slot-boot-splash-card-track-*`                                     |
 
 ## 变更约束
 
-| 变更类型 | 必做动作 |
-|---|---|
+| 变更类型     | 必做动作                                                                 |
+| ------------ | ------------------------------------------------------------------------ |
 | 新增 UI 槽位 | 先在 `10-ui_definition.md` 增加稳定路径，再在本文件增加对应 Token 前缀行 |
-| 修改稳定路径 | 同步修改两张表中的路径与前缀；禁止只改其一 |
-| 删除 UI 槽位 | 两张表同时删除；若需兼容，先标记 deprecated 并给迁移窗口 |
+| 修改稳定路径 | 同步修改两张表中的路径与前缀；禁止只改其一                               |
+| 删除 UI 槽位 | 两张表同时删除；若需兼容，先标记 deprecated 并给迁移窗口                 |

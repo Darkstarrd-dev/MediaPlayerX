@@ -7,7 +7,9 @@ interface AdReviewStartDialogProps {
   t: TranslateFn;
   open: boolean;
   manageReviewMode: ManageReviewModeDto;
-  slot?: "fg-main-header-image-ad-review-start-panel" | "fg-meta-main-ad-review-start-panel";
+  slot?:
+    | "fg-main-header-image-ad-review-start-panel"
+    | "fg-meta-main-ad-review-start-panel";
   onClose: () => void;
   onStartWithOption: (skipReviewedNodes: boolean) => void;
 }
@@ -31,7 +33,7 @@ export function AdReviewStartDialog({
 
   return (
     <div
-      className="manage-ad-review-start-mask"
+      className="settings-floating-mask mpx-dialog-mask manage-ad-review-start-mask"
       data-slot={overlaySlot}
       role="dialog"
       aria-modal="true"
@@ -43,7 +45,7 @@ export function AdReviewStartDialog({
       }}
     >
       <section
-        className="settings-floating-panel manage-ad-review-start-dialog"
+        className="settings-floating-panel mpx-dialog-panel manage-ad-review-start-dialog"
         data-slot={slot}
         onMouseDown={(event) => event.stopPropagation()}
       >
