@@ -27,7 +27,6 @@ import {
   isValidGroupName,
   parseSidebarNodeId,
   pathKeyHasPrefix,
-  resolveAbsolutePathFromPathKey,
 } from "./managementMutationService.helpers";
 
 interface ManagementMoveDeleteServiceDependencies {
@@ -343,16 +342,6 @@ export class ManagementMoveDeleteService {
       nodeIdsBySelectedPath.set(resolvedPath, nodeIds);
     };
 
-    for (const target of validTargets) {
-      const parsed = target.parsed;
-      if (!parsed || parsed.kind !== "folder") {
-        continue;
-      }
-      const folderPath = resolveAbsolutePathFromPathKey(parsed.pathKey);
-      rememberSelectedPath(folderPath, target.nodeId);
-      target.matched = true;
-    }
-
     const markMatchedAndSelect = (
       pathKey: string,
       kind: "package" | "directory" | "video" | "audio",
@@ -651,16 +640,6 @@ export class ManagementMoveDeleteService {
       nodeIds.add(nodeId);
       nodeIdsBySelectedPath.set(resolvedPath, nodeIds);
     };
-
-    for (const target of validTargets) {
-      const parsed = target.parsed;
-      if (!parsed || parsed.kind !== "folder") {
-        continue;
-      }
-      const folderPath = resolveAbsolutePathFromPathKey(parsed.pathKey);
-      rememberSelectedPath(folderPath, target.nodeId);
-      target.matched = true;
-    }
 
     const markMatchedAndSelect = (
       pathKey: string,

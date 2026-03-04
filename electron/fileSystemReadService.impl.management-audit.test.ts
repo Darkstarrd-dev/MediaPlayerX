@@ -339,7 +339,7 @@ describe("FileSystemMediaReadService", () => {
       delete_files: false,
     });
 
-    expect(result.deleted_count).toBe(1);
+    expect(result.deleted_count).toBe(childSources.length);
     expect(result.failed).toHaveLength(0);
 
     const parentFolderStat = await fs.stat(parentFolderPath).catch(() => null);
@@ -559,6 +559,49 @@ describe("FileSystemMediaReadService", () => {
     expect(
       snapshotAfter.videos.some(
         (item) => path.resolve(item.absolute_path) === path.resolve(videoPath),
+      ),
+    ).toBe(false);
+  });
+
+  it("单文件导入场景下删除父级 Sidebar 路径（仅移除）应命中已导入子项", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-manage-remove-parent-for-file-import-"),
+    );
+    createdRoots.push(root);
+
+    const zipPath = path.join(root, "20260304", "01.zip");
+    await writeStoredZip(zipPath, [
+      { name: "001.jpg", content: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) },
+    ]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-files", [zipPath]);
+
+    const snapshotBefore = await service.readLibrarySnapshot();
+    const zipSource = snapshotBefore.image_packages.find(
+      (item) => path.resolve(item.absolute_path) === path.resolve(zipPath),
+    );
+    expect(zipSource).toBeTruthy();
+    if (!zipSource) {
+      throw new Error("zip source not found before delete");
+    }
+
+    const parentPathKey = zipSource.tree_path.slice(0, -1).join("/");
+    const deleteResult = await service.deleteSidebarNodes({
+      node_ids: [`folder:${parentPathKey}`],
+      delete_files: false,
+    });
+    expect(deleteResult.failed).toHaveLength(0);
+    expect(deleteResult.deleted_count).toBe(1);
+
+    const zipStat = await fs.stat(zipPath).catch(() => null);
+    expect(zipStat?.isFile()).toBe(true);
+
+    const snapshotAfter = await service.readLibrarySnapshot();
+    expect(
+      snapshotAfter.image_packages.some(
+        (item) => path.resolve(item.absolute_path) === path.resolve(zipPath),
       ),
     ).toBe(false);
   });
