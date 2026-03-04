@@ -17,9 +17,16 @@
   --mpx-range-thumb-bg: #fffdf9;
   --mpx-range-thumb-border: #baa27f;
   --mpx-range-thumb-border-width: 1.5px;
-  --mpx-range-thumb-shadow: 1px 1px 3px rgba(163, 138, 98, 0.56), -1px -1px 2px rgba(255, 253, 248, 0.96);
-  --mpx-range-thumb-hover-shadow: 0 0 0 2px rgba(138, 106, 59, 0.24), 1px 2px 4px rgba(151, 127, 91, 0.64), -1px -1px 2px rgba(255, 253, 248, 0.98);
-  --mpx-range-thumb-active-shadow: 0 0 0 2px rgba(138, 106, 59, 0.3), inset 1px 1px 2px rgba(157, 133, 96, 0.64), inset -1px -1px 2px rgba(255, 253, 248, 0.98);
+  --mpx-range-thumb-shadow:
+    1px 1px 3px rgba(163, 138, 98, 0.56),
+    -1px -1px 2px rgba(255, 253, 248, 0.96);
+  --mpx-range-thumb-hover-shadow:
+    0 0 0 2px rgba(138, 106, 59, 0.24), 1px 2px 4px rgba(151, 127, 91, 0.64),
+    -1px -1px 2px rgba(255, 253, 248, 0.98);
+  --mpx-range-thumb-active-shadow:
+    0 0 0 2px rgba(138, 106, 59, 0.3),
+    inset 1px 1px 2px rgba(157, 133, 96, 0.64),
+    inset -1px -1px 2px rgba(255, 253, 248, 0.98);
   --mpx-range-thumb-focus-ring: 0 0 0 2px rgba(138, 106, 59, 0.36);
 
   --mpx-checkbox-bg: var(--mpx-input-bg);
@@ -65,41 +72,72 @@
   --mpx-btn-secondary-bg: #fffdf8;
   --mpx-btn-secondary-border: #c7b295;
   --mpx-btn-secondary-text: #3f3224;
-  --mpx-btn-template-base: #ecf0f3;
-  --mpx-btn-template-hover: #f8fafc;
-  --mpx-btn-template-active: #dce2e8;
-  --mpx-btn-template-pressed: #d6dee5;
-  --mpx-btn-template-border: #cbd5e1;
-  --mpx-btn-template-text-idle: #4a4a4a;
-  --mpx-btn-template-text-active: #334155;
-  --mpx-btn-template-text-pressed: #555555;
-  --mpx-btn-template-text-merged: #0f172a;
-  --mpx-btn-template-shadow-idle:
-    0 4px 6px rgba(116, 88, 50, 0.14),
-    inset 0 2px 1px rgba(255, 255, 255, 0.9),
+  --mpx-btn-core-border: #cbd5e1;
+  --mpx-btn-core-bg-idle: #ecf0f3;
+  --mpx-btn-core-bg-hover: #f8fafc;
+  --mpx-btn-core-bg-active: #dce2e8;
+  --mpx-btn-core-bg-pressed: #d6dee5;
+  --mpx-btn-core-text-idle: #4a4a4a;
+  --mpx-btn-core-text-active: #334155;
+  --mpx-btn-core-text-pressed: #555555;
+  --mpx-btn-core-text-merged: #0f172a;
+  --mpx-btn-core-text-disabled: #9b8465;
+  --mpx-btn-core-shadow-idle:
+    0 4px 6px rgba(116, 88, 50, 0.14), inset 0 2px 1px rgba(255, 255, 255, 0.9),
     inset 0 -2px 1px rgba(116, 88, 50, 0.08);
-  --mpx-btn-template-shadow-hover:
-    0 6px 10px rgba(116, 88, 50, 0.17),
-    inset 0 2px 1px rgba(255, 255, 255, 1),
+  --mpx-btn-core-shadow-hover:
+    0 6px 10px rgba(116, 88, 50, 0.17), inset 0 2px 1px rgba(255, 255, 255, 1),
     inset 0 -2px 1px rgba(116, 88, 50, 0.08);
-  --mpx-btn-template-shadow-active:
-    0 1px 2px rgba(116, 88, 50, 0.12),
-    inset 0 2px 4px rgba(116, 88, 50, 0.17),
+  --mpx-btn-core-shadow-active:
+    0 1px 2px rgba(116, 88, 50, 0.12), inset 0 2px 4px rgba(116, 88, 50, 0.17),
     inset 0 -1px 1px rgba(255, 255, 255, 0.5);
-  --mpx-btn-template-shadow-pressed:
-    0 1px 1px rgba(255, 255, 255, 0.8),
-    inset 0 4px 8px rgba(116, 88, 50, 0.28),
+  --mpx-btn-core-shadow-pressed:
+    0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(116, 88, 50, 0.28),
     inset 0 -2px 2px rgba(255, 255, 255, 0.7);
-  --mpx-btn-template-transform-hover: translateY(-1px);
-  --mpx-btn-template-transform-active: translateY(2px);
-  --mpx-btn-template-transform-pressed: translateY(1px);
-  --mpx-btn-template-danger-hover-bg: #fee2e2;
-  --mpx-btn-template-danger-hover-border: #fca5a5;
-  --mpx-btn-template-danger-hover-text: #dc2626;
-  --mpx-btn-template-danger-hover-shadow:
-    0 6px 10px rgba(220, 38, 38, 0.15),
-    inset 0 2px 1px rgba(255, 255, 255, 1),
+  --mpx-btn-core-transform-hover: translateY(-1px);
+  --mpx-btn-core-transform-active: translateY(2px);
+  --mpx-btn-core-transform-pressed: translateY(1px);
+  --mpx-btn-core-danger-hover-bg: #fee2e2;
+  --mpx-btn-core-danger-hover-border: #fca5a5;
+  --mpx-btn-core-danger-hover-text: #dc2626;
+  --mpx-btn-core-danger-hover-shadow:
+    0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
     inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+
+  --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
+  --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);
+  --mpx-btn-variant-default-bg-hover: var(--mpx-btn-core-bg-hover);
+  --mpx-btn-variant-default-bg-active: var(--mpx-btn-core-bg-active);
+  --mpx-btn-variant-default-bg-pressed: var(--mpx-btn-core-bg-pressed);
+  --mpx-btn-variant-default-text-idle: var(--mpx-btn-core-text-idle);
+  --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
+  --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
+  --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
+  --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
+  --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
+  --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);
+  --mpx-btn-variant-default-shadow-pressed: var(--mpx-btn-core-shadow-pressed);
+  --mpx-btn-variant-default-transform-hover: var(
+    --mpx-btn-core-transform-hover
+  );
+  --mpx-btn-variant-default-transform-active: var(
+    --mpx-btn-core-transform-active
+  );
+  --mpx-btn-variant-default-transform-pressed: var(
+    --mpx-btn-core-transform-pressed
+  );
+  --mpx-btn-variant-default-danger-hover-bg: var(
+    --mpx-btn-core-danger-hover-bg
+  );
+  --mpx-btn-variant-default-danger-hover-border: var(
+    --mpx-btn-core-danger-hover-border
+  );
+  --mpx-btn-variant-default-danger-hover-text: var(
+    --mpx-btn-core-danger-hover-text
+  );
+  --mpx-btn-variant-default-danger-hover-shadow: var(
+    --mpx-btn-core-danger-hover-shadow
+  );
 
   --mpx-status-danger-bg: #fceeea;
   --mpx-status-danger-border: #dfae9f;
@@ -125,13 +163,22 @@
   --mpx-status-idle-border: #a2b2c6;
   --mpx-status-idle-text: #3d5167;
 
-  --mpx-header-bg: linear-gradient(120deg, #fefbf6 0%, #f7efe2 52%, #efe2cd 100%);
+  --mpx-header-bg: linear-gradient(
+    120deg,
+    #fefbf6 0%,
+    #f7efe2 52%,
+    #efe2cd 100%
+  );
   --mpx-header-border: var(--mpx-border-1);
 
   --mpx-sidebar-bullet-pending: #98836a;
   --mpx-sidebar-bullet-running: #4ea87c;
 
-  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(155, 124, 82, 0.34), rgba(155, 124, 82, 0.12));
+  --mpx-splitter-track-bg: linear-gradient(
+    180deg,
+    rgba(155, 124, 82, 0.34),
+    rgba(155, 124, 82, 0.12)
+  );
   --mpx-splitter-handle-bg: rgba(148, 116, 73, 0.76);
   --mpx-splitter-handle-hover-bg: rgba(127, 95, 53, 0.92);
 
@@ -157,21 +204,38 @@
   --mpx-player-hud-bg: #f7efe4;
   --mpx-player-hud-border: rgba(185, 159, 122, 0.82);
   --mpx-player-hud-text: #413325;
-  --mpx-player-btn-bg: #fffaf3;
-  --mpx-player-btn-border: rgba(185, 159, 122, 0.82);
-  --mpx-player-btn-text: #4d3e2d;
-  --mpx-player-btn-hover-bg: #f5eadb;
-  --mpx-player-btn-active-bg: #ecddc8;
-  --mpx-player-btn-active-border: #ad8752;
-  --mpx-player-btn-muted-text: #9b8465;
+  --mpx-btn-variant-player-bg-idle: #fffaf3;
+  --mpx-btn-variant-player-border: rgba(185, 159, 122, 0.82);
+  --mpx-btn-variant-player-text-idle: #4d3e2d;
+  --mpx-btn-variant-player-bg-hover: #f5eadb;
+  --mpx-btn-variant-player-bg-active: #ecddc8;
+  --mpx-btn-variant-player-border-active: #ad8752;
+  --mpx-btn-variant-player-text-disabled: #9b8465;
+
+  --mpx-btn-variant-overlay-cell-text-hover: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
+  --mpx-btn-variant-overlay-cell-text-active: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-focus-outline-color: var(
+    --mpx-state-focus-color
+  );
   --mpx-random-sheen-duration: 1.9s;
   --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  --mpx-random-sheen-overlay: linear-gradient(115deg,
-      transparent 45%,
-      rgba(255, 255, 255, 0.6) 48%,
-      rgba(255, 255, 255, 1) 50%,
-      rgba(255, 255, 255, 0.6) 52%,
-      transparent 55%);
+  --mpx-random-sheen-overlay: linear-gradient(
+    115deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.6) 48%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.6) 52%,
+    transparent 55%
+  );
   --mpx-random-sheen-blend-mode: overlay;
   --mpx-random-sheen-start-translate: -42%;
   --mpx-random-sheen-end-translate: 42%;
@@ -192,7 +256,7 @@
   --mpx-overlay-soft-bg: #e9ecf0;
   --mpx-overlay-soft-hover-bg: #dde2e9;
   --mpx-overlay-soft-focus-bg: #cfd6df;
-  --mpx-overlay-soft-head-bg: #D6DBE1;
+  --mpx-overlay-soft-head-bg: #d6dbe1;
   --mpx-overlay-soft-head-divider: #b5bdc8;
   --mpx-overlay-soft-row-divider: #dce1e7;
 
@@ -203,8 +267,12 @@
   --mpx-sidebar-tree-scrollbar-thumb-bg: #d5d2cc;
   --mpx-sidebar-tree-scrollbar-thumb-hover-bg: #cecac3;
   --mpx-sidebar-tree-scrollbar-thumb-active-bg: #c5c1b9;
-  --mpx-sidebar-tree-scrollbar-track-shadow: inset 1px 1px 2px #dbd8d2, inset -1px -1px 2px #ffffff;
+  --mpx-sidebar-tree-scrollbar-track-shadow:
+    inset 1px 1px 2px #dbd8d2, inset -1px -1px 2px #ffffff;
   --mpx-sidebar-tree-scrollbar-thumb-border-color: rgba(237, 235, 231, 0.96);
-  --mpx-sidebar-tree-scrollbar-thumb-shadow: 1px 1px 2px rgba(200, 196, 188, 0.62), -1px -1px 2px rgba(255, 255, 255, 0.76);
-  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px rgba(186, 182, 174, 0.78);
+  --mpx-sidebar-tree-scrollbar-thumb-shadow:
+    1px 1px 2px rgba(200, 196, 188, 0.62),
+    -1px -1px 2px rgba(255, 255, 255, 0.76);
+  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px
+    rgba(186, 182, 174, 0.78);
 }

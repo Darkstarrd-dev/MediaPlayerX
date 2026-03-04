@@ -152,6 +152,127 @@
   --mpx-large-panel-main-align-items: flex-start;
   --mpx-large-panel-main-justify-content: flex-start;
 
+  /* ---------- Button foundation (4.0) ---------- */
+  --mpx-btn-core-border: var(--mpx-border-2);
+  --mpx-btn-core-bg-idle: var(--mpx-bg-elevated);
+  --mpx-btn-core-bg-hover: color-mix(
+    in srgb,
+    var(--mpx-bg-elevated) 88%,
+    #ffffff
+  );
+  --mpx-btn-core-bg-active: color-mix(
+    in srgb,
+    var(--mpx-bg-elevated) 82%,
+    #000000 18%
+  );
+  --mpx-btn-core-bg-pressed: color-mix(
+    in srgb,
+    var(--mpx-bg-elevated) 74%,
+    #000000 26%
+  );
+  --mpx-btn-core-text-idle: var(--mpx-text-1);
+  --mpx-btn-core-text-active: var(--mpx-text-1);
+  --mpx-btn-core-text-pressed: var(--mpx-text-1);
+  --mpx-btn-core-text-merged: var(--mpx-text-heading);
+  --mpx-btn-core-text-disabled: color-mix(
+    in srgb,
+    var(--mpx-text-2) 72%,
+    transparent
+  );
+  --mpx-btn-core-shadow-idle: var(--mpx-control-shadow);
+  --mpx-btn-core-shadow-hover: var(--mpx-control-hover-shadow);
+  --mpx-btn-core-shadow-active: var(--mpx-control-active-shadow);
+  --mpx-btn-core-shadow-pressed: var(--mpx-control-active-shadow);
+  --mpx-btn-core-transform-hover: var(--mpx-control-hover-transform);
+  --mpx-btn-core-transform-active: var(--mpx-control-active-transform);
+  --mpx-btn-core-transform-pressed: var(--mpx-control-active-transform);
+  --mpx-btn-core-danger-hover-bg: color-mix(
+    in srgb,
+    #dc2626 14%,
+    var(--mpx-btn-core-bg-hover)
+  );
+  --mpx-btn-core-danger-hover-border: color-mix(
+    in srgb,
+    #dc2626 40%,
+    var(--mpx-btn-core-border)
+  );
+  --mpx-btn-core-danger-hover-text: #dc2626;
+  --mpx-btn-core-danger-hover-shadow: var(--mpx-btn-core-shadow-hover);
+
+  --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
+  --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);
+  --mpx-btn-variant-default-bg-hover: var(--mpx-btn-core-bg-hover);
+  --mpx-btn-variant-default-bg-active: var(--mpx-btn-core-bg-active);
+  --mpx-btn-variant-default-bg-pressed: var(--mpx-btn-core-bg-pressed);
+  --mpx-btn-variant-default-text-idle: var(--mpx-btn-core-text-idle);
+  --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
+  --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
+  --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
+  --mpx-btn-variant-default-text-disabled: var(--mpx-btn-core-text-disabled);
+  --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
+  --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
+  --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);
+  --mpx-btn-variant-default-shadow-pressed: var(--mpx-btn-core-shadow-pressed);
+  --mpx-btn-variant-default-transform-hover: var(
+    --mpx-btn-core-transform-hover
+  );
+  --mpx-btn-variant-default-transform-active: var(
+    --mpx-btn-core-transform-active
+  );
+  --mpx-btn-variant-default-transform-pressed: var(
+    --mpx-btn-core-transform-pressed
+  );
+  --mpx-btn-variant-default-danger-hover-bg: var(
+    --mpx-btn-core-danger-hover-bg
+  );
+  --mpx-btn-variant-default-danger-hover-border: var(
+    --mpx-btn-core-danger-hover-border
+  );
+  --mpx-btn-variant-default-danger-hover-text: var(
+    --mpx-btn-core-danger-hover-text
+  );
+  --mpx-btn-variant-default-danger-hover-shadow: var(
+    --mpx-btn-core-danger-hover-shadow
+  );
+
+  --mpx-btn-variant-player-border: var(--mpx-player-surface-border);
+  --mpx-btn-variant-player-border-active: var(--mpx-player-surface-border);
+  --mpx-btn-variant-player-bg-idle: color-mix(
+    in srgb,
+    var(--mpx-player-surface-bg) 86%,
+    #000000 14%
+  );
+  --mpx-btn-variant-player-bg-hover: color-mix(
+    in srgb,
+    var(--mpx-btn-variant-player-bg-idle) 84%,
+    #ffffff 16%
+  );
+  --mpx-btn-variant-player-bg-active: color-mix(
+    in srgb,
+    var(--mpx-btn-variant-player-bg-idle) 78%,
+    #000000 22%
+  );
+  --mpx-btn-variant-player-text-idle: var(--mpx-player-surface-text);
+  --mpx-btn-variant-player-text-disabled: var(--mpx-player-surface-text-muted);
+
+  --mpx-btn-variant-overlay-cell-text-hover: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
+  --mpx-btn-variant-overlay-cell-text-active: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-focus-outline-width: 1px;
+  --mpx-btn-variant-overlay-cell-focus-outline-color: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    var(--mpx-border-2)
+  );
+
   /* ---------- Inner cards ---------- */
   --mpx-card-radius: 10px;
   --mpx-card-shadow: none;

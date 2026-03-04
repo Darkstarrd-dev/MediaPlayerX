@@ -703,10 +703,16 @@
 }
 
 .metadata-fetch-search-row button.metadata-fetch-mode-btn.mpx-overlay-cell-btn {
-  --mpx-overlay-cell-btn-hover-bg: var(--metadata-fetch-soft-input-hover-bg);
-  --mpx-overlay-cell-btn-active-bg: var(--metadata-fetch-soft-input-focus-bg);
-  --mpx-overlay-cell-btn-pressed-bg: var(--metadata-fetch-soft-input-focus-bg);
-  --mpx-overlay-cell-btn-pressed-weight: 600;
+  --mpx-btn-variant-overlay-cell-bg-hover: var(
+    --metadata-fetch-soft-input-hover-bg
+  );
+  --mpx-btn-variant-overlay-cell-bg-active: var(
+    --metadata-fetch-soft-input-focus-bg
+  );
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(
+    --metadata-fetch-soft-input-focus-bg
+  );
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
   width: 44px;
   height: 44px;
   border-right: 1px solid var(--metadata-fetch-soft-border);
@@ -757,9 +763,15 @@
 .metadata-fetch-source-head
   .metadata-fetch-source-actions
   > button.mpx-overlay-cell-btn {
-  --mpx-overlay-cell-btn-hover-bg: var(--metadata-fetch-soft-input-hover-bg);
-  --mpx-overlay-cell-btn-active-bg: var(--metadata-fetch-soft-input-focus-bg);
-  --mpx-overlay-cell-btn-pressed-bg: var(--metadata-fetch-soft-input-focus-bg);
+  --mpx-btn-variant-overlay-cell-bg-hover: var(
+    --metadata-fetch-soft-input-hover-bg
+  );
+  --mpx-btn-variant-overlay-cell-bg-active: var(
+    --metadata-fetch-soft-input-focus-bg
+  );
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(
+    --metadata-fetch-soft-input-focus-bg
+  );
   width: 44px;
   min-width: 44px;
   height: 100%;

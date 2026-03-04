@@ -100,13 +100,22 @@
   --mpx-status-idle-text: #35525c;
 
   /* ---------- Component aliases (D layer, color/effect only) ---------- */
-  --mpx-header-bg: linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%);
+  --mpx-header-bg: linear-gradient(
+    120deg,
+    #f4ebe0 0%,
+    #f7f4ef 42%,
+    #ece6d8 100%
+  );
   --mpx-header-border: var(--mpx-border-1);
 
   --mpx-sidebar-bullet-pending: #94a3ad;
   --mpx-sidebar-bullet-running: #2fb36e;
 
-  --mpx-splitter-track-bg: linear-gradient(180deg, rgba(181, 171, 149, 0.16), rgba(181, 171, 149, 0.02));
+  --mpx-splitter-track-bg: linear-gradient(
+    180deg,
+    rgba(181, 171, 149, 0.16),
+    rgba(181, 171, 149, 0.02)
+  );
   --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
   --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
 
@@ -130,13 +139,13 @@
   --mpx-player-hud-bg: rgba(10, 14, 20, 0.72);
   --mpx-player-hud-border: rgba(129, 145, 163, 0.48);
   --mpx-player-hud-text: #eef1f4;
-  --mpx-player-btn-bg: rgba(30, 40, 52, 0.74);
-  --mpx-player-btn-border: rgba(117, 136, 162, 0.8);
-  --mpx-player-btn-text: #f1f6ff;
-  --mpx-player-btn-hover-bg: rgba(42, 56, 74, 0.9);
-  --mpx-player-btn-active-bg: rgba(64, 86, 112, 0.95);
-  --mpx-player-btn-active-border: rgba(140, 165, 196, 0.92);
-  --mpx-player-btn-muted-text: rgba(213, 223, 236, 0.62);
+  --mpx-btn-variant-player-bg-idle: rgba(30, 40, 52, 0.74);
+  --mpx-btn-variant-player-border: rgba(117, 136, 162, 0.8);
+  --mpx-btn-variant-player-text-idle: #f1f6ff;
+  --mpx-btn-variant-player-bg-hover: rgba(42, 56, 74, 0.9);
+  --mpx-btn-variant-player-bg-active: rgba(64, 86, 112, 0.95);
+  --mpx-btn-variant-player-border-active: rgba(140, 165, 196, 0.92);
+  --mpx-btn-variant-player-text-disabled: rgba(213, 223, 236, 0.62);
   --mpx-random-sheen-duration: 1.9s;
   --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
   --mpx-random-sheen-overlay: linear-gradient(

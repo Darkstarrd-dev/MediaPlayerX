@@ -1,19 +1,19 @@
-
 .music-ctrl-shader-toolbar-btn {
   width: 32px;
   height: 28px;
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-player-btn-bg);
-  color: var(--mpx-player-btn-text);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .music-ctrl-shader-toolbar-btn.is-on {
-  border-color: var(--mpx-player-btn-active-border);
-  background: var(--mpx-player-btn-active-bg);
+  border-color: var(--mpx-btn-variant-player-border-active);
+  background: var(--mpx-btn-variant-player-bg-active);
 }
 
 .music-ctrl-panel.is-shader-settings {
@@ -40,10 +40,11 @@
 .music-ctrl-shader-input {
   width: 100%;
   min-height: 30px;
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-player-btn-bg);
-  color: var(--mpx-player-btn-text);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
   padding: 0 8px;
   font-size: 12px;
 }
@@ -81,15 +82,20 @@
     color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 68%, #ffffff 32%) 0%,
     color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 68%, #ffffff 32%)
       var(--mpx-skeuo-range-pct, 0%),
-    color-mix(in srgb, var(--mpx-player-btn-border) 36%, transparent)
+    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
       var(--mpx-skeuo-range-pct, 0%),
-    color-mix(in srgb, var(--mpx-player-btn-border) 36%, transparent) 100%
+    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
+      100%
   );
   border-radius: var(--mpx-radius-pill);
 }
 
 .music-ctrl-shader-range::-moz-range-track {
-  background: color-mix(in srgb, var(--mpx-player-btn-border) 36%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--mpx-btn-variant-player-border) 36%,
+    transparent
+  );
   border-radius: var(--mpx-radius-pill);
 }
 

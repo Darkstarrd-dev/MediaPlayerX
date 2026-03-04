@@ -178,15 +178,16 @@
 }
 
 .sidebar-title-btn {
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border);
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border);
   border-radius: var(
     --mpx-radius-sidebar-header-btn,
     var(--mpx-control-radius)
   );
-  background: var(--mpx-player-btn-bg);
+  background: var(--mpx-btn-variant-player-bg-idle);
   color: var(
     --mpx-slot-fg-sidebar-header-title-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
   font-weight: 700;
   font-size: 15px;
@@ -208,90 +209,90 @@
 [data-slot="fg-sidebar-header-back"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-back-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-back-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-back-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
 [data-slot="fg-sidebar-header-clear"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-clear-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-clear-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-clear-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
 [data-slot="fg-sidebar-header-root-toggle"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-root-toggle-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-root-toggle-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-root-toggle-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
 [data-slot="fg-sidebar-header-collapse-all"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-collapse-all-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-collapse-all-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-collapse-all-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
 [data-slot="fg-sidebar-header-prev-image-parent"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
 [data-slot="fg-sidebar-header-next-image-parent"] {
   border-color: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-border,
-    var(--mpx-player-btn-border)
+    var(--mpx-btn-variant-player-border)
   );
   background: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-bg,
-    var(--mpx-player-btn-bg)
+    var(--mpx-btn-variant-player-bg-idle)
   );
   color: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-text,
-    var(--mpx-player-btn-text)
+    var(--mpx-btn-variant-player-text-idle)
   );
 }
 
@@ -373,12 +374,7 @@
   box-shadow:
     var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
     0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
-    0 0 0 4px
-      color-mix(
-        in srgb,
-        var(--mpx-state-focus-color) 82%,
-        transparent
-      );
+    0 0 0 4px color-mix(in srgb, var(--mpx-state-focus-color) 82%, transparent);
 }
 
 .sidebar-row.is-processing {
@@ -397,8 +393,8 @@
     --mpx-sidebar-node-label-radius,
     var(--mpx-radius-sidebar-label, 12px)
   );
-  background: var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg));
-  color: var(--mpx-sidebar-node-text, var(--mpx-player-btn-text));
+  background: var(--mpx-sidebar-node-bg, var(--mpx-btn-variant-player-bg-idle));
+  color: var(--mpx-sidebar-node-text, var(--mpx-btn-variant-player-text-idle));
   box-shadow:
     2px 2px 3px
       color-mix(in srgb, var(--mpx-skeuo-shadow-dark) 82%, transparent),
@@ -407,7 +403,7 @@
     0 1px 0
       color-mix(
         in srgb,
-        var(--mpx-sidebar-node-bg, var(--mpx-player-btn-bg)) 78%,
+        var(--mpx-sidebar-node-bg, var(--mpx-btn-variant-player-bg-idle)) 78%,
         #ffffff 22%
       );
 }

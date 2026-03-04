@@ -8,7 +8,25 @@
 | path 生成 | 稳定路径按 `.` 拆分后用 `-` 连接 |
 | 命名归一化 | 段内 `camelCase` 转 `kebab-case`（如 `importMenu` -> `import-menu`） |
 | token 落地方式 | 具体 token 在前缀后追加语义后缀（如 `bg` / `text` / `border` / `shadow` / `gap`） |
+| 按钮层 4.0 例外 | 全局按钮基架/变体不走 slot 前缀：`--mpx-btn-core-*`、`--mpx-btn-variant-<name>-*` |
+| 按钮层局部覆盖 | 业务按钮的局部覆盖仍走 slot 前缀（`--mpx-slot-<path>-*`），并回落到 `variant/core` |
 | 示例 | `fg.main.content.video.controls.volume.pop` -> `--mpx-slot-fg-main-content-video-controls-volume-pop-*` |
+
+## 按钮层 4.0 命名索引
+
+| 层级 | 命名模式 | 说明 |
+|---|---|---|
+| Core | `--mpx-btn-core-<semantic>` | 按钮基础语义层（颜色、阴影、变换、危险态） |
+| Variant | `--mpx-btn-variant-<variant>-<semantic>` | 按钮变体层（如 `default` / `player` / `overlay-cell`） |
+| Slot override | `--mpx-slot-<path>-<semantic>` | 业务路径局部覆写，最终映射到 variant/core |
+
+示例（ThemeParameter side 按钮）
+`--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg`
+`-> --mpx-btn-variant-theme-parameter-side-bg-idle`
+`-> --mpx-btn-variant-default-bg-idle`
+
+说明
+按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
 
 ## 稳定路径到 Token 前缀
 

@@ -151,44 +151,107 @@
   --mpx-btn-secondary-bg: #ffffff;
   --mpx-btn-secondary-border: #b7ab95;
   --mpx-btn-secondary-text: #2e2a22;
-  --mpx-btn-template-base: #ecf0f3;
-  --mpx-btn-template-hover: #f8fafc;
-  --mpx-btn-template-active: #dce2e8;
-  --mpx-btn-template-pressed: #d6dee5;
-  --mpx-btn-template-border: #cbd5e1;
-  --mpx-btn-template-text-idle: #4a4a4a;
-  --mpx-btn-template-text-active: #334155;
-  --mpx-btn-template-text-pressed: #555555;
-  --mpx-btn-template-text-merged: #0f172a;
-  --mpx-btn-template-text-disabled: var(--mpx-player-btn-muted-text);
-  --mpx-btn-template-shadow-idle:
+  --mpx-btn-core-border: #cbd5e1;
+  --mpx-btn-core-bg-idle: #ecf0f3;
+  --mpx-btn-core-bg-hover: #f8fafc;
+  --mpx-btn-core-bg-active: #dce2e8;
+  --mpx-btn-core-bg-pressed: #d6dee5;
+  --mpx-btn-core-text-idle: #4a4a4a;
+  --mpx-btn-core-text-active: #334155;
+  --mpx-btn-core-text-pressed: #555555;
+  --mpx-btn-core-text-merged: #0f172a;
+  --mpx-btn-core-text-disabled: rgba(213, 223, 236, 0.62);
+  --mpx-btn-core-shadow-idle:
     0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9),
     inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-  --mpx-btn-template-shadow-hover:
+  --mpx-btn-core-shadow-hover:
     0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
     inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-  --mpx-btn-template-shadow-active:
+  --mpx-btn-core-shadow-active:
     0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15),
     inset 0 -1px 1px rgba(255, 255, 255, 0.5);
-  --mpx-btn-template-shadow-pressed:
+  --mpx-btn-core-shadow-pressed:
     0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25),
     inset 0 -2px 2px rgba(255, 255, 255, 0.7);
-  --mpx-btn-template-transform-hover: translateY(-1px);
-  --mpx-btn-template-transform-active: translateY(2px);
-  --mpx-btn-template-transform-pressed: translateY(1px);
-  --mpx-btn-template-danger-hover-bg: #fee2e2;
-  --mpx-btn-template-danger-hover-border: #fca5a5;
-  --mpx-btn-template-danger-hover-text: #dc2626;
-  --mpx-btn-template-danger-hover-shadow:
+  --mpx-btn-core-transform-hover: translateY(-1px);
+  --mpx-btn-core-transform-active: translateY(2px);
+  --mpx-btn-core-transform-pressed: translateY(1px);
+  --mpx-btn-core-danger-hover-bg: #fee2e2;
+  --mpx-btn-core-danger-hover-border: #fca5a5;
+  --mpx-btn-core-danger-hover-text: #dc2626;
+  --mpx-btn-core-danger-hover-shadow:
     0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
     inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+
+  --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
+  --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);
+  --mpx-btn-variant-default-bg-hover: var(--mpx-btn-core-bg-hover);
+  --mpx-btn-variant-default-bg-active: var(--mpx-btn-core-bg-active);
+  --mpx-btn-variant-default-bg-pressed: var(--mpx-btn-core-bg-pressed);
+  --mpx-btn-variant-default-text-idle: var(--mpx-btn-core-text-idle);
+  --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
+  --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
+  --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
+  --mpx-btn-variant-default-text-disabled: var(--mpx-btn-core-text-disabled);
+  --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
+  --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
+  --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);
+  --mpx-btn-variant-default-shadow-pressed: var(--mpx-btn-core-shadow-pressed);
+  --mpx-btn-variant-default-transform-hover: var(
+    --mpx-btn-core-transform-hover
+  );
+  --mpx-btn-variant-default-transform-active: var(
+    --mpx-btn-core-transform-active
+  );
+  --mpx-btn-variant-default-transform-pressed: var(
+    --mpx-btn-core-transform-pressed
+  );
+  --mpx-btn-variant-default-danger-hover-bg: var(
+    --mpx-btn-core-danger-hover-bg
+  );
+  --mpx-btn-variant-default-danger-hover-border: var(
+    --mpx-btn-core-danger-hover-border
+  );
+  --mpx-btn-variant-default-danger-hover-text: var(
+    --mpx-btn-core-danger-hover-text
+  );
+  --mpx-btn-variant-default-danger-hover-shadow: var(
+    --mpx-btn-core-danger-hover-shadow
+  );
+
+  --mpx-btn-variant-player-border: rgba(117, 136, 162, 0.8);
+  --mpx-btn-variant-player-border-active: rgba(140, 165, 196, 0.92);
+  --mpx-btn-variant-player-bg-idle: rgba(30, 40, 52, 0.74);
+  --mpx-btn-variant-player-bg-hover: rgba(42, 56, 74, 0.9);
+  --mpx-btn-variant-player-bg-active: rgba(64, 86, 112, 0.95);
+  --mpx-btn-variant-player-text-idle: #f1f6ff;
+  --mpx-btn-variant-player-text-disabled: rgba(213, 223, 236, 0.62);
+
+  --mpx-btn-variant-overlay-cell-text-hover: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
+  --mpx-btn-variant-overlay-cell-text-active: inherit;
+  --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-overlay-soft-focus-bg);
+  --mpx-btn-variant-overlay-cell-focus-outline-width: 1px;
+  --mpx-btn-variant-overlay-cell-focus-outline-color: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    var(--mpx-border-2)
+  );
+
   --mpx-btn-group-groove-bg: var(
     --mpx-slot-fg-header-g2-mode-image-bg,
-    var(--mpx-btn-template-base)
+    var(--mpx-btn-variant-default-bg-idle)
   );
   --mpx-btn-group-groove-border: var(
     --mpx-slot-fg-header-g2-mode-image-border,
-    var(--mpx-btn-template-border)
+    var(--mpx-btn-variant-default-border)
   );
   --mpx-btn-group-groove-radius: 10px;
   --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
@@ -317,14 +380,6 @@
   --mpx-player-hud-bg: rgba(10, 14, 20, 0.72);
   --mpx-player-hud-border: rgba(129, 145, 163, 0.48);
   --mpx-player-hud-text: #eef1f4;
-  --mpx-player-btn-bg: rgba(30, 40, 52, 0.74);
-  --mpx-player-btn-border: rgba(117, 136, 162, 0.8);
-  --mpx-player-btn-text: #f1f6ff;
-  --mpx-player-btn-hover-bg: rgba(42, 56, 74, 0.9);
-  --mpx-player-btn-active-bg: rgba(64, 86, 112, 0.95);
-  --mpx-player-btn-active-border: rgba(140, 165, 196, 0.92);
-  --mpx-player-btn-muted-text: rgba(213, 223, 236, 0.62);
-
   --mpx-random-sheen-duration: 1.9s;
   --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
   --mpx-random-sheen-overlay: linear-gradient(

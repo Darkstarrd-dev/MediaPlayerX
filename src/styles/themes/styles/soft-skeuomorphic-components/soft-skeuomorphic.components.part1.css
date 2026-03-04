@@ -273,19 +273,19 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-controls-shader-pop"]
   .music-ctrl-shader-toolbar-btn.is-layer.is-on {
-  border-color: var(--mpx-btn-template-border);
-  color: var(--mpx-btn-template-text-pressed);
-  background: var(--mpx-btn-template-pressed);
-  box-shadow: var(--mpx-btn-template-shadow-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-controls-shader-pop"]
   .music-ctrl-shader-toolbar-btn.is-power.is-on {
-  border-color: var(--mpx-btn-template-border);
-  color: var(--mpx-btn-template-text-pressed);
-  background: var(--mpx-btn-template-pressed);
-  box-shadow: var(--mpx-btn-template-shadow-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -297,14 +297,15 @@
   min-height: 30px;
   position: relative;
   overflow: hidden;
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
   border-radius: 12px;
   padding: 0 12px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--mpx-btn-template-text-idle);
-  background: var(--mpx-btn-template-base);
-  box-shadow: var(--mpx-btn-template-shadow-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  box-shadow: var(--mpx-btn-variant-default-shadow-idle);
   transition:
     filter 120ms ease,
     transform 120ms ease,
@@ -365,20 +366,20 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-controls-shader-pop"]
   .music-ctrl-panel-option:hover {
-  background: var(--mpx-btn-template-hover);
-  box-shadow: var(--mpx-btn-template-shadow-hover);
-  transform: var(--mpx-btn-template-transform-hover);
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
   filter: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-controls-shader-pop"]
   .music-ctrl-panel-option:active {
-  transform: var(--mpx-btn-template-transform-active);
-  border-color: var(--mpx-btn-template-border);
-  color: var(--mpx-btn-template-text-idle);
-  background: var(--mpx-btn-template-active);
-  box-shadow: var(--mpx-btn-template-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-idle);
+  background: var(--mpx-btn-variant-default-bg-active);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -531,11 +532,17 @@
   border: none;
   border-radius: var(
     --mpx-sysinfo-card-radius-effective,
-    var(--mpx-sysinfo-card-radius, var(--mpx-header-radius-effective, var(--mpx-header-radius)))
+    var(
+      --mpx-sysinfo-card-radius,
+      var(--mpx-header-radius-effective, var(--mpx-header-radius))
+    )
   );
   background: var(
     --mpx-slot-fg-sysinfo-card-root-bg,
-    var(--mpx-sysinfo-card-bg, var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg)))
+    var(
+      --mpx-sysinfo-card-bg,
+      var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg))
+    )
   );
   box-shadow: var(
     --mpx-slot-fg-sysinfo-card-root-shadow,

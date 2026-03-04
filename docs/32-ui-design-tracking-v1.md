@@ -514,3 +514,107 @@ css 的触发点
 
 说明
 本阶段先统一为“同尺寸 + 同 head/main 骨架”；标签组与操作区仅做结构承接，后续再做细节微调。
+
+## 4.0 按钮层（基架）
+
+用在什么地方
+统一全局按钮视觉链路，覆盖默认按钮、播放器按钮、overlay cell 按钮与 ThemeParameter side 分页按钮。
+
+目标
+1) 调整少量基架变量即可批量影响大多数按钮。
+2) 特殊场景仍可通过变体与 slot 精细调节。
+
+css 的触发点
+`src/styles/themes/contract.css`（4.0 按钮基架与变体 token 定义）
+`src/styles/themes/styles/_style-template.css`（style 模板中的 4.0 同构 token）
+`src/styles/themes/palettes/skeuomorphic-luxury-white.css`（当前 palette 的 4.0 实际值）
+`src/styles/themes/palettes/_palette-template.css`（palette 模板同步到新命名）
+`src/styles/app/button-template.css`（按钮模板消费端切到 `btn-variant-default`/`btn-variant-player`）
+`src/styles/app/settings/settings.part1.css`（overlay-cell 按钮与 ThemeParameter side 按钮接入新链路）
+`src/styles/app/sidebar.css`、`src/styles/app/layout/layout.part*.css`、`src/styles/app/main/main.part*.css`、`src/styles/app/metadata.css`、`src/styles/app/manage.css`（业务消费端批量切换）
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part2.css`
+
+变量与变量对应的值（按组）
+
+`A. 基架层（core）`
+`--mpx-btn-core-border`（按钮边框基色）
+`--mpx-btn-core-bg-idle/hover/active/pressed`（按钮背景态）
+`--mpx-btn-core-text-idle/active/pressed/merged/disabled`（按钮文字态）
+`--mpx-btn-core-shadow-idle/hover/active/pressed`（按钮阴影态）
+`--mpx-btn-core-transform-hover/active/pressed`（按钮位移动画）
+`--mpx-btn-core-danger-hover-bg/border/text/shadow`（危险 hover 态）
+
+`--mpx-btn-core-border = #cbd5e1`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-bg-idle = #ecf0f3`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-bg-hover = #f8fafc`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-bg-active = #dce2e8`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-bg-pressed = #d6dee5`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-text-idle = #4a4a4a`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-text-active = #334155`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-text-pressed = #555555`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-text-merged = #0f172a`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-text-disabled = #9b8465`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-transform-hover = translateY(-1px)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-transform-active = translateY(2px)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-core-transform-pressed = translateY(1px)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+
+`B. 默认变体（default）`
+`--mpx-btn-variant-default-*`（默认按钮变体，直接继承 core）
+
+`--mpx-btn-variant-default-border = var(--mpx-btn-core-border)`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-default-bg-idle = var(--mpx-btn-core-bg-idle)`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-default-bg-hover = var(--mpx-btn-core-bg-hover)`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-default-bg-active = var(--mpx-btn-core-bg-active)`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-default-bg-pressed = var(--mpx-btn-core-bg-pressed)`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-default-text-disabled = var(--mpx-btn-core-text-disabled)`（`src/styles/themes/contract.css`）
+
+`C. 播放器变体（player）`
+`--mpx-btn-variant-player-border`
+`--mpx-btn-variant-player-border-active`
+`--mpx-btn-variant-player-bg-idle/hover/active`
+`--mpx-btn-variant-player-text-idle/disabled`
+
+`--mpx-btn-variant-player-bg-idle = #fffaf3`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-border = rgba(185, 159, 122, 0.82)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-text-idle = #4d3e2d`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-bg-hover = #f5eadb`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-bg-active = #ecddc8`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-border-active = #ad8752`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-player-text-disabled = #9b8465`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+
+`D. Overlay Cell 变体（overlay-cell）`
+`--mpx-btn-variant-overlay-cell-text-hover/active/pressed`
+`--mpx-btn-variant-overlay-cell-bg-hover/active/pressed`
+`--mpx-btn-variant-overlay-cell-font-weight-pressed`
+`--mpx-btn-variant-overlay-cell-focus-outline-width/color`
+
+`--mpx-btn-variant-overlay-cell-text-hover = color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1))`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-bg-hover = var(--mpx-overlay-soft-hover-bg)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-text-active = var(--mpx-text-1)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-bg-active = var(--mpx-overlay-soft-focus-bg)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-text-pressed = var(--mpx-text-1)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-font-weight-pressed = 600`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-bg-pressed = var(--mpx-overlay-soft-focus-bg)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-btn-variant-overlay-cell-focus-outline-width = 1px`（`src/styles/themes/contract.css`）
+`--mpx-btn-variant-overlay-cell-focus-outline-color = var(--mpx-state-focus-color)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+
+`E. ThemeParameter Side 局部变体（slot 微调）`
+挂载前缀：`--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-<state>-<prop>`
+接入状态：`idle/hover/active/selected/pressed/disabled/pending/danger-hover`
+
+`--mpx-btn-variant-theme-parameter-side-bg-idle = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg, var(--mpx-btn-variant-default-bg-idle))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-bg-hover = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg, var(--mpx-btn-variant-default-bg-hover))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-bg-active = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-bg, var(--mpx-btn-variant-default-bg-active))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-bg-selected = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-bg, var(--mpx-bg-elevated))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-bg-pressed = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-bg, var(--mpx-btn-variant-default-bg-pressed))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-text-disabled = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-text, var(--mpx-btn-variant-default-text-disabled))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-pending-bg = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-bg, var(--mpx-status-warning-bg))`（`src/styles/app/settings/settings.part1.css`）
+`--mpx-btn-variant-theme-parameter-side-danger-hover-bg = var(--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-bg, var(--mpx-btn-variant-default-danger-hover-bg))`（`src/styles/app/settings/settings.part1.css`）
+
+说明
+4.0 已完成“基架 + 变体 + slot 微调”三层收口：
+1) 全局按钮主链路统一到 `core/default/player/overlay-cell`。
+2) 旧命名（`btn-template/player-btn/overlay-cell-btn`）已完成迁移并移除。
+3) ThemeParameter side 分页按钮保留独立状态级调参能力，同时保持与 default 变体同链路。
+4) 命名索引已同步到 `docs/10-ui_definition.md` 与 `docs/11-token_design.md`。

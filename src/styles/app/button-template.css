@@ -19,10 +19,11 @@
   button.settings-icon-btn,
   .mode-switch > button
 ) {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border) !important;
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-btn-template-base) !important;
-  color: var(--mpx-btn-template-text-idle) !important;
+  background: var(--mpx-btn-variant-default-bg-idle) !important;
+  color: var(--mpx-btn-variant-default-text-idle) !important;
   box-shadow: none !important;
   transform: translateY(0);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -54,9 +55,9 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).force-hover {
-  background: var(--mpx-btn-template-hover) !important;
-  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
-  transform: var(--mpx-btn-template-transform-hover);
+  background: var(--mpx-btn-variant-default-bg-hover) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
 :is(
@@ -85,9 +86,9 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).force-active {
-  background: var(--mpx-btn-template-active) !important;
-  box-shadow: var(--mpx-btn-template-shadow-active) !important;
-  transform: var(--mpx-btn-template-transform-active);
+  background: var(--mpx-btn-variant-default-bg-active) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  transform: var(--mpx-btn-variant-default-transform-active);
 }
 
 :is(
@@ -103,7 +104,7 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).is-active {
-  color: var(--mpx-btn-template-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active) !important;
 }
 
 :is(
@@ -119,11 +120,11 @@
   button.settings-icon-btn,
   .mode-switch > button
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-template-pressed) !important;
-  border-color: var(--mpx-btn-template-border) !important;
-  color: var(--mpx-btn-template-text-pressed) !important;
-  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
-  transform: var(--mpx-btn-template-transform-pressed);
+  background: var(--mpx-btn-variant-default-bg-pressed) !important;
+  border-color: var(--mpx-btn-variant-default-border) !important;
+  color: var(--mpx-btn-variant-default-text-pressed) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
 :is(
@@ -139,7 +140,7 @@
     button.settings-icon-btn,
     .mode-switch > button
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-template-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged) !important;
 }
 
 :is(
@@ -169,10 +170,10 @@
     .mode-switch > button
   ).danger.force-hover,
 button.window-control-btn.window-control-btn--close:not(:disabled):hover {
-  background: var(--mpx-btn-template-danger-hover-bg) !important;
-  border-color: var(--mpx-btn-template-danger-hover-border) !important;
-  color: var(--mpx-btn-template-danger-hover-text) !important;
-  box-shadow: var(--mpx-btn-template-danger-hover-shadow) !important;
+  background: var(--mpx-btn-variant-default-danger-hover-bg) !important;
+  border-color: var(--mpx-btn-variant-default-danger-hover-border) !important;
+  color: var(--mpx-btn-variant-default-danger-hover-text) !important;
+  box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow) !important;
 }
 
 :is(
@@ -189,7 +190,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .mode-switch > button
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-template-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled) !important;
   cursor: not-allowed;
   transform: translateY(0);
 }
@@ -235,9 +236,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 ) {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
-  background: var(--mpx-btn-template-base) !important;
-  color: var(--mpx-btn-template-text-idle) !important;
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border) !important;
+  background: var(--mpx-btn-variant-default-bg-idle) !important;
+  color: var(--mpx-btn-variant-default-text-idle) !important;
   box-shadow: none !important;
   transform: translateY(0);
 }
@@ -266,9 +268,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):hover {
-  background: var(--mpx-btn-template-hover) !important;
-  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
-  transform: var(--mpx-btn-template-transform-hover);
+  background: var(--mpx-btn-variant-default-bg-hover) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
 :is(
@@ -295,9 +297,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):active {
-  background: var(--mpx-btn-template-active) !important;
-  box-shadow: var(--mpx-btn-template-shadow-active) !important;
-  transform: var(--mpx-btn-template-transform-active);
+  background: var(--mpx-btn-variant-default-bg-active) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  transform: var(--mpx-btn-variant-default-transform-active);
 }
 
 :is(
@@ -325,7 +327,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 ).is-active,
 .toolbar-icon-btn.is-grid-mode,
 .toolbar-icon-btn.is-names-mode {
-  color: var(--mpx-btn-template-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active) !important;
 }
 
 :is(
@@ -351,11 +353,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-template-pressed) !important;
-  border-color: var(--mpx-btn-template-border) !important;
-  color: var(--mpx-btn-template-text-pressed) !important;
-  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
-  transform: var(--mpx-btn-template-transform-pressed);
+  background: var(--mpx-btn-variant-default-bg-pressed) !important;
+  border-color: var(--mpx-btn-variant-default-border) !important;
+  color: var(--mpx-btn-variant-default-text-pressed) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
 :is(
@@ -382,7 +384,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-template-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged) !important;
 }
 
 :is(
@@ -409,7 +411,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .manage-ad-review-icon-btn
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-template-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled) !important;
   cursor: not-allowed;
 }
 
@@ -421,9 +423,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ) {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
-  background: var(--mpx-btn-template-base) !important;
-  color: var(--mpx-btn-template-text-idle) !important;
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border) !important;
+  background: var(--mpx-btn-variant-default-bg-idle) !important;
+  color: var(--mpx-btn-variant-default-text-idle) !important;
   box-shadow: none !important;
   transform: translateY(0);
 }
@@ -436,9 +439,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
       ):not(.mpx-overlay-cell-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):not(:disabled):hover {
-  background: var(--mpx-btn-template-hover) !important;
-  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
-  transform: var(--mpx-btn-template-transform-hover);
+  background: var(--mpx-btn-variant-default-bg-hover) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
 :is(
@@ -449,9 +452,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
       ):not(.mpx-overlay-cell-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):not(:disabled):active {
-  background: var(--mpx-btn-template-active) !important;
-  box-shadow: var(--mpx-btn-template-shadow-active) !important;
-  transform: var(--mpx-btn-template-transform-active);
+  background: var(--mpx-btn-variant-default-bg-active) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  transform: var(--mpx-btn-variant-default-transform-active);
 }
 
 :is(
@@ -462,7 +465,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ).is-active {
-  color: var(--mpx-btn-template-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active) !important;
 }
 
 :is(
@@ -473,11 +476,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     ):not(.mpx-overlay-cell-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-template-pressed) !important;
-  border-color: var(--mpx-btn-template-border) !important;
-  color: var(--mpx-btn-template-text-pressed) !important;
-  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
-  transform: var(--mpx-btn-template-transform-pressed);
+  background: var(--mpx-btn-variant-default-bg-pressed) !important;
+  border-color: var(--mpx-btn-variant-default-border) !important;
+  color: var(--mpx-btn-variant-default-text-pressed) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
 :is(
@@ -488,7 +491,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
       ):not(.mpx-overlay-cell-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-template-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged) !important;
 }
 
 :is(
@@ -500,7 +503,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-template-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled) !important;
   cursor: not-allowed;
 }
 
@@ -564,8 +567,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
       ):not(.mpx-overlay-cell-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):focus-visible:not([aria-pressed="true"]) {
-  border-color: var(--mpx-btn-template-border) !important;
-  box-shadow: var(--mpx-btn-template-shadow-hover) !important;
+  border-color: var(--mpx-btn-variant-default-border) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
 }
 
 :is(
@@ -606,16 +609,17 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
       ):not(.mpx-overlay-cell-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   )[aria-pressed="true"]:focus-visible {
-  border-color: var(--mpx-btn-template-border) !important;
-  box-shadow: var(--mpx-btn-template-shadow-pressed) !important;
+  border-color: var(--mpx-btn-variant-default-border) !important;
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
 }
 
 .video-controls-group.is-center .video-action-btn,
 .music-controls-group.is-center .video-action-btn,
 .fullscreen-group.is-center .fullscreen-action-btn {
-  border: var(--mpx-control-border-width) solid var(--mpx-player-btn-border) !important;
-  background: var(--mpx-player-btn-bg) !important;
-  color: var(--mpx-player-btn-text) !important;
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border) !important;
+  background: var(--mpx-btn-variant-player-bg-idle) !important;
+  color: var(--mpx-btn-variant-player-text-idle) !important;
   box-shadow: none !important;
   transform: translateY(0);
 }
@@ -623,14 +627,14 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 .video-controls-group.is-center .video-action-btn:not(:disabled):hover,
 .music-controls-group.is-center .video-action-btn:not(:disabled):hover,
 .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
-  background: var(--mpx-player-btn-hover-bg) !important;
+  background: var(--mpx-btn-variant-player-bg-hover) !important;
 }
 
 .video-controls-group.is-center .video-action-btn:not(:disabled):active,
 .music-controls-group.is-center .video-action-btn:not(:disabled):active,
 .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
-  background: var(--mpx-player-btn-active-bg) !important;
-  border-color: var(--mpx-player-btn-active-border) !important;
+  background: var(--mpx-btn-variant-player-bg-active) !important;
+  border-color: var(--mpx-btn-variant-player-border-active) !important;
 }
 
 .video-controls-group.is-center .video-action-btn:focus,

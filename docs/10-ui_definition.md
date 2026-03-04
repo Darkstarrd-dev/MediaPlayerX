@@ -9,6 +9,18 @@
 | `命名规则.interaction_suffix` | 全局约定 | `-` | always | 交互后缀统一：`.panel` / `.pop` / `.ovl` | 例如：`fg.header.logo.importMenu.panel` |
 | `命名规则.trigger_attach` | 全局约定 | `-` | always | 交互路径必须绑定触发语义路径 | 禁止 `panel.xxx` / `pop.xxx` / `ovl.xxx` 前缀写法 |
 | `命名规则.empty_slot` | 全局约定 | `-` | always | 允许预留空槽位 | 未实现也保留稳定路径 |
+| `命名规则.button_layer_4_0` | `docs/32-ui-design-tracking-v1.md` | `-` | always | 按钮视觉命名采用 `core/variant/slot` 三层 | `core`/`variant` 为全局语义，`slot` 为局部覆盖 |
+
+### 按钮层命名索引（4.0）
+
+| 层级 | 命名前缀 | 说明 |
+|---|---|---|
+| Core | `--mpx-btn-core-*` | 全局按钮基架语义（批量调节入口） |
+| Variant | `--mpx-btn-variant-<name>-*` | 基于 Core 的按钮变体（如 `default/player/overlay-cell`） |
+| Slot（局部） | `--mpx-slot-<path>-*` | 业务路径局部覆盖，优先级高于 Core/Variant |
+
+说明
+按钮层 4.0 的变量值与当前接入范围，以 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）` 为准。
 
 ## 1. Core Layers
 
