@@ -252,7 +252,7 @@ export const appSettingsSchema = z.object({
   sidebarInnerGapScaleCoeff: z.number().min(0).max(2).default(1),
   thumbnailGapScaleCoeff: z.number().min(0).max(2).default(1),
   buttonGroupInsetScaleCoeff: z.number().min(0).max(2).default(1),
-  paneToolbarHeightScaleCoeff: z.number().min(0.5).max(2).default(1),
+  paneHeaderHeightScaleCoeff: z.number().min(0.5).max(2).default(1),
   paneFooterHeightScaleCoeff: z.number().min(0.5).max(2).default(1),
   radiusCascadeScaleCoeff: z.number().min(0).max(2).default(1),
   radiusValueScaleCoeff: z.number().min(0).max(2).default(1),

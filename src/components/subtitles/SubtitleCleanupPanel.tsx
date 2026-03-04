@@ -206,8 +206,8 @@ function SubtitleCleanupPanel({
   }
 
   return (
-    <div className="settings-mask" data-slot="fg-main-toolbar-manage-subtitle-cleanup-ovl" role="dialog" aria-modal="true" aria-label={t('a11y.media.subtitleCleanupDialog')} data-overlay-close="subtitle-cleanup-panel">
-      <section className="settings-panel metadata-fetch-panel" data-slot="fg-main-toolbar-manage-subtitle-cleanup-panel" data-overlay-close="subtitle-cleanup-panel">
+    <div className="settings-mask" data-slot="fg-main-header-manage-subtitle-cleanup-ovl" role="dialog" aria-modal="true" aria-label={t('a11y.media.subtitleCleanupDialog')} data-overlay-close="subtitle-cleanup-panel">
+      <section className="settings-panel metadata-fetch-panel" data-slot="fg-main-header-manage-subtitle-cleanup-panel" data-overlay-close="subtitle-cleanup-panel">
         <header className="settings-head metadata-fetch-head">
           <span className="settings-head-spacer" />
           <h2>{t('ui.media.subtitleCleanupTitle')}</h2>
@@ -244,7 +244,7 @@ function SubtitleCleanupPanel({
           {task?.error_detail ? <p className="settings-danger-text">{task.error_detail}</p> : null}
           {error ? <p className="settings-danger-text">{error}</p> : null}
 
-          <section className="metadata-fetch-preview-card" data-slot="fg-main-toolbar-manage-subtitle-cleanup-raw-preview-panel">
+          <section className="metadata-fetch-preview-card" data-slot="fg-main-header-manage-subtitle-cleanup-raw-preview-panel">
             <button type="button" className="metadata-fetch-preview-toggle" onClick={() => setRawCollapsed((value) => !value)}>
               <span>{t('ui.media.subtitleCleanupRaw')}</span>
               <span className="metadata-fetch-preview-state" aria-hidden="true">
@@ -254,7 +254,7 @@ function SubtitleCleanupPanel({
             {!rawCollapsed ? <textarea readOnly value={task?.raw_subtitle_text ?? ''} /> : null}
           </section>
 
-          <section className="metadata-fetch-preview-card" data-slot="fg-main-toolbar-manage-subtitle-cleanup-clean-preview-panel">
+          <section className="metadata-fetch-preview-card" data-slot="fg-main-header-manage-subtitle-cleanup-clean-preview-panel">
             <button type="button" className="metadata-fetch-preview-toggle" onClick={() => setCleanCollapsed((value) => !value)}>
               <span>{t('ui.media.subtitleCleanupCleaned')}</span>
               <span className="metadata-fetch-preview-state" aria-hidden="true">

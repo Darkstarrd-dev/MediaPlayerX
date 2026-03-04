@@ -30,11 +30,11 @@ export function ImageMainMetadataToolbar({
 
   return (
     <>
-      <span hidden data-slot="fg-main-toolbar-state-metadata" />
-      <strong className="main-toolbar-title">
+      <span hidden data-slot="fg-main-header-state-metadata" />
+      <strong className="main-header-title">
         {t("ui.header.metadataManage")}
       </strong>
-      <div className="toolbar-actions toolbar-actions-manage">
+      <div className="main-header-actions main-header-actions-manage">
         <button
           className="feature-action-btn main-icon-square-btn"
           type="button"

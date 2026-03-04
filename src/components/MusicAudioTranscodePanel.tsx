@@ -144,7 +144,7 @@ export function MusicAudioTranscodePanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-manage-music-transcode-ovl"
+      data-slot="fg-main-header-manage-music-transcode-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t("ui.music.audioTranscodeDialog")}
@@ -157,11 +157,11 @@ export function MusicAudioTranscodePanel({
     >
       <section
         className="settings-floating-panel manage-group-dialog music-audio-transcode-dialog"
-        data-slot="fg-main-toolbar-manage-music-transcode-panel"
+        data-slot="fg-main-header-manage-music-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
         <div className="music-audio-transcode-header">
-          <h3 className="main-toolbar-image-convert-title sidebar-rename-title">
+          <h3 className="main-header-image-convert-title sidebar-rename-title">
             {t("ui.music.audioTranscodeTitle")}
           </h3>
           {outputPolicyHint ? (
@@ -309,7 +309,7 @@ export function MusicAudioTranscodePanel({
               </button>
             </div>
             {preset === "opus" || preset === "aac" || preset === "mp3" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.music.audioTranscodeBitrateKbps")}</span>
                 <input
                   type="number"
@@ -332,7 +332,7 @@ export function MusicAudioTranscodePanel({
               </label>
             ) : null}
             {preset === "mp3" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.music.audioTranscodeVbrQuality")}</span>
                 <input
                   type="number"
@@ -350,7 +350,7 @@ export function MusicAudioTranscodePanel({
                 />
               </label>
             ) : null}
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.music.audioTranscodeSampleRate")}</span>
               <select
                 value={
@@ -376,7 +376,7 @@ export function MusicAudioTranscodePanel({
                 <option value="96000">96 kHz</option>
               </select>
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.music.audioTranscodeChannels")}</span>
               <select
                 value={
@@ -400,7 +400,7 @@ export function MusicAudioTranscodePanel({
               </select>
             </label>
             {preset === "flac" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.music.audioTranscodeFlacCompressionLevel")}</span>
                 <input
                   type="number"
@@ -419,7 +419,7 @@ export function MusicAudioTranscodePanel({
               </label>
             ) : null}
             {preset === "wav" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.music.audioTranscodeWavBitDepth")}</span>
                 <select
                   value={
@@ -443,7 +443,7 @@ export function MusicAudioTranscodePanel({
                 </select>
               </label>
             ) : null}
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.music.audioTranscodeMetadataMode")}</span>
               <select
                 value={activeDefaults.metadataMode}
@@ -467,7 +467,7 @@ export function MusicAudioTranscodePanel({
             </label>
             {activeDefaults.metadataMode === "copy_and_override" ? (
               <>
-                <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
                   <span>{t("ui.music.audioTranscodeMetadataKey")}</span>
                   <input
                     type="text"
@@ -478,7 +478,7 @@ export function MusicAudioTranscodePanel({
                     }
                   />
                 </label>
-                <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+                <label className="main-header-image-convert-row mpx-overlay-field-row">
                   <span>{t("ui.music.audioTranscodeMetadataValue")}</span>
                   <input
                     type="text"
@@ -492,7 +492,7 @@ export function MusicAudioTranscodePanel({
               </>
             ) : null}
           </section>
-          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+          <label className="main-header-image-convert-row mpx-overlay-field-row">
             <span>{t("ui.music.audioTranscodeOverwrite")}</span>
             <input
               type="checkbox"
@@ -501,7 +501,7 @@ export function MusicAudioTranscodePanel({
               onChange={(event) => onOverwriteChange(event.target.checked)}
             />
           </label>
-          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+          <label className="main-header-image-convert-row mpx-overlay-field-row">
             <span>{t("ui.music.audioTranscodeCopyMetadata")}</span>
             <input
               type="checkbox"
@@ -510,7 +510,7 @@ export function MusicAudioTranscodePanel({
               onChange={(event) => onCopyMetadataChange(event.target.checked)}
             />
           </label>
-          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+          <label className="main-header-image-convert-row mpx-overlay-field-row">
             <span>{t("ui.music.audioTranscodeAddOutputToSources")}</span>
             <input
               type="checkbox"
@@ -522,7 +522,7 @@ export function MusicAudioTranscodePanel({
             />
           </label>
           {taskStatus && taskStatusLabel ? (
-            <p className="main-toolbar-hint">
+            <p className="main-header-hint">
               {`${t("ui.music.audioTranscodeTaskSummary", {
                 status: taskStatusLabel,
                 progress: Math.round(taskProgress * 100),

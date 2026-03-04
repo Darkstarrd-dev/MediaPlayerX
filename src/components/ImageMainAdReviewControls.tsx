@@ -149,7 +149,7 @@ export function ImageMainAdReviewControls({
       !isReviewWithCandidates &&
       manageReviewMode === "ad" ? (
         <div
-          className={`header-popover-control main-toolbar-ad-review-strategy-control ${
+          className={`header-popover-control main-header-ad-review-strategy-control ${
             openAdReviewStrategyPopover ? "is-open" : ""
           }`}
           onMouseEnter={openAdReviewStrategyPopoverByHover}
@@ -182,8 +182,8 @@ export function ImageMainAdReviewControls({
           </button>
 
           <div
-            className="header-popover-panel main-toolbar-ad-review-strategy-panel"
-            data-slot="fg-main-toolbar-image-ad-review-strategy-pop"
+            className="header-popover-panel main-header-ad-review-strategy-panel"
+            data-slot="fg-main-header-image-ad-review-strategy-pop"
             hidden={
               !openAdReviewStrategyPopover ||
               effectiveStrategyMode !== "head-tail"
@@ -191,11 +191,11 @@ export function ImageMainAdReviewControls({
             role="dialog"
             aria-label={t("a11y.manage.strategyPanel")}
           >
-            <p className="main-toolbar-ad-review-strategy-title">
+            <p className="main-header-ad-review-strategy-title">
               {t("ui.manage.strategyHeadTailPanelTitle")}
             </p>
 
-            <div className="main-toolbar-ad-review-slider-row">
+            <div className="main-header-ad-review-slider-row">
               <span>{t("ui.manage.concurrency")}</span>
               <input
                 type="range"
@@ -209,11 +209,11 @@ export function ImageMainAdReviewControls({
               />
               <strong>{adReviewMaxConcurrency}</strong>
             </div>
-            <p className="main-toolbar-ad-review-slider-hint">
+            <p className="main-header-ad-review-slider-hint">
               {t("ui.manage.strategyHintConcurrency")}
             </p>
 
-            <div className="main-toolbar-ad-review-slider-row">
+            <div className="main-header-ad-review-slider-row">
               <span>{t("ui.manage.headWindow")}</span>
               <input
                 type="range"
@@ -227,11 +227,11 @@ export function ImageMainAdReviewControls({
               />
               <strong>{adReviewHeadN}</strong>
             </div>
-            <p className="main-toolbar-ad-review-slider-hint">
+            <p className="main-header-ad-review-slider-hint">
               {t("ui.manage.strategyHintHead")}
             </p>
 
-            <div className="main-toolbar-ad-review-slider-row">
+            <div className="main-header-ad-review-slider-row">
               <span>{t("ui.manage.tailWindow")}</span>
               <input
                 type="range"
@@ -245,13 +245,13 @@ export function ImageMainAdReviewControls({
               />
               <strong>{adReviewTailN}</strong>
             </div>
-            <p className="main-toolbar-ad-review-slider-hint">
+            <p className="main-header-ad-review-slider-hint">
               {t("ui.manage.strategyHintTail")}
             </p>
 
             {isPerformanceMode ? null : (
               <>
-                <div className="main-toolbar-ad-review-slider-row">
+                <div className="main-header-ad-review-slider-row">
                   <span>{t("ui.manage.tailStopClean")}</span>
                   <input
                     type="range"
@@ -267,7 +267,7 @@ export function ImageMainAdReviewControls({
                   />
                   <strong>{adReviewTailStopCleanStreak}</strong>
                 </div>
-                <p className="main-toolbar-ad-review-slider-hint">
+                <p className="main-header-ad-review-slider-hint">
                   {t("ui.manage.strategyHintTailStop")}
                 </p>
               </>
@@ -278,12 +278,12 @@ export function ImageMainAdReviewControls({
       {isReviewRunningOrPaused ? (
         <>
           <div
-            className={`header-popover-control main-toolbar-ad-review-progress-control ${openAdReviewProgressPopover ? "is-open" : ""}`}
+            className={`header-popover-control main-header-ad-review-progress-control ${openAdReviewProgressPopover ? "is-open" : ""}`}
             onMouseEnter={openAdReviewProgressPopoverByHover}
             onMouseLeave={closeAdReviewProgressPopoverByHover}
           >
             <button
-              className="main-toolbar-ad-review-running-pill"
+              className="main-header-ad-review-running-pill"
               type="button"
               aria-pressed={openAdReviewProgressPopover}
               aria-label={t("ui.manage.progress", {
@@ -305,8 +305,8 @@ export function ImageMainAdReviewControls({
             </button>
 
             <div
-              className="header-popover-panel main-toolbar-ad-review-progress-panel"
-              data-slot="fg-main-toolbar-image-ad-review-progress-pop"
+              className="header-popover-panel main-header-ad-review-progress-panel"
+              data-slot="fg-main-header-image-ad-review-progress-pop"
               hidden={!openAdReviewProgressPopover}
               role="dialog"
               aria-label={t("ui.manage.progress", {
@@ -317,21 +317,21 @@ export function ImageMainAdReviewControls({
             >
               {adReviewTask ? (
                 <>
-                  <p className="main-toolbar-ad-review-progress-line">
+                  <p className="main-header-ad-review-progress-line">
                     {`策略 ${adReviewTask.execution?.strategy.mode === "head-tail" ? "head-tail" : "all"} 并发 ${adReviewTask.execution?.max_concurrency ?? adReviewMaxConcurrency}`}
                   </p>
-                  <p className="main-toolbar-ad-review-progress-line">
+                  <p className="main-header-ad-review-progress-line">
                     {`头部 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.head_n : "-"} 尾部 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.tail_n : "-"} 尾部截止 ${adReviewTask.execution?.strategy.mode === "head-tail" ? adReviewTask.execution.strategy.tail_stop_clean_streak : "-"}`}
                   </p>
                   {adReviewTask.audit ? (
                     <>
-                      <p className="main-toolbar-ad-review-progress-line">
+                      <p className="main-header-ad-review-progress-line">
                         {`来源 known-hash ${adReviewTask.audit.source_distribution.known_hash} strategy-skip ${adReviewTask.audit.source_distribution.strategy_skipped}`}
                       </p>
-                      <p className="main-toolbar-ad-review-progress-line">
+                      <p className="main-header-ad-review-progress-line">
                         {`LLM 疑似 ${adReviewTask.audit.source_distribution.llm_suspected} 正常 ${adReviewTask.audit.source_distribution.llm_clean} 失败 ${adReviewTask.audit.source_distribution.llm_failed}`}
                       </p>
-                      <p className="main-toolbar-ad-review-progress-line">
+                      <p className="main-header-ad-review-progress-line">
                         {`命中率 LLM ${formatPercent(adReviewTask.audit.llm_hit_rate)} 总体 ${formatPercent(adReviewTask.audit.overall_hit_rate)}`}
                       </p>
                     </>
@@ -380,7 +380,7 @@ export function ImageMainAdReviewControls({
       {isReviewWithCandidates ? (
         <>
           <button
-            className={`main-toolbar-ad-review-review-pill ${adReviewFocusActive ? "is-active" : ""}`}
+            className={`main-header-ad-review-review-pill ${adReviewFocusActive ? "is-active" : ""}`}
             type="button"
             aria-label={t("a11y.manage.focus")}
             data-tooltip-label={t("a11y.manage.focus")}

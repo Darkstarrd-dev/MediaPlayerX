@@ -117,7 +117,7 @@ export function ThemeParameterPanelMain({
       state: "禁用态 (disabled)",
       styleSource: "button:disabled",
       interaction: "组件设置 disabled，阻断点击",
-      usage: "MetadataPanel.tsx -> fg-meta-toolbar-g3-search",
+      usage: "MetadataPanel.tsx -> fg-meta-header-g3-search",
       demoLabel: "禁用",
     },
     {

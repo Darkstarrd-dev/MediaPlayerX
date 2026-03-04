@@ -68,7 +68,7 @@ interface BuildSettingsPanelPropsParams {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff: number;
+  paneHeaderHeightScaleCoeff: number;
   paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
@@ -252,7 +252,7 @@ export function buildSettingsPanelProps(
     sidebarInnerGapScaleCoeff: params.sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff: params.thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff: params.buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff: params.paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff: params.paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff: params.paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff: params.radiusCascadeScaleCoeff,
     radiusValueScaleCoeff: params.radiusValueScaleCoeff,
@@ -461,7 +461,7 @@ export function buildSettingsPanelProps(
     onButtonGroupInsetScaleCoeffChange: (value) =>
       params.updateSettings({ buttonGroupInsetScaleCoeff: value }),
     onPaneToolbarHeightScaleCoeffChange: (value) =>
-      params.updateSettings({ paneToolbarHeightScaleCoeff: value }),
+      params.updateSettings({ paneHeaderHeightScaleCoeff: value }),
     onPaneFooterHeightScaleCoeffChange: (value) =>
       params.updateSettings({ paneFooterHeightScaleCoeff: value }),
     onRadiusCascadeScaleCoeffChange: (value) =>

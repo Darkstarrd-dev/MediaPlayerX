@@ -7,7 +7,7 @@ interface AdReviewStartDialogProps {
   t: TranslateFn;
   open: boolean;
   manageReviewMode: ManageReviewModeDto;
-  slot?: "fg-main-toolbar-image-ad-review-start-panel" | "fg-meta-main-ad-review-start-panel";
+  slot?: "fg-main-header-image-ad-review-start-panel" | "fg-meta-main-ad-review-start-panel";
   onClose: () => void;
   onStartWithOption: (skipReviewedNodes: boolean) => void;
 }
@@ -16,13 +16,13 @@ export function AdReviewStartDialog({
   t,
   open,
   manageReviewMode,
-  slot = "fg-main-toolbar-image-ad-review-start-panel",
+  slot = "fg-main-header-image-ad-review-start-panel",
   onClose,
   onStartWithOption,
 }: AdReviewStartDialogProps) {
   const overlaySlot =
-    slot === "fg-main-toolbar-image-ad-review-start-panel"
-      ? "fg-main-toolbar-image-ad-review-start-ovl"
+    slot === "fg-main-header-image-ad-review-start-panel"
+      ? "fg-main-header-image-ad-review-start-ovl"
       : "fg-meta-main-ad-review-start-ovl";
 
   if (!open) {

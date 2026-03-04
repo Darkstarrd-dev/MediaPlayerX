@@ -489,9 +489,9 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     );
   }
 
-  if ("paneToolbarHeightScaleCoeff" in next) {
-    next.paneToolbarHeightScaleCoeff = normalizeNumberInRange(
-      next.paneToolbarHeightScaleCoeff,
+  if ("paneHeaderHeightScaleCoeff" in next) {
+    next.paneHeaderHeightScaleCoeff = normalizeNumberInRange(
+      next.paneHeaderHeightScaleCoeff,
       1,
       0.5,
       2,

@@ -246,7 +246,7 @@ export function MetadataMusicEditor({
             </label>
           </div>
 
-          <div className="metadata-music-booklet-bindings-actions toolbar-actions">
+          <div className="metadata-music-booklet-bindings-actions main-header-actions">
             <button
               className="toolbar-icon-btn main-icon-square-btn"
               disabled={!canOpenMusicCover}

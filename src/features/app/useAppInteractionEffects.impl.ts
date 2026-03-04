@@ -865,7 +865,7 @@ export function useAppInteractionEffects({
     sidebarInnerGapScaleCoeff: appSettings.sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff: appSettings.thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff: appSettings.buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff: appSettings.paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff: appSettings.paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff: appSettings.paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff: appSettings.radiusCascadeScaleCoeff,
     radiusValueScaleCoeff: appSettings.radiusValueScaleCoeff,

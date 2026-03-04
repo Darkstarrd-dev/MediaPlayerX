@@ -485,11 +485,11 @@ function App() {
         {sidebarCollapsed ? null : (
           <>
             <aside className="sidebar" data-slot="fg-sidebar-root" style={{ width: sidebarWidth, flex: `0 0 ${sidebarWidth}` }}>
-              <div className="sidebar-head" data-slot="fg-sidebar-head">
-                <div className="sidebar-head-title">
+              <div className="sidebar-header" data-slot="fg-sidebar-header">
+                <div className="sidebar-header-title">
                   <strong>{sidebarTitle}</strong>
                 </div>
-                <div className="sidebar-head-actions">
+                <div className="sidebar-header-actions">
                   {activeView === 'app' ? (
                     <button
                       className="feature-action-btn main-icon-square-btn sidebar-home-btn"
@@ -501,7 +501,7 @@ function App() {
                   ) : null}
                 </div>
               </div>
-              <div className="sidebar-tree mpx-scroll-area" data-slot="fg-sidebar-tree">
+              <div className="sidebar-tree mpx-scroll-area" data-slot="fg-sidebar-main">
                 {sidebarBody}
               </div>
             </aside>
@@ -519,7 +519,7 @@ function App() {
         <section className="workspace" data-slot="bg-app-workspace-shell" style={{ width: workspaceWidth }}>
           <div className="workspace-body" data-slot="bg-app-workspace-body" ref={workspaceBodyRef}>
             <main className="main-pane" data-slot="fg-main-root" style={{ width: mainPaneWidth }}>
-              <div className="main-toolbar" data-slot="fg-main-toolbar-root">
+              <div className="main-header" data-slot="fg-main-header">
                 <strong>{mainTitle}</strong>
               </div>
               <div className="main-content-host mpx-scroll-area" data-slot="fg-main-content-image-grid-shell">
@@ -550,10 +550,10 @@ function App() {
                   data-slot="fg-meta-root"
                   style={{ width: metadataWidth, flex: `0 0 ${metadataWidth}` }}
                 >
-                  <div className="metadata-head" data-slot="fg-meta-head">
+                  <div className="metadata-header" data-slot="fg-meta-header">
                     <strong>运行信息</strong>
                   </div>
-                  <div className="metadata-content" data-slot="fg-meta-content-image-editor">
+                  <div className="metadata-content" data-slot="fg-meta-main">
                     {metadataContent}
                   </div>
                 </aside>

@@ -46,8 +46,8 @@ function DangerConfirmDialog({
   }
 
   return (
-    <div className="settings-floating-mask" data-slot="fg-main-toolbar-manage-delete-confirm-ovl" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="delete-confirm">
-      <section className="settings-floating-panel manage-confirm-dialog" data-slot="fg-main-toolbar-manage-delete-confirm-panel">
+    <div className="settings-floating-mask" data-slot="fg-main-header-manage-delete-confirm-ovl" role="dialog" aria-modal="true" aria-label={title} data-overlay-close="delete-confirm">
+      <section className="settings-floating-panel manage-confirm-dialog" data-slot="fg-main-header-manage-delete-confirm-panel">
         <h3>{title}</h3>
         <p className="mpx-overlay-description">{description}</p>
 

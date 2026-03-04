@@ -55,10 +55,10 @@ export function ImageMainNormalToolbar({
 }: ImageMainNormalToolbarProps) {
   return (
     <>
-      <span hidden data-slot="fg-main-toolbar-state-normal" />
+      <span hidden data-slot="fg-main-header-state-normal" />
       <ToolbarTitleMarquee text={browseToolbarTitle} />
-      <div className="toolbar-actions toolbar-actions-image-mode">
-        <div className="toolbar-actions toolbar-actions-image-primary">
+      <div className="main-header-actions main-header-actions-image-mode">
+        <div className="main-header-actions main-header-actions-image-primary">
           <button
             className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
             type="button"
@@ -115,7 +115,7 @@ export function ImageMainNormalToolbar({
         </div>
         {canJumpToAnimation ||
         (canJumpToMusic && !canJumpToMusicFromBooklet) ? (
-          <div className="toolbar-actions toolbar-actions-series-jump">
+          <div className="main-header-actions main-header-actions-series-jump">
             {canJumpToAnimation ? (
               <button
                 className="toolbar-icon-btn"

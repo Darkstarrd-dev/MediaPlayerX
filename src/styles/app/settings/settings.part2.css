@@ -158,39 +158,39 @@
   z-index: 3002;
 }
 
-[data-slot='fg-main-toolbar-manage-group-name-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-manage-group-name-ovl-bg, var(--mpx-slot-fg-main-toolbar-manage-group-name-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
-  color: var(--mpx-slot-fg-main-toolbar-manage-group-name-ovl-text, var(--mpx-slot-fg-main-toolbar-manage-group-name-panel-text, inherit));
+[data-slot='fg-main-header-manage-group-name-ovl'] {
+  background: var(--mpx-slot-fg-main-header-manage-group-name-ovl-bg, var(--mpx-slot-fg-main-header-manage-group-name-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
+  color: var(--mpx-slot-fg-main-header-manage-group-name-ovl-text, var(--mpx-slot-fg-main-header-manage-group-name-panel-text, inherit));
 }
 
-[data-slot='fg-main-toolbar-manage-delete-confirm-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-ovl-bg, var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
-  color: var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-ovl-text, var(--mpx-slot-fg-main-toolbar-manage-delete-confirm-panel-text, inherit));
+[data-slot='fg-main-header-manage-delete-confirm-ovl'] {
+  background: var(--mpx-slot-fg-main-header-manage-delete-confirm-ovl-bg, var(--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)));
+  color: var(--mpx-slot-fg-main-header-manage-delete-confirm-ovl-text, var(--mpx-slot-fg-main-header-manage-delete-confirm-panel-text, inherit));
 }
 
-[data-slot='fg-main-toolbar-image-convert-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-image-convert-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
-  color: var(--mpx-slot-fg-main-toolbar-image-convert-ovl-text, inherit);
+[data-slot='fg-main-header-image-convert-ovl'] {
+  background: var(--mpx-slot-fg-main-header-image-convert-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent));
+  color: var(--mpx-slot-fg-main-header-image-convert-ovl-text, inherit);
 }
 
-[data-slot='fg-main-toolbar-manage-music-transcode-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-manage-music-transcode-ovl-bg, var(--mpx-slot-fg-main-toolbar-manage-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)));
-  color: var(--mpx-slot-fg-main-toolbar-manage-music-transcode-ovl-text, var(--mpx-slot-fg-main-toolbar-manage-music-transcode-panel-text, inherit));
+[data-slot='fg-main-header-manage-music-transcode-ovl'] {
+  background: var(--mpx-slot-fg-main-header-manage-music-transcode-ovl-bg, var(--mpx-slot-fg-main-header-manage-music-transcode-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent)));
+  color: var(--mpx-slot-fg-main-header-manage-music-transcode-ovl-text, var(--mpx-slot-fg-main-header-manage-music-transcode-panel-text, inherit));
 }
 
-[data-slot='fg-main-toolbar-image-metadata-fetch-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-ovl-bg, var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
-  color: var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-ovl-text, var(--mpx-slot-fg-main-toolbar-image-metadata-fetch-panel-text, inherit));
+[data-slot='fg-main-header-image-metadata-fetch-ovl'] {
+  background: var(--mpx-slot-fg-main-header-image-metadata-fetch-ovl-bg, var(--mpx-slot-fg-main-header-image-metadata-fetch-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
+  color: var(--mpx-slot-fg-main-header-image-metadata-fetch-ovl-text, var(--mpx-slot-fg-main-header-image-metadata-fetch-panel-text, inherit));
 }
 
-[data-slot='fg-main-toolbar-manage-subtitle-cleanup-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-ovl-bg, var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
-  color: var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-ovl-text, var(--mpx-slot-fg-main-toolbar-manage-subtitle-cleanup-panel-text, inherit));
+[data-slot='fg-main-header-manage-subtitle-cleanup-ovl'] {
+  background: var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-bg, var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg, color-mix(in srgb, var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%), transparent)));
+  color: var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-text, var(--mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-text, inherit));
 }
 
-[data-slot='fg-main-toolbar-manage-video-transcode-ovl'] {
-  background: var(--mpx-slot-fg-main-toolbar-manage-video-transcode-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
-  color: var(--mpx-slot-fg-main-toolbar-manage-video-transcode-ovl-text, inherit);
+[data-slot='fg-main-header-manage-video-transcode-ovl'] {
+  background: var(--mpx-slot-fg-main-header-manage-video-transcode-ovl-bg, color-mix(in srgb, var(--mpx-bg-tooltip) 24%, transparent));
+  color: var(--mpx-slot-fg-main-header-manage-video-transcode-ovl-text, inherit);
 }
 
 .settings-floating-panel {

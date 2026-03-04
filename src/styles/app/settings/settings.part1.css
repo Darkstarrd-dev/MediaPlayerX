@@ -30,16 +30,16 @@
   box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
 }
 
-.sidebar-head button,
-.toolbar-actions button,
-.metadata-head button,
+.sidebar-header button,
+.main-header-actions button,
+.metadata-header button,
 .settings-head button,
 .settings-side button,
 .settings-shortcuts-head button,
 .main-footer-pagination button,
 .video-controls button:not(.video-action-btn),
 .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-.main-toolbar button,
+.main-header button,
 .settings-block button,
 .search-trigger-btn {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border);
@@ -52,27 +52,27 @@
   cursor: pointer;
 }
 
-.sidebar-head button:hover,
-.toolbar-actions button:hover,
-.metadata-head button:hover,
-.main-toolbar button:hover,
+.sidebar-header button:hover,
+.main-header-actions button:hover,
+.metadata-header button:hover,
+.main-header button:hover,
 .search-trigger-btn:hover {
   background: var(--mpx-btn-template-hover);
 }
 
-.sidebar-head button:active,
-.toolbar-actions button:active,
-.metadata-head button:active,
-.main-toolbar button:active,
+.sidebar-header button:active,
+.main-header-actions button:active,
+.metadata-header button:active,
+.main-header button:active,
 .search-trigger-btn:active {
   background: var(--mpx-btn-template-active);
   border-color: var(--mpx-btn-template-border);
 }
 
-.sidebar-head button:disabled,
-.toolbar-actions button:disabled,
-.metadata-head button:disabled,
-.main-toolbar button:disabled,
+.sidebar-header button:disabled,
+.main-header-actions button:disabled,
+.metadata-header button:disabled,
+.main-header button:disabled,
 .search-trigger-btn:disabled {
   opacity: 0.56;
   color: var(--mpx-btn-template-text-disabled);

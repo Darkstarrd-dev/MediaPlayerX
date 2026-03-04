@@ -158,7 +158,7 @@ html                                        data-mpx-style / data-mpx-palette
          │
          └─ div.app-body                    flex row, padding: var(--mpx-layout-padding)
               ├─ aside.sidebar              flex column, 可折叠
-              │    ├─ .sidebar-head         标题 + 操作按钮
+              │    ├─ .sidebar-header         标题 + 操作按钮
               │    └─ .sidebar-tree         目录/文件节点列表
               │
               ├─ div.sidebar-splitter       宽度: var(--mpx-splitter-width), 可拖动
@@ -166,7 +166,7 @@ html                                        data-mpx-style / data-mpx-palette
               └─ section.workspace          flex column
                     └─ div.workspace-body    flex row
                          ├─ main.main-pane   flex column
-                         │    ├─ .main-toolbar             工具栏（普通/管理/元数据管理）
+                         │    ├─ .main-header             工具栏（普通/管理/元数据管理）
                          │    ├─ .image-grid               缩略图网格 (grid)
                          │    │   └─ .thumb-card ×N        缩略图卡片
                          │    ├─ .name-list                纯文件名列表视图
@@ -176,7 +176,7 @@ html                                        data-mpx-style / data-mpx-palette
                          ├─ div.metadata-splitter          宽度: var(--mpx-splitter-width)
                          │
                          └─ aside.metadata-panel           flex column
-                              ├─ .metadata-head            标题 + 图标按钮
+                              ├─ .metadata-header            标题 + 图标按钮
                               ├─ .metadata-content         图包元数据编辑
                               ├─ .metadata-content-focus   图片预览 + caption
                               ├─ .metadata-video-content   视频信息/播放列表
@@ -525,7 +525,7 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-radius-main-inner` | `max(...)` | Main 内层基准半径 |
 | `--mpx-radius-metadata-inner` | `max(...)` | Metadata 内层基准半径 |
 | `--mpx-radius-header-inner` | `max(...)` | Header 内层基准半径 |
-| `--mpx-radius-sidebar-toolbar-btn` | `min(...)` | Sidebar 工具按钮半径 |
+| `--mpx-radius-sidebar-header-btn` | `min(...)` | Sidebar Header 按钮半径 |
 | `--mpx-radius-sidebar-label` | `max(...)` | Sidebar 列表标签半径 |
 | `--mpx-radius-main-card` | `min(...)` | Main 内容卡片半径 |
 | `--mpx-radius-thumb-media` | `max(...)` | 缩略图媒体内层半径 |
@@ -819,12 +819,12 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.search-trigger-btn` | 检索/管理开关按钮 |
 | `.mode-switch` | 图片/视频模式切换容器 |
 | `.mode-switch button` | 模式切换按钮 |
-| `.sidebar-head` | Sidebar 头部 |
-| `.sidebar-head-icon-btn` | Sidebar 图标按钮 |
+| `.sidebar-header` | Sidebar 头部 |
+| `.sidebar-header-icon-btn` | Sidebar 图标按钮 |
 | `.sidebar-row` | Sidebar 目录行 |
 | `.sidebar-row.is-active` | 当前选中行 |
 | `.sidebar-label` | Sidebar 标签文本 |
-| `.main-toolbar` | Main 工具栏 |
+| `.main-header` | Main 工具栏 |
 | `.toolbar-icon-btn` | Main 工具栏图标按钮 |
 | `.image-grid` | 缩略图网格 |
 | `.thumb-card` | 缩略图卡片 |
@@ -840,8 +840,8 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | `.video-preview` | 视频预览容器 |
 | `.video-screen` | 视频播放区 |
 | `.video-controls` | 视频控制栏 |
-| `.metadata-head` | 元数据头部 |
-| `.metadata-head-icon-btn` | 元数据图标按钮 |
+| `.metadata-header` | 元数据头部 |
+| `.metadata-header-icon-btn` | 元数据图标按钮 |
 | `.metadata-content` | 元数据内容区 |
 | `.metadata-search-section` | 元数据内检索筛选区 |
 | `.metadata-ad-review-section` | 元数据内 AI 审核区 |

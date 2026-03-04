@@ -49,8 +49,8 @@ export function ImageMainScaleControl({
 
   return (
     <div
-      className={`header-popover-control main-toolbar-scale-control ${openScalePopover ? "is-open" : ""}`}
-      data-slot="fg-main-toolbar-image-scale-control"
+      className={`header-popover-control main-header-scale-control ${openScalePopover ? "is-open" : ""}`}
+      data-slot="fg-main-header-image-scale-control"
       role="group"
       aria-label={t("a11y.header.thumbnailScaleGroup")}
       onMouseEnter={onOpenByHover}
@@ -85,7 +85,7 @@ export function ImageMainScaleControl({
 
       <div
         className="header-popover-panel"
-        data-slot="fg-main-toolbar-image-scale-pop"
+        data-slot="fg-main-header-image-scale-pop"
         hidden={!openScalePopover}
         role="dialog"
         aria-label={t("a11y.header.scaleSettings")}

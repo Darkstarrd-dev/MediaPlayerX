@@ -28,7 +28,7 @@ export function toPersistedAppSettings(
     sidebarInnerGapScaleCoeff: settings.sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff: settings.thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff: settings.buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff: settings.paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff: settings.paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff: settings.paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff: settings.radiusCascadeScaleCoeff,
     radiusValueScaleCoeff: settings.radiusValueScaleCoeff,

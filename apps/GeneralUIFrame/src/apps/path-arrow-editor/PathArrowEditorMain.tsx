@@ -40,8 +40,8 @@ export function PathArrowEditorMain({ model }: PathArrowEditorMainProps) {
 
   return (
     <div className="path-arrow-main-shell">
-      <div className="path-arrow-toolbar">
-        <div className="path-arrow-toolbar-group">
+      <div className="path-arrow-header">
+        <div className="path-arrow-header-group">
           <button className="feature-action-btn" type="button" onClick={onTriggerImageImport} disabled={isExporting}>
             导入图片
           </button>
@@ -53,7 +53,7 @@ export function PathArrowEditorMain({ model }: PathArrowEditorMainProps) {
           </button>
         </div>
 
-        <div className="path-arrow-toolbar-group">
+        <div className="path-arrow-header-group">
           <button className="feature-action-btn" type="button" onClick={onZoomOut} disabled={isExporting}>
             -
           </button>
@@ -69,7 +69,7 @@ export function PathArrowEditorMain({ model }: PathArrowEditorMainProps) {
           </button>
         </div>
 
-        <div className="path-arrow-toolbar-group">
+        <div className="path-arrow-header-group">
           <button className="feature-action-btn" type="button" onClick={onTogglePlay} disabled={!imageLoaded || isExporting}>
             {isPlaying ? '停止' : '播放'}
           </button>
@@ -84,7 +84,7 @@ export function PathArrowEditorMain({ model }: PathArrowEditorMainProps) {
           </button>
         </div>
 
-        <div className="path-arrow-toolbar-note">左键新增/拖拽锚点，右键选择锚点，Delete 删除</div>
+        <div className="path-arrow-header-note">左键新增/拖拽锚点，右键选择锚点，Delete 删除</div>
       </div>
 
       <div className="path-arrow-canvas-container" ref={canvasContainerRef}>

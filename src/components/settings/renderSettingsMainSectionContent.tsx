@@ -36,7 +36,7 @@ export function renderSettingsMainSection(
       paneInnerGapScaleCoeff,
       paneStackGapScaleCoeff,
       sidebarInnerGapScaleCoeff,
-      paneToolbarHeightScaleCoeff,
+      paneHeaderHeightScaleCoeff,
       paneFooterHeightScaleCoeff,
       buttonGroupInsetScaleCoeff,
       radiusCascadeScaleCoeff,
@@ -310,17 +310,17 @@ export function renderSettingsMainSection(
             />
           </label>
           <label
-            data-tooltip-label={settingsTip("paneToolbarHeightScaleCoeff")}
+            data-tooltip-label={settingsTip("paneHeaderHeightScaleCoeff")}
           >
-            {t("ui.settings.paneToolbarHeightScaleCoeff", {
-              value: paneToolbarHeightScaleCoeff.toFixed(2),
+            {t("ui.settings.paneHeaderHeightScaleCoeff", {
+              value: paneHeaderHeightScaleCoeff.toFixed(2),
             })}
             <input
               max={2}
               min={0.5}
               step={0.1}
               type="range"
-              value={paneToolbarHeightScaleCoeff}
+              value={paneHeaderHeightScaleCoeff}
               onChange={(event) =>
                 onPaneToolbarHeightScaleCoeffChange(Number(event.target.value))
               }

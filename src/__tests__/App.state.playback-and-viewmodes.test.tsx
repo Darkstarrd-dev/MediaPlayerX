@@ -49,7 +49,7 @@ describe("MediaPlayer 虚拟 UI", () => {
       render(<App />);
 
       const toolbarIconButtons = document.querySelectorAll(
-        ".toolbar-actions .toolbar-icon-btn",
+        ".main-header-actions .toolbar-icon-btn",
       );
       expect(toolbarIconButtons.length).toBeGreaterThanOrEqual(3);
       expect(
@@ -127,7 +127,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
       const readMainFocusedOrdinal = () => {
         const title =
-          document.querySelector(".main-toolbar-title")?.textContent ?? "";
+          document.querySelector(".main-header-title")?.textContent ?? "";
         const matched = title.match(/\((\d+)\/(\d+)\)/);
         return Number(matched?.[1] ?? 0);
       };

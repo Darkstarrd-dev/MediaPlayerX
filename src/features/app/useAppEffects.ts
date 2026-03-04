@@ -103,7 +103,7 @@ interface UseAppEffectsParams {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff: number;
+  paneHeaderHeightScaleCoeff: number;
   paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
@@ -201,7 +201,7 @@ export function useAppEffects({
   sidebarInnerGapScaleCoeff,
   thumbnailGapScaleCoeff,
   buttonGroupInsetScaleCoeff,
-  paneToolbarHeightScaleCoeff,
+  paneHeaderHeightScaleCoeff,
   paneFooterHeightScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
@@ -916,7 +916,7 @@ export function useAppEffects({
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,

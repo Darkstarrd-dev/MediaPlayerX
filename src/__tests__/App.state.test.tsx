@@ -695,7 +695,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     const readToolbarProgress = () => {
       const line =
-        document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        document.querySelector(".main-header-title")?.textContent ?? "";
       const matched = line.match(/\((\d+)\/(\d+)\)/);
       return {
         current: Number(matched?.[1] ?? 0),
@@ -715,7 +715,7 @@ describe("MediaPlayer 虚拟 UI", () => {
     await flushUiUpdates();
 
     const toolbarTitle =
-      document.querySelector(".main-toolbar-title")?.textContent ?? "";
+      document.querySelector(".main-header-title")?.textContent ?? "";
     expect(toolbarTitle).toContain("幻旅系列 001");
     expect(toolbarTitle).toMatch(/\(\d+\/\d+\)/);
   });
@@ -733,7 +733,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     const readToolbarProgress = () => {
       const line =
-        document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        document.querySelector(".main-header-title")?.textContent ?? "";
       const matched = line.match(/\((\d+)\/(\d+)\)/);
       return Number(matched?.[1] ?? 0);
     };
@@ -748,7 +748,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     const readToolbarProgress = () => {
       const line =
-        document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        document.querySelector(".main-header-title")?.textContent ?? "";
       const matched = line.match(/\((\d+)\/(\d+)\)/);
       return Number(matched?.[1] ?? 0);
     };
@@ -777,7 +777,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
     const readFocusedOrdinal = () => {
       const line =
-        document.querySelector(".main-toolbar-title")?.textContent ?? "";
+        document.querySelector(".main-header-title")?.textContent ?? "";
       const matched = line.match(/\((\d+)\/(\d+)\)/);
       return Number(matched?.[1] ?? 0);
     };

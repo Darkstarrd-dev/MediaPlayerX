@@ -241,6 +241,8 @@
   --mpx-help-overlay-tag-gap: 8px;
 
   /* Component Aliases (Default mappings) */
+  --mpx-surface-chrome-bg: var(--mpx-bg-panel);
+  --mpx-surface-chrome-shell-shadow: var(--mpx-panel-shadow);
   --mpx-header-bg: linear-gradient(
     120deg,
     #f4ebe0 0%,
@@ -346,7 +348,7 @@
   --mpx-sidebar-inner-gap-scale: 1;
   --mpx-thumbnail-gap-scale: 1;
   --mpx-button-group-inset-scale: 1;
-  --mpx-pane-toolbar-height-scale: 1;
+  --mpx-pane-header-height-scale: 1;
   --mpx-pane-footer-height-scale: 1;
   --mpx-layout-gap-px: 0px;
   --mpx-pane-inner-padding-px: 10px;
@@ -357,7 +359,7 @@
   --mpx-thumbnail-gap-px: 8px;
   --mpx-button-group-inset-px: 2px;
   --mpx-control-group-gap-px: 8px;
-  --mpx-pane-toolbar-height-px: 34px;
+  --mpx-pane-header-height-px: 34px;
   --mpx-pane-footer-height-px: 40px;
   --mpx-metadata-edit-grid-label-gap-px: 4px;
   --mpx-layout-padding: 0px;
@@ -434,6 +436,21 @@
   --mpx-header-transform-origin: center top;
   --mpx-header-transition: none;
 
+  /* SysInfo / Import Task 容器（默认跟随 Header） */
+  --mpx-sysinfo-root-margin: var(--mpx-header-margin);
+  --mpx-sysinfo-card-bg: var(--mpx-header-bg);
+  --mpx-sysinfo-card-radius: var(--mpx-header-radius);
+  --mpx-sysinfo-card-shadow: var(--mpx-header-shadow);
+  --mpx-sysinfo-card-border-width: var(--mpx-header-border-width);
+  --mpx-sysinfo-card-border-color: var(
+    --mpx-header-border-color,
+    var(--mpx-border-1)
+  );
+  --mpx-sysinfo-card-backdrop-filter: var(--mpx-header-backdrop-filter);
+  --mpx-sysinfo-card-transform: var(--mpx-header-transform);
+  --mpx-sysinfo-card-transform-origin: var(--mpx-header-transform-origin);
+  --mpx-sysinfo-card-transition: var(--mpx-header-transition);
+
   /* 内卡统一 */
   --mpx-card-radius: 10px;
   --mpx-card-shadow: none;
@@ -460,6 +477,10 @@
   --mpx-header-radius-effective: max(
     0px,
     calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff))
+  );
+  --mpx-sysinfo-card-radius-effective: max(
+    0px,
+    calc(var(--mpx-sysinfo-card-radius) * var(--mpx-radius-value-scale-coeff))
   );
   --mpx-card-radius-effective: max(
     0px,
@@ -514,14 +535,14 @@
     calc(var(--mpx-header-radius) - var(--mpx-radius-inset-stack))
   );
 
-  --mpx-radius-sidebar-toolbar-btn-base: min(
+  --mpx-radius-sidebar-header-btn-base: min(
     var(--mpx-control-radius),
     var(--mpx-radius-sidebar-inner-base)
   );
   --mpx-radius-sidebar-label-base: max(
     0px,
     calc(
-      var(--mpx-radius-sidebar-toolbar-btn-base) -
+      var(--mpx-radius-sidebar-header-btn-base) -
         var(--mpx-radius-inset-control)
     )
   );
@@ -595,10 +616,10 @@
       var(--mpx-radius-header-inner-base) * var(--mpx-radius-value-scale-coeff)
     )
   );
-  --mpx-radius-sidebar-toolbar-btn: max(
+  --mpx-radius-sidebar-header-btn: max(
     0px,
     calc(
-      var(--mpx-radius-sidebar-toolbar-btn-base) *
+      var(--mpx-radius-sidebar-header-btn-base) *
         var(--mpx-radius-value-scale-coeff)
     )
   );

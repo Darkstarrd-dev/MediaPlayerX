@@ -117,7 +117,7 @@ interface UseAppThemeAndLayoutEffectsParams {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff: number;
+  paneHeaderHeightScaleCoeff: number;
   paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;
@@ -146,7 +146,7 @@ export function useAppThemeAndLayoutEffects({
   sidebarInnerGapScaleCoeff,
   thumbnailGapScaleCoeff,
   buttonGroupInsetScaleCoeff,
-  paneToolbarHeightScaleCoeff,
+  paneHeaderHeightScaleCoeff,
   paneFooterHeightScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
@@ -279,7 +279,7 @@ export function useAppThemeAndLayoutEffects({
         sidebarInnerGapScaleCoeff,
         thumbnailGapScaleCoeff,
         buttonGroupInsetScaleCoeff,
-        paneToolbarHeightScaleCoeff,
+        paneHeaderHeightScaleCoeff,
         paneFooterHeightScaleCoeff,
       });
       const normalizedRadiusCascadeScale = Math.max(
@@ -302,7 +302,7 @@ export function useAppThemeAndLayoutEffects({
         resolvedHeaderButtonSizePx,
         Math.round(
           resolvedHeaderButtonSizePx *
-            runtimeSpacing.paneToolbarHeightScaleCoeff,
+            runtimeSpacing.paneHeaderHeightScaleCoeff,
         ),
       );
       const basePanelFooterMinHeightPx = Math.max(
@@ -348,8 +348,8 @@ export function useAppThemeAndLayoutEffects({
         runtimeSpacing.buttonGroupInsetScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
-        "--mpx-pane-toolbar-height-scale",
-        runtimeSpacing.paneToolbarHeightScaleCoeff.toFixed(2),
+        "--mpx-pane-header-height-scale",
+        runtimeSpacing.paneHeaderHeightScaleCoeff.toFixed(2),
       );
       document.documentElement.style.setProperty(
         "--mpx-pane-footer-height-scale",
@@ -416,7 +416,7 @@ export function useAppThemeAndLayoutEffects({
         `${resolvedPanelHeadHeightPx}px`,
       );
       document.documentElement.style.setProperty(
-        "--mpx-pane-toolbar-height-px",
+        "--mpx-pane-header-height-px",
         `${resolvedPanelHeadHeightPx}px`,
       );
       document.documentElement.style.setProperty(
@@ -449,7 +449,7 @@ export function useAppThemeAndLayoutEffects({
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,

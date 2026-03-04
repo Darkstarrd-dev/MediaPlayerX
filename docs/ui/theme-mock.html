@@ -475,7 +475,7 @@
       :root[data-debug="true"] .sidebar,
       :root[data-debug="true"] .sidebar-splitter,
       :root[data-debug="true"] .main-pane,
-      :root[data-debug="true"] .main-toolbar,
+      :root[data-debug="true"] .main-header,
       :root[data-debug="true"] .image-grid,
       :root[data-debug="true"] .thumb-card,
       :root[data-debug="true"] .main-footer,
@@ -503,7 +503,7 @@
       :root[data-debug="true"] .sidebar::before,
       :root[data-debug="true"] .sidebar-splitter::before,
       :root[data-debug="true"] .main-pane::before,
-      :root[data-debug="true"] .main-toolbar::before,
+      :root[data-debug="true"] .main-header::before,
       :root[data-debug="true"] .image-grid::before,
       :root[data-debug="true"] .main-footer::before,
       :root[data-debug="true"] .metadata-splitter::before,
@@ -610,10 +610,10 @@
         color: #fff;
       }
 
-      :root[data-debug="true"] .main-toolbar {
+      :root[data-debug="true"] .main-header {
         outline: 1px dashed rgba(0, 180, 180, .7);
       }
-      :root[data-debug="true"] .main-toolbar::before {
+      :root[data-debug="true"] .main-header::before {
         content: 'TOOLBAR';
         background: rgba(0, 160, 160, .8);
         color: #fff;
@@ -902,11 +902,11 @@
           <div class="app-body">
             <!-- Sidebar -->
             <aside class="sidebar" style="width: 230px; min-width: 200px;">
-              <div class="sidebar-head">
+              <div class="sidebar-header">
                 <button class="sidebar-title-btn" type="button">Library</button>
-                <div class="sidebar-head-actions">
+                <div class="sidebar-header-actions">
                   <button type="button">Go to</button>
-                  <button class="sidebar-head-icon-btn is-root-set" type="button">ROOT</button>
+                  <button class="sidebar-header-icon-btn is-root-set" type="button">ROOT</button>
                 </div>
               </div>
               <div class="sidebar-tree" style="display: flex; flex-direction: column; gap: 4px;">
@@ -977,9 +977,9 @@
               <div class="workspace-body">
                 <!-- Main pane -->
                 <main class="main-pane" style="width: calc(100% - 300px);">
-                  <div class="main-toolbar">
-                    <strong class="main-toolbar-title">Package A (18 items)</strong>
-                    <div class="toolbar-actions">
+                  <div class="main-header">
+                    <strong class="main-header-title">Package A (18 items)</strong>
+                    <div class="main-header-actions">
                       <button class="toolbar-icon-btn is-grid-mode" type="button">GRID</button>
                       <button class="toolbar-icon-btn" type="button">LIST</button>
                       <button class="toolbar-icon-btn" type="button">FULL</button>
@@ -1048,13 +1048,13 @@
 
                 <!-- Metadata panel -->
                 <aside class="metadata-panel" style="width: 280px;">
-                  <div class="metadata-head">
-                    <div class="metadata-toolbar-g3">
+                  <div class="metadata-header">
+                    <div class="metadata-header-g3">
                       <button class="search-trigger-btn" type="button">S</button>
                       <button class="search-trigger-btn" type="button">M</button>
                       <button class="search-trigger-btn" type="button">D</button>
                     </div>
-                    <button class="metadata-head-icon-btn is-image" type="button">VIEW</button>
+                    <button class="metadata-header-icon-btn is-image" type="button">VIEW</button>
                   </div>
                   <div class="metadata-content">
                     <div class="feature-rating-group metadata-rating-group">

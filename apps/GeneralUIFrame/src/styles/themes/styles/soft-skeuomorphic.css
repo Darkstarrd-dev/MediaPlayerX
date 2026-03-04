@@ -164,10 +164,27 @@
     -5px -5px 15px color-mix(in srgb, var(--mpx-palette-surface) 99%, var(--mpx-bg-elevated));
   --mpx-control-active-shadow: inset 3px 3px 7px color-mix(in srgb, var(--mpx-palette-shadow-color) 97%, transparent),
     inset -3px -3px 7px color-mix(in srgb, var(--mpx-palette-surface) 96%, var(--mpx-bg-elevated));
-  --mpx-main-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
-  --mpx-sidebar-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
-  --mpx-metadata-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
-  --mpx-header-bg: linear-gradient(160deg, #fffefb 0%, #f9f7f3 40%, #f3f0ea 100%);
+  --mpx-surface-chrome-bg: linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%);
+  --mpx-surface-chrome-shell-shadow:
+    2px 4px 10px rgba(116, 88, 50, 0.18),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  --mpx-main-bg: var(--mpx-surface-chrome-bg);
+  --mpx-sidebar-bg: var(--mpx-surface-chrome-bg);
+  --mpx-metadata-bg: var(--mpx-surface-chrome-bg);
+  --mpx-header-bg: var(--mpx-surface-chrome-bg);
+  --mpx-slot-fg-header-root-bg: var(--mpx-header-bg);
+  --mpx-sysinfo-card-bg: var(--mpx-surface-chrome-bg);
+  --mpx-sysinfo-card-shadow: var(--mpx-surface-chrome-shell-shadow);
+  --mpx-sysinfo-card-radius: var(--mpx-header-radius);
+  --mpx-sysinfo-card-border-width: var(--mpx-header-border-width);
+  --mpx-sysinfo-card-border-color: var(--mpx-header-border-color);
+  --mpx-sysinfo-card-backdrop-filter: var(--mpx-header-backdrop-filter);
+  --mpx-sysinfo-card-transform: var(--mpx-header-transform);
+  --mpx-sysinfo-card-transform-origin: var(--mpx-header-transform-origin);
+  --mpx-sysinfo-card-transition: var(--mpx-header-transition);
   --mpx-border-1: #e5e4e0;
   --mpx-header-border-color: #e5e4e0;
   --mpx-sidebar-border-color: #e5e4e0;
@@ -261,5 +278,5 @@
   --mpx-screen-bg: #110f0e;
 
   --mpx-slot-fg-main-content-video-controls-left-bg: var(--mpx-runway-groove-bg);
-  --mpx-slot-bg-app-root-bg: var(--mpx-slot-fg-main-content-video-controls-left-bg);
+  --mpx-slot-bg-app-root-bg: var(--mpx-bg-app);
 }

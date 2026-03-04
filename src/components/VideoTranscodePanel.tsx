@@ -167,7 +167,7 @@ export function VideoTranscodePanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-manage-video-transcode-ovl"
+      data-slot="fg-main-header-manage-video-transcode-ovl"
       role="dialog"
       aria-modal="true"
       aria-label={t("ui.media.videoTranscodeDialog")}
@@ -180,11 +180,11 @@ export function VideoTranscodePanel({
     >
       <section
         className="settings-floating-panel manage-group-dialog"
-        data-slot="fg-main-toolbar-manage-video-transcode-panel"
+        data-slot="fg-main-header-manage-video-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
         <div className="music-audio-transcode-header">
-          <h3 className="main-toolbar-image-convert-title sidebar-rename-title">
+          <h3 className="main-header-image-convert-title sidebar-rename-title">
             {t("ui.media.videoTranscodeTitle")}
           </h3>
           <button
@@ -199,7 +199,7 @@ export function VideoTranscodePanel({
         </div>
         <div className="music-audio-transcode-body">
           <section className="mpx-overlay-section">
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeContainer")}</span>
               <select
                 value={container}
@@ -236,7 +236,7 @@ export function VideoTranscodePanel({
                 </option>
               </select>
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeCodec")}</span>
               <select
                 value={videoCodec}
@@ -294,7 +294,7 @@ export function VideoTranscodePanel({
                 </option>
               </select>
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeQualityMode")}</span>
               <select
                 value={qualityMode}
@@ -315,7 +315,7 @@ export function VideoTranscodePanel({
               </select>
             </label>
             {qualityMode === "crf" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>CRF</span>
                 <input
                   type="number"
@@ -329,7 +329,7 @@ export function VideoTranscodePanel({
               </label>
             ) : null}
             {qualityMode === "bitrate" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.media.videoTranscodeVideoBitrateKbps")}</span>
                 <input
                   type="number"
@@ -345,7 +345,7 @@ export function VideoTranscodePanel({
                 />
               </label>
             ) : null}
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeEncoderPreset")}</span>
               <select
                 value={encoderPreset}
@@ -369,7 +369,7 @@ export function VideoTranscodePanel({
                 ))}
               </select>
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeScaleLongEdge")}</span>
               <input
                 type="number"
@@ -384,7 +384,7 @@ export function VideoTranscodePanel({
                 }}
               />
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeFps")}</span>
               <input
                 type="number"
@@ -399,7 +399,7 @@ export function VideoTranscodePanel({
                 }}
               />
             </label>
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeAudioMode")}</span>
               <select
                 value={audioMode}
@@ -422,7 +422,7 @@ export function VideoTranscodePanel({
               </select>
             </label>
             {audioMode === "encode" ? (
-              <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+              <label className="main-header-image-convert-row mpx-overlay-field-row">
                 <span>{t("ui.media.videoTranscodeAudioBitrateKbps")}</span>
                 <input
                   type="number"
@@ -438,7 +438,7 @@ export function VideoTranscodePanel({
                 />
               </label>
             ) : null}
-            <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+            <label className="main-header-image-convert-row mpx-overlay-field-row">
               <span>{t("ui.media.videoTranscodeFaststart")}</span>
               <input
                 type="checkbox"
@@ -480,7 +480,7 @@ export function VideoTranscodePanel({
             </button>
           </div>
 
-          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+          <label className="main-header-image-convert-row mpx-overlay-field-row">
             <span>{t("ui.media.videoTranscodeOverwrite")}</span>
             <input
               type="checkbox"
@@ -490,7 +490,7 @@ export function VideoTranscodePanel({
             />
           </label>
 
-          <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+          <label className="main-header-image-convert-row mpx-overlay-field-row">
             <span>{t("ui.media.videoTranscodeAddOutputToSources")}</span>
             <input
               type="checkbox"
@@ -557,7 +557,7 @@ export function VideoTranscodePanel({
           </section>
 
           {taskStatus && taskStatusLabel ? (
-            <p className="main-toolbar-hint">
+            <p className="main-header-hint">
               {`${t("ui.media.videoTranscodeTaskSummary", {
                 status: taskStatusLabel,
                 progress: Math.round(taskProgress * 100),

@@ -464,7 +464,7 @@ describe('ImageMainSection RS execution', () => {
     expect(screen.getByRole('button', { name: 'RS' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '预览' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '确定' })).toBeDisabled()
-    const scaleSlider = document.querySelector('.main-toolbar-image-convert-panel input[type="range"]') as HTMLInputElement | null
+    const scaleSlider = document.querySelector('.main-header-image-convert-panel input[type="range"]') as HTMLInputElement | null
     expect(scaleSlider).not.toBeNull()
     expect(scaleSlider?.disabled).toBe(true)
   })
@@ -586,13 +586,13 @@ describe('ImageMainSection RS execution', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'RS' }))
-    expect(document.querySelector('.main-toolbar-image-convert-panel')).not.toBeNull()
+    expect(document.querySelector('.main-header-image-convert-panel')).not.toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
 
     await waitFor(() => {
       expect(onCancelImageConvertPreview).toHaveBeenCalledTimes(0)
-      expect(document.querySelector('.main-toolbar-image-convert-panel')).toBeNull()
+      expect(document.querySelector('.main-header-image-convert-panel')).toBeNull()
       expect(document.documentElement.dataset.mpxImageConvertExecuting).toBe('0')
     })
 
@@ -606,6 +606,6 @@ describe('ImageMainSection RS execution', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'RS' }))
-    expect(document.querySelector('.main-toolbar-image-convert-panel')).toBeNull()
+    expect(document.querySelector('.main-header-image-convert-panel')).toBeNull()
   })
 })

@@ -72,7 +72,7 @@ export function ImageConvertSettingsPanel({
   return (
     <div
       className="settings-floating-mask"
-      data-slot="fg-main-toolbar-image-convert-ovl"
+      data-slot="fg-main-header-image-convert-ovl"
       role="dialog"
       aria-modal="true"
       aria-label="RS 转换设置"
@@ -84,12 +84,12 @@ export function ImageConvertSettingsPanel({
       }}
     >
       <section
-        className="settings-floating-panel main-toolbar-image-convert-panel main-toolbar-image-convert-dialog"
-        data-slot="fg-main-toolbar-image-convert-panel"
+        className="settings-floating-panel main-header-image-convert-panel main-header-image-convert-dialog"
+        data-slot="fg-main-header-image-convert-panel"
         onMouseDown={onPanelMouseDown}
       >
-        <h3 className="main-toolbar-image-convert-title">RS 转换设置</h3>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+        <h3 className="main-header-image-convert-title">RS 转换设置</h3>
+        <label className="main-header-image-convert-row mpx-overlay-field-row">
           <span>Scale {imageConvertScale.toFixed(1)}</span>
           <input
             type="range"
@@ -101,7 +101,7 @@ export function ImageConvertSettingsPanel({
             onChange={(event) => onScaleChange(Number(event.target.value))}
           />
         </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+        <label className="main-header-image-convert-row mpx-overlay-field-row">
           <span>Longest Edge</span>
           <input
             type="number"
@@ -127,7 +127,7 @@ export function ImageConvertSettingsPanel({
             }}
           />
         </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+        <label className="main-header-image-convert-row mpx-overlay-field-row">
           <span>Format</span>
           <select
             value={imageConvertFormat}
@@ -144,7 +144,7 @@ export function ImageConvertSettingsPanel({
             <option value="avif">Avif</option>
           </select>
         </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+        <label className="main-header-image-convert-row mpx-overlay-field-row">
           <span>Quality {imageConvertQuality}</span>
           <input
             type="range"
@@ -156,7 +156,7 @@ export function ImageConvertSettingsPanel({
             onChange={(event) => onQualityChange(Number(event.target.value))}
           />
         </label>
-        <label className="main-toolbar-image-convert-row mpx-overlay-field-row">
+        <label className="main-header-image-convert-row mpx-overlay-field-row">
           <span>Threads {imageConvertConcurrency}</span>
           <input
             type="range"
@@ -171,7 +171,7 @@ export function ImageConvertSettingsPanel({
           />
         </label>
         {imageConvertTaskStatus ? (
-          <p className="main-toolbar-hint">
+          <p className="main-header-hint">
             {`RS ${imageConvertTaskStatus} ${Math.round(imageConvertTaskProgress * 100)}%${imageConvertTaskMessage ? ` | ${imageConvertTaskMessage}` : ""}`}
           </p>
         ) : null}

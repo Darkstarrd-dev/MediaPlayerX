@@ -706,11 +706,11 @@ function VideoMainSection({
 
   return (
     <>
-      <div className="main-toolbar" data-slot="fg-main-toolbar">
+      <div className="main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-manage" />
-            <div className="toolbar-actions toolbar-actions-manage">
+            <span hidden data-slot="fg-main-header-state-manage" />
+            <div className="main-header-actions main-header-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -773,7 +773,7 @@ function VideoMainSection({
               </button>
             </div>
             <strong
-              className="main-toolbar-summary"
+              className="main-header-summary"
               data-tooltip-label={manageSummary}
             >
               {manageSummary}
@@ -781,11 +781,11 @@ function VideoMainSection({
           </>
         ) : metadataManageMode ? (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-metadata" />
-            <strong className="main-toolbar-title">
+            <span hidden data-slot="fg-main-header-state-metadata" />
+            <strong className="main-header-title">
               {t("ui.header.metadataManage")}
             </strong>
-            <div className="toolbar-actions toolbar-actions-manage">
+            <div className="main-header-actions main-header-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -809,13 +809,13 @@ function VideoMainSection({
           </>
         ) : (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-normal" />
+            <span hidden data-slot="fg-main-header-state-normal" />
             <ToolbarTitleMarquee
-              className="main-toolbar-title is-video"
+              className="main-header-title is-video"
               text={toolbarVideoSummary}
             />
             {canJumpToManga || canJumpToMusic ? (
-              <div className="toolbar-actions">
+              <div className="main-header-actions">
                 {nodeBrowseMode ? (
                   <ImageMainScaleControl
                     t={t}
@@ -857,7 +857,7 @@ function VideoMainSection({
               </div>
             ) : null}
             {nodeBrowseMode && !canJumpToManga && !canJumpToMusic ? (
-              <div className="toolbar-actions">
+              <div className="main-header-actions">
                 <ImageMainScaleControl
                   t={t}
                   openScalePopover={effectiveOpenScalePopover}

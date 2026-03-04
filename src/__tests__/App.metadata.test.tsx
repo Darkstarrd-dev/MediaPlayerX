@@ -384,10 +384,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       expect(screen.queryByRole("button", { name: "元数据面板" })).toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-meta-toolbar-g3"]'),
+        document.querySelector('[data-slot="fg-meta-header-g3"]'),
       ).not.toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-meta-toolbar-g3-search"]'),
+        document.querySelector('[data-slot="fg-meta-header-g3-search"]'),
       ).not.toBeNull();
     },
     uiLongTestTimeoutMs,
@@ -695,7 +695,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       render(<App />);
 
       const jumpToAnimation = screen.getByRole("button", { name: "动画版" });
-      const imageToolbarActions = jumpToAnimation.closest(".toolbar-actions");
+      const imageToolbarActions = jumpToAnimation.closest(".main-header-actions");
       expect(imageToolbarActions?.firstElementChild).toBe(jumpToAnimation);
       expect(jumpToAnimation).toBeEnabled();
       await click(jumpToAnimation);
@@ -715,13 +715,13 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await waitFor(() => {
         const toolbarTitle =
-          document.querySelector(".main-toolbar-title.is-video")?.textContent ??
+          document.querySelector(".main-header-title.is-video")?.textContent ??
           "";
         expect(toolbarTitle).toContain("teaser_city");
       });
 
       const jumpToManga = screen.getByRole("button", { name: "漫画版" });
-      const videoToolbarActions = jumpToManga.closest(".toolbar-actions");
+      const videoToolbarActions = jumpToManga.closest(".main-header-actions");
       expect(videoToolbarActions?.firstElementChild).toBe(jumpToManga);
       expect(jumpToManga).toBeEnabled();
       await click(jumpToManga);
@@ -738,7 +738,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       await waitFor(() => {
         const toolbarTitle =
-          document.querySelector(".main-toolbar-title")?.textContent ?? "";
+          document.querySelector(".main-header-title")?.textContent ?? "";
         expect(toolbarTitle).toContain("幻旅系列 001");
       });
     },

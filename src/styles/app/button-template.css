@@ -213,16 +213,16 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
+  .sidebar-header button,
+  .main-header-actions button,
+  .metadata-header button,
   .settings-head button,
   .settings-side button,
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
+  .main-header button,
   .settings-block button:not(.sidebar-mini-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
@@ -231,8 +231,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .video-ctrl-panel-option,
   .music-ctrl-panel-option,
   .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
+  .main-header-ad-review-review-pill,
+  .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 ) {
   border: var(--mpx-control-border-width) solid var(--mpx-btn-template-border) !important;
@@ -243,9 +243,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-    .sidebar-head button,
-    .toolbar-actions button,
-    .metadata-head button,
+    .sidebar-header button,
+    .main-header-actions button,
+    .metadata-header button,
     .settings-head button,
     .settings-side button,
     .settings-shortcuts-head button,
@@ -253,7 +253,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-toolbar button,
+    .main-header button,
     .settings-block button:not(.sidebar-mini-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
@@ -262,8 +262,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-ctrl-panel-option,
     .music-ctrl-panel-option,
     .fullscreen-convert-format-btn,
-    .main-toolbar-ad-review-review-pill,
-    .main-toolbar-ad-review-running-pill,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):hover {
   background: var(--mpx-btn-template-hover) !important;
@@ -272,9 +272,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-    .sidebar-head button,
-    .toolbar-actions button,
-    .metadata-head button,
+    .sidebar-header button,
+    .main-header-actions button,
+    .metadata-header button,
     .settings-head button,
     .settings-side button,
     .settings-shortcuts-head button,
@@ -282,7 +282,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-toolbar button,
+    .main-header button,
     .settings-block button:not(.sidebar-mini-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
@@ -291,8 +291,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-ctrl-panel-option,
     .music-ctrl-panel-option,
     .fullscreen-convert-format-btn,
-    .main-toolbar-ad-review-review-pill,
-    .main-toolbar-ad-review-running-pill,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):active {
   background: var(--mpx-btn-template-active) !important;
@@ -301,16 +301,16 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
+  .sidebar-header button,
+  .main-header-actions button,
+  .metadata-header button,
   .settings-head button,
   .settings-side button,
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
+  .main-header button,
   .settings-block button:not(.sidebar-mini-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
@@ -319,8 +319,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .video-ctrl-panel-option,
   .music-ctrl-panel-option,
   .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
+  .main-header-ad-review-review-pill,
+  .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 ).is-active,
 .toolbar-icon-btn.is-grid-mode,
@@ -329,16 +329,16 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
+  .sidebar-header button,
+  .main-header-actions button,
+  .metadata-header button,
   .settings-head button,
   .settings-side button,
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
+  .main-header button,
   .settings-block button:not(.sidebar-mini-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
@@ -347,8 +347,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .video-ctrl-panel-option,
   .music-ctrl-panel-option,
   .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
+  .main-header-ad-review-review-pill,
+  .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 )[aria-pressed="true"] {
   background: var(--mpx-btn-template-pressed) !important;
@@ -359,9 +359,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 }
 
 :is(
-    .sidebar-head button,
-    .toolbar-actions button,
-    .metadata-head button,
+    .sidebar-header button,
+    .main-header-actions button,
+    .metadata-header button,
     .settings-head button,
     .settings-side button,
     .settings-shortcuts-head button,
@@ -369,7 +369,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-toolbar button,
+    .main-header button,
     .settings-block button:not(.sidebar-mini-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
@@ -378,24 +378,24 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .video-ctrl-panel-option,
     .music-ctrl-panel-option,
     .fullscreen-convert-format-btn,
-    .main-toolbar-ad-review-review-pill,
-    .main-toolbar-ad-review-running-pill,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-template-text-merged) !important;
 }
 
 :is(
-  .sidebar-head button,
-  .toolbar-actions button,
-  .metadata-head button,
+  .sidebar-header button,
+  .main-header-actions button,
+  .metadata-header button,
   .settings-head button,
   .settings-side button,
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-toolbar button,
+  .main-header button,
   .settings-block button:not(.sidebar-mini-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
@@ -404,8 +404,8 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .video-ctrl-panel-option,
   .music-ctrl-panel-option,
   .fullscreen-convert-format-btn,
-  .main-toolbar-ad-review-review-pill,
-  .main-toolbar-ad-review-running-pill,
+  .main-header-ad-review-review-pill,
+  .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 ):disabled {
   opacity: 0.56;

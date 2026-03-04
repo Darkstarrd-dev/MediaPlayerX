@@ -1083,11 +1083,11 @@ function ImageMainSection({
 
   return (
     <>
-      <div className="main-toolbar" data-slot="fg-main-toolbar">
+      <div className="main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-manage" />
-            <div className="toolbar-actions toolbar-actions-manage">
+            <span hidden data-slot="fg-main-header-state-manage" />
+            <div className="main-header-actions main-header-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -1300,9 +1300,9 @@ function ImageMainSection({
                 onCancel={handleImageConvertCancel}
               />
             </div>
-            <div className="toolbar-actions toolbar-actions-manage-secondary">
+            <div className="main-header-actions main-header-actions-manage-secondary">
               <strong
-                className="main-toolbar-summary"
+                className="main-header-summary"
                 data-tooltip-label={manageSummaryText}
               >
                 {manageSummaryText}

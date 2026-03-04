@@ -161,7 +161,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-main-toolbar-manage-music-transcode-panel"].music-audio-transcode-dialog {
+  [data-slot="fg-main-header-manage-music-transcode-panel"].music-audio-transcode-dialog {
   border-color: var(--mpx-overlay-surface-border);
   background: var(--mpx-overlay-surface-bg);
   color: #4c4033;
@@ -506,48 +506,41 @@
   position: relative;
   border: none;
   border-radius: var(--mpx-main-radius-effective, var(--mpx-main-radius));
-  background: linear-gradient(
-    180deg,
-    var(--mpx-metal-light) 0%,
-    var(--mpx-metal-base) 100%
-  );
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  background: var(--mpx-surface-chrome-bg);
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .workspace.is-focus
   .main-pane {
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .app-header,
+  .app-header {
+  border: none;
+  border-radius: var(--mpx-header-radius-effective, var(--mpx-header-radius));
+  background: var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg));
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  --mpx-metadata-control-shadow: none;
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .fg-sysinfo
   .sysinfo-card-shell {
   border: none;
-  border-radius: var(--mpx-header-radius-effective, var(--mpx-header-radius));
-  background: linear-gradient(
-    180deg,
-    var(--mpx-metal-light) 0%,
-    var(--mpx-metal-base) 100%
+  border-radius: var(
+    --mpx-sysinfo-card-radius-effective,
+    var(--mpx-sysinfo-card-radius, var(--mpx-header-radius-effective, var(--mpx-header-radius)))
   );
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  background: var(
+    --mpx-slot-fg-sysinfo-card-root-bg,
+    var(--mpx-sysinfo-card-bg, var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg)))
+  );
+  box-shadow: var(
+    --mpx-slot-fg-sysinfo-card-root-shadow,
+    var(--mpx-sysinfo-card-shadow, var(--mpx-surface-chrome-shell-shadow))
+  );
   --mpx-metadata-control-shadow: none;
 }
 
@@ -555,17 +548,8 @@
   .sidebar {
   border: none;
   border-radius: var(--mpx-sidebar-radius-effective, var(--mpx-sidebar-radius));
-  background: linear-gradient(
-    180deg,
-    var(--mpx-metal-light) 0%,
-    var(--mpx-metal-base) 100%
-  );
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  background: var(--mpx-surface-chrome-bg);
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -575,27 +559,13 @@
     --mpx-metadata-radius-effective,
     var(--mpx-metadata-radius)
   );
-  background: linear-gradient(
-    180deg,
-    var(--mpx-metal-light) 0%,
-    var(--mpx-metal-base) 100%
-  );
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  background: var(--mpx-surface-chrome-bg);
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar.is-focus {
-  box-shadow:
-    2px 4px 10px rgba(116, 88, 50, 0.18),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent);
+  box-shadow: var(--mpx-surface-chrome-shell-shadow);
 }
 
 @supports not selector(::-webkit-scrollbar) {
@@ -799,7 +769,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .main-toolbar {
+  .main-header {
   border-bottom: none;
 }
 

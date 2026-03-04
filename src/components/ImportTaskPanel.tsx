@@ -94,7 +94,7 @@ function ImportTaskPanel({
   }
 
   return (
-    <section className="import-task-panel sysinfo-card-shell" data-slot="fg-header-g1-task-import-task-panel" role="status" aria-live="polite">
+    <section className="import-task-panel sysinfo-card-shell" data-slot="fg-import-task-root" role="status" aria-live="polite">
       <header>
         <strong>{t('ui.importTask.title')}</strong>
         <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
@@ -132,7 +132,7 @@ function ImportTaskPanel({
         ) : null}
       </header>
       {taskError ? (
-        <p data-slot="fg-header-g1-task-import-task-error-panel">
+        <p data-slot="fg-import-task-error">
           <span>{taskError}</span>
           <button type="button" onClick={onClearError}>
             {t('ui.common.clear')}
@@ -140,7 +140,7 @@ function ImportTaskPanel({
         </p>
       ) : null}
       {operationHint ? (
-        <p data-slot="fg-header-g1-task-import-task-hint-panel">
+        <p data-slot="fg-import-task-hint">
           <span>{operationHint}</span>
           <button type="button" onClick={onClearOperationHint}>
             {t('ui.common.clear')}

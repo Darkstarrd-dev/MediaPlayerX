@@ -172,7 +172,7 @@
   gap: var(--mpx-pane-section-gap-px, 10px);
 }
 
-.path-arrow-toolbar {
+.path-arrow-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -183,7 +183,7 @@
   padding: 8px;
 }
 
-.path-arrow-toolbar-group {
+.path-arrow-header-group {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -191,7 +191,7 @@
   border-right: 1px solid color-mix(in srgb, var(--mpx-border-2) 85%, transparent);
 }
 
-.path-arrow-toolbar-group:last-of-type {
+.path-arrow-header-group:last-of-type {
   border-right: 0;
 }
 
@@ -202,7 +202,7 @@
   color: var(--mpx-text-2);
 }
 
-.path-arrow-toolbar-note {
+.path-arrow-header-note {
   margin-left: auto;
   font-size: 12px;
   color: var(--mpx-text-2);

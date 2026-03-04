@@ -32,7 +32,7 @@ describe("buildSettingsPanelProps", () => {
       sidebarInnerGapScaleCoeff: 1,
       thumbnailGapScaleCoeff: 1,
       buttonGroupInsetScaleCoeff: 1,
-      paneToolbarHeightScaleCoeff: 1,
+      paneHeaderHeightScaleCoeff: 1,
       paneFooterHeightScaleCoeff: 1,
       radiusCascadeScaleCoeff: 1,
       radiusValueScaleCoeff: 1,
@@ -399,7 +399,7 @@ describe("buildSettingsPanelProps", () => {
       buttonGroupInsetScaleCoeff: 0.8,
     });
     expect(updateSettings).toHaveBeenCalledWith({
-      paneToolbarHeightScaleCoeff: 1.2,
+      paneHeaderHeightScaleCoeff: 1.2,
     });
     expect(updateSettings).toHaveBeenCalledWith({
       paneFooterHeightScaleCoeff: 0.9,

@@ -185,7 +185,7 @@ export interface RenderSettingsMainSectionParams {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff: number;
+  paneHeaderHeightScaleCoeff: number;
   paneFooterHeightScaleCoeff: number;
   radiusCascadeScaleCoeff: number;
   radiusValueScaleCoeff: number;

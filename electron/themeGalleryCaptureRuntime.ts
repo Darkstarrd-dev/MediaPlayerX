@@ -239,21 +239,21 @@ export function buildSceneApplyScript(styleId: string, paletteId: string, sceneP
 
   const ensureSearchPanel = async (enabled) => {
     const button = query('button[data-a11y-id="metadata.toolbar.g3.search"]')
-      || query('button[data-slot="fg-meta-toolbar-g3-search"][aria-label="元数据面板检索开关"]')
+      || query('button[data-slot="fg-meta-header-g3-search"][aria-label="元数据面板检索开关"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureManageMode = async (enabled) => {
     const button = query('button[data-a11y-id="metadata.toolbar.g3.manage"]')
-      || query('button[data-slot="fg-meta-toolbar-g3-manage"][aria-label="元数据面板文件管理开关"]')
+      || query('button[data-slot="fg-meta-header-g3-manage"][aria-label="元数据面板文件管理开关"]')
     await ensureButtonActive(button, enabled)
   }
 
   const ensureMetadataManageMode = async (enabled) => {
     const preferred = query('button[data-a11y-id="metadata.toolbar.g3.metadataToggle"]')
-      || query('button[data-slot="fg-meta-toolbar-g3-metadata"][aria-label="进入元数据管理模式"]')
-      || query('button[data-slot="fg-meta-toolbar-g3-metadata"][aria-label="退出元数据管理模式"]')
-    const fallback = query('button[data-slot="fg-meta-toolbar-g3-metadata"]')
+      || query('button[data-slot="fg-meta-header-g3-metadata"][aria-label="进入元数据管理模式"]')
+      || query('button[data-slot="fg-meta-header-g3-metadata"][aria-label="退出元数据管理模式"]')
+    const fallback = query('button[data-slot="fg-meta-header-g3-metadata"]')
     const button = preferred || fallback
     await ensureButtonActive(button, enabled)
   }

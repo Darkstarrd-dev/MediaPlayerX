@@ -47,13 +47,23 @@
   overflow: auto;
 }
 
-.sidebar-head-title {
+.sidebar-header,
+.main-header,
+.metadata-header {
+  min-height: var(--mpx-pane-header-height-px, var(--mpx-icon-button-size));
+}
+
+.sidebar-title-btn {
+  border-radius: var(--mpx-radius-sidebar-header-btn, var(--mpx-control-radius));
+}
+
+.sidebar-header-title {
   min-width: 0;
   flex: 1;
   padding-left: var(--mpx-sidebar-gap-px, var(--mpx-pane-inner-padding-px, 8px));
 }
 
-.sidebar-head-title > strong {
+.sidebar-header-title > strong {
   display: inline-block;
   max-width: 100%;
   white-space: nowrap;

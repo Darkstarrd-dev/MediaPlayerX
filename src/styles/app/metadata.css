@@ -1,5 +1,5 @@
-.sidebar-head-icon-btn,
-.metadata-head-icon-btn {
+.sidebar-header-icon-btn,
+.metadata-header-icon-btn {
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);
   min-width: var(--mpx-icon-button-size);
@@ -11,21 +11,21 @@
   line-height: 1;
 }
 
-.sidebar-head .sidebar-head-icon-btn,
-.metadata-head .metadata-head-icon-btn {
+.sidebar-header .sidebar-header-icon-btn,
+.metadata-header .metadata-header-icon-btn {
   padding: 0;
 }
 
-.metadata-head-icon-btn {
+.metadata-header-icon-btn {
   border: 1px solid
-    var(--mpx-slot-fg-meta-toolbar-toggle-border, var(--mpx-player-btn-border));
+    var(--mpx-slot-fg-meta-header-toggle-border, var(--mpx-player-btn-border));
   border-radius: var(--mpx-radius-metadata-control, 8px);
   background: var(
-    --mpx-slot-fg-meta-toolbar-toggle-bg,
+    --mpx-slot-fg-meta-header-toggle-bg,
     var(--mpx-player-btn-bg)
   );
   color: var(
-    --mpx-slot-fg-meta-toolbar-toggle-text,
+    --mpx-slot-fg-meta-header-toggle-text,
     var(--mpx-player-btn-text)
   );
   cursor: pointer;
@@ -120,30 +120,30 @@
   flex-direction: column;
 }
 
-.metadata-head {
+.metadata-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
   height: auto;
   min-height: var(
-    --mpx-pane-toolbar-height-px,
+    --mpx-pane-header-height-px,
     var(--mpx-icon-button-size)
   );
   flex-shrink: 0;
   margin: 0;
   padding: 0;
-  background: var(--mpx-slot-fg-meta-toolbar-bg, transparent);
+  background: var(--mpx-slot-fg-meta-header-bg, transparent);
   border-bottom: none;
 }
 
-.metadata-toolbar-g3 {
+.metadata-header-g3 {
   display: inline-flex;
   align-items: flex-end;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
 }
 
-.metadata-toolbar-g3 .search-trigger-btn {
+.metadata-header-g3 .search-trigger-btn {
   min-width: var(--mpx-icon-button-size);
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);
@@ -151,15 +151,15 @@
   padding: 0;
 }
 
-.metadata-toolbar-g3 .header-btn-label {
+.metadata-header-g3 .header-btn-label {
   display: none;
 }
 
-.metadata-head-icon-btn.is-image {
+.metadata-header-icon-btn.is-image {
   background: var(--mpx-bg-selected);
 }
 
-.metadata-head-icon-btn.is-metadata {
+.metadata-header-icon-btn.is-metadata {
   background: var(--mpx-bg-muted);
 }
 

@@ -106,7 +106,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     render(<App />);
 
     const readToolbarTitle = () =>
-      document.querySelector(".main-toolbar strong")?.textContent ?? "";
+      document.querySelector(".main-header strong")?.textContent ?? "";
     const readFullscreenImageAlt = () =>
       (
         document.querySelector(

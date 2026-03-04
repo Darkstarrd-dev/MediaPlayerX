@@ -69,7 +69,7 @@ function SettingsPanel({
   sidebarInnerGapScaleCoeff,
   thumbnailGapScaleCoeff,
   buttonGroupInsetScaleCoeff,
-  paneToolbarHeightScaleCoeff,
+  paneHeaderHeightScaleCoeff,
   paneFooterHeightScaleCoeff,
   radiusCascadeScaleCoeff,
   radiusValueScaleCoeff,
@@ -413,7 +413,7 @@ function SettingsPanel({
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff,
   });
   const thumbnailGapScale = thumbnailGapScaleCoeff;
@@ -964,7 +964,7 @@ function SettingsPanel({
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff,
     radiusCascadeScaleCoeff,
     radiusValueScaleCoeff,

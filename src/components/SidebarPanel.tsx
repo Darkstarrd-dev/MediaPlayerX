@@ -1104,10 +1104,10 @@ function SidebarPanel({
         minWidth: `${sidebarMinWidth}px`,
       }}
     >
-      <div className="sidebar-head" data-slot="fg-sidebar-toolbar">
+      <div className="sidebar-header" data-slot="fg-sidebar-header">
         <button
           className="sidebar-title-btn"
-          data-slot="fg-sidebar-toolbar-title"
+          data-slot="fg-sidebar-header-title"
           type="button"
           aria-label={sidebarTreeDisplayToggleLabel}
           data-tooltip-label={sidebarTreeDisplayToggleTip}
@@ -1125,11 +1125,11 @@ function SidebarPanel({
           {currentRootLabel ?? t("ui.sidebar.structure")}
         </button>
 
-        <div className="sidebar-head-actions">
+        <div className="sidebar-header-actions">
           {searchResultMode ? (
             <button
-              className="sidebar-head-icon-btn"
-              data-slot="fg-sidebar-toolbar-back"
+              className="sidebar-header-icon-btn"
+              data-slot="fg-sidebar-header-back"
               type="button"
               aria-label={t("a11y.common.back")}
               data-tooltip-label={t("tip.common.back")}
@@ -1143,8 +1143,8 @@ function SidebarPanel({
           {showRootToggle ? (
             manageStyleEnabled ? (
               <button
-                className="sidebar-head-icon-btn"
-                data-slot="fg-sidebar-toolbar-clear"
+                className="sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-clear"
                 type="button"
                 aria-label={t("a11y.common.clearSelection")}
                 data-tooltip-label={t("tip.common.clearSelection")}
@@ -1158,8 +1158,8 @@ function SidebarPanel({
 
           {showRootToggle ? (
             <button
-              className={`sidebar-head-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-toolbar-label-mode-toggle"
+              className={`sidebar-header-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-header-label-mode-toggle"
               type="button"
               data-tooltip-label={
                 effectiveSidebarLabelDisplayMode === "full"
@@ -1183,8 +1183,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-head-icon-btn"
-                data-slot="fg-sidebar-toolbar-collapse-all"
+                className="sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-collapse-all"
                 type="button"
                 aria-label={collapseImageParentsLabel}
                 data-tooltip-label={
@@ -1211,8 +1211,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-head-icon-btn"
-                data-slot="fg-sidebar-toolbar-prev-image-parent"
+                className="sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-prev-image-parent"
                 type="button"
                 aria-label={previousImageParentLabel}
                 data-tooltip-label={t("tip.sidebar.previousImageParent")}
@@ -1241,8 +1241,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-head-icon-btn"
-                data-slot="fg-sidebar-toolbar-next-image-parent"
+                className="sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-next-image-parent"
                 type="button"
                 aria-label={nextImageParentLabel}
                 data-tooltip-label={t("tip.sidebar.nextImageParent")}
@@ -1264,8 +1264,8 @@ function SidebarPanel({
 
           {showRootToggle ? (
             <button
-              className={`sidebar-head-icon-btn ${rootSet ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-toolbar-root-toggle"
+              className={`sidebar-header-icon-btn ${rootSet ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-header-root-toggle"
               type="button"
               aria-label={rootToggleLabel}
               data-tooltip-label={rootToggleLabel}

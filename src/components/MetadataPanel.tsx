@@ -917,12 +917,12 @@ function MetadataPanel({
         style={{ width: `${metadataRatio * 100}%` }}
         onContextMenu={handlePanelContextMenu}
       >
-        <div className="metadata-head" data-slot="fg-meta-toolbar">
-          <div className="metadata-toolbar-g3" data-slot="fg-meta-toolbar-g3">
+        <div className="metadata-header" data-slot="fg-meta-header">
+          <div className="metadata-header-g3" data-slot="fg-meta-header-g3">
             <button
               {...searchButtonA11y}
               className={`search-trigger-btn ${searchPanelOpen ? "is-active" : ""}`}
-              data-slot="fg-meta-toolbar-g3-search"
+              data-slot="fg-meta-header-g3-search"
               type="button"
               disabled={interactionLocked}
               onClick={onToggleSearchPanel}
@@ -940,7 +940,7 @@ function MetadataPanel({
             <button
               {...manageButtonA11y}
               className={`search-trigger-btn ${manageMode ? "is-active" : ""}`}
-              data-slot="fg-meta-toolbar-g3-manage"
+              data-slot="fg-meta-header-g3-manage"
               type="button"
               disabled={interactionLocked}
               onClick={onToggleManageMode}
@@ -958,7 +958,7 @@ function MetadataPanel({
             <button
               {...metadataToggleA11y}
               className={`search-trigger-btn ${metadataManageMode ? "is-active" : ""}`}
-              data-slot="fg-meta-toolbar-g3-metadata"
+              data-slot="fg-meta-header-g3-metadata"
               type="button"
               disabled={interactionLocked}
               onClick={onToggleMetadataManageMode}
@@ -978,7 +978,7 @@ function MetadataPanel({
             {mode === "video" ? (
               <button
                 className={`main-icon-square-btn ${metadataTab === "playlist" ? "is-active" : ""}`}
-                data-slot="fg-meta-toolbar-g3-playlist"
+                data-slot="fg-meta-header-g3-playlist"
                 type="button"
                 aria-label={
                   metadataTab === "info"
@@ -1005,8 +1005,8 @@ function MetadataPanel({
 
           {mode === "image" ? (
             <button
-              className={`metadata-head-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
-              data-slot="fg-meta-toolbar-toggle"
+              className={`metadata-header-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
+              data-slot="fg-meta-header-toggle"
               type="button"
               aria-label={metadataToggleLabel}
               data-tooltip-label={metadataToggleLabel}

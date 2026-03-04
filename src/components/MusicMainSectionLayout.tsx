@@ -113,11 +113,11 @@ export function MusicMainSectionLayout({
 
   return (
     <>
-      <div className="main-toolbar" data-slot="fg-main-toolbar">
+      <div className="main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-manage" />
-            <div className="toolbar-actions toolbar-actions-manage">
+            <span hidden data-slot="fg-main-header-state-manage" />
+            <div className="main-header-actions main-header-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -168,15 +168,15 @@ export function MusicMainSectionLayout({
               </button>
               {audioTranscodePanel}
             </div>
-            <strong className="main-toolbar-summary" data-tooltip-label={manageSummary}>
+            <strong className="main-header-summary" data-tooltip-label={manageSummary}>
               {manageSummary}
             </strong>
           </>
         ) : metadataManageMode ? (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-metadata" />
-            <strong className="main-toolbar-title">{t("ui.header.metadataManage")}</strong>
-            <div className="toolbar-actions toolbar-actions-manage">
+            <span hidden data-slot="fg-main-header-state-metadata" />
+            <strong className="main-header-title">{t("ui.header.metadataManage")}</strong>
+            <div className="main-header-actions main-header-actions-manage">
               <button
                 className="feature-action-btn main-icon-square-btn"
                 type="button"
@@ -190,9 +190,9 @@ export function MusicMainSectionLayout({
           </>
         ) : (
           <>
-            <span hidden data-slot="fg-main-toolbar-state-normal" />
+            <span hidden data-slot="fg-main-header-state-normal" />
             <ToolbarTitleMarquee text={musicToolbarTitle} />
-            <div className="toolbar-actions">
+            <div className="main-header-actions">
               <button
                 className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
                 type="button"
@@ -212,7 +212,7 @@ export function MusicMainSectionLayout({
               </button>
             </div>
             {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
-              <div className="toolbar-actions">
+              <div className="main-header-actions">
                 {canJumpToCover ? (
                   <button
                     className="toolbar-icon-btn"

@@ -6,7 +6,7 @@ interface RuntimeSpacingInput {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff?: number;
+  paneHeaderHeightScaleCoeff?: number;
   paneFooterHeightScaleCoeff?: number;
 }
 
@@ -17,7 +17,7 @@ interface RuntimeSpacingResult {
   sidebarInnerGapScaleCoeff: number;
   thumbnailGapScaleCoeff: number;
   buttonGroupInsetScaleCoeff: number;
-  paneToolbarHeightScaleCoeff: number;
+  paneHeaderHeightScaleCoeff: number;
   paneFooterHeightScaleCoeff: number;
   layoutGapPx: number;
   paneInnerPaddingPx: number;
@@ -73,8 +73,8 @@ export function resolveRuntimeSpacing(
     0,
     2,
   );
-  const paneToolbarHeightScaleCoeff = clampNumber(
-    input.paneToolbarHeightScaleCoeff ?? 1,
+  const paneHeaderHeightScaleCoeff = clampNumber(
+    input.paneHeaderHeightScaleCoeff ?? 1,
     0.5,
     2,
   );
@@ -123,7 +123,7 @@ export function resolveRuntimeSpacing(
     sidebarInnerGapScaleCoeff,
     thumbnailGapScaleCoeff,
     buttonGroupInsetScaleCoeff,
-    paneToolbarHeightScaleCoeff,
+    paneHeaderHeightScaleCoeff,
     paneFooterHeightScaleCoeff,
     layoutGapPx,
     paneInnerPaddingPx,

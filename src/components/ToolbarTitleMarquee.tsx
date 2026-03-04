@@ -7,27 +7,27 @@ interface ToolbarTitleMarqueeProps {
 
 export function ToolbarTitleMarquee({
   text,
-  className = "main-toolbar-title",
+  className = "main-header-title",
 }: ToolbarTitleMarqueeProps) {
   const { hostRef, textRef, overflowing, marqueeStyle } =
     useOverflowMarquee<HTMLSpanElement>({
       text,
-      cssDurationVar: "--mpx-main-toolbar-marquee-duration",
+      cssDurationVar: "--mpx-main-header-marquee-duration",
       secondsPerChar: 0.22,
     });
 
   return (
     <strong className={className} data-tooltip-label={text}>
       <span
-        className={`main-toolbar-title-marquee ${overflowing ? "is-overflow" : ""}`}
+        className={`main-header-title-marquee ${overflowing ? "is-overflow" : ""}`}
         ref={hostRef}
         style={marqueeStyle}
       >
-        <span className="main-toolbar-title-marquee-item" ref={textRef}>
+        <span className="main-header-title-marquee-item" ref={textRef}>
           {text}
         </span>
         {overflowing ? (
-          <span aria-hidden="true" className="main-toolbar-title-marquee-item">
+          <span aria-hidden="true" className="main-header-title-marquee-item">
             {text}
           </span>
         ) : null}

@@ -115,7 +115,7 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     await click(screen.getByRole("button", { name: "文件管理" }));
 
     expect(document.querySelector(".manage-panel")).toBeNull();
-    expect(document.querySelector(".main-toolbar-summary")).not.toBeNull();
+    expect(document.querySelector(".main-header-summary")).not.toBeNull();
 
     await waitFor(() => {
       expect(screen.getByText("未选择条目")).toBeInTheDocument();
