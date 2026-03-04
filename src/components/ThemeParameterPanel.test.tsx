@@ -364,6 +364,17 @@ describe("ThemeParameterPanel", () => {
       document.querySelector(".theme-debug-large-panel-preview-side"),
     ).not.toBeNull();
 
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "背景层 + 小面板层预览" }),
+    );
+    expect(
+      document.documentElement.getAttribute("data-mpx-theme-debug-preview"),
+    ).toBe("bg-plus-small-panel");
+    expect(
+      document.querySelector(".theme-debug-small-panel-preview"),
+    ).not.toBeNull();
+
     rerender(
       <I18nProvider browserLocale="en-US">
         <ThemeParameterPanel

@@ -190,6 +190,16 @@
   pointer-events: none !important;
 }
 
+:root[data-mpx-theme-debug-preview="bg-plus-small-panel"]
+  [data-slot="fg-header-root"],
+:root[data-mpx-theme-debug-preview="bg-plus-small-panel"]
+  [data-slot="fg-sysinfo-root"],
+:root[data-mpx-theme-debug-preview="bg-plus-small-panel"]
+  [data-slot="bg-app-workspace"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 .theme-debug-large-panel-preview-layer {
   position: fixed;
   inset: 0;
@@ -202,6 +212,39 @@
 
 .theme-debug-large-panel-preview {
   pointer-events: none;
+}
+
+.theme-debug-small-panel-preview-layer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.theme-debug-small-panel-preview {
+  pointer-events: none;
+}
+
+.theme-debug-small-panel-preview > h3 {
+  margin: 0;
+}
+
+.theme-debug-small-panel-preview-content,
+.theme-debug-small-panel-preview-actions {
+  width: 100%;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--mpx-text-1) 6%, transparent);
+}
+
+.theme-debug-small-panel-preview-content {
+  min-height: 80px;
+}
+
+.theme-debug-small-panel-preview-actions {
+  min-height: 34px;
 }
 
 .theme-debug-large-panel-preview-head {

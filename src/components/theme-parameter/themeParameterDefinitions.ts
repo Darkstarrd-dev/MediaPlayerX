@@ -108,6 +108,21 @@ function createCssPercentParameter({
   };
 }
 
+function readFirstUnitValue(
+  raw: string,
+  unit: "px" | "vw" | "vh" | "%",
+  fallback: number,
+): number {
+  const escapedUnit = unit === "%" ? "%" : unit;
+  const pattern = new RegExp(`([\\d.]+)${escapedUnit}`);
+  const match = raw.match(pattern);
+  if (!match) {
+    return fallback;
+  }
+  const parsed = Number.parseFloat(match[1]);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 type SectionScope = "header" | "sidebar" | "main" | "metadata";
 type SectionTarget = "pane" | "control";
 type SectionMetric =
@@ -753,6 +768,111 @@ export const LARGE_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
     max: 6,
     step: 1,
     fallback: 1,
+  }),
+];
+
+export const SMALL_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
+  {
+    id: "small-panel-width",
+    labelKey: "ui.themeParameter.smallPanelWidth",
+    cssVarName: "--mpx-dialog-panel-width",
+    min: 280,
+    max: 920,
+    step: 1,
+    fallback: 520,
+    unit: "px",
+    read: (computed) =>
+      readFirstUnitValue(
+        computed.getPropertyValue("--mpx-dialog-panel-width").trim(),
+        "px",
+        520,
+      ),
+    apply: (root, value, values) => {
+      const width = clampValue(value, 280, 920);
+      const maxWidth = clampValue(values["small-panel-max-width"] ?? 92, 40, 100);
+      root.style.setProperty(
+        "--mpx-dialog-panel-width",
+        `min(${width}px, ${maxWidth}vw)`,
+      );
+    },
+    reset: (root) => {
+      root.style.removeProperty("--mpx-dialog-panel-width");
+    },
+  },
+  {
+    id: "small-panel-max-width",
+    labelKey: "ui.themeParameter.smallPanelMaxWidth",
+    cssVarName: "--mpx-dialog-panel-max-width",
+    min: 40,
+    max: 100,
+    step: 1,
+    fallback: 92,
+    unit: "%",
+    read: (computed) =>
+      readFirstUnitValue(
+        computed.getPropertyValue("--mpx-dialog-panel-max-width").trim(),
+        "vw",
+        92,
+      ),
+    apply: (root, value, values) => {
+      const maxWidth = clampValue(value, 40, 100);
+      const width = clampValue(values["small-panel-width"] ?? 520, 280, 920);
+      root.style.setProperty("--mpx-dialog-panel-max-width", `${maxWidth}vw`);
+      root.style.setProperty(
+        "--mpx-dialog-panel-width",
+        `min(${width}px, ${maxWidth}vw)`,
+      );
+    },
+    reset: (root) => {
+      root.style.removeProperty("--mpx-dialog-panel-max-width");
+      root.style.removeProperty("--mpx-dialog-panel-width");
+    },
+  },
+  createCssPercentParameter({
+    id: "small-panel-max-height",
+    labelKey: "ui.themeParameter.smallPanelMaxHeight",
+    variableName: "--mpx-dialog-panel-max-height",
+    min: 40,
+    max: 100,
+    step: 1,
+    fallback: 80,
+    valueSuffix: "vh",
+  }),
+  createCssPxParameter({
+    id: "small-panel-border-width",
+    labelKey: "ui.themeParameter.smallPanelBorderWidth",
+    variableName: "--mpx-dialog-panel-border-width",
+    min: 0,
+    max: 6,
+    step: 1,
+    fallback: 1,
+  }),
+  createCssPxParameter({
+    id: "small-panel-radius",
+    labelKey: "ui.themeParameter.smallPanelRadius",
+    variableName: "--mpx-dialog-panel-radius",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 12,
+  }),
+  createCssPxParameter({
+    id: "small-panel-padding",
+    labelKey: "ui.themeParameter.smallPanelPadding",
+    variableName: "--mpx-dialog-panel-padding",
+    min: 0,
+    max: 28,
+    step: 1,
+    fallback: 14,
+  }),
+  createCssPxParameter({
+    id: "small-panel-gap",
+    labelKey: "ui.themeParameter.smallPanelGap",
+    variableName: "--mpx-dialog-panel-gap",
+    min: 0,
+    max: 24,
+    step: 1,
+    fallback: 10,
   }),
 ];
 

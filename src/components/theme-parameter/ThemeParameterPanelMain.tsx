@@ -47,6 +47,7 @@ interface ThemeParameterPanelMainProps {
   styleParameters: ThemeParameterDefinition[];
   containerLayerParameters: ThemeParameterDefinition[];
   largePanelLayerParameters: ThemeParameterDefinition[];
+  smallPanelLayerParameters: ThemeParameterDefinition[];
   values: ThemeParameterValues;
   applyParameter: (
     parameter: ThemeParameterDefinition,
@@ -63,6 +64,7 @@ export type ThemeParameterPageId =
   | "snapshot"
   | "containerLayer"
   | "largePanelLayer"
+  | "smallPanelLayer"
   | "buttonStates"
   | "actions";
 
@@ -70,7 +72,8 @@ export type ThemeParameterPreviewMode =
   | "none"
   | "bg-only"
   | "bg-plus-container"
-  | "bg-plus-large-panel";
+  | "bg-plus-large-panel"
+  | "bg-plus-small-panel";
 
 type ThemeDebugNumberGroupId =
   | "box"
@@ -222,6 +225,31 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     cssVar: "--mpx-large-panel-main-bg",
     fallback: "#ffffff",
     groupId: "main",
+  },
+];
+
+const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "small-panel-border-color",
+    cssVar: "--mpx-dialog-panel-border-color",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-bg",
+    cssVar: "--mpx-dialog-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+];
+
+const SMALL_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "small-panel-shadow",
+    cssVar: "--mpx-dialog-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
   },
 ];
 
@@ -467,6 +495,16 @@ function resolveLargePanelNumberGroup(
   return "root";
 }
 
+function resolveSmallPanelNumberGroup(
+  parameter: ThemeParameterDefinition,
+): ThemeDebugNumberGroupId {
+  const id = parameter.id;
+  if (id.includes("border") || id.includes("radius")) {
+    return "border";
+  }
+  return "box";
+}
+
 export function ThemeParameterPanelMain({
   t,
   styleId,
@@ -496,6 +534,7 @@ export function ThemeParameterPanelMain({
   styleParameters,
   containerLayerParameters,
   largePanelLayerParameters,
+  smallPanelLayerParameters,
   values,
   applyParameter,
   isParameterChanged,
@@ -516,6 +555,10 @@ export function ThemeParameterPanelMain({
     {
       id: "largePanelLayer",
       labelKey: "ui.themeParameter.page.largePanelLayer",
+    },
+    {
+      id: "smallPanelLayer",
+      labelKey: "ui.themeParameter.page.smallPanelLayer",
     },
     {
       id: "buttonStates",
@@ -589,10 +632,40 @@ export function ThemeParameterPanelMain({
       .filter((group) => group.parameters.length > 0);
   }, [largePanelLayerParameters]);
 
+  const smallPanelNumberGroups = useMemo(() => {
+    const groupMap: Record<
+      ThemeDebugNumberGroupId,
+      ThemeParameterDefinition[]
+    > = {
+      box: [],
+      border: [],
+      shadow: [],
+      root: [],
+      head: [],
+      shell: [],
+      side: [],
+      main: [],
+    };
+    for (const parameter of smallPanelLayerParameters) {
+      groupMap[resolveSmallPanelNumberGroup(parameter)].push(parameter);
+    }
+    return ["box", "border"]
+      .map((groupId) => {
+        const id = groupId as ThemeDebugNumberGroupId;
+        return {
+          id,
+          title: resolveNumberGroupTitle(id),
+          parameters: groupMap[id],
+        };
+      })
+      .filter((group) => group.parameters.length > 0);
+  }, [smallPanelLayerParameters]);
+
   useEffect(() => {
     if (
       activePage !== "containerLayer" &&
       activePage !== "largePanelLayer" &&
+      activePage !== "smallPanelLayer" &&
       activePage !== "buttonStates"
     ) {
       return;
@@ -603,6 +676,8 @@ export function ThemeParameterPanelMain({
         ? CONTAINER_COLOR_FIELDS
         : activePage === "largePanelLayer"
           ? LARGE_PANEL_COLOR_FIELDS
+          : activePage === "smallPanelLayer"
+            ? SMALL_PANEL_COLOR_FIELDS
           : BUTTON_STATE_COLOR_FIELDS;
     const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
@@ -614,14 +689,20 @@ export function ThemeParameterPanelMain({
     }
     setDebugColorValues(nextValues);
 
-    if (activePage === "containerLayer") {
+    if (activePage === "containerLayer" || activePage === "smallPanelLayer") {
       const nextTextValues: Record<string, string> = {};
-      for (const field of CONTAINER_TEXT_FIELDS) {
+      const sourceTextFields =
+        activePage === "containerLayer"
+          ? CONTAINER_TEXT_FIELDS
+          : SMALL_PANEL_TEXT_FIELDS;
+      for (const field of sourceTextFields) {
         nextTextValues[field.id] =
           computed.getPropertyValue(field.cssVar).trim() || field.fallback;
       }
       setDebugTextValues(nextTextValues);
+      return;
     }
+    setDebugTextValues({});
   }, [activePage, styleId]);
 
   const setDebugColorFieldHex = (
@@ -1246,6 +1327,32 @@ export function ThemeParameterPanelMain({
               "main",
             ])}
             {renderNumberGroups(largePanelNumberGroups)}
+          </section>
+        ) : null}
+
+        {activePage === "smallPanelLayer" ? (
+          <section className="settings-block theme-parameter-block">
+            <section className="settings-group">
+              <header className="settings-group-head">
+                <span>{t("ui.themeParameter.page.smallPanelLayer")}</span>
+              </header>
+              <div className="theme-parameter-debug-preview-actions">
+                <button
+                  type="button"
+                  className={
+                    activePreviewMode === "bg-plus-small-panel"
+                      ? "theme-parameter-debug-preview-btn is-active"
+                      : "theme-parameter-debug-preview-btn"
+                  }
+                  onClick={() => togglePreviewMode("bg-plus-small-panel")}
+                >
+                  {t("ui.themeParameter.preview.bgPlusSmallPanel")}
+                </button>
+              </div>
+            </section>
+            {renderColorGroups(SMALL_PANEL_COLOR_FIELDS, ["box", "border"])}
+            {renderTextGroups(SMALL_PANEL_TEXT_FIELDS, ["shadow"])}
+            {renderNumberGroups(smallPanelNumberGroups)}
           </section>
         ) : null}
 

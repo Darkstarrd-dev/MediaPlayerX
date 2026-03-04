@@ -356,6 +356,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.page.snapshot": "Snapshot tools",
   "ui.themeParameter.page.containerLayer": "Container layer debug",
   "ui.themeParameter.page.largePanelLayer": "Large panel layer debug",
+  "ui.themeParameter.page.smallPanelLayer": "Small panel layer debug",
   "ui.themeParameter.resetField": "Reset",
   "ui.themeParameter.page.buttonStates": "Button state demos",
   "ui.themeParameter.page.actions": "Actions",
@@ -364,6 +365,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Preview background + container layer",
   "ui.themeParameter.preview.bgPlusLargePanel":
     "Preview background + large panel layer",
+  "ui.themeParameter.preview.bgPlusSmallPanel":
+    "Preview background + small panel layer",
   "ui.themeParameter.sectionCommon": "Common parameters",
   "ui.themeParameter.sectionStyle": "Style parameters ({{styleId}})",
   "ui.themeParameter.sectionMetric": "{{scope}} {{target}} {{metric}}",
@@ -409,6 +412,13 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelMainRadius": "Large panel main radius",
   "ui.themeParameter.largePanelMainBorderWidth":
     "Large panel main border width",
+  "ui.themeParameter.smallPanelWidth": "Small panel width",
+  "ui.themeParameter.smallPanelMaxWidth": "Small panel max width",
+  "ui.themeParameter.smallPanelMaxHeight": "Small panel max height",
+  "ui.themeParameter.smallPanelBorderWidth": "Small panel border width",
+  "ui.themeParameter.smallPanelRadius": "Small panel radius",
+  "ui.themeParameter.smallPanelPadding": "Small panel padding",
+  "ui.themeParameter.smallPanelGap": "Small panel content gap",
   "ui.themeParameter.panelPadding": "Panel padding",
   "ui.themeParameter.headerButtonSize": "Header button size",
   "ui.themeParameter.headerButtonRadius": "Header button radius",

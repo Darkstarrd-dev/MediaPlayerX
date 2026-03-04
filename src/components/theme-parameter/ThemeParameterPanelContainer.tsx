@@ -20,6 +20,7 @@ import {
   COMMON_PARAMETERS,
   EMPTY_PARAMETERS,
   LARGE_PANEL_PARAMETERS,
+  SMALL_PANEL_PARAMETERS,
   readParameterValues,
   resolveParameterLabel,
   resolveStyleGroup,
@@ -161,6 +162,16 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   {
     id: "large-panel-main-bg",
     cssVar: "--mpx-large-panel-main-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-border-color",
+    cssVar: "--mpx-dialog-panel-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-bg",
+    cssVar: "--mpx-dialog-panel-bg",
     fallback: "#ffffff",
   },
   {
@@ -314,6 +325,10 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     id: "container-surface-chrome-shell-shadow",
     cssVar: "--mpx-surface-chrome-shell-shadow",
   },
+  {
+    id: "small-panel-shadow",
+    cssVar: "--mpx-dialog-panel-shadow",
+  },
 ];
 
 function ThemeParameterPanel({
@@ -329,11 +344,12 @@ function ThemeParameterPanel({
   const parameters = useMemo(
     () =>
       styleGroup === "default"
-        ? [...COMMON_PARAMETERS, ...LARGE_PANEL_PARAMETERS]
+        ? [...COMMON_PARAMETERS, ...LARGE_PANEL_PARAMETERS, ...SMALL_PANEL_PARAMETERS]
         : [
             ...COMMON_PARAMETERS,
             ...STYLE_PARAMETERS[styleGroup],
             ...LARGE_PANEL_PARAMETERS,
+            ...SMALL_PANEL_PARAMETERS,
           ],
     [styleGroup],
   );
@@ -692,6 +708,18 @@ function ThemeParameterPanel({
           </section>
         </div>
       ) : null}
+      {activePreviewMode === "bg-plus-small-panel" ? (
+        <div
+          className="theme-debug-small-panel-preview-layer"
+          aria-hidden="true"
+        >
+          <section className="mpx-dialog-panel theme-debug-small-panel-preview">
+            <h3>Dialog Preview</h3>
+            <div className="theme-debug-small-panel-preview-content" />
+            <div className="theme-debug-small-panel-preview-actions" />
+          </section>
+        </div>
+      ) : null}
       <section
         className={`mpx-large-panel mpx-large-panel--theme-parameter settings-panel theme-parameter-panel ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g3-theme-parameter-root-panel"
@@ -748,6 +776,7 @@ function ThemeParameterPanel({
           styleParameters={styleParameters}
           containerLayerParameters={containerLayerParameters}
           largePanelLayerParameters={LARGE_PANEL_PARAMETERS}
+          smallPanelLayerParameters={SMALL_PANEL_PARAMETERS}
           values={values}
           applyParameter={applyParameter}
           isParameterChanged={isParameterChanged}
