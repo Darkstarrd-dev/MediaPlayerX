@@ -353,7 +353,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.metricShadowStrength": "阴影强度",
   "ui.themeParameter.metricShadowHardness": "阴影硬度",
   "ui.themeParameter.metricBorderContrast": "边界对比度",
-  "ui.themeParameter.metricBorderColor": "边界颜色",
+  "ui.themeParameter.metricBorderColor": "边界色调比例",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.resetCurrentStyle": "重置当前风格参数",
   "ui.themeParameter.layoutPadding": "布局内边距",

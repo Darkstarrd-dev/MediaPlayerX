@@ -177,6 +177,9 @@ describe("ThemeParameterPanel", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "--mpx-bg-app" }), {
       target: { value: "#123456" },
     });
+    fireEvent.change(screen.getByLabelText("--mpx-bg-app-alpha"), {
+      target: { value: "40" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
 
@@ -186,7 +189,7 @@ describe("ThemeParameterPanel", () => {
     expect(snapshotTextarea.value).toContain('"styleId": "soft-skeuomorphic"');
     expect(snapshotTextarea.value).toContain('"layout-padding": 14');
     expect(snapshotTextarea.value).toContain('"debugColors"');
-    expect(snapshotTextarea.value).toContain('"container-bg-app": "#123456"');
+    expect(snapshotTextarea.value).toContain('"container-bg-app": "rgba(18, 52, 86, 0.4)"');
 
     fireEvent.change(snapshotTextarea, {
       target: {

@@ -398,7 +398,9 @@ css 的触发点
 
 补充
 `快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 两个调试分页中的颜色调节结果。
+`快照工具` 导出的 JSON 现已包含 `debugTexts`，用于保存容器壳层阴影原始串（如 `--mpx-surface-chrome-shell-shadow`）。
 `3.2` 两个调试分页里每个已改动字段都显示“复位”按钮，点击后恢复到主题默认值（移除对应 inline 覆写）。
+`--mpx-metal-dark` 与 `--mpx-surface-chrome-shell-shadow` 已接入大容器层调试分页；颜色项支持透明度输入。
 
 ## 3.3 帮助面板
 

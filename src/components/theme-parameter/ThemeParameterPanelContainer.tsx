@@ -9,7 +9,13 @@ import type {
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
 } from "./ThemeParameterPanelMain";
-import { includesSearch, readFileAsText } from "./themeParameterUtils";
+import {
+  formatColorStateAsCss,
+  includesSearch,
+  parseColorState,
+  readCssColorState,
+  readFileAsText,
+} from "./themeParameterUtils";
 import {
   COMMON_PARAMETERS,
   EMPTY_PARAMETERS,
@@ -61,12 +67,18 @@ interface ThemeParameterSnapshot {
   styleId: string;
   values: Record<string, number>;
   debugColors?: Record<string, string>;
+  debugTexts?: Record<string, string>;
 }
 
 interface SnapshotColorField {
   id: string;
   cssVar: string;
   fallback: string;
+}
+
+interface SnapshotTextField {
+  id: string;
+  cssVar: string;
 }
 
 const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
@@ -95,6 +107,11 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-metal-base",
     cssVar: "--mpx-metal-base",
     fallback: "#e6e2da",
+  },
+  {
+    id: "container-metal-dark",
+    cssVar: "--mpx-metal-dark",
+    fallback: "#cdc7bb",
   },
   {
     id: "container-border-1",
@@ -148,36 +165,12 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
 ];
 
-function normalizeHexColor(value: string): string | null {
-  const normalized = value.trim();
-  if (/^#[0-9a-f]{6}$/i.test(normalized)) {
-    return normalized.toLowerCase();
-  }
-  if (/^#[0-9a-f]{3}$/i.test(normalized)) {
-    const [r, g, b] = normalized.slice(1).split("");
-    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-  }
-  const rgbMatch = normalized.match(
-    /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/i,
-  );
-  if (!rgbMatch) {
-    return null;
-  }
-  const [r, g, b] = rgbMatch.slice(1, 4).map((item) =>
-    Math.max(0, Math.min(255, Number(item))),
-  );
-  const toHex = (channel: number) => channel.toString(16).padStart(2, "0");
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-function readCssColorAsHex(
-  computed: CSSStyleDeclaration,
-  cssVar: string,
-  fallback: string,
-): string {
-  const raw = computed.getPropertyValue(cssVar).trim();
-  return normalizeHexColor(raw) ?? fallback;
-}
+const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
+  {
+    id: "container-surface-chrome-shell-shadow",
+    cssVar: "--mpx-surface-chrome-shell-shadow",
+  },
+];
 
 function ThemeParameterPanel({
   open,
@@ -316,7 +309,15 @@ function ThemeParameterPanel({
       debugColors: Object.fromEntries(
         SNAPSHOT_COLOR_FIELDS.map((field) => [
           field.id,
-          readCssColorAsHex(computed, field.cssVar, field.fallback),
+          formatColorStateAsCss(
+            readCssColorState(computed, field.cssVar, field.fallback),
+          ),
+        ]),
+      ),
+      debugTexts: Object.fromEntries(
+        SNAPSHOT_TEXT_FIELDS.map((field) => [
+          field.id,
+          computed.getPropertyValue(field.cssVar).trim(),
         ]),
       ),
     };
@@ -442,11 +443,25 @@ function ThemeParameterPanel({
         if (typeof rawColor !== "string") {
           continue;
         }
-        const normalizedColor = normalizeHexColor(rawColor);
+        const normalizedColor = parseColorState(rawColor, field.fallback);
         if (!normalizedColor) {
           continue;
         }
-        root.style.setProperty(field.cssVar, normalizedColor);
+        root.style.setProperty(field.cssVar, formatColorStateAsCss(normalizedColor));
+      }
+    }
+    if (payload.debugTexts && typeof payload.debugTexts === "object") {
+      const debugTexts = payload.debugTexts as Record<string, unknown>;
+      for (const field of SNAPSHOT_TEXT_FIELDS) {
+        const rawText = debugTexts[field.id];
+        if (typeof rawText !== "string") {
+          continue;
+        }
+        if (!rawText.trim()) {
+          root.style.removeProperty(field.cssVar);
+          continue;
+        }
+        root.style.setProperty(field.cssVar, rawText);
       }
     }
     setValues(nextValues);
@@ -467,6 +482,9 @@ function ThemeParameterPanel({
       parameter.reset(root);
     }
     for (const field of SNAPSHOT_COLOR_FIELDS) {
+      root.style.removeProperty(field.cssVar);
+    }
+    for (const field of SNAPSHOT_TEXT_FIELDS) {
       root.style.removeProperty(field.cssVar);
     }
     setValues(readParameterValues(parameters));

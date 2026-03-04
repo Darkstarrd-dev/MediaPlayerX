@@ -6,7 +6,13 @@ import type {
 } from "react";
 import { useEffect, useMemo, useState } from "react";
 
-import { formatValue } from "./themeParameterUtils";
+import {
+  formatColorStateAsCss,
+  formatValue,
+  parseColorState,
+  readCssColorState,
+  type ColorState,
+} from "./themeParameterUtils";
 import type {
   ThemeParameterDefinition,
   ThemeParameterValues,
@@ -80,6 +86,14 @@ interface ThemeDebugColorField {
   id: string;
   cssVar: string;
   fallback: string;
+  fallbackAlpha?: number;
+  groupId: ThemeDebugNumberGroupId;
+}
+
+interface ThemeDebugTextField {
+  id: string;
+  cssVar: string;
+  fallback: string;
   groupId: ThemeDebugNumberGroupId;
 }
 
@@ -121,6 +135,12 @@ const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "box",
   },
   {
+    id: "container-metal-dark",
+    cssVar: "--mpx-metal-dark",
+    fallback: "#cdc7bb",
+    groupId: "shadow",
+  },
+  {
     id: "container-border-1",
     cssVar: "--mpx-border-1",
     fallback: "#d6cfc1",
@@ -131,6 +151,16 @@ const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     cssVar: "--mpx-border-2",
     fallback: "#b7ab95",
     groupId: "border",
+  },
+];
+
+const CONTAINER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-surface-chrome-shell-shadow",
+    cssVar: "--mpx-surface-chrome-shell-shadow",
+    fallback:
+      "2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent)",
+    groupId: "shadow",
   },
 ];
 
@@ -184,37 +214,6 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
 ];
-
-function normalizeHexColor(value: string): string | null {
-  const normalized = value.trim();
-  if (/^#[0-9a-f]{6}$/i.test(normalized)) {
-    return normalized.toLowerCase();
-  }
-  if (/^#[0-9a-f]{3}$/i.test(normalized)) {
-    const [r, g, b] = normalized.slice(1).split("");
-    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-  }
-  const rgbMatch = normalized.match(
-    /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/i,
-  );
-  if (!rgbMatch) {
-    return null;
-  }
-  const [r, g, b] = rgbMatch.slice(1, 4).map((item) =>
-    Math.max(0, Math.min(255, Number(item))),
-  );
-  const toHex = (channel: number) => channel.toString(16).padStart(2, "0");
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-function readCssColorAsHex(
-  computed: CSSStyleDeclaration,
-  cssVar: string,
-  fallback: string,
-): string {
-  const raw = computed.getPropertyValue(cssVar).trim();
-  return normalizeHexColor(raw) ?? fallback;
-}
 
 function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
   switch (groupId) {
@@ -334,8 +333,11 @@ export function ThemeParameterPanelMain({
   ];
 
   const [debugColorValues, setDebugColorValues] = useState<
-    Record<string, string>
+    Record<string, ColorState>
   >({});
+  const [debugTextValues, setDebugTextValues] = useState<Record<string, string>>(
+    {},
+  );
 
   const containerNumberGroups = useMemo(() => {
     const groupMap: Record<ThemeDebugNumberGroupId, ThemeParameterDefinition[]> = {
@@ -398,27 +400,74 @@ export function ThemeParameterPanelMain({
       activePage === "containerLayer"
         ? CONTAINER_COLOR_FIELDS
         : LARGE_PANEL_COLOR_FIELDS;
-    const nextValues: Record<string, string> = {};
+    const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
-      nextValues[field.id] = readCssColorAsHex(
+      const parsed = readCssColorState(
         computed,
         field.cssVar,
         field.fallback,
       );
+      nextValues[field.id] = {
+        hex: parsed.hex,
+        alpha: field.fallbackAlpha ?? parsed.alpha,
+      };
     }
     setDebugColorValues(nextValues);
+
+    if (activePage === "containerLayer") {
+      const nextTextValues: Record<string, string> = {};
+      for (const field of CONTAINER_TEXT_FIELDS) {
+        nextTextValues[field.id] =
+          computed.getPropertyValue(field.cssVar).trim() || field.fallback;
+      }
+      setDebugTextValues(nextTextValues);
+    }
   }, [activePage, styleId]);
 
-  const setDebugColorFieldValue = (field: ThemeDebugColorField, raw: string) => {
-    setDebugColorValues((previous) => ({ ...previous, [field.id]: raw }));
-    const normalized = normalizeHexColor(raw);
-    if (!normalized) {
+  const setDebugColorFieldHex = (field: ThemeDebugColorField, rawHex: string) => {
+    const parsed = parseColorState(rawHex, field.fallback);
+    if (!parsed) {
       return;
     }
-    document.documentElement.style.setProperty(field.cssVar, normalized);
+    const previousState =
+      debugColorValues[field.id] ??
+      ({ hex: field.fallback, alpha: field.fallbackAlpha ?? 1 } satisfies ColorState);
+    const nextState: ColorState = {
+      hex: parsed.hex,
+      alpha: previousState.alpha,
+    };
+    document.documentElement.style.setProperty(
+      field.cssVar,
+      formatColorStateAsCss(nextState),
+    );
     setDebugColorValues((previous) => ({
       ...previous,
-      [field.id]: normalized,
+      [field.id]: nextState,
+    }));
+  };
+
+  const setDebugColorFieldAlpha = (
+    field: ThemeDebugColorField,
+    rawAlphaPercent: number,
+  ) => {
+    if (!Number.isFinite(rawAlphaPercent)) {
+      return;
+    }
+    const bounded = Math.max(0, Math.min(100, rawAlphaPercent));
+    const previousState =
+      debugColorValues[field.id] ??
+      ({ hex: field.fallback, alpha: field.fallbackAlpha ?? 1 } satisfies ColorState);
+    const nextState: ColorState = {
+      ...previousState,
+      alpha: bounded / 100,
+    };
+    document.documentElement.style.setProperty(
+      field.cssVar,
+      formatColorStateAsCss(nextState),
+    );
+    setDebugColorValues((previous) => ({
+      ...previous,
+      [field.id]: nextState,
     }));
   };
 
@@ -433,10 +482,38 @@ export function ThemeParameterPanelMain({
     const root = document.documentElement;
     root.style.removeProperty(field.cssVar);
     const computed = getComputedStyle(root);
-    const nextValue = readCssColorAsHex(computed, field.cssVar, field.fallback);
+    const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
     setDebugColorValues((previous) => ({
       ...previous,
-      [field.id]: nextValue,
+      [field.id]: {
+        hex: nextValue.hex,
+        alpha: field.fallbackAlpha ?? nextValue.alpha,
+      },
+    }));
+  };
+
+  const isTextFieldChanged = (field: ThemeDebugTextField): boolean => {
+    return (
+      document.documentElement.style.getPropertyValue(field.cssVar).trim().length >
+      0
+    );
+  };
+
+  const setDebugTextFieldValue = (field: ThemeDebugTextField, raw: string) => {
+    setDebugTextValues((previous) => ({ ...previous, [field.id]: raw }));
+    if (!raw.trim()) {
+      return;
+    }
+    document.documentElement.style.setProperty(field.cssVar, raw);
+  };
+
+  const resetTextField = (field: ThemeDebugTextField) => {
+    const root = document.documentElement;
+    root.style.removeProperty(field.cssVar);
+    const computed = getComputedStyle(root);
+    setDebugTextValues((previous) => ({
+      ...previous,
+      [field.id]: computed.getPropertyValue(field.cssVar).trim() || field.fallback,
     }));
   };
 
@@ -456,8 +533,12 @@ export function ThemeParameterPanelMain({
           </header>
           <div className="theme-parameter-color-list">
             {groupFields.map((field) => {
-              const raw = debugColorValues[field.id] ?? field.fallback;
-              const pickerValue = normalizeHexColor(raw) ?? field.fallback;
+              const colorState =
+                debugColorValues[field.id] ?? {
+                  hex: field.fallback,
+                  alpha: field.fallbackAlpha ?? 1,
+                };
+              const alphaPercent = Math.round(colorState.alpha * 100);
               return (
                 <label key={field.id} className="theme-parameter-color-row">
                   <span className="theme-parameter-var-label">{field.cssVar}</span>
@@ -465,19 +546,31 @@ export function ThemeParameterPanelMain({
                     <input
                       type="color"
                       aria-label={`${field.cssVar}-picker`}
-                      value={pickerValue}
+                      value={colorState.hex}
                       onChange={(event) =>
-                        setDebugColorFieldValue(field, event.target.value)
+                        setDebugColorFieldHex(field, event.target.value)
                       }
                     />
                     <input
                       type="text"
                       aria-label={field.cssVar}
-                      value={raw}
+                      value={colorState.hex}
                       onChange={(event) =>
-                        setDebugColorFieldValue(field, event.target.value)
+                        setDebugColorFieldHex(field, event.target.value)
                       }
                       placeholder={field.fallback}
+                    />
+                    <input
+                      type="number"
+                      className="theme-parameter-alpha-input"
+                      aria-label={`${field.cssVar}-alpha`}
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={alphaPercent}
+                      onChange={(event) =>
+                        setDebugColorFieldAlpha(field, Number(event.target.value))
+                      }
                     />
                     {isColorFieldChanged(field) ? (
                       <button
@@ -489,6 +582,52 @@ export function ThemeParameterPanelMain({
                       </button>
                     ) : null}
                   </div>
+                </label>
+              );
+            })}
+          </div>
+        </section>
+      );
+    });
+  };
+
+  const renderTextGroups = (
+    fields: readonly ThemeDebugTextField[],
+    groupIds: readonly ThemeDebugNumberGroupId[],
+  ) => {
+    return groupIds.map((groupId) => {
+      const groupFields = fields.filter((field) => field.groupId === groupId);
+      if (groupFields.length === 0) {
+        return null;
+      }
+      return (
+        <section key={`text-${groupId}`} className="settings-group theme-parameter-debug-group">
+          <header className="settings-group-head">
+            <span>{resolveNumberGroupTitle(groupId)}</span>
+          </header>
+          <div className="theme-parameter-text-list">
+            {groupFields.map((field) => {
+              const raw = debugTextValues[field.id] ?? field.fallback;
+              return (
+                <label key={field.id} className="theme-parameter-text-row">
+                  <span className="theme-parameter-var-label">{field.cssVar}</span>
+                  <textarea
+                    aria-label={field.cssVar}
+                    className="theme-parameter-textarea"
+                    value={raw}
+                    onChange={(event) =>
+                      setDebugTextFieldValue(field, event.target.value)
+                    }
+                  />
+                  {isTextFieldChanged(field) ? (
+                    <button
+                      type="button"
+                      className="theme-parameter-reset-btn"
+                      onClick={() => resetTextField(field)}
+                    >
+                      {t("ui.themeParameter.resetField")}
+                    </button>
+                  ) : null}
                 </label>
               );
             })}
@@ -822,7 +961,8 @@ export function ThemeParameterPanelMain({
                 </button>
               </div>
             </section>
-            {renderColorGroups(CONTAINER_COLOR_FIELDS, ["box", "border"])}
+            {renderColorGroups(CONTAINER_COLOR_FIELDS, ["box", "border", "shadow"])}
+            {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
             {renderNumberGroups(containerNumberGroups)}
           </section>
         ) : null}

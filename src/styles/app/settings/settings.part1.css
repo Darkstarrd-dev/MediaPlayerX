@@ -1262,8 +1262,28 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .theme-parameter-color-control {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) auto;
+  grid-template-columns: 58px minmax(0, 1fr) 92px auto;
   gap: 8px;
+}
+
+.theme-parameter-alpha-input {
+  text-align: right;
+}
+
+.theme-parameter-text-list {
+  display: grid;
+  gap: 10px;
+}
+
+.theme-parameter-text-row {
+  display: grid;
+  gap: 6px;
+}
+
+.theme-parameter-textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
 }
 
 .theme-parameter-reset-btn {

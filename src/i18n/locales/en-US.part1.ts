@@ -377,7 +377,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.metricShadowStrength": "shadow strength",
   "ui.themeParameter.metricShadowHardness": "shadow hardness",
   "ui.themeParameter.metricBorderContrast": "border contrast",
-  "ui.themeParameter.metricBorderColor": "border color",
+  "ui.themeParameter.metricBorderColor": "border tint ratio",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.resetCurrentStyle": "Reset current style parameters",
