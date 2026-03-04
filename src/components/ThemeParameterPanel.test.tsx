@@ -189,7 +189,9 @@ describe("ThemeParameterPanel", () => {
     expect(snapshotTextarea.value).toContain('"styleId": "soft-skeuomorphic"');
     expect(snapshotTextarea.value).toContain('"layout-padding": 14');
     expect(snapshotTextarea.value).toContain('"debugColors"');
-    expect(snapshotTextarea.value).toContain('"container-bg-app": "rgba(18, 52, 86, 0.4)"');
+    expect(snapshotTextarea.value).toContain(
+      '"container-bg-app": "rgba(18, 52, 86, 0.4)"',
+    );
 
     fireEvent.change(snapshotTextarea, {
       target: {
@@ -225,6 +227,36 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-bg-app").trim(),
     ).toBe("#112233");
     expect(screen.getByText(/快照来自风格 liquid-glass/)).toBeInTheDocument();
+  });
+
+  it("按钮状态页颜色参数支持写入样式并进入快照", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "按钮状态样例" }));
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+      }),
+      {
+        target: { value: "#112233" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+      ),
+    ).toBe("#112233");
+
+    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    expect(snapshotTextarea.value).toContain(
+      '"button-side-hover-bg": "#112233"',
+    );
   });
 
   it("支持下载与加载参数快照 JSON 文件", async () => {
@@ -359,9 +391,9 @@ describe("ThemeParameterPanel", () => {
     const fieldInput = screen.getByRole("textbox", { name: "--mpx-bg-app" });
     const control = fieldInput.closest(".theme-parameter-color-control");
     expect(control).not.toBeNull();
-    const resetButton = control?.querySelector(".theme-parameter-reset-btn") as
-      | HTMLButtonElement
-      | null;
+    const resetButton = control?.querySelector(
+      ".theme-parameter-reset-btn",
+    ) as HTMLButtonElement | null;
     expect(resetButton).not.toBeNull();
     fireEvent.click(resetButton as HTMLButtonElement);
 

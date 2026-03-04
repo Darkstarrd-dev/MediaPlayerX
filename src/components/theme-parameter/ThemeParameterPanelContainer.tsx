@@ -163,6 +163,150 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     cssVar: "--mpx-large-panel-main-bg",
     fallback: "#ffffff",
   },
+  {
+    id: "button-side-idle-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-side-idle-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "button-side-idle-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-text",
+    fallback: "#4a4a4a",
+  },
+  {
+    id: "button-side-hover-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-side-hover-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+    fallback: "#f8fafc",
+  },
+  {
+    id: "button-side-hover-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-text",
+    fallback: "#4a4a4a",
+  },
+  {
+    id: "button-side-active-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-side-active-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-bg",
+    fallback: "#dce2e8",
+  },
+  {
+    id: "button-side-active-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-text",
+    fallback: "#334155",
+  },
+  {
+    id: "button-side-selected-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "button-side-selected-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "button-side-selected-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "button-side-pressed-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-side-pressed-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-bg",
+    fallback: "#d6dee5",
+  },
+  {
+    id: "button-side-pressed-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-text",
+    fallback: "#555555",
+  },
+  {
+    id: "button-side-disabled-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-side-disabled-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "button-side-disabled-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-text",
+    fallback: "#9b8465",
+  },
+  {
+    id: "button-side-pending-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-border",
+    fallback: "#d7ba8a",
+  },
+  {
+    id: "button-side-pending-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-bg",
+    fallback: "#fbf1e0",
+  },
+  {
+    id: "button-side-pending-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-text",
+    fallback: "#6a4b1e",
+  },
+  {
+    id: "button-side-danger-hover-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-border",
+    fallback: "#fca5a5",
+  },
+  {
+    id: "button-side-danger-hover-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-bg",
+    fallback: "#fee2e2",
+  },
+  {
+    id: "button-side-danger-hover-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-text",
+    fallback: "#dc2626",
+  },
 ];
 
 const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
@@ -194,9 +338,8 @@ function ThemeParameterPanel({
     [styleGroup],
   );
   const [values, setValues] = useState<ThemeParameterValues>({});
-  const [activePage, setActivePage] = useState<ThemeParameterPageId>(
-    "parameters",
-  );
+  const [activePage, setActivePage] =
+    useState<ThemeParameterPageId>("parameters");
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
@@ -447,7 +590,10 @@ function ThemeParameterPanel({
         if (!normalizedColor) {
           continue;
         }
-        root.style.setProperty(field.cssVar, formatColorStateAsCss(normalizedColor));
+        root.style.setProperty(
+          field.cssVar,
+          formatColorStateAsCss(normalizedColor),
+        );
       }
     }
     if (payload.debugTexts && typeof payload.debugTexts === "object") {
@@ -492,9 +638,11 @@ function ThemeParameterPanel({
 
   const isParameterChanged = (parameter: ThemeParameterDefinition): boolean => {
     if (parameter.cssVarName) {
-      return document.documentElement.style
-        .getPropertyValue(parameter.cssVarName)
-        .trim().length > 0;
+      return (
+        document.documentElement.style
+          .getPropertyValue(parameter.cssVarName)
+          .trim().length > 0
+      );
     }
     const value = values[parameter.id] ?? parameter.fallback;
     return Math.abs(value - parameter.fallback) > 1e-6;
@@ -531,7 +679,10 @@ function ThemeParameterPanel({
       data-overlay-close="theme-parameter"
     >
       {activePreviewMode === "bg-plus-large-panel" ? (
-        <div className="theme-debug-large-panel-preview-layer" aria-hidden="true">
+        <div
+          className="theme-debug-large-panel-preview-layer"
+          aria-hidden="true"
+        >
           <section className="mpx-large-panel theme-debug-large-panel-preview">
             <header className="mpx-large-panel-head theme-debug-large-panel-preview-head" />
             <div className="mpx-large-panel-shell theme-debug-large-panel-preview-shell">

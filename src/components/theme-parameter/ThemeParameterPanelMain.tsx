@@ -97,6 +97,16 @@ interface ThemeDebugTextField {
   groupId: ThemeDebugNumberGroupId;
 }
 
+type ButtonStateKey =
+  | "idle"
+  | "hover"
+  | "active"
+  | "selected"
+  | "pressed"
+  | "disabled"
+  | "pending"
+  | "close-hover";
+
 const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "container-bg-app",
@@ -214,6 +224,188 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
 ];
+
+const BUTTON_STATE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "button-side-idle-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-border",
+    fallback: "#cbd5e1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-idle-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg",
+    fallback: "#ecf0f3",
+    groupId: "side",
+  },
+  {
+    id: "button-side-idle-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-text",
+    fallback: "#4a4a4a",
+    groupId: "side",
+  },
+  {
+    id: "button-side-hover-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-border",
+    fallback: "#cbd5e1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-hover-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+    fallback: "#f8fafc",
+    groupId: "side",
+  },
+  {
+    id: "button-side-hover-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-text",
+    fallback: "#4a4a4a",
+    groupId: "side",
+  },
+  {
+    id: "button-side-active-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-border",
+    fallback: "#cbd5e1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-active-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-bg",
+    fallback: "#dce2e8",
+    groupId: "side",
+  },
+  {
+    id: "button-side-active-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-active-text",
+    fallback: "#334155",
+    groupId: "side",
+  },
+  {
+    id: "button-side-selected-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-border",
+    fallback: "#d6cfc1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-selected-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-bg",
+    fallback: "#ffffff",
+    groupId: "side",
+  },
+  {
+    id: "button-side-selected-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-text",
+    fallback: "#2e2a22",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pressed-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-border",
+    fallback: "#cbd5e1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pressed-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-bg",
+    fallback: "#d6dee5",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pressed-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pressed-text",
+    fallback: "#555555",
+    groupId: "side",
+  },
+  {
+    id: "button-side-disabled-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-border",
+    fallback: "#cbd5e1",
+    groupId: "side",
+  },
+  {
+    id: "button-side-disabled-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-bg",
+    fallback: "#ecf0f3",
+    groupId: "side",
+  },
+  {
+    id: "button-side-disabled-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-disabled-text",
+    fallback: "#9b8465",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pending-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-border",
+    fallback: "#d7ba8a",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pending-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-bg",
+    fallback: "#fbf1e0",
+    groupId: "side",
+  },
+  {
+    id: "button-side-pending-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-pending-text",
+    fallback: "#6a4b1e",
+    groupId: "side",
+  },
+  {
+    id: "button-side-danger-hover-border",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-border",
+    fallback: "#fca5a5",
+    groupId: "side",
+  },
+  {
+    id: "button-side-danger-hover-bg",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-bg",
+    fallback: "#fee2e2",
+    groupId: "side",
+  },
+  {
+    id: "button-side-danger-hover-text",
+    cssVar:
+      "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-text",
+    fallback: "#dc2626",
+    groupId: "side",
+  },
+];
+
+const BUTTON_STATE_FIELD_PREFIX: Readonly<Record<ButtonStateKey, string>> = {
+  idle: "idle",
+  hover: "hover",
+  active: "active",
+  selected: "selected",
+  pressed: "pressed",
+  disabled: "disabled",
+  pending: "pending",
+  "close-hover": "danger-hover",
+};
 
 function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
   switch (groupId) {
@@ -335,12 +527,15 @@ export function ThemeParameterPanelMain({
   const [debugColorValues, setDebugColorValues] = useState<
     Record<string, ColorState>
   >({});
-  const [debugTextValues, setDebugTextValues] = useState<Record<string, string>>(
-    {},
-  );
+  const [debugTextValues, setDebugTextValues] = useState<
+    Record<string, string>
+  >({});
 
   const containerNumberGroups = useMemo(() => {
-    const groupMap: Record<ThemeDebugNumberGroupId, ThemeParameterDefinition[]> = {
+    const groupMap: Record<
+      ThemeDebugNumberGroupId,
+      ThemeParameterDefinition[]
+    > = {
       box: [],
       border: [],
       shadow: [],
@@ -366,7 +561,10 @@ export function ThemeParameterPanelMain({
   }, [containerLayerParameters]);
 
   const largePanelNumberGroups = useMemo(() => {
-    const groupMap: Record<ThemeDebugNumberGroupId, ThemeParameterDefinition[]> = {
+    const groupMap: Record<
+      ThemeDebugNumberGroupId,
+      ThemeParameterDefinition[]
+    > = {
       box: [],
       border: [],
       shadow: [],
@@ -392,21 +590,23 @@ export function ThemeParameterPanelMain({
   }, [largePanelLayerParameters]);
 
   useEffect(() => {
-    if (activePage !== "containerLayer" && activePage !== "largePanelLayer") {
+    if (
+      activePage !== "containerLayer" &&
+      activePage !== "largePanelLayer" &&
+      activePage !== "buttonStates"
+    ) {
       return;
     }
     const computed = getComputedStyle(document.documentElement);
     const sourceFields =
       activePage === "containerLayer"
         ? CONTAINER_COLOR_FIELDS
-        : LARGE_PANEL_COLOR_FIELDS;
+        : activePage === "largePanelLayer"
+          ? LARGE_PANEL_COLOR_FIELDS
+          : BUTTON_STATE_COLOR_FIELDS;
     const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
-      const parsed = readCssColorState(
-        computed,
-        field.cssVar,
-        field.fallback,
-      );
+      const parsed = readCssColorState(computed, field.cssVar, field.fallback);
       nextValues[field.id] = {
         hex: parsed.hex,
         alpha: field.fallbackAlpha ?? parsed.alpha,
@@ -424,14 +624,20 @@ export function ThemeParameterPanelMain({
     }
   }, [activePage, styleId]);
 
-  const setDebugColorFieldHex = (field: ThemeDebugColorField, rawHex: string) => {
+  const setDebugColorFieldHex = (
+    field: ThemeDebugColorField,
+    rawHex: string,
+  ) => {
     const parsed = parseColorState(rawHex, field.fallback);
     if (!parsed) {
       return;
     }
     const previousState =
       debugColorValues[field.id] ??
-      ({ hex: field.fallback, alpha: field.fallbackAlpha ?? 1 } satisfies ColorState);
+      ({
+        hex: field.fallback,
+        alpha: field.fallbackAlpha ?? 1,
+      } satisfies ColorState);
     const nextState: ColorState = {
       hex: parsed.hex,
       alpha: previousState.alpha,
@@ -456,7 +662,10 @@ export function ThemeParameterPanelMain({
     const bounded = Math.max(0, Math.min(100, rawAlphaPercent));
     const previousState =
       debugColorValues[field.id] ??
-      ({ hex: field.fallback, alpha: field.fallbackAlpha ?? 1 } satisfies ColorState);
+      ({
+        hex: field.fallback,
+        alpha: field.fallbackAlpha ?? 1,
+      } satisfies ColorState);
     const nextState: ColorState = {
       ...previousState,
       alpha: bounded / 100,
@@ -473,8 +682,8 @@ export function ThemeParameterPanelMain({
 
   const isColorFieldChanged = (field: ThemeDebugColorField): boolean => {
     return (
-      document.documentElement.style.getPropertyValue(field.cssVar).trim().length >
-      0
+      document.documentElement.style.getPropertyValue(field.cssVar).trim()
+        .length > 0
     );
   };
 
@@ -494,8 +703,8 @@ export function ThemeParameterPanelMain({
 
   const isTextFieldChanged = (field: ThemeDebugTextField): boolean => {
     return (
-      document.documentElement.style.getPropertyValue(field.cssVar).trim().length >
-      0
+      document.documentElement.style.getPropertyValue(field.cssVar).trim()
+        .length > 0
     );
   };
 
@@ -513,8 +722,62 @@ export function ThemeParameterPanelMain({
     const computed = getComputedStyle(root);
     setDebugTextValues((previous) => ({
       ...previous,
-      [field.id]: computed.getPropertyValue(field.cssVar).trim() || field.fallback,
+      [field.id]:
+        computed.getPropertyValue(field.cssVar).trim() || field.fallback,
     }));
+  };
+
+  const renderColorFieldRow = (field: ThemeDebugColorField) => {
+    const colorState = debugColorValues[field.id] ?? {
+      hex: field.fallback,
+      alpha: field.fallbackAlpha ?? 1,
+    };
+    const alphaPercent = Math.round(colorState.alpha * 100);
+    return (
+      <label key={field.id} className="theme-parameter-color-row">
+        <span className="theme-parameter-var-label">{field.cssVar}</span>
+        <div className="theme-parameter-color-control">
+          <input
+            type="color"
+            aria-label={`${field.cssVar}-picker`}
+            value={colorState.hex}
+            onChange={(event) =>
+              setDebugColorFieldHex(field, event.target.value)
+            }
+          />
+          <input
+            type="text"
+            aria-label={field.cssVar}
+            value={colorState.hex}
+            onChange={(event) =>
+              setDebugColorFieldHex(field, event.target.value)
+            }
+            placeholder={field.fallback}
+          />
+          <input
+            type="number"
+            className="theme-parameter-alpha-input"
+            aria-label={`${field.cssVar}-alpha`}
+            min={0}
+            max={100}
+            step={1}
+            value={alphaPercent}
+            onChange={(event) =>
+              setDebugColorFieldAlpha(field, Number(event.target.value))
+            }
+          />
+          {isColorFieldChanged(field) ? (
+            <button
+              type="button"
+              className="theme-parameter-reset-btn"
+              onClick={() => resetColorField(field)}
+            >
+              {t("ui.themeParameter.resetField")}
+            </button>
+          ) : null}
+        </div>
+      </label>
+    );
   };
 
   const renderColorGroups = (
@@ -527,68 +790,26 @@ export function ThemeParameterPanelMain({
         return null;
       }
       return (
-        <section key={groupId} className="settings-group theme-parameter-debug-group">
+        <section
+          key={groupId}
+          className="settings-group theme-parameter-debug-group"
+        >
           <header className="settings-group-head">
             <span>{resolveNumberGroupTitle(groupId)}</span>
           </header>
           <div className="theme-parameter-color-list">
-            {groupFields.map((field) => {
-              const colorState =
-                debugColorValues[field.id] ?? {
-                  hex: field.fallback,
-                  alpha: field.fallbackAlpha ?? 1,
-                };
-              const alphaPercent = Math.round(colorState.alpha * 100);
-              return (
-                <label key={field.id} className="theme-parameter-color-row">
-                  <span className="theme-parameter-var-label">{field.cssVar}</span>
-                  <div className="theme-parameter-color-control">
-                    <input
-                      type="color"
-                      aria-label={`${field.cssVar}-picker`}
-                      value={colorState.hex}
-                      onChange={(event) =>
-                        setDebugColorFieldHex(field, event.target.value)
-                      }
-                    />
-                    <input
-                      type="text"
-                      aria-label={field.cssVar}
-                      value={colorState.hex}
-                      onChange={(event) =>
-                        setDebugColorFieldHex(field, event.target.value)
-                      }
-                      placeholder={field.fallback}
-                    />
-                    <input
-                      type="number"
-                      className="theme-parameter-alpha-input"
-                      aria-label={`${field.cssVar}-alpha`}
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={alphaPercent}
-                      onChange={(event) =>
-                        setDebugColorFieldAlpha(field, Number(event.target.value))
-                      }
-                    />
-                    {isColorFieldChanged(field) ? (
-                      <button
-                        type="button"
-                        className="theme-parameter-reset-btn"
-                        onClick={() => resetColorField(field)}
-                      >
-                        {t("ui.themeParameter.resetField")}
-                      </button>
-                    ) : null}
-                  </div>
-                </label>
-              );
-            })}
+            {groupFields.map(renderColorFieldRow)}
           </div>
         </section>
       );
     });
+  };
+
+  const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
+    const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
+    return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
+      field.id.startsWith(`button-side-${prefix}-`),
+    );
   };
 
   const renderTextGroups = (
@@ -601,7 +822,10 @@ export function ThemeParameterPanelMain({
         return null;
       }
       return (
-        <section key={`text-${groupId}`} className="settings-group theme-parameter-debug-group">
+        <section
+          key={`text-${groupId}`}
+          className="settings-group theme-parameter-debug-group"
+        >
           <header className="settings-group-head">
             <span>{resolveNumberGroupTitle(groupId)}</span>
           </header>
@@ -610,7 +834,9 @@ export function ThemeParameterPanelMain({
               const raw = debugTextValues[field.id] ?? field.fallback;
               return (
                 <label key={field.id} className="theme-parameter-text-row">
-                  <span className="theme-parameter-var-label">{field.cssVar}</span>
+                  <span className="theme-parameter-var-label">
+                    {field.cssVar}
+                  </span>
                   <textarea
                     aria-label={field.cssVar}
                     className="theme-parameter-textarea"
@@ -637,13 +863,18 @@ export function ThemeParameterPanelMain({
     });
   };
 
-  const renderNumberGroups = (groups: ReadonlyArray<{
-    id: ThemeDebugNumberGroupId;
-    title: string;
-    parameters: ThemeParameterDefinition[];
-  }>) => {
+  const renderNumberGroups = (
+    groups: ReadonlyArray<{
+      id: ThemeDebugNumberGroupId;
+      title: string;
+      parameters: ThemeParameterDefinition[];
+    }>,
+  ) => {
     return groups.map((group) => (
-      <section key={group.id} className="settings-group theme-parameter-debug-group">
+      <section
+        key={group.id}
+        className="settings-group theme-parameter-debug-group"
+      >
         <header className="settings-group-head">
           <span>{group.title}</span>
         </header>
@@ -712,69 +943,80 @@ export function ThemeParameterPanelMain({
     );
   };
 
-  const buttonTemplateStates = [
+  const buttonTemplateStates: ReadonlyArray<{
+    key: ButtonStateKey;
+    state: string;
+    styleSource: string;
+    interaction: string;
+    usage: string;
+    demoLabel: string;
+  }> = [
     {
       key: "idle",
       state: "默认态 (idle)",
-      styleSource: ".mpx-btn-template (idle)",
+      styleSource: ".theme-parameter-side-btn（default variant）",
       interaction: "初始渲染，未悬停/未按下/未选中",
-      usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-image'",
+      usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
       demoLabel: "默认",
     },
     {
       key: "hover",
       state: "悬停态 (hover)",
-      styleSource: ".mpx-btn-template:hover / .force-hover",
+      styleSource:
+        ".theme-parameter-side-btn:hover / .force-hover（side-btn-hover-*）",
       interaction: "pointerenter / mouseenter",
-      usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-video'",
+      usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
       demoLabel: "悬停测试",
     },
     {
       key: "active",
       state: "按下态 (active)",
-      styleSource: ".mpx-btn-template:active / .force-active",
+      styleSource:
+        ".theme-parameter-side-btn:active / .force-active（side-btn-active-*）",
       interaction: "pointerdown / mousedown",
-      usage: "AppHeader.tsx -> data-slot='fg-header-g2-mode-music'",
+      usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
       demoLabel: "按下测试",
     },
     {
       key: "selected",
       state: "选中态 (is-active)",
-      styleSource: ".mpx-btn-template.is-active",
+      styleSource: ".theme-parameter-side-btn.is-active（side-btn-selected-*）",
       interaction: "click 后由业务状态切换 class",
-      usage: "AppHeader.tsx -> className={mode === 'image' ? 'is-active' : ''}",
+      usage: "ThemeParameterPanelMain.tsx -> activePage 对应按钮",
       demoLabel: "已选中",
     },
     {
       key: "pressed",
       state: "开关按压态 (aria-pressed='true')",
-      styleSource: ".mpx-btn-template[aria-pressed='true']",
+      styleSource:
+        ".theme-parameter-side-btn[aria-pressed='true']（side-btn-pressed-*）",
       interaction: "click 切换布尔开关状态",
-      usage: "AppHeader.tsx -> fg-header-g-debug-tooltips",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
       demoLabel: "开关已按下",
     },
     {
       key: "disabled",
       state: "禁用态 (disabled)",
-      styleSource: "button:disabled",
+      styleSource: ".theme-parameter-side-btn:disabled（side-btn-disabled-*）",
       interaction: "组件设置 disabled，阻断点击",
-      usage: "MetadataPanel.tsx -> fg-meta-header-g3-search",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
       demoLabel: "禁用",
     },
     {
       key: "pending",
       state: "待处理态 (is-pending)",
-      styleSource: ".main-icon-square-btn.is-pending",
+      styleSource: ".theme-parameter-side-btn.is-pending（side-btn-pending-*）",
       interaction: "异步任务期间由业务状态添加 class",
-      usage: "ImageMainSection.tsx -> vector-search-btn.is-pending",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
       demoLabel: "处理中",
     },
     {
       key: "close-hover",
       state: "危险悬停态 (close:hover)",
-      styleSource: ".mpx-btn-template.danger:hover",
+      styleSource:
+        ".theme-parameter-side-btn.danger:hover / .danger.force-hover",
       interaction: "关闭按钮 hover",
-      usage: "AppHeader.tsx -> window-control-btn--close",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
       demoLabel: "关闭悬停测试",
     },
   ] as const;
@@ -786,7 +1028,11 @@ export function ThemeParameterPanelMain({
           <button
             key={page.id}
             type="button"
-            className={activePage === page.id ? "theme-parameter-side-btn is-active" : "theme-parameter-side-btn"}
+            className={
+              activePage === page.id
+                ? "theme-parameter-side-btn is-active"
+                : "theme-parameter-side-btn"
+            }
             onClick={() => setActivePage(page.id)}
           >
             {t(page.labelKey)}
@@ -845,7 +1091,9 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.sectionStyle", { styleId })}</summary>
+              <summary>
+                {t("ui.themeParameter.sectionStyle", { styleId })}
+              </summary>
               <div className="settings-collapsible-content">
                 {styleParameters.length === 0 ? (
                   <p className="settings-placeholder">
@@ -961,7 +1209,11 @@ export function ThemeParameterPanelMain({
                 </button>
               </div>
             </section>
-            {renderColorGroups(CONTAINER_COLOR_FIELDS, ["box", "border", "shadow"])}
+            {renderColorGroups(CONTAINER_COLOR_FIELDS, [
+              "box",
+              "border",
+              "shadow",
+            ])}
             {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
             {renderNumberGroups(containerNumberGroups)}
           </section>
@@ -1004,7 +1256,13 @@ export function ThemeParameterPanelMain({
                 <span>{t("ui.themeParameter.page.buttonStates")}</span>
               </header>
               <p className="theme-parameter-note-intro">
-                以下用于对齐按钮模板抽象时的状态与交互基线，当前仅记录一处代表性使用位置。
+                当前页基于 4.0 按钮层（core/variant/slot）展示 side 分页按钮。
+                每个状态都对应独立的调节项和展示项（border/bg/text）。
+                颜色字段直接映射
+                <code>
+                  --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-*
+                </code>
+                ，修改后立即作用到分页按钮样式。
               </p>
               <ul className="theme-parameter-note-list">
                 {buttonTemplateStates.map((item) => (
@@ -1012,48 +1270,31 @@ export function ThemeParameterPanelMain({
                     <div className="theme-parameter-note-title-row">
                       <strong>{item.state}</strong>
                       <div className="theme-parameter-state-demo">
-                        {item.key === "pressed" ? (
-                          <button
-                            aria-pressed="true"
-                            className="window-control-btn window-control-btn--theme-parameter"
-                            data-slot="fg-header-g-debug-tooltips"
-                            type="button"
-                          >
-                            <span className="window-control-btn-text">
-                              {item.demoLabel}
-                            </span>
-                          </button>
-                        ) : item.key === "pending" ? (
-                          <button
-                            className="feature-action-btn main-icon-square-btn is-pending"
-                            type="button"
-                          >
-                            {item.demoLabel}
-                          </button>
-                        ) : item.key === "close-hover" ? (
-                          <button
-                            className="window-control-btn window-control-btn--close danger force-hover"
-                            type="button"
-                          >
-                            <span className="window-control-btn-text">
-                              {item.demoLabel}
-                            </span>
-                          </button>
-                        ) : (
-                          <div className="mode-switch-wrap theme-parameter-g2-wrap-demo">
-                            <div className="mode-switch mpx-btn-group is-groove theme-parameter-g2-mode-demo">
-                              <button
-                                className={`${item.key === "selected" ? "is-active" : ""} ${item.key === "hover" ? "force-hover" : ""} ${item.key === "active" ? "force-active" : ""}`.trim()}
-                                data-slot="fg-header-g2-mode-image"
-                                type="button"
-                                disabled={item.key === "disabled"}
-                              >
-                                {item.demoLabel}
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                        <button
+                          aria-pressed={item.key === "pressed"}
+                          className={[
+                            "theme-parameter-side-btn",
+                            item.key === "selected" ? "is-active" : "",
+                            item.key === "hover" ? "force-hover" : "",
+                            item.key === "active" ? "force-active" : "",
+                            item.key === "pending" ? "is-pending" : "",
+                            item.key === "close-hover"
+                              ? "danger force-hover"
+                              : "",
+                          ]
+                            .join(" ")
+                            .trim()}
+                          type="button"
+                          disabled={item.key === "disabled"}
+                        >
+                          {item.demoLabel}
+                        </button>
                       </div>
+                    </div>
+                    <div className="theme-parameter-state-field-list">
+                      {resolveButtonStateFields(item.key).map(
+                        renderColorFieldRow,
+                      )}
                     </div>
                     <span>样式来源：{item.styleSource}</span>
                     <span>交互事件：{item.interaction}</span>
