@@ -329,7 +329,6 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.toggleOff": "Off",
   "ui.themeParameter.panel": "Theme Parameter",
   "ui.themeParameter.toolsSection": "Tools",
-  "ui.themeParameter.actionsSection": "Actions",
   "ui.themeParameter.searchLabel": "Parameter search",
   "ui.themeParameter.searchPlaceholder": "Type keywords to filter parameters",
   "ui.themeParameter.snapshotLabel": "Snapshot JSON",
@@ -366,8 +365,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.page.largePanelLayer": "Large panel layer debug",
   "ui.themeParameter.page.smallPanelLayer": "Small panel layer debug",
   "ui.themeParameter.resetField": "Reset",
-  "ui.themeParameter.page.buttonStates": "Button state demos",
-  "ui.themeParameter.page.actions": "Actions",
+  "ui.themeParameter.page.buttonStates": "Button style debug",
   "ui.themeParameter.preview.bgOnly": "Preview background only",
   "ui.themeParameter.preview.bgPlusContainer":
     "Preview background + container layer",
@@ -391,7 +389,6 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.metricBorderColor": "border tint ratio",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
-  "ui.themeParameter.resetCurrentStyle": "Reset current style parameters",
   "ui.themeParameter.layoutPadding": "Layout padding",
   "ui.themeParameter.splitterWidth": "Splitter width",
   "ui.themeParameter.panelRadius": "Panel radius",

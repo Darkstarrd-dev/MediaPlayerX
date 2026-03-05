@@ -55,6 +55,12 @@ describe("ThemeParameterPanel", () => {
   it("支持调节与重置通用/风格参数", () => {
     renderThemeParameterPanel();
 
+    const baselineLayoutPadding = getSliderByLabelText("布局内边距").value;
+    const baselineSkeuoShadowStrength =
+      getSliderByLabelText("拟物阴影强度").value;
+    const baselineSkeuoPaneElevation =
+      getSliderByLabelText("拟物面板浮起高度").value;
+
     fireEvent.change(getSliderByLabelText("布局内边距"), {
       target: { value: "14" },
     });
@@ -105,19 +111,18 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-panel-radius"),
     ).toBe("18px");
 
-    fireEvent.click(screen.getByRole("button", { name: "操作" }));
-    fireEvent.click(screen.getByRole("button", { name: "重置当前风格参数" }));
-    expect(
-      document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
-    ).toBe("");
-    expect(
-      document.documentElement.style.getPropertyValue(
-        "--mpx-skeuo-shadow-dark",
-      ),
-    ).toBe("");
-    expect(
-      document.documentElement.style.getPropertyValue("--mpx-panel-shadow"),
-    ).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "复位到打开时状态" }));
+    fireEvent.click(screen.getByRole("button", { name: "参数调节" }));
+    expect(getSliderByLabelText("布局内边距").value).toBe(
+      baselineLayoutPadding,
+    );
+    expect(getSliderByLabelText("拟物阴影强度").value).toBe(
+      baselineSkeuoShadowStrength,
+    );
+    expect(getSliderByLabelText("拟物面板浮起高度").value).toBe(
+      baselineSkeuoPaneElevation,
+    );
   });
 
   it("按 style 切换专属参数并应用变量覆盖", () => {
@@ -232,7 +237,7 @@ describe("ThemeParameterPanel", () => {
   it("按钮状态页颜色参数支持写入样式并进入快照", () => {
     renderThemeParameterPanel();
 
-    fireEvent.click(screen.getByRole("button", { name: "按钮状态样例" }));
+    fireEvent.click(screen.getByRole("button", { name: "按钮样式调试" }));
     fireEvent.change(
       screen.getByRole("textbox", {
         name: "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",

@@ -789,21 +789,6 @@ function ThemeParameterPanel({
     });
   };
 
-  const resetCurrentStyleParameters = () => {
-    const root = document.documentElement;
-    for (const parameter of parameters) {
-      parameter.reset(root);
-    }
-    for (const field of SNAPSHOT_COLOR_FIELDS) {
-      root.style.removeProperty(field.cssVar);
-    }
-    for (const field of SNAPSHOT_TEXT_FIELDS) {
-      root.style.removeProperty(field.cssVar);
-    }
-    setSnapshotExplicitParameterIds(new Set());
-    setValues(readParameterValues(parameters));
-  };
-
   const isParameterChanged = (parameter: ThemeParameterDefinition): boolean => {
     if (parameter.cssVarName) {
       return (
@@ -952,7 +937,6 @@ function ThemeParameterPanel({
           isParameterChanged={isParameterChanged}
           resetSingleParameter={resetSingleParameter}
           resolveLabel={resolveLabel}
-          resetCurrentStyleParameters={resetCurrentStyleParameters}
         />
       </section>
     </div>

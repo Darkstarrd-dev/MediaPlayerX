@@ -59,7 +59,6 @@ interface ThemeParameterPanelMainProps {
   isParameterChanged: (parameter: ThemeParameterDefinition) => boolean;
   resetSingleParameter: (parameter: ThemeParameterDefinition) => void;
   resolveLabel: (parameter: ThemeParameterDefinition) => string;
-  resetCurrentStyleParameters: () => void;
 }
 
 export type ThemeParameterPageId =
@@ -68,8 +67,7 @@ export type ThemeParameterPageId =
   | "containerLayer"
   | "largePanelLayer"
   | "smallPanelLayer"
-  | "buttonStates"
-  | "actions";
+  | "buttonStates";
 
 export type ThemeParameterPreviewMode =
   | "none"
@@ -546,7 +544,6 @@ export function ThemeParameterPanelMain({
   isParameterChanged,
   resetSingleParameter,
   resolveLabel,
-  resetCurrentStyleParameters,
 }: ThemeParameterPanelMainProps) {
   const pages: ReadonlyArray<{
     id: ThemeParameterPageId;
@@ -570,7 +567,6 @@ export function ThemeParameterPanelMain({
       id: "buttonStates",
       labelKey: "ui.themeParameter.page.buttonStates",
     },
-    { id: "actions", labelKey: "ui.themeParameter.page.actions" },
   ];
 
   const [debugColorValues, setDebugColorValues] = useState<
@@ -1078,7 +1074,7 @@ export function ThemeParameterPanelMain({
       styleSource:
         ".theme-parameter-side-btn[aria-pressed='true']（side-btn-pressed-*）",
       interaction: "click 切换布尔开关状态",
-      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
       demoLabel: "开关已按下",
     },
     {
@@ -1086,7 +1082,7 @@ export function ThemeParameterPanelMain({
       state: "禁用态 (disabled)",
       styleSource: ".theme-parameter-side-btn:disabled（side-btn-disabled-*）",
       interaction: "组件设置 disabled，阻断点击",
-      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
       demoLabel: "禁用",
     },
     {
@@ -1094,7 +1090,7 @@ export function ThemeParameterPanelMain({
       state: "待处理态 (is-pending)",
       styleSource: ".theme-parameter-side-btn.is-pending（side-btn-pending-*）",
       interaction: "异步任务期间由业务状态添加 class",
-      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
       demoLabel: "处理中",
     },
     {
@@ -1103,7 +1099,7 @@ export function ThemeParameterPanelMain({
       styleSource:
         ".theme-parameter-side-btn.danger:hover / .danger.force-hover",
       interaction: "关闭按钮 hover",
-      usage: "ThemeParameterPanelMain.tsx -> side 按钮状态样例",
+      usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
       demoLabel: "关闭悬停测试",
     },
   ] as const;
@@ -1430,21 +1426,6 @@ export function ThemeParameterPanelMain({
                   </li>
                 ))}
               </ul>
-            </section>
-          </section>
-        ) : null}
-
-        {activePage === "actions" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.actionsSection")}</span>
-              </header>
-              <div className="theme-parameter-actions">
-                <button type="button" onClick={resetCurrentStyleParameters}>
-                  {t("ui.themeParameter.resetCurrentStyle")}
-                </button>
-              </div>
             </section>
           </section>
         ) : null}
