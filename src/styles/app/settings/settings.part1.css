@@ -1784,12 +1784,6 @@ button.mpx-overlay-chip-btn:focus-visible {
   margin: 0;
 }
 
-.theme-parameter-snapshot-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .theme-parameter-file-input {
   display: none;
 }
