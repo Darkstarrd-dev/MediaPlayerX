@@ -713,6 +713,21 @@ export function useAppInteractionLayer({
         return;
       }
 
+      if (
+        event.code === "KeyT" &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        !isEditableTarget(event.target)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        setThemeParameterPanelHidden(false);
+        setThemeParameterPanelOpen(true);
+        return;
+      }
+
       if (!fullscreenActive) {
         if (isEditableTarget(event.target)) {
           return;

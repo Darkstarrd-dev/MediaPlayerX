@@ -222,21 +222,11 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
   );
 
   it(
-    "Theme Parameter 面板支持 H 临时隐藏，并可通过 Esc/右键恢复或关闭",
+    "Theme Parameter 面板支持 T 打开、H 临时隐藏，并可通过 Esc/右键恢复或关闭",
     async () => {
       render(<App />);
 
-      await click(screen.getByRole("button", { name: "设置" }));
-      await click(screen.getByRole("button", { name: "调试" }));
-      await click(screen.getByRole("button", { name: /显示界面参数按钮/ }));
-      await keyDown(window, { key: "Escape", code: "Escape" });
-
-      const themeParameterButton = document.querySelector(
-        'button[data-a11y-id="header.themeParameter"]',
-      ) as HTMLButtonElement | null;
-      expect(themeParameterButton).not.toBeNull();
-
-      await click(themeParameterButton as HTMLButtonElement);
+      await keyDown(window, { key: "t", code: "KeyT" });
       expect(
         screen.getByRole("heading", { name: "Theme Parameter" }),
       ).toBeInTheDocument();
@@ -256,7 +246,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
         screen.queryByRole("heading", { name: "Theme Parameter" }),
       ).toBeNull();
 
-      await click(themeParameterButton as HTMLButtonElement);
+      await keyDown(window, { key: "t", code: "KeyT" });
       await keyDown(window, { key: "h", code: "KeyH" });
       await mouseDown(window, { button: 2 });
       expect(

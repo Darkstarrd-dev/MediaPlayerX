@@ -375,6 +375,26 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     expect(imageModeButton.classList.contains("is-active")).toBe(false);
   });
 
+  it("全屏模式下按 T 可打开 Theme Parameter 面板", async () => {
+    render(<App />);
+
+    await keyDown(window, { key: "f", code: "KeyF" });
+    await waitFor(() => {
+      expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+    });
+
+    await keyDown(window, { key: "t", code: "KeyT" });
+    expect(
+      screen.getByRole("heading", { name: "Theme Parameter" }),
+    ).toBeInTheDocument();
+
+    await keyDown(window, { key: "Escape", code: "Escape" });
+    expect(
+      screen.queryByRole("heading", { name: "Theme Parameter" }),
+    ).toBeNull();
+    expect(document.querySelector(".fullscreen-layer")).not.toBeNull();
+  });
+
   it("全屏 D/S 快捷键支持双屏切换、按焦点回单屏与左右交换", async () => {
     render(<App />);
 

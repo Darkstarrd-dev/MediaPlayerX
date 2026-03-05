@@ -74,9 +74,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.image.keyboard.helpOverlayToggle":
     "Outside fullscreen, toggle button-help overlay (? toggle, Esc close).",
   "ui.help.image.keyboard.fixedThemeParameterHideShortcut":
-    "H (hide) / Esc or Right Click (restore)",
+    "T (open) / H (hide) / Esc or Right Click (restore)",
   "ui.help.image.keyboard.themeParameterTemporaryHide":
-    "When Theme Parameter is open, press H to hide it temporarily; press Esc or right click to restore.",
+    "Press T to open Theme Parameter in any mode; when it is open, press H to hide temporarily, then Esc or right click to restore.",
   "ui.help.fullscreen.sectionTitle": "Fullscreen interaction guide",
   "ui.help.fullscreen.groupMouse": "Mouse",
   "ui.help.fullscreen.groupKeyboard": "Keyboard",
@@ -364,6 +364,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.page.containerLayer": "Container layer debug",
   "ui.themeParameter.page.largePanelLayer": "Large panel layer debug",
   "ui.themeParameter.page.smallPanelLayer": "Small panel layer debug",
+  "ui.themeParameter.page.commonControls": "Common controls debug",
   "ui.themeParameter.resetField": "Reset",
   "ui.themeParameter.page.buttonStates": "Button style debug",
   "ui.themeParameter.preview.bgOnly": "Preview background only",
@@ -387,6 +388,16 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.metricShadowHardness": "shadow hardness",
   "ui.themeParameter.metricBorderContrast": "border contrast",
   "ui.themeParameter.metricBorderColor": "border tint ratio",
+  "ui.themeParameter.controls.section.scrollbar": "6.1 Scrollbar style",
+  "ui.themeParameter.controls.section.sliderBase": "6.2.0 Slider base layer",
+  "ui.themeParameter.controls.section.sliderPlayer": "6.2.1 Slider variant: player panel",
+  "ui.themeParameter.controls.section.sliderVertical": "6.2.2 Slider variant: vertical (up/down shared)",
+  "ui.themeParameter.controls.section.sliderSettings": "6.2.3 Slider variant: settings panel",
+  "ui.themeParameter.controls.note.scrollbar": "Control layer has no base layer. Scrollbar currently keeps a single chain (no variants).",
+  "ui.themeParameter.controls.note.sliderBase": "Base style entry for slider variants, covering shared range track/thumb states.",
+  "ui.themeParameter.controls.note.sliderPlayer": "Player progress and volume sliders share the SkeuoRunway chain.",
+  "ui.themeParameter.controls.note.sliderVertical": "Vertical sliders (up/down) share one variable chain.",
+  "ui.themeParameter.controls.note.sliderSettings": "Settings sliders are kept as an independent section for scenario-specific debugging.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",
