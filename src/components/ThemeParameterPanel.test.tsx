@@ -264,6 +264,65 @@ describe("ThemeParameterPanel", () => {
     );
   });
 
+  it("常用控件调试页支持变量写入并进入快照", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "常用控件调试" }));
+    expect(
+      screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("theme-control-preview-slider-player-horizontal"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("theme-control-preview-slider-vertical-stack"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("theme-control-preview-slider-player-vertical"),
+    ).toBeNull();
+    expect(screen.getByLabelText("slider-vertical-up-preview")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("slider-vertical-down-preview"),
+    ).toBeInTheDocument();
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+      }),
+      {
+        target: { value: "#224466" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-range-track-bg" }),
+      {
+        target: { value: "#556677" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-sidebar-tree-scrollbar-thumb-bg",
+      ),
+    ).toBe("#224466");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-range-track-bg"),
+    ).toBe("#556677");
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    expect(snapshotTextarea.value).toContain(
+      '"control-scrollbar-thumb-bg": "#224466"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"control-slider-base-track-bg": "#556677"',
+    );
+  });
+
   it("默认导出不包含计算值，可手动切换包含", () => {
     renderThemeParameterPanel();
 

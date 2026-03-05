@@ -1,10 +1,12 @@
 import type {
   ChangeEvent,
+  CSSProperties,
   Dispatch,
   MutableRefObject,
   SetStateAction,
 } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { SkeuoRunway } from "../primitives/SkeuoRunway";
 
 import {
   formatColorStateAsCss,
@@ -67,6 +69,7 @@ export type ThemeParameterPageId =
   | "containerLayer"
   | "largePanelLayer"
   | "smallPanelLayer"
+  | "commonControls"
   | "buttonStates";
 
 export type ThemeParameterPreviewMode =
@@ -86,12 +89,20 @@ type ThemeDebugNumberGroupId =
   | "side"
   | "main";
 
+type ThemeControlSectionId =
+  | "control-scrollbar"
+  | "control-slider-base"
+  | "control-slider-player"
+  | "control-slider-vertical"
+  | "control-slider-settings";
+
 interface ThemeDebugColorField {
   id: string;
   cssVar: string;
   fallback: string;
   fallbackAlpha?: number;
   groupId: ThemeDebugNumberGroupId;
+  sectionId?: ThemeControlSectionId;
 }
 
 interface ThemeDebugTextField {
@@ -99,6 +110,16 @@ interface ThemeDebugTextField {
   cssVar: string;
   fallback: string;
   groupId: ThemeDebugNumberGroupId;
+  sectionId?: ThemeControlSectionId;
+}
+
+interface ControlPreviewValues {
+  sliderBaseHorizontal: number;
+  sliderPlayerProgress: number;
+  sliderVerticalReference: number;
+  sliderVerticalUp: number;
+  sliderVerticalDown: number;
+  sliderSettingsHorizontal: number;
 }
 
 type ButtonStateKey =
@@ -436,6 +457,314 @@ const BUTTON_STATE_FIELD_PREFIX: Readonly<Record<ButtonStateKey, string>> = {
   "close-hover": "danger-hover",
 };
 
+const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
+  id: ThemeControlSectionId;
+  titleKey: string;
+  noteKey: string;
+}> = [
+  {
+    id: "control-scrollbar",
+    titleKey: "ui.themeParameter.controls.section.scrollbar",
+    noteKey: "ui.themeParameter.controls.note.scrollbar",
+  },
+  {
+    id: "control-slider-base",
+    titleKey: "ui.themeParameter.controls.section.sliderBase",
+    noteKey: "ui.themeParameter.controls.note.sliderBase",
+  },
+  {
+    id: "control-slider-player",
+    titleKey: "ui.themeParameter.controls.section.sliderPlayer",
+    noteKey: "ui.themeParameter.controls.note.sliderPlayer",
+  },
+  {
+    id: "control-slider-vertical",
+    titleKey: "ui.themeParameter.controls.section.sliderVertical",
+    noteKey: "ui.themeParameter.controls.note.sliderVertical",
+  },
+  {
+    id: "control-slider-settings",
+    titleKey: "ui.themeParameter.controls.section.sliderSettings",
+    noteKey: "ui.themeParameter.controls.note.sliderSettings",
+  },
+];
+
+const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "control-scrollbar-track-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-bg",
+    fallback: "#ece5d9",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+    fallback: "#b7ab95",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-hover-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-hover-bg",
+    fallback: "#2e6f7f",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-active-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-bg",
+    fallback: "#2e6f7f",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-slider-base-track-bg",
+    cssVar: "--mpx-range-track-bg",
+    fallback: "#d6cfc1",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-bg",
+    cssVar: "--mpx-range-thumb-bg",
+    fallback: "#2e6f7f",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-border",
+    cssVar: "--mpx-range-thumb-border",
+    fallback: "#ffffff",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-player-fill-gold",
+    cssVar: "--mpx-runway-fill-gold",
+    fallback: "linear-gradient(90deg, #cba468 0%, #b5853b 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-fill-graphite",
+    cssVar: "--mpx-runway-fill-graphite",
+    fallback: "linear-gradient(90deg, #9ca3af 0%, #4b5563 55%, #374151 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-shell-pearl",
+    cssVar: "--mpx-runway-thumb-shell-pearl",
+    fallback: "linear-gradient(90deg, #d6bc86 0%, #c79d4a 50%, #d6bc86 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-shell-graphite",
+    cssVar: "--mpx-runway-thumb-shell-graphite",
+    fallback: "linear-gradient(145deg, #ffffff 0%, #e5e7eb 40%, #9ca3af 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-vertical-accent-fill",
+    cssVar: "--mpx-skeuo-accent-fill",
+    fallback: "#8a6a3b",
+    groupId: "box",
+    sectionId: "control-slider-vertical",
+  },
+  {
+    id: "control-slider-vertical-inset-bg",
+    cssVar: "--mpx-skeuo-inset-bg",
+    fallback: "#f3e9d8",
+    groupId: "box",
+    sectionId: "control-slider-vertical",
+  },
+  {
+    id: "control-slider-settings-groove-bg",
+    cssVar: "--mpx-runway-groove-bg",
+    fallback: "#e9ecf0",
+    groupId: "box",
+    sectionId: "control-slider-settings",
+  },
+];
+
+const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "control-scrollbar-size",
+    cssVar: "--mpx-sidebar-tree-scrollbar-size",
+    fallback: "10px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-track-radius",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-radius",
+    fallback: "10px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-radius",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
+    fallback: "999px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-slider-base-track-height",
+    cssVar: "--mpx-range-track-height",
+    fallback: "6px",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-size",
+    cssVar: "--mpx-range-thumb-size",
+    fallback: "16px",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-border-width",
+    cssVar: "--mpx-range-thumb-border-width",
+    fallback: "1.5px",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-shadow",
+    cssVar: "--mpx-range-thumb-shadow",
+    fallback: "0 1px 2px rgba(0, 0, 0, 0.24)",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-hover-shadow",
+    cssVar: "--mpx-range-thumb-hover-shadow",
+    fallback:
+      "0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 28%, transparent), 0 2px 4px rgba(0, 0, 0, 0.28)",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-active-shadow",
+    cssVar: "--mpx-range-thumb-active-shadow",
+    fallback:
+      "0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 36%, transparent), 0 1px 2px rgba(0, 0, 0, 0.24)",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-focus-ring",
+    cssVar: "--mpx-range-thumb-focus-ring",
+    fallback:
+      "0 0 0 2px color-mix(in srgb, var(--mpx-border-focus) 45%, transparent)",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-hover-scale",
+    cssVar: "--mpx-range-thumb-hover-scale",
+    fallback: "1.06",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-base-thumb-active-scale",
+    cssVar: "--mpx-range-thumb-active-scale",
+    fallback: "1.12",
+    groupId: "box",
+    sectionId: "control-slider-base",
+  },
+  {
+    id: "control-slider-player-fill-shadow-gold",
+    cssVar: "--mpx-runway-fill-shadow-gold",
+    fallback:
+      "inset 0 1px 1px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(0, 0, 0, 0.1)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-fill-shadow-graphite",
+    cssVar: "--mpx-runway-fill-shadow-graphite",
+    fallback:
+      "inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.25)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-shell-shadow-pearl",
+    cssVar: "--mpx-runway-thumb-shell-shadow-pearl",
+    fallback: "0 1px 1px rgba(0, 0, 0, 0.05)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-shell-shadow-graphite",
+    cssVar: "--mpx-runway-thumb-shell-shadow-graphite",
+    fallback:
+      "0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 1), inset -1px -1px 2px rgba(156, 163, 175, 0.5)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-core-pearl",
+    cssVar: "--mpx-runway-thumb-core-pearl",
+    fallback:
+      "radial-gradient(circle at 35% 25%, #ffffff 0%, #f8f9fa 40%, #d1d5db 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-core-graphite",
+    cssVar: "--mpx-runway-thumb-core-graphite",
+    fallback:
+      "radial-gradient(circle at 35% 25%, #9ca3af 0%, #4b5563 50%, #374151 100%)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-core-shadow-pearl",
+    cssVar: "--mpx-runway-thumb-core-shadow-pearl",
+    fallback:
+      "inset 1px 1px 2px rgba(255, 255, 255, 1), inset -1px -1px 3px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.05)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-player-thumb-core-shadow-graphite",
+    cssVar: "--mpx-runway-thumb-core-shadow-graphite",
+    fallback:
+      "inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 3px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.5)",
+    groupId: "box",
+    sectionId: "control-slider-player",
+  },
+  {
+    id: "control-slider-vertical-shadow-dark",
+    cssVar: "--mpx-skeuo-shadow-dark",
+    fallback: "#cdb799",
+    groupId: "box",
+    sectionId: "control-slider-vertical",
+  },
+  {
+    id: "control-slider-vertical-shadow-light",
+    cssVar: "--mpx-skeuo-shadow-light",
+    fallback: "#fffdf7",
+    groupId: "box",
+    sectionId: "control-slider-vertical",
+  },
+  {
+    id: "control-slider-settings-groove-shadow",
+    cssVar: "--mpx-runway-groove-shadow",
+    fallback:
+      "inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)",
+    groupId: "box",
+    sectionId: "control-slider-settings",
+  },
+];
+
 function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
   switch (groupId) {
     case "box":
@@ -564,6 +893,10 @@ export function ThemeParameterPanelMain({
       labelKey: "ui.themeParameter.page.smallPanelLayer",
     },
     {
+      id: "commonControls",
+      labelKey: "ui.themeParameter.page.commonControls",
+    },
+    {
       id: "buttonStates",
       labelKey: "ui.themeParameter.page.buttonStates",
     },
@@ -575,6 +908,15 @@ export function ThemeParameterPanelMain({
   const [debugTextValues, setDebugTextValues] = useState<
     Record<string, string>
   >({});
+  const [controlPreviewValues, setControlPreviewValues] =
+    useState<ControlPreviewValues>({
+      sliderBaseHorizontal: 36,
+      sliderPlayerProgress: 42,
+      sliderVerticalReference: 58,
+      sliderVerticalUp: 72,
+      sliderVerticalDown: 28,
+      sliderSettingsHorizontal: 52,
+    });
 
   const containerNumberGroups = useMemo(() => {
     const groupMap: Record<
@@ -668,6 +1010,7 @@ export function ThemeParameterPanelMain({
       activePage !== "containerLayer" &&
       activePage !== "largePanelLayer" &&
       activePage !== "smallPanelLayer" &&
+      activePage !== "commonControls" &&
       activePage !== "buttonStates"
     ) {
       return;
@@ -678,9 +1021,11 @@ export function ThemeParameterPanelMain({
         ? CONTAINER_COLOR_FIELDS
         : activePage === "largePanelLayer"
           ? LARGE_PANEL_COLOR_FIELDS
-          : activePage === "smallPanelLayer"
-            ? SMALL_PANEL_COLOR_FIELDS
-            : BUTTON_STATE_COLOR_FIELDS;
+        : activePage === "smallPanelLayer"
+          ? SMALL_PANEL_COLOR_FIELDS
+          : activePage === "commonControls"
+            ? COMMON_CONTROL_COLOR_FIELDS
+          : BUTTON_STATE_COLOR_FIELDS;
     const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
       const parsed = readCssColorState(computed, field.cssVar, field.fallback);
@@ -691,11 +1036,17 @@ export function ThemeParameterPanelMain({
     }
     setDebugColorValues(nextValues);
 
-    if (activePage === "containerLayer" || activePage === "smallPanelLayer") {
+    if (
+      activePage === "containerLayer" ||
+      activePage === "smallPanelLayer" ||
+      activePage === "commonControls"
+    ) {
       const nextTextValues: Record<string, string> = {};
       const sourceTextFields =
         activePage === "containerLayer"
           ? CONTAINER_TEXT_FIELDS
+          : activePage === "commonControls"
+            ? COMMON_CONTROL_TEXT_FIELDS
           : SMALL_PANEL_TEXT_FIELDS;
       for (const field of sourceTextFields) {
         nextTextValues[field.id] =
@@ -899,6 +1250,32 @@ export function ThemeParameterPanelMain({
     fields: readonly ThemeDebugTextField[],
     groupIds: readonly ThemeDebugNumberGroupId[],
   ) => {
+    const renderTextFieldRow = (field: ThemeDebugTextField) => {
+      const raw = debugTextValues[field.id] ?? field.fallback;
+      return (
+        <label key={field.id} className="theme-parameter-text-row">
+          <span className="theme-parameter-var-label">{field.cssVar}</span>
+          <textarea
+            aria-label={field.cssVar}
+            className="theme-parameter-textarea"
+            value={raw}
+            onChange={(event) =>
+              setDebugTextFieldValue(field, event.target.value)
+            }
+          />
+          {isTextFieldChanged(field) ? (
+            <button
+              type="button"
+              className="theme-parameter-reset-btn"
+              onClick={() => resetTextField(field)}
+            >
+              {t("ui.themeParameter.resetField")}
+            </button>
+          ) : null}
+        </label>
+      );
+    };
+
     return groupIds.map((groupId) => {
       const groupFields = fields.filter((field) => field.groupId === groupId);
       if (groupFields.length === 0) {
@@ -913,33 +1290,315 @@ export function ThemeParameterPanelMain({
             <span>{resolveNumberGroupTitle(groupId)}</span>
           </header>
           <div className="theme-parameter-text-list">
-            {groupFields.map((field) => {
-              const raw = debugTextValues[field.id] ?? field.fallback;
-              return (
-                <label key={field.id} className="theme-parameter-text-row">
-                  <span className="theme-parameter-var-label">
-                    {field.cssVar}
+            {groupFields.map(renderTextFieldRow)}
+          </div>
+        </section>
+      );
+    });
+  };
+
+  const toRangePercent = (value: number, min: number, max: number) => {
+    if (max <= min) {
+      return 0;
+    }
+    return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+  };
+
+  const buildSkeuoRangeStyle = (value: number) => {
+    return {
+      "--mpx-skeuo-range-pct": `${toRangePercent(value, 0, 100)}%`,
+    } as CSSProperties;
+  };
+
+  const renderCommonControlTextFieldRow = (field: ThemeDebugTextField) => {
+    const raw = debugTextValues[field.id] ?? field.fallback;
+    return (
+      <label key={field.id} className="theme-parameter-text-row">
+        <span className="theme-parameter-var-label">{field.cssVar}</span>
+        <textarea
+          aria-label={field.cssVar}
+          className="theme-parameter-textarea"
+          value={raw}
+          onChange={(event) => setDebugTextFieldValue(field, event.target.value)}
+        />
+        {isTextFieldChanged(field) ? (
+          <button
+            type="button"
+            className="theme-parameter-reset-btn"
+            onClick={() => resetTextField(field)}
+          >
+            {t("ui.themeParameter.resetField")}
+          </button>
+        ) : null}
+      </label>
+    );
+  };
+
+  const renderCommonControlHorizontalPreview = (
+    sectionId: ThemeControlSectionId,
+  ) => {
+    switch (sectionId) {
+      case "control-scrollbar": {
+        return (
+          <div
+            className="theme-parameter-control-preview-row is-horizontal"
+            data-testid="theme-control-preview-scrollbar-horizontal"
+          >
+            <div
+              className="theme-parameter-scroll-preview mpx-scroll-area"
+              aria-label="滚动条横向预览"
+              tabIndex={0}
+            >
+              <div className="theme-parameter-scroll-preview-content">
+                {Array.from({ length: 18 }).map((_, index) => (
+                  <span
+                    key={`scroll-preview-chip-${index}`}
+                    className="theme-parameter-scroll-preview-chip"
+                  >
+                    {`Scroll-${index + 1}`}
                   </span>
-                  <textarea
-                    aria-label={field.cssVar}
-                    className="theme-parameter-textarea"
-                    value={raw}
-                    onChange={(event) =>
-                      setDebugTextFieldValue(field, event.target.value)
-                    }
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case "control-slider-base": {
+        return (
+          <div
+            className="theme-parameter-control-preview-row is-horizontal"
+            data-testid="theme-control-preview-slider-base-horizontal"
+          >
+            <label className="theme-parameter-control-range-row">
+              <span>基础 slider（横向）</span>
+              <input
+                aria-label="slider-base-horizontal-preview"
+                className="theme-parameter-control-range"
+                max={100}
+                min={0}
+                step={1}
+                type="range"
+                value={controlPreviewValues.sliderBaseHorizontal}
+                onChange={(event) => {
+                  setControlPreviewValues((current) => ({
+                    ...current,
+                    sliderBaseHorizontal: Number(event.target.value),
+                  }));
+                }}
+              />
+            </label>
+          </div>
+        );
+      }
+      case "control-slider-player": {
+        return (
+          <div
+            className="theme-parameter-control-preview-row is-horizontal"
+            data-testid="theme-control-preview-slider-player-horizontal"
+          >
+            <div className="video-controls-progress theme-parameter-player-progress-preview">
+              <span className="video-progress-time">01:24 / 03:40</span>
+              <SkeuoRunway
+                ariaLabel="slider-player-progress-preview"
+                fillTone="gold"
+                max={100}
+                min={0}
+                preset="progress"
+                rangePercent={controlPreviewValues.sliderPlayerProgress}
+                step={1}
+                value={controlPreviewValues.sliderPlayerProgress}
+                onChange={(event) => {
+                  setControlPreviewValues((current) => ({
+                    ...current,
+                    sliderPlayerProgress: Number(event.target.value),
+                  }));
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+      case "control-slider-vertical": {
+        return (
+          <div
+            className="theme-parameter-control-preview-row is-horizontal"
+            data-testid="theme-control-preview-slider-vertical-horizontal"
+          >
+            <label className="theme-parameter-control-range-row">
+              <span>竖向链路横向参考</span>
+              <input
+                aria-label="slider-vertical-reference-preview"
+                className="music-ctrl-shader-range theme-parameter-control-range"
+                max={100}
+                min={0}
+                step={1}
+                style={buildSkeuoRangeStyle(
+                  controlPreviewValues.sliderVerticalReference,
+                )}
+                type="range"
+                value={controlPreviewValues.sliderVerticalReference}
+                onChange={(event) => {
+                  setControlPreviewValues((current) => ({
+                    ...current,
+                    sliderVerticalReference: Number(event.target.value),
+                  }));
+                }}
+              />
+            </label>
+          </div>
+        );
+      }
+      case "control-slider-settings": {
+        return (
+          <div
+            className="theme-parameter-control-preview-row is-horizontal"
+            data-testid="theme-control-preview-slider-settings-horizontal"
+          >
+            <label className="theme-parameter-control-range-row">
+              <span>设置面板 slider（横向）</span>
+              <input
+                aria-label="slider-settings-horizontal-preview"
+                className="theme-parameter-control-range"
+                max={100}
+                min={0}
+                step={1}
+                type="range"
+                value={controlPreviewValues.sliderSettingsHorizontal}
+                onChange={(event) => {
+                  setControlPreviewValues((current) => ({
+                    ...current,
+                    sliderSettingsHorizontal: Number(event.target.value),
+                  }));
+                }}
+              />
+            </label>
+          </div>
+        );
+      }
+      default:
+        return null;
+    }
+  };
+
+  const renderCommonControlVerticalPreview = (
+    sectionId: ThemeControlSectionId,
+  ) => {
+    switch (sectionId) {
+      case "control-slider-player": {
+        return null;
+      }
+      case "control-slider-vertical": {
+        return (
+          <div
+            className="theme-parameter-control-vertical-stack is-volume-variants"
+            data-testid="theme-control-preview-slider-vertical-stack"
+          >
+            <label className="theme-parameter-control-vertical-item">
+              <span className="theme-parameter-control-preview-caption">朝上</span>
+              <div className="theme-parameter-control-vertical-track-box">
+                <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis">
+                  <SkeuoRunway
+                    ariaLabel="slider-vertical-up-preview"
+                    inputClassName="video-ctrl-volume-range"
+                    max={100}
+                    min={0}
+                    orientation="vertical"
+                    preset="control"
+                    rangePercent={controlPreviewValues.sliderVerticalUp}
+                    step={1}
+                    value={controlPreviewValues.sliderVerticalUp}
+                    onChange={(event) => {
+                      setControlPreviewValues((current) => ({
+                        ...current,
+                        sliderVerticalUp: Number(event.target.value),
+                      }));
+                    }}
                   />
-                  {isTextFieldChanged(field) ? (
-                    <button
-                      type="button"
-                      className="theme-parameter-reset-btn"
-                      onClick={() => resetTextField(field)}
-                    >
-                      {t("ui.themeParameter.resetField")}
-                    </button>
-                  ) : null}
-                </label>
-              );
-            })}
+                </div>
+              </div>
+            </label>
+            <label className="theme-parameter-control-vertical-item">
+              <span className="theme-parameter-control-preview-caption">朝下</span>
+              <div className="theme-parameter-control-vertical-track-box">
+                <div
+                  className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis is-down"
+                >
+                  <SkeuoRunway
+                    ariaLabel="slider-vertical-down-preview"
+                    inputClassName="video-ctrl-volume-range"
+                    max={100}
+                    min={0}
+                    orientation="vertical"
+                    preset="control"
+                    rangePercent={controlPreviewValues.sliderVerticalDown}
+                    step={1}
+                    value={controlPreviewValues.sliderVerticalDown}
+                    onChange={(event) => {
+                      setControlPreviewValues((current) => ({
+                        ...current,
+                        sliderVerticalDown: Number(event.target.value),
+                      }));
+                    }}
+                  />
+                </div>
+              </div>
+            </label>
+          </div>
+        );
+      }
+      default:
+        return null;
+    }
+  };
+
+  const renderCommonControlSections = () => {
+    return CONTROL_SECTION_DEFINITIONS.map((section) => {
+      const colorFields = COMMON_CONTROL_COLOR_FIELDS.filter(
+        (field) => field.sectionId === section.id,
+      );
+      const textFields = COMMON_CONTROL_TEXT_FIELDS.filter(
+        (field) => field.sectionId === section.id,
+      );
+      if (colorFields.length === 0 && textFields.length === 0) {
+        return null;
+      }
+      const horizontalPreview = renderCommonControlHorizontalPreview(section.id);
+      const verticalPreview = renderCommonControlVerticalPreview(section.id);
+      return (
+        <section
+          key={section.id}
+          className="settings-group theme-parameter-debug-group"
+          data-testid={`theme-control-section-${section.id}`}
+        >
+          <header className="settings-group-head">
+            <span>{t(section.titleKey)}</span>
+          </header>
+          <p className="theme-parameter-note-intro">{t(section.noteKey)}</p>
+          {horizontalPreview}
+          <div
+            className={
+              verticalPreview
+                ? "theme-parameter-control-content has-right-vertical"
+                : "theme-parameter-control-content"
+            }
+          >
+            <div className="theme-parameter-control-fields">
+              {colorFields.length > 0 ? (
+                <div className="theme-parameter-color-list">
+                  {colorFields.map(renderColorFieldRow)}
+                </div>
+              ) : null}
+              {textFields.length > 0 ? (
+                <div className="theme-parameter-text-list">
+                  {textFields.map(renderCommonControlTextFieldRow)}
+                </div>
+              ) : null}
+            </div>
+            {verticalPreview ? (
+              <aside className="theme-parameter-control-vertical-side">
+                {verticalPreview}
+              </aside>
+            ) : null}
           </div>
         </section>
       );
@@ -1370,6 +2029,17 @@ export function ThemeParameterPanelMain({
             {renderColorGroups(SMALL_PANEL_COLOR_FIELDS, ["box", "border"])}
             {renderTextGroups(SMALL_PANEL_TEXT_FIELDS, ["shadow"])}
             {renderNumberGroups(smallPanelNumberGroups)}
+          </section>
+        ) : null}
+
+        {activePage === "commonControls" ? (
+          <section className="settings-block theme-parameter-block">
+            <section className="settings-group">
+              <header className="settings-group-head">
+                <span>{t("ui.themeParameter.page.commonControls")}</span>
+              </header>
+            </section>
+            {renderCommonControlSections()}
           </section>
         ) : null}
 

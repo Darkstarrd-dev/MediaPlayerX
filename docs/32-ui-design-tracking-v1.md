@@ -347,8 +347,8 @@ css 的触发点
 3. 大容器层调试
 4. 大面板层调试
 5. 小面板层调试
-6. 按钮状态样例
-7. 操作
+6. 常用控件调试
+7. 按钮状态样例
 
 临时预览模式（全局）
 
@@ -367,16 +367,16 @@ css 的触发点
 
 1. 主题参数面板大小、配色、布局与设置/帮助面板同源。
 2. 原来单页内容已按功能分流到 side 分页。
-3. 新增大容器层/大面板层/小面板层调试分页，支持全局临时预览模式。
+3. 新增大容器层/大面板层/小面板层/常用控件调试分页，支持分层调参。
 4. `bg-plus-large-panel` 预览改为真实 `head + side + main` 骨架，不再使用伪元素近似。
 5. 调试参数按 F12 属性聚合展示（Box / Border / Shadow / Root / Head / Shell / Side / Main）。
 6. 数值参数支持“滑条 + 数字输入 + 当前值显示”；颜色参数支持“颜色选择器 + HEX 输入”。
 7. 参数应用、导入导出、重置功能保持等价。
 
 补充
-`快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 三个调试分页中的颜色调节结果。
+`快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 四个调试分页中的颜色调节结果。
 `快照工具` 导出的 JSON 现已包含 `debugTexts`，用于保存容器壳层阴影原始串（如 `--mpx-surface-chrome-shell-shadow`）。
-`3.2` 三个调试分页里每个已改动字段都显示“复位”按钮，点击后恢复到主题默认值（移除对应 inline 覆写）。
+`3.2` 四个调试分页里每个已改动字段都显示“复位”按钮，点击后恢复到主题默认值（移除对应 inline 覆写）。
 `--mpx-metal-dark` 与 `--mpx-surface-chrome-shell-shadow` 已接入大容器层调试分页；颜色项支持透明度输入。
 
 ## 3.3 帮助面板
@@ -778,3 +778,138 @@ css 的触发点
 1. 所有纳入项统一挂到 `mpx-dialog-mask + mpx-dialog-panel` 基架。
 2. 各 dialog 仍可通过各自 slot 变量做局部覆写（边框/背景/文字/阴影/尺寸）。
 3. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。
+
+## 6.0 控件层
+
+说明
+控件层没有基础层，直接从 `6.1` 开始维护。
+
+## 6.1 滚动条样式
+
+用在什么地方
+全局滚动容器（含 `mpx-scroll-area` 与常规可滚动区域）的滚动条轨道/滑块样式。
+当前按单链路维护，暂不拆变体。
+
+css 的触发点
+`src/styles/app/base.css`（`*::-webkit-scrollbar*` 与 `scrollbar-color` 入口）
+`src/styles/themes/contract.css`（滚动条语义 token 默认值）
+`src/styles/themes/styles/soft-skeuomorphic.css`（当前 style 对 sidebar-tree 滚动条覆写）
+
+变量与变量对应的值（按组）
+`--mpx-scrollbar-size`（滚动条尺寸）
+`--mpx-scrollbar-radius`（滚动条圆角）
+`--mpx-scrollbar-track-bg`（轨道背景）
+`--mpx-scrollbar-thumb-bg`（滑块背景）
+`--mpx-scrollbar-thumb-hover-bg`（滑块 hover 背景）
+`--mpx-scrollbar-thumb-active-bg`（滑块 active 背景）
+
+`--mpx-scrollbar-size = 10px`（`src/styles/themes/contract.css`）
+`--mpx-scrollbar-radius = 999px`（`src/styles/themes/contract.css`）
+`--mpx-scrollbar-track-bg = #ece5d9`（`src/styles/themes/contract.css`）
+`--mpx-scrollbar-thumb-bg = #b7ab95`（`src/styles/themes/contract.css`）
+`--mpx-scrollbar-thumb-hover-bg = #2e6f7f`（`src/styles/themes/contract.css`）
+`--mpx-scrollbar-thumb-active-bg = var(--mpx-scrollbar-thumb-hover-bg)`（`src/styles/themes/contract.css`）
+
+说明
+6.1 当前不区分场景变体；侧栏树滚动条通过 `sidebar-tree` 命名变量链路承接并覆写视觉细节。
+
+## 6.2 Slider
+
+### 6.2.0 Slider 基础层（变体基座）
+
+用在什么地方
+所有 `input[type='range']` 的基础轨道/滑块状态参数，作为后续变体共用底座。
+
+css 的触发点
+`src/styles/app/base.css`（range 基础样式）
+`src/styles/themes/contract.css`（range 基础 token）
+
+变量与变量对应的值（按组）
+`--mpx-range-track-height`（轨道高度）
+`--mpx-range-track-bg`（轨道背景）
+`--mpx-range-thumb-size`（滑块尺寸）
+`--mpx-range-thumb-bg`（滑块背景）
+`--mpx-range-thumb-border`（滑块描边）
+`--mpx-range-thumb-border-width`（滑块描边宽度）
+`--mpx-range-thumb-shadow/hover-shadow/active-shadow`（滑块阴影态）
+`--mpx-range-thumb-focus-ring`（键盘焦点环）
+`--mpx-range-thumb-hover-scale/active-scale`（滑块交互缩放）
+
+`--mpx-range-track-height = 6px`（`src/styles/themes/contract.css`）
+`--mpx-range-track-bg = #d6cfc1`（`src/styles/themes/contract.css`）
+`--mpx-range-thumb-size = 16px`（`src/styles/themes/contract.css`）
+`--mpx-range-thumb-bg = #2e6f7f`（`src/styles/themes/contract.css`）
+`--mpx-range-thumb-border = #ffffff`（`src/styles/themes/contract.css`）
+`--mpx-range-thumb-border-width = 1.5px`（`src/styles/themes/contract.css`）
+
+说明
+6.2.0 仅定义基础状态，不绑定具体业务场景。
+
+### 6.2.1 Slider 变体：播放器面板
+
+用在什么地方
+播放器进度/音量滑条与全屏播放器同类控件，统一走 `SkeuoRunway`。
+
+css 的触发点
+`src/components/primitives/SkeuoRunway.tsx`
+`src/components/VideoMainSection.tsx`
+`src/components/MusicMainSectionControlsShell.tsx`
+`src/components/fullscreen/FullscreenVideoControls.tsx`
+`src/styles/themes/styles/soft-skeuomorphic.runway.css`
+
+变量与变量对应的值（按组）
+`--mpx-runway-fill-gold`（进度填充金色变体）
+`--mpx-runway-fill-graphite`（进度填充石墨变体）
+`--mpx-runway-fill-shadow-gold/graphite`（填充阴影）
+`--mpx-runway-thumb-shell-*/core-*`（滑块壳层与核心渐变）
+`--mpx-runway-thumb-shell-shadow-*/core-shadow-*`（滑块阴影）
+
+`--mpx-runway-fill-gold = linear-gradient(90deg, #cba468 0%, #b5853b 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-runway-fill-graphite = linear-gradient(90deg, #9ca3af 0%, #4b5563 55%, #374151 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+
+说明
+播放器面板 slider 在 6.2.1 下单独维护，不与设置面板 slider 混在同一调参区。
+
+### 6.2.2 Slider 变体：竖向（上/下同链路）
+
+用在什么地方
+竖向 slider（包括朝上与朝下两种交互方向）的共享样式链路。
+
+css 的触发点
+`src/styles/app/layout/layout.part2.css`（`header-vertical-range`）
+`src/components/fullscreen/FullscreenFooter.tsx`（竖向 range 交互）
+`src/styles/themes/styles/soft-skeuomorphic.runway.css`（竖向 range 的软拟物轨道/滑块）
+
+变量与变量对应的值（按组）
+`--mpx-skeuo-accent-fill`（已走过区域填充色）
+`--mpx-skeuo-inset-bg`（未走过区域底色）
+`--mpx-skeuo-shadow-dark`（凹陷暗部阴影）
+`--mpx-skeuo-shadow-light`（凹陷亮部阴影）
+
+`--mpx-skeuo-accent-fill = #8a6a3b`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-skeuo-inset-bg = #f3e9d8`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-skeuo-shadow-dark = #cdb799`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+`--mpx-skeuo-shadow-light = #fffdf7`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
+
+说明
+朝上/朝下仅方向变换不同（`transform` 与输入方向），视觉 token 共用同一套。
+
+### 6.2.3 Slider 变体：设置面板
+
+用在什么地方
+设置页与主题参数页等非播放器场景中的通用 slider。
+
+css 的触发点
+`src/styles/app/settings/settings.part1.css`（设置页 range 布局）
+`src/components/theme-parameter/ThemeParameterPanelMain.tsx`（参数调节滑条）
+`src/styles/themes/styles/soft-skeuomorphic.runway.css`（`input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)`）
+
+变量与变量对应的值（按组）
+`--mpx-runway-groove-bg`（设置 slider 轨道底色）
+`--mpx-runway-groove-shadow`（设置 slider 轨道阴影）
+
+`--mpx-runway-groove-bg = #e9ecf0`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-runway-groove-shadow = inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+
+说明
+当前 6.2.3 与 6.2.1 在部分轨道 token 上存在共享；分页已分离，后续可继续下钻为独立 token 链路。

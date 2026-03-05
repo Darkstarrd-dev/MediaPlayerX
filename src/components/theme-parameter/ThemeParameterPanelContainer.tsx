@@ -314,6 +314,76 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
       "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-text",
     fallback: "#dc2626",
   },
+  {
+    id: "control-scrollbar-track-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-bg",
+    fallback: "#ece5d9",
+  },
+  {
+    id: "control-scrollbar-thumb-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "control-scrollbar-thumb-hover-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-hover-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-scrollbar-thumb-active-bg",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-slider-base-track-bg",
+    cssVar: "--mpx-range-track-bg",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "control-slider-base-thumb-bg",
+    cssVar: "--mpx-range-thumb-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-slider-base-thumb-border",
+    cssVar: "--mpx-range-thumb-border",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-slider-player-fill-gold",
+    cssVar: "--mpx-runway-fill-gold",
+    fallback: "linear-gradient(90deg, #cba468 0%, #b5853b 100%)",
+  },
+  {
+    id: "control-slider-player-fill-graphite",
+    cssVar: "--mpx-runway-fill-graphite",
+    fallback: "linear-gradient(90deg, #9ca3af 0%, #4b5563 55%, #374151 100%)",
+  },
+  {
+    id: "control-slider-player-thumb-shell-pearl",
+    cssVar: "--mpx-runway-thumb-shell-pearl",
+    fallback: "linear-gradient(90deg, #d6bc86 0%, #c79d4a 50%, #d6bc86 100%)",
+  },
+  {
+    id: "control-slider-player-thumb-shell-graphite",
+    cssVar: "--mpx-runway-thumb-shell-graphite",
+    fallback: "linear-gradient(145deg, #ffffff 0%, #e5e7eb 40%, #9ca3af 100%)",
+  },
+  {
+    id: "control-slider-vertical-accent-fill",
+    cssVar: "--mpx-skeuo-accent-fill",
+    fallback: "#8a6a3b",
+  },
+  {
+    id: "control-slider-vertical-inset-bg",
+    cssVar: "--mpx-skeuo-inset-bg",
+    fallback: "#f3e9d8",
+  },
+  {
+    id: "control-slider-settings-groove-bg",
+    cssVar: "--mpx-runway-groove-bg",
+    fallback: "#e9ecf0",
+  },
 ];
 
 const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
@@ -324,6 +394,98 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "small-panel-shadow",
     cssVar: "--mpx-dialog-panel-shadow",
+  },
+  {
+    id: "control-scrollbar-size",
+    cssVar: "--mpx-sidebar-tree-scrollbar-size",
+  },
+  {
+    id: "control-scrollbar-track-radius",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-radius",
+  },
+  {
+    id: "control-scrollbar-thumb-radius",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
+  },
+  {
+    id: "control-slider-base-track-height",
+    cssVar: "--mpx-range-track-height",
+  },
+  {
+    id: "control-slider-base-thumb-size",
+    cssVar: "--mpx-range-thumb-size",
+  },
+  {
+    id: "control-slider-base-thumb-border-width",
+    cssVar: "--mpx-range-thumb-border-width",
+  },
+  {
+    id: "control-slider-base-thumb-shadow",
+    cssVar: "--mpx-range-thumb-shadow",
+  },
+  {
+    id: "control-slider-base-thumb-hover-shadow",
+    cssVar: "--mpx-range-thumb-hover-shadow",
+  },
+  {
+    id: "control-slider-base-thumb-active-shadow",
+    cssVar: "--mpx-range-thumb-active-shadow",
+  },
+  {
+    id: "control-slider-base-thumb-focus-ring",
+    cssVar: "--mpx-range-thumb-focus-ring",
+  },
+  {
+    id: "control-slider-base-thumb-hover-scale",
+    cssVar: "--mpx-range-thumb-hover-scale",
+  },
+  {
+    id: "control-slider-base-thumb-active-scale",
+    cssVar: "--mpx-range-thumb-active-scale",
+  },
+  {
+    id: "control-slider-player-fill-shadow-gold",
+    cssVar: "--mpx-runway-fill-shadow-gold",
+  },
+  {
+    id: "control-slider-player-fill-shadow-graphite",
+    cssVar: "--mpx-runway-fill-shadow-graphite",
+  },
+  {
+    id: "control-slider-player-thumb-shell-shadow-pearl",
+    cssVar: "--mpx-runway-thumb-shell-shadow-pearl",
+  },
+  {
+    id: "control-slider-player-thumb-shell-shadow-graphite",
+    cssVar: "--mpx-runway-thumb-shell-shadow-graphite",
+  },
+  {
+    id: "control-slider-player-thumb-core-pearl",
+    cssVar: "--mpx-runway-thumb-core-pearl",
+  },
+  {
+    id: "control-slider-player-thumb-core-graphite",
+    cssVar: "--mpx-runway-thumb-core-graphite",
+  },
+  {
+    id: "control-slider-player-thumb-core-shadow-pearl",
+    cssVar: "--mpx-runway-thumb-core-shadow-pearl",
+  },
+  {
+    id: "control-slider-player-thumb-core-shadow-graphite",
+    cssVar: "--mpx-runway-thumb-core-shadow-graphite",
+  },
+  {
+    id: "control-slider-vertical-shadow-dark",
+    cssVar: "--mpx-skeuo-shadow-dark",
+  },
+  {
+    id: "control-slider-vertical-shadow-light",
+    cssVar: "--mpx-skeuo-shadow-light",
+  },
+  {
+    id: "control-slider-settings-groove-shadow",
+    cssVar: "--mpx-runway-groove-shadow",
   },
 ];
 
