@@ -28,6 +28,15 @@
 说明
 按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
 
+Import Task（3.10）补充
+`fg.header.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。
+3.10 起，推荐调节变量语义如下：
+
+1. 遮罩层链路：`--mpx-slot-fg-import-task-ovl-bg/ovl-text`
+2. 面板外框链路：`--mpx-slot-fg-import-task-root-border/bg/shadow/head-*/main-*`
+3. 状态线链路：`--mpx-slot-fg-import-task-root-status-border/status-text`
+4. 错误行文本：`--mpx-slot-fg-import-task-error-text`
+
 ## 稳定路径到 Token 前缀
 
 | 稳定路径                                                    | Token 前缀                                                                |

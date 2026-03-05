@@ -240,6 +240,24 @@
   );
 }
 
+[data-slot="fg-import-task-ovl"] {
+  background: var(
+    --mpx-slot-fg-import-task-ovl-bg,
+    var(
+      --mpx-slot-fg-import-task-root-bg,
+      color-mix(
+        in srgb,
+        var(--mpx-bg-tooltip) var(--mpx-settings-backdrop-opacity, 18%),
+        transparent
+      )
+    )
+  );
+  color: var(
+    --mpx-slot-fg-import-task-ovl-text,
+    var(--mpx-slot-fg-import-task-root-text, inherit)
+  );
+}
+
 [data-slot="fg-main-header-manage-subtitle-cleanup-ovl"] {
   background: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-ovl-bg,

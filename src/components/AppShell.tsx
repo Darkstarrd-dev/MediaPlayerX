@@ -11,6 +11,7 @@ import E2eBenchSection from './E2eBenchSection'
 import FullscreenLayer from './FullscreenLayer'
 import GroupNameDialog from './GroupNameDialog'
 import HelpPanel from './HelpPanel'
+import ImportTaskPanel from './ImportTaskPanel'
 import ImportSourceInputs from './ImportSourceInputs'
 import SidebarRenameDialog from './SidebarRenameDialog'
 import SettingsPanel from './SettingsPanel'
@@ -25,6 +26,7 @@ interface AppShellProps {
   appHeaderProps: ComponentProps<typeof AppHeader>
   importSourceInputsProps: ComponentProps<typeof ImportSourceInputs>
   appTopBannersProps: ComponentProps<typeof AppTopBanners>
+  importTaskPanelProps: ComponentProps<typeof ImportTaskPanel>
   appWorkspaceProps: ComponentProps<typeof AppWorkspace>
   fullscreenLayerProps: ComponentProps<typeof FullscreenLayer>
   helpPanelProps: ComponentProps<typeof HelpPanel>
@@ -47,6 +49,7 @@ function AppShell({
   appHeaderProps,
   importSourceInputsProps,
   appTopBannersProps,
+  importTaskPanelProps,
   appWorkspaceProps,
   fullscreenLayerProps,
   helpPanelProps,
@@ -72,6 +75,7 @@ function AppShell({
       <AppHeader {...appHeaderProps} />
       <ImportSourceInputs {...importSourceInputsProps} />
       <AppTopBanners {...appTopBannersProps} />
+      <ImportTaskPanel {...importTaskPanelProps} />
       <AppWorkspace {...appWorkspaceProps} />
       <FullscreenLayer {...fullscreenLayerProps} />
       <HelpPanel {...helpPanelProps} />

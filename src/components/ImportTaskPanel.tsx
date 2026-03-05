@@ -1,5 +1,6 @@
 import type { ImportTaskDto } from '../contracts/backend'
 import { useI18n } from '../i18n/useI18n'
+import { useDraggablePanel } from './useDraggablePanel'
 import { clamp } from '../utils/ui'
 
 export interface ImportHashReviewLogItem {
@@ -103,6 +104,7 @@ function ImportTaskPanel({
   onRemoveTask,
 }: ImportTaskPanelProps) {
   const { t } = useI18n()
+  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open)
   const runningArchiveProgressPercent =
     typeof runningArchiveProgress === 'number' && Number.isFinite(runningArchiveProgress)
       ? Math.round(clamp(runningArchiveProgress, 0, 1) * 100)
@@ -117,31 +119,24 @@ function ImportTaskPanel({
   }
 
   return (
-    <section className="import-task-panel sysinfo-card-shell" data-slot="fg-import-task-root" role="status" aria-live="polite">
-      <header>
-        <strong>{t('ui.importTask.title')}</strong>
-        <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
-        <span>{t('ui.importTask.pendingArchiveCount', { count: pendingArchiveCount })}</span>
-        {runningArchive ? (
-          <span>
-            {runningArchiveProgressPercent === null
-              ? t('ui.importTask.runningArchive')
-              : t('ui.importTask.runningArchiveProgress', { progress: runningArchiveProgressPercent })}
-          </span>
-        ) : null}
-        {runningArchiveMessage ? <span>{t('ui.importTask.runningArchiveMessage', { message: runningArchiveMessage })}</span> : null}
-        {thumbnailRunningCount > 0 ? (
-          <span>{t('ui.importTask.thumbnailRunningCount', { count: thumbnailRunningCount })}</span>
-        ) : null}
-        {thumbnailRunningCount > 0 && thumbnailRunningProgressPercent !== null ? (
-          <span>{t('ui.importTask.thumbnailRunningProgress', { progress: thumbnailRunningProgressPercent })}</span>
-        ) : null}
-        {thumbnailRunningCount > 0 && thumbnailRunningMessage ? (
-          <span>{t('ui.importTask.thumbnailRunningMessage', { message: thumbnailRunningMessage })}</span>
-        ) : null}
-        {enqueuePending ? <span>{t('ui.importTask.enqueuing')}</span> : null}
-        {open ? (
-          <>
+    <div
+      className="settings-mask"
+      data-slot="fg-import-task-ovl"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('ui.importTask.title')}
+      data-overlay-close="import-task-panel"
+    >
+      <section
+        className={`import-task-panel mpx-large-panel settings-panel ${panelDragging ? 'is-dragging' : ''}`}
+        data-slot="fg-import-task-root"
+        data-overlay-close="import-task-panel"
+        style={{ transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)` }}
+      >
+        <header className="import-task-panel-head mpx-large-panel-head settings-head settings-head-draggable" {...headHandlers}>
+          <span className="settings-head-spacer" />
+          <h2>{t('ui.importTask.title')}</h2>
+          <div className="import-task-panel-head-actions">
             <button type="button" onClick={onClose}>
               {t('ui.common.close')}
             </button>
@@ -151,91 +146,117 @@ function ImportTaskPanel({
             <button type="button" onClick={onClearAll}>
               {t('ui.importTask.clearAll')}
             </button>
-          </>
-        ) : null}
-      </header>
-      {taskError ? (
-        <p data-slot="fg-import-task-error">
-          <span>{taskError}</span>
-          <button type="button" onClick={onClearError}>
-            {t('ui.common.clear')}
-          </button>
-        </p>
-      ) : null}
-      {operationHint ? (
-        <p data-slot="fg-import-task-hint">
-          <span>{operationHint}</span>
-          <button type="button" onClick={onClearOperationHint}>
-            {t('ui.common.clear')}
-          </button>
-        </p>
-      ) : null}
-      {pendingReviewNoticeVisible ? (
-        <p className="import-task-panel-review-notice" data-slot="fg-import-task-review-notice">
-          <span>
-            {t('ui.importTask.reviewPendingSummary', {
-              taskCount: Math.max(1, pendingReviewTaskCount),
-              imageCount: Math.max(1, pendingReviewImageCount),
-            })}
-          </span>
-          <span className="import-task-panel-review-notice-actions">
-            <button type="button" onClick={() => onOpenAdReviewFromPendingNotice?.()}>
-              {t('ui.importTask.openReviewMode')}
-            </button>
-            <button type="button" onClick={() => onDismissPendingReviewNotice?.()}>
-              {t('ui.common.clear')}
-            </button>
-          </span>
-        </p>
-      ) : null}
-      {hashReviewLogs.length > 0 ? (
-        <ul className="import-task-panel-hash-log-list" data-slot="fg-import-task-hash-log-list">
-          {hashReviewLogs.map((item) => (
-            <li key={item.id}>
-              <span>
-                {t('ui.importTask.hashSilentDeleteSummary', {
-                  deletedCount: item.deleted_count,
-                  hitCount: item.hit_count,
-                  failedCount: item.failed_count,
-                })}
-              </span>
-              <button type="button" onClick={() => onRemoveHashReviewLog?.(item.id)}>
-                {t('ui.common.clear')}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {tasks.length > 0 ? (
-        <ul>
-          {tasks.map((task) => {
-            const sourceLabel = resolveTaskSourceLabel(task.source, t)
-            const progressPercent = Math.round(clamp(task.progress, 0, 1) * 100)
+          </div>
+        </header>
+        <div className="mpx-large-panel-shell settings-shell is-no-side import-task-panel-shell">
+          <main className="import-task-panel-main mpx-large-panel-main settings-main" role="status" aria-live="polite">
+            <div className="import-task-panel-summary">
+              <span>{t('ui.importTask.activeCount', { count: activeTaskCount })}</span>
+              <span>{t('ui.importTask.pendingArchiveCount', { count: pendingArchiveCount })}</span>
+              {runningArchive ? (
+                <span>
+                  {runningArchiveProgressPercent === null
+                    ? t('ui.importTask.runningArchive')
+                    : t('ui.importTask.runningArchiveProgress', { progress: runningArchiveProgressPercent })}
+                </span>
+              ) : null}
+              {runningArchiveMessage ? <span>{t('ui.importTask.runningArchiveMessage', { message: runningArchiveMessage })}</span> : null}
+              {thumbnailRunningCount > 0 ? (
+                <span>{t('ui.importTask.thumbnailRunningCount', { count: thumbnailRunningCount })}</span>
+              ) : null}
+              {thumbnailRunningCount > 0 && thumbnailRunningProgressPercent !== null ? (
+                <span>{t('ui.importTask.thumbnailRunningProgress', { progress: thumbnailRunningProgressPercent })}</span>
+              ) : null}
+              {thumbnailRunningCount > 0 && thumbnailRunningMessage ? (
+                <span>{t('ui.importTask.thumbnailRunningMessage', { message: thumbnailRunningMessage })}</span>
+              ) : null}
+              {enqueuePending ? <span>{t('ui.importTask.enqueuing')}</span> : null}
+            </div>
+            {taskError ? (
+              <p data-slot="fg-import-task-error">
+                <span>{taskError}</span>
+                <button type="button" onClick={onClearError}>
+                  {t('ui.common.clear')}
+                </button>
+              </p>
+            ) : null}
+            {operationHint ? (
+              <p data-slot="fg-import-task-hint">
+                <span>{operationHint}</span>
+                <button type="button" onClick={onClearOperationHint}>
+                  {t('ui.common.clear')}
+                </button>
+              </p>
+            ) : null}
+            {pendingReviewNoticeVisible ? (
+              <p className="import-task-panel-review-notice" data-slot="fg-import-task-review-notice">
+                <span>
+                  {t('ui.importTask.reviewPendingSummary', {
+                    taskCount: Math.max(1, pendingReviewTaskCount),
+                    imageCount: Math.max(1, pendingReviewImageCount),
+                  })}
+                </span>
+                <span className="import-task-panel-review-notice-actions">
+                  <button type="button" onClick={() => onOpenAdReviewFromPendingNotice?.()}>
+                    {t('ui.importTask.openReviewMode')}
+                  </button>
+                  <button type="button" onClick={() => onDismissPendingReviewNotice?.()}>
+                    {t('ui.common.clear')}
+                  </button>
+                </span>
+              </p>
+            ) : null}
+            {hashReviewLogs.length > 0 ? (
+              <ul className="import-task-panel-hash-log-list" data-slot="fg-import-task-hash-log-list">
+                {hashReviewLogs.map((item) => (
+                  <li key={item.id}>
+                    <span>
+                      {t('ui.importTask.hashSilentDeleteSummary', {
+                        deletedCount: item.deleted_count,
+                        hitCount: item.hit_count,
+                        failedCount: item.failed_count,
+                      })}
+                    </span>
+                    <button type="button" onClick={() => onRemoveHashReviewLog?.(item.id)}>
+                      {t('ui.common.clear')}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {tasks.length > 0 ? (
+              <ul>
+                {tasks.map((task) => {
+                  const sourceLabel = resolveTaskSourceLabel(task.source, t)
+                  const progressPercent = Math.round(clamp(task.progress, 0, 1) * 100)
 
-            return (
-              <li key={task.task_id}>
-                <span>{t('ui.importTask.progressSummary', { source: sourceLabel, processed: task.processed_count, total: task.total_count })}</span>
-                <span>{resolveTaskStatusLabel(task.status, t)}</span>
-                <progress max={100} value={progressPercent} />
-                <span>{`${progressPercent}%`}</span>
-                <span>{task.message ?? '-'}</span>
-                {task.status === 'failed' ? (
-                  <button type="button" onClick={() => onRetryTask(task.task_id)}>
-                    {t('ui.common.retry')}
-                  </button>
-                ) : task.status === 'completed' ? (
-                  <button type="button" onClick={() => onRemoveTask(task.task_id)}>
-                    {t('ui.common.remove')}
-                  </button>
-                ) : null}
-              </li>
-            )
-          })}
-        </ul>
-      ) : (
-        <p>{t('ui.importTask.empty')}</p>
-      )}
-    </section>
+                  return (
+                    <li key={task.task_id}>
+                      <span>{t('ui.importTask.progressSummary', { source: sourceLabel, processed: task.processed_count, total: task.total_count })}</span>
+                      <span>{resolveTaskStatusLabel(task.status, t)}</span>
+                      <progress max={100} value={progressPercent} />
+                      <span>{`${progressPercent}%`}</span>
+                      <span>{task.message ?? '-'}</span>
+                      {task.status === 'failed' ? (
+                        <button type="button" onClick={() => onRetryTask(task.task_id)}>
+                          {t('ui.common.retry')}
+                        </button>
+                      ) : task.status === 'completed' ? (
+                        <button type="button" onClick={() => onRemoveTask(task.task_id)}>
+                          {t('ui.common.remove')}
+                        </button>
+                      ) : null}
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p>{t('ui.importTask.empty')}</p>
+            )}
+          </main>
+        </div>
+      </section>
+    </div>
   )
 }
 

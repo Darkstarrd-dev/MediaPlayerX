@@ -2,7 +2,6 @@ import type { RepositoryMode } from '../features/backend/repository'
 import type { BackendErrorRow } from '../features/app/buildBackendErrorRows'
 
 import BackendErrorBanner from './BackendErrorBanner'
-import ImportTaskPanel, { type ImportTaskPanelProps } from './ImportTaskPanel'
 import RuntimeWarningBanner from './RuntimeWarningBanner'
 
 interface AppTopBannersProps {
@@ -15,7 +14,6 @@ interface AppTopBannersProps {
     note: string
   }>
   onDismissRuntimeWarning: () => void
-  importTaskPanelProps: ImportTaskPanelProps
   dualCollapsed?: boolean
   layoutConvergedInsetPx?: number
 }
@@ -26,12 +24,10 @@ function AppTopBanners({
   runtimeWarningVisible,
   runtimeCapabilityWarnings,
   onDismissRuntimeWarning,
-  importTaskPanelProps,
   dualCollapsed = false,
   layoutConvergedInsetPx = 0,
 }: AppTopBannersProps) {
-  const hasSysinfo =
-    importTaskPanelProps.open || backendErrorRows.length > 0 || runtimeWarningVisible
+  const hasSysinfo = backendErrorRows.length > 0 || runtimeWarningVisible
 
   if (!hasSysinfo) {
     return null
@@ -60,8 +56,6 @@ function AppTopBanners({
         warnings={runtimeCapabilityWarnings}
         onDismiss={onDismissRuntimeWarning}
       />
-
-      <ImportTaskPanel {...importTaskPanelProps} />
     </section>
   )
 }

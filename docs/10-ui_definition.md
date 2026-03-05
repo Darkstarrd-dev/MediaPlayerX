@@ -49,9 +49,10 @@
 | `fg.header.g1.panelToggles` | `.panel-toggle-wrap` | `data-slot="fg-header-g1-panel-toggles"` | `showPanelToggleControls` | 侧栏/元数据面板切换按钮容器 | L/R 按钮组合 |
 | `fg.header.g1.toggle.sidebar` | `.panel-toggle-btn` (L) | `data-slot="fg-header-g1-toggle-sidebar"` | `showPanelToggleControls` | 侧边栏开关按钮 | L 按钮 |
 | `fg.header.g1.toggle.metadata` | `.panel-toggle-btn` (R) | `data-slot="fg-header-g1-toggle-metadata"` | `showPanelToggleControls` | 元数据面板开关按钮 | R 按钮 |
-| `fg.header.g1.task.importTask.panel` | `.import-task-panel` | `data-slot="fg-import-task-root"` | `importTaskPanelOpen` | 导入任务面板 | 渲染在 `fg.sysinfo` 容器 |
-| `fg.header.g1.task.importTask.error.panel` | `.import-task-panel > p`（错误行） | `data-slot="fg-import-task-error"` | `taskError != null` | 任务面板错误区 | clear 按钮 |
-| `fg.header.g1.task.importTask.hint.panel` | `.import-task-panel > p`（提示行） | `data-slot="fg-import-task-hint"` | `operationHint != null` | 任务面板提示区 | clear 按钮 |
+| `fg.header.g1.task.importTask.ovl` | `.settings-mask`（ImportTaskPanel） | `data-slot="fg-import-task-ovl"` | `importTaskPanelOpen` | 导入任务面板遮罩层 | 全屏遮罩；`data-overlay-close="import-task-panel"` |
+| `fg.header.g1.task.importTask.panel` | `.import-task-panel.mpx-large-panel.settings-panel` | `data-slot="fg-import-task-root"` | `importTaskPanelOpen` | 导入任务面板 | 归并到 `3.10` 大面板层（overlay + `head + main`） |
+| `fg.header.g1.task.importTask.error.panel` | `.import-task-panel-main > p`（错误行） | `data-slot="fg-import-task-error"` | `taskError != null` | 任务面板错误区 | clear 按钮 |
+| `fg.header.g1.task.importTask.hint.panel` | `.import-task-panel-main > p`（提示行） | `data-slot="fg-import-task-hint"` | `operationHint != null` | 任务面板提示区 | clear 按钮 |
 | `fg.header.g1.task.importTask.reviewNotice.panel` | `.import-task-panel-review-notice` | `data-slot="fg-import-task-review-notice"` | `pendingReviewNoticeVisible` | 待审核提示区 | 含「打开审核模式/清除」动作 |
 | `fg.header.g1.task.importTask.hashLogList.panel` | `.import-task-panel-hash-log-list` | `data-slot="fg-import-task-hash-log-list"` | `hashReviewLogs.length > 0` | 静默去重日志列表 | 按条目支持清除 |
 | `fg.header.g1.palette` | `.window-control-btn` (palette) | `data-slot="fg-header-g1-palette"` | always | 昼夜切换按钮 | 无 popover |

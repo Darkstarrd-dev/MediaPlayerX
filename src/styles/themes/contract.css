@@ -494,7 +494,7 @@
   --mpx-header-transform-origin: center top;
   --mpx-header-transition: none;
 
-  /* SysInfo / Import Task 容器（默认跟随 Header） */
+  /* SysInfo 卡片容器（默认跟随 Header） */
   --mpx-sysinfo-root-margin: var(--mpx-header-margin);
   --mpx-sysinfo-card-bg: var(--mpx-header-bg);
   --mpx-sysinfo-card-radius: var(--mpx-header-radius);

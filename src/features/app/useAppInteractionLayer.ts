@@ -80,6 +80,8 @@ export function useAppInteractionLayer({
     setHelpOverlayOpen,
     themeParameterPanelOpen,
     setThemeParameterPanelOpen,
+    importTaskPanelOpen,
+    setImportTaskPanelOpen,
   } = sessionState;
 
   const {
@@ -243,6 +245,14 @@ export function useAppInteractionLayer({
         return false;
       }
       setThemeParameterPanelOpen(false);
+      return true;
+    };
+
+    const closeImportTaskPanel = () => {
+      if (!importTaskPanelOpen) {
+        return false;
+      }
+      setImportTaskPanelOpen(false);
       return true;
     };
 
@@ -429,6 +439,9 @@ export function useAppInteractionLayer({
       if (closeThemeParameterPanel()) {
         return true;
       }
+      if (closeImportTaskPanel()) {
+        return true;
+      }
       if (closeHelpOverlay()) {
         return true;
       }
@@ -474,6 +487,9 @@ export function useAppInteractionLayer({
       }
       if (layer === "theme-parameter") {
         return closeThemeParameterPanel();
+      }
+      if (layer === "import-task-panel") {
+        return closeImportTaskPanel();
       }
       if (layer === "search-panel") {
         return closeSearchPanel();
@@ -1052,6 +1068,8 @@ export function useAppInteractionLayer({
     setHelpOverlayOpen,
     themeParameterPanelOpen,
     setThemeParameterPanelOpen,
+    importTaskPanelOpen,
+    setImportTaskPanelOpen,
     setSearchPanelCollapsed,
     setSearchPanelMode,
     selectedPackageId,

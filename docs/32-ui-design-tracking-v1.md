@@ -22,20 +22,19 @@ css 的触发点
 说明
 当前主题（`soft-skeuomorphic × skeuomorphic-luxury-white`）下，首页 `.app` 根层背景最终为 `#e0dfde`。
 
-## 2.0 大容器层（2.1~2.5 通用）
+## 2.0 大容器层（2.1~2.4 通用）
 
 用在什么地方
-统一控制五大容器壳层：`Header / Sidebar / Main / Meta / Import Task`。
+统一控制四大容器壳层：`Header / Sidebar / Main / Meta`。
 
 css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:504`（`.main-pane`）
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:520`（`.app-header`）
-`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:529`（`.fg-sysinfo .sysinfo-card-shell`）
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:548`（`.sidebar`）
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:556`（`.metadata-panel`）
 
 变量与变量对应的值（按组）
-`--mpx-surface-chrome-bg`（五大容器共享的壳层背景语义）
+`--mpx-surface-chrome-bg`（四大容器共享的壳层背景语义）
 `--mpx-metal-light`（金属渐变高光浅色）
 `--mpx-metal-base`（金属渐变基底色）
 
@@ -43,14 +42,14 @@ css 的触发点
 `--mpx-metal-light = #f5f2ec`（`src/styles/themes/styles/soft-skeuomorphic.css:263`）
 `--mpx-metal-base = #e6e2da`（`src/styles/themes/styles/soft-skeuomorphic.css:264`）
 
-`--mpx-surface-chrome-shell-shadow`（五大容器共享壳层凹凸阴影）
+`--mpx-surface-chrome-shell-shadow`（四大容器共享壳层凹凸阴影）
 `--mpx-metal-dark`（凹凸阴影深色边缘）
 
 `--mpx-surface-chrome-shell-shadow = 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent)`（`src/styles/themes/styles/soft-skeuomorphic.css:168`）
 `--mpx-metal-dark = #cdc7bb`（`src/styles/themes/styles/soft-skeuomorphic.css:265`）
 
 说明
-`2.1~2.5` 都默认挂到这套通用壳层语义上；各容器仍可通过各自 `slot` 变量独立覆写。
+`2.1~2.4` 都默认挂到这套通用壳层语义上；各容器仍可通过各自 `slot` 变量独立覆写。
 
 ## 2.1 Header 容器
 
@@ -185,46 +184,16 @@ css 的触发点
 说明
 Meta 容器顶部命名已统一为 `metadata-header` / `fg-meta-header`，不再使用 `toolbar` 称呼。
 
-## 2.5 Import Task Panel 容器
-
-用在什么地方
-导入任务面板容器（独立于 Header，挂在系统信息区域）。
-容器定义：`className="import-task-panel sysinfo-card-shell" data-slot="fg-import-task-root"`（`src/components/ImportTaskPanel.tsx:97`）。
-
-css 的触发点
-`src/styles/app/base.css:307`（`.sysinfo-card-shell` 壳层链路）
-`src/styles/app/base.css:397`（`.import-task-panel` 自身差异样式）
-`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:529`（主题壳层覆盖）
-
-变量与变量对应的值（按组）
-`--mpx-slot-fg-sysinfo-card-root-bg`（SysInfo 卡片背景槽位变量）
-`--mpx-sysinfo-card-bg`（SysInfo 卡片语义背景）
-`--mpx-surface-chrome-bg`（通用壳层背景）
-
-`--mpx-slot-fg-sysinfo-card-root-bg = 未定义（走 fallback）`
-`--mpx-sysinfo-card-bg = var(--mpx-surface-chrome-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:179`）
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
-
-`--mpx-slot-fg-import-task-root-border`（Import Task 左侧状态线颜色）
-`--mpx-slot-fg-import-task-root-text`（Import Task 主文本颜色）
-
-`--mpx-slot-fg-import-task-root-border = 未定义（走 fallback）`
-`--mpx-slot-fg-import-task-root-text = 未定义（走 fallback）`
-实际回退：`border-left = 3px solid var(--mpx-status-info-border)`，`text = var(--mpx-status-info-text)`（`src/styles/app/base.css:398`）
-
-`--mpx-slot-fg-import-task-error-text`（Import Task 错误行文本颜色）
-
-`--mpx-slot-fg-import-task-error-text = 未定义（走 fallback）`
-实际回退：`inherit`（`src/styles/app/base.css:424`）
+## 2.5 Import Task Panel 容器（已迁移）
 
 说明
-Import Task 已独立为 `2.5`，不再走 `fg-header-g1-task-*` 命名；同时保留与 `2.0` 通用壳层一致的外壳风格。
+Import Task 已从 `2.5` 迁移到 `3.10` 大面板层；`2.5` 不再作为独立样式层维护。
 
 ## 3.0 大面板层（基架）
 
 用在什么地方
 定义“设置面板风格”的通用大面板骨架，覆盖 `root / head / shell / side / main` 五个层级。
-本阶段建立通用链路，并按分层逐步把 `3.1~3.9` 归并到同一骨架。
+本阶段建立通用链路，并按分层逐步把 `3.1~3.10` 归并到同一骨架。
 
 css 的触发点
 `src/styles/themes/contract.css`（新增 3.0 通用语义 token）
@@ -309,9 +278,9 @@ css 的触发点
 
 1. 统一参数入口已建立（可全局调节大面板整体与 `head/side/main`）。
 2. `settings-*` 已接入同一套 3.0 token，现有视觉保持不变。
-3. `3.1~3.9` 的具体结构迁移与差异收口，按面板逐项执行。
+3. `3.1~3.10` 的具体结构迁移与差异收口，按面板逐项执行。
 
-当前统一能力（3.1~3.9）
+当前统一能力（3.1~3.10）
 
 1. 大面板遮罩层统一受 `--mpx-settings-backdrop-opacity` 影响。
 2. 大面板可统一复用 `mpx-large-panel` 基架并通过 slot 局部覆写差异。
@@ -603,6 +572,54 @@ css 的触发点
 
 说明
 视频转码参数区、估算区与任务状态逻辑保持原行为，外层切到 3.0 基架。
+
+## 3.10 Import Task 面板
+
+用在什么地方
+`fg-import-task-root`（`ImportTaskPanel`）已从 `2.5` 迁移到 `3.0` 大面板骨架，使用 `ovl + root + head + main`（无 side）。
+该面板改为全局 overlay 弹出层，不再占据 Header 与 Main 之间的常驻布局位；导入任务、错误、提示、待审核提醒、哈希日志等事件显示链路保持不变。
+
+css 的触发点
+`src/components/AppShell.tsx`（ImportTaskPanel 提升为与 Settings/Help 同级的顶层渲染）
+`src/components/ImportTaskPanel.tsx`（新增 `settings-mask` + `data-slot='fg-import-task-ovl'`，根类为 `import-task-panel mpx-large-panel settings-panel`）
+`src/styles/app/base.css`（Import Task 面板本体、状态线、错误行样式）
+`src/styles/app/settings/settings.part1.css`（`[data-slot='fg-import-task-root']` 的 slot -> 3.0 token 映射）
+`src/styles/app/settings/settings.part2.css`（`[data-slot='fg-import-task-ovl']` 的遮罩层 slot）
+`src/features/app/useAppInteractionLayer.ts`（Esc / 右键 `data-overlay-close='import-task-panel'` 关闭）
+
+变量与变量对应的值（按组）
+`--mpx-slot-fg-import-task-ovl-bg`（Import Task 遮罩层背景）
+`--mpx-slot-fg-import-task-ovl-text`（Import Task 遮罩层文本色）
+
+`--mpx-slot-fg-import-task-ovl-bg = 未定义（走 fallback）`
+`--mpx-slot-fg-import-task-ovl-text = 未定义（走 fallback）`
+实际回退：`ovl-bg -> var(--mpx-slot-fg-import-task-root-bg) / color-mix(...)`，`ovl-text -> var(--mpx-slot-fg-import-task-root-text, inherit)`（`src/styles/app/settings/settings.part2.css`）
+
+`--mpx-slot-fg-import-task-root-border`（Import Task 面板外框颜色，3.10 起语义改为“面板边框”）
+`--mpx-slot-fg-import-task-root-bg`（Import Task 面板背景）
+`--mpx-slot-fg-import-task-root-shadow`（Import Task 面板阴影）
+`--mpx-slot-fg-import-task-root-head-border`（head 分割线颜色）
+`--mpx-slot-fg-import-task-root-head-bg`（head 背景）
+`--mpx-slot-fg-import-task-root-head-text`（head 文本色）
+`--mpx-slot-fg-import-task-root-main-bg`（main 背景）
+
+`--mpx-slot-fg-import-task-root-border = 未定义（走 fallback）`
+实际回退：`--mpx-overlay-surface-border` -> `--mpx-border-2`（`src/styles/app/settings/settings.part1.css`）
+
+`--mpx-slot-fg-import-task-root-status-border`（Import Task 左侧状态线颜色）
+`--mpx-slot-fg-import-task-root-status-text`（Import Task 状态文本颜色）
+
+`--mpx-slot-fg-import-task-root-status-border = 未定义（走 fallback）`
+`--mpx-slot-fg-import-task-root-status-text = 未定义（走 fallback）`
+实际回退：`border-left = 3px solid var(--mpx-status-info-border)`，`text = var(--mpx-status-info-text)`（`src/styles/app/base.css`）
+
+`--mpx-slot-fg-import-task-error-text`（Import Task 错误行文本颜色）
+
+`--mpx-slot-fg-import-task-error-text = 未定义（走 fallback）`
+实际回退：`inherit`（`src/styles/app/base.css`）
+
+说明
+3.10 改造后，Import Task 的外框视觉与调参入口对齐大面板层；状态线语义从 `root-border` 拆分到 `root-status-border`，避免与面板外框语义冲突。
 
 ## 4.0 按钮层（基架）
 

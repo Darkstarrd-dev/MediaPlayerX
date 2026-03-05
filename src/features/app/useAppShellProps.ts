@@ -276,7 +276,6 @@ export function useAppShellProps({
     runtimeWarningVisible: topLayerState.runtimeWarningDismiss.visible,
     runtimeCapabilityWarnings: topLayerState.runtimeCapabilityWarnings,
     onDismissRuntimeWarning: topLayerState.runtimeWarningDismiss.dismiss,
-    importTaskPanelProps: topLayerState.importTaskPanelProps,
     dualCollapsed: sidebarCollapsed && metadataCollapsed,
     layoutConvergedInsetPx,
   }
@@ -316,6 +315,7 @@ export function useAppShellProps({
     appHeaderProps: topLayerState.appHeaderProps,
     importSourceInputsProps,
     appTopBannersProps,
+    importTaskPanelProps: topLayerState.importTaskPanelProps,
     appWorkspaceProps,
     fullscreenLayerProps: topLayerState.fullscreenLayerProps,
     helpPanelProps: topLayerState.helpPanelProps,
