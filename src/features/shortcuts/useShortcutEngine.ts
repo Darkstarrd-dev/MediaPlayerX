@@ -398,9 +398,6 @@ export function useShortcutEngine({
     [
       autoplayShortcutEnabled,
       fullscreenActive,
-      fullscreenDisplay,
-      fullscreenVideoFocus,
-      mode,
       onAdjustVideoRate,
       onAdjustVideoVolume,
       onApplyAutoplayIntervalByIndex,
