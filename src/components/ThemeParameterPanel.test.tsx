@@ -271,7 +271,9 @@ describe("ThemeParameterPanel", () => {
     const snapshotWithoutComputed = JSON.parse(snapshotTextarea.value) as {
       values?: Record<string, number>;
     };
-    expect(snapshotWithoutComputed.values?.["skeuo-header-gap"]).toBeUndefined();
+    expect(
+      snapshotWithoutComputed.values?.["skeuo-header-gap"],
+    ).toBeUndefined();
 
     fireEvent.click(screen.getByLabelText("导出包含计算值"));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -281,6 +283,30 @@ describe("ThemeParameterPanel", () => {
     };
     expect(typeof snapshotWithComputed.values?.["skeuo-header-gap"]).toBe(
       "number",
+    );
+  });
+
+  it("参数导入导出页支持复位到打开时状态", () => {
+    renderThemeParameterPanel();
+
+    const layoutPaddingSlider = getSliderByLabelText("布局内边距");
+    const baselineLayoutPaddingValue = layoutPaddingSlider.value;
+    fireEvent.change(getSliderByLabelText("布局内边距"), {
+      target: { value: "14" },
+    });
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
+    ).toBe("14px");
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "复位到打开时状态" }));
+    expect(
+      screen.getByText("已恢复到打开面板时的样式状态。"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "参数调节" }));
+
+    expect(getSliderByLabelText("布局内边距").value).toBe(
+      baselineLayoutPaddingValue,
     );
   });
 
@@ -305,7 +331,9 @@ describe("ThemeParameterPanel", () => {
         .trim(),
     ).toBe("");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-header-margin").trim(),
+      document.documentElement.style
+        .getPropertyValue("--mpx-header-margin")
+        .trim(),
     ).toBe("");
   });
 
@@ -403,7 +431,9 @@ describe("ThemeParameterPanel", () => {
 
     try {
       fireEvent.click(screen.getByRole("button", { name: "复制 JSON" }));
-      expect(await screen.findByText("参数快照已复制到剪贴板。")).toBeInTheDocument();
+      expect(
+        await screen.findByText("参数快照已复制到剪贴板。"),
+      ).toBeInTheDocument();
       expect(execCommandSpy).toHaveBeenCalledWith("copy");
     } finally {
       Object.defineProperty(window.navigator, "clipboard", {
@@ -488,6 +518,16 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "关闭主题参数面板" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("隐藏按钮触发隐藏回调", () => {
+    const onHide = vi.fn();
+    renderThemeParameterPanel({ onHide });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "临时隐藏主题参数面板" }),
+    );
+    expect(onHide).toHaveBeenCalledTimes(1);
   });
 
   it("支持大容器层与大面板层全局预览开关，并在面板关闭后恢复", () => {

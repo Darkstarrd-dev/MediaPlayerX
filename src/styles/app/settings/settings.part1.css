@@ -751,6 +751,13 @@
   justify-self: end;
 }
 
+.settings-head-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mpx-large-panel-head-spacer,
 .settings-head-spacer {
   width: 1px;

@@ -9,10 +9,7 @@ import type {
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
 } from "./ThemeParameterPanelMain";
-import {
-  includesSearch,
-  readFileAsText,
-} from "./themeParameterUtils";
+import { includesSearch, readFileAsText } from "./themeParameterUtils";
 import {
   COMMON_PARAMETERS,
   EMPTY_PARAMETERS,
@@ -55,9 +52,11 @@ function isContainerLayerParameter(
 
 interface ThemeParameterPanelProps {
   open: boolean;
+  hidden?: boolean;
   styleId: string;
   settingsFontSize: number;
   onClose: () => void;
+  onHide?: () => void;
 }
 
 interface ThemeParameterSnapshot {
@@ -330,9 +329,11 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
 
 function ThemeParameterPanel({
   open,
+  hidden = false,
   styleId,
   settingsFontSize,
   onClose,
+  onHide = () => {},
 }: ThemeParameterPanelProps) {
   const { t } = useI18n();
   const styleGroup = resolveStyleGroup(styleId);
@@ -341,7 +342,11 @@ function ThemeParameterPanel({
   const parameters = useMemo(
     () =>
       styleGroup === "default"
-        ? [...COMMON_PARAMETERS, ...LARGE_PANEL_PARAMETERS, ...SMALL_PANEL_PARAMETERS]
+        ? [
+            ...COMMON_PARAMETERS,
+            ...LARGE_PANEL_PARAMETERS,
+            ...SMALL_PANEL_PARAMETERS,
+          ]
         : [
             ...COMMON_PARAMETERS,
             ...STYLE_PARAMETERS[styleGroup],
@@ -365,6 +370,7 @@ function ThemeParameterPanel({
   const [snapshotExplicitParameterIds, setSnapshotExplicitParameterIds] =
     useState<Set<string>>(new Set());
   const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
+  const snapshotBaselineRef = useRef<ThemeParameterSnapshot | null>(null);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
 
   const containerLayerParameters = useMemo(
@@ -392,15 +398,83 @@ function ThemeParameterPanel({
     );
   }, [searchText, styleParameters, t]);
 
+  const buildSnapshotPayload = (options?: {
+    includeComputedValues?: boolean;
+    sourceValues?: ThemeParameterValues;
+  }): ThemeParameterSnapshot => {
+    const computed = getComputedStyle(document.documentElement);
+    const includeComputedValues =
+      options?.includeComputedValues ?? snapshotIncludeComputedValues;
+    const sourceValues = options?.sourceValues ?? values;
+    const valueEntries = parameters
+      .filter(
+        (parameter) =>
+          includeComputedValues ||
+          snapshotExplicitParameterIds.has(parameter.id),
+      )
+      .map(
+        (parameter) =>
+          [
+            parameter.id,
+            sourceValues[parameter.id] ?? parameter.read(computed),
+          ] as const,
+      );
+    const snapshotValues = Object.fromEntries(valueEntries);
+
+    return {
+      version: 1,
+      styleId,
+      ...(Object.keys(snapshotValues).length > 0
+        ? { values: snapshotValues }
+        : {}),
+      debugColors: Object.fromEntries(
+        SNAPSHOT_COLOR_FIELDS.map((field) => [
+          field.id,
+          computed.getPropertyValue(field.cssVar).trim(),
+        ]),
+      ),
+      debugTexts: Object.fromEntries(
+        SNAPSHOT_TEXT_FIELDS.map((field) => [
+          field.id,
+          computed.getPropertyValue(field.cssVar).trim(),
+        ]),
+      ),
+    };
+  };
+
   useEffect(() => {
     if (!open) {
       return;
     }
+    const initialValues = readParameterValues(parameters);
+    const computed = getComputedStyle(document.documentElement);
     setActivePage("parameters");
     setActivePreviewMode("none");
-    setValues(readParameterValues(parameters));
+    setValues(initialValues);
     setSnapshotMessage("");
     setSnapshotExplicitParameterIds(new Set());
+    snapshotBaselineRef.current = {
+      version: 1,
+      styleId,
+      values: Object.fromEntries(
+        parameters.map((parameter) => [
+          parameter.id,
+          initialValues[parameter.id] ?? parameter.read(computed),
+        ]),
+      ),
+      debugColors: Object.fromEntries(
+        SNAPSHOT_COLOR_FIELDS.map((field) => [
+          field.id,
+          computed.getPropertyValue(field.cssVar).trim(),
+        ]),
+      ),
+      debugTexts: Object.fromEntries(
+        SNAPSHOT_TEXT_FIELDS.map((field) => [
+          field.id,
+          computed.getPropertyValue(field.cssVar).trim(),
+        ]),
+      ),
+    };
   }, [open, parameters, styleId]);
 
   useEffect(() => {
@@ -414,7 +488,7 @@ function ThemeParameterPanel({
     };
   }, [activePreviewMode, open]);
 
-  if (!open) {
+  if (!open || hidden) {
     return null;
   }
 
@@ -427,6 +501,12 @@ function ThemeParameterPanel({
     id: "themeParameter.close",
     labelKey: "a11y.themeParameter.close",
     titleKey: "tip.themeParameter.close",
+    t,
+  });
+  const hideA11y = buildA11yProps({
+    id: "themeParameter.hide",
+    labelKey: "a11y.themeParameter.hide",
+    titleKey: "tip.themeParameter.hide",
     t,
   });
 
@@ -459,39 +539,6 @@ function ThemeParameterPanel({
       parameter.apply(root, nextValue, nextValues);
       return nextValues;
     });
-  };
-
-  const buildSnapshotPayload = (): ThemeParameterSnapshot => {
-    const computed = getComputedStyle(document.documentElement);
-    const valueEntries = parameters
-      .filter(
-        (parameter) =>
-          snapshotIncludeComputedValues ||
-          snapshotExplicitParameterIds.has(parameter.id),
-      )
-      .map((parameter) => [
-        parameter.id,
-        values[parameter.id] ?? parameter.fallback,
-      ] as const);
-    const snapshotValues = Object.fromEntries(valueEntries);
-
-    return {
-      version: 1,
-      styleId,
-      ...(Object.keys(snapshotValues).length > 0 ? { values: snapshotValues } : {}),
-      debugColors: Object.fromEntries(
-        SNAPSHOT_COLOR_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-      debugTexts: Object.fromEntries(
-        SNAPSHOT_TEXT_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-    };
   };
 
   const buildSnapshotJson = (): string => {
@@ -599,23 +646,13 @@ function ThemeParameterPanel({
     }
   };
 
-  const importSnapshotJson = () => {
-    if (!snapshotJson.trim()) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
-      return;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(snapshotJson);
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-    if (!parsed || typeof parsed !== "object") {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-    const payload = parsed as Partial<ThemeParameterSnapshot>;
+  const applySnapshotPayload = (
+    payload: Partial<ThemeParameterSnapshot>,
+    options?: {
+      successMessageKey?: string;
+      reportStyleMismatch?: boolean;
+    },
+  ) => {
     const hasValues = payload.values !== undefined;
     const hasDebugColors = payload.debugColors !== undefined;
     const hasDebugTexts = payload.debugTexts !== undefined;
@@ -636,7 +673,7 @@ function ThemeParameterPanel({
           Array.isArray(payload.debugTexts)))
     ) {
       setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
+      return false;
     }
 
     const importedValues = (payload.values ?? {}) as Record<string, unknown>;
@@ -703,14 +740,53 @@ function ThemeParameterPanel({
       });
     }
     if (payload.styleId && payload.styleId !== styleId) {
-      setSnapshotMessage(
-        t("ui.themeParameter.snapshotImportedStyleMismatch", {
-          styleId: payload.styleId,
-        }),
-      );
+      if (options?.reportStyleMismatch !== false) {
+        setSnapshotMessage(
+          t("ui.themeParameter.snapshotImportedStyleMismatch", {
+            styleId: payload.styleId,
+          }),
+        );
+      }
+      return false;
+    }
+    setSnapshotMessage(
+      t(options?.successMessageKey ?? "ui.themeParameter.snapshotImported"),
+    );
+    return true;
+  };
+
+  const importSnapshotJson = () => {
+    if (!snapshotJson.trim()) {
+      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
       return;
     }
-    setSnapshotMessage(t("ui.themeParameter.snapshotImported"));
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(snapshotJson);
+    } catch {
+      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
+      return;
+    }
+    if (!parsed || typeof parsed !== "object") {
+      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
+      return;
+    }
+    applySnapshotPayload(parsed as Partial<ThemeParameterSnapshot>, {
+      reportStyleMismatch: true,
+    });
+  };
+
+  const resetSnapshotToBaseline = () => {
+    const baseline = snapshotBaselineRef.current;
+    if (!baseline) {
+      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
+      return;
+    }
+    setSnapshotJson(JSON.stringify(baseline, null, 2));
+    applySnapshotPayload(baseline, {
+      successMessageKey: "ui.themeParameter.snapshotResetToOpenState",
+      reportStyleMismatch: false,
+    });
   };
 
   const resetCurrentStyleParameters = () => {
@@ -818,14 +894,24 @@ function ThemeParameterPanel({
             aria-hidden="true"
           />
           <h2>{t("ui.themeParameter.panel")}</h2>
-          <button
-            {...closeA11y}
-            className="settings-icon-btn main-icon-square-btn"
-            type="button"
-            onClick={onClose}
-          >
-            <MainUiIcon name="close" />
-          </button>
+          <div className="settings-head-actions">
+            <button
+              {...hideA11y}
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              onClick={onHide}
+            >
+              <MainUiIcon name="hidden" />
+            </button>
+            <button
+              {...closeA11y}
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              onClick={onClose}
+            >
+              <MainUiIcon name="close" />
+            </button>
+          </div>
         </div>
 
         <ThemeParameterPanelMain
@@ -850,6 +936,7 @@ function ThemeParameterPanel({
           openSnapshotFilePicker={openSnapshotFilePicker}
           copySnapshotJson={copySnapshotJson}
           importSnapshotJson={importSnapshotJson}
+          resetSnapshotToBaseline={resetSnapshotToBaseline}
           commonExpanded={commonExpanded}
           setCommonExpanded={setCommonExpanded}
           styleExpanded={styleExpanded}

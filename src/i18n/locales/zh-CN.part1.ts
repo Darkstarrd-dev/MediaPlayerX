@@ -67,6 +67,10 @@ export const zhCnCatalogPart1 = {
     "图片模式下触发 RS：文件管理模式等同 RS 按钮；非文件管理模式对当前 Sidebar 焦点节点触发。",
   "ui.help.image.keyboard.helpOverlayToggle":
     "非全屏下切换按钮说明覆盖层（? 打开/关闭，Esc 关闭）。",
+  "ui.help.image.keyboard.fixedThemeParameterHideShortcut":
+    "H（隐藏） / Esc 或鼠标右键（恢复）",
+  "ui.help.image.keyboard.themeParameterTemporaryHide":
+    "Theme Parameter 面板打开时，按 H 临时隐藏；按 Esc 或鼠标右键恢复显示。",
   "ui.help.fullscreen.sectionTitle": "全屏模式交互说明",
   "ui.help.fullscreen.groupMouse": "鼠标操作",
   "ui.help.fullscreen.groupKeyboard": "键盘操作",
@@ -331,6 +335,9 @@ export const zhCnCatalogPart1 = {
     "快照来自风格 {{styleId}}，仅应用当前风格可识别参数。",
   "ui.themeParameter.snapshotImportFailed": "JSON 解析失败或格式无效。",
   "ui.themeParameter.snapshotEmpty": "请先输入或导出 JSON。",
+  "ui.themeParameter.resetSnapshotToOpenState": "复位到打开时状态",
+  "ui.themeParameter.snapshotResetToOpenState":
+    "已恢复到打开面板时的样式状态。",
   "ui.themeParameter.page.parameters": "参数调节",
   "ui.themeParameter.page.snapshot": "参数导入导出",
   "ui.themeParameter.page.containerLayer": "大容器层调试",
@@ -996,7 +1003,8 @@ export const zhCnCatalogPart1 = {
   "ui.fullscreen.singleDisplay": "单显示",
   "ui.fullscreen.dualDisplay": "双显示",
   "ui.fullscreen.swapSides": "调换左右",
-  "ui.fullscreen.focusDual": "焦点：{{focus}}（点击区域或 Tab / 小键盘 . 切换）",
+  "ui.fullscreen.focusDual":
+    "焦点：{{focus}}（点击区域或 Tab / 小键盘 . 切换）",
   "ui.fullscreen.focusVideo": "视频",
   "ui.fullscreen.focusImage": "图片",
   "ui.fullscreen.focusSingle": "焦点：单显示",

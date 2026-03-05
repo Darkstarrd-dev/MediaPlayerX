@@ -222,7 +222,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
   );
 
   it(
-    "Theme Parameter 面板支持打开并可通过 Esc/右键关闭",
+    "Theme Parameter 面板支持 H 临时隐藏，并可通过 Esc/右键恢复或关闭",
     async () => {
       render(<App />);
 
@@ -241,12 +241,28 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
         screen.getByRole("heading", { name: "Theme Parameter" }),
       ).toBeInTheDocument();
 
+      await keyDown(window, { key: "h", code: "KeyH" });
+      expect(
+        screen.queryByRole("heading", { name: "Theme Parameter" }),
+      ).toBeNull();
+
+      await keyDown(window, { key: "Escape", code: "Escape" });
+      expect(
+        screen.getByRole("heading", { name: "Theme Parameter" }),
+      ).toBeInTheDocument();
+
       await keyDown(window, { key: "Escape", code: "Escape" });
       expect(
         screen.queryByRole("heading", { name: "Theme Parameter" }),
       ).toBeNull();
 
       await click(themeParameterButton as HTMLButtonElement);
+      await keyDown(window, { key: "h", code: "KeyH" });
+      await mouseDown(window, { button: 2 });
+      expect(
+        screen.getByRole("heading", { name: "Theme Parameter" }),
+      ).toBeInTheDocument();
+
       const themeParameterOverlay = document.querySelector(
         '[data-overlay-close="theme-parameter"]',
       ) as HTMLElement | null;

@@ -1,41 +1,41 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  normalizePathForCompare,
-} from './mediaPathUtils'
+import { normalizePathForCompare } from "./mediaPathUtils";
 import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
-} from './workspaceImageManageUtils'
-import { useAppTopLayerState } from './useAppTopLayerState'
-import type { ImageConvertAdjustProfile } from './useAppSessionState'
-import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
+} from "./workspaceImageManageUtils";
+import { useAppTopLayerState } from "./useAppTopLayerState";
+import type { ImageConvertAdjustProfile } from "./useAppSessionState";
+import type { AppRuntimeSourcesResult } from "./useAppRuntimeSources";
+import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
+import type { AppDisplayAndEffectsResult } from "./useAppDisplayAndEffects";
 
-const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
+const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8];
 
-function resolveImageConvertMimeType(format: 'webp' | 'jpeg' | 'png' | 'avif'): string {
-  if (format === 'jpeg') {
-    return 'image/jpeg'
+function resolveImageConvertMimeType(
+  format: "webp" | "jpeg" | "png" | "avif",
+): string {
+  if (format === "jpeg") {
+    return "image/jpeg";
   }
-  if (format === 'png') {
-    return 'image/png'
+  if (format === "png") {
+    return "image/png";
   }
-  if (format === 'avif') {
-    return 'image/avif'
+  if (format === "avif") {
+    return "image/avif";
   }
-  return 'image/webp'
+  return "image/webp";
 }
 
 function loadImageElement(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.crossOrigin = 'anonymous'
-    image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('preview image load failed'))
-    image.src = src
-  })
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("preview image load failed"));
+    image.src = src;
+  });
 }
 
 function canvasToDataUrl(
@@ -48,26 +48,33 @@ function canvasToDataUrl(
       (blob) => {
         if (!blob) {
           resolve(
-            quality == null ? canvas.toDataURL(mimeType) : canvas.toDataURL(mimeType, quality),
-          )
-          return
+            quality == null
+              ? canvas.toDataURL(mimeType)
+              : canvas.toDataURL(mimeType, quality),
+          );
+          return;
         }
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = () => {
-          const result = typeof reader.result === 'string' ? reader.result : canvas.toDataURL(mimeType)
-          resolve(result)
-        }
+          const result =
+            typeof reader.result === "string"
+              ? reader.result
+              : canvas.toDataURL(mimeType);
+          resolve(result);
+        };
         reader.onerror = () => {
           resolve(
-            quality == null ? canvas.toDataURL(mimeType) : canvas.toDataURL(mimeType, quality),
-          )
-        }
-        reader.readAsDataURL(blob)
+            quality == null
+              ? canvas.toDataURL(mimeType)
+              : canvas.toDataURL(mimeType, quality),
+          );
+        };
+        reader.readAsDataURL(blob);
       },
       mimeType,
       quality,
-    )
-  })
+    );
+  });
 }
 
 function resolveImageConvertTargetSize(
@@ -76,27 +83,31 @@ function resolveImageConvertTargetSize(
   scaleFactor: number,
   longestEdgePx: number | null,
 ): { width: number; height: number } {
-  const safeSourceWidth = Math.max(1, Math.round(sourceWidth))
-  const safeSourceHeight = Math.max(1, Math.round(sourceHeight))
+  const safeSourceWidth = Math.max(1, Math.round(sourceWidth));
+  const safeSourceHeight = Math.max(1, Math.round(sourceHeight));
 
-  if (longestEdgePx != null && Number.isFinite(longestEdgePx) && longestEdgePx > 0) {
-    const sourceLongestEdge = Math.max(safeSourceWidth, safeSourceHeight)
-    const resizeRatio = Math.min(1, longestEdgePx / sourceLongestEdge)
+  if (
+    longestEdgePx != null &&
+    Number.isFinite(longestEdgePx) &&
+    longestEdgePx > 0
+  ) {
+    const sourceLongestEdge = Math.max(safeSourceWidth, safeSourceHeight);
+    const resizeRatio = Math.min(1, longestEdgePx / sourceLongestEdge);
     return {
       width: Math.max(1, Math.round(safeSourceWidth * resizeRatio)),
       height: Math.max(1, Math.round(safeSourceHeight * resizeRatio)),
-    }
+    };
   }
 
-  const safeScaleFactor = Math.max(0.1, Math.min(1, scaleFactor))
+  const safeScaleFactor = Math.max(0.1, Math.min(1, scaleFactor));
   return {
     width: Math.max(1, Math.round(safeSourceWidth * safeScaleFactor)),
     height: Math.max(1, Math.round(safeSourceHeight * safeScaleFactor)),
-  }
+  };
 }
 
 function clampByte(value: number): number {
-  return Math.max(0, Math.min(255, Math.round(value)))
+  return Math.max(0, Math.min(255, Math.round(value)));
 }
 
 function buildCurveLutFromAnchors(
@@ -107,101 +118,113 @@ function buildCurveLutFromAnchors(
   midtoneYOffset: number,
   highlightYOffset: number,
 ): Uint8ClampedArray {
-  const clampedShadowX = clampByte(shadowX)
-  const clampedMidtoneX = clampByte(midtoneX)
-  const clampedHighlightX = clampByte(highlightX)
+  const clampedShadowX = clampByte(shadowX);
+  const clampedMidtoneX = clampByte(midtoneX);
+  const clampedHighlightX = clampByte(highlightX);
   const anchorX = [
     0,
     Math.max(1, Math.min(clampedShadowX, clampedMidtoneX - 2)),
-    Math.max(clampedShadowX + 1, Math.min(clampedMidtoneX, clampedHighlightX - 1)),
+    Math.max(
+      clampedShadowX + 1,
+      Math.min(clampedMidtoneX, clampedHighlightX - 1),
+    ),
     Math.max(clampedMidtoneX + 2, Math.min(clampedHighlightX, 254)),
     255,
-  ]
+  ];
   const anchorY = [
     0,
     clampByte(anchorX[1] - shadowYOffset * 0.52),
     clampByte(anchorX[2] - midtoneYOffset * 0.52),
     clampByte(anchorX[3] - highlightYOffset * 0.52),
     255,
-  ]
-  const slope = new Array<number>(anchorX.length).fill(0)
-  slope[0] = (anchorY[1] - anchorY[0]) / (anchorX[1] - anchorX[0])
+  ];
+  const slope = new Array<number>(anchorX.length).fill(0);
+  slope[0] = (anchorY[1] - anchorY[0]) / (anchorX[1] - anchorX[0]);
   slope[slope.length - 1] =
     (anchorY[anchorY.length - 1] - anchorY[anchorY.length - 2]) /
-    (anchorX[anchorX.length - 1] - anchorX[anchorX.length - 2])
+    (anchorX[anchorX.length - 1] - anchorX[anchorX.length - 2]);
   for (let index = 1; index < slope.length - 1; index += 1) {
     slope[index] =
       (anchorY[index + 1] - anchorY[index - 1]) /
-      (anchorX[index + 1] - anchorX[index - 1])
+      (anchorX[index + 1] - anchorX[index - 1]);
   }
 
-  const lut = new Uint8ClampedArray(256)
+  const lut = new Uint8ClampedArray(256);
   for (let x = 0; x <= 255; x += 1) {
-    let segmentIndex = 0
-    while (
-      segmentIndex < anchorX.length - 2 &&
-      x > anchorX[segmentIndex + 1]
-    ) {
-      segmentIndex += 1
+    let segmentIndex = 0;
+    while (segmentIndex < anchorX.length - 2 && x > anchorX[segmentIndex + 1]) {
+      segmentIndex += 1;
     }
-    const x0 = anchorX[segmentIndex]
-    const x1 = anchorX[segmentIndex + 1]
-    const y0 = anchorY[segmentIndex]
-    const y1 = anchorY[segmentIndex + 1]
-    const span = Math.max(1, x1 - x0)
-    const t = (x - x0) / span
-    const m0 = slope[segmentIndex]
-    const m1 = slope[segmentIndex + 1]
-    const h00 = 2 * t * t * t - 3 * t * t + 1
-    const h10 = t * t * t - 2 * t * t + t
-    const h01 = -2 * t * t * t + 3 * t * t
-    const h11 = t * t * t - t * t
-    const y = h00 * y0 + h10 * span * m0 + h01 * y1 + h11 * span * m1
-    lut[x] = clampByte(y)
+    const x0 = anchorX[segmentIndex];
+    const x1 = anchorX[segmentIndex + 1];
+    const y0 = anchorY[segmentIndex];
+    const y1 = anchorY[segmentIndex + 1];
+    const span = Math.max(1, x1 - x0);
+    const t = (x - x0) / span;
+    const m0 = slope[segmentIndex];
+    const m1 = slope[segmentIndex + 1];
+    const h00 = 2 * t * t * t - 3 * t * t + 1;
+    const h10 = t * t * t - 2 * t * t + t;
+    const h01 = -2 * t * t * t + 3 * t * t;
+    const h11 = t * t * t - t * t;
+    const y = h00 * y0 + h10 * span * m0 + h01 * y1 + h11 * span * m1;
+    lut[x] = clampByte(y);
   }
-  return lut
+  return lut;
 }
 
-function createImageConvertLut(profile: ImageConvertAdjustProfile): Uint8ClampedArray {
-  const lut = new Uint8ClampedArray(256)
-  const normalizedContrast = Math.max(-100, Math.min(100, profile.contrast)) / 100
-  const contrastFactor = (259 * (normalizedContrast * 255 + 255)) / (255 * (259 - normalizedContrast * 255))
-  const brightnessOffset = (Math.max(-100, Math.min(100, profile.brightness)) / 100) * 255
-  const inputBlack = Math.max(0, Math.min(254, Math.round(profile.level_input_black)))
-  const inputWhite = Math.max(inputBlack + 1, Math.min(255, Math.round(profile.level_input_white)))
-  const gamma = Math.max(0.1, Math.min(5, profile.level_gamma))
-  const curveShadow = Math.max(-100, Math.min(100, profile.curve_shadow))
-  const curveMidtone = Math.max(-100, Math.min(100, profile.curve_midtone))
-  const curveHighlight = Math.max(-100, Math.min(100, profile.curve_highlight))
+function createImageConvertLut(
+  profile: ImageConvertAdjustProfile,
+): Uint8ClampedArray {
+  const lut = new Uint8ClampedArray(256);
+  const normalizedContrast =
+    Math.max(-100, Math.min(100, profile.contrast)) / 100;
+  const contrastFactor =
+    (259 * (normalizedContrast * 255 + 255)) /
+    (255 * (259 - normalizedContrast * 255));
+  const brightnessOffset =
+    (Math.max(-100, Math.min(100, profile.brightness)) / 100) * 255;
+  const inputBlack = Math.max(
+    0,
+    Math.min(254, Math.round(profile.level_input_black)),
+  );
+  const inputWhite = Math.max(
+    inputBlack + 1,
+    Math.min(255, Math.round(profile.level_input_white)),
+  );
+  const gamma = Math.max(0.1, Math.min(5, profile.level_gamma));
+  const curveShadow = Math.max(-100, Math.min(100, profile.curve_shadow));
+  const curveMidtone = Math.max(-100, Math.min(100, profile.curve_midtone));
+  const curveHighlight = Math.max(-100, Math.min(100, profile.curve_highlight));
   const curveLut =
-    profile.mode === 'curve'
+    profile.mode === "curve"
       ? buildCurveLutFromAnchors(
-        profile.curve_shadow_x,
-        profile.curve_midtone_x,
-        profile.curve_highlight_x,
-        curveShadow,
-        curveMidtone,
-        curveHighlight,
-      )
-      : null
+          profile.curve_shadow_x,
+          profile.curve_midtone_x,
+          profile.curve_highlight_x,
+          curveShadow,
+          curveMidtone,
+          curveHighlight,
+        )
+      : null;
 
   for (let index = 0; index < 256; index += 1) {
-    let value = index
-    if (profile.mode === 'basic') {
-      value = contrastFactor * (value - 128) + 128 + brightnessOffset
+    let value = index;
+    if (profile.mode === "basic") {
+      value = contrastFactor * (value - 128) + 128 + brightnessOffset;
     }
-    if (profile.mode === 'levels') {
-      const leveled = (value - inputBlack) / (inputWhite - inputBlack)
-      const clampedLeveled = Math.max(0, Math.min(1, leveled))
-      value = 255 * Math.pow(clampedLeveled, 1 / gamma)
+    if (profile.mode === "levels") {
+      const leveled = (value - inputBlack) / (inputWhite - inputBlack);
+      const clampedLeveled = Math.max(0, Math.min(1, leveled));
+      value = 255 * Math.pow(clampedLeveled, 1 / gamma);
     }
-    if (profile.mode === 'curve') {
-      value = curveLut ? curveLut[clampByte(value)] : value
+    if (profile.mode === "curve") {
+      value = curveLut ? curveLut[clampByte(value)] : value;
     }
-    lut[index] = clampByte(value)
+    lut[index] = clampByte(value);
   }
 
-  return lut
+  return lut;
 }
 
 function applyImageConvertAdjustToCanvas(
@@ -211,39 +234,41 @@ function applyImageConvertAdjustToCanvas(
   profile: ImageConvertAdjustProfile,
 ): void {
   const isIdentityProfile =
-    (profile.mode === 'basic' && profile.brightness === 0 && profile.contrast === 0) ||
-    (profile.mode === 'levels' &&
+    (profile.mode === "basic" &&
+      profile.brightness === 0 &&
+      profile.contrast === 0) ||
+    (profile.mode === "levels" &&
       profile.level_input_black === 0 &&
       profile.level_input_white === 255 &&
       profile.level_gamma === 1) ||
-    (profile.mode === 'curve' &&
+    (profile.mode === "curve" &&
       profile.curve_shadow_x === 64 &&
       profile.curve_midtone_x === 128 &&
       profile.curve_highlight_x === 192 &&
       profile.curve_shadow === 0 &&
       profile.curve_midtone === 0 &&
-      profile.curve_highlight === 0)
+      profile.curve_highlight === 0);
   if (isIdentityProfile) {
-    return
+    return;
   }
 
-  const imageData = context.getImageData(0, 0, width, height)
-  const lut = createImageConvertLut(profile)
-  const pixels = imageData.data
+  const imageData = context.getImageData(0, 0, width, height);
+  const lut = createImageConvertLut(profile);
+  const pixels = imageData.data;
   for (let index = 0; index < pixels.length; index += 4) {
-    pixels[index] = lut[pixels[index]]
-    pixels[index + 1] = lut[pixels[index + 1]]
-    pixels[index + 2] = lut[pixels[index + 2]]
+    pixels[index] = lut[pixels[index]];
+    pixels[index + 1] = lut[pixels[index + 1]];
+    pixels[index + 2] = lut[pixels[index + 2]];
   }
-  context.putImageData(imageData, 0, 0)
+  context.putImageData(imageData, 0, 0);
 }
 
 interface UseAppTopLayerBindingsParams {
-  runtimeSources: AppRuntimeSourcesResult
-  readNavigationState: AppReadAndNavigationResult
-  displayState: AppDisplayAndEffectsResult
-  adReviewDeleteOverlayDebugActive: boolean
-  onOpenAdReviewDeleteOverlayDebug: () => void
+  runtimeSources: AppRuntimeSourcesResult;
+  readNavigationState: AppReadAndNavigationResult;
+  displayState: AppDisplayAndEffectsResult;
+  adReviewDeleteOverlayDebugActive: boolean;
+  onOpenAdReviewDeleteOverlayDebug: () => void;
 }
 
 export function useAppTopLayerBindings({
@@ -253,9 +278,12 @@ export function useAppTopLayerBindings({
   adReviewDeleteOverlayDebugActive,
   onOpenAdReviewDeleteOverlayDebug,
 }: UseAppTopLayerBindingsParams) {
-  const [imageConvertPreviewRenderedSrc, setImageConvertPreviewRenderedSrc] = useState<string | null>(null)
-  const [imageConvertPreviewError, setImageConvertPreviewError] = useState<string | null>(null)
-  const imageConvertPreviewRenderTokenRef = useRef(0)
+  const [imageConvertPreviewRenderedSrc, setImageConvertPreviewRenderedSrc] =
+    useState<string | null>(null);
+  const [imageConvertPreviewError, setImageConvertPreviewError] = useState<
+    string | null
+  >(null);
+  const imageConvertPreviewRenderTokenRef = useRef(0);
 
   const {
     appSettings,
@@ -265,16 +293,11 @@ export function useAppTopLayerBindings({
     playlistPersistence,
     importState,
     archiveLoadStatus,
-  } = runtimeSources
+  } = runtimeSources;
 
-  const {
-    mediaRepository,
-    repositoryMode,
-  } = repositoryBootstrap
+  const { mediaRepository, repositoryMode } = repositoryBootstrap;
 
-  const {
-    mode,
-  } = appSettings
+  const { mode } = appSettings;
 
   const {
     manageMode,
@@ -294,7 +317,9 @@ export function useAppTopLayerBindings({
     setManageOperationHint,
     helpOverlayOpen,
     themeParameterPanelOpen,
+    themeParameterPanelHidden,
     setThemeParameterPanelOpen,
+    setThemeParameterPanelHidden,
     fullscreenEntryDisplay,
     selectedPackageId,
     selectedSidebarNodeId,
@@ -322,7 +347,7 @@ export function useAppTopLayerBindings({
     setImageConvertPreviewFormat,
     imageConvertPreviewQuality,
     setImageConvertPreviewQuality,
-  } = sessionState
+  } = sessionState;
 
   const {
     fullscreenActive,
@@ -357,17 +382,17 @@ export function useAppTopLayerBindings({
     setFullscreenSwapped,
     setFullscreenVideoFocus,
     setFullscreenSplit,
-  } = mediaState
+  } = mediaState;
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return
+    if (typeof document === "undefined") {
+      return;
     }
-    document.documentElement.dataset.mpxVideoPlaying = videoPlaying ? '1' : '0'
+    document.documentElement.dataset.mpxVideoPlaying = videoPlaying ? "1" : "0";
     return () => {
-      document.documentElement.dataset.mpxVideoPlaying = '0'
-    }
-  }, [videoPlaying])
+      document.documentElement.dataset.mpxVideoPlaying = "0";
+    };
+  }, [videoPlaying]);
 
   const {
     backendRead,
@@ -389,7 +414,7 @@ export function useAppTopLayerBindings({
     sidebarCollapsed,
     layoutConvergedInsetPx,
     onExpandSidebar,
-  } = readNavigationState
+  } = readNavigationState;
 
   const {
     backendWrite,
@@ -417,78 +442,101 @@ export function useAppTopLayerBindings({
     focusedVideoCoverImageSrc,
     fullscreenAlignRequest,
     setFullscreenActiveWithAutoStop,
-  } = displayState
+  } = displayState;
 
   useEffect(() => {
     if (!imageConvertPreviewMode || !fullscreenImageSrc) {
-      setImageConvertPreviewRenderedSrc(null)
-      setImageConvertPreviewError(null)
-      return
+      setImageConvertPreviewRenderedSrc(null);
+      setImageConvertPreviewError(null);
+      return;
     }
 
-    const renderToken = imageConvertPreviewRenderTokenRef.current + 1
-    imageConvertPreviewRenderTokenRef.current = renderToken
-    setImageConvertPreviewError(null)
+    const renderToken = imageConvertPreviewRenderTokenRef.current + 1;
+    imageConvertPreviewRenderTokenRef.current = renderToken;
+    setImageConvertPreviewError(null);
 
     const delayTimer = window.setTimeout(() => {
       void (async () => {
         try {
-          const imageElement = await loadImageElement(fullscreenImageSrc)
-          const sourceWidth = Math.max(1, imageElement.naturalWidth || imageElement.width || 1)
-          const sourceHeight = Math.max(1, imageElement.naturalHeight || imageElement.height || 1)
+          const imageElement = await loadImageElement(fullscreenImageSrc);
+          const sourceWidth = Math.max(
+            1,
+            imageElement.naturalWidth || imageElement.width || 1,
+          );
+          const sourceHeight = Math.max(
+            1,
+            imageElement.naturalHeight || imageElement.height || 1,
+          );
           const targetSize = resolveImageConvertTargetSize(
             sourceWidth,
             sourceHeight,
             imageConvertPreviewScale,
             imageConvertPreviewLongestEdgePx,
-          )
-          const targetWidth = targetSize.width
-          const targetHeight = targetSize.height
+          );
+          const targetWidth = targetSize.width;
+          const targetHeight = targetSize.height;
 
-          const canvas = document.createElement('canvas')
-          canvas.width = targetWidth
-          canvas.height = targetHeight
-          const context = canvas.getContext('2d')
+          const canvas = document.createElement("canvas");
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const context = canvas.getContext("2d");
           if (!context) {
-            throw new Error('preview canvas unavailable')
+            throw new Error("preview canvas unavailable");
           }
 
-          context.imageSmoothingEnabled = true
-          context.imageSmoothingQuality = imageConvertPreviewQuality >= 70 ? 'high' : imageConvertPreviewQuality >= 40 ? 'medium' : 'low'
-          context.clearRect(0, 0, targetWidth, targetHeight)
-          context.drawImage(imageElement, 0, 0, targetWidth, targetHeight)
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality =
+            imageConvertPreviewQuality >= 70
+              ? "high"
+              : imageConvertPreviewQuality >= 40
+                ? "medium"
+                : "low";
+          context.clearRect(0, 0, targetWidth, targetHeight);
+          context.drawImage(imageElement, 0, 0, targetWidth, targetHeight);
           applyImageConvertAdjustToCanvas(
             context,
             targetWidth,
             targetHeight,
             imageConvertPreviewAdjustProfile,
-          )
+          );
 
-          const mimeType = resolveImageConvertMimeType(imageConvertPreviewFormat)
-          const quality = imageConvertPreviewFormat === 'png'
-            ? undefined
-            : Math.max(0.1, Math.min(1, Number((imageConvertPreviewQuality / 100).toFixed(2))))
-          const rendered = await canvasToDataUrl(canvas, mimeType, quality)
+          const mimeType = resolveImageConvertMimeType(
+            imageConvertPreviewFormat,
+          );
+          const quality =
+            imageConvertPreviewFormat === "png"
+              ? undefined
+              : Math.max(
+                  0.1,
+                  Math.min(
+                    1,
+                    Number((imageConvertPreviewQuality / 100).toFixed(2)),
+                  ),
+                );
+          const rendered = await canvasToDataUrl(canvas, mimeType, quality);
 
           if (imageConvertPreviewRenderTokenRef.current !== renderToken) {
-            return
+            return;
           }
-          setImageConvertPreviewRenderedSrc(rendered)
-          setImageConvertPreviewError(null)
+          setImageConvertPreviewRenderedSrc(rendered);
+          setImageConvertPreviewError(null);
         } catch (error) {
           if (imageConvertPreviewRenderTokenRef.current !== renderToken) {
-            return
+            return;
           }
-          const reason = error instanceof Error && error.message ? error.message : String(error)
-          setImageConvertPreviewRenderedSrc(null)
-          setImageConvertPreviewError(reason)
+          const reason =
+            error instanceof Error && error.message
+              ? error.message
+              : String(error);
+          setImageConvertPreviewRenderedSrc(null);
+          setImageConvertPreviewError(reason);
         }
-      })()
-    }, 40)
+      })();
+    }, 40);
 
     return () => {
-      window.clearTimeout(delayTimer)
-    }
+      window.clearTimeout(delayTimer);
+    };
   }, [
     fullscreenImageSrc,
     imageConvertPreviewFormat,
@@ -497,12 +545,12 @@ export function useAppTopLayerBindings({
     imageConvertPreviewMode,
     imageConvertPreviewQuality,
     imageConvertPreviewScale,
-  ])
+  ]);
 
   const goPackageForFullscreen = (step: number) => {
-    if (mode !== 'image' || !imageConvertPreviewMode) {
-      goPackage(step)
-      return
+    if (mode !== "image" || !imageConvertPreviewMode) {
+      goPackage(step);
+      return;
     }
 
     const scopeNodeIds = resolveImageConvertScopeNodeIds({
@@ -512,10 +560,10 @@ export function useAppTopLayerBindings({
       sidebarCheckedNodeIds,
       selectedSidebarNodeId,
       sidebarNodeById,
-    })
+    });
     if (scopeNodeIds.length === 0) {
-      goPackage(step)
-      return
+      goPackage(step);
+      return;
     }
 
     const nextNodeId = resolveScopedImageConvertNavigationNodeId({
@@ -524,31 +572,31 @@ export function useAppTopLayerBindings({
       selectedPackageId,
       sidebarNodeById,
       step,
-    })
+    });
     if (!nextNodeId || nextNodeId === selectedSidebarNodeId) {
-      return
+      return;
     }
 
-    const nextNode = sidebarNodeById.get(nextNodeId)
-    setSelectedSidebarNodeId(nextNodeId)
+    const nextNode = sidebarNodeById.get(nextNodeId);
+    setSelectedSidebarNodeId(nextNodeId);
     if (nextNode?.imageSourceId) {
-      setSelectedPackageId(nextNode.imageSourceId)
+      setSelectedPackageId(nextNode.imageSourceId);
     }
-  }
+  };
 
   const openAdReviewFromImportNotice = useCallback(
     (taskId: string | null) => {
-      if (mode !== 'image') {
-        appSettings.updateSettings({ mode: 'image' })
+      if (mode !== "image") {
+        appSettings.updateSettings({ mode: "image" });
       }
       if (!manageMode) {
-        setManageMode(true)
+        setManageMode(true);
       }
-      setManageReviewMode('ad')
-      setAdReviewPanelOpen(true)
-      setAdReviewFocusTaskId(taskId)
-      setAdReviewPageIndex(0)
-      setSelectedSidebarNodeId(null)
+      setManageReviewMode("ad");
+      setAdReviewPanelOpen(true);
+      setAdReviewFocusTaskId(taskId);
+      setAdReviewPageIndex(0);
+      setSelectedSidebarNodeId(null);
     },
     [
       appSettings,
@@ -561,7 +609,7 @@ export function useAppTopLayerBindings({
       setManageReviewMode,
       setSelectedSidebarNodeId,
     ],
-  )
+  );
 
   return useAppTopLayerState({
     appSettings,
@@ -583,9 +631,11 @@ export function useAppTopLayerBindings({
     importTaskPanelOpen,
     helpOverlayOpen,
     themeParameterPanelOpen,
+    themeParameterPanelHidden,
     setImportMenuOpen,
     setImportTaskPanelOpen,
     setThemeParameterPanelOpen,
+    setThemeParameterPanelHidden,
     openImportFilesDialog: importState.openImportFilesDialog,
     openImportFoldersDialog: importState.openImportFoldersDialog,
     setSearchPanelMode: readNavigationState.setSearchPanelMode,
@@ -597,13 +647,15 @@ export function useAppTopLayerBindings({
     layoutConvergedInsetPx,
     onToggleSidebarPanel: () => {
       if (sidebarCollapsed) {
-        onExpandSidebar()
-        return
+        onExpandSidebar();
+        return;
       }
-      collapseSidebar()
+      collapseSidebar();
     },
     onToggleMetadataPanel: () => {
-      appSettings.updateSettings({ metadataCollapsed: !appSettings.metadataCollapsed })
+      appSettings.updateSettings({
+        metadataCollapsed: !appSettings.metadataCollapsed,
+      });
     },
     importTasks: importState.importTasks,
     dismissedImportTaskIds,
@@ -650,37 +702,41 @@ export function useAppTopLayerBindings({
     imageConvertPreviewRenderedSrc,
     imageConvertPreviewError,
     onChangeImageConvertPreviewScale: (value) => {
-      setImageConvertPreviewScale(Math.max(0.1, Math.min(1, Number(value.toFixed(1)))))
+      setImageConvertPreviewScale(
+        Math.max(0.1, Math.min(1, Number(value.toFixed(1)))),
+      );
     },
     onChangeImageConvertPreviewFormat: (value) => {
-      setImageConvertPreviewFormat(value)
+      setImageConvertPreviewFormat(value);
     },
     onChangeImageConvertPreviewQuality: (value) => {
-      setImageConvertPreviewQuality(Math.max(10, Math.min(100, Math.round(value))))
+      setImageConvertPreviewQuality(
+        Math.max(10, Math.min(100, Math.round(value))),
+      );
     },
     onConfirmImageConvertPreview: () => {
-      setImageConvertScale(imageConvertPreviewScale)
-      setImageConvertLongestEdgePx(imageConvertPreviewLongestEdgePx)
-      setImageConvertAdjustProfile(imageConvertPreviewAdjustProfile)
-      setImageConvertFormat(imageConvertPreviewFormat)
-      setImageConvertQuality(imageConvertPreviewQuality)
-      setImageConvertPreviewMode(false)
-      setFullscreenActiveWithAutoStop(false)
+      setImageConvertScale(imageConvertPreviewScale);
+      setImageConvertLongestEdgePx(imageConvertPreviewLongestEdgePx);
+      setImageConvertAdjustProfile(imageConvertPreviewAdjustProfile);
+      setImageConvertFormat(imageConvertPreviewFormat);
+      setImageConvertQuality(imageConvertPreviewQuality);
+      setImageConvertPreviewMode(false);
+      setFullscreenActiveWithAutoStop(false);
     },
     onCancelImageConvertPreview: () => {
-      setImageConvertPreviewScale(imageConvertScale)
-      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx)
-      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile)
-      setImageConvertPreviewFormat(imageConvertFormat)
-      setImageConvertPreviewQuality(imageConvertQuality)
-      setImageConvertPreviewMode(false)
-      setFullscreenActiveWithAutoStop(false)
+      setImageConvertPreviewScale(imageConvertScale);
+      setImageConvertPreviewLongestEdgePx(imageConvertLongestEdgePx);
+      setImageConvertPreviewAdjustProfile(imageConvertAdjustProfile);
+      setImageConvertPreviewFormat(imageConvertFormat);
+      setImageConvertPreviewQuality(imageConvertQuality);
+      setImageConvertPreviewMode(false);
+      setFullscreenActiveWithAutoStop(false);
     },
     onApplyImageConvertPreviewScaleToLongestEdge: (value) => {
-      setImageConvertPreviewLongestEdgePx(value)
+      setImageConvertPreviewLongestEdgePx(value);
     },
     onChangeImageConvertPreviewAdjustProfile: (nextProfile) => {
-      setImageConvertPreviewAdjustProfile(nextProfile)
+      setImageConvertPreviewAdjustProfile(nextProfile);
     },
     bindFullscreenVideoElement,
     focusedVideoCoverImageSrc,
@@ -724,5 +780,5 @@ export function useAppTopLayerBindings({
     adReviewDeleteOverlayDebugActive,
     onOpenAdReviewDeleteOverlayDebug,
     focusedVideoEffectiveId: focusedVideoEffective?.id ?? null,
-  })
+  });
 }

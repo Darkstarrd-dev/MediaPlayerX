@@ -79,7 +79,9 @@ export function useAppInteractionLayer({
     helpOverlayOpen,
     setHelpOverlayOpen,
     themeParameterPanelOpen,
+    themeParameterPanelHidden,
     setThemeParameterPanelOpen,
+    setThemeParameterPanelHidden,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
   } = sessionState;
@@ -244,6 +246,11 @@ export function useAppInteractionLayer({
       if (!themeParameterPanelOpen) {
         return false;
       }
+      if (themeParameterPanelHidden) {
+        setThemeParameterPanelHidden(false);
+        return true;
+      }
+      setThemeParameterPanelHidden(false);
       setThemeParameterPanelOpen(false);
       return true;
     };
@@ -753,11 +760,23 @@ export function useAppInteractionLayer({
             return;
           }
 
+          if (
+            event.code === "KeyH" &&
+            themeParameterPanelOpen &&
+            !themeParameterPanelHidden
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            setThemeParameterPanelHidden(true);
+            return;
+          }
+
           if (sidebarShortcutActive && event.code === "Delete") {
             const hasManageSelection =
               sidebarCheckedNodeIds.length > 0 || imageCheckedIds.length > 0;
             const targetNodeId =
-              selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)
+              selectedSidebarNodeId &&
+              sidebarNodeById.has(selectedSidebarNodeId)
                 ? selectedSidebarNodeId
                 : null;
 
@@ -973,6 +992,17 @@ export function useAppInteractionLayer({
         return;
       }
 
+      if (
+        event.button === 2 &&
+        themeParameterPanelOpen &&
+        themeParameterPanelHidden
+      ) {
+        setThemeParameterPanelHidden(false);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       if (event.button !== 2) {
         return;
       }
@@ -1067,7 +1097,9 @@ export function useAppInteractionLayer({
     helpOverlayOpen,
     setHelpOverlayOpen,
     themeParameterPanelOpen,
+    themeParameterPanelHidden,
     setThemeParameterPanelOpen,
+    setThemeParameterPanelHidden,
     importTaskPanelOpen,
     setImportTaskPanelOpen,
     setSearchPanelCollapsed,

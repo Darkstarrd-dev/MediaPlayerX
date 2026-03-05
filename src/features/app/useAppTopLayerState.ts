@@ -67,58 +67,77 @@ export function resolvePendingReviewNoticeVisible(
 ): boolean {
   return Boolean(
     pendingReviewNoticeToken !== null &&
-      (dismissedPendingReviewTokenMs === null ||
-        pendingReviewNoticeToken > dismissedPendingReviewTokenMs),
+    (dismissedPendingReviewTokenMs === null ||
+      pendingReviewNoticeToken > dismissedPendingReviewTokenMs),
   );
 }
 
-function parseImportStageReviewLogItems(stateJson: string): ImportStageReviewLogItem[] {
+function parseImportStageReviewLogItems(
+  stateJson: string,
+): ImportStageReviewLogItem[] {
   try {
-    const parsed = JSON.parse(stateJson) as unknown
-    if (!parsed || typeof parsed !== 'object') {
-      return []
+    const parsed = JSON.parse(stateJson) as unknown;
+    if (!parsed || typeof parsed !== "object") {
+      return [];
     }
     const rawItems = Array.isArray((parsed as { items?: unknown }).items)
       ? ((parsed as { items: unknown[] }).items as unknown[])
-      : []
+      : [];
 
-    const items: ImportStageReviewLogItem[] = []
+    const items: ImportStageReviewLogItem[] = [];
     for (const item of rawItems) {
-      if (!item || typeof item !== 'object') {
-        continue
+      if (!item || typeof item !== "object") {
+        continue;
       }
       const id =
-        typeof (item as { id?: unknown }).id === 'string'
+        typeof (item as { id?: unknown }).id === "string"
           ? (item as { id: string }).id.trim()
-          : ''
-      const mode = (item as { mode?: unknown }).mode
-      if (!id || (mode !== 'silent-delete' && mode !== 'user-confirm')) {
-        continue
+          : "";
+      const mode = (item as { mode?: unknown }).mode;
+      if (!id || (mode !== "silent-delete" && mode !== "user-confirm")) {
+        continue;
       }
       const createdAtMs =
-        typeof (item as { created_at_ms?: unknown }).created_at_ms === 'number'
-          ? Math.max(0, Math.floor((item as { created_at_ms: number }).created_at_ms))
-          : 0
+        typeof (item as { created_at_ms?: unknown }).created_at_ms === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { created_at_ms: number }).created_at_ms),
+            )
+          : 0;
       const comparedCount =
-        typeof (item as { compared_count?: unknown }).compared_count === 'number'
-          ? Math.max(0, Math.floor((item as { compared_count: number }).compared_count))
-          : 0
+        typeof (item as { compared_count?: unknown }).compared_count ===
+        "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { compared_count: number }).compared_count),
+            )
+          : 0;
       const hitCount =
-        typeof (item as { hit_count?: unknown }).hit_count === 'number'
+        typeof (item as { hit_count?: unknown }).hit_count === "number"
           ? Math.max(0, Math.floor((item as { hit_count: number }).hit_count))
-          : 0
+          : 0;
       const deletedCount =
-        typeof (item as { deleted_count?: unknown }).deleted_count === 'number'
-          ? Math.max(0, Math.floor((item as { deleted_count: number }).deleted_count))
-          : 0
+        typeof (item as { deleted_count?: unknown }).deleted_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { deleted_count: number }).deleted_count),
+            )
+          : 0;
       const enqueuedCount =
-        typeof (item as { enqueued_count?: unknown }).enqueued_count === 'number'
-          ? Math.max(0, Math.floor((item as { enqueued_count: number }).enqueued_count))
-          : 0
+        typeof (item as { enqueued_count?: unknown }).enqueued_count ===
+        "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { enqueued_count: number }).enqueued_count),
+            )
+          : 0;
       const failedCount =
-        typeof (item as { failed_count?: unknown }).failed_count === 'number'
-          ? Math.max(0, Math.floor((item as { failed_count: number }).failed_count))
-          : 0
+        typeof (item as { failed_count?: unknown }).failed_count === "number"
+          ? Math.max(
+              0,
+              Math.floor((item as { failed_count: number }).failed_count),
+            )
+          : 0;
 
       items.push({
         id,
@@ -129,11 +148,11 @@ function parseImportStageReviewLogItems(stateJson: string): ImportStageReviewLog
         enqueued_count: enqueuedCount,
         failed_count: failedCount,
         created_at_ms: createdAtMs,
-      })
+      });
     }
-    return items
+    return items;
   } catch {
-    return []
+    return [];
   }
 }
 
@@ -189,9 +208,11 @@ interface UseAppTopLayerStateParams {
   importTaskPanelOpen: boolean;
   helpOverlayOpen: boolean;
   themeParameterPanelOpen: boolean;
+  themeParameterPanelHidden: boolean;
   setImportMenuOpen: Dispatch<SetStateAction<boolean>>;
   setImportTaskPanelOpen: Dispatch<SetStateAction<boolean>>;
   setThemeParameterPanelOpen: Dispatch<SetStateAction<boolean>>;
+  setThemeParameterPanelHidden: Dispatch<SetStateAction<boolean>>;
   openImportFilesDialog: () => void;
   openImportFoldersDialog: () => void;
   setSearchPanelMode: Dispatch<SetStateAction<SearchPanelMode>>;
@@ -341,9 +362,11 @@ export function useAppTopLayerState({
   importTaskPanelOpen,
   helpOverlayOpen,
   themeParameterPanelOpen,
+  themeParameterPanelHidden,
   setImportMenuOpen,
   setImportTaskPanelOpen,
   setThemeParameterPanelOpen,
+  setThemeParameterPanelHidden,
   openImportFilesDialog,
   openImportFoldersDialog,
   setSearchPanelMode,
@@ -684,7 +707,10 @@ export function useAppTopLayerState({
   }, [mediaRepository.readAppState]);
 
   useEffect(() => {
-    if (pendingReviewNoticeToken !== null || dismissedPendingReviewTokenMs === null) {
+    if (
+      pendingReviewNoticeToken !== null ||
+      dismissedPendingReviewTokenMs === null
+    ) {
       return;
     }
     setDismissedPendingReviewTokenMs(null);
@@ -711,11 +737,7 @@ export function useAppTopLayerState({
     if (previous && !importPipelineBusy && importTasksForPanel.length > 0) {
       setImportTaskPanelOpen(true);
     }
-  }, [
-    importPipelineBusy,
-    importTasksForPanel.length,
-    setImportTaskPanelOpen,
-  ]);
+  }, [importPipelineBusy, importTasksForPanel.length, setImportTaskPanelOpen]);
 
   const pendingReviewNoticeVisible = resolvePendingReviewNoticeVisible(
     pendingReviewNoticeToken,
@@ -724,10 +746,7 @@ export function useAppTopLayerState({
 
   const openAdReviewFromImportPanelNotice = useCallback(() => {
     onOpenAdReviewFromImportNotice(latestPendingReviewTaskId);
-  }, [
-    latestPendingReviewTaskId,
-    onOpenAdReviewFromImportNotice,
-  ]);
+  }, [latestPendingReviewTaskId, onOpenAdReviewFromImportNotice]);
 
   const dismissPendingReviewNotice = () => {
     if (pendingReviewNoticeToken === null) {
@@ -1176,7 +1195,10 @@ export function useAppTopLayerState({
     onElectronNativeChromeEnabledChange: applyElectronNativeChromeEnabled,
     onThemeParameterButtonVisibleChange: (value: boolean) =>
       appSettings.updateSettings({ themeParameterButtonVisible: value }),
-    onOpenThemeParameter: () => setThemeParameterPanelOpen(true),
+    onOpenThemeParameter: () => {
+      setThemeParameterPanelHidden(false);
+      setThemeParameterPanelOpen(true);
+    },
     sidebarCollapsed,
     metadataCollapsed,
     onToggleSidebarPanel,
@@ -1193,9 +1215,14 @@ export function useAppTopLayerState({
 
   const themeParameterPanelProps = {
     open: themeParameterPanelOpen,
+    hidden: themeParameterPanelHidden,
     styleId: appSettings.styleId,
     settingsFontSize: appSettings.settingsFontSize,
-    onClose: () => setThemeParameterPanelOpen(false),
+    onClose: () => {
+      setThemeParameterPanelHidden(false);
+      setThemeParameterPanelOpen(false);
+    },
+    onHide: () => setThemeParameterPanelHidden(true),
   };
 
   const importTaskPanelProps = buildImportTaskPanelProps({

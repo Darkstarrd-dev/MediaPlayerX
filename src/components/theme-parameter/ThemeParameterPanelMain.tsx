@@ -40,6 +40,7 @@ interface ThemeParameterPanelMainProps {
   openSnapshotFilePicker: () => void;
   copySnapshotJson: () => Promise<void>;
   importSnapshotJson: () => void;
+  resetSnapshotToBaseline: () => void;
   commonExpanded: boolean;
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
@@ -529,6 +530,7 @@ export function ThemeParameterPanelMain({
   openSnapshotFilePicker,
   copySnapshotJson,
   importSnapshotJson,
+  resetSnapshotToBaseline,
   commonExpanded,
   setCommonExpanded,
   styleExpanded,
@@ -682,7 +684,7 @@ export function ThemeParameterPanelMain({
           ? LARGE_PANEL_COLOR_FIELDS
           : activePage === "smallPanelLayer"
             ? SMALL_PANEL_COLOR_FIELDS
-          : BUTTON_STATE_COLOR_FIELDS;
+            : BUTTON_STATE_COLOR_FIELDS;
     const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
       const parsed = readCssColorState(computed, field.cssVar, field.fallback);
@@ -1212,7 +1214,9 @@ export function ThemeParameterPanelMain({
                     setSnapshotIncludeComputedValues(event.target.checked);
                   }}
                 />
-                <span>{t("ui.themeParameter.snapshotIncludeComputedValues")}</span>
+                <span>
+                  {t("ui.themeParameter.snapshotIncludeComputedValues")}
+                </span>
               </label>
               <div className="theme-parameter-actions">
                 <button type="button" onClick={exportSnapshotJson}>
@@ -1234,6 +1238,9 @@ export function ThemeParameterPanelMain({
                 </button>
                 <button type="button" onClick={importSnapshotJson}>
                   {t("ui.themeParameter.importJson")}
+                </button>
+                <button type="button" onClick={resetSnapshotToBaseline}>
+                  {t("ui.themeParameter.resetSnapshotToOpenState")}
                 </button>
                 <button
                   type="button"

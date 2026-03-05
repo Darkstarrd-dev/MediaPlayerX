@@ -73,6 +73,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "In image mode, trigger RS: in file-manage mode it is the same as RS button; outside file-manage mode it targets current focused sidebar node.",
   "ui.help.image.keyboard.helpOverlayToggle":
     "Outside fullscreen, toggle button-help overlay (? toggle, Esc close).",
+  "ui.help.image.keyboard.fixedThemeParameterHideShortcut":
+    "H (hide) / Esc or Right Click (restore)",
+  "ui.help.image.keyboard.themeParameterTemporaryHide":
+    "When Theme Parameter is open, press H to hide it temporarily; press Esc or right click to restore.",
   "ui.help.fullscreen.sectionTitle": "Fullscreen interaction guide",
   "ui.help.fullscreen.groupMouse": "Mouse",
   "ui.help.fullscreen.groupKeyboard": "Keyboard",
@@ -353,6 +357,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.snapshotImportFailed":
     "Failed to parse JSON or invalid payload format.",
   "ui.themeParameter.snapshotEmpty": "Please provide or export JSON first.",
+  "ui.themeParameter.resetSnapshotToOpenState": "Reset to open state",
+  "ui.themeParameter.snapshotResetToOpenState":
+    "Theme styles restored to the state when this panel was opened.",
   "ui.themeParameter.page.parameters": "Parameter tuning",
   "ui.themeParameter.page.snapshot": "Import / Export",
   "ui.themeParameter.page.containerLayer": "Container layer debug",
@@ -698,7 +705,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.adReviewKnownHashesImport": "Import known-hash",
   "ui.settings.adReviewKnownHashesExport": "Export known-hash",
   "ui.settings.adReviewKnownHashesPickImportFile": "Select known-hash JSON",
-  "ui.settings.adReviewKnownHashesPickExportDirectory": "Select export directory",
+  "ui.settings.adReviewKnownHashesPickExportDirectory":
+    "Select export directory",
   "ui.settings.adReviewKnownHashesImportUnsupported":
     "Known-hash import is not supported in current environment.",
   "ui.settings.adReviewKnownHashesExportUnsupported":
