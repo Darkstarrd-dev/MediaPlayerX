@@ -617,19 +617,16 @@
   }
 }
 
-.sidebar-label.is-collapsible::before {
-  content: "▾";
+.sidebar-toggle-arrow {
+  flex: 0 0 auto;
   display: inline-block;
   width: 1em;
   margin-right: 0.15em;
+  text-align: center;
   color: var(
     --mpx-slot-fg-sidebar-main-label-toggle-text,
     var(--mpx-sidebar-main-label-toggle-text, var(--mpx-text-2))
   );
-}
-
-.sidebar-label.is-collapsible.is-collapsed::before {
-  content: "▸";
 }
 
 .sidebar-counts {

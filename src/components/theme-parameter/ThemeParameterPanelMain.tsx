@@ -130,6 +130,13 @@ interface ControlPreviewValues {
   sliderSettingsHorizontal: number;
 }
 
+interface SidebarMainDebugSection {
+  id: string;
+  title: string;
+  tag: string;
+  cssVars: readonly string[];
+}
+
 type ButtonStateKey =
   | "idle"
   | "hover"
@@ -240,6 +247,25 @@ const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "side",
   },
   {
+    id: "container-sidebar-main-label-collapsed-active-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-active-bg",
+    fallback: "#f2d796",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-active-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-active-bg",
+    fallback: "#f2d796",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-active-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-active-bg",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
     id: "container-sidebar-main-label-active-ring",
     cssVar: "--mpx-sidebar-main-active-ring",
     fallback: "#2d6e7d",
@@ -258,15 +284,70 @@ const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "side",
   },
   {
+    id: "container-sidebar-main-label-collapsed-marker-focus-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-marker-focus-bg",
+    fallback: "#f2d796",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-marker-focus-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-marker-focus-bg",
+    fallback: "#f2d796",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-marker-focus-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-marker-focus-bg",
+    fallback: "#f2d796",
+    groupId: "side",
+  },
+  {
     id: "container-sidebar-main-label-marker-selected-bg",
     cssVar: "--mpx-sidebar-main-label-marker-selected-bg",
     fallback: "#9a885f",
     groupId: "side",
   },
   {
+    id: "container-sidebar-main-label-collapsed-marker-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-marker-selected-bg",
+    fallback: "#8a919a",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-marker-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-marker-selected-bg",
+    fallback: "#8a919a",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-marker-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-marker-selected-bg",
+    fallback: "#8a919a",
+    groupId: "side",
+  },
+  {
     id: "container-sidebar-main-label-manage-selected-bg",
     cssVar: "--mpx-sidebar-main-label-manage-selected-bg",
     fallback: "#9a885f",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-collapsed-manage-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-manage-selected-bg",
+    fallback: "#8a919a",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-manage-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-manage-selected-bg",
+    fallback: "#8a919a",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-manage-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-manage-selected-bg",
+    fallback: "#000000",
+    fallbackAlpha: 0,
     groupId: "side",
   },
   {
@@ -425,6 +506,91 @@ const CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     fallback:
       "inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 1)",
     groupId: "side",
+  },
+];
+
+const SIDEBAR_MAIN_DEBUG_SECTIONS: readonly SidebarMainDebugSection[] = [
+  {
+    id: "sidebar-main-shell",
+    title: "1、sidebar-main 本体与容器链路",
+    tag: "容器",
+    cssVars: [
+      "--mpx-sidebar-main-bg",
+      "--mpx-sidebar-main-label-text",
+      "--mpx-sidebar-main-label-border",
+      "--mpx-sidebar-main-label-bg",
+      "--mpx-sidebar-main-label-shadow",
+      "--mpx-sidebar-main-label-hover-filter",
+      "--mpx-sidebar-main-label-active-bg",
+      "--mpx-sidebar-main-label-manage-selected-bg",
+      "--mpx-sidebar-main-active-ring",
+      "--mpx-sidebar-main-active-underlay",
+      "--mpx-sidebar-main-label-active-shadow",
+      "--mpx-sidebar-main-label-active-hover-shadow",
+      "--mpx-sidebar-main-label-manage-selected-shadow",
+      "--mpx-sidebar-main-label-marker-focus-bg",
+      "--mpx-sidebar-main-label-marker-selected-bg",
+    ],
+  },
+  {
+    id: "sidebar-main-collapsible",
+    title: "2、可折叠节点调节",
+    tag: "可折叠",
+    cssVars: [
+      "--mpx-sidebar-main-label-toggle-text",
+      "--mpx-sidebar-main-label-collapsed-bg",
+      "--mpx-sidebar-main-label-expanded-bg",
+      "--mpx-sidebar-main-label-collapsed-active-bg",
+      "--mpx-sidebar-main-label-expanded-active-bg",
+      "--mpx-sidebar-main-label-collapsed-manage-selected-bg",
+      "--mpx-sidebar-main-label-expanded-manage-selected-bg",
+      "--mpx-sidebar-main-label-collapsed-marker-focus-bg",
+      "--mpx-sidebar-main-label-expanded-marker-focus-bg",
+      "--mpx-sidebar-main-label-collapsed-marker-selected-bg",
+      "--mpx-sidebar-main-label-expanded-marker-selected-bg",
+    ],
+  },
+  {
+    id: "sidebar-main-plain",
+    title: "3、不可折叠节点调节",
+    tag: "不可折叠",
+    cssVars: [
+      "--mpx-sidebar-main-label-plain-border",
+      "--mpx-sidebar-main-label-plain-bg",
+      "--mpx-sidebar-main-label-plain-active-bg",
+      "--mpx-sidebar-main-label-plain-manage-selected-bg",
+      "--mpx-sidebar-main-label-plain-marker-focus-bg",
+      "--mpx-sidebar-main-label-plain-marker-selected-bg",
+    ],
+  },
+  {
+    id: "sidebar-main-count",
+    title: "4、计数器调节",
+    tag: "计数器",
+    cssVars: [
+      "--mpx-sidebar-main-count-text",
+      "--mpx-sidebar-main-count-border",
+      "--mpx-sidebar-main-count-bg",
+      "--mpx-sidebar-main-count-shadow",
+      "--mpx-sidebar-main-count-packages-text",
+      "--mpx-sidebar-main-count-packages-border",
+      "--mpx-sidebar-main-count-packages-bg",
+      "--mpx-sidebar-main-count-packages-shadow",
+      "--mpx-sidebar-main-count-images-text",
+      "--mpx-sidebar-main-count-images-border",
+      "--mpx-sidebar-main-count-images-bg",
+    ],
+  },
+  {
+    id: "sidebar-main-bullet",
+    title: "5、bullet 调节",
+    tag: "Bullet",
+    cssVars: [
+      "--mpx-sidebar-main-bullet-pending-bg",
+      "--mpx-sidebar-main-bullet-running-bg",
+      "--mpx-sidebar-main-bullet-running-ring",
+      "--mpx-sidebar-main-bullet-active-bg",
+    ],
   },
 ];
 
@@ -702,6 +868,15 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-sidebar-main-label-active-bg") {
     return "用于侧栏主列表标签激活背景（.sidebar-row.is-active .sidebar-label）";
   }
+  if (cssVar === "--mpx-sidebar-main-label-collapsed-active-bg") {
+    return "用于可折叠-折叠节点激活背景（.sidebar-label.is-collapsible.is-collapsed）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-expanded-active-bg") {
+    return "用于可折叠-展开节点激活背景（.sidebar-label.is-collapsible:not(.is-collapsed)）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-plain-active-bg") {
+    return "用于非可折叠节点激活背景（.sidebar-label:not(.is-collapsible)）";
+  }
   if (cssVar === "--mpx-sidebar-main-active-ring") {
     return "用于侧栏主列表标签激活外圈（active ring）";
   }
@@ -709,7 +884,34 @@ function resolveDebugVarUsage(cssVar: string): string {
     return "用于侧栏主列表标签激活内圈衬底（active underlay）";
   }
   if (cssVar === "--mpx-sidebar-main-label-toggle-text") {
-    return "用于侧栏可折叠箭头颜色（.sidebar-label.is-collapsible::before）";
+    return "用于侧栏可折叠箭头颜色（.sidebar-toggle-arrow）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-collapsed-marker-focus-bg") {
+    return "用于可折叠-折叠节点 focus marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-expanded-marker-focus-bg") {
+    return "用于可折叠-展开节点 focus marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-plain-marker-focus-bg") {
+    return "用于非可折叠节点 focus marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-collapsed-marker-selected-bg") {
+    return "用于可折叠-折叠节点 selected marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-expanded-marker-selected-bg") {
+    return "用于可折叠-展开节点 selected marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-plain-marker-selected-bg") {
+    return "用于非可折叠节点 selected marker 颜色";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-collapsed-manage-selected-bg") {
+    return "用于可折叠-折叠节点管理选中背景";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-expanded-manage-selected-bg") {
+    return "用于可折叠-展开节点管理选中背景";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-plain-manage-selected-bg") {
+    return "用于非可折叠节点管理选中背景";
   }
   if (cssVar === "--mpx-sidebar-main-count-bg") {
     return "用于侧栏计数徽标通用背景（.sidebar-count）";
@@ -1861,6 +2063,86 @@ export function ThemeParameterPanelMain({
     });
   };
 
+  const renderTextFieldRow = (field: ThemeDebugTextField) => {
+    const raw = debugTextValues[field.id] ?? field.fallback;
+    return (
+      <label key={field.id} className="theme-parameter-text-row">
+        <span className="theme-parameter-var-label">
+          {field.cssVar}
+          <span className="theme-parameter-var-usage">
+            {`（${resolveDebugVarUsage(field.cssVar)}）`}
+          </span>
+        </span>
+        <textarea
+          aria-label={field.cssVar}
+          className="theme-parameter-textarea"
+          value={raw}
+          onChange={(event) => setDebugTextFieldValue(field, event.target.value)}
+        />
+        {isTextFieldChanged(field) ? (
+          <button
+            type="button"
+            className="theme-parameter-reset-btn"
+            onClick={() => resetTextField(field)}
+          >
+            {t("ui.themeParameter.resetField")}
+          </button>
+        ) : null}
+      </label>
+    );
+  };
+
+  const sidebarMainColorFieldMap = useMemo(
+    () =>
+      new Map(
+        CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS.map((field) => [field.cssVar, field]),
+      ),
+    [],
+  );
+
+  const sidebarMainTextFieldMap = useMemo(
+    () =>
+      new Map(
+        CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS.map((field) => [field.cssVar, field]),
+      ),
+    [],
+  );
+
+  const renderSidebarMainDebugSections = () => {
+    return SIDEBAR_MAIN_DEBUG_SECTIONS.map((section) => {
+      const sectionRows = section.cssVars
+        .map((cssVar) => {
+          const colorField = sidebarMainColorFieldMap.get(cssVar);
+          if (colorField) {
+            return renderColorFieldRow(colorField);
+          }
+          const textField = sidebarMainTextFieldMap.get(cssVar);
+          if (textField) {
+            return renderTextFieldRow(textField);
+          }
+          return null;
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      if (sectionRows.length === 0) {
+        return null;
+      }
+
+      return (
+        <section
+          key={section.id}
+          className="settings-group theme-parameter-debug-group"
+        >
+          <header className="settings-group-head theme-parameter-subgroup-head">
+            <span>{section.title}</span>
+            <span className="theme-parameter-subgroup-tag">{section.tag}</span>
+          </header>
+          <div className="theme-parameter-color-list">{sectionRows}</div>
+        </section>
+      );
+    });
+  };
+
   const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
     const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
     return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
@@ -1872,37 +2154,6 @@ export function ThemeParameterPanelMain({
     fields: readonly ThemeDebugTextField[],
     groupIds: readonly ThemeDebugNumberGroupId[],
   ) => {
-    const renderTextFieldRow = (field: ThemeDebugTextField) => {
-      const raw = debugTextValues[field.id] ?? field.fallback;
-      return (
-        <label key={field.id} className="theme-parameter-text-row">
-          <span className="theme-parameter-var-label">
-            {field.cssVar}
-            <span className="theme-parameter-var-usage">
-              {`（${resolveDebugVarUsage(field.cssVar)}）`}
-            </span>
-          </span>
-          <textarea
-            aria-label={field.cssVar}
-            className="theme-parameter-textarea"
-            value={raw}
-            onChange={(event) =>
-              setDebugTextFieldValue(field, event.target.value)
-            }
-          />
-          {isTextFieldChanged(field) ? (
-            <button
-              type="button"
-              className="theme-parameter-reset-btn"
-              onClick={() => resetTextField(field)}
-            >
-              {t("ui.themeParameter.resetField")}
-            </button>
-          ) : null}
-        </label>
-      );
-    };
-
     return groupIds.map((groupId) => {
       const groupFields = fields.filter((field) => field.groupId === groupId);
       if (groupFields.length === 0) {
@@ -2640,8 +2891,7 @@ export function ThemeParameterPanelMain({
                 {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
               </summary>
               <div className="settings-collapsible-content">
-                {renderColorGroups(CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS, ["side"])}
-                {renderTextGroups(CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS, ["side"])}
+                {renderSidebarMainDebugSections()}
               </div>
             </details>
 

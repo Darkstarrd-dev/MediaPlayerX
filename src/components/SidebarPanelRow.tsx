@@ -333,6 +333,12 @@ export function SidebarPanelRow({
         }}
         onAnimationEnd={handleSidebarFocusSweepAnimationEnd}
       >
+        {imageFolderCollapsible ? (
+          <span aria-hidden="true" className="sidebar-toggle-arrow">
+            {imageFolderCollapsed ? "▸" : "▾"}
+          </span>
+        ) : null}
+
         <span
           ref={(element) => {
             if (element) {

@@ -34,7 +34,10 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-main-shell
   .sidebar-tree {
-  background: #e3e7ec;
+  background: var(
+    --mpx-slot-fg-sidebar-main-bg,
+    var(--mpx-sidebar-main-bg, var(--mpx-sidebar-main-tree-bg, #e3e7ec))
+  );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -673,7 +676,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row
-  .sidebar-label::after {
+  .sidebar-label::before {
   content: "";
   position: absolute;
   left: -1px;
@@ -700,13 +703,6 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row
-  .sidebar-label.is-collapsible::after {
-  display: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row
   .sidebar-label:hover {
   filter: var(
     --mpx-slot-fg-sidebar-main-label-hover-filter,
@@ -728,24 +724,292 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row.is-active
-  .sidebar-label:not(.is-collapsible)::after {
-  opacity: 1;
+  .sidebar-label {
+  border-radius: var(
+    --mpx-sidebar-node-label-radius,
+    var(--mpx-radius-sidebar-label, 12px)
+  );
+  transform: var(--mpx-control-active-transform);
+  box-shadow:
+    var(
+      --mpx-slot-fg-sidebar-main-label-active-shadow,
+      var(
+        --mpx-sidebar-main-label-active-shadow,
+        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+      )
+    ),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-underlay,
+            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+          )
+          90%,
+        transparent
+      ),
+    0 0 0 4px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-ring,
+            var(--mpx-sidebar-main-active-ring, var(--mpx-state-focus-color))
+          )
+          82%,
+        transparent
+      );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label.is-collapsible.is-collapsed {
   background: var(
-    --mpx-slot-fg-sidebar-main-label-marker-focus-bg,
-    var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    --mpx-slot-fg-sidebar-main-label-collapsed-active-bg,
+    var(
+      --mpx-sidebar-main-label-collapsed-active-bg,
+      var(--mpx-sidebar-main-label-active-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label.is-collapsible:not(.is-collapsed) {
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-active-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-active-bg,
+      var(--mpx-sidebar-main-label-active-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label:not(.is-collapsible) {
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-active-bg,
+    var(
+      --mpx-sidebar-main-label-plain-active-bg,
+      var(--mpx-sidebar-main-label-active-bg, transparent)
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active.is-hover-active
+  .sidebar-label {
+  box-shadow:
+    var(
+      --mpx-slot-fg-sidebar-main-label-active-hover-shadow,
+      var(
+        --mpx-sidebar-main-label-active-hover-shadow,
+        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+      )
+    ),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-underlay,
+            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+          )
+          90%,
+        transparent
+      ),
+    0 0 0 4px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-ring,
+            var(--mpx-sidebar-main-active-ring, var(--mpx-state-focus-color))
+          )
+          82%,
+        transparent
+      );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label {
+  border-radius: var(
+    --mpx-sidebar-node-label-radius,
+    var(--mpx-radius-sidebar-label, 12px)
+  );
+  transform: var(--mpx-control-active-transform);
+  box-shadow:
+    var(
+      --mpx-slot-fg-sidebar-main-label-manage-selected-shadow,
+      var(
+        --mpx-sidebar-main-label-manage-selected-shadow,
+        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+      )
+    ),
+    inset 0 0 0 1px
+      color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
+    inset 0 0 0 2px
+      color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 4px var(--mpx-manage-select-ring);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label.is-collapsible.is-collapsed {
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-collapsed-manage-selected-bg,
+    var(
+      --mpx-sidebar-main-label-collapsed-manage-selected-bg,
+      var(
+        --mpx-sidebar-main-label-manage-selected-bg,
+        var(--mpx-state-selected-color)
+      )
+    )
   );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row.is-manage.is-selected
-  .sidebar-label:not(.is-collapsible)::after {
+  .sidebar-label.is-collapsible:not(.is-collapsed) {
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-manage-selected-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-manage-selected-bg,
+      var(
+        --mpx-sidebar-main-label-manage-selected-bg,
+        var(--mpx-state-selected-color)
+      )
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label:not(.is-collapsible) {
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-manage-selected-bg,
+    var(
+      --mpx-sidebar-main-label-plain-manage-selected-bg,
+      var(--mpx-sidebar-main-label-manage-selected-bg, transparent)
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected.is-hover-active
+  .sidebar-label,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected.is-pressed-active
+  .sidebar-label {
+  box-shadow:
+    var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
+    inset 0 0 0 1px
+      color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
+    inset 0 0 0 2px
+      color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 4px var(--mpx-manage-select-ring);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label.is-collapsible.is-collapsed::before {
   opacity: 1;
   background: var(
-    --mpx-slot-fg-sidebar-main-label-marker-selected-bg,
+    --mpx-slot-fg-sidebar-main-label-collapsed-marker-focus-bg,
     var(
-      --mpx-sidebar-main-label-marker-selected-bg,
-      var(--mpx-state-selected-color)
+      --mpx-sidebar-main-label-collapsed-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label.is-collapsible:not(.is-collapsed)::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-marker-focus-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-active
+  .sidebar-label:not(.is-collapsible)::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-marker-focus-bg,
+    var(
+      --mpx-sidebar-main-label-plain-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label.is-collapsible.is-collapsed::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-collapsed-marker-selected-bg,
+    var(
+      --mpx-sidebar-main-label-collapsed-marker-selected-bg,
+      var(
+        --mpx-sidebar-main-label-marker-selected-bg,
+        var(--mpx-state-selected-color)
+      )
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label.is-collapsible:not(.is-collapsed)::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-marker-selected-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-marker-selected-bg,
+      var(
+        --mpx-sidebar-main-label-marker-selected-bg,
+        var(--mpx-state-selected-color)
+      )
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row.is-manage.is-selected
+  .sidebar-label:not(.is-collapsible)::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-marker-selected-bg,
+    var(
+      --mpx-sidebar-main-label-plain-marker-selected-bg,
+      var(
+        --mpx-sidebar-main-label-marker-selected-bg,
+        var(--mpx-state-selected-color)
+      )
     )
   );
 }
@@ -753,11 +1017,42 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row
-  .sidebar-label:not(.is-collapsible):focus-visible::after {
+  .sidebar-label.is-collapsible.is-collapsed:focus-visible::before {
   opacity: 1;
   background: var(
-    --mpx-slot-fg-sidebar-main-label-marker-focus-bg,
-    var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    --mpx-slot-fg-sidebar-main-label-collapsed-marker-focus-bg,
+    var(
+      --mpx-sidebar-main-label-collapsed-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row
+  .sidebar-label.is-collapsible:not(.is-collapsed):focus-visible::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-marker-focus-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row
+  .sidebar-label:not(.is-collapsible):focus-visible::before {
+  opacity: 1;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-marker-focus-bg,
+    var(
+      --mpx-sidebar-main-label-plain-marker-focus-bg,
+      var(--mpx-sidebar-main-label-marker-focus-bg, var(--mpx-state-focus-color))
+    )
   );
 }
 

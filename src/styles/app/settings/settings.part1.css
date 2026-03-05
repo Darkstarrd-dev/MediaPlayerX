@@ -1642,6 +1642,27 @@ button.mpx-overlay-chip-btn:focus-visible {
   gap: 10px;
 }
 
+.theme-parameter-subgroup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.theme-parameter-subgroup-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 999px;
+  background: var(--mpx-bg-muted);
+  color: var(--mpx-text-2);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .theme-parameter-shell {
   min-height: 0;
 }

@@ -108,6 +108,36 @@
   );
   --mpx-header-border: var(--mpx-border-1);
 
+  /* Sidebar Main (2.2.2.1) */
+  /* --mpx-sidebar-main-tree-bg: #e3e7ec; */
+  /* --mpx-sidebar-main-label-border: #bcc1c9; */
+  /* --mpx-sidebar-main-label-bg: linear-gradient(135deg, #e4e6ea, #c8ccd3); */
+  /* --mpx-sidebar-main-label-shadow: 0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff; */
+  /* --mpx-sidebar-main-label-hover-filter: brightness(0.97); */
+  /* --mpx-sidebar-main-label-collapsed-bg: linear-gradient(135deg, #ede6d6, #ddd4bf); */
+  /* --mpx-sidebar-main-label-expanded-bg: linear-gradient(135deg, #f8f4eb, #ede6d6); */
+  /* --mpx-sidebar-main-label-plain-bg: linear-gradient(135deg, #f3f0ea, #e9e5de); */
+  /* --mpx-sidebar-main-label-collapsed-active-bg: #f2d796; */
+  /* --mpx-sidebar-main-label-expanded-active-bg: #f2d796; */
+  /* --mpx-sidebar-main-label-plain-active-bg: transparent; */
+  /* --mpx-sidebar-main-label-collapsed-manage-selected-bg: #8a919a; */
+  /* --mpx-sidebar-main-label-expanded-manage-selected-bg: #8a919a; */
+  /* --mpx-sidebar-main-label-plain-manage-selected-bg: transparent; */
+  /* --mpx-sidebar-main-label-collapsed-marker-focus-bg: #f2d796; */
+  /* --mpx-sidebar-main-label-expanded-marker-focus-bg: #f2d796; */
+  /* --mpx-sidebar-main-label-plain-marker-focus-bg: #f2d796; */
+  /* --mpx-sidebar-main-label-collapsed-marker-selected-bg: #8a919a; */
+  /* --mpx-sidebar-main-label-expanded-marker-selected-bg: #8a919a; */
+  /* --mpx-sidebar-main-label-plain-marker-selected-bg: #8a919a; */
+  /* --mpx-sidebar-main-label-plain-border: #d5d0c8; */
+  /* --mpx-sidebar-main-count-text: #000000; */
+  /* --mpx-sidebar-main-count-border: #bcc4cf; */
+  /* --mpx-sidebar-main-count-packages-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 1); */
+
+  /* Main Image Name-List (2.3.2.2) */
+  /* --mpx-main-image-name-list-border: #c7d0d8; */
+  /* --mpx-main-image-name-list-bg: #ecf0f3; */
+
   --mpx-sidebar-bullet-pending: #94a3ad;
   --mpx-sidebar-bullet-running: #2fb36e;
 
