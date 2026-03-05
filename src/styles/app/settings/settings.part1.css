@@ -1855,6 +1855,11 @@ button.mpx-overlay-chip-btn:focus-visible {
   color: var(--mpx-text-2);
 }
 
+.theme-parameter-var-usage {
+  font-family: var(--mpx-font-ui);
+  color: var(--mpx-text-3);
+}
+
 .theme-parameter-color-control {
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr) 92px auto;

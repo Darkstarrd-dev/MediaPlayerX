@@ -327,6 +327,106 @@
   --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
   --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
 
+  /* Sidebar Main (fg-sidebar-main): semantic -> slot -> selector */
+  --mpx-sidebar-main-bg: transparent;
+  --mpx-sidebar-main-label-text: var(--mpx-text-1);
+  --mpx-sidebar-main-label-border: #bcc1c9;
+  --mpx-sidebar-main-label-plain-border: var(--mpx-sidebar-main-label-border);
+  --mpx-sidebar-main-label-active-bg: var(--mpx-state-focus-color);
+  --mpx-sidebar-main-active-ring: var(--mpx-state-focus-color);
+  --mpx-sidebar-main-active-underlay: var(--mpx-sidebar-bg);
+  --mpx-sidebar-main-label-marker-focus-bg: var(--mpx-state-focus-color);
+  --mpx-sidebar-main-label-marker-selected-bg: var(--mpx-state-selected-color);
+  --mpx-sidebar-main-label-manage-selected-bg: var(--mpx-state-selected-color);
+  --mpx-sidebar-main-label-toggle-text: var(--mpx-text-2);
+  --mpx-sidebar-main-count-text: #000000;
+  --mpx-sidebar-main-count-border: #bcc4cf;
+  --mpx-sidebar-main-count-bg: transparent;
+  --mpx-sidebar-main-count-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-sidebar-main-count-packages-text: var(--mpx-status-info-text);
+  --mpx-sidebar-main-count-packages-border: var(--mpx-status-info-border);
+  --mpx-sidebar-main-count-packages-bg: var(--mpx-sidebar-main-count-bg);
+  --mpx-sidebar-main-count-packages-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 1px 1px rgba(0, 0, 0, 0.15),
+    0 1px 0 rgba(255, 255, 255, 1);
+  --mpx-sidebar-main-count-images-text: var(--mpx-status-success-text);
+  --mpx-sidebar-main-count-images-border: var(--mpx-status-success-border);
+  --mpx-sidebar-main-count-images-bg: var(--mpx-sidebar-main-count-bg);
+  --mpx-sidebar-main-bullet-pending-bg: var(--mpx-sidebar-bullet-pending);
+  --mpx-sidebar-main-bullet-running-bg: var(--mpx-sidebar-bullet-running);
+  --mpx-sidebar-main-bullet-running-ring: var(--mpx-accent-soft);
+  --mpx-sidebar-main-bullet-active-bg: var(--mpx-state-focus-color);
+  --mpx-sidebar-main-label-bg: linear-gradient(135deg, #e4e6ea, #c8ccd3);
+  --mpx-sidebar-main-label-shadow:
+    0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff;
+  --mpx-sidebar-main-label-hover-filter: brightness(0.97);
+  --mpx-sidebar-main-label-collapsed-bg: linear-gradient(
+    135deg,
+    #ede6d6,
+    #ddd4bf
+  );
+  --mpx-sidebar-main-label-expanded-bg: linear-gradient(
+    135deg,
+    #f8f4eb,
+    #ede6d6
+  );
+  --mpx-sidebar-main-label-plain-bg: linear-gradient(135deg, #f3f0ea, #e9e5de);
+  --mpx-sidebar-main-label-active-shadow: var(
+    --mpx-sidebar-control-active-shadow,
+    var(--mpx-control-active-shadow)
+  );
+  --mpx-sidebar-main-label-active-hover-shadow: var(
+    --mpx-sidebar-control-active-shadow,
+    var(--mpx-control-active-shadow)
+  );
+  --mpx-sidebar-main-label-manage-selected-shadow: var(
+    --mpx-sidebar-control-active-shadow,
+    var(--mpx-control-active-shadow)
+  );
+
+  /* Main image name-list (fg-main-content-image-name-list): semantic -> slot -> selector */
+  --mpx-main-image-name-list-border: #c7d0d8;
+  --mpx-main-image-name-list-bg: #ecf0f3;
+  --mpx-main-image-name-list-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-head-border: var(--mpx-overlay-soft-head-divider);
+  --mpx-main-image-name-list-head-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-main-image-name-list-head-text: var(--mpx-text-2);
+  --mpx-main-image-name-list-body-bg: var(--mpx-overlay-soft-bg);
+  --mpx-main-image-name-list-row-border: var(--mpx-overlay-soft-row-divider);
+  --mpx-main-image-name-list-row-bg: var(--mpx-overlay-soft-bg);
+  --mpx-main-image-name-list-row-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-hover-bg: var(--mpx-overlay-soft-bg);
+  --mpx-main-image-name-list-row-focused-border-left: var(--mpx-state-focus-color);
+  --mpx-main-image-name-list-row-selected-border-left: var(
+    --mpx-state-selected-color
+  );
+  --mpx-main-image-name-list-row-selected-focused-border-left: var(
+    --mpx-state-focus-color
+  );
+  --mpx-main-image-name-list-row-manage-selected-bg: var(
+    --mpx-state-selected-color
+  );
+  --mpx-main-image-name-list-row-main-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-main-image-name-list-row-main-active-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-main-image-name-list-row-main-pressed-bg: var(
+    --mpx-overlay-soft-focus-bg
+  );
+  --mpx-main-image-name-list-row-main-hover-text: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-main-image-name-list-row-main-active-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-main-pressed-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-main-focus-outline-width: 1px;
+  --mpx-main-image-name-list-row-main-focus-outline-color: var(
+    --mpx-state-focus-color
+  );
+  --mpx-main-image-name-list-row-main-pressed-font-weight: 600;
+  --mpx-main-image-name-list-label-text: inherit;
+
   /* Focus ring (pane-level): shared by sidebar + main.
    * If a palette wants to change it, override --mpx-pane-focus-* directly.
    */

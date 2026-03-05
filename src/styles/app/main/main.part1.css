@@ -514,10 +514,16 @@
 }
 
 [data-slot="fg-main-content-image-name-list"] {
-  border-color: var(--mpx-slot-fg-main-content-image-name-list-border, #c7d0d8);
-  background: var(--mpx-slot-fg-main-content-image-name-list-bg, #ecf0f3);
+  border-color: var(
+    --mpx-slot-fg-main-content-image-name-list-border,
+    var(--mpx-main-image-name-list-border, #c7d0d8)
+  );
+  background: var(
+    --mpx-slot-fg-main-content-image-name-list-bg,
+    var(--mpx-main-image-name-list-bg, #ecf0f3)
+  );
   color: var(
     --mpx-slot-fg-main-content-image-name-list-text,
-    var(--mpx-text-1)
+    var(--mpx-main-image-name-list-text, var(--mpx-text-1))
   );
 }

@@ -326,7 +326,10 @@
   position: relative;
   direction: ltr;
   overflow-anchor: none;
-  background: var(--mpx-slot-fg-sidebar-main-bg, transparent);
+  background: var(
+    --mpx-slot-fg-sidebar-main-bg,
+    var(--mpx-sidebar-main-bg, transparent)
+  );
 }
 
 .sidebar-tree.mpx-scroll-area {
@@ -351,13 +354,23 @@
 
 .sidebar-bullet.is-pending {
   opacity: 1;
-  background: var(--mpx-sidebar-bullet-pending);
+  background: var(
+    --mpx-slot-fg-sidebar-main-bullet-pending-bg,
+    var(--mpx-sidebar-main-bullet-pending-bg, var(--mpx-sidebar-bullet-pending))
+  );
 }
 
 .sidebar-bullet.is-running {
   opacity: 1;
-  background: var(--mpx-sidebar-bullet-running);
-  box-shadow: 0 0 0 2px var(--mpx-accent-soft);
+  background: var(
+    --mpx-slot-fg-sidebar-main-bullet-running-bg,
+    var(--mpx-sidebar-main-bullet-running-bg, var(--mpx-sidebar-bullet-running))
+  );
+  box-shadow: 0 0 0 2px
+    var(
+      --mpx-slot-fg-sidebar-main-bullet-running-ring,
+      var(--mpx-sidebar-main-bullet-running-ring, var(--mpx-accent-soft))
+    );
 }
 
 .sidebar-row.is-active {
@@ -365,16 +378,43 @@
 }
 
 .sidebar-row.is-active .sidebar-label {
-  background: var(--mpx-state-focus-color);
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-active-bg,
+    var(--mpx-sidebar-main-label-active-bg, var(--mpx-state-focus-color))
+  );
   border-radius: var(
     --mpx-sidebar-node-label-radius,
     var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px))
   );
   transform: var(--mpx-control-active-transform);
   box-shadow:
-    var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow)),
-    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
-    0 0 0 4px color-mix(in srgb, var(--mpx-state-focus-color) 82%, transparent);
+    var(
+      --mpx-slot-fg-sidebar-main-label-active-shadow,
+      var(
+        --mpx-sidebar-main-label-active-shadow,
+        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+      )
+    ),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-underlay,
+            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+          )
+          90%,
+        transparent
+      ),
+    0 0 0 4px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-ring,
+            var(--mpx-sidebar-main-active-ring, var(--mpx-state-focus-color))
+          )
+          82%,
+        transparent
+      );
 }
 
 .sidebar-row.is-processing {
@@ -414,17 +454,44 @@
 }
 
 .sidebar-row.is-active.is-hover-active .sidebar-label {
-  box-shadow: var(
-    --mpx-sidebar-control-active-shadow,
-    var(--mpx-control-active-shadow)
-  );
+  box-shadow:
+    var(
+      --mpx-slot-fg-sidebar-main-label-active-hover-shadow,
+      var(
+        --mpx-sidebar-main-label-active-hover-shadow,
+        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+      )
+    ),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-underlay,
+            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+          )
+          90%,
+        transparent
+      ),
+    0 0 0 4px
+      color-mix(
+        in srgb,
+        var(
+            --mpx-slot-fg-sidebar-main-active-ring,
+            var(--mpx-sidebar-main-active-ring, var(--mpx-state-focus-color))
+          )
+          82%,
+        transparent
+      );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-row.is-active
   .sidebar-bullet {
   opacity: 1;
-  background: var(--mpx-state-focus-color);
+  background: var(
+    --mpx-slot-fg-sidebar-main-bullet-active-bg,
+    var(--mpx-sidebar-main-bullet-active-bg, var(--mpx-state-focus-color))
+  );
   box-shadow: none;
 }
 
@@ -437,7 +504,10 @@
   text-align: left;
   padding: 4px 2px;
   padding-inline-start: calc(2px + var(--mpx-sidebar-node-indent, 0px));
-  color: var(--mpx-slot-fg-sidebar-main-label-text, var(--mpx-text-1));
+  color: var(
+    --mpx-slot-fg-sidebar-main-label-text,
+    var(--mpx-sidebar-main-label-text, var(--mpx-text-1))
+  );
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -461,29 +531,47 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-row
   .sidebar-label.is-collapsible.is-collapsed {
-  background: linear-gradient(135deg, #f3ead1, #e6d6b3);
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-collapsed-bg,
+    var(
+      --mpx-sidebar-main-label-collapsed-bg,
+      linear-gradient(135deg, #f3ead1, #e6d6b3)
+    )
+  );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-row
   .sidebar-label.is-collapsible:not(.is-collapsed) {
-  background: linear-gradient(135deg, #fffbf2, #f3ead1);
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-expanded-bg,
+    var(
+      --mpx-sidebar-main-label-expanded-bg,
+      linear-gradient(135deg, #fffbf2, #f3ead1)
+    )
+  );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row
-  .sidebar-label:not(.is-collapsible),
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row.is-active
-  .sidebar-label:not(.is-collapsible),
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row.is-hover-active
-  .sidebar-label:not(.is-collapsible),
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row.is-active.is-hover-active
+  .sidebar-row:not(.is-active)
   .sidebar-label:not(.is-collapsible) {
-  background: linear-gradient(135deg, #f3f0ea, #e9e5de);
-  border-color: #d5d0c8;
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-plain-bg,
+    var(
+      --mpx-sidebar-main-label-plain-bg,
+      linear-gradient(135deg, #f3f0ea, #e9e5de)
+    )
+  );
+  border-color: var(
+    --mpx-slot-fg-sidebar-main-label-plain-border,
+    var(
+      --mpx-sidebar-main-label-plain-border,
+      var(
+        --mpx-slot-fg-sidebar-main-label-border,
+        var(--mpx-sidebar-main-label-border, #d5d0c8)
+      )
+    )
+  );
 }
 
 .sidebar-label-marquee {
@@ -531,7 +619,10 @@
   display: inline-block;
   width: 1em;
   margin-right: 0.15em;
-  color: var(--mpx-text-2);
+  color: var(
+    --mpx-slot-fg-sidebar-main-label-toggle-text,
+    var(--mpx-sidebar-main-label-toggle-text, var(--mpx-text-2))
+  );
 }
 
 .sidebar-label.is-collapsible.is-collapsed::before {
@@ -565,15 +656,48 @@
 }
 
 .sidebar-count-packages {
-  color: var(--mpx-status-info-text);
-  background: transparent;
-  border-color: var(--mpx-status-info-border);
+  color: var(
+    --mpx-slot-fg-sidebar-main-count-packages-text,
+    var(--mpx-sidebar-main-count-packages-text, var(--mpx-status-info-text))
+  );
+  background: var(
+    --mpx-slot-fg-sidebar-main-count-packages-bg,
+    var(
+      --mpx-sidebar-main-count-packages-bg,
+      var(
+        --mpx-slot-fg-sidebar-main-count-bg,
+        var(--mpx-sidebar-main-count-bg, transparent)
+      )
+    )
+  );
+  border-color: var(
+    --mpx-slot-fg-sidebar-main-count-packages-border,
+    var(--mpx-sidebar-main-count-packages-border, var(--mpx-status-info-border))
+  );
 }
 
 .sidebar-count-images {
-  color: var(--mpx-status-success-text);
-  background: transparent;
-  border-color: var(--mpx-status-success-border);
+  color: var(
+    --mpx-slot-fg-sidebar-main-count-images-text,
+    var(--mpx-sidebar-main-count-images-text, var(--mpx-status-success-text))
+  );
+  background: var(
+    --mpx-slot-fg-sidebar-main-count-images-bg,
+    var(
+      --mpx-sidebar-main-count-images-bg,
+      var(
+        --mpx-slot-fg-sidebar-main-count-bg,
+        var(--mpx-sidebar-main-count-bg, transparent)
+      )
+    )
+  );
+  border-color: var(
+    --mpx-slot-fg-sidebar-main-count-images-border,
+    var(
+      --mpx-sidebar-main-count-images-border,
+      var(--mpx-status-success-border)
+    )
+  );
 }
 
 .sidebar-splitter {

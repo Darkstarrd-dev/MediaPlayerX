@@ -374,6 +374,12 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Preview background + large panel layer",
   "ui.themeParameter.preview.bgPlusSmallPanel":
     "Preview background + small panel layer",
+  "ui.themeParameter.resetContainerDebugAll": "Full reset (container debug)",
+  "ui.themeParameter.containerLayer.sectionLegacy": "2.0 shared (existing)",
+  "ui.themeParameter.containerLayer.sectionSidebarMain":
+    "2.2.2.1 fg-sidebar-main",
+  "ui.themeParameter.containerLayer.sectionMainImageNameList":
+    "2.3.2.2 fg-main-content-image-name-list",
   "ui.themeParameter.sectionCommon": "Common parameters",
   "ui.themeParameter.sectionStyle": "Style parameters ({{styleId}})",
   "ui.themeParameter.sectionMetric": "{{scope}} {{target}} {{metric}}",

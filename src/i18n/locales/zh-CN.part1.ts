@@ -349,6 +349,12 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.preview.bgPlusContainer": "背景层 + 大容器层预览",
   "ui.themeParameter.preview.bgPlusLargePanel": "背景层 + 大面板层预览",
   "ui.themeParameter.preview.bgPlusSmallPanel": "背景层 + 小面板层预览",
+  "ui.themeParameter.resetContainerDebugAll": "完全复位（大容器调试）",
+  "ui.themeParameter.containerLayer.sectionLegacy": "2.0 通用（已有项）",
+  "ui.themeParameter.containerLayer.sectionSidebarMain":
+    "2.2.2.1 fg-sidebar-main",
+  "ui.themeParameter.containerLayer.sectionMainImageNameList":
+    "2.3.2.2 fg-main-content-image-name-list",
   "ui.themeParameter.sectionCommon": "通用参数",
   "ui.themeParameter.sectionStyle": "风格参数（{{styleId}}）",
   "ui.themeParameter.sectionMetric": "{{scope}}{{target}}{{metric}}",

@@ -121,6 +121,246 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#b7ab95",
   },
   {
+    id: "container-sidebar-main-bg",
+    cssVar: "--mpx-sidebar-main-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-main-label-text",
+    cssVar: "--mpx-sidebar-main-label-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-sidebar-main-label-border",
+    cssVar: "--mpx-sidebar-main-label-border",
+    fallback: "#bcc1c9",
+  },
+  {
+    id: "container-sidebar-main-label-plain-border",
+    cssVar: "--mpx-sidebar-main-label-plain-border",
+    fallback: "#d5d0c8",
+  },
+  {
+    id: "container-sidebar-main-label-active-bg",
+    cssVar: "--mpx-sidebar-main-label-active-bg",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-sidebar-main-label-active-ring",
+    cssVar: "--mpx-sidebar-main-active-ring",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-sidebar-main-label-active-underlay",
+    cssVar: "--mpx-sidebar-main-active-underlay",
+    fallback: "#e6e2da",
+  },
+  {
+    id: "container-sidebar-main-label-marker-focus-bg",
+    cssVar: "--mpx-sidebar-main-label-marker-focus-bg",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-sidebar-main-label-marker-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-marker-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-sidebar-main-label-manage-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-manage-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-sidebar-main-label-toggle-text",
+    cssVar: "--mpx-sidebar-main-label-toggle-text",
+    fallback: "#5b4f3f",
+  },
+  {
+    id: "container-sidebar-main-count-text",
+    cssVar: "--mpx-sidebar-main-count-text",
+    fallback: "#000000",
+  },
+  {
+    id: "container-sidebar-main-count-border",
+    cssVar: "--mpx-sidebar-main-count-border",
+    fallback: "#bcc4cf",
+  },
+  {
+    id: "container-sidebar-main-count-bg",
+    cssVar: "--mpx-sidebar-main-count-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-main-count-packages-text",
+    cssVar: "--mpx-sidebar-main-count-packages-text",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-sidebar-main-count-packages-border",
+    cssVar: "--mpx-sidebar-main-count-packages-border",
+    fallback: "#d8cba8",
+  },
+  {
+    id: "container-sidebar-main-count-packages-bg",
+    cssVar: "--mpx-sidebar-main-count-packages-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-main-count-images-text",
+    cssVar: "--mpx-sidebar-main-count-images-text",
+    fallback: "#4ea87c",
+  },
+  {
+    id: "container-sidebar-main-count-images-border",
+    cssVar: "--mpx-sidebar-main-count-images-border",
+    fallback: "#4ea87c",
+  },
+  {
+    id: "container-sidebar-main-count-images-bg",
+    cssVar: "--mpx-sidebar-main-count-images-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-main-bullet-pending-bg",
+    cssVar: "--mpx-sidebar-main-bullet-pending-bg",
+    fallback: "#98836a",
+  },
+  {
+    id: "container-sidebar-main-bullet-running-bg",
+    cssVar: "--mpx-sidebar-main-bullet-running-bg",
+    fallback: "#4ea87c",
+  },
+  {
+    id: "container-sidebar-main-bullet-running-ring",
+    cssVar: "--mpx-sidebar-main-bullet-running-ring",
+    fallback: "#93b4bc",
+  },
+  {
+    id: "container-sidebar-main-bullet-active-bg",
+    cssVar: "--mpx-sidebar-main-bullet-active-bg",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-main-image-name-list-border",
+    cssVar: "--mpx-main-image-name-list-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "container-main-image-name-list-bg",
+    cssVar: "--mpx-main-image-name-list-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "container-main-image-name-list-text",
+    cssVar: "--mpx-main-image-name-list-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-row-border",
+    cssVar: "--mpx-main-image-name-list-row-border",
+    fallback: "#dce1e7",
+  },
+  {
+    id: "container-main-image-name-list-row-bg",
+    cssVar: "--mpx-main-image-name-list-row-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "container-main-image-name-list-row-text",
+    cssVar: "--mpx-main-image-name-list-row-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-label-text",
+    cssVar: "--mpx-main-image-name-list-label-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-head-border",
+    cssVar: "--mpx-main-image-name-list-head-border",
+    fallback: "#b5bdc8",
+  },
+  {
+    id: "container-main-image-name-list-head-bg",
+    cssVar: "--mpx-main-image-name-list-head-bg",
+    fallback: "#d6dbe1",
+  },
+  {
+    id: "container-main-image-name-list-head-text",
+    cssVar: "--mpx-main-image-name-list-head-text",
+    fallback: "#544634",
+  },
+  {
+    id: "container-main-image-name-list-body-bg",
+    cssVar: "--mpx-main-image-name-list-body-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "container-main-image-name-list-row-hover-bg",
+    cssVar: "--mpx-main-image-name-list-row-hover-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "container-main-image-name-list-row-focused-border-left",
+    cssVar: "--mpx-main-image-name-list-row-focused-border-left",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-main-image-name-list-row-selected-border-left",
+    cssVar: "--mpx-main-image-name-list-row-selected-border-left",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-main-image-name-list-row-selected-focused-border-left",
+    cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-main-image-name-list-row-manage-selected-bg",
+    cssVar: "--mpx-main-image-name-list-row-manage-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-main-image-name-list-row-main-text",
+    cssVar: "--mpx-main-image-name-list-row-main-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-row-main-hover-bg",
+    cssVar: "--mpx-main-image-name-list-row-main-hover-bg",
+    fallback: "#f3f6f8",
+  },
+  {
+    id: "container-main-image-name-list-row-main-active-bg",
+    cssVar: "--mpx-main-image-name-list-row-main-active-bg",
+    fallback: "#d7dde4",
+  },
+  {
+    id: "container-main-image-name-list-row-main-pressed-bg",
+    cssVar: "--mpx-main-image-name-list-row-main-pressed-bg",
+    fallback: "#d7dde4",
+  },
+  {
+    id: "container-main-image-name-list-row-main-hover-text",
+    cssVar: "--mpx-main-image-name-list-row-main-hover-text",
+    fallback: "#2f5f6d",
+  },
+  {
+    id: "container-main-image-name-list-row-main-active-text",
+    cssVar: "--mpx-main-image-name-list-row-main-active-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-row-main-pressed-text",
+    cssVar: "--mpx-main-image-name-list-row-main-pressed-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-main-image-name-list-row-main-focus-outline-color",
+    cssVar: "--mpx-main-image-name-list-row-main-focus-outline-color",
+    fallback: "#2d6e7d",
+  },
+  {
     id: "large-panel-border-color",
     cssVar: "--mpx-large-panel-border-color",
     fallback: "#d6cfc1",
@@ -392,6 +632,58 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-surface-chrome-shell-shadow",
   },
   {
+    id: "container-sidebar-main-label-bg",
+    cssVar: "--mpx-sidebar-main-label-bg",
+  },
+  {
+    id: "container-sidebar-main-label-shadow",
+    cssVar: "--mpx-sidebar-main-label-shadow",
+  },
+  {
+    id: "container-sidebar-main-label-hover-filter",
+    cssVar: "--mpx-sidebar-main-label-hover-filter",
+  },
+  {
+    id: "container-sidebar-main-label-collapsed-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-bg",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-bg",
+  },
+  {
+    id: "container-sidebar-main-label-plain-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-bg",
+  },
+  {
+    id: "container-sidebar-main-label-active-shadow",
+    cssVar: "--mpx-sidebar-main-label-active-shadow",
+  },
+  {
+    id: "container-sidebar-main-label-active-hover-shadow",
+    cssVar: "--mpx-sidebar-main-label-active-hover-shadow",
+  },
+  {
+    id: "container-sidebar-main-label-manage-selected-shadow",
+    cssVar: "--mpx-sidebar-main-label-manage-selected-shadow",
+  },
+  {
+    id: "container-sidebar-main-count-shadow",
+    cssVar: "--mpx-sidebar-main-count-shadow",
+  },
+  {
+    id: "container-sidebar-main-count-packages-shadow",
+    cssVar: "--mpx-sidebar-main-count-packages-shadow",
+  },
+  {
+    id: "container-main-image-name-list-row-main-focus-outline-width",
+    cssVar: "--mpx-main-image-name-list-row-main-focus-outline-width",
+  },
+  {
+    id: "container-main-image-name-list-row-main-pressed-font-weight",
+    cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
+  },
+  {
     id: "small-panel-shadow",
     cssVar: "--mpx-dialog-panel-shadow",
   },
@@ -489,6 +781,105 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
 ];
 
+const CONTAINER_DEBUG_COLOR_FIELDS = SNAPSHOT_COLOR_FIELDS.filter((field) =>
+  field.id.startsWith("container-"),
+);
+
+const CONTAINER_DEBUG_TEXT_FIELDS = SNAPSHOT_TEXT_FIELDS.filter((field) =>
+  field.id.startsWith("container-"),
+);
+
+const LEGACY_SIDEBAR_MAIN_SLOT_TO_SEMANTIC: ReadonlyArray<{
+  legacy: string;
+  semantic: string;
+}> = [
+  { legacy: "--mpx-slot-fg-sidebar-main-bg", semantic: "--mpx-sidebar-main-bg" },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-label-border",
+    semantic: "--mpx-sidebar-main-label-border",
+  },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-label-active-bg",
+    semantic: "--mpx-sidebar-main-label-active-bg",
+  },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-active-ring",
+    semantic: "--mpx-sidebar-main-active-ring",
+  },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-active-underlay",
+    semantic: "--mpx-sidebar-main-active-underlay",
+  },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-label-toggle-text",
+    semantic: "--mpx-sidebar-main-label-toggle-text",
+  },
+  {
+    legacy: "--mpx-slot-fg-sidebar-main-count-bg",
+    semantic: "--mpx-sidebar-main-count-bg",
+  },
+];
+
+interface ContainerDebugSessionState {
+  colors: Record<string, string>;
+  texts: Record<string, string>;
+}
+
+let containerDebugSessionState: ContainerDebugSessionState = {
+  colors: {},
+  texts: {},
+};
+
+function migrateLegacySidebarMainSlots(root: HTMLElement): void {
+  for (const mapping of LEGACY_SIDEBAR_MAIN_SLOT_TO_SEMANTIC) {
+    const semanticValue = root.style.getPropertyValue(mapping.semantic).trim();
+    const legacyValue = root.style.getPropertyValue(mapping.legacy).trim();
+    if (!semanticValue && legacyValue) {
+      root.style.setProperty(mapping.semantic, legacyValue);
+    }
+    if (legacyValue) {
+      root.style.removeProperty(mapping.legacy);
+    }
+  }
+}
+
+function captureContainerDebugSessionState(root: HTMLElement): void {
+  const nextColors: Record<string, string> = {};
+  for (const field of CONTAINER_DEBUG_COLOR_FIELDS) {
+    const raw = root.style.getPropertyValue(field.cssVar).trim();
+    if (raw) {
+      nextColors[field.cssVar] = raw;
+    }
+  }
+  const nextTexts: Record<string, string> = {};
+  for (const field of CONTAINER_DEBUG_TEXT_FIELDS) {
+    const raw = root.style.getPropertyValue(field.cssVar).trim();
+    if (raw) {
+      nextTexts[field.cssVar] = raw;
+    }
+  }
+  containerDebugSessionState = {
+    colors: nextColors,
+    texts: nextTexts,
+  };
+}
+
+function applyContainerDebugSessionState(root: HTMLElement): void {
+  for (const [cssVar, value] of Object.entries(containerDebugSessionState.colors)) {
+    root.style.setProperty(cssVar, value);
+  }
+  for (const [cssVar, value] of Object.entries(containerDebugSessionState.texts)) {
+    root.style.setProperty(cssVar, value);
+  }
+}
+
+function clearContainerDebugSessionState(): void {
+  containerDebugSessionState = {
+    colors: {},
+    texts: {},
+  };
+}
+
 function ThemeParameterPanel({
   open,
   hidden = false,
@@ -533,6 +924,7 @@ function ThemeParameterPanel({
     useState<Set<string>>(new Set());
   const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
   const snapshotBaselineRef = useRef<ThemeParameterSnapshot | null>(null);
+  const wasOpenRef = useRef(false);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
 
   const containerLayerParameters = useMemo(
@@ -608,8 +1000,12 @@ function ThemeParameterPanel({
     if (!open) {
       return;
     }
+    wasOpenRef.current = true;
+    const root = document.documentElement;
+    migrateLegacySidebarMainSlots(root);
+    applyContainerDebugSessionState(root);
     const initialValues = readParameterValues(parameters);
-    const computed = getComputedStyle(document.documentElement);
+    const computed = getComputedStyle(root);
     setActivePage("parameters");
     setActivePreviewMode("none");
     setValues(initialValues);
@@ -638,6 +1034,17 @@ function ThemeParameterPanel({
       ),
     };
   }, [open, parameters, styleId]);
+
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+    if (!wasOpenRef.current) {
+      return;
+    }
+    captureContainerDebugSessionState(document.documentElement);
+    wasOpenRef.current = false;
+  }, [open]);
 
   useEffect(() => {
     if (!open || activePreviewMode === "none") {
@@ -989,6 +1396,14 @@ function ThemeParameterPanel({
     setActivePreviewMode((previous) => (previous === mode ? "none" : mode));
   };
 
+  const handleContainerDebugChanged = () => {
+    captureContainerDebugSessionState(document.documentElement);
+  };
+
+  const handleContainerDebugResetAll = () => {
+    clearContainerDebugSessionState();
+  };
+
   return (
     <div
       {...panelA11y}
@@ -1099,6 +1514,8 @@ function ThemeParameterPanel({
           isParameterChanged={isParameterChanged}
           resetSingleParameter={resetSingleParameter}
           resolveLabel={resolveLabel}
+          onContainerDebugChanged={handleContainerDebugChanged}
+          onContainerDebugResetAll={handleContainerDebugResetAll}
         />
       </section>
     </div>

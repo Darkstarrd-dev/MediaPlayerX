@@ -43,6 +43,8 @@ interface ThemeParameterPanelMainProps {
   copySnapshotJson: () => Promise<void>;
   importSnapshotJson: () => void;
   resetSnapshotToBaseline: () => void;
+  onContainerDebugChanged: () => void;
+  onContainerDebugResetAll: () => void;
   commonExpanded: boolean;
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
@@ -198,6 +200,508 @@ const CONTAINER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     groupId: "shadow",
   },
 ];
+
+const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-sidebar-main-bg",
+    cssVar: "--mpx-sidebar-main-bg",
+    fallback: "#000000",
+    fallbackAlpha: 1,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-text",
+    cssVar: "--mpx-sidebar-main-label-text",
+    fallback: "#30271d",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-border",
+    cssVar: "--mpx-sidebar-main-label-border",
+    fallback: "#bcc1c9",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-border",
+    cssVar: "--mpx-sidebar-main-label-plain-border",
+    fallback: "#d5d0c8",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-active-bg",
+    cssVar: "--mpx-sidebar-main-label-active-bg",
+    fallback: "#2d6e7d",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-active-ring",
+    cssVar: "--mpx-sidebar-main-active-ring",
+    fallback: "#2d6e7d",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-active-underlay",
+    cssVar: "--mpx-sidebar-main-active-underlay",
+    fallback: "#e6e2da",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-marker-focus-bg",
+    cssVar: "--mpx-sidebar-main-label-marker-focus-bg",
+    fallback: "#2d6e7d",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-marker-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-marker-selected-bg",
+    fallback: "#9a885f",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-manage-selected-bg",
+    cssVar: "--mpx-sidebar-main-label-manage-selected-bg",
+    fallback: "#9a885f",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-toggle-text",
+    cssVar: "--mpx-sidebar-main-label-toggle-text",
+    fallback: "#5b4f3f",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-text",
+    cssVar: "--mpx-sidebar-main-count-text",
+    fallback: "#000000",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-border",
+    cssVar: "--mpx-sidebar-main-count-border",
+    fallback: "#bcc4cf",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-bg",
+    cssVar: "--mpx-sidebar-main-count-bg",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-packages-text",
+    cssVar: "--mpx-sidebar-main-count-packages-text",
+    fallback: "#2d6e7d",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-packages-border",
+    cssVar: "--mpx-sidebar-main-count-packages-border",
+    fallback: "#d8cba8",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-packages-bg",
+    cssVar: "--mpx-sidebar-main-count-packages-bg",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-images-text",
+    cssVar: "--mpx-sidebar-main-count-images-text",
+    fallback: "#4ea87c",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-images-border",
+    cssVar: "--mpx-sidebar-main-count-images-border",
+    fallback: "#4ea87c",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-images-bg",
+    cssVar: "--mpx-sidebar-main-count-images-bg",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-bullet-pending-bg",
+    cssVar: "--mpx-sidebar-main-bullet-pending-bg",
+    fallback: "#98836a",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-bullet-running-bg",
+    cssVar: "--mpx-sidebar-main-bullet-running-bg",
+    fallback: "#4ea87c",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-bullet-running-ring",
+    cssVar: "--mpx-sidebar-main-bullet-running-ring",
+    fallback: "#93b4bc",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-bullet-active-bg",
+    cssVar: "--mpx-sidebar-main-bullet-active-bg",
+    fallback: "#2d6e7d",
+    groupId: "side",
+  },
+];
+
+const CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-sidebar-main-label-bg",
+    cssVar: "--mpx-sidebar-main-label-bg",
+    fallback: "linear-gradient(135deg, #e4e6ea, #c8ccd3)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-shadow",
+    cssVar: "--mpx-sidebar-main-label-shadow",
+    fallback: "0 2px 4px rgba(150, 140, 130, 0.2), inset 0 1px 0 #ffffff",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-hover-filter",
+    cssVar: "--mpx-sidebar-main-label-hover-filter",
+    fallback: "brightness(0.97)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-collapsed-bg",
+    cssVar: "--mpx-sidebar-main-label-collapsed-bg",
+    fallback: "linear-gradient(135deg, #ede6d6, #ddd4bf)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-expanded-bg",
+    cssVar: "--mpx-sidebar-main-label-expanded-bg",
+    fallback: "linear-gradient(135deg, #f8f4eb, #ede6d6)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-plain-bg",
+    cssVar: "--mpx-sidebar-main-label-plain-bg",
+    fallback: "linear-gradient(135deg, #f3f0ea, #e9e5de)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-active-shadow",
+    cssVar: "--mpx-sidebar-main-label-active-shadow",
+    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-active-hover-shadow",
+    cssVar: "--mpx-sidebar-main-label-active-hover-shadow",
+    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-label-manage-selected-shadow",
+    cssVar: "--mpx-sidebar-main-label-manage-selected-shadow",
+    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-shadow",
+    cssVar: "--mpx-sidebar-main-count-shadow",
+    fallback: "var(--mpx-runway-groove-shadow)",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-main-count-packages-shadow",
+    cssVar: "--mpx-sidebar-main-count-packages-shadow",
+    fallback:
+      "inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 1)",
+    groupId: "side",
+  },
+];
+
+const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-main-image-name-list-border",
+      cssVar: "--mpx-main-image-name-list-border",
+      fallback: "#c7d0d8",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-bg",
+      cssVar: "--mpx-main-image-name-list-bg",
+      fallback: "#ecf0f3",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-text",
+      cssVar: "--mpx-main-image-name-list-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-border",
+      cssVar: "--mpx-main-image-name-list-row-border",
+      fallback: "#dce1e7",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-bg",
+      cssVar: "--mpx-main-image-name-list-row-bg",
+      fallback: "#e9ecf0",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-text",
+      cssVar: "--mpx-main-image-name-list-row-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-label-text",
+      cssVar: "--mpx-main-image-name-list-label-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-head-border",
+      cssVar: "--mpx-main-image-name-list-head-border",
+      fallback: "#b5bdc8",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-head-bg",
+      cssVar: "--mpx-main-image-name-list-head-bg",
+      fallback: "#d6dbe1",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-head-text",
+      cssVar: "--mpx-main-image-name-list-head-text",
+      fallback: "#544634",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-body-bg",
+      cssVar: "--mpx-main-image-name-list-body-bg",
+      fallback: "#e9ecf0",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-hover-bg",
+      cssVar: "--mpx-main-image-name-list-row-hover-bg",
+      fallback: "#e9ecf0",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-focused-border-left",
+      cssVar: "--mpx-main-image-name-list-row-focused-border-left",
+      fallback: "#2d6e7d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-selected-border-left",
+      cssVar: "--mpx-main-image-name-list-row-selected-border-left",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-selected-focused-border-left",
+      cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
+      fallback: "#2d6e7d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-manage-selected-bg",
+      cssVar: "--mpx-main-image-name-list-row-manage-selected-bg",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-text",
+      cssVar: "--mpx-main-image-name-list-row-main-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-hover-bg",
+      cssVar: "--mpx-main-image-name-list-row-main-hover-bg",
+      fallback: "#f3f6f8",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-active-bg",
+      cssVar: "--mpx-main-image-name-list-row-main-active-bg",
+      fallback: "#d7dde4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-pressed-bg",
+      cssVar: "--mpx-main-image-name-list-row-main-pressed-bg",
+      fallback: "#d7dde4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-hover-text",
+      cssVar: "--mpx-main-image-name-list-row-main-hover-text",
+      fallback: "#2f5f6d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-active-text",
+      cssVar: "--mpx-main-image-name-list-row-main-active-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-pressed-text",
+      cssVar: "--mpx-main-image-name-list-row-main-pressed-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-focus-outline-color",
+      cssVar: "--mpx-main-image-name-list-row-main-focus-outline-color",
+      fallback: "#2d6e7d",
+      groupId: "main",
+    },
+  ];
+
+const CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  [
+    {
+      id: "container-main-image-name-list-row-main-focus-outline-width",
+      cssVar: "--mpx-main-image-name-list-row-main-focus-outline-width",
+      fallback: "1px",
+      groupId: "main",
+    },
+    {
+      id: "container-main-image-name-list-row-main-pressed-font-weight",
+      cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
+      fallback: "600",
+      groupId: "main",
+    },
+  ];
+
+const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  ...CONTAINER_COLOR_FIELDS,
+  ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
+  ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
+];
+
+const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  ...CONTAINER_TEXT_FIELDS,
+  ...CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS,
+  ...CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
+];
+
+const CONTAINER_LEGACY_SLOT_VARS: readonly string[] = [
+  "--mpx-slot-fg-sidebar-main-bg",
+  "--mpx-slot-fg-sidebar-main-label-text",
+  "--mpx-slot-fg-sidebar-main-label-border",
+  "--mpx-slot-fg-sidebar-main-label-plain-border",
+  "--mpx-slot-fg-sidebar-main-label-active-bg",
+  "--mpx-slot-fg-sidebar-main-active-ring",
+  "--mpx-slot-fg-sidebar-main-active-underlay",
+  "--mpx-slot-fg-sidebar-main-label-marker-focus-bg",
+  "--mpx-slot-fg-sidebar-main-label-marker-selected-bg",
+  "--mpx-slot-fg-sidebar-main-label-manage-selected-bg",
+  "--mpx-slot-fg-sidebar-main-label-toggle-text",
+  "--mpx-slot-fg-sidebar-main-count-text",
+  "--mpx-slot-fg-sidebar-main-count-border",
+  "--mpx-slot-fg-sidebar-main-count-bg",
+  "--mpx-slot-fg-sidebar-main-count-packages-text",
+  "--mpx-slot-fg-sidebar-main-count-packages-border",
+  "--mpx-slot-fg-sidebar-main-count-packages-bg",
+  "--mpx-slot-fg-sidebar-main-count-images-text",
+  "--mpx-slot-fg-sidebar-main-count-images-border",
+  "--mpx-slot-fg-sidebar-main-count-images-bg",
+  "--mpx-slot-fg-sidebar-main-bullet-pending-bg",
+  "--mpx-slot-fg-sidebar-main-bullet-running-bg",
+  "--mpx-slot-fg-sidebar-main-bullet-running-ring",
+  "--mpx-slot-fg-sidebar-main-bullet-active-bg",
+  "--mpx-slot-fg-main-content-image-name-list-border",
+  "--mpx-slot-fg-main-content-image-name-list-bg",
+  "--mpx-slot-fg-main-content-image-name-list-text",
+  "--mpx-slot-fg-main-content-image-name-list-head-border",
+  "--mpx-slot-fg-main-content-image-name-list-head-bg",
+  "--mpx-slot-fg-main-content-image-name-list-head-text",
+  "--mpx-slot-fg-main-content-image-name-list-body-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-border",
+  "--mpx-slot-fg-main-content-image-name-list-row-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-text",
+  "--mpx-slot-fg-main-content-image-name-list-row-hover-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-focused-border-left",
+  "--mpx-slot-fg-main-content-image-name-list-row-selected-border-left",
+  "--mpx-slot-fg-main-content-image-name-list-row-selected-focused-border-left",
+  "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-text",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-hover-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-active-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-bg",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-hover-text",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-active-text",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-width",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-color",
+  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-font-weight",
+  "--mpx-slot-fg-main-content-image-name-list-label-text",
+];
+
+function resolveDebugVarUsage(cssVar: string): string {
+  if (cssVar === "--mpx-sidebar-main-bg") {
+    return "用于侧栏主列表壳层背景（.sidebar-tree）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-border") {
+    return "用于侧栏主列表标签边框（.sidebar-label）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-active-bg") {
+    return "用于侧栏主列表标签激活背景（.sidebar-row.is-active .sidebar-label）";
+  }
+  if (cssVar === "--mpx-sidebar-main-active-ring") {
+    return "用于侧栏主列表标签激活外圈（active ring）";
+  }
+  if (cssVar === "--mpx-sidebar-main-active-underlay") {
+    return "用于侧栏主列表标签激活内圈衬底（active underlay）";
+  }
+  if (cssVar === "--mpx-sidebar-main-label-toggle-text") {
+    return "用于侧栏可折叠箭头颜色（.sidebar-label.is-collapsible::before）";
+  }
+  if (cssVar === "--mpx-sidebar-main-count-bg") {
+    return "用于侧栏计数徽标通用背景（.sidebar-count）";
+  }
+  if (cssVar.startsWith("--mpx-sidebar-main-")) {
+    return "用于侧栏主列表（fg-sidebar-main）样式链路";
+  }
+  if (cssVar.startsWith("--mpx-main-image-name-list-")) {
+    return "用于图片文件名列表（fg-main-content-image-name-list）样式链路";
+  }
+  if (cssVar.startsWith("--mpx-large-panel-")) {
+    return "用于大面板骨架（root/head/shell/side/main）";
+  }
+  if (cssVar.startsWith("--mpx-dialog-panel-")) {
+    return "用于小面板骨架（dialog panel）";
+  }
+  if (cssVar.startsWith("--mpx-btn-variant-theme-parameter-side-")) {
+    return "用于 Theme Parameter 侧栏按钮状态";
+  }
+  if (cssVar.startsWith("--mpx-sidebar-tree-scrollbar-")) {
+    return "用于侧栏滚动条样式";
+  }
+  if (cssVar.startsWith("--mpx-range-")) {
+    return "用于 Slider 基础层样式";
+  }
+  if (cssVar.startsWith("--mpx-runway-")) {
+    return "用于播放器/滑条 runway 样式";
+  }
+  if (cssVar.startsWith("--mpx-btn-variant-overlay-cell-")) {
+    return "用于 overlay-cell 按钮状态样式";
+  }
+  return "用于对应 CSS 消费点的主题调试变量";
+}
 
 const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -873,6 +1377,8 @@ export function ThemeParameterPanelMain({
   isParameterChanged,
   resetSingleParameter,
   resolveLabel,
+  onContainerDebugChanged,
+  onContainerDebugResetAll,
 }: ThemeParameterPanelMainProps) {
   const pages: ReadonlyArray<{
     id: ThemeParameterPageId;
@@ -917,6 +1423,66 @@ export function ThemeParameterPanelMain({
       sliderVerticalDown: 28,
       sliderSettingsHorizontal: 52,
     });
+  const [containerLegacyExpanded, setContainerLegacyExpanded] =
+    useState(true);
+  const [containerSidebarMainExpanded, setContainerSidebarMainExpanded] =
+    useState(false);
+  const [containerMainImageNameListExpanded, setContainerMainImageNameListExpanded] =
+    useState(false);
+
+  const containerDebugColorVarSet = useMemo(
+    () => new Set(CONTAINER_LAYER_COLOR_FIELDS.map((field) => field.cssVar)),
+    [],
+  );
+  const containerDebugTextVarSet = useMemo(
+    () => new Set(CONTAINER_LAYER_TEXT_FIELDS.map((field) => field.cssVar)),
+    [],
+  );
+
+  const notifyContainerDebugChanged = (cssVar: string) => {
+    if (
+      containerDebugColorVarSet.has(cssVar) ||
+      containerDebugTextVarSet.has(cssVar)
+    ) {
+      onContainerDebugChanged();
+    }
+  };
+
+  const resetAllContainerDebugFields = () => {
+    const root = document.documentElement;
+    for (const field of CONTAINER_LAYER_COLOR_FIELDS) {
+      root.style.removeProperty(field.cssVar);
+    }
+    for (const field of CONTAINER_LAYER_TEXT_FIELDS) {
+      root.style.removeProperty(field.cssVar);
+    }
+    for (const cssVar of CONTAINER_LEGACY_SLOT_VARS) {
+      root.style.removeProperty(cssVar);
+    }
+    const computed = getComputedStyle(root);
+    const nextColorValues: Record<string, ColorState> = {};
+    for (const field of CONTAINER_LAYER_COLOR_FIELDS) {
+      const parsed = readCssColorState(computed, field.cssVar, field.fallback);
+      nextColorValues[field.id] = {
+        hex: parsed.hex,
+        alpha: field.fallbackAlpha ?? parsed.alpha,
+      };
+    }
+    const nextTextValues: Record<string, string> = {};
+    for (const field of CONTAINER_LAYER_TEXT_FIELDS) {
+      nextTextValues[field.id] =
+        computed.getPropertyValue(field.cssVar).trim() || field.fallback;
+    }
+    setDebugColorValues((previous) => ({
+      ...previous,
+      ...nextColorValues,
+    }));
+    setDebugTextValues((previous) => ({
+      ...previous,
+      ...nextTextValues,
+    }));
+    onContainerDebugResetAll();
+  };
 
   const containerNumberGroups = useMemo(() => {
     const groupMap: Record<
@@ -1018,7 +1584,7 @@ export function ThemeParameterPanelMain({
     const computed = getComputedStyle(document.documentElement);
     const sourceFields =
       activePage === "containerLayer"
-        ? CONTAINER_COLOR_FIELDS
+        ? CONTAINER_LAYER_COLOR_FIELDS
         : activePage === "largePanelLayer"
           ? LARGE_PANEL_COLOR_FIELDS
         : activePage === "smallPanelLayer"
@@ -1044,7 +1610,7 @@ export function ThemeParameterPanelMain({
       const nextTextValues: Record<string, string> = {};
       const sourceTextFields =
         activePage === "containerLayer"
-          ? CONTAINER_TEXT_FIELDS
+          ? CONTAINER_LAYER_TEXT_FIELDS
           : activePage === "commonControls"
             ? COMMON_CONTROL_TEXT_FIELDS
           : SMALL_PANEL_TEXT_FIELDS;
@@ -1080,6 +1646,7 @@ export function ThemeParameterPanelMain({
       field.cssVar,
       formatColorStateAsCss(nextState),
     );
+    notifyContainerDebugChanged(field.cssVar);
     setDebugColorValues((previous) => ({
       ...previous,
       [field.id]: nextState,
@@ -1108,6 +1675,7 @@ export function ThemeParameterPanelMain({
       field.cssVar,
       formatColorStateAsCss(nextState),
     );
+    notifyContainerDebugChanged(field.cssVar);
     setDebugColorValues((previous) => ({
       ...previous,
       [field.id]: nextState,
@@ -1124,6 +1692,7 @@ export function ThemeParameterPanelMain({
   const resetColorField = (field: ThemeDebugColorField) => {
     const root = document.documentElement;
     root.style.removeProperty(field.cssVar);
+    notifyContainerDebugChanged(field.cssVar);
     const computed = getComputedStyle(root);
     const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
     setDebugColorValues((previous) => ({
@@ -1148,11 +1717,13 @@ export function ThemeParameterPanelMain({
       return;
     }
     document.documentElement.style.setProperty(field.cssVar, raw);
+    notifyContainerDebugChanged(field.cssVar);
   };
 
   const resetTextField = (field: ThemeDebugTextField) => {
     const root = document.documentElement;
     root.style.removeProperty(field.cssVar);
+    notifyContainerDebugChanged(field.cssVar);
     const computed = getComputedStyle(root);
     setDebugTextValues((previous) => ({
       ...previous,
@@ -1169,7 +1740,12 @@ export function ThemeParameterPanelMain({
     const alphaPercent = Math.round(colorState.alpha * 100);
     return (
       <label key={field.id} className="theme-parameter-color-row">
-        <span className="theme-parameter-var-label">{field.cssVar}</span>
+        <span className="theme-parameter-var-label">
+          {field.cssVar}
+          <span className="theme-parameter-var-usage">
+            {`（${resolveDebugVarUsage(field.cssVar)}）`}
+          </span>
+        </span>
         <div className="theme-parameter-color-control">
           <input
             type="color"
@@ -1254,7 +1830,12 @@ export function ThemeParameterPanelMain({
       const raw = debugTextValues[field.id] ?? field.fallback;
       return (
         <label key={field.id} className="theme-parameter-text-row">
-          <span className="theme-parameter-var-label">{field.cssVar}</span>
+          <span className="theme-parameter-var-label">
+            {field.cssVar}
+            <span className="theme-parameter-var-usage">
+              {`（${resolveDebugVarUsage(field.cssVar)}）`}
+            </span>
+          </span>
           <textarea
             aria-label={field.cssVar}
             className="theme-parameter-textarea"
@@ -1314,7 +1895,12 @@ export function ThemeParameterPanelMain({
     const raw = debugTextValues[field.id] ?? field.fallback;
     return (
       <label key={field.id} className="theme-parameter-text-row">
-        <span className="theme-parameter-var-label">{field.cssVar}</span>
+        <span className="theme-parameter-var-label">
+          {field.cssVar}
+          <span className="theme-parameter-var-usage">
+            {`（${resolveDebugVarUsage(field.cssVar)}）`}
+          </span>
+        </span>
         <textarea
           aria-label={field.cssVar}
           className="theme-parameter-textarea"
@@ -1964,15 +2550,76 @@ export function ThemeParameterPanelMain({
                 >
                   {t("ui.themeParameter.preview.bgPlusContainer")}
                 </button>
+                <button
+                  type="button"
+                  className="theme-parameter-debug-preview-btn"
+                  onClick={resetAllContainerDebugFields}
+                >
+                  {t("ui.themeParameter.resetContainerDebugAll")}
+                </button>
               </div>
             </section>
-            {renderColorGroups(CONTAINER_COLOR_FIELDS, [
-              "box",
-              "border",
-              "shadow",
-            ])}
-            {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
-            {renderNumberGroups(containerNumberGroups)}
+
+            <details
+              className="settings-collapsible"
+              open={containerLegacyExpanded}
+              onToggle={(event) =>
+                setContainerLegacyExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.containerLayer.sectionLegacy")}</summary>
+              <div className="settings-collapsible-content">
+                {renderColorGroups(CONTAINER_COLOR_FIELDS, [
+                  "box",
+                  "border",
+                  "shadow",
+                ])}
+                {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
+                {renderNumberGroups(containerNumberGroups)}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerSidebarMainExpanded}
+              onToggle={(event) =>
+                setContainerSidebarMainExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
+              </summary>
+              <div className="settings-collapsible-content">
+                {renderColorGroups(CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS, ["side"])}
+                {renderTextGroups(CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS, ["side"])}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerMainImageNameListExpanded}
+              onToggle={(event) =>
+                setContainerMainImageNameListExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionMainImageNameList")}
+              </summary>
+              <div className="settings-collapsible-content">
+                {renderColorGroups(CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS, [
+                  "main",
+                ])}
+                {renderTextGroups(CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS, [
+                  "main",
+                ])}
+              </div>
+            </details>
           </section>
         ) : null}
 

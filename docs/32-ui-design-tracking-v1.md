@@ -118,6 +118,68 @@ css 的触发点
 说明
 Sidebar 结构命名已去除 `toolbar`，统一为 `header/main/footer`；容器壳层默认与 `2.0` 通用样式一致。
 
+### 2.2.2.1 fg-sidebar-main
+
+用在什么地方
+侧栏主列表壳层 `.sidebar-main-shell`，结构槽位为 `data-slot="fg-sidebar-main"`（`src/components/SidebarPanel.tsx:1281`）。
+
+css 的触发点
+`src/styles/app/sidebar.css:309`
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:592`
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part2.css:203`
+
+变量与变量对应的值（按组）
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-sidebar-main-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：`--mpx-slot-fg-sidebar-main-*`
+3. 消费层：`sidebar.css / manage.css / soft-skeuomorphic.components.part1.css / part2.css`
+
+slot 与语义映射规则（同名后缀）：
+`--mpx-slot-fg-sidebar-main-<suffix> = 未设置时 -> --mpx-sidebar-main-<suffix> -> 最终 fallback`
+
+`A. 主列表壳层`
+
+`--mpx-sidebar-main-bg`（主列表背景）
+
+`B. label（默认态 / active / manage selected / collapsible）`
+
+`--mpx-sidebar-main-label-text`
+`--mpx-sidebar-main-label-border`
+`--mpx-sidebar-main-label-bg`
+`--mpx-sidebar-main-label-shadow`
+`--mpx-sidebar-main-label-hover-filter`
+`--mpx-sidebar-main-label-active-bg`
+`--mpx-sidebar-main-label-active-shadow`
+`--mpx-sidebar-main-label-active-hover-shadow`
+`--mpx-sidebar-main-label-manage-selected-bg`
+`--mpx-sidebar-main-label-manage-selected-shadow`
+`--mpx-sidebar-main-active-ring`
+`--mpx-sidebar-main-active-underlay`
+`--mpx-sidebar-main-label-toggle-text`
+`--mpx-sidebar-main-label-collapsed-bg`
+`--mpx-sidebar-main-label-expanded-bg`
+`--mpx-sidebar-main-label-plain-bg`
+`--mpx-sidebar-main-label-plain-border`
+
+`C. marker / bullet`
+
+`--mpx-sidebar-main-label-marker-focus-bg`
+`--mpx-sidebar-main-label-marker-selected-bg`
+`--mpx-sidebar-main-bullet-pending-bg`
+`--mpx-sidebar-main-bullet-running-bg`
+`--mpx-sidebar-main-bullet-running-ring`
+`--mpx-sidebar-main-bullet-active-bg`
+
+`D. count 徽标（默认 / packages / images）`
+
+`--mpx-sidebar-main-count-text/border/bg/shadow`
+`--mpx-sidebar-main-count-packages-text/border/bg/shadow`
+`--mpx-sidebar-main-count-images-text/border/bg`
+
+说明
+`fg-sidebar-main` 调试入口已切到语义 token（`--mpx-sidebar-main-*`）；slot 变量继续保留用于局部覆写，快照字段 `id` 保持兼容。
+
 ## 2.3 Main 容器
 
 用在什么地方
@@ -150,6 +212,69 @@ css 的触发点
 
 说明
 Main 容器顶部命名已统一为 `main-header` / `fg-main-header`，不再使用 `toolbar` 称呼。
+
+### 2.3.2.2 fg-main-content-image-name-list
+
+用在什么地方
+图片模式文件名列表容器 `.name-list`，结构槽位为 `data-slot="fg-main-content-image-name-list"`（`src/components/ImageMainSection.renderers.tsx:177`，出现条件：`mode=image && showNamesOnly`）。
+
+css 的触发点
+`src/styles/app/main/main.part1.css:504`
+`src/styles/app/main/main.part2.css:25`
+
+变量与变量对应的值（按组）
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-main-image-name-list-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：`--mpx-slot-fg-main-content-image-name-list-*`
+3. 消费层：`main.part1.css / main.part2.css / manage.css`
+
+slot 与语义映射规则（同名后缀）：
+`--mpx-slot-fg-main-content-image-name-list-<suffix> = 未设置时 -> --mpx-main-image-name-list-<suffix> -> 最终 fallback`
+
+`A. 列表壳层（name-list）`
+
+`--mpx-main-image-name-list-border`
+`--mpx-main-image-name-list-bg`
+`--mpx-main-image-name-list-text`
+
+`B. 表头与表体（header/body）`
+
+`--mpx-main-image-name-list-head-border`
+`--mpx-main-image-name-list-head-bg`
+`--mpx-main-image-name-list-head-text`
+`--mpx-main-image-name-list-body-bg`
+
+`C. 列表行（name-list-row）`
+
+`--mpx-main-image-name-list-row-border`
+`--mpx-main-image-name-list-row-bg`
+`--mpx-main-image-name-list-row-text`
+`--mpx-main-image-name-list-row-hover-bg`
+`--mpx-main-image-name-list-row-focused-border-left`
+`--mpx-main-image-name-list-row-selected-border-left`
+`--mpx-main-image-name-list-row-selected-focused-border-left`
+`--mpx-main-image-name-list-row-manage-selected-bg`
+
+`D. 行内主按钮（name-list-row-main / overlay-cell）`
+
+`--mpx-main-image-name-list-row-main-text`（新增 idle 文本语义入口）
+`--mpx-main-image-name-list-row-main-hover-bg`
+`--mpx-main-image-name-list-row-main-active-bg`
+`--mpx-main-image-name-list-row-main-pressed-bg`
+`--mpx-main-image-name-list-row-main-hover-text`
+`--mpx-main-image-name-list-row-main-active-text`
+`--mpx-main-image-name-list-row-main-pressed-text`
+`--mpx-main-image-name-list-row-main-focus-outline-color`
+`--mpx-main-image-name-list-row-main-focus-outline-width`
+`--mpx-main-image-name-list-row-main-pressed-font-weight`
+
+`E. 文件名列文本（label）`
+
+`--mpx-main-image-name-list-label-text`
+
+说明
+`fg-main-content-image-name-list` 调试入口已切到语义 token（`--mpx-main-image-name-list-*`）；slot 变量继续保留用于局部覆写，快照字段 `id` 保持兼容。
 
 ## 2.4 Meta 容器
 
