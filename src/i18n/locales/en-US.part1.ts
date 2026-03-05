@@ -331,6 +331,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.snapshotLabel": "Snapshot JSON",
   "ui.themeParameter.snapshotPlaceholder":
     "Paste JSON to import, or export and copy from here",
+  "ui.themeParameter.snapshotIncludeComputedValues": "Include computed values",
   "ui.themeParameter.exportJson": "Export JSON",
   "ui.themeParameter.downloadJsonFile": "Download JSON file",
   "ui.themeParameter.loadJsonFile": "Load JSON file",
@@ -353,7 +354,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Failed to parse JSON or invalid payload format.",
   "ui.themeParameter.snapshotEmpty": "Please provide or export JSON first.",
   "ui.themeParameter.page.parameters": "Parameter tuning",
-  "ui.themeParameter.page.snapshot": "Snapshot tools",
+  "ui.themeParameter.page.snapshot": "Import / Export",
   "ui.themeParameter.page.containerLayer": "Container layer debug",
   "ui.themeParameter.page.largePanelLayer": "Large panel layer debug",
   "ui.themeParameter.page.smallPanelLayer": "Small panel layer debug",

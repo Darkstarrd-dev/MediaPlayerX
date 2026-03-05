@@ -10,10 +10,7 @@ import type {
   ThemeParameterPreviewMode,
 } from "./ThemeParameterPanelMain";
 import {
-  formatColorStateAsCss,
   includesSearch,
-  parseColorState,
-  readCssColorState,
   readFileAsText,
 } from "./themeParameterUtils";
 import {
@@ -66,7 +63,7 @@ interface ThemeParameterPanelProps {
 interface ThemeParameterSnapshot {
   version: 1;
   styleId: string;
-  values: Record<string, number>;
+  values?: Record<string, number>;
   debugColors?: Record<string, string>;
   debugTexts?: Record<string, string>;
 }
@@ -362,7 +359,11 @@ function ThemeParameterPanel({
   const [commonExpanded, setCommonExpanded] = useState(true);
   const [styleExpanded, setStyleExpanded] = useState(true);
   const [snapshotJson, setSnapshotJson] = useState("");
+  const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
+    useState(false);
   const [snapshotMessage, setSnapshotMessage] = useState("");
+  const [snapshotExplicitParameterIds, setSnapshotExplicitParameterIds] =
+    useState<Set<string>>(new Set());
   const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
 
@@ -399,6 +400,7 @@ function ThemeParameterPanel({
     setActivePreviewMode("none");
     setValues(readParameterValues(parameters));
     setSnapshotMessage("");
+    setSnapshotExplicitParameterIds(new Set());
   }, [open, parameters, styleId]);
 
   useEffect(() => {
@@ -444,6 +446,11 @@ function ThemeParameterPanel({
       ),
     );
     const root = document.documentElement;
+    setSnapshotExplicitParameterIds((previous) => {
+      const next = new Set(previous);
+      next.add(parameter.id);
+      return next;
+    });
     setValues((previous) => {
       const nextValues = {
         ...previous,
@@ -456,21 +463,26 @@ function ThemeParameterPanel({
 
   const buildSnapshotPayload = (): ThemeParameterSnapshot => {
     const computed = getComputedStyle(document.documentElement);
+    const valueEntries = parameters
+      .filter(
+        (parameter) =>
+          snapshotIncludeComputedValues ||
+          snapshotExplicitParameterIds.has(parameter.id),
+      )
+      .map((parameter) => [
+        parameter.id,
+        values[parameter.id] ?? parameter.fallback,
+      ] as const);
+    const snapshotValues = Object.fromEntries(valueEntries);
+
     return {
       version: 1,
       styleId,
-      values: Object.fromEntries(
-        parameters.map((parameter) => [
-          parameter.id,
-          values[parameter.id] ?? parameter.fallback,
-        ]),
-      ),
+      ...(Object.keys(snapshotValues).length > 0 ? { values: snapshotValues } : {}),
       debugColors: Object.fromEntries(
         SNAPSHOT_COLOR_FIELDS.map((field) => [
           field.id,
-          formatColorStateAsCss(
-            readCssColorState(computed, field.cssVar, field.fallback),
-          ),
+          computed.getPropertyValue(field.cssVar).trim(),
         ]),
       ),
       debugTexts: Object.fromEntries(
@@ -541,12 +553,47 @@ function ThemeParameterPanel({
       setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
       return;
     }
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("clipboard unavailable");
+
+    const copyText = async (text: string): Promise<boolean> => {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // noop
+        }
       }
-      await navigator.clipboard.writeText(snapshotJson);
-      setSnapshotMessage(t("ui.themeParameter.snapshotCopied"));
+
+      if (typeof document === "undefined") {
+        return false;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      textarea.style.pointerEvents = "none";
+      document.body.appendChild(textarea);
+
+      try {
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+        return document.execCommand("copy");
+      } catch {
+        return false;
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    };
+
+    try {
+      const copied = await copyText(snapshotJson);
+      setSnapshotMessage(
+        copied
+          ? t("ui.themeParameter.snapshotCopied")
+          : t("ui.themeParameter.snapshotCopyFailed"),
+      );
     } catch {
       setSnapshotMessage(t("ui.themeParameter.snapshotCopyFailed"));
     }
@@ -569,13 +616,33 @@ function ThemeParameterPanel({
       return;
     }
     const payload = parsed as Partial<ThemeParameterSnapshot>;
-    if (!payload.values || typeof payload.values !== "object") {
+    const hasValues = payload.values !== undefined;
+    const hasDebugColors = payload.debugColors !== undefined;
+    const hasDebugTexts = payload.debugTexts !== undefined;
+
+    if (
+      (!hasValues && !hasDebugColors && !hasDebugTexts) ||
+      (hasValues &&
+        (!payload.values ||
+          typeof payload.values !== "object" ||
+          Array.isArray(payload.values))) ||
+      (hasDebugColors &&
+        (!payload.debugColors ||
+          typeof payload.debugColors !== "object" ||
+          Array.isArray(payload.debugColors))) ||
+      (hasDebugTexts &&
+        (!payload.debugTexts ||
+          typeof payload.debugTexts !== "object" ||
+          Array.isArray(payload.debugTexts)))
+    ) {
       setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
       return;
     }
-    const importedValues = payload.values as Record<string, unknown>;
+
+    const importedValues = (payload.values ?? {}) as Record<string, unknown>;
     const root = document.documentElement;
     const nextValues: ThemeParameterValues = { ...values };
+    const importedParameterIds = new Set<string>();
     for (const parameter of parameters) {
       const rawValue = importedValues[parameter.id];
       if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
@@ -593,6 +660,7 @@ function ThemeParameterPanel({
         ),
       );
       nextValues[parameter.id] = normalized;
+      importedParameterIds.add(parameter.id);
       parameter.apply(root, normalized, nextValues);
     }
     if (payload.debugColors && typeof payload.debugColors === "object") {
@@ -602,14 +670,12 @@ function ThemeParameterPanel({
         if (typeof rawColor !== "string") {
           continue;
         }
-        const normalizedColor = parseColorState(rawColor, field.fallback);
+        const normalizedColor = rawColor.trim();
         if (!normalizedColor) {
+          root.style.removeProperty(field.cssVar);
           continue;
         }
-        root.style.setProperty(
-          field.cssVar,
-          formatColorStateAsCss(normalizedColor),
-        );
+        root.style.setProperty(field.cssVar, normalizedColor);
       }
     }
     if (payload.debugTexts && typeof payload.debugTexts === "object") {
@@ -627,6 +693,15 @@ function ThemeParameterPanel({
       }
     }
     setValues(nextValues);
+    if (importedParameterIds.size > 0) {
+      setSnapshotExplicitParameterIds((previous) => {
+        const next = new Set(previous);
+        for (const parameterId of importedParameterIds) {
+          next.add(parameterId);
+        }
+        return next;
+      });
+    }
     if (payload.styleId && payload.styleId !== styleId) {
       setSnapshotMessage(
         t("ui.themeParameter.snapshotImportedStyleMismatch", {
@@ -649,6 +724,7 @@ function ThemeParameterPanel({
     for (const field of SNAPSHOT_TEXT_FIELDS) {
       root.style.removeProperty(field.cssVar);
     }
+    setSnapshotExplicitParameterIds(new Set());
     setValues(readParameterValues(parameters));
   };
 
@@ -673,6 +749,11 @@ function ThemeParameterPanel({
       ...previous,
       [parameter.id]: nextValue,
     }));
+    setSnapshotExplicitParameterIds((previous) => {
+      const next = new Set(previous);
+      next.delete(parameter.id);
+      return next;
+    });
   };
 
   const resolveLabel = (parameter: ThemeParameterDefinition): string => {
@@ -758,6 +839,8 @@ function ThemeParameterPanel({
           setSearchText={setSearchText}
           snapshotJson={snapshotJson}
           setSnapshotJson={setSnapshotJson}
+          snapshotIncludeComputedValues={snapshotIncludeComputedValues}
+          setSnapshotIncludeComputedValues={setSnapshotIncludeComputedValues}
           snapshotMessage={snapshotMessage}
           setSnapshotMessage={setSnapshotMessage}
           snapshotFileInputRef={snapshotFileInputRef}

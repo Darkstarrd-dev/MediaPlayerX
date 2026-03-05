@@ -312,6 +312,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.snapshotLabel": "参数快照 JSON",
   "ui.themeParameter.snapshotPlaceholder":
     "在此粘贴导入 JSON，或点击导出后复制",
+  "ui.themeParameter.snapshotIncludeComputedValues": "导出包含计算值",
   "ui.themeParameter.exportJson": "导出 JSON",
   "ui.themeParameter.downloadJsonFile": "下载 JSON文件",
   "ui.themeParameter.loadJsonFile": "加载 JSON文件",
@@ -331,7 +332,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.snapshotImportFailed": "JSON 解析失败或格式无效。",
   "ui.themeParameter.snapshotEmpty": "请先输入或导出 JSON。",
   "ui.themeParameter.page.parameters": "参数调节",
-  "ui.themeParameter.page.snapshot": "快照工具",
+  "ui.themeParameter.page.snapshot": "参数导入导出",
   "ui.themeParameter.page.containerLayer": "大容器层调试",
   "ui.themeParameter.page.largePanelLayer": "大面板层调试",
   "ui.themeParameter.page.smallPanelLayer": "小面板层调试",

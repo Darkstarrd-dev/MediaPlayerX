@@ -180,7 +180,7 @@ describe("ThemeParameterPanel", () => {
     fireEvent.change(screen.getByLabelText("--mpx-bg-app-alpha"), {
       target: { value: "40" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
 
     const snapshotTextarea = screen.getByLabelText(
@@ -248,7 +248,7 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toBe("#112233");
 
-    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
 
     const snapshotTextarea = screen.getByLabelText(
@@ -257,6 +257,164 @@ describe("ThemeParameterPanel", () => {
     expect(snapshotTextarea.value).toContain(
       '"button-side-hover-bg": "#112233"',
     );
+  });
+
+  it("默认导出不包含计算值，可手动切换包含", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    const snapshotWithoutComputed = JSON.parse(snapshotTextarea.value) as {
+      values?: Record<string, number>;
+    };
+    expect(snapshotWithoutComputed.values?.["skeuo-header-gap"]).toBeUndefined();
+
+    fireEvent.click(screen.getByLabelText("导出包含计算值"));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotWithComputed = JSON.parse(snapshotTextarea.value) as {
+      values?: Record<string, number>;
+    };
+    expect(typeof snapshotWithComputed.values?.["skeuo-header-gap"]).toBe(
+      "number",
+    );
+  });
+
+  it("导出后直接导入不会把空调试项写成默认色", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    const snapshotPayload = JSON.parse(snapshotTextarea.value) as {
+      debugColors?: Record<string, string>;
+    };
+    expect(snapshotPayload.debugColors?.["large-panel-bg"] ?? "").toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: "应用导入" }));
+    expect(
+      document.documentElement.style
+        .getPropertyValue("--mpx-large-panel-bg")
+        .trim(),
+    ).toBe("");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-margin").trim(),
+    ).toBe("");
+  });
+
+  it("导入缺失值时保持已有参数不变", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.change(getSliderByLabelText("布局内边距"), {
+      target: { value: "14" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    fireEvent.change(snapshotTextarea, {
+      target: {
+        value: JSON.stringify(
+          {
+            version: 1,
+            styleId: "soft-skeuomorphic",
+            values: {
+              "splitter-width": 16,
+            },
+          },
+          null,
+          2,
+        ),
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "应用导入" }));
+
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
+    ).toBe("14px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-splitter-width"),
+    ).toBe("16px");
+  });
+
+  it("仅导入 debugColors 时不覆盖现有数值参数", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.change(getSliderByLabelText("布局内边距"), {
+      target: { value: "14" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    fireEvent.change(snapshotTextarea, {
+      target: {
+        value: JSON.stringify(
+          {
+            version: 1,
+            styleId: "soft-skeuomorphic",
+            debugColors: {
+              "container-bg-app": "#112233",
+            },
+          },
+          null,
+          2,
+        ),
+      },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "应用导入" }));
+
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
+    ).toBe("14px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-bg-app").trim(),
+    ).toBe("#112233");
+  });
+
+  it("复制 JSON 在剪贴板不可用时回退 execCommand", async () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const originalClipboard = window.navigator.clipboard;
+    const originalExecCommand = document.execCommand;
+    const execCommandSpy = vi.fn(() => true);
+    Object.defineProperty(window.navigator, "clipboard", {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(document, "execCommand", {
+      configurable: true,
+      value: execCommandSpy,
+    });
+
+    try {
+      fireEvent.click(screen.getByRole("button", { name: "复制 JSON" }));
+      expect(await screen.findByText("参数快照已复制到剪贴板。")).toBeInTheDocument();
+      expect(execCommandSpy).toHaveBeenCalledWith("copy");
+    } finally {
+      Object.defineProperty(window.navigator, "clipboard", {
+        configurable: true,
+        value: originalClipboard,
+      });
+      Object.defineProperty(document, "execCommand", {
+        configurable: true,
+        value: originalExecCommand,
+      });
+    }
   });
 
   it("支持下载与加载参数快照 JSON 文件", async () => {
@@ -276,7 +434,7 @@ describe("ThemeParameterPanel", () => {
 
     renderThemeParameterPanel();
 
-    fireEvent.click(screen.getByRole("button", { name: "快照工具" }));
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
 
     fireEvent.click(screen.getByRole("button", { name: "下载 JSON文件" }));
     expect(createObjectUrl).toHaveBeenCalledTimes(1);

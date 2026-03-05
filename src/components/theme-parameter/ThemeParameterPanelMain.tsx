@@ -29,6 +29,8 @@ interface ThemeParameterPanelMainProps {
   setSearchText: Dispatch<SetStateAction<string>>;
   snapshotJson: string;
   setSnapshotJson: Dispatch<SetStateAction<string>>;
+  snapshotIncludeComputedValues: boolean;
+  setSnapshotIncludeComputedValues: Dispatch<SetStateAction<boolean>>;
   snapshotMessage: string;
   setSnapshotMessage: Dispatch<SetStateAction<string>>;
   snapshotFileInputRef: MutableRefObject<HTMLInputElement | null>;
@@ -516,6 +518,8 @@ export function ThemeParameterPanelMain({
   setSearchText,
   snapshotJson,
   setSnapshotJson,
+  snapshotIncludeComputedValues,
+  setSnapshotIncludeComputedValues,
   snapshotMessage,
   setSnapshotMessage,
   snapshotFileInputRef,
@@ -1200,6 +1204,16 @@ export function ThemeParameterPanelMain({
               <header className="settings-group-head">
                 <span>{t("ui.themeParameter.page.snapshot")}</span>
               </header>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={snapshotIncludeComputedValues}
+                  onChange={(event) => {
+                    setSnapshotIncludeComputedValues(event.target.checked);
+                  }}
+                />
+                <span>{t("ui.themeParameter.snapshotIncludeComputedValues")}</span>
+              </label>
               <div className="theme-parameter-actions">
                 <button type="button" onClick={exportSnapshotJson}>
                   {t("ui.themeParameter.exportJson")}
