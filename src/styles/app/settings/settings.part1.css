@@ -1959,7 +1959,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .theme-parameter-control-content.has-right-vertical {
   grid-template-columns: minmax(0, 1fr) 82px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .theme-parameter-control-fields {
@@ -1973,7 +1973,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  align-self: start;
+  align-self: stretch;
 }
 
 .theme-parameter-control-vertical-stack {
@@ -1990,7 +1990,14 @@ button.mpx-overlay-chip-btn:focus-visible {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  align-items: flex-start;
+  align-items: stretch;
+  align-self: stretch;
+  height: 100%;
+}
+
+.theme-parameter-control-vertical-stack.is-volume-variants .theme-parameter-control-vertical-item {
+  min-height: 0;
+  height: 100%;
 }
 
 .theme-parameter-control-preview-caption {
@@ -2001,10 +2008,24 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .theme-parameter-control-vertical-runway {
   width: 132px;
+  width: max(132px, 100cqh);
   height: 24px;
 }
 
+.theme-parameter-control-vertical-track-box .theme-parameter-control-vertical-runway > .mpx-runway {
+  width: 100% !important;
+  min-width: 0;
+}
+
+.theme-parameter-control-vertical-track-box .mpx-runway-input.video-ctrl-volume-range {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
 .theme-parameter-control-vertical-track-box .mpx-runway-axis.theme-parameter-control-vertical-axis {
+  width: 132px !important;
+  width: max(132px, 100cqh) !important;
+  height: 24px !important;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -2028,7 +2049,11 @@ button.mpx-overlay-chip-btn:focus-visible {
 .theme-parameter-control-vertical-track-box {
   position: relative;
   width: 34px;
-  height: 132px;
+  height: auto;
+  min-height: 132px;
+  flex: 1;
+  align-self: stretch;
+  container-type: size;
   overflow: visible;
 }
 
@@ -2075,5 +2100,26 @@ button.mpx-overlay-chip-btn:focus-visible {
 @media (max-width: 1120px) {
   .theme-parameter-control-content.has-right-vertical {
     grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .theme-parameter-control-vertical-side {
+    align-self: start;
+  }
+
+  .theme-parameter-control-vertical-stack.is-volume-variants {
+    align-items: flex-start;
+    align-self: start;
+    height: auto;
+  }
+
+  .theme-parameter-control-vertical-stack.is-volume-variants .theme-parameter-control-vertical-item {
+    height: auto;
+  }
+
+  .theme-parameter-control-vertical-track-box {
+    flex: none;
+    height: 132px;
+    min-height: 132px;
   }
 }
