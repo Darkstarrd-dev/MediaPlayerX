@@ -145,3 +145,215 @@ export function readFileAsText(file: File): Promise<string> {
     reader.readAsText(file);
   });
 }
+
+function splitCssTopLevel(value: string, separator: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = "";
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (char === "(") {
+      depth += 1;
+      current += char;
+      continue;
+    }
+    if (char === ")") {
+      depth = Math.max(0, depth - 1);
+      current += char;
+      continue;
+    }
+    if (char === separator && depth === 0) {
+      if (current.trim()) {
+        parts.push(current.trim());
+      }
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+
+  return parts;
+}
+
+function tokenizeCssTopLevelByWhitespace(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = "";
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (char === "(") {
+      depth += 1;
+      current += char;
+      continue;
+    }
+    if (char === ")") {
+      depth = Math.max(0, depth - 1);
+      current += char;
+      continue;
+    }
+    if (/\s/.test(char) && depth === 0) {
+      if (current.trim()) {
+        parts.push(current.trim());
+      }
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+
+  return parts;
+}
+
+export interface SimpleLinearGradientValue {
+  angle: number;
+  colorStops: [string, string];
+}
+
+export function parseSimpleLinearGradient(
+  value: string,
+): SimpleLinearGradientValue | null {
+  const match = value
+    .trim()
+    .match(/^linear-gradient\(\s*(-?[\d.]+)deg\s*,(.*)\)$/i);
+  if (!match) {
+    return null;
+  }
+  const angle = Number.parseFloat(match[1]);
+  if (!Number.isFinite(angle)) {
+    return null;
+  }
+  const args = splitCssTopLevel(match[2], ",");
+  if (args.length !== 2) {
+    return null;
+  }
+  return {
+    angle,
+    colorStops: [args[0], args[1]],
+  };
+}
+
+export function formatSimpleLinearGradient(
+  value: SimpleLinearGradientValue,
+): string {
+  return `linear-gradient(${value.angle}deg, ${value.colorStops[0]}, ${value.colorStops[1]})`;
+}
+
+export interface SimpleFilterFunctionValue {
+  name: string;
+  numericValue: number;
+  unit: string;
+}
+
+export function parseSimpleFilterFunction(
+  value: string,
+): SimpleFilterFunctionValue | null {
+  const match = value
+    .trim()
+    .match(/^([a-z-]+)\(\s*(-?[\d.]+)([%a-z]*)\s*\)$/i);
+  if (!match) {
+    return null;
+  }
+  const numericValue = Number.parseFloat(match[2]);
+  if (!Number.isFinite(numericValue)) {
+    return null;
+  }
+  return {
+    name: match[1],
+    numericValue,
+    unit: match[3] ?? "",
+  };
+}
+
+export function formatSimpleFilterFunction(
+  value: SimpleFilterFunctionValue,
+): string {
+  return `${value.name}(${value.numericValue}${value.unit})`;
+}
+
+export interface BoxShadowLayerValue {
+  inset: boolean;
+  offsetX: string;
+  offsetY: string;
+  blur: string;
+  spread: string;
+  color: string;
+}
+
+const LENGTH_TOKEN_RE = /^-?[\d.]+(?:px|r?em|%|vh|vw|vmin|vmax|ch|ex|pt|pc|cm|mm|in)?$/i;
+
+export function parseBoxShadowValue(value: string): BoxShadowLayerValue[] | null {
+  const layers = splitCssTopLevel(value.trim(), ",");
+  if (layers.length === 0) {
+    return null;
+  }
+
+  const parsedLayers = layers.map((layer) => {
+    const tokens = tokenizeCssTopLevelByWhitespace(layer);
+    if (tokens.length < 3) {
+      return null;
+    }
+
+    let cursor = 0;
+    let inset = false;
+    if (tokens[cursor]?.toLowerCase() === "inset") {
+      inset = true;
+      cursor += 1;
+    }
+
+    const lengths: string[] = [];
+    while (cursor < tokens.length && LENGTH_TOKEN_RE.test(tokens[cursor])) {
+      lengths.push(tokens[cursor]);
+      cursor += 1;
+    }
+
+    if (lengths.length < 2 || lengths.length > 4) {
+      return null;
+    }
+
+    const color = tokens.slice(cursor).join(" ");
+    if (!color) {
+      return null;
+    }
+
+    return {
+      inset,
+      offsetX: lengths[0] ?? "0px",
+      offsetY: lengths[1] ?? "0px",
+      blur: lengths[2] ?? "0px",
+      spread: lengths[3] ?? "0px",
+      color,
+    } satisfies BoxShadowLayerValue;
+  });
+
+  if (parsedLayers.some((layer) => layer === null)) {
+    return null;
+  }
+
+  return parsedLayers as BoxShadowLayerValue[];
+}
+
+export function formatBoxShadowValue(layers: readonly BoxShadowLayerValue[]): string {
+  return layers
+    .map((layer) => {
+      const parts = [
+        layer.inset ? "inset" : "",
+        layer.offsetX.trim() || "0px",
+        layer.offsetY.trim() || "0px",
+        layer.blur.trim() || "0px",
+        layer.spread.trim() || "0px",
+        layer.color.trim() || "#000000",
+      ].filter(Boolean);
+      return parts.join(" ");
+    })
+    .join(", ");
+}

@@ -9,11 +9,20 @@ import { useEffect, useMemo, useState } from "react";
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
 
 import {
+  formatBoxShadowValue,
   formatColorStateAsCss,
+  formatSimpleFilterFunction,
+  formatSimpleLinearGradient,
   formatValue,
+  parseBoxShadowValue,
   parseColorState,
+  parseSimpleFilterFunction,
+  parseSimpleLinearGradient,
   readCssColorState,
+  type BoxShadowLayerValue,
   type ColorState,
+  type SimpleFilterFunctionValue,
+  type SimpleLinearGradientValue,
 } from "./themeParameterUtils";
 import type {
   ThemeParameterDefinition,
@@ -131,6 +140,13 @@ interface ControlPreviewValues {
 }
 
 interface SidebarMainDebugSection {
+  id: string;
+  title: string;
+  tag: string;
+  cssVars: readonly string[];
+}
+
+interface MainImageNameListDebugSection {
   id: string;
   title: string;
   tag: string;
@@ -755,6 +771,57 @@ const CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS: readonly ThemeDebugTextField[]
       cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
       fallback: "600",
       groupId: "main",
+    },
+  ];
+
+const MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] =
+  [
+    {
+      id: "main-image-name-list-bg",
+      title: "1、bg 背景与外层链路",
+      tag: "bg",
+      cssVars: [
+        "--mpx-main-image-name-list-border",
+        "--mpx-main-image-name-list-bg",
+        "--mpx-main-image-name-list-text",
+        "--mpx-main-image-name-list-label-text",
+      ],
+    },
+    {
+      id: "main-image-name-list-header",
+      title: "2、header 表头链路",
+      tag: "header",
+      cssVars: [
+        "--mpx-main-image-name-list-head-border",
+        "--mpx-main-image-name-list-head-bg",
+        "--mpx-main-image-name-list-head-text",
+      ],
+    },
+    {
+      id: "main-image-name-list-table",
+      title: "3、table 表格主体链路",
+      tag: "table",
+      cssVars: [
+        "--mpx-main-image-name-list-body-bg",
+        "--mpx-main-image-name-list-row-border",
+        "--mpx-main-image-name-list-row-bg",
+        "--mpx-main-image-name-list-row-text",
+        "--mpx-main-image-name-list-row-hover-bg",
+        "--mpx-main-image-name-list-row-focused-border-left",
+        "--mpx-main-image-name-list-row-selected-border-left",
+        "--mpx-main-image-name-list-row-selected-focused-border-left",
+        "--mpx-main-image-name-list-row-manage-selected-bg",
+        "--mpx-main-image-name-list-row-main-text",
+        "--mpx-main-image-name-list-row-main-hover-bg",
+        "--mpx-main-image-name-list-row-main-active-bg",
+        "--mpx-main-image-name-list-row-main-pressed-bg",
+        "--mpx-main-image-name-list-row-main-hover-text",
+        "--mpx-main-image-name-list-row-main-active-text",
+        "--mpx-main-image-name-list-row-main-pressed-text",
+        "--mpx-main-image-name-list-row-main-focus-outline-width",
+        "--mpx-main-image-name-list-row-main-focus-outline-color",
+        "--mpx-main-image-name-list-row-main-pressed-font-weight",
+      ],
     },
   ];
 
@@ -2065,6 +2132,329 @@ export function ThemeParameterPanelMain({
 
   const renderTextFieldRow = (field: ThemeDebugTextField) => {
     const raw = debugTextValues[field.id] ?? field.fallback;
+    const parsedGradient = parseSimpleLinearGradient(raw);
+    const parsedFilter = parseSimpleFilterFunction(raw);
+    const parsedShadow = parseBoxShadowValue(raw);
+
+    const updateTextValue = (nextRaw: string) => {
+      setDebugTextFieldValue(field, nextRaw);
+    };
+
+    const renderResetButton = () => {
+      return isTextFieldChanged(field) ? (
+        <button
+          type="button"
+          className="theme-parameter-reset-btn"
+          onClick={() => resetTextField(field)}
+        >
+          {t("ui.themeParameter.resetField")}
+        </button>
+      ) : null;
+    };
+
+    const renderColorExpressionInput = (
+      ariaLabel: string,
+      value: string,
+      onChange: (nextValue: string) => void,
+    ) => {
+      const parsedColor = parseColorState(value, "#ffffff");
+      const normalizedColorValue = parsedColor?.hex ?? "#ffffff";
+      const isPlainColor = parseColorState(value, "#ffffff") !== null;
+
+      return (
+        <div className="theme-parameter-inline-field color-expression">
+          {isPlainColor ? (
+            <input
+              type="color"
+              aria-label={`${ariaLabel}-picker`}
+              value={normalizedColorValue}
+              onChange={(event) => onChange(event.target.value)}
+            />
+          ) : null}
+          <input
+            type="text"
+            aria-label={ariaLabel}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+        </div>
+      );
+    };
+
+    if (parsedGradient) {
+      const updateGradient = (nextValue: SimpleLinearGradientValue) => {
+        updateTextValue(formatSimpleLinearGradient(nextValue));
+      };
+
+      return (
+        <div key={field.id} className="theme-parameter-text-row is-structured">
+          <span className="theme-parameter-var-label">
+            {field.cssVar}
+            <span className="theme-parameter-var-usage">
+              {`（${resolveDebugVarUsage(field.cssVar)}）`}
+            </span>
+          </span>
+          <div className="theme-parameter-structured-card">
+            <div className="theme-parameter-structured-grid is-gradient">
+              <label className="theme-parameter-inline-field">
+                <span>角度</span>
+                <input
+                  type="number"
+                  aria-label={`${field.cssVar}-angle`}
+                  value={parsedGradient.angle}
+                  onChange={(event) => {
+                    const nextAngle = Number(event.target.value);
+                    if (!Number.isFinite(nextAngle)) {
+                      return;
+                    }
+                    updateGradient({
+                      ...parsedGradient,
+                      angle: nextAngle,
+                    });
+                  }}
+                />
+              </label>
+              <label className="theme-parameter-inline-field">
+                <span>颜色 1</span>
+                {renderColorExpressionInput(
+                  `${field.cssVar}-color-1`,
+                  parsedGradient.colorStops[0],
+                  (nextColor) => {
+                    updateGradient({
+                      ...parsedGradient,
+                      colorStops: [nextColor, parsedGradient.colorStops[1]],
+                    });
+                  },
+                )}
+              </label>
+              <label className="theme-parameter-inline-field">
+                <span>颜色 2</span>
+                {renderColorExpressionInput(
+                  `${field.cssVar}-color-2`,
+                  parsedGradient.colorStops[1],
+                  (nextColor) => {
+                    updateGradient({
+                      ...parsedGradient,
+                      colorStops: [parsedGradient.colorStops[0], nextColor],
+                    });
+                  },
+                )}
+              </label>
+            </div>
+          </div>
+          {renderResetButton()}
+        </div>
+      );
+    }
+
+    if (parsedFilter) {
+      const updateFilter = (nextValue: SimpleFilterFunctionValue) => {
+        updateTextValue(formatSimpleFilterFunction(nextValue));
+      };
+
+      return (
+        <div key={field.id} className="theme-parameter-text-row is-structured">
+          <span className="theme-parameter-var-label">
+            {field.cssVar}
+            <span className="theme-parameter-var-usage">
+              {`（${resolveDebugVarUsage(field.cssVar)}）`}
+            </span>
+          </span>
+          <div className="theme-parameter-structured-card">
+            <div className="theme-parameter-structured-grid is-filter">
+              <label className="theme-parameter-inline-field">
+                <span>函数</span>
+                <input
+                  type="text"
+                  aria-label={`${field.cssVar}-fn`}
+                  value={parsedFilter.name}
+                  onChange={(event) => {
+                    updateFilter({
+                      ...parsedFilter,
+                      name: event.target.value,
+                    });
+                  }}
+                />
+              </label>
+              <label className="theme-parameter-inline-field">
+                <span>数值</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  aria-label={`${field.cssVar}-value`}
+                  value={parsedFilter.numericValue}
+                  onChange={(event) => {
+                    const nextNumericValue = Number(event.target.value);
+                    if (!Number.isFinite(nextNumericValue)) {
+                      return;
+                    }
+                    updateFilter({
+                      ...parsedFilter,
+                      numericValue: nextNumericValue,
+                    });
+                  }}
+                />
+              </label>
+              <label className="theme-parameter-inline-field">
+                <span>单位</span>
+                <input
+                  type="text"
+                  aria-label={`${field.cssVar}-unit`}
+                  value={parsedFilter.unit}
+                  onChange={(event) => {
+                    updateFilter({
+                      ...parsedFilter,
+                      unit: event.target.value,
+                    });
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+          {renderResetButton()}
+        </div>
+      );
+    }
+
+    if (parsedShadow) {
+      const updateShadowLayers = (nextLayers: BoxShadowLayerValue[]) => {
+        updateTextValue(formatBoxShadowValue(nextLayers));
+      };
+
+      return (
+        <div key={field.id} className="theme-parameter-text-row is-structured">
+          <span className="theme-parameter-var-label">
+            {field.cssVar}
+            <span className="theme-parameter-var-usage">
+              {`（${resolveDebugVarUsage(field.cssVar)}）`}
+            </span>
+          </span>
+          <div className="theme-parameter-shadow-layer-list">
+            {parsedShadow.map((layer, layerIndex) => (
+              <section
+                key={`${field.id}-layer-${layerIndex}`}
+                className="theme-parameter-structured-card theme-parameter-shadow-layer"
+              >
+                <div className="theme-parameter-shadow-layer-head">
+                  <strong>{`阴影层 ${layerIndex + 1}`}</strong>
+                  <div className="theme-parameter-shadow-layer-actions">
+                    <label className="theme-parameter-inline-toggle">
+                      <input
+                        type="checkbox"
+                        aria-label={`${field.cssVar}-layer-${layerIndex}-inset`}
+                        checked={layer.inset}
+                        onChange={(event) => {
+                          const nextLayers = parsedShadow.map(
+                            (currentLayer, currentIndex) =>
+                              currentIndex === layerIndex
+                                ? {
+                                    ...currentLayer,
+                                    inset: event.target.checked,
+                                  }
+                                : currentLayer,
+                          );
+                          updateShadowLayers(nextLayers);
+                        }}
+                      />
+                      <span>Inset</span>
+                    </label>
+                    {parsedShadow.length > 1 ? (
+                      <button
+                        type="button"
+                        className="theme-parameter-reset-btn"
+                        onClick={() => {
+                          updateShadowLayers(
+                            parsedShadow.filter(
+                              (_, currentIndex) => currentIndex !== layerIndex,
+                            ),
+                          );
+                        }}
+                      >
+                        删除层
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="theme-parameter-structured-grid is-shadow">
+                  {(
+                    [
+                      ["offsetX", "X 偏移"],
+                      ["offsetY", "Y 偏移"],
+                      ["blur", "模糊"],
+                      ["spread", "扩散"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <label
+                      key={`${field.id}-layer-${layerIndex}-${key}`}
+                      className="theme-parameter-inline-field"
+                    >
+                      <span>{label}</span>
+                      <input
+                        type="text"
+                        aria-label={`${field.cssVar}-layer-${layerIndex}-${key}`}
+                        value={layer[key]}
+                        onChange={(event) => {
+                          const nextLayers = parsedShadow.map(
+                            (currentLayer, currentIndex) =>
+                              currentIndex === layerIndex
+                                ? {
+                                    ...currentLayer,
+                                    [key]: event.target.value,
+                                  }
+                                : currentLayer,
+                          );
+                          updateShadowLayers(nextLayers);
+                        }}
+                      />
+                    </label>
+                  ))}
+                  <label className="theme-parameter-inline-field is-span-all">
+                    <span>颜色 / 表达式</span>
+                    {renderColorExpressionInput(
+                      `${field.cssVar}-layer-${layerIndex}-color`,
+                      layer.color,
+                      (nextColor) => {
+                        const nextLayers = parsedShadow.map(
+                          (currentLayer, currentIndex) =>
+                            currentIndex === layerIndex
+                              ? {
+                                  ...currentLayer,
+                                  color: nextColor,
+                                }
+                              : currentLayer,
+                        );
+                        updateShadowLayers(nextLayers);
+                      },
+                    )}
+                  </label>
+                </div>
+              </section>
+            ))}
+            <button
+              type="button"
+              className="theme-parameter-debug-preview-btn"
+              onClick={() => {
+                updateShadowLayers([
+                  ...parsedShadow,
+                  {
+                    inset: false,
+                    offsetX: "0px",
+                    offsetY: "2px",
+                    blur: "4px",
+                    spread: "0px",
+                    color: "rgba(0, 0, 0, 0.2)",
+                  },
+                ]);
+              }}
+            >
+              添加阴影层
+            </button>
+          </div>
+          {renderResetButton()}
+        </div>
+      );
+    }
+
     return (
       <label key={field.id} className="theme-parameter-text-row">
         <span className="theme-parameter-var-label">
@@ -2079,15 +2469,7 @@ export function ThemeParameterPanelMain({
           value={raw}
           onChange={(event) => setDebugTextFieldValue(field, event.target.value)}
         />
-        {isTextFieldChanged(field) ? (
-          <button
-            type="button"
-            className="theme-parameter-reset-btn"
-            onClick={() => resetTextField(field)}
-          >
-            {t("ui.themeParameter.resetField")}
-          </button>
-        ) : null}
+        {renderResetButton()}
       </label>
     );
   };
@@ -2117,6 +2499,63 @@ export function ThemeParameterPanelMain({
             return renderColorFieldRow(colorField);
           }
           const textField = sidebarMainTextFieldMap.get(cssVar);
+          if (textField) {
+            return renderTextFieldRow(textField);
+          }
+          return null;
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      if (sectionRows.length === 0) {
+        return null;
+      }
+
+      return (
+        <section
+          key={section.id}
+          className="settings-group theme-parameter-debug-group"
+        >
+          <header className="settings-group-head theme-parameter-subgroup-head">
+            <span>{section.title}</span>
+            <span className="theme-parameter-subgroup-tag">{section.tag}</span>
+          </header>
+          <div className="theme-parameter-color-list">{sectionRows}</div>
+        </section>
+      );
+    });
+  };
+
+  const mainImageNameListColorFieldMap = useMemo(
+    () =>
+      new Map(
+        CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS.map((field) => [
+          field.cssVar,
+          field,
+        ]),
+      ),
+    [],
+  );
+
+  const mainImageNameListTextFieldMap = useMemo(
+    () =>
+      new Map(
+        CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS.map((field) => [
+          field.cssVar,
+          field,
+        ]),
+      ),
+    [],
+  );
+
+  const renderMainImageNameListDebugSections = () => {
+    return MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS.map((section) => {
+      const sectionRows = section.cssVars
+        .map((cssVar) => {
+          const colorField = mainImageNameListColorFieldMap.get(cssVar);
+          if (colorField) {
+            return renderColorFieldRow(colorField);
+          }
+          const textField = mainImageNameListTextFieldMap.get(cssVar);
           if (textField) {
             return renderTextFieldRow(textField);
           }
@@ -2908,12 +3347,7 @@ export function ThemeParameterPanelMain({
                 {t("ui.themeParameter.containerLayer.sectionMainImageNameList")}
               </summary>
               <div className="settings-collapsible-content">
-                {renderColorGroups(CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS, [
-                  "main",
-                ])}
-                {renderTextGroups(CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS, [
-                  "main",
-                ])}
+                {renderMainImageNameListDebugSections()}
               </div>
             </details>
           </section>

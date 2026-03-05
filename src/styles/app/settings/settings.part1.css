@@ -1901,10 +1901,89 @@ button.mpx-overlay-chip-btn:focus-visible {
   gap: 6px;
 }
 
+.theme-parameter-text-row.is-structured {
+  align-items: stretch;
+}
+
 .theme-parameter-textarea {
   width: 100%;
   min-height: 96px;
   resize: vertical;
+}
+
+.theme-parameter-structured-card {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--mpx-border-1);
+  border-radius: 10px;
+  background: var(--mpx-bg-elevated);
+}
+
+.theme-parameter-structured-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.theme-parameter-structured-grid.is-gradient,
+.theme-parameter-structured-grid.is-filter {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.theme-parameter-structured-grid.is-shadow {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.theme-parameter-inline-field {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.theme-parameter-inline-field > span {
+  font-size: 12px;
+  color: var(--mpx-text-2);
+}
+
+.theme-parameter-inline-field.color-expression {
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+}
+
+.theme-parameter-inline-field.is-span-all {
+  grid-column: 1 / -1;
+}
+
+.theme-parameter-shadow-layer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.theme-parameter-shadow-layer {
+  gap: 12px;
+}
+
+.theme-parameter-shadow-layer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.theme-parameter-shadow-layer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.theme-parameter-inline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--mpx-text-2);
 }
 
 .theme-parameter-reset-btn {
