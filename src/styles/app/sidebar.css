@@ -553,6 +553,9 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  .sidebar-row.is-hover-active:not(.is-active)
+  .sidebar-label:not(.is-collapsible),
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-row:not(.is-active)
   .sidebar-label:not(.is-collapsible) {
   background: var(
@@ -662,13 +665,7 @@
   );
   background: var(
     --mpx-slot-fg-sidebar-main-count-packages-bg,
-    var(
-      --mpx-sidebar-main-count-packages-bg,
-      var(
-        --mpx-slot-fg-sidebar-main-count-bg,
-        var(--mpx-sidebar-main-count-bg, transparent)
-      )
-    )
+    var(--mpx-sidebar-main-count-packages-bg, transparent)
   );
   border-color: var(
     --mpx-slot-fg-sidebar-main-count-packages-border,
@@ -683,13 +680,7 @@
   );
   background: var(
     --mpx-slot-fg-sidebar-main-count-images-bg,
-    var(
-      --mpx-sidebar-main-count-images-bg,
-      var(
-        --mpx-slot-fg-sidebar-main-count-bg,
-        var(--mpx-sidebar-main-count-bg, transparent)
-      )
-    )
+    var(--mpx-sidebar-main-count-images-bg, transparent)
   );
   border-color: var(
     --mpx-slot-fg-sidebar-main-count-images-border,

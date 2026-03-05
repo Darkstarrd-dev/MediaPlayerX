@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/I18nProvider";
 import { resetUiStoreState, useUiStore } from "../store/useUiStore";
+import { resetThemeParameterPanelSessionStateForTest } from "./theme-parameter/themeParameterPanelSessionState";
 import ThemeParameterPanel from "./ThemeParameterPanel";
 
 function getSliderByLabelText(text: string): HTMLInputElement {
@@ -40,6 +41,7 @@ describe("ThemeParameterPanel", () => {
   beforeEach(() => {
     document.documentElement.removeAttribute("style");
     act(() => {
+      resetThemeParameterPanelSessionStateForTest();
       resetUiStoreState();
       useUiStore.getState().updateSettings({ uiLocale: "zh-CN" });
     });
@@ -48,6 +50,7 @@ describe("ThemeParameterPanel", () => {
   afterEach(() => {
     document.documentElement.removeAttribute("style");
     act(() => {
+      resetThemeParameterPanelSessionStateForTest();
       resetUiStoreState();
     });
   });
@@ -792,6 +795,74 @@ describe("ThemeParameterPanel", () => {
     ).toBe("");
   });
 
+  it("关闭后重开保持当前分页", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    expect(screen.getByLabelText("参数快照 JSON")).toBeInTheDocument();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByLabelText("参数快照 JSON")).toBeInTheDocument();
+  });
+
+  it("关闭后重开保持容器折叠状态", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.click(screen.getByText("2.2.2.1 fg-sidebar-main"));
+    expect(
+      screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    expect(
+      screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
+    ).toBeInTheDocument();
+  });
+
   it("打开主题参数面板时会迁移旧 sidebar slot 覆写到语义 token", () => {
     document.documentElement.style.setProperty(
       "--mpx-slot-fg-sidebar-main-bg",
@@ -806,6 +877,35 @@ describe("ThemeParameterPanel", () => {
     expect(
       document.documentElement.style
         .getPropertyValue("--mpx-slot-fg-sidebar-main-bg")
+        .trim(),
+    ).toBe("");
+  });
+
+  it("写入语义 token 时会清理对应 legacy slot 覆写", () => {
+    document.documentElement.style.setProperty(
+      "--mpx-slot-fg-sidebar-main-label-border",
+      "#8899aa",
+    );
+
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.click(screen.getByText("2.2.2.1 fg-sidebar-main"));
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-sidebar-main-label-border" }),
+      {
+        target: { value: "#223344" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-sidebar-main-label-border",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style
+        .getPropertyValue("--mpx-slot-fg-sidebar-main-label-border")
         .trim(),
     ).toBe("");
   });

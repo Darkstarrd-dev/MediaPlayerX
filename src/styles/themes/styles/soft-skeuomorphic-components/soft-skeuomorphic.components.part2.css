@@ -237,13 +237,7 @@
   );
   background: var(
     --mpx-slot-fg-sidebar-main-count-packages-bg,
-    var(
-      --mpx-sidebar-main-count-packages-bg,
-      var(
-        --mpx-slot-fg-sidebar-main-count-bg,
-        var(--mpx-sidebar-main-count-bg, transparent)
-      )
-    )
+    var(--mpx-sidebar-main-count-packages-bg, transparent)
   );
   box-shadow: var(
     --mpx-slot-fg-sidebar-main-count-packages-shadow,

@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type SetStateAction,
+} from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
 import { useDraggablePanel } from "../useDraggablePanel";
@@ -22,6 +29,14 @@ import {
   type ThemeParameterDefinition,
   type ThemeParameterValues,
 } from "./themeParameterDefinitions";
+import {
+  clearContainerDebugSessionState,
+  readContainerDebugSessionState,
+  readThemeParameterUiSessionState,
+  updateThemeParameterUiSessionState,
+  writeContainerDebugSessionState,
+  writeThemeParameterUiSessionState,
+} from "./themeParameterPanelSessionState";
 
 const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
 
@@ -789,58 +804,59 @@ const CONTAINER_DEBUG_TEXT_FIELDS = SNAPSHOT_TEXT_FIELDS.filter((field) =>
   field.id.startsWith("container-"),
 );
 
-const LEGACY_SIDEBAR_MAIN_SLOT_TO_SEMANTIC: ReadonlyArray<{
-  legacy: string;
-  semantic: string;
+const LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC: ReadonlyArray<{
+  legacyPrefix: string;
+  semanticPrefix: string;
 }> = [
-  { legacy: "--mpx-slot-fg-sidebar-main-bg", semantic: "--mpx-sidebar-main-bg" },
   {
-    legacy: "--mpx-slot-fg-sidebar-main-label-border",
-    semantic: "--mpx-sidebar-main-label-border",
+    legacyPrefix: "--mpx-slot-fg-sidebar-main-",
+    semanticPrefix: "--mpx-sidebar-main-",
   },
   {
-    legacy: "--mpx-slot-fg-sidebar-main-label-active-bg",
-    semantic: "--mpx-sidebar-main-label-active-bg",
-  },
-  {
-    legacy: "--mpx-slot-fg-sidebar-main-active-ring",
-    semantic: "--mpx-sidebar-main-active-ring",
-  },
-  {
-    legacy: "--mpx-slot-fg-sidebar-main-active-underlay",
-    semantic: "--mpx-sidebar-main-active-underlay",
-  },
-  {
-    legacy: "--mpx-slot-fg-sidebar-main-label-toggle-text",
-    semantic: "--mpx-sidebar-main-label-toggle-text",
-  },
-  {
-    legacy: "--mpx-slot-fg-sidebar-main-count-bg",
-    semantic: "--mpx-sidebar-main-count-bg",
+    legacyPrefix: "--mpx-slot-fg-main-content-image-name-list-",
+    semanticPrefix: "--mpx-main-image-name-list-",
   },
 ];
 
-interface ContainerDebugSessionState {
-  colors: Record<string, string>;
-  texts: Record<string, string>;
+function resolveLegacyContainerSemanticVar(legacyCssVar: string): string | null {
+  for (const mapping of LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC) {
+    if (!legacyCssVar.startsWith(mapping.legacyPrefix)) {
+      continue;
+    }
+    return `${mapping.semanticPrefix}${legacyCssVar.slice(mapping.legacyPrefix.length)}`;
+  }
+  return null;
 }
 
-let containerDebugSessionState: ContainerDebugSessionState = {
-  colors: {},
-  texts: {},
-};
-
 function migrateLegacySidebarMainSlots(root: HTMLElement): void {
-  for (const mapping of LEGACY_SIDEBAR_MAIN_SLOT_TO_SEMANTIC) {
-    const semanticValue = root.style.getPropertyValue(mapping.semantic).trim();
-    const legacyValue = root.style.getPropertyValue(mapping.legacy).trim();
-    if (!semanticValue && legacyValue) {
-      root.style.setProperty(mapping.semantic, legacyValue);
+  const legacyPairs: Array<{ legacyCssVar: string; semanticCssVar: string }> = [];
+  for (let index = 0; index < root.style.length; index += 1) {
+    const legacyCssVar = root.style.item(index);
+    const semanticCssVar = resolveLegacyContainerSemanticVar(legacyCssVar);
+    if (!semanticCssVar) {
+      continue;
     }
-    if (legacyValue) {
-      root.style.removeProperty(mapping.legacy);
-    }
+    legacyPairs.push({ legacyCssVar, semanticCssVar });
   }
+
+  for (const pair of legacyPairs) {
+    const semanticValue = root.style.getPropertyValue(pair.semanticCssVar).trim();
+    const legacyValue = root.style.getPropertyValue(pair.legacyCssVar).trim();
+    if (legacyValue && !semanticValue) {
+      root.style.setProperty(pair.semanticCssVar, legacyValue);
+    }
+    root.style.removeProperty(pair.legacyCssVar);
+  }
+}
+
+function resolveNextState<T>(
+  action: SetStateAction<T>,
+  previous: T,
+): T {
+  if (typeof action === "function") {
+    return (action as (previousValue: T) => T)(previous);
+  }
+  return action;
 }
 
 function captureContainerDebugSessionState(root: HTMLElement): void {
@@ -858,26 +874,20 @@ function captureContainerDebugSessionState(root: HTMLElement): void {
       nextTexts[field.cssVar] = raw;
     }
   }
-  containerDebugSessionState = {
+  writeContainerDebugSessionState({
     colors: nextColors,
     texts: nextTexts,
-  };
+  });
 }
 
 function applyContainerDebugSessionState(root: HTMLElement): void {
-  for (const [cssVar, value] of Object.entries(containerDebugSessionState.colors)) {
+  const sessionState = readContainerDebugSessionState();
+  for (const [cssVar, value] of Object.entries(sessionState.colors)) {
     root.style.setProperty(cssVar, value);
   }
-  for (const [cssVar, value] of Object.entries(containerDebugSessionState.texts)) {
+  for (const [cssVar, value] of Object.entries(sessionState.texts)) {
     root.style.setProperty(cssVar, value);
   }
-}
-
-function clearContainerDebugSessionState(): void {
-  containerDebugSessionState = {
-    colors: {},
-    texts: {},
-  };
 }
 
 function ThemeParameterPanel({
@@ -888,6 +898,7 @@ function ThemeParameterPanel({
   onClose,
   onHide = () => {},
 }: ThemeParameterPanelProps) {
+  const initialUiSessionState = readThemeParameterUiSessionState();
   const { t } = useI18n();
   const styleGroup = resolveStyleGroup(styleId);
   const styleParameters =
@@ -909,13 +920,25 @@ function ThemeParameterPanel({
     [styleGroup],
   );
   const [values, setValues] = useState<ThemeParameterValues>({});
-  const [activePage, setActivePage] =
-    useState<ThemeParameterPageId>("parameters");
+  const [activePage, setActivePageState] = useState<ThemeParameterPageId>(
+    initialUiSessionState.activePage,
+  );
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
-  const [commonExpanded, setCommonExpanded] = useState(true);
-  const [styleExpanded, setStyleExpanded] = useState(true);
+  const [commonExpanded, setCommonExpandedState] = useState(
+    initialUiSessionState.commonExpanded,
+  );
+  const [styleExpanded, setStyleExpandedState] = useState(
+    initialUiSessionState.styleExpanded,
+  );
+  const [containerLegacyExpanded, setContainerLegacyExpandedState] = useState(
+    initialUiSessionState.containerLegacyExpanded,
+  );
+  const [containerSidebarMainExpanded, setContainerSidebarMainExpandedState] =
+    useState(initialUiSessionState.containerSidebarMainExpanded);
+  const [containerMainImageNameListExpanded, setContainerMainImageNameListExpandedState] =
+    useState(initialUiSessionState.containerMainImageNameListExpanded);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -926,6 +949,58 @@ function ThemeParameterPanel({
   const snapshotBaselineRef = useRef<ThemeParameterSnapshot | null>(null);
   const wasOpenRef = useRef(false);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
+
+  const setActivePage = (action: SetStateAction<ThemeParameterPageId>) => {
+    setActivePageState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ activePage: next });
+      return next;
+    });
+  };
+
+  const setCommonExpanded = (action: SetStateAction<boolean>) => {
+    setCommonExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ commonExpanded: next });
+      return next;
+    });
+  };
+
+  const setStyleExpanded = (action: SetStateAction<boolean>) => {
+    setStyleExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ styleExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerLegacyExpanded = (action: SetStateAction<boolean>) => {
+    setContainerLegacyExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerLegacyExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerSidebarMainExpanded = (action: SetStateAction<boolean>) => {
+    setContainerSidebarMainExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerSidebarMainExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMainImageNameListExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMainImageNameListExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMainImageNameListExpanded: next,
+      });
+      return next;
+    });
+  };
 
   const containerLayerParameters = useMemo(
     () => parameters.filter(isContainerLayerParameter),
@@ -1006,7 +1081,17 @@ function ThemeParameterPanel({
     applyContainerDebugSessionState(root);
     const initialValues = readParameterValues(parameters);
     const computed = getComputedStyle(root);
-    setActivePage("parameters");
+    const uiSessionState = readThemeParameterUiSessionState();
+    setActivePageState(uiSessionState.activePage);
+    setCommonExpandedState(uiSessionState.commonExpanded);
+    setStyleExpandedState(uiSessionState.styleExpanded);
+    setContainerLegacyExpandedState(uiSessionState.containerLegacyExpanded);
+    setContainerSidebarMainExpandedState(
+      uiSessionState.containerSidebarMainExpanded,
+    );
+    setContainerMainImageNameListExpandedState(
+      uiSessionState.containerMainImageNameListExpanded,
+    );
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -1043,8 +1128,24 @@ function ThemeParameterPanel({
       return;
     }
     captureContainerDebugSessionState(document.documentElement);
+    writeThemeParameterUiSessionState({
+      activePage,
+      containerLegacyExpanded,
+      containerSidebarMainExpanded,
+      containerMainImageNameListExpanded,
+      commonExpanded,
+      styleExpanded,
+    });
     wasOpenRef.current = false;
-  }, [open]);
+  }, [
+    activePage,
+    commonExpanded,
+    containerLegacyExpanded,
+    containerMainImageNameListExpanded,
+    containerSidebarMainExpanded,
+    open,
+    styleExpanded,
+  ]);
 
   useEffect(() => {
     if (!open || activePreviewMode === "none") {
@@ -1503,6 +1604,14 @@ function ThemeParameterPanel({
           setCommonExpanded={setCommonExpanded}
           styleExpanded={styleExpanded}
           setStyleExpanded={setStyleExpanded}
+          containerLegacyExpanded={containerLegacyExpanded}
+          setContainerLegacyExpanded={setContainerLegacyExpanded}
+          containerSidebarMainExpanded={containerSidebarMainExpanded}
+          setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}
+          containerMainImageNameListExpanded={containerMainImageNameListExpanded}
+          setContainerMainImageNameListExpanded={
+            setContainerMainImageNameListExpanded
+          }
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

@@ -49,6 +49,12 @@ interface ThemeParameterPanelMainProps {
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
   setStyleExpanded: Dispatch<SetStateAction<boolean>>;
+  containerLegacyExpanded: boolean;
+  setContainerLegacyExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarMainExpanded: boolean;
+  setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainImageNameListExpanded: boolean;
+  setContainerMainImageNameListExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -650,6 +656,41 @@ const CONTAINER_LEGACY_SLOT_VARS: readonly string[] = [
   "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-font-weight",
   "--mpx-slot-fg-main-content-image-name-list-label-text",
 ];
+
+const CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT: ReadonlyArray<{
+  semanticPrefix: string;
+  slotPrefix: string;
+}> = [
+  {
+    semanticPrefix: "--mpx-sidebar-main-",
+    slotPrefix: "--mpx-slot-fg-sidebar-main-",
+  },
+  {
+    semanticPrefix: "--mpx-main-image-name-list-",
+    slotPrefix: "--mpx-slot-fg-main-content-image-name-list-",
+  },
+];
+
+function resolveLegacySlotVarForSemanticVar(cssVar: string): string | null {
+  for (const mapping of CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT) {
+    if (!cssVar.startsWith(mapping.semanticPrefix)) {
+      continue;
+    }
+    return `${mapping.slotPrefix}${cssVar.slice(mapping.semanticPrefix.length)}`;
+  }
+  return null;
+}
+
+function clearLegacySlotOverrideForSemanticVar(
+  root: HTMLElement,
+  cssVar: string,
+): void {
+  const legacySlotVar = resolveLegacySlotVarForSemanticVar(cssVar);
+  if (!legacySlotVar) {
+    return;
+  }
+  root.style.removeProperty(legacySlotVar);
+}
 
 function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-sidebar-main-bg") {
@@ -1366,6 +1407,12 @@ export function ThemeParameterPanelMain({
   setCommonExpanded,
   styleExpanded,
   setStyleExpanded,
+  containerLegacyExpanded,
+  setContainerLegacyExpanded,
+  containerSidebarMainExpanded,
+  setContainerSidebarMainExpanded,
+  containerMainImageNameListExpanded,
+  setContainerMainImageNameListExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -1423,12 +1470,6 @@ export function ThemeParameterPanelMain({
       sliderVerticalDown: 28,
       sliderSettingsHorizontal: 52,
     });
-  const [containerLegacyExpanded, setContainerLegacyExpanded] =
-    useState(true);
-  const [containerSidebarMainExpanded, setContainerSidebarMainExpanded] =
-    useState(false);
-  const [containerMainImageNameListExpanded, setContainerMainImageNameListExpanded] =
-    useState(false);
 
   const containerDebugColorVarSet = useMemo(
     () => new Set(CONTAINER_LAYER_COLOR_FIELDS.map((field) => field.cssVar)),
@@ -1646,6 +1687,7 @@ export function ThemeParameterPanelMain({
       field.cssVar,
       formatColorStateAsCss(nextState),
     );
+    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
     setDebugColorValues((previous) => ({
       ...previous,
@@ -1675,6 +1717,7 @@ export function ThemeParameterPanelMain({
       field.cssVar,
       formatColorStateAsCss(nextState),
     );
+    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
     setDebugColorValues((previous) => ({
       ...previous,
@@ -1692,6 +1735,7 @@ export function ThemeParameterPanelMain({
   const resetColorField = (field: ThemeDebugColorField) => {
     const root = document.documentElement;
     root.style.removeProperty(field.cssVar);
+    clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
     const computed = getComputedStyle(root);
     const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
@@ -1717,12 +1761,14 @@ export function ThemeParameterPanelMain({
       return;
     }
     document.documentElement.style.setProperty(field.cssVar, raw);
+    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
   };
 
   const resetTextField = (field: ThemeDebugTextField) => {
     const root = document.documentElement;
     root.style.removeProperty(field.cssVar);
+    clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
     const computed = getComputedStyle(root);
     setDebugTextValues((previous) => ({

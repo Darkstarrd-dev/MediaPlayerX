@@ -700,6 +700,13 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row
+  .sidebar-label.is-collapsible::after {
+  display: none;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-sidebar-main"]
+  .sidebar-row
   .sidebar-label:hover {
   filter: var(
     --mpx-slot-fg-sidebar-main-label-hover-filter,
@@ -721,7 +728,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row.is-active
-  .sidebar-label::after {
+  .sidebar-label:not(.is-collapsible)::after {
   opacity: 1;
   background: var(
     --mpx-slot-fg-sidebar-main-label-marker-focus-bg,
@@ -732,7 +739,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row.is-manage.is-selected
-  .sidebar-label::after {
+  .sidebar-label:not(.is-collapsible)::after {
   opacity: 1;
   background: var(
     --mpx-slot-fg-sidebar-main-label-marker-selected-bg,
@@ -746,7 +753,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
   .sidebar-row
-  .sidebar-label:focus-visible::after {
+  .sidebar-label:not(.is-collapsible):focus-visible::after {
   opacity: 1;
   background: var(
     --mpx-slot-fg-sidebar-main-label-marker-focus-bg,
