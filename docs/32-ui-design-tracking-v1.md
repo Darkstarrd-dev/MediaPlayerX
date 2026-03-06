@@ -341,6 +341,82 @@ css 的触发点
 说明
 Meta 容器顶部命名已统一为 `metadata-header` / `fg-meta-header`，不再使用 `toolbar` 称呼。
 
+### 2.4.1 偏好指标卡片（preference record）
+
+用在什么地方
+`fg-meta-main-image-editor-preference-metrics-panel` 与 `fg-meta-main-video-editor-preference-metrics-panel`（`.metadata-preference-record`）。
+
+css 的触发点
+`src/components/metadata/MetadataImageEditor.tsx`
+`src/components/metadata/MetadataVideoEditor.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/metadata.css`
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+
+变量与变量对应的值（按组）
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-metadata-preference-record-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：
+   - `--mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-*`
+   - `--mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-*`
+3. 消费层：`src/styles/app/settings/settings.part1.css` + `src/styles/app/metadata.css` + `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+
+`A. 外卡本体`
+
+`--mpx-metadata-preference-record-border`
+`--mpx-metadata-preference-record-bg`
+`--mpx-metadata-preference-record-text`
+
+`B. 标题 / hint`
+
+`--mpx-metadata-preference-record-summary-text`
+`--mpx-metadata-preference-record-hint-text`
+
+`C. 只读字段`
+
+`--mpx-metadata-preference-record-field-border`
+`--mpx-metadata-preference-record-field-bg`
+`--mpx-metadata-preference-record-field-text`
+
+说明
+Image / Video 两处 preference record 已改为同一语义家族，`ThemeParameterPanel` 统一在 `largePanelLayer` 验收，不再依赖散落的 `.metadata-preference-record` 类规则直写。
+
+### 2.4.2 音乐 Booklet 绑定卡片
+
+用在什么地方
+`fg-meta-main-music-editor-booklet-binding-panel`（`.metadata-music-booklet-bindings`）。
+
+css 的触发点
+`src/components/metadata/MetadataMusicEditor.tsx`
+`src/styles/app/settings/settings.part1.css`
+`src/styles/app/metadata.css`
+`src/styles/themes/styles/soft-skeuomorphic.css`
+`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+
+变量与变量对应的值（按组）
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-metadata-booklet-binding-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：`--mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-*`
+3. 消费层：`src/styles/app/settings/settings.part1.css` + `src/styles/app/metadata.css` + `src/styles/themes/styles/soft-skeuomorphic.css` + `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`
+
+`A. 卡片本体`
+
+`--mpx-metadata-booklet-binding-border`
+`--mpx-metadata-booklet-binding-bg`
+`--mpx-metadata-booklet-binding-text`
+`--mpx-metadata-booklet-binding-meta-text`
+
+`B. 选择控件`
+
+`--mpx-metadata-booklet-binding-control-border`
+`--mpx-metadata-booklet-binding-control-bg`
+`--mpx-metadata-booklet-binding-control-text`
+
+说明
+Booklet 绑定区现已不再借壳通用 `input/select` 默认值；slot 可局部覆写，语义层可直接进入 `largePanelLayer` 调试。
+
 ## 2.5 Import Task Panel 容器（已迁移）
 
 说明
@@ -689,8 +765,35 @@ css 的触发点
 
 `[data-slot='fg-meta-main-search-feature-tag-picker-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
+内部件链路（Phase 2 已补齐）
+
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-metadata-feature-tag-picker-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：`--mpx-slot-fg-meta-main-search-feature-tag-picker-panel-*`
+3. 消费层：`src/styles/app/settings/settings.part1.css` + `src/styles/app/metadata.css`
+
+`A. hint / 分组键`
+
+`--mpx-metadata-feature-tag-picker-hint-text`
+`--mpx-metadata-feature-tag-picker-group-key-text`
+
+`B. tag 容器`
+
+`--mpx-metadata-feature-tag-picker-popover-border`
+`--mpx-metadata-feature-tag-picker-popover-bg`
+
+`C. tag 按钮（默认 / active）`
+
+`--mpx-metadata-feature-tag-picker-tag-border`
+`--mpx-metadata-feature-tag-picker-tag-bg`
+`--mpx-metadata-feature-tag-picker-tag-text`
+`--mpx-metadata-feature-tag-picker-tag-active-border`
+`--mpx-metadata-feature-tag-picker-tag-active-bg`
+`--mpx-metadata-feature-tag-picker-tag-active-text`
+
 说明
-本阶段先统一为“同尺寸 + 同 head/main 骨架”；标签组与操作区仅做结构承接，后续再做细节微调。
+标签检索面板现已不止统一外层骨架；内部 tag popover / hint / active tag 也已进入 `largePanelLayer` 调试范围。
 
 ## 3.7 字幕清理面板
 
@@ -777,8 +880,14 @@ css 的触发点
 
 `[data-slot='fg-main-header-manage-music-transcode-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
+内部件现已补齐 `语义 token -> slot token -> selector consume` 三段链路：
+
+1. 语义层：`--mpx-transcode-dialog-control-*`、`--mpx-transcode-dialog-action-btn-*`
+2. slot 层：`--mpx-slot-fg-main-header-manage-music-transcode-panel-control-*`、`--mpx-slot-fg-main-header-manage-music-transcode-panel-action-btn-*`
+3. 消费层：`settings.part2.css / settings.part3.css`
+
 说明
-音频转码继续复用原业务内部表单与历史任务区，仅统一到 3.0 外层骨架链路。
+音频转码继续复用原业务内部表单与历史任务区；路径行输入框、select 与 footer / inline action button 已不再借壳 `sidebar-rename-soft-*` 或 Header G2 token。
 
 ## 3.9 视频转码面板
 
@@ -804,8 +913,14 @@ css 的触发点
 
 `[data-slot='fg-main-header-manage-video-transcode-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
+内部件现已补齐 `语义 token -> slot token -> selector consume` 三段链路：
+
+1. 语义层：`--mpx-transcode-dialog-control-*`、`--mpx-transcode-dialog-action-btn-*`
+2. slot 层：`--mpx-slot-fg-main-header-manage-video-transcode-panel-control-*`、`--mpx-slot-fg-main-header-manage-video-transcode-panel-action-btn-*`
+3. 消费层：`settings.part2.css / settings.part3.css`
+
 说明
-视频转码参数区、估算区与任务状态逻辑保持原行为，外层切到 3.0 基架。
+视频转码参数区、估算区与任务状态逻辑保持原行为；输出目录行与底部操作按钮已切到独立 transcode 语义家族。
 
 ## 3.10 Import Task 面板
 
@@ -1038,6 +1153,54 @@ css 的触发点
 2. 各 dialog 仍可通过各自 slot 变量做局部覆写（边框/背景/文字/阴影/尺寸）。
 3. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。
 
+### 5.2 SidebarRenameDialog 小面板 / 大面板内部件
+
+用在什么地方
+`SidebarRenameDialog` 的单文件更名分支与批量更名分支共享一组受控内部语义：输入控件 / 操作按钮 / 批量预览表。
+
+变量与变量对应的值（按组）
+
+1. 通用 dialog 控件：`--mpx-sidebar-rename-dialog-text`、`--mpx-sidebar-rename-dialog-muted-text`、`--mpx-sidebar-rename-dialog-control-*`、`--mpx-sidebar-rename-dialog-action-btn-*`
+2. 批量预览表：`--mpx-sidebar-rename-preview-border/bg/head-*/list-bg/row-*`
+3. slot 映射：
+   - 小面板：`--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-*`、`action-btn-*`、`text`、`muted-text`
+   - 大面板：`--mpx-slot-fg-sidebar-shortcut-rename-panel-control-*`、`action-btn-*`、`preview-*`、`text`、`muted-text`
+
+说明
+`SidebarRenameDialog` 已不再借壳 `sidebar-rename-soft-*` 与 `fg-header-g2-mode-image-*`；单文件重命名纳入 `smallPanelLayer`，批量预览表纳入 `largePanelLayer`。
+
+### 5.1 播放列表命名小面板
+
+用在什么地方
+`fg-meta-main-video-editor-playlist-name-dialog-panel`（`.metadata-playlist-save-dialog.mpx-dialog-panel.mpx-dialog-panel--inline`）。
+
+css 的触发点
+`src/components/metadata/MetadataVideoEditor.tsx`
+`src/styles/app/settings/settings.part2.css`
+`src/styles/app/metadata.css`
+
+变量与变量对应的值（按组）
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 骨架层：`--mpx-dialog-panel-*`（5.0 小面板基架）
+2. 内部语义层：`--mpx-metadata-playlist-name-dialog-*`（定义在 `src/styles/themes/contract.css`）
+3. slot 层：`--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-*`
+4. 消费层：`src/styles/app/settings/settings.part2.css` + `src/styles/app/metadata.css`
+
+`A. 文本 / 提示`
+
+`--mpx-metadata-playlist-name-dialog-text`
+
+`B. 输入框`
+
+`--mpx-metadata-playlist-name-dialog-input-border`
+`--mpx-metadata-playlist-name-dialog-input-bg`
+`--mpx-metadata-playlist-name-dialog-input-text`
+`--mpx-metadata-playlist-name-dialog-input-placeholder`
+
+说明
+播放列表命名弹窗现已不只挂到 `5.0` 骨架；其 prompt 与 input 也可在 `smallPanelLayer` 直接调试与快照覆盖。
+
 ## 6.0 控件层
 
 说明
@@ -1047,7 +1210,7 @@ css 的触发点
 
 用在什么地方
 全局滚动容器（含 `mpx-scroll-area` 与常规可滚动区域）的滚动条轨道/滑块样式。
-当前按单链路维护，暂不拆变体。
+当前按“全局基础层 + sidebar-tree 受控别名细节覆写”维护，暂不再拆新变体。
 
 css 的触发点
 `src/styles/app/base.css`（`*::-webkit-scrollbar*` 与 `scrollbar-color` 入口）
@@ -1055,6 +1218,9 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic.css`（当前 style 对 sidebar-tree 滚动条覆写）
 
 变量与变量对应的值（按组）
+
+`A. 全局基础层`
+
 `--mpx-scrollbar-size`（滚动条尺寸）
 `--mpx-scrollbar-radius`（滚动条圆角）
 `--mpx-scrollbar-track-bg`（轨道背景）
@@ -1069,8 +1235,20 @@ css 的触发点
 `--mpx-scrollbar-thumb-hover-bg = #2e6f7f`（`src/styles/themes/contract.css`）
 `--mpx-scrollbar-thumb-active-bg = var(--mpx-scrollbar-thumb-hover-bg)`（`src/styles/themes/contract.css`）
 
+`B. sidebar-tree 细节覆写层（ThemeParameter commonControls 已直接暴露）`
+
+`--mpx-sidebar-tree-scrollbar-track-radius/thumb-radius`
+`--mpx-sidebar-tree-scrollbar-color-track/color-thumb`
+`--mpx-sidebar-tree-scrollbar-track-bg/border/shadow`
+`--mpx-sidebar-tree-scrollbar-end-gap`
+`--mpx-sidebar-tree-scrollbar-thumb-min-height`
+`--mpx-sidebar-tree-scrollbar-thumb-border-width/border-color`
+`--mpx-sidebar-tree-scrollbar-thumb-bg/hover-bg/active-bg`
+`--mpx-sidebar-tree-scrollbar-thumb-shadow/active-shadow`
+
 说明
-6.1 当前不区分场景变体；侧栏树滚动条通过 `sidebar-tree` 命名变量链路承接并覆写视觉细节。
+6.1 当前不再视为“未分页尾项”：`ThemeParameterPanel` 的 `commonControls` 页已同时覆盖全局基础值与 `sidebar-tree` 细节覆写字段。
+`base.css` 的真实消费顺序仍为 `sidebar-tree alias -> global scrollbar base -> fallback`，因此 `sidebar-tree` 前缀继续保留为受控别名，而不是匿名硬编码。
 
 ## 6.2 Slider
 
@@ -1164,14 +1342,15 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic.runway.css`（`input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)`）
 
 变量与变量对应的值（按组）
-`--mpx-runway-groove-bg`（设置 slider 轨道底色）
-`--mpx-runway-groove-shadow`（设置 slider 轨道阴影）
+`--mpx-slider-settings-groove-bg`（设置 slider 轨道底色）
+`--mpx-slider-settings-groove-shadow`（设置 slider 轨道阴影）
 
-`--mpx-runway-groove-bg = #e9ecf0`（`src/styles/themes/styles/soft-skeuomorphic.css`）
-`--mpx-runway-groove-shadow = inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-slider-settings-groove-bg = #e9ecf0`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-slider-settings-groove-shadow = inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
 说明
-当前 6.2.3 与 6.2.1 在部分轨道 token 上存在共享；分页已分离，后续可继续下钻为独立 token 链路。
+6.2.3 已从播放器 runway 轨道中拆出，`ThemeParameterPanel` 的 `commonControls` 页现在直接调试 `--mpx-slider-settings-groove-*`。
+`--mpx-runway-groove-*` 继续保留给播放器 / runway 相关消费点，不再承担设置 slider 的轨道语义。
 
 ## 7.0 Phase 1 收口基线（2026-03-06）
 
@@ -1185,7 +1364,7 @@ css 的触发点
 | `3.0~3.10 大面板层` | `--mpx-large-panel-*` | 各大面板 `root/head/side/main/ovl` slot 家族 | `settings.part1.css`、`settings.part2.css`、业务面板 CSS | `largePanelLayer` | 骨架已统一，内部件仍有残余 |
 | `5.0 小面板层` | `--mpx-dialog-panel-*` | 各 dialog `ovl/panel` slot 家族 | `settings.part2.css`、`metadata.css` | `smallPanelLayer` | 骨架已统一 |
 | `4.0 按钮层` | `--mpx-btn-core-*`、`--mpx-btn-variant-*` | `--mpx-slot-<path>-*`（局部覆写） | `button-template.css`、`settings.part1.css`、业务消费端样式 | `buttonStates` | 已建立主链路 |
-| `6.1 滚动条` + `6.2 Slider` | `--mpx-scrollbar-*`、`--mpx-range-*`、`--mpx-runway-*` | 控件自身 slot/语义链路 | `base.css`、`soft-skeuomorphic.runway.css`、`layout.part2.css`、`settings.part1.css` | `commonControls` | 已进入分页，仍有别名与共享 token 尾项 |
+| `6.1 滚动条` + `6.2 Slider` | `--mpx-scrollbar-*`、`--mpx-range-*`、`--mpx-runway-*`、`--mpx-slider-settings-*` | 控件自身 slot/语义链路 | `base.css`、`soft-skeuomorphic.runway.css`、`layout.part2.css`、`settings.part1.css` | `commonControls` | 已进入分页，scrollbar detail 与 settings slider groove 已补齐 |
 | 播放器 / 全屏图像调整 / 广告审核 overlay | `--mpx-player-surface-*`、`--mpx-player-hud-*`、`--mpx-fs-image-adjust-*`（预留）、`--mpx-ad-review-overlay-*` | 各子系统自有前缀或受控保留位 | `main.part2.css`、`main.part3.css`、`main.part4.css`、`layout.part3.css`、`manage.css` | 暂不并入当前分页 | 允许特例，保留独立语义域 |
 
 说明
@@ -1193,14 +1372,43 @@ css 的触发点
 1. `ThemeParameterPanel` 当前分页只承接可稳定批量调节的层级；播放器、全屏图像调整、广告审核 overlay 保留为特例子系统。
 2. `parameters / snapshot` 两页用于通用参数与快照，不作为 UI 层级归属页。
 
+### 7.0.1.1 ThemeParameter 分页验收对照表（Phase 2）
+
+| 分页 | 必须覆盖的层级节点 | 暂不纳入的特例节点 | 当前预览入口 | 说明 |
+|---|---|---|---|---|
+| `parameters` | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数 | 不承载特例白名单，只负责通用参数滑条 | 无独立预览；直接写入实际变量 | 该页是参数入口，不作为层级归属页 |
+| `snapshot` | 当前所有分页已暴露字段的导出 / 导入 / 复位 | 不负责新增字段定义 | 无独立预览；作用于当前 inline 覆写集合 | Phase 3 会把该结构继续收敛到正式 theme schema |
+| `containerLayer` | `1.0` 背景层、`2.0~2.4` 四大容器壳层、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay | `bg-only`、`bg-plus-container` | 已拆成 legacy / sidebar-main / image-name-list 三组验收区 |
+| `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等 | 播放器独立 panel / HUD、未登记的舞台化 overlay | `bg-plus-large-panel` | 主验收对象是 `root/head/side/main` 骨架与受控内部语义 |
+| `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等 | 不承接大面板内部件与播放器 popover | `bg-plus-small-panel` | 以 dialog panel 本体与其局部控件为主 |
+| `commonControls` | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider sections） | 当前已补齐 scrollbar detail 与 settings groove 独立 token |
+| `buttonStates` | `4.0` 按钮层里 ThemeParameter side 按钮的 state 样例与 slot 覆写链路 | 业务按钮全集并不在本页逐个复刻 | 页内 state demo 按钮 | 用于验收 `core/variant/slot` 到 side button 的命中情况 |
+
+### 7.0.1.2 ThemeParameter 逐页手工验收清单（待执行）
+
+| 分页 | 验收动作 | 预期结果 | 当前记录状态 |
+|---|---|---|---|
+| `parameters` | 调节任一通用参数后关闭并重新打开面板 | 变量值保持到当前会话态，UI 同步更新 | 待执行 |
+| `snapshot` | 导出当前快照 -> 清空 / 复位 -> 重新导入 | 已暴露字段全部恢复，提示文案正确 | 待执行 |
+| `containerLayer` | 在 `bg-only` / `bg-plus-container` 下分别修改颜色、文本串、数值项并单项复位 | 预览区即时生效，复位后回到主题默认值 | 待执行 |
+| `largePanelLayer` | 在 `bg-plus-large-panel` 下修改 `root/head/side/main` 与内部件颜色项 | 大面板骨架与已收口内部件同步响应 | 待执行 |
+| `smallPanelLayer` | 在 `bg-plus-small-panel` 下修改 dialog 骨架与文本串并复位 | 小面板预览与实际 slot 命中一致 | 待执行 |
+| `commonControls` | 逐项测试 scrollbar、runway、vertical、settings slider 字段 | 对应控件样例即时变化；scrollbar detail 与 settings groove 命中新链路 | 待执行 |
+| `buttonStates` | 切换各状态样例并修改 side button 颜色项 | state demo 与左侧分页按钮命中一致 | 待执行 |
+
+执行约束
+
+1. 每页至少记录四类结果：`改值生效`、`单项复位生效`、`快照恢复生效`、`切页不丢状态`。
+2. 若发现“文档标注变量”与“实际命中变量”不一致，优先修正文档或实现，禁止口头跳过。
+3. 手工验收完成后，再回填 `docs/35-ui-theme-config-tauri-roadmap-v1.md` 的 Phase 2 勾选状态。
+
 ### 7.0.2 残余链路清单（Phase 1 冻结结果）
 
 | 区域 | 当前问题 | 现状归类 | 所属分页 | 后续 Phase |
 |---|---|---|---|---|
-| `FeatureTagPickerModal`、`metadata-preference-record`、`metadata-music-booklet-bindings`、`playlist-name-dialog` | 已挂 slot，但内部卡片与输入区仍偏类规则直写，缺统一语义家族 | 内部件未收口 | `largePanelLayer` / `smallPanelLayer` | Phase 2 |
-| `MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件 | 仍借用其他域 token（如 `sidebar-rename-soft-*`、`fg-header-g2-mode-image-*`） | 跨层借壳 token | `largePanelLayer` | Phase 2 |
-| `6.1` 滚动条 | 全局 `--mpx-scrollbar-*` 已建立，但仍与 `sidebar-tree` 别名链路并存 | 控件层尾项 | `commonControls` | Phase 2 |
-| `6.2.1` / `6.2.3` slider | 播放器 slider 与设置 slider 仍共享部分轨道 token | 控件层尾项 | `commonControls` | Phase 2 |
+| `MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件 | 已收口到 `--mpx-transcode-dialog-*` / `--mpx-sidebar-rename-dialog-*` / `--mpx-sidebar-rename-preview-*` | 已完成 | `largePanelLayer` + `smallPanelLayer` | 已完成 |
+| `6.1` 滚动条 | `ThemeParameterPanel` 已补齐 sidebar-tree scrollbar detail 字段；全局 `--mpx-scrollbar-*` 继续作为基础层，`sidebar-tree` 保留受控别名覆写 | 已完成 | `commonControls` | 已完成 |
+| `6.2.1` / `6.2.3` slider | 设置页 slider groove 已拆到 `--mpx-slider-settings-groove-*`，与播放器 runway 轨道分离 | 已完成 | `commonControls` | 已完成 |
 
 冻结约束
 

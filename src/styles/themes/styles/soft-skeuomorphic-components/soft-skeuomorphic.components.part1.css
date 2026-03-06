@@ -17,6 +17,14 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  .metadata-music-booklet-bindings {
+  border-color: var(
+    --mpx-metadata-booklet-binding-border-current,
+    var(--mpx-metadata-booklet-binding-border)
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-main-shell {
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-sidebar-inner, 12px);
@@ -97,9 +105,16 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .metadata-video-body
   > .metadata-preference-record {
-  border: 1px solid #c0c4ca;
+  border: 1px solid
+    var(
+      --mpx-metadata-preference-record-border-current,
+      var(--mpx-metadata-preference-record-border)
+    );
   border-radius: var(--mpx-radius-metadata-card, 12px);
-  background: #e3e7ec;
+  background: var(
+    --mpx-metadata-preference-record-bg-current,
+    var(--mpx-metadata-preference-record-bg)
+  );
   box-shadow: none;
 }
 

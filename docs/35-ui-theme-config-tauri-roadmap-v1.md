@@ -76,8 +76,8 @@
 ### 状态
 
 - 状态：进行中
-- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`
-- 当前下一项：metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）
+- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`
+- 当前下一项：补逐页手工验收记录（改值 / 复位 / 快照恢复 / 切页保态），并继续清点尚未分页化的特例白名单区域
 
 ### 目标
 
@@ -85,9 +85,9 @@
 
 ### Todo
 
-- [ ] 为现有分页建立正式对照表：`containerLayer / largePanelLayer / smallPanelLayer / commonControls / buttonStates`。
-- [ ] 对每个分页列出“必须覆盖的层级节点”和“暂不纳入的特例节点”。
-- [ ] 补齐缺页项对应的调试字段，避免出现文档已有层级但分页无法调试的情况。
+- [x] 为现有分页建立正式对照表：`containerLayer / largePanelLayer / smallPanelLayer / commonControls / buttonStates`。
+- [x] 对每个分页列出“必须覆盖的层级节点”和“暂不纳入的特例节点”。
+- [x] 补齐缺页项对应的调试字段，避免出现文档已有层级但分页无法调试的情况。
 - [ ] 为每组字段补充用途说明、默认来源、回退来源与预览区域。
 - [ ] 确保每个字段都能通过 UI 改值、复位、导出、导入、恢复默认。
 - [ ] 逐页完成手工验收，记录“改值生效 / 复位生效 / 快照恢复生效 / 切页不丢状态”。
@@ -98,6 +98,24 @@
 - [ ] 每个可视字段都能定位到实际 CSS 变量，而不是仅停留在文档命名。
 - [ ] 快照导出内容可以完整覆盖该页可调字段。
 - [ ] 同一字段的实际消费点与文档说明一致，不存在“文档写 A，实际命中 B”的长期偏差。
+
+### 手工验收记录（待执行）
+
+| 分页 | 需验收项 | 记录状态 |
+|---|---|---|
+| `parameters` | 会话保态、改值即时生效 | 待执行 |
+| `snapshot` | 导出 / 导入 / 复位 / 恢复打开态 | 待执行 |
+| `containerLayer` | `bg-only` / `bg-plus-container` 预览、单项复位、切页保态 | 待执行 |
+| `largePanelLayer` | `bg-plus-large-panel` 预览、骨架命中、内部件命中 | 待执行 |
+| `smallPanelLayer` | `bg-plus-small-panel` 预览、dialog 骨架命中、文本串恢复 | 待执行 |
+| `commonControls` | scrollbar / range / runway / vertical / settings slider 命中 | 待执行 |
+| `buttonStates` | side button state demo 与 slot 覆写命中 | 待执行 |
+
+记录约束：
+
+1. 每页至少回填 `改值生效 / 单项复位生效 / 快照恢复生效 / 切页不丢状态` 四项结果。
+2. 手工验收结论以 `docs/32-ui-design-tracking-v1.md` 的分页验收对照表和清单为基准。
+3. 若执行中发现特例白名单需要扩容，先更新文档再继续验收，不直接口头豁免。
 
 ---
 

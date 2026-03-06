@@ -498,6 +498,114 @@
     --mpx-slot-fg-sidebar-shortcut-rename-panel-main-bg,
     var(--mpx-bg-elevated)
   );
+  --mpx-sidebar-rename-dialog-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-text,
+    var(--mpx-sidebar-rename-dialog-text)
+  );
+  --mpx-sidebar-rename-dialog-muted-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-muted-text,
+    var(--mpx-sidebar-rename-dialog-muted-text)
+  );
+  --mpx-sidebar-rename-dialog-control-border-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-border,
+    var(--mpx-sidebar-rename-dialog-control-border)
+  );
+  --mpx-sidebar-rename-dialog-control-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-bg,
+    var(--mpx-sidebar-rename-dialog-control-bg)
+  );
+  --mpx-sidebar-rename-dialog-control-hover-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-hover-bg,
+    var(--mpx-sidebar-rename-dialog-control-hover-bg)
+  );
+  --mpx-sidebar-rename-dialog-control-focus-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-focus-bg,
+    var(--mpx-sidebar-rename-dialog-control-focus-bg)
+  );
+  --mpx-sidebar-rename-dialog-control-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-text,
+    var(--mpx-sidebar-rename-dialog-control-text)
+  );
+  --mpx-sidebar-rename-dialog-control-placeholder-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-control-placeholder,
+    var(--mpx-sidebar-rename-dialog-control-placeholder)
+  );
+  --mpx-sidebar-rename-dialog-action-btn-border-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-action-btn-border,
+    var(--mpx-sidebar-rename-dialog-action-btn-border)
+  );
+  --mpx-sidebar-rename-dialog-action-btn-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-action-btn-bg,
+    var(--mpx-sidebar-rename-dialog-action-btn-bg)
+  );
+  --mpx-sidebar-rename-dialog-action-btn-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-action-btn-text,
+    var(--mpx-sidebar-rename-dialog-action-btn-text)
+  );
+  --mpx-sidebar-rename-preview-border-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-border,
+    var(--mpx-sidebar-rename-preview-border)
+  );
+  --mpx-sidebar-rename-preview-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-bg,
+    var(--mpx-sidebar-rename-preview-bg)
+  );
+  --mpx-sidebar-rename-preview-head-border-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-head-border,
+    var(--mpx-sidebar-rename-preview-head-border)
+  );
+  --mpx-sidebar-rename-preview-head-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-head-bg,
+    var(--mpx-sidebar-rename-preview-head-bg)
+  );
+  --mpx-sidebar-rename-preview-head-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-head-text,
+    var(--mpx-sidebar-rename-preview-head-text)
+  );
+  --mpx-sidebar-rename-preview-list-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-list-bg,
+    var(--mpx-sidebar-rename-preview-list-bg)
+  );
+  --mpx-sidebar-rename-preview-row-border-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-border,
+    var(--mpx-sidebar-rename-preview-row-border)
+  );
+  --mpx-sidebar-rename-preview-row-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-text,
+    var(--mpx-sidebar-rename-preview-row-text)
+  );
+  --mpx-sidebar-rename-preview-arrow-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-arrow-text,
+    var(--mpx-sidebar-rename-preview-arrow-text)
+  );
+  --mpx-sidebar-rename-preview-row-source-hover-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-source-hover-bg,
+    var(--mpx-sidebar-rename-preview-row-source-hover-bg)
+  );
+  --mpx-sidebar-rename-preview-row-source-active-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-source-active-bg,
+    var(--mpx-sidebar-rename-preview-row-source-active-bg)
+  );
+  --mpx-sidebar-rename-preview-row-source-pressed-bg-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-source-pressed-bg,
+    var(--mpx-sidebar-rename-preview-row-source-pressed-bg)
+  );
+  --mpx-sidebar-rename-preview-row-changed-accent-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-changed-accent,
+    var(--mpx-sidebar-rename-preview-row-changed-accent)
+  );
+  --mpx-sidebar-rename-preview-row-failed-accent-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-failed-accent,
+    var(--mpx-sidebar-rename-preview-row-failed-accent)
+  );
+  --mpx-sidebar-rename-preview-row-failed-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-failed-text,
+    var(--mpx-sidebar-rename-preview-row-failed-text)
+  );
+  --mpx-sidebar-rename-preview-row-unchanged-text-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-preview-row-unchanged-text,
+    var(--mpx-sidebar-rename-preview-row-unchanged-text)
+  );
 }
 
 [data-slot="fg-import-task-root"] {
@@ -804,6 +912,42 @@
     --mpx-slot-fg-main-header-manage-video-transcode-panel-main-bg,
     var(--mpx-bg-elevated)
   );
+  --mpx-transcode-dialog-control-border-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-border,
+    var(--mpx-transcode-dialog-control-border)
+  );
+  --mpx-transcode-dialog-control-bg-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-bg,
+    var(--mpx-transcode-dialog-control-bg)
+  );
+  --mpx-transcode-dialog-control-hover-bg-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-hover-bg,
+    var(--mpx-transcode-dialog-control-hover-bg)
+  );
+  --mpx-transcode-dialog-control-focus-bg-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-focus-bg,
+    var(--mpx-transcode-dialog-control-focus-bg)
+  );
+  --mpx-transcode-dialog-control-text-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-text,
+    var(--mpx-transcode-dialog-control-text)
+  );
+  --mpx-transcode-dialog-control-placeholder-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-control-placeholder,
+    var(--mpx-transcode-dialog-control-placeholder)
+  );
+  --mpx-transcode-dialog-action-btn-border-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-action-btn-border,
+    var(--mpx-transcode-dialog-action-btn-border)
+  );
+  --mpx-transcode-dialog-action-btn-bg-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-action-btn-bg,
+    var(--mpx-transcode-dialog-action-btn-bg)
+  );
+  --mpx-transcode-dialog-action-btn-text-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-action-btn-text,
+    var(--mpx-transcode-dialog-action-btn-text)
+  );
 }
 
 [data-slot="fg-main-header-manage-music-transcode-panel"] {
@@ -835,6 +979,42 @@
     --mpx-slot-fg-main-header-manage-music-transcode-panel-main-bg,
     var(--mpx-bg-elevated)
   );
+  --mpx-transcode-dialog-control-border-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-border,
+    var(--mpx-transcode-dialog-control-border)
+  );
+  --mpx-transcode-dialog-control-bg-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-bg,
+    var(--mpx-transcode-dialog-control-bg)
+  );
+  --mpx-transcode-dialog-control-hover-bg-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-hover-bg,
+    var(--mpx-transcode-dialog-control-hover-bg)
+  );
+  --mpx-transcode-dialog-control-focus-bg-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-focus-bg,
+    var(--mpx-transcode-dialog-control-focus-bg)
+  );
+  --mpx-transcode-dialog-control-text-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-text,
+    var(--mpx-transcode-dialog-control-text)
+  );
+  --mpx-transcode-dialog-control-placeholder-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-control-placeholder,
+    var(--mpx-transcode-dialog-control-placeholder)
+  );
+  --mpx-transcode-dialog-action-btn-border-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-action-btn-border,
+    var(--mpx-transcode-dialog-action-btn-border)
+  );
+  --mpx-transcode-dialog-action-btn-bg-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-action-btn-bg,
+    var(--mpx-transcode-dialog-action-btn-bg)
+  );
+  --mpx-transcode-dialog-action-btn-text-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-action-btn-text,
+    var(--mpx-transcode-dialog-action-btn-text)
+  );
 }
 
 [data-slot="fg-meta-main-search-feature-tag-picker-panel"] {
@@ -865,6 +1045,147 @@
   --mpx-large-panel-main-bg: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-main-bg,
     var(--mpx-bg-elevated)
+  );
+  --mpx-metadata-feature-tag-picker-hint-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-hint-text,
+    var(--mpx-metadata-feature-tag-picker-hint-text)
+  );
+  --mpx-metadata-feature-tag-picker-group-key-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-group-key-text,
+    var(--mpx-metadata-feature-tag-picker-group-key-text)
+  );
+  --mpx-metadata-feature-tag-picker-popover-border-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-popover-border,
+    var(--mpx-metadata-feature-tag-picker-popover-border)
+  );
+  --mpx-metadata-feature-tag-picker-popover-bg-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-popover-bg,
+    var(--mpx-metadata-feature-tag-picker-popover-bg)
+  );
+  --mpx-metadata-feature-tag-picker-tag-border-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-border,
+    var(--mpx-metadata-feature-tag-picker-tag-border)
+  );
+  --mpx-metadata-feature-tag-picker-tag-bg-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-bg,
+    var(--mpx-metadata-feature-tag-picker-tag-bg)
+  );
+  --mpx-metadata-feature-tag-picker-tag-text-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-text,
+    var(--mpx-metadata-feature-tag-picker-tag-text)
+  );
+  --mpx-metadata-feature-tag-picker-tag-active-border-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-active-border,
+    var(--mpx-metadata-feature-tag-picker-tag-active-border)
+  );
+  --mpx-metadata-feature-tag-picker-tag-active-bg-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-active-bg,
+    var(--mpx-metadata-feature-tag-picker-tag-active-bg)
+  );
+  --mpx-metadata-feature-tag-picker-tag-active-text-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-tag-active-text,
+    var(--mpx-metadata-feature-tag-picker-tag-active-text)
+  );
+}
+
+[data-slot="fg-meta-main-image-editor-preference-metrics-panel"] {
+  --mpx-metadata-preference-record-border-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-border,
+    var(--mpx-metadata-preference-record-border)
+  );
+  --mpx-metadata-preference-record-bg-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-bg,
+    var(--mpx-metadata-preference-record-bg)
+  );
+  --mpx-metadata-preference-record-text-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-text,
+    var(--mpx-metadata-preference-record-text)
+  );
+  --mpx-metadata-preference-record-summary-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-summary-text,
+    var(--mpx-metadata-preference-record-summary-text)
+  );
+  --mpx-metadata-preference-record-hint-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-hint-text,
+    var(--mpx-metadata-preference-record-hint-text)
+  );
+  --mpx-metadata-preference-record-field-border-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-field-border,
+    var(--mpx-metadata-preference-record-field-border)
+  );
+  --mpx-metadata-preference-record-field-bg-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-field-bg,
+    var(--mpx-metadata-preference-record-field-bg)
+  );
+  --mpx-metadata-preference-record-field-text-current: var(
+    --mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-field-text,
+    var(--mpx-metadata-preference-record-field-text)
+  );
+}
+
+[data-slot="fg-meta-main-video-editor-preference-metrics-panel"] {
+  --mpx-metadata-preference-record-border-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-border,
+    var(--mpx-metadata-preference-record-border)
+  );
+  --mpx-metadata-preference-record-bg-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-bg,
+    var(--mpx-metadata-preference-record-bg)
+  );
+  --mpx-metadata-preference-record-text-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-text,
+    var(--mpx-metadata-preference-record-text)
+  );
+  --mpx-metadata-preference-record-summary-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-summary-text,
+    var(--mpx-metadata-preference-record-summary-text)
+  );
+  --mpx-metadata-preference-record-hint-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-hint-text,
+    var(--mpx-metadata-preference-record-hint-text)
+  );
+  --mpx-metadata-preference-record-field-border-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-field-border,
+    var(--mpx-metadata-preference-record-field-border)
+  );
+  --mpx-metadata-preference-record-field-bg-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-field-bg,
+    var(--mpx-metadata-preference-record-field-bg)
+  );
+  --mpx-metadata-preference-record-field-text-current: var(
+    --mpx-slot-fg-meta-main-video-editor-preference-metrics-panel-field-text,
+    var(--mpx-metadata-preference-record-field-text)
+  );
+}
+
+[data-slot="fg-meta-main-music-editor-booklet-binding-panel"] {
+  --mpx-metadata-booklet-binding-border-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-border,
+    var(--mpx-metadata-booklet-binding-border)
+  );
+  --mpx-metadata-booklet-binding-bg-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-bg,
+    var(--mpx-metadata-booklet-binding-bg)
+  );
+  --mpx-metadata-booklet-binding-text-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-text,
+    var(--mpx-metadata-booklet-binding-text)
+  );
+  --mpx-metadata-booklet-binding-meta-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-meta-text,
+    var(--mpx-metadata-booklet-binding-meta-text)
+  );
+  --mpx-metadata-booklet-binding-control-border-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-control-border,
+    var(--mpx-metadata-booklet-binding-control-border)
+  );
+  --mpx-metadata-booklet-binding-control-bg-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-control-bg,
+    var(--mpx-metadata-booklet-binding-control-bg)
+  );
+  --mpx-metadata-booklet-binding-control-text-current: var(
+    --mpx-slot-fg-meta-main-music-editor-booklet-binding-panel-control-text,
+    var(--mpx-metadata-booklet-binding-control-text)
   );
 }
 

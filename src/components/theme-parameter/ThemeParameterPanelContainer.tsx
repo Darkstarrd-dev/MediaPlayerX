@@ -591,6 +591,131 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#4d8fa0",
   },
   {
+    id: "large-panel-metadata-preference-record-border",
+    cssVar: "--mpx-metadata-preference-record-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "large-panel-metadata-preference-record-bg",
+    cssVar: "--mpx-metadata-preference-record-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-metadata-preference-record-text",
+    cssVar: "--mpx-metadata-preference-record-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-preference-record-summary-text",
+    cssVar: "--mpx-metadata-preference-record-summary-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-preference-record-hint-text",
+    cssVar: "--mpx-metadata-preference-record-hint-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-border",
+    cssVar: "--mpx-metadata-preference-record-field-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-bg",
+    cssVar: "--mpx-metadata-preference-record-field-bg",
+    fallback: "#f8f5ef",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-text",
+    cssVar: "--mpx-metadata-preference-record-field-text",
+    fallback: "#6b6356",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-border",
+    cssVar: "--mpx-metadata-booklet-binding-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-bg",
+    cssVar: "--mpx-metadata-booklet-binding-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-text",
+    cssVar: "--mpx-metadata-booklet-binding-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-meta-text",
+    cssVar: "--mpx-metadata-booklet-binding-meta-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-border",
+    cssVar: "--mpx-metadata-booklet-binding-control-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-bg",
+    cssVar: "--mpx-metadata-booklet-binding-control-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-text",
+    cssVar: "--mpx-metadata-booklet-binding-control-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-hint-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-hint-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-group-key-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-group-key-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-border",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-bg",
+    fallback: "#dcecf0",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-text",
+    fallback: "#2e6f7f",
+  },
+  {
     id: "large-panel-subtitle-cleanup-raw-preview-border",
     cssVar: "--mpx-subtitle-cleanup-raw-preview-border",
     fallback: "#ddd7cc",
@@ -681,6 +806,186 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#4d8fa0",
   },
   {
+    id: "large-panel-transcode-dialog-control-border",
+    cssVar: "--mpx-transcode-dialog-control-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-bg",
+    cssVar: "--mpx-transcode-dialog-control-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-hover-bg",
+    cssVar: "--mpx-transcode-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-focus-bg",
+    cssVar: "--mpx-transcode-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-text",
+    cssVar: "--mpx-transcode-dialog-control-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-placeholder",
+    cssVar: "--mpx-transcode-dialog-control-placeholder",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-border",
+    cssVar: "--mpx-transcode-dialog-action-btn-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-bg",
+    cssVar: "--mpx-transcode-dialog-action-btn-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-text",
+    cssVar: "--mpx-transcode-dialog-action-btn-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-border",
+    cssVar: "--mpx-sidebar-rename-preview-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-bg",
+    cssVar: "--mpx-sidebar-rename-preview-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-border",
+    cssVar: "--mpx-sidebar-rename-preview-head-border",
+    fallback: "#bcc7d1",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-bg",
+    cssVar: "--mpx-sidebar-rename-preview-head-bg",
+    fallback: "#d1d5db",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-text",
+    cssVar: "--mpx-sidebar-rename-preview-head-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-list-bg",
+    cssVar: "--mpx-sidebar-rename-preview-list-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-border",
+    cssVar: "--mpx-sidebar-rename-preview-row-border",
+    fallback: "#cfd7df",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-arrow-text",
+    cssVar: "--mpx-sidebar-rename-preview-arrow-text",
+    fallback: "rgba(106, 99, 88, 0.7)",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-hover-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-hover-bg",
+    fallback: "#e3e9ef",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-active-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-active-bg",
+    fallback: "#dbe3eb",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-pressed-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-pressed-bg",
+    fallback: "#dbe3eb",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-changed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-changed-accent",
+    fallback: "#9fb1c3",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-accent",
+    fallback: "#c7928a",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-text",
+    fallback: "#5f2a1e",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-unchanged-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-unchanged-text",
+    fallback: "#6a6358",
+  },
+  {
     id: "small-panel-border-color",
     cssVar: "--mpx-dialog-panel-border-color",
     fallback: "#d6cfc1",
@@ -689,6 +994,76 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "small-panel-bg",
     cssVar: "--mpx-dialog-panel-bg",
     fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-border",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-bg",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-placeholder",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-placeholder",
+    fallback: "#6a6358",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
   },
   {
     id: "button-side-idle-border",
@@ -855,6 +1230,21 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2e6f7f",
   },
   {
+    id: "control-scrollbar-color-thumb",
+    cssVar: "--mpx-sidebar-tree-scrollbar-color-thumb",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "control-scrollbar-color-track",
+    cssVar: "--mpx-sidebar-tree-scrollbar-color-track",
+    fallback: "#ece5d9",
+  },
+  {
+    id: "control-scrollbar-thumb-border-color",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-color",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
     id: "control-slider-base-track-bg",
     cssVar: "--mpx-range-track-bg",
     fallback: "#d6cfc1",
@@ -901,7 +1291,7 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "control-slider-settings-groove-bg",
-    cssVar: "--mpx-runway-groove-bg",
+    cssVar: "--mpx-slider-settings-groove-bg",
     fallback: "#e9ecf0",
   },
 ];
@@ -992,6 +1382,34 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
   },
   {
+    id: "control-scrollbar-track-border",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-border",
+  },
+  {
+    id: "control-scrollbar-track-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-shadow",
+  },
+  {
+    id: "control-scrollbar-end-gap",
+    cssVar: "--mpx-sidebar-tree-scrollbar-end-gap",
+  },
+  {
+    id: "control-scrollbar-thumb-min-height",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-min-height",
+  },
+  {
+    id: "control-scrollbar-thumb-border-width",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-width",
+  },
+  {
+    id: "control-scrollbar-thumb-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-shadow",
+  },
+  {
+    id: "control-scrollbar-thumb-active-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-shadow",
+  },
+  {
     id: "control-slider-base-track-height",
     cssVar: "--mpx-range-track-height",
   },
@@ -1069,7 +1487,7 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
   {
     id: "control-slider-settings-groove-shadow",
-    cssVar: "--mpx-runway-groove-shadow",
+    cssVar: "--mpx-slider-settings-groove-shadow",
   },
 ];
 

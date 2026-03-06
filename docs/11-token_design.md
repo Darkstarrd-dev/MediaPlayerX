@@ -76,15 +76,19 @@
 ## Phase 1 冻结补充
 
 1. ThemeParameter 分页归属遵循 `docs/32-ui-design-tracking-v1.md` 的 `7.0.1`：
+   - 通用参数与 style 参数入口 -> `parameters`
+   - 快照导入 / 导出 / 复位 -> `snapshot`
    - 大容器与其已收口子层 -> `containerLayer`
    - 大面板骨架与内部件 -> `largePanelLayer`
    - 小面板骨架 -> `smallPanelLayer`
    - 按钮基架 -> `buttonStates`
    - 滚动条 / slider / runway -> `commonControls`
 2. 下列实现别名在 Phase 3 之前视为受控保留，不视为违规：
-   - `fg.header.g1.task.importTask.*` 的实现别名家族：`--mpx-slot-fg-import-task-*`
-   - `fg.sidebar.main` 的语义家族：`--mpx-sidebar-main-*`
-   - `fg.main.content.image.nameList*` 的语义家族：`--mpx-main-image-name-list-*`
+    - `fg.header.g1.task.importTask.*` 的实现别名家族：`--mpx-slot-fg-import-task-*`
+    - `fg.sidebar.main` 的语义家族：`--mpx-sidebar-main-*`
+    - `fg.main.content.image.nameList*` 的语义家族：`--mpx-main-image-name-list-*`
+    - 滚动条基础层与场景别名并存：`--mpx-scrollbar-*` + `--mpx-sidebar-tree-scrollbar-*`
+    - 设置 slider 独立轨道：`--mpx-slider-settings-groove-*`（不再借用 `--mpx-runway-groove-*`）
 3. 特例白名单前缀：
    - 播放器子系统：`--mpx-player-surface-*`、`--mpx-player-hud-*`
    - 全屏图像调整：`--mpx-fs-image-adjust-*`（Phase 1 预留）
@@ -290,6 +294,15 @@
 | `boot.splash.stage.character`                               | `--mpx-slot-boot-splash-stage-character-*`                                |
 | `boot.splash.card`                                          | `--mpx-slot-boot-splash-card-*`                                           |
 | `boot.splash.card.track`                                    | `--mpx-slot-boot-splash-card-track-*`                                     |
+
+## Phase 2 补充（2026-03-06）
+
+- `fg.meta.main.imageEditor.preferenceMetrics.panel` 与 `fg.meta.main.videoEditor.preferenceMetrics.panel` 额外承载 `border / bg / text / summary-text / hint-text / field-border / field-bg / field-text` 后缀，消费 `--mpx-metadata-preference-record-*`。
+- `fg.meta.main.musicEditor.bookletBinding.panel` 额外承载 `border / bg / text / meta-text / control-border / control-bg / control-text` 后缀，消费 `--mpx-metadata-booklet-binding-*`。
+- `fg.meta.main.search.featureTagPicker.panel` 额外承载 `hint-text / group-key-text / popover-* / tag-*` 后缀，消费 `--mpx-metadata-feature-tag-picker-*`。
+- `fg.meta.main.videoEditor.playlistNameDialog.panel` 额外承载 `input-border / input-bg / input-text / input-placeholder / text` 后缀，消费 `--mpx-metadata-playlist-name-dialog-*`。
+- `fg.main.toolbar.manage.musicTranscode.panel` 与 `fg.main.toolbar.manage.videoTranscode.panel` 额外承载 `control-* / action-btn-*` 后缀，消费 `--mpx-transcode-dialog-*`。
+- `fg.sidebar.shortcut.rename.single.panel` 额外承载 `input-* / action-btn-* / text / muted-text` 后缀，`fg.sidebar.shortcut.rename.batch.panel`（实现层 `fg-sidebar-shortcut-rename-panel`）额外承载 `control-* / action-btn-* / preview-* / text / muted-text` 后缀，分别消费 `--mpx-sidebar-rename-dialog-*` 与 `--mpx-sidebar-rename-preview-*`。
 
 ## 变更约束
 

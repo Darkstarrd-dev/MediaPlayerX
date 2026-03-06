@@ -399,11 +399,11 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.section.sliderPlayer": "6.2.1 Slider variant: player panel",
   "ui.themeParameter.controls.section.sliderVertical": "6.2.2 Slider variant: vertical (up/down shared)",
   "ui.themeParameter.controls.section.sliderSettings": "6.2.3 Slider variant: settings panel",
-  "ui.themeParameter.controls.note.scrollbar": "Control layer has no base layer. Scrollbar currently keeps a single chain (no variants).",
+  "ui.themeParameter.controls.note.scrollbar": "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
   "ui.themeParameter.controls.note.sliderBase": "Base style entry for slider variants, covering shared range track/thumb states.",
   "ui.themeParameter.controls.note.sliderPlayer": "Player progress and volume sliders share the SkeuoRunway chain.",
   "ui.themeParameter.controls.note.sliderVertical": "Vertical sliders (up/down) share one variable chain.",
-  "ui.themeParameter.controls.note.sliderSettings": "Settings sliders are kept as an independent section for scenario-specific debugging.",
+  "ui.themeParameter.controls.note.sliderSettings": "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

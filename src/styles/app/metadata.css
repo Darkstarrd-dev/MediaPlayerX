@@ -625,18 +625,6 @@
 }
 
 .metadata-playlist-save-dialog {
-  --mpx-dialog-panel-border-color: var(
-    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border,
-    var(--mpx-border-1)
-  );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg,
-    var(--mpx-bg-elevated)
-  );
-  --mpx-dialog-panel-shadow: var(
-    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow,
-    var(--mpx-shadow-panel)
-  );
   --mpx-dialog-panel-radius: var(--mpx-radius-metadata-card, 10px);
   --mpx-dialog-panel-width: auto;
   --mpx-dialog-panel-max-width: none;
@@ -644,13 +632,33 @@
   --mpx-dialog-panel-padding: 8px;
   --mpx-dialog-panel-gap: 8px;
   color: var(
-    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text,
-    inherit
+    --mpx-metadata-playlist-name-dialog-text-current,
+    var(--mpx-metadata-playlist-name-dialog-text)
   );
   width: auto;
   max-width: none;
   max-height: none;
   margin-bottom: 10px;
+  --mpx-metadata-playlist-name-dialog-text-current: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text,
+    var(--mpx-metadata-playlist-name-dialog-text)
+  );
+  --mpx-metadata-playlist-name-dialog-input-border-current: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border,
+    var(--mpx-metadata-playlist-name-dialog-input-border)
+  );
+  --mpx-metadata-playlist-name-dialog-input-bg-current: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg,
+    var(--mpx-metadata-playlist-name-dialog-input-bg)
+  );
+  --mpx-metadata-playlist-name-dialog-input-text-current: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text,
+    var(--mpx-metadata-playlist-name-dialog-input-text)
+  );
+  --mpx-metadata-playlist-name-dialog-input-placeholder-current: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder,
+    var(--mpx-metadata-playlist-name-dialog-input-placeholder)
+  );
 }
 
 .metadata-playlist-save-dialog-card {
@@ -663,6 +671,35 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  color: var(
+    --mpx-metadata-playlist-name-dialog-text-current,
+    var(--mpx-metadata-playlist-name-dialog-text)
+  );
+}
+
+.metadata-playlist-save-dialog-card input {
+  border: 1px solid
+    var(
+      --mpx-metadata-playlist-name-dialog-input-border-current,
+      var(--mpx-metadata-playlist-name-dialog-input-border)
+    );
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(
+    --mpx-metadata-playlist-name-dialog-input-bg-current,
+    var(--mpx-metadata-playlist-name-dialog-input-bg)
+  );
+  color: var(
+    --mpx-metadata-playlist-name-dialog-input-text-current,
+    var(--mpx-metadata-playlist-name-dialog-input-text)
+  );
+  padding: 6px 8px;
+}
+
+.metadata-playlist-save-dialog-card input::placeholder {
+  color: var(
+    --mpx-metadata-playlist-name-dialog-input-placeholder-current,
+    var(--mpx-metadata-playlist-name-dialog-input-placeholder)
+  );
 }
 
 .metadata-playlist-save-dialog-actions {
@@ -694,15 +731,29 @@
 }
 
 .metadata-preference-record {
-  border: 1px solid var(--mpx-border-1);
+  border: 1px solid
+    var(
+      --mpx-metadata-preference-record-border-current,
+      var(--mpx-metadata-preference-record-border)
+    );
   border-radius: var(--mpx-radius-metadata-card, 10px);
-  background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
+  background: var(
+    --mpx-metadata-preference-record-bg-current,
+    var(--mpx-metadata-preference-record-bg)
+  );
+  color: var(
+    --mpx-metadata-preference-record-text-current,
+    var(--mpx-metadata-preference-record-text)
+  );
   padding: 8px 10px;
 }
 
 .metadata-preference-record > summary {
   cursor: pointer;
-  color: var(--mpx-text-1);
+  color: var(
+    --mpx-metadata-preference-record-summary-current,
+    var(--mpx-metadata-preference-record-summary-text)
+  );
   font-weight: 600;
 }
 
@@ -719,6 +770,38 @@
   gap: 4px;
 }
 
+.metadata-preference-record-content label > span {
+  color: var(
+    --mpx-metadata-preference-record-text-current,
+    var(--mpx-metadata-preference-record-text)
+  );
+}
+
+.metadata-preference-record .metadata-field-hint {
+  color: var(
+    --mpx-metadata-preference-record-hint-current,
+    var(--mpx-metadata-preference-record-hint-text)
+  );
+}
+
+.metadata-preference-record-content input[readonly] {
+  border: 1px solid
+    var(
+      --mpx-metadata-preference-record-field-border-current,
+      var(--mpx-metadata-preference-record-field-border)
+    );
+  border-radius: var(--mpx-radius-metadata-control, 8px);
+  background: var(
+    --mpx-metadata-preference-record-field-bg-current,
+    var(--mpx-metadata-preference-record-field-bg)
+  );
+  color: var(
+    --mpx-metadata-preference-record-field-text-current,
+    var(--mpx-metadata-preference-record-field-text)
+  );
+  padding: 6px 8px;
+}
+
 .metadata-music-content {
   min-height: 0;
   flex: 1;
@@ -733,9 +816,20 @@
 }
 
 .metadata-music-booklet-bindings {
-  border: 1px solid var(--mpx-border-1);
+  border: 1px solid
+    var(
+      --mpx-metadata-booklet-binding-border-current,
+      var(--mpx-metadata-booklet-binding-border)
+    );
   border-radius: var(--mpx-radius-metadata-card, 10px);
-  background: var(--mpx-bg-elevated);
+  background: var(
+    --mpx-metadata-booklet-binding-bg-current,
+    var(--mpx-metadata-booklet-binding-bg)
+  );
+  color: var(
+    --mpx-metadata-booklet-binding-text-current,
+    var(--mpx-metadata-booklet-binding-text)
+  );
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -754,7 +848,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--mpx-text-2);
+  color: var(
+    --mpx-metadata-booklet-binding-meta-current,
+    var(--mpx-metadata-booklet-binding-meta-text)
+  );
   font-size: 12px;
 }
 
@@ -768,6 +865,28 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.metadata-music-booklet-bindings select {
+  border: 1px solid
+    var(
+      --mpx-metadata-booklet-binding-control-border-current,
+      var(--mpx-metadata-booklet-binding-control-border)
+    );
+  border-radius: var(--mpx-radius-metadata-control, 8px);
+  background: var(
+    --mpx-metadata-booklet-binding-control-bg-current,
+    var(--mpx-metadata-booklet-binding-control-bg)
+  );
+  color: var(
+    --mpx-metadata-booklet-binding-control-text-current,
+    var(--mpx-metadata-booklet-binding-control-text)
+  );
+  padding: 6px 8px;
+}
+
+.metadata-music-booklet-bindings select:disabled {
+  opacity: 0.72;
 }
 
 .metadata-music-booklet-bindings-actions {
@@ -977,7 +1096,10 @@
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--mpx-text-2);
+  color: var(
+    --mpx-metadata-feature-tag-picker-hint-current,
+    var(--mpx-metadata-feature-tag-picker-hint-text)
+  );
 }
 
 .feature-tag-picker-groups {
@@ -998,7 +1120,10 @@
 }
 
 .feature-tag-picker-group-key {
-  color: var(--mpx-text-2);
+  color: var(
+    --mpx-metadata-feature-tag-picker-group-key-current,
+    var(--mpx-metadata-feature-tag-picker-group-key-text)
+  );
   font-size: 12px;
   line-height: 24px;
   text-align: center;
@@ -1092,6 +1217,54 @@
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
+}
+
+.feature-tag-modal-panel .feature-selection-result {
+  color: var(
+    --mpx-metadata-feature-tag-picker-hint-current,
+    var(--mpx-metadata-feature-tag-picker-hint-text)
+  );
+}
+
+.feature-tag-modal-panel .feature-tags-popover {
+  border-color: var(
+    --mpx-metadata-feature-tag-picker-popover-border-current,
+    var(--mpx-metadata-feature-tag-picker-popover-border)
+  );
+  background: var(
+    --mpx-metadata-feature-tag-picker-popover-bg-current,
+    var(--mpx-metadata-feature-tag-picker-popover-bg)
+  );
+}
+
+.feature-tag-modal-panel .feature-tags-popover button {
+  border-color: var(
+    --mpx-metadata-feature-tag-picker-tag-border-current,
+    var(--mpx-metadata-feature-tag-picker-tag-border)
+  );
+  background: var(
+    --mpx-metadata-feature-tag-picker-tag-bg-current,
+    var(--mpx-metadata-feature-tag-picker-tag-bg)
+  );
+  color: var(
+    --mpx-metadata-feature-tag-picker-tag-text-current,
+    var(--mpx-metadata-feature-tag-picker-tag-text)
+  );
+}
+
+.feature-tag-modal-panel .feature-tags-popover button.is-active {
+  border-color: var(
+    --mpx-metadata-feature-tag-picker-tag-active-border-current,
+    var(--mpx-metadata-feature-tag-picker-tag-active-border)
+  );
+  background: var(
+    --mpx-metadata-feature-tag-picker-tag-active-bg-current,
+    var(--mpx-metadata-feature-tag-picker-tag-active-bg)
+  );
+  color: var(
+    --mpx-metadata-feature-tag-picker-tag-active-text-current,
+    var(--mpx-metadata-feature-tag-picker-tag-active-text)
+  );
 }
 
 .feature-tags-group {

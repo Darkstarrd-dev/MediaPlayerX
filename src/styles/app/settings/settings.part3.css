@@ -17,7 +17,7 @@
 }
 
 .sidebar-rename-mode-prefix {
-  color: var(--mpx-text-2);
+  color: var(--mpx-sidebar-rename-dialog-muted-text-current);
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
@@ -31,29 +31,30 @@
   min-height: 44px;
   border: 0;
   background: transparent;
-  color: var(--mpx-text-1);
+  color: var(--mpx-sidebar-rename-dialog-control-text-current);
   font-size: 16px;
   font-weight: 500;
   padding: 0 14px 0 0;
 }
 
 .sidebar-rename-mode-select option {
-  background: var(--sidebar-rename-soft-input-bg);
-  color: var(--mpx-text-1);
+  background: var(--mpx-sidebar-rename-dialog-control-bg-current);
+  color: var(--mpx-sidebar-rename-dialog-control-text-current);
 }
 
 .sidebar-rename-dialog .mpx-overlay-input {
-  border-color: var(--sidebar-rename-soft-border);
-  background: var(--sidebar-rename-soft-input-bg);
+  border-color: var(--mpx-sidebar-rename-dialog-control-border-current);
+  background: var(--mpx-sidebar-rename-dialog-control-bg-current);
+  color: var(--mpx-sidebar-rename-dialog-control-text-current);
 }
 
 .sidebar-rename-dialog .mpx-overlay-input:hover {
-  background: var(--sidebar-rename-soft-input-hover-bg);
+  background: var(--mpx-sidebar-rename-dialog-control-hover-bg-current);
 }
 
 .sidebar-rename-dialog .mpx-overlay-input:focus,
 .sidebar-rename-dialog .mpx-overlay-input:focus-visible {
-  background: var(--sidebar-rename-soft-input-focus-bg);
+  background: var(--mpx-sidebar-rename-dialog-control-focus-bg-current);
   outline: none;
 }
 
@@ -68,9 +69,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--sidebar-rename-soft-border);
+  border: 1px solid var(--mpx-sidebar-rename-preview-border-current);
   border-radius: 16px;
-  background: var(--mpx-bg-elevated);
+  background: var(--mpx-sidebar-rename-preview-bg-current);
   overflow: hidden;
 }
 
@@ -83,9 +84,9 @@
   grid-template-columns: minmax(0, 5fr) 52px minmax(0, 6fr);
   align-items: center;
   min-height: 38px;
-  border-bottom: 1px solid var(--mpx-overlay-soft-head-divider);
-  background: var(--mpx-overlay-soft-head-bg);
-  color: var(--mpx-text-2);
+  border-bottom: 1px solid var(--mpx-sidebar-rename-preview-head-border-current);
+  background: var(--mpx-sidebar-rename-preview-head-bg-current);
+  color: var(--mpx-sidebar-rename-preview-head-text-current);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -106,7 +107,7 @@
   flex-direction: column;
   min-height: 0;
   flex: 1;
-  background: var(--sidebar-rename-soft-input-bg);
+  background: var(--mpx-sidebar-rename-preview-list-bg-current);
   overflow-y: auto;
 }
 
@@ -117,9 +118,9 @@
   flex: 0 0 auto;
   min-height: 44px;
   border-left: 4px solid transparent;
-  border-bottom: 1px solid var(--mpx-overlay-soft-row-divider);
+  border-bottom: 1px solid var(--mpx-sidebar-rename-preview-row-border-current);
   margin: 0;
-  color: var(--mpx-text-1);
+  color: var(--mpx-sidebar-rename-preview-row-text-current);
   font-size: 14px;
 }
 
@@ -134,7 +135,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: color-mix(in srgb, var(--mpx-text-2) 70%, transparent);
+  color: var(--mpx-sidebar-rename-preview-arrow-text-current);
 }
 
 .sidebar-rename-preview-arrow-icon {
@@ -144,13 +145,13 @@
 
 .sidebar-rename-preview-source-btn {
   --mpx-btn-variant-overlay-cell-bg-hover: var(
-    --sidebar-rename-soft-input-hover-bg
+    --mpx-sidebar-rename-preview-row-source-hover-bg-current
   );
   --mpx-btn-variant-overlay-cell-bg-active: var(
-    --sidebar-rename-soft-input-focus-bg
+    --mpx-sidebar-rename-preview-row-source-active-bg-current
   );
   --mpx-btn-variant-overlay-cell-bg-pressed: var(
-    --sidebar-rename-soft-input-focus-bg
+    --mpx-sidebar-rename-preview-row-source-pressed-bg-current
   );
   appearance: none;
   border: 0;
@@ -170,19 +171,19 @@
 }
 
 .sidebar-rename-preview-row.is-changed {
-  border-left: 4px solid #9fb1c3;
+  border-left: 4px solid var(--mpx-sidebar-rename-preview-row-changed-accent-current);
 }
 
 .sidebar-rename-preview-row.is-failed.is-changed {
-  border-left-color: #c7928a;
+  border-left-color: var(--mpx-sidebar-rename-preview-row-failed-accent-current);
 }
 
 .sidebar-rename-preview-row.is-failed {
-  color: var(--mpx-status-danger-text);
+  color: var(--mpx-sidebar-rename-preview-row-failed-text-current);
 }
 
 .sidebar-rename-preview-row.is-unchanged {
-  color: var(--mpx-text-2);
+  color: var(--mpx-sidebar-rename-preview-row-unchanged-text-current);
 }
 
 .sidebar-rename-dialog .mpx-overlay-footer-actions {
@@ -256,7 +257,7 @@
 
   .sidebar-rename-numbering-control {
     border-right: 0;
-    border-bottom: 1px solid var(--sidebar-rename-soft-border);
+    border-bottom: 1px solid var(--mpx-sidebar-rename-dialog-control-border-current);
   }
 
   .sidebar-rename-numbering-control:last-child {
@@ -266,8 +267,7 @@
   .sidebar-rename-seamless-control,
   .sidebar-rename-mode-control {
     border-right: 0;
-    border-bottom: 1px solid
-      color-mix(in srgb, var(--mpx-border-2) 88%, transparent);
+    border-bottom: 1px solid var(--mpx-sidebar-rename-dialog-control-border-current);
   }
 
   .sidebar-rename-seamless-control:last-child {

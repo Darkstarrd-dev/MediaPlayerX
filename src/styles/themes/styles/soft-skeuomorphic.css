@@ -102,6 +102,49 @@
   --mpx-bg-panel: color-mix(in srgb, var(--mpx-palette-surface) 82%, var(--mpx-palette-base));
   --mpx-bg-elevated: color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base));
   --mpx-border-1: color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent);
+  --mpx-metadata-preference-record-border: color-mix(in srgb, var(--mpx-border-1) 86%, var(--mpx-palette-accent-raw) 14%);
+  --mpx-metadata-preference-record-bg: color-mix(in srgb, var(--mpx-overlay-soft-bg) 82%, var(--mpx-bg-elevated));
+  --mpx-metadata-preference-record-field-border: color-mix(in srgb, var(--mpx-overlay-soft-border) 82%, var(--mpx-border-1));
+  --mpx-metadata-preference-record-field-bg: color-mix(in srgb, var(--mpx-bg-elevated) 84%, var(--mpx-overlay-soft-bg));
+  --mpx-metadata-booklet-binding-border: color-mix(in srgb, var(--mpx-border-1) 90%, var(--mpx-palette-accent-raw) 10%);
+  --mpx-metadata-booklet-binding-bg: color-mix(in srgb, var(--mpx-bg-elevated) 88%, var(--mpx-overlay-soft-bg));
+  --mpx-metadata-booklet-binding-control-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-booklet-binding-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-booklet-binding-control-text: var(--mpx-text-1);
+  --mpx-metadata-feature-tag-picker-popover-border: color-mix(in srgb, var(--mpx-border-1) 88%, var(--mpx-palette-accent-raw) 12%);
+  --mpx-metadata-feature-tag-picker-popover-bg: color-mix(in srgb, var(--mpx-overlay-soft-bg) 86%, var(--mpx-bg-elevated));
+  --mpx-metadata-feature-tag-picker-tag-border: color-mix(in srgb, var(--mpx-border-2) 82%, var(--mpx-palette-accent-raw) 18%);
+  --mpx-metadata-feature-tag-picker-tag-bg: color-mix(in srgb, var(--mpx-bg-elevated) 90%, var(--mpx-overlay-soft-bg));
+  --mpx-metadata-feature-tag-picker-tag-active-border: color-mix(in srgb, var(--mpx-accent) 86%, var(--mpx-palette-accent-raw));
+  --mpx-metadata-feature-tag-picker-tag-active-bg: color-mix(in srgb, var(--mpx-accent-soft) 78%, var(--mpx-bg-elevated));
+  --mpx-metadata-feature-tag-picker-tag-active-text: var(--mpx-accent);
+  --mpx-metadata-playlist-name-dialog-input-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-playlist-name-dialog-input-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-playlist-name-dialog-input-text: var(--mpx-text-1);
+  --mpx-metadata-playlist-name-dialog-input-placeholder: var(--mpx-text-2);
+  --mpx-transcode-dialog-control-border: var(--mpx-overlay-soft-border);
+  --mpx-transcode-dialog-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-transcode-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-transcode-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-transcode-dialog-action-btn-border: color-mix(in srgb, var(--mpx-border-2) 84%, var(--mpx-palette-accent-raw) 16%);
+  --mpx-transcode-dialog-action-btn-bg: color-mix(in srgb, var(--mpx-bg-elevated) 90%, var(--mpx-overlay-soft-bg));
+  --mpx-transcode-dialog-action-btn-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-dialog-control-border: var(--mpx-overlay-soft-border);
+  --mpx-sidebar-rename-dialog-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-sidebar-rename-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-sidebar-rename-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-sidebar-rename-dialog-action-btn-border: color-mix(in srgb, var(--mpx-border-2) 84%, var(--mpx-palette-accent-raw) 16%);
+  --mpx-sidebar-rename-dialog-action-btn-bg: color-mix(in srgb, var(--mpx-bg-elevated) 90%, var(--mpx-overlay-soft-bg));
+  --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-preview-border: color-mix(in srgb, var(--mpx-border-1) 88%, var(--mpx-palette-accent-raw) 12%);
+  --mpx-sidebar-rename-preview-bg: color-mix(in srgb, var(--mpx-bg-elevated) 88%, var(--mpx-overlay-soft-bg));
+  --mpx-sidebar-rename-preview-head-border: color-mix(in srgb, var(--mpx-overlay-soft-head-divider) 90%, var(--mpx-border-1));
+  --mpx-sidebar-rename-preview-head-bg: color-mix(in srgb, var(--mpx-overlay-soft-head-bg) 92%, var(--mpx-bg-elevated));
+  --mpx-sidebar-rename-preview-list-bg: color-mix(in srgb, var(--mpx-overlay-soft-bg) 94%, var(--mpx-bg-elevated));
+  --mpx-sidebar-rename-preview-row-border: color-mix(in srgb, var(--mpx-overlay-soft-row-divider) 92%, var(--mpx-border-1));
+  --mpx-sidebar-rename-preview-row-source-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-sidebar-rename-preview-row-source-active-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-sidebar-rename-preview-row-source-pressed-bg: var(--mpx-overlay-soft-focus-bg);
   --mpx-header-bg: linear-gradient(145deg,
       color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
       color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base)));
@@ -145,6 +188,13 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-playlist-item:not(.mpx-overlay-cell-btn) {
   border-color: color-mix(in srgb, var(--mpx-border-1) 90%, var(--mpx-palette-accent-raw) 10%);
   box-shadow: var(--mpx-card-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .metadata-music-booklet-bindings {
+  border-color: var(
+    --mpx-metadata-booklet-binding-border-current,
+    var(--mpx-metadata-booklet-binding-border)
+  );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] {
@@ -240,6 +290,8 @@
     0 1px 1px rgba(0, 0, 0, 0.05);
   --mpx-runway-thumb-core-shadow-graphite: inset 1px 1px 2px rgba(255, 255, 255, 0.5), inset -1px -1px 3px rgba(0, 0, 0, 0.5),
     0 1px 1px rgba(255, 255, 255, 0.5);
+  --mpx-slider-settings-groove-bg: #e9ecf0;
+  --mpx-slider-settings-groove-shadow: inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1);
 
   --mpx-sidebar-tree-scrollbar-size: 10px;
   --mpx-sidebar-tree-scrollbar-radius: 999px;

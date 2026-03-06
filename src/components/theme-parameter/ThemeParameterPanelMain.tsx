@@ -998,8 +998,29 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-metadata-fetch-")) {
     return "用于元数据抓取面板内部件（search row / result columns / preview cards）";
   }
+  if (cssVar.startsWith("--mpx-metadata-preference-record-")) {
+    return "用于 metadata 偏好指标卡片（preference record）";
+  }
+  if (cssVar.startsWith("--mpx-metadata-booklet-binding-")) {
+    return "用于音乐 metadata 的封面 / Booklet 绑定卡片";
+  }
+  if (cssVar.startsWith("--mpx-metadata-feature-tag-picker-")) {
+    return "用于标签检索面板内部件（tag popover / hint / active tag）";
+  }
   if (cssVar.startsWith("--mpx-subtitle-cleanup-")) {
     return "用于字幕清理面板预览区（raw / clean preview panels）";
+  }
+  if (cssVar.startsWith("--mpx-metadata-playlist-name-dialog-")) {
+    return "用于视频 metadata 的播放列表命名小面板";
+  }
+  if (cssVar.startsWith("--mpx-transcode-dialog-")) {
+    return "用于音频 / 视频转码面板内部控件与底部操作按钮";
+  }
+  if (cssVar.startsWith("--mpx-sidebar-rename-dialog-")) {
+    return "用于侧栏重命名对话框的输入控件与操作按钮";
+  }
+  if (cssVar.startsWith("--mpx-sidebar-rename-preview-")) {
+    return "用于侧栏批量重命名预览表（head / row / source button）";
   }
   if (cssVar.startsWith("--mpx-dialog-panel-")) {
     return "用于小面板骨架（dialog panel）";
@@ -1015,6 +1036,9 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar.startsWith("--mpx-runway-")) {
     return "用于播放器/滑条 runway 样式";
+  }
+  if (cssVar.startsWith("--mpx-slider-settings-")) {
+    return "用于设置页与 ThemeParameter 页的横向 slider 轨道样式";
   }
   if (cssVar.startsWith("--mpx-btn-variant-overlay-cell-")) {
     return "用于 overlay-cell 按钮状态样式";
@@ -1282,6 +1306,156 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
   {
+    id: "large-panel-metadata-preference-record-border",
+    cssVar: "--mpx-metadata-preference-record-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-bg",
+    cssVar: "--mpx-metadata-preference-record-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-text",
+    cssVar: "--mpx-metadata-preference-record-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-summary-text",
+    cssVar: "--mpx-metadata-preference-record-summary-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-hint-text",
+    cssVar: "--mpx-metadata-preference-record-hint-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-border",
+    cssVar: "--mpx-metadata-preference-record-field-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-bg",
+    cssVar: "--mpx-metadata-preference-record-field-bg",
+    fallback: "#f8f5ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-text",
+    cssVar: "--mpx-metadata-preference-record-field-text",
+    fallback: "#6b6356",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-border",
+    cssVar: "--mpx-metadata-booklet-binding-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-bg",
+    cssVar: "--mpx-metadata-booklet-binding-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-text",
+    cssVar: "--mpx-metadata-booklet-binding-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-meta-text",
+    cssVar: "--mpx-metadata-booklet-binding-meta-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-border",
+    cssVar: "--mpx-metadata-booklet-binding-control-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-bg",
+    cssVar: "--mpx-metadata-booklet-binding-control-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-text",
+    cssVar: "--mpx-metadata-booklet-binding-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-hint-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-hint-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-group-key-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-group-key-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-border",
+    fallback: "#2e6f7f",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-bg",
+    fallback: "#dcecf0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-text",
+    fallback: "#2e6f7f",
+    groupId: "main",
+  },
+  {
     id: "large-panel-subtitle-cleanup-raw-preview-border",
     cssVar: "--mpx-subtitle-cleanup-raw-preview-border",
     fallback: "#ddd7cc",
@@ -1389,6 +1563,222 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#4d8fa0",
     groupId: "main",
   },
+  {
+    id: "large-panel-transcode-dialog-control-border",
+    cssVar: "--mpx-transcode-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-bg",
+    cssVar: "--mpx-transcode-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-hover-bg",
+    cssVar: "--mpx-transcode-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-focus-bg",
+    cssVar: "--mpx-transcode-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-text",
+    cssVar: "--mpx-transcode-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-placeholder",
+    cssVar: "--mpx-transcode-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-border",
+    cssVar: "--mpx-transcode-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-bg",
+    cssVar: "--mpx-transcode-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-text",
+    cssVar: "--mpx-transcode-dialog-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-border",
+    cssVar: "--mpx-sidebar-rename-preview-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-bg",
+    cssVar: "--mpx-sidebar-rename-preview-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-border",
+    cssVar: "--mpx-sidebar-rename-preview-head-border",
+    fallback: "#bcc7d1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-bg",
+    cssVar: "--mpx-sidebar-rename-preview-head-bg",
+    fallback: "#d1d5db",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-text",
+    cssVar: "--mpx-sidebar-rename-preview-head-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-list-bg",
+    cssVar: "--mpx-sidebar-rename-preview-list-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-border",
+    cssVar: "--mpx-sidebar-rename-preview-row-border",
+    fallback: "#cfd7df",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-arrow-text",
+    cssVar: "--mpx-sidebar-rename-preview-arrow-text",
+    fallback: "rgba(106, 99, 88, 0.7)",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-hover-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-active-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-active-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-pressed-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-pressed-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-changed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-changed-accent",
+    fallback: "#9fb1c3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-accent",
+    fallback: "#c7928a",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-text",
+    fallback: "#5f2a1e",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-unchanged-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-unchanged-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
 ];
 
 const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
@@ -1423,6 +1813,90 @@ const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     id: "small-panel-bg",
     cssVar: "--mpx-dialog-panel-bg",
     fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-border",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-bg",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-placeholder",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
     groupId: "box",
   },
 ];
@@ -1681,6 +2155,27 @@ const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     sectionId: "control-scrollbar",
   },
   {
+    id: "control-scrollbar-color-thumb",
+    cssVar: "--mpx-sidebar-tree-scrollbar-color-thumb",
+    fallback: "#b7ab95",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-color-track",
+    cssVar: "--mpx-sidebar-tree-scrollbar-color-track",
+    fallback: "#ece5d9",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-border-color",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-color",
+    fallback: "rgba(0, 0, 0, 0)",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
     id: "control-slider-base-track-bg",
     cssVar: "--mpx-range-track-bg",
     fallback: "#d6cfc1",
@@ -1745,7 +2240,7 @@ const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   },
   {
     id: "control-slider-settings-groove-bg",
-    cssVar: "--mpx-runway-groove-bg",
+    cssVar: "--mpx-slider-settings-groove-bg",
     fallback: "#e9ecf0",
     groupId: "box",
     sectionId: "control-slider-settings",
@@ -1771,6 +2266,55 @@ const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     id: "control-scrollbar-thumb-radius",
     cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
     fallback: "999px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-track-border",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-border",
+    fallback: "none",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-track-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-track-shadow",
+    fallback: "none",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-end-gap",
+    cssVar: "--mpx-sidebar-tree-scrollbar-end-gap",
+    fallback: "0px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-min-height",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-min-height",
+    fallback: "24px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-border-width",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-width",
+    fallback: "0px",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-shadow",
+    fallback: "none",
+    groupId: "box",
+    sectionId: "control-scrollbar",
+  },
+  {
+    id: "control-scrollbar-thumb-active-shadow",
+    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-shadow",
+    fallback: "none",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
@@ -1919,7 +2463,7 @@ const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
   {
     id: "control-slider-settings-groove-shadow",
-    cssVar: "--mpx-runway-groove-shadow",
+    cssVar: "--mpx-slider-settings-groove-shadow",
     fallback:
       "inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)",
     groupId: "box",

@@ -206,6 +206,39 @@
     var(--mpx-border-2)
   );
 
+  --mpx-metadata-preference-record-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-preference-record-bg: var(
+    --mpx-bg-elevated-soft,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-metadata-preference-record-text: var(--mpx-text-1);
+  --mpx-metadata-preference-record-summary-text: var(--mpx-text-1);
+  --mpx-metadata-preference-record-hint-text: var(--mpx-text-2);
+  --mpx-metadata-preference-record-field-border: var(
+    --mpx-input-readonly-border
+  );
+  --mpx-metadata-preference-record-field-bg: var(--mpx-input-readonly-bg);
+  --mpx-metadata-preference-record-field-text: var(--mpx-input-readonly-text);
+
+  --mpx-metadata-booklet-binding-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-booklet-binding-bg: var(--mpx-bg-elevated);
+  --mpx-metadata-booklet-binding-text: var(--mpx-text-1);
+  --mpx-metadata-booklet-binding-meta-text: var(--mpx-text-2);
+  --mpx-metadata-booklet-binding-control-border: var(--mpx-input-border);
+  --mpx-metadata-booklet-binding-control-bg: var(--mpx-input-bg);
+  --mpx-metadata-booklet-binding-control-text: var(--mpx-input-text);
+
+  --mpx-metadata-feature-tag-picker-hint-text: var(--mpx-text-2);
+  --mpx-metadata-feature-tag-picker-group-key-text: var(--mpx-text-2);
+  --mpx-metadata-feature-tag-picker-popover-border: var(--mpx-border-1);
+  --mpx-metadata-feature-tag-picker-popover-bg: var(--mpx-bg-elevated);
+  --mpx-metadata-feature-tag-picker-tag-border: var(--mpx-border-2);
+  --mpx-metadata-feature-tag-picker-tag-bg: var(--mpx-bg-elevated);
+  --mpx-metadata-feature-tag-picker-tag-text: var(--mpx-text-1);
+  --mpx-metadata-feature-tag-picker-tag-active-border: var(--mpx-accent);
+  --mpx-metadata-feature-tag-picker-tag-active-bg: var(--mpx-accent-soft);
+  --mpx-metadata-feature-tag-picker-tag-active-text: var(--mpx-accent);
+
   --mpx-subtitle-cleanup-raw-preview-border: var(--mpx-overlay-soft-row-divider);
   --mpx-subtitle-cleanup-raw-preview-bg: var(--mpx-overlay-soft-bg);
   --mpx-subtitle-cleanup-raw-preview-text: var(--mpx-text-1);
@@ -247,6 +280,54 @@
     var(--mpx-border-2)
   );
 
+  --mpx-transcode-dialog-control-border: var(--mpx-overlay-soft-border);
+  --mpx-transcode-dialog-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-transcode-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-transcode-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-transcode-dialog-control-text: var(--mpx-text-1);
+  --mpx-transcode-dialog-control-placeholder: var(--mpx-text-2);
+  --mpx-transcode-dialog-action-btn-border: var(--mpx-border-2);
+  --mpx-transcode-dialog-action-btn-bg: var(--mpx-bg-elevated);
+  --mpx-transcode-dialog-action-btn-text: var(--mpx-text-1);
+
+  --mpx-sidebar-rename-dialog-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-dialog-muted-text: var(--mpx-text-2);
+  --mpx-sidebar-rename-dialog-control-border: var(--mpx-overlay-soft-border);
+  --mpx-sidebar-rename-dialog-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-sidebar-rename-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-sidebar-rename-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-sidebar-rename-dialog-control-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-dialog-control-placeholder: var(--mpx-text-2);
+  --mpx-sidebar-rename-dialog-action-btn-border: var(--mpx-border-2);
+  --mpx-sidebar-rename-dialog-action-btn-bg: var(--mpx-bg-elevated);
+  --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-preview-border: var(--mpx-overlay-soft-border);
+  --mpx-sidebar-rename-preview-bg: var(--mpx-bg-elevated);
+  --mpx-sidebar-rename-preview-head-border: var(--mpx-overlay-soft-head-divider);
+  --mpx-sidebar-rename-preview-head-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-sidebar-rename-preview-head-text: var(--mpx-text-2);
+  --mpx-sidebar-rename-preview-list-bg: var(--mpx-overlay-soft-bg);
+  --mpx-sidebar-rename-preview-row-border: var(--mpx-overlay-soft-row-divider);
+  --mpx-sidebar-rename-preview-row-text: var(--mpx-text-1);
+  --mpx-sidebar-rename-preview-arrow-text: color-mix(
+    in srgb,
+    var(--mpx-text-2) 70%,
+    transparent
+  );
+  --mpx-sidebar-rename-preview-row-source-hover-bg: var(
+    --mpx-overlay-soft-hover-bg
+  );
+  --mpx-sidebar-rename-preview-row-source-active-bg: var(
+    --mpx-overlay-soft-focus-bg
+  );
+  --mpx-sidebar-rename-preview-row-source-pressed-bg: var(
+    --mpx-overlay-soft-focus-bg
+  );
+  --mpx-sidebar-rename-preview-row-changed-accent: #9fb1c3;
+  --mpx-sidebar-rename-preview-row-failed-accent: #c7928a;
+  --mpx-sidebar-rename-preview-row-failed-text: var(--mpx-status-danger-text);
+  --mpx-sidebar-rename-preview-row-unchanged-text: var(--mpx-text-2);
+
   /* ---------- Dialog panel layer (5.0) ---------- */
   --mpx-dialog-panel-width: min(520px, 92vw);
   --mpx-dialog-panel-max-width: 92vw;
@@ -264,6 +345,18 @@
   );
   --mpx-dialog-panel-padding: 14px;
   --mpx-dialog-panel-gap: 10px;
+
+  --mpx-metadata-playlist-name-dialog-text: var(--mpx-text-1);
+  --mpx-metadata-playlist-name-dialog-input-border: var(--mpx-input-border);
+  --mpx-metadata-playlist-name-dialog-input-bg: var(--mpx-input-bg);
+  --mpx-metadata-playlist-name-dialog-input-text: var(--mpx-input-text);
+  --mpx-metadata-playlist-name-dialog-input-placeholder: var(--mpx-text-2);
+
+  --mpx-slider-settings-groove-bg: var(--mpx-overlay-soft-bg);
+  --mpx-slider-settings-groove-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.12),
+    inset 0 1px 1px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255, 255, 255, 1);
 
   /* ---------- Button foundation (4.0) ---------- */
   --mpx-btn-core-border: var(--mpx-border-2);

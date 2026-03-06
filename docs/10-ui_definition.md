@@ -26,12 +26,14 @@
 
 | 稳定路径范围 | 对应分页 | 说明 |
 |---|---|---|
+| ThemeParameter 通用参数与 style 参数调节区 | `parameters` | 通用参数入口，不单独代表某个 UI 层 |
+| ThemeParameter 快照导入 / 导出 / 复位区 | `snapshot` | 快照工具页，负责承载各分页已暴露字段 |
 | `bg.app.*`、`fg.header.root`、`fg.sidebar.root`、`fg.main.root`、`fg.meta.root` | `containerLayer` | 背景层与四大容器壳层 |
 | `fg.sidebar.main`、`fg.sidebar.main.label`、`fg.main.content.image.nameList*` | `containerLayer` | 已独立收口到容器层子页的重点调试区 |
 | `*.settings.root.*`、`*.themeParameter.root.*`、`*.help.root.*`、`*.metadataFetch.*`、`*.featureTagPicker.*`、`*.subtitleCleanup.*`、`*.musicTranscode.*`、`*.videoTranscode.*`、`fg.header.g1.task.importTask.*` | `largePanelLayer` | 3.0 大面板骨架与其内部件 |
 | `*.shortcutEdit.*`、`*.shortcutCapture.*`、`*.groupName.*`、`*.deleteConfirm.*`、`*.adReviewStart.*`、`*.convert.*`、`*.rename.single.*`、`*.playlistNameDialog.*` | `smallPanelLayer` | 5.0 小面板链路 |
 | 按钮触发器与按钮局部覆写路径 | `buttonStates` | 统一走 `4.0 core/variant/slot` |
-| 滚动条、Slider、Runway 等控件层 | `commonControls` | 控件层不按单一路径表维护，以 `docs/32-ui-design-tracking-v1.md` 为准 |
+| 滚动条、Slider、Runway 等控件层 | `commonControls` | 当前覆盖全局 scrollbar 基础层、sidebar-tree 细节覆写、range/runway/vertical/settings slider |
 
 特例白名单
 
