@@ -77,6 +77,7 @@ export class MediaTokenService {
       throw new Error('媒体资源令牌已过期')
     }
 
+    record.expiresAtMs = nowMs + this.tokenTtlMs
     this.cleanupExpiredTokens(nowMs)
     this.tokenHits += 1
     return record

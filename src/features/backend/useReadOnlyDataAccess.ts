@@ -32,6 +32,7 @@ const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set([
   'thumbnail-rendering-start',
   'thumbnail-rendering-progress',
   'thumbnail-rendering-end',
+  'write-preference-metrics',
 ])
 
 function parseOptionalBoolean(value: unknown): boolean | null {

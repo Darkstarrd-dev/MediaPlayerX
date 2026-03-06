@@ -5,7 +5,7 @@ import type {
   RefObject,
   WheelEvent as ReactWheelEvent,
 } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { VideoFitMode } from '../../features/media/videoFitMode'
 import { clamp } from '../../utils/ui'
@@ -186,6 +186,7 @@ interface FullscreenVideoPaneProps {
   draggingPane: PaneKey | null
   videoGeometry: MediaGeometry
   videoTransform: PaneTransform
+  focusedVideoId: string | null
   videoPlaying: boolean
   videoTime: number
   focusedVideoSrc: string | null
@@ -227,6 +228,7 @@ export function FullscreenVideoPane({
   draggingPane,
   videoGeometry,
   videoTransform,
+  focusedVideoId,
   videoPlaying,
   videoTime,
   focusedVideoSrc,
@@ -256,24 +258,115 @@ export function FullscreenVideoPane({
   onVideoDurationDetected,
   onVideoEnded,
 }: FullscreenVideoPaneProps) {
+  const [displayedVideoId, setDisplayedVideoId] = useState(focusedVideoId)
+  const [displayedVideoSrc, setDisplayedVideoSrc] = useState(focusedVideoSrc)
   const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
   const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
+  const lastStableTimeRef = useRef(0)
+  const sourceChangedAtMsRef = useRef(0)
+  const sourceRestoreAnchorTimeRef = useRef(0)
+  const previousDisplayedVideoIdRef = useRef<string | null>(focusedVideoId)
+  const pendingVideoSrcRef = useRef<string | null>(null)
 
   useEffect(() => {
+    if (!focusedVideoId) {
+      pendingVideoSrcRef.current = null
+      setDisplayedVideoId(null)
+      setDisplayedVideoSrc(null)
+      return
+    }
+
+    if (displayedVideoId !== focusedVideoId) {
+      pendingVideoSrcRef.current = null
+      setDisplayedVideoId(focusedVideoId)
+      setDisplayedVideoSrc(focusedVideoSrc)
+      return
+    }
+
+    if (!focusedVideoSrc) {
+      if (!videoPlaying) {
+        pendingVideoSrcRef.current = null
+        setDisplayedVideoSrc(null)
+      }
+      return
+    }
+
+    if (displayedVideoSrc === null) {
+      pendingVideoSrcRef.current = null
+      if (displayedVideoSrc !== focusedVideoSrc) {
+        setDisplayedVideoSrc(focusedVideoSrc)
+      }
+      return
+    }
+
+    if (focusedVideoSrc === displayedVideoSrc) {
+      if (pendingVideoSrcRef.current === focusedVideoSrc) {
+        pendingVideoSrcRef.current = null
+      }
+      return
+    }
+
+    pendingVideoSrcRef.current = focusedVideoSrc
+    if (!videoPlaying) {
+      pendingVideoSrcRef.current = null
+      setDisplayedVideoSrc(focusedVideoSrc)
+    }
+  }, [displayedVideoId, displayedVideoSrc, focusedVideoId, focusedVideoSrc, videoPlaying])
+
+  const commitPendingVideoSrc = () => {
+    const pendingVideoSrc = pendingVideoSrcRef.current
+    if (!pendingVideoSrc || pendingVideoSrc === displayedVideoSrc) {
+      return false
+    }
+
+    pendingVideoSrcRef.current = null
+    setDisplayedVideoSrc(pendingVideoSrc)
+    return true
+  }
+
+  useEffect(() => {
+    const previousDisplayedVideoId = previousDisplayedVideoIdRef.current
+    previousDisplayedVideoIdRef.current = displayedVideoId
+
+    const sameVideo =
+      displayedVideoId !== null &&
+      previousDisplayedVideoId !== null &&
+      displayedVideoId === previousDisplayedVideoId
+
+    sourceChangedAtMsRef.current = Date.now()
+    if (sameVideo) {
+      sourceRestoreAnchorTimeRef.current = Math.max(
+        lastStableTimeRef.current,
+        Math.max(0, videoTime),
+      )
+    } else {
+      lastStableTimeRef.current = Math.max(0, videoTime)
+      sourceRestoreAnchorTimeRef.current = Math.max(0, videoTime)
+    }
     setHasPlayedCurrentSource(false)
     setHasSeekPreviewCurrentSource(false)
-  }, [focusedVideoSrc])
+  }, [displayedVideoId, displayedVideoSrc, videoTime])
 
   useEffect(() => {
-    if (videoPlaying && focusedVideoSrc) {
+    if (videoPlaying && displayedVideoSrc) {
       setHasPlayedCurrentSource(true)
     }
-  }, [focusedVideoSrc, videoPlaying])
+  }, [displayedVideoSrc, videoPlaying])
+
+  useEffect(() => {
+    if (videoTime > 0.05) {
+      lastStableTimeRef.current = Math.max(lastStableTimeRef.current, videoTime)
+      sourceRestoreAnchorTimeRef.current = Math.max(
+        sourceRestoreAnchorTimeRef.current,
+        videoTime,
+      )
+    }
+  }, [videoTime])
 
   const useFixedBottomControls = fullscreenDisplay !== 'image-only'
   const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
   const showVideoFrame = Boolean(
-    focusedVideoSrc && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !focusedVideoCoverImageSrc),
+    displayedVideoSrc && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !focusedVideoCoverImageSrc),
   )
   const controlsStyle = useFixedBottomControls
     ? {
@@ -319,7 +412,7 @@ export function FullscreenVideoPane({
               background: showVideoFrame ? 'var(--mpx-video-screen-bg)' : focusedVideoCoverColor,
             }}
           >
-          {focusedVideoSrc ? (
+          {displayedVideoSrc ? (
             <video
               ref={(element) => {
                 videoRef.current = element
@@ -331,14 +424,35 @@ export function FullscreenVideoPane({
                 objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
                 objectPosition: 'center center',
               }}
-              src={focusedVideoSrc}
+              src={displayedVideoSrc}
               crossOrigin="anonymous"
               preload="metadata"
               playsInline
               loop={videoLoopMode === 'single'}
+              onError={() => {
+                void commitPendingVideoSrc()
+              }}
               onTimeUpdate={() => {
                 const currentTime = videoRef.current?.currentTime ?? 0
+                const recentSourceSwap =
+                  Date.now() - sourceChangedAtMsRef.current < 2_500
+                const restoreAnchorTime = sourceRestoreAnchorTimeRef.current
+                const shouldIgnoreTransientReset =
+                  currentTime <= 0.05 &&
+                  videoPlaying &&
+                  recentSourceSwap &&
+                  restoreAnchorTime > 0.8
+
+                if (shouldIgnoreTransientReset) {
+                  return
+                }
+
                 if (currentTime > 0.05) {
+                  lastStableTimeRef.current = currentTime
+                  sourceRestoreAnchorTimeRef.current = Math.max(
+                    sourceRestoreAnchorTimeRef.current,
+                    currentTime,
+                  )
                   setHasSeekPreviewCurrentSource(true)
                 }
                 onVideoTimeUpdate(currentTime)
@@ -348,17 +462,32 @@ export function FullscreenVideoPane({
                 if (Number.isFinite(duration) && duration > 0) {
                   onVideoDurationDetected(duration)
                 }
-                const restoreTime = clamp(videoTime, 0, Number.isFinite(duration) && duration > 0 ? duration : Math.max(0, videoTime))
+                const restoreTime = clamp(
+                  Math.max(videoTime, sourceRestoreAnchorTimeRef.current),
+                  0,
+                  Number.isFinite(duration) && duration > 0
+                    ? duration
+                    : Math.max(0, videoTime),
+                )
                 if (restoreTime > 0.05 && videoRef.current && Math.abs(videoRef.current.currentTime - restoreTime) > 0.05) {
                   videoRef.current.currentTime = restoreTime
                 }
                 if ((videoRef.current?.currentTime ?? 0) > 0.05) {
+                  lastStableTimeRef.current = Math.max(
+                    lastStableTimeRef.current,
+                    videoRef.current?.currentTime ?? 0,
+                  )
                   setHasSeekPreviewCurrentSource(true)
                 }
               }}
               onSeeked={() => {
                 const currentTime = videoRef.current?.currentTime ?? 0
                 if (currentTime > 0.05) {
+                  lastStableTimeRef.current = currentTime
+                  sourceRestoreAnchorTimeRef.current = Math.max(
+                    sourceRestoreAnchorTimeRef.current,
+                    currentTime,
+                  )
                   setHasSeekPreviewCurrentSource(true)
                 }
                 onVideoTimeUpdate(currentTime)

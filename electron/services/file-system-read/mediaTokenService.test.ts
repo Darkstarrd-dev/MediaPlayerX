@@ -20,7 +20,7 @@ describe('MediaTokenService', () => {
     expect(record).toMatchObject({
       locator: IMAGE_LOCATOR,
       mimeType: 'image/jpeg',
-      expiresAtMs: 1_200,
+      expiresAtMs: 1_250,
     })
 
     const audit = service.readAuditSnapshot(1_050)
@@ -57,6 +57,26 @@ describe('MediaTokenService', () => {
       tokenExpired: 1,
       tokenCleanupRemoved: 1,
       tokenActive: 0,
+    })
+  })
+
+  it('活跃读取会滑动续期，避免长时间流式播放中途失效', () => {
+    const service = new MediaTokenService(100)
+    const issued = service.issueToken(IMAGE_LOCATOR, 'image/jpeg', 1_000)
+
+    const firstRecord = service.requireRecord(issued.token, 1_050)
+    expect(firstRecord.expiresAtMs).toBe(1_150)
+
+    const secondRecord = service.requireRecord(issued.token, 1_149)
+    expect(secondRecord.expiresAtMs).toBe(1_249)
+
+    const audit = service.readAuditSnapshot(1_149)
+    expect(audit).toMatchObject({
+      tokenReads: 2,
+      tokenHits: 2,
+      tokenExpired: 0,
+      tokenMisses: 0,
+      tokenActive: 1,
     })
   })
 })

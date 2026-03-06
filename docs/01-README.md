@@ -39,20 +39,34 @@
 
 ## 待办
 
+- [ ] ThemeParameter Phase 2 手工验收与特例清点
+  - [ ] 按 `docs/32-ui-design-tracking-v1.md` 的 `7.0.1.2 ThemeParameter 逐页手工验收清单` 逐页执行验收：`parameters / snapshot / containerLayer / largePanelLayer / smallPanelLayer / commonControls / buttonStates`
+  - [ ] 每页至少记录四类结果：`改值生效`、`单项复位生效`、`快照恢复生效`、`切页不丢状态`
+  - [ ] 将手工验收结果回填到 `docs/35-ui-theme-config-tauri-roadmap-v1.md` 的 `Phase 2 -> 手工验收记录`，并同步更新勾选状态
+  - [ ] 继续清点尚未分页化的特例白名单区域；若需新增豁免或命名空间，先更新 `docs/32-ui-design-tracking-v1.md`、`docs/10-ui_definition.md`、`docs/11-token_design.md`
+
 - [ ] 排查 fullscreen dual 模式下视频播放约 5~6 分钟自动跳回片首的回归问题（远程机器接手）
   - [ ] 复现结论：问题发生在 `fullscreen + dual` 播放过程中，不是 single/dual 切换瞬间；从头连续播放时约 5~6 分钟触发。
   - [ ] 新增复测结论：即使先 `seek forward` 到较靠后位置，仍然是“从 seek 后继续播放约 5 分钟左右”跳回片首，而不是在媒体时间轴到达 5:00 左右时触发。
   - [ ] 当前判断：根因更像“与当前全屏 dual 视频实例存活时长 / 某个墙钟定时链路相关”，而不是“与播放位置到达某个时间点相关”。
   - [ ] 已排除的初步假设：仅缩短媒体 token TTL（`MPX_MEDIA_TOKEN_TTL_MS` / `MEDIA_PLAYERX_MEDIA_TOKEN_TTL_MS`）不会让问题提前到 10~30 秒内触发，因此“纯墙钟 5 分钟 token 到期即刻触发”不是充分解释。
+  - [x] 新增复测结论：问题并非 `dual` 独占，`video-only` fullscreen 也能复现；`single` / `list` loop mode 都出现过回片首。
+  - [x] 新增复测结论：长视频黑闪窗口与媒体 URL 刷新提前量高度相关；曾观察到默认 TTL 下约 `4:44~4:46` 触发，排查期另见约 `30s` 一次的黑闪现象，但当前终端未发现 `MPX_MEDIA_TOKEN_TTL_MS` / `MEDIA_PLAYERX_MEDIA_TOKEN_TTL_MS` 环境变量残留。
+  - [x] 已完成一轮止血：`src/features/backend/useReadOnlyDataAccess.ts` 已将 `write-preference-metrics` 视为 transient reason，避免读侧全量刷新放大 fullscreen `<video>` 重建概率。
+  - [x] 已完成一轮播放器保位：`src/components/fullscreen/FullscreenPanes.tsx` 增加异常 reload 后的播放位置保护，避免瞬时 `timeupdate(0)` 直接把全局 `videoTime` 覆盖为 `0`。
+  - [x] 已完成一轮换源收口：fullscreen 视频同一 `focusedVideoId` 播放期间改为 sticky `src`，只有异常时才切到 pending URL；`electron/services/file-system-read/mediaTokenService.ts` 同步改为活跃读流滑动续期。
+  - [ ] 当前最新状态：已消除“播放约 5 分钟直接跳回片首”的主故障，但 sticky `src` 在跨视频切换时曾出现“信息栏切到下一条、画面仍停留上一条”的回归；代码已追加 `displayedVideoId` 修正与回归测试，仍需远程机重新复测确认。
   - [ ] 待优先验证 1：全屏 dual 视频实例在存活约 5 分钟后触发某次新的 range / 续读请求或内部重载，自定义媒体协议读流失败，导致 `<video>` 静默 reload 或 seek 到 0。
   - [ ] 待优先验证 2：播放过程中的周期性刷新 / 库变更 / scope 校正导致 `selectedVideoId`、`focusedVideoSrc` 或全屏 `<video>` 实例被隐式重建，从而把播放状态重置到片首。
   - [ ] 先补诊断：`electron/registerMediaProtocolHandler.ts` 为 `media-protocol-read-failed` 增加强制日志（至少打印 `tokenPrefix`、`hasRangeHeader`、错误 message、触发时间）。
   - [ ] 先补前端事件埋点：`src/components/fullscreen/FullscreenPanes.tsx` 的 `<video>` 增加 `onError / onStalled / onWaiting / onEmptied / onAbort`，记录 `currentSrc / currentTime / networkState / readyState`。
   - [ ] 重点排查文件：`src/components/fullscreen/FullscreenPanes.tsx`、`src/components/FullscreenLayer.tsx`、`src/features/app/useAppEffects.ts`、`src/features/app/useResolvedMediaState.ts`、`src/features/backend/useResolvedMediaUrls.ts`。
   - [ ] 协议/后端链路重点文件：`electron/registerMediaProtocolHandler.ts`、`electron/services/file-system-read/mediaResourceService.ts`、`electron/services/file-system-read/mediaTokenService.ts`、`electron/services/file-system-read/fileSystemReadFacadeConfig.ts`、`electron/fileSystemMediaReaders.ts`。
-  - [ ] 次级干扰项：`src/features/app/usePreferenceMetricsBuffer.ts` 会周期性写 runtime checkpoint；`electron/services/file-system-read/libraryReadWriteServiceImpl.ts` 会发 `write-preference-metrics`；`src/features/backend/useReadOnlyDataAccess.ts` 当前未豁免该 reason，可能放大全量刷新与重建概率，需一并审计。
+  - [x] 次级干扰项：`src/features/app/usePreferenceMetricsBuffer.ts` 会周期性写 runtime checkpoint；`electron/services/file-system-read/libraryReadWriteServiceImpl.ts` 会发 `write-preference-metrics`；`src/features/backend/useReadOnlyDataAccess.ts` 已豁免该 reason，并补充测试覆盖。
   - [ ] 建议远程机复现步骤 A：进入 video 模式 -> fullscreen -> dual -> 从头连续播放同一视频，记录 5~6 分钟附近是否触发；期间不要切视频、不要切模式。
   - [ ] 建议远程机复现步骤 B：进入 fullscreen dual 后立即 `seek forward` 到明显靠后位置，继续播放并记录是否仍在 seek 后约 5 分钟左右触发；若仍触发，可继续排除“播放位置阈值”假设。
+  - [ ] 新增复测步骤 C：`video-only` fullscreen 连续跨 4 个文件，确认不会出现“信息栏切换成功但 `<video>` 仍停留上一条画面”的回归。
+  - [ ] 新增复测步骤 D：长视频 fullscreen 连续播放 5~10 分钟，记录是否仍出现黑闪；若有，继续核对触发时是否伴随 `focusedVideoSrc` 变化或协议读流失败。
 
 - [ ] 间距系统去硬编码收口（image | video | music 三模式）
   - [ ] Video 主区控件容器去硬编码：`src/styles/app/main/main.part3.css`（`video-controls-shell` 的 `margin-top/gap/padding`）

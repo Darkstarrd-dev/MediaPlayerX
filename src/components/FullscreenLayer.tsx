@@ -1614,6 +1614,7 @@ function FullscreenLayer({
       draggingPane={draggingPane}
       videoGeometry={videoGeometry}
       videoTransform={videoRenderTransform}
+      focusedVideoId={focusedVideoId}
       videoPlaying={videoPlaying}
       videoTime={clampedVideoTime}
       focusedVideoSrc={focusedVideoSrc}
