@@ -263,7 +263,7 @@ describe('FullscreenVideoPane', () => {
     expect(video.currentTime).toBe(0)
   })
 
-  it('切换到下一条视频时即使新 src 晚一拍到达，也不会继续显示上一条视频', () => {
+  it('切换到下一条视频时即使新 src 晚一拍到达，也不会继续显示上一条视频或继承上一条进度', () => {
     const paneRef = createRef<HTMLElement>()
     const videoRef = createRef<HTMLVideoElement>()
 
@@ -312,6 +312,14 @@ describe('FullscreenVideoPane', () => {
 
     const firstVideo = container.querySelector('video')
     expect(firstVideo?.getAttribute('src')).toBe('mpx://resource/video-1')
+    if (firstVideo) {
+      Object.defineProperty(firstVideo, 'currentTime', {
+        configurable: true,
+        writable: true,
+        value: 281,
+      })
+      fireEvent.timeUpdate(firstVideo)
+    }
 
     rerender(
       <FullscreenVideoPane
@@ -404,5 +412,180 @@ describe('FullscreenVideoPane', () => {
     expect(container.querySelector('video')?.getAttribute('src')).toBe(
       'mpx://resource/video-2',
     )
+
+    const secondVideo = container.querySelector('video')
+    if (!secondVideo) {
+      return
+    }
+
+    Object.defineProperty(secondVideo, 'currentTime', {
+      configurable: true,
+      writable: true,
+      value: 0,
+    })
+    Object.defineProperty(secondVideo, 'duration', {
+      configurable: true,
+      writable: true,
+      value: 25,
+    })
+
+    fireEvent.loadedMetadata(secondVideo)
+
+    expect(secondVideo.currentTime).toBe(0)
+  })
+
+  it('切换到下一条视频后，新源 metadata 就绪时会自动继续播放', () => {
+    const paneRef = createRef<HTMLElement>()
+    const videoRef = createRef<HTMLVideoElement>()
+
+    const { rerender, container } = render(
+      <FullscreenVideoPane
+        paneRef={paneRef}
+        videoRef={videoRef}
+        className="fullscreen-pane fullscreen-video"
+        flex={1}
+        fullscreenDisplay="video-only"
+        singlePane="video"
+        draggingPane={null}
+        videoGeometry={createVideoGeometry()}
+        videoTransform={DEFAULT_PANE_TRANSFORM}
+        focusedVideoId="video-1"
+        videoPlaying
+        videoTime={12}
+        focusedVideoSrc="mpx://resource/video-1"
+        focusedVideoCoverImageSrc={null}
+        focusedVideoCoverColor="#000"
+        subtitleTrackUrl={null}
+        autoSubtitleActive={false}
+        subtitleVisible={false}
+        liveSubtitleText={null}
+        subtitleOverlayStyle={{}}
+        bindVideoElement={() => undefined}
+        videoFitMode="contain"
+        videoLoopMode="list"
+        videoControlsVisible={false}
+        videoControlsAtTop={false}
+        videoControlsTop={0}
+        videoControlsLeft={0}
+        videoControlsWidth={640}
+        controlsRows={null}
+        overlayContent={null}
+        onSetVideoFocus={() => undefined}
+        onWheel={() => undefined}
+        onMouseDown={() => undefined}
+        onShowControls={() => undefined}
+        onHideControls={() => undefined}
+        onVideoTimeUpdate={() => undefined}
+        onVideoDurationDetected={() => undefined}
+        onVideoEnded={() => undefined}
+      />,
+    )
+
+    rerender(
+      <FullscreenVideoPane
+        paneRef={paneRef}
+        videoRef={videoRef}
+        className="fullscreen-pane fullscreen-video"
+        flex={1}
+        fullscreenDisplay="video-only"
+        singlePane="video"
+        draggingPane={null}
+        videoGeometry={createVideoGeometry()}
+        videoTransform={DEFAULT_PANE_TRANSFORM}
+        focusedVideoId="video-2"
+        videoPlaying
+        videoTime={0}
+        focusedVideoSrc={null}
+        focusedVideoCoverImageSrc={null}
+        focusedVideoCoverColor="#000"
+        subtitleTrackUrl={null}
+        autoSubtitleActive={false}
+        subtitleVisible={false}
+        liveSubtitleText={null}
+        subtitleOverlayStyle={{}}
+        bindVideoElement={() => undefined}
+        videoFitMode="contain"
+        videoLoopMode="list"
+        videoControlsVisible={false}
+        videoControlsAtTop={false}
+        videoControlsTop={0}
+        videoControlsLeft={0}
+        videoControlsWidth={640}
+        controlsRows={null}
+        overlayContent={null}
+        onSetVideoFocus={() => undefined}
+        onWheel={() => undefined}
+        onMouseDown={() => undefined}
+        onShowControls={() => undefined}
+        onHideControls={() => undefined}
+        onVideoTimeUpdate={() => undefined}
+        onVideoDurationDetected={() => undefined}
+        onVideoEnded={() => undefined}
+      />,
+    )
+
+    rerender(
+      <FullscreenVideoPane
+        paneRef={paneRef}
+        videoRef={videoRef}
+        className="fullscreen-pane fullscreen-video"
+        flex={1}
+        fullscreenDisplay="video-only"
+        singlePane="video"
+        draggingPane={null}
+        videoGeometry={createVideoGeometry()}
+        videoTransform={DEFAULT_PANE_TRANSFORM}
+        focusedVideoId="video-2"
+        videoPlaying
+        videoTime={0}
+        focusedVideoSrc="mpx://resource/video-2"
+        focusedVideoCoverImageSrc={null}
+        focusedVideoCoverColor="#000"
+        subtitleTrackUrl={null}
+        autoSubtitleActive={false}
+        subtitleVisible={false}
+        liveSubtitleText={null}
+        subtitleOverlayStyle={{}}
+        bindVideoElement={() => undefined}
+        videoFitMode="contain"
+        videoLoopMode="list"
+        videoControlsVisible={false}
+        videoControlsAtTop={false}
+        videoControlsTop={0}
+        videoControlsLeft={0}
+        videoControlsWidth={640}
+        controlsRows={null}
+        overlayContent={null}
+        onSetVideoFocus={() => undefined}
+        onWheel={() => undefined}
+        onMouseDown={() => undefined}
+        onShowControls={() => undefined}
+        onHideControls={() => undefined}
+        onVideoTimeUpdate={() => undefined}
+        onVideoDurationDetected={() => undefined}
+        onVideoEnded={() => undefined}
+      />,
+    )
+
+    const video = container.querySelector('video')
+    expect(video).not.toBeNull()
+    if (!video) {
+      return
+    }
+
+    const playMock = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(video, 'play', {
+      configurable: true,
+      value: playMock,
+    })
+    Object.defineProperty(video, 'duration', {
+      configurable: true,
+      writable: true,
+      value: 120,
+    })
+
+    fireEvent.loadedMetadata(video)
+
+    expect(playMock).toHaveBeenCalledTimes(1)
   })
 })

@@ -55,7 +55,11 @@
   - [x] 已完成一轮止血：`src/features/backend/useReadOnlyDataAccess.ts` 已将 `write-preference-metrics` 视为 transient reason，避免读侧全量刷新放大 fullscreen `<video>` 重建概率。
   - [x] 已完成一轮播放器保位：`src/components/fullscreen/FullscreenPanes.tsx` 增加异常 reload 后的播放位置保护，避免瞬时 `timeupdate(0)` 直接把全局 `videoTime` 覆盖为 `0`。
   - [x] 已完成一轮换源收口：fullscreen 视频同一 `focusedVideoId` 播放期间改为 sticky `src`，只有异常时才切到 pending URL；`electron/services/file-system-read/mediaTokenService.ts` 同步改为活跃读流滑动续期。
-  - [ ] 当前最新状态：已消除“播放约 5 分钟直接跳回片首”的主故障，但 sticky `src` 在跨视频切换时曾出现“信息栏切到下一条、画面仍停留上一条”的回归；代码已追加 `displayedVideoId` 修正与回归测试，仍需远程机重新复测确认。
+  - [x] 当前阶段结论：已消除“播放约 5 分钟直接跳回片首”的主故障；`video-only` fullscreen 手工复测中已能稳定实现“不黑闪 / 可自动跳转 / 跳转后自动续播”。
+  - [x] 已完成跨视频切换修复 1：sticky `src` 早期版本曾导致“信息栏切到下一条、画面仍停留上一条”，现已通过 `displayedVideoId` + 新源晚到测试修正。
+  - [x] 已完成跨视频切换修复 2：新视频挂载后需要手动 `pause/play` 才继续播放的问题，已在 fullscreen `<video>` 的 `loadedmetadata` 阶段补自动 `play()`，并补测试覆盖。
+  - [ ] 当前剩余问题：自动顺播链路下，`6:20 -> 25s -> 25s -> 105:01` 这组样本中，前两个 `25s` 短视频仍可能被直接跳过；当前最新观察是第 4 个 `105:01` 视频会从 `0:00` 正常开始，说明更像“短视频被瞬时判定 ended / 连续 next”而不是“继承上一条播放位置”。
+  - [x] 已完成收口：fullscreen 播放恢复锚点已绑定 `videoId`，并前移到 `useLayoutEffect` 重置，避免上一条视频的恢复时间串到下一条短视频。
   - [ ] 待优先验证 1：全屏 dual 视频实例在存活约 5 分钟后触发某次新的 range / 续读请求或内部重载，自定义媒体协议读流失败，导致 `<video>` 静默 reload 或 seek 到 0。
   - [ ] 待优先验证 2：播放过程中的周期性刷新 / 库变更 / scope 校正导致 `selectedVideoId`、`focusedVideoSrc` 或全屏 `<video>` 实例被隐式重建，从而把播放状态重置到片首。
   - [ ] 先补诊断：`electron/registerMediaProtocolHandler.ts` 为 `media-protocol-read-failed` 增加强制日志（至少打印 `tokenPrefix`、`hasRangeHeader`、错误 message、触发时间）。
@@ -65,8 +69,9 @@
   - [x] 次级干扰项：`src/features/app/usePreferenceMetricsBuffer.ts` 会周期性写 runtime checkpoint；`electron/services/file-system-read/libraryReadWriteServiceImpl.ts` 会发 `write-preference-metrics`；`src/features/backend/useReadOnlyDataAccess.ts` 已豁免该 reason，并补充测试覆盖。
   - [ ] 建议远程机复现步骤 A：进入 video 模式 -> fullscreen -> dual -> 从头连续播放同一视频，记录 5~6 分钟附近是否触发；期间不要切视频、不要切模式。
   - [ ] 建议远程机复现步骤 B：进入 fullscreen dual 后立即 `seek forward` 到明显靠后位置，继续播放并记录是否仍在 seek 后约 5 分钟左右触发；若仍触发，可继续排除“播放位置阈值”假设。
-  - [ ] 新增复测步骤 C：`video-only` fullscreen 连续跨 4 个文件，确认不会出现“信息栏切换成功但 `<video>` 仍停留上一条画面”的回归。
-  - [ ] 新增复测步骤 D：长视频 fullscreen 连续播放 5~10 分钟，记录是否仍出现黑闪；若有，继续核对触发时是否伴随 `focusedVideoSrc` 变化或协议读流失败。
+  - [x] 新增复测步骤 C：`video-only` fullscreen 连续跨 4 个文件，已确认“信息栏切换成功但 `<video>` 仍停留上一条画面”的回归已修复。
+  - [x] 新增复测步骤 D：长视频 fullscreen 连续播放 5~10 分钟，已确认当前版本不再出现早前那种周期性黑闪与回片首主故障。
+  - [ ] 新增复测步骤 E：继续使用 `6:20 -> 25s -> 25s -> 105:01` 这组样本，在 `video-only` 与 `dual` fullscreen 下验证短视频不会被自动跳过。
 
 - [ ] 间距系统去硬编码收口（image | video | music 三模式）
   - [ ] Video 主区控件容器去硬编码：`src/styles/app/main/main.part3.css`（`video-controls-shell` 的 `margin-top/gap/padding`）
