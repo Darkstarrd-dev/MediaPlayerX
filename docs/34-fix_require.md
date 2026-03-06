@@ -1066,4 +1066,44 @@ sidebar.css / manage.css
 优先处理文档剩余内容：
 
 1. 先完成 `docs/32-ui-design-tracking-v1.md` 的 2.2.2.1 同步（触发点、特异性约束、marker 实现、count 说明、说明段补充）。
-2. 再回到样式细化：将 `active / manage-selected` 的覆盖范围从“全 label 覆盖”收敛为与基线一致的节点层级表现。
+2. 再回到样式细化：将 `active / manage-selected` 的覆盖范围从”全 label 覆盖”收敛为与基线一致的节点层级表现。
+
+---
+
+## 实施状态核查（提交 4fee096 之后）
+
+核查日期：2026-03-06
+基准提交：4fee096（refactor(theme): 重构sidebar-main分层并重排调试分组）
+
+### 已实施项
+
+| 修复项 | 状态 | 说明 |
+|--------|------|------|
+| marker `::after` → `::before` | ✅ 已完成 | part1.css 中所有 marker 伪元素已改回 `::before`，10+ 处选择器已更新 |
+| `.is-collapsible::after { display: none }` 删除 | ✅ 已完成 | 该规则已不存在 |
+| active 高特异性规则 | ✅ 已完成 | part1.css:724-834 新增完整的 `.is-active .sidebar-label` 规则（含 collapsible/expanded/plain 三种变体） |
+| manage-selected 高特异性规则 | ✅ 已完成 | part1.css:836-922 新增完整的 `.is-manage.is-selected .sidebar-label` 规则 |
+| sidebar-tree 背景消费语义 token | ✅ 已完成 | part1.css:34-41 改为 `var(--mpx-slot-..., var(--mpx-sidebar-main-bg, var(--mpx-sidebar-main-tree-bg, #e3e7ec)))` |
+| palette 层 sidebar-main 原始值 | ✅ 已完成 | skeuomorphic-luxury-white.css:174-198 新增 21 个变量（含 active/manage-selected 的 collapsible/expanded/plain 三种变体背景） |
+| contract.css 硬编码清除 | ✅ 已完成 | 40+ 变量全部改为语义 token 引用，无硬编码色值 |
+| _palette-template 模板 | ✅ 已完成 | 新增 sidebar-main 区段注释 |
+| UI 会话持久化 | ✅ 已完成 | themeParameterPanelSessionState.ts 已创建，activePage + 折叠状态会话级保存 |
+| is-sweeping 动画恢复 | ✅ 用户确认通过 | marker 改回 `::before` 后 `::after` 归还给 sweeping |
+
+### 残余问题
+
+| 问题 | 状态 | 说明 |
+|------|------|------|
+| active 在直属媒体节点表现为全 label 覆盖 | ⚠️ 待修复 | 根节点正常，但直属媒体节点的 active 背景扩散到整个 label 而非仅显示 marker |
+| manage-selected 在所有节点全 label 覆盖 | ⚠️ 待修复 | 所有节点的 manage-selected 背景扩散到整个 label |
+| docs/32 的 2.2.2.1 文档同步 | ⏳ 待执行 | 触发点、特异性约束、marker 机制等需要更新 |
+
+### 架构合规性
+
+| 维度 | 状态 |
+|------|------|
+| palette → contract → slot → component 分层 | ✅ 已对齐 |
+| contract.css 无 palette 特定硬编码 | ✅ 已清除 |
+| `::before` = marker, `::after` = sweeping 伪元素分工 | ✅ 已恢复 |
+| 高特异性规则覆盖基础 label | ✅ 已补充 |
+| 切换 palette 自动适配 | ✅ 架构就绪（需实际验证） |
