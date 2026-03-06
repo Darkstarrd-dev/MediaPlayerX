@@ -38,6 +38,21 @@
 
 ## 待办
 
+- [ ] 排查 fullscreen dual 模式下视频播放约 5~6 分钟自动跳回片首的回归问题（远程机器接手）
+  - [ ] 复现结论：问题发生在 `fullscreen + dual` 播放过程中，不是 single/dual 切换瞬间；从头连续播放时约 5~6 分钟触发。
+  - [ ] 新增复测结论：即使先 `seek forward` 到较靠后位置，仍然是“从 seek 后继续播放约 5 分钟左右”跳回片首，而不是在媒体时间轴到达 5:00 左右时触发。
+  - [ ] 当前判断：根因更像“与当前全屏 dual 视频实例存活时长 / 某个墙钟定时链路相关”，而不是“与播放位置到达某个时间点相关”。
+  - [ ] 已排除的初步假设：仅缩短媒体 token TTL（`MPX_MEDIA_TOKEN_TTL_MS` / `MEDIA_PLAYERX_MEDIA_TOKEN_TTL_MS`）不会让问题提前到 10~30 秒内触发，因此“纯墙钟 5 分钟 token 到期即刻触发”不是充分解释。
+  - [ ] 待优先验证 1：全屏 dual 视频实例在存活约 5 分钟后触发某次新的 range / 续读请求或内部重载，自定义媒体协议读流失败，导致 `<video>` 静默 reload 或 seek 到 0。
+  - [ ] 待优先验证 2：播放过程中的周期性刷新 / 库变更 / scope 校正导致 `selectedVideoId`、`focusedVideoSrc` 或全屏 `<video>` 实例被隐式重建，从而把播放状态重置到片首。
+  - [ ] 先补诊断：`electron/registerMediaProtocolHandler.ts` 为 `media-protocol-read-failed` 增加强制日志（至少打印 `tokenPrefix`、`hasRangeHeader`、错误 message、触发时间）。
+  - [ ] 先补前端事件埋点：`src/components/fullscreen/FullscreenPanes.tsx` 的 `<video>` 增加 `onError / onStalled / onWaiting / onEmptied / onAbort`，记录 `currentSrc / currentTime / networkState / readyState`。
+  - [ ] 重点排查文件：`src/components/fullscreen/FullscreenPanes.tsx`、`src/components/FullscreenLayer.tsx`、`src/features/app/useAppEffects.ts`、`src/features/app/useResolvedMediaState.ts`、`src/features/backend/useResolvedMediaUrls.ts`。
+  - [ ] 协议/后端链路重点文件：`electron/registerMediaProtocolHandler.ts`、`electron/services/file-system-read/mediaResourceService.ts`、`electron/services/file-system-read/mediaTokenService.ts`、`electron/services/file-system-read/fileSystemReadFacadeConfig.ts`、`electron/fileSystemMediaReaders.ts`。
+  - [ ] 次级干扰项：`src/features/app/usePreferenceMetricsBuffer.ts` 会周期性写 runtime checkpoint；`electron/services/file-system-read/libraryReadWriteServiceImpl.ts` 会发 `write-preference-metrics`；`src/features/backend/useReadOnlyDataAccess.ts` 当前未豁免该 reason，可能放大全量刷新与重建概率，需一并审计。
+  - [ ] 建议远程机复现步骤 A：进入 video 模式 -> fullscreen -> dual -> 从头连续播放同一视频，记录 5~6 分钟附近是否触发；期间不要切视频、不要切模式。
+  - [ ] 建议远程机复现步骤 B：进入 fullscreen dual 后立即 `seek forward` 到明显靠后位置，继续播放并记录是否仍在 seek 后约 5 分钟左右触发；若仍触发，可继续排除“播放位置阈值”假设。
+
 - [ ] 间距系统去硬编码收口（image | video | music 三模式）
   - [ ] Video 主区控件容器去硬编码：`src/styles/app/main/main.part3.css`（`video-controls-shell` 的 `margin-top/gap/padding`）
   - [ ] Music 主区控件容器去硬编码：`src/styles/app/main/main.part2.css`（`music-controls-shell` 的 `margin-top/padding`，`music-controls-progress` 的 `gap/margin-bottom`）

@@ -16,6 +16,19 @@ function resolveConcurrency(
   return Math.max(1, Math.min(max, Math.round(parsed)));
 }
 
+function resolveDurationMs(
+  rawValue: string | undefined,
+  fallback: number,
+  max: number,
+): number {
+  const parsed = Number(rawValue);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.min(max, Math.round(parsed)));
+}
+
 function resolveFirstEnvValue(...keys: Array<string>): string | undefined {
   for (const key of keys) {
     const value = process.env[key];
@@ -80,8 +93,16 @@ export const ZIP_COMPRESSION_DEFLATE = 8;
  * 令牌有效期取 5 分钟：
  * - 足够覆盖翻页/全屏/重试等短会话的连续资源请求，避免频繁 401 风格失败。
  * - 又不会长期暴露可复用 token，把资源 URL 泄漏后的可利用窗口限制在可控范围。
+ * - 本地排查视频流回退问题时，可通过 MPX_MEDIA_TOKEN_TTL_MS / MEDIA_PLAYERX_MEDIA_TOKEN_TTL_MS 临时缩短。
  */
-export const MEDIA_TOKEN_TTL_MS = 5 * 60 * 1000;
+export const MEDIA_TOKEN_TTL_MS = resolveDurationMs(
+  resolveFirstEnvValue(
+    "MPX_MEDIA_TOKEN_TTL_MS",
+    "MEDIA_PLAYERX_MEDIA_TOKEN_TTL_MS",
+  ),
+  5 * 60 * 1000,
+  24 * 60 * 60 * 1000,
+);
 
 export const FFMPEG_BIN = resolveFfmpegBinPath(process.cwd()) ?? "ffmpeg";
 
