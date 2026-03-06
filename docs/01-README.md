@@ -35,6 +35,7 @@
 - 全屏重采样 SSOT 草案：`23-fullscreen_resampling_ssot_draft.md`
 - 高优化需求项目表：`24-high-optimization-demand-table.md`
 - Ad Review 导入哈希专家咨询申请：`33-ad-review-import-known-hash-专家技术支持请求-2026-03-04.md`
+- UI Theme Config 与 Tauri 迁移路线图：`35-ui-theme-config-tauri-roadmap-v1.md`
 
 ## 待办
 

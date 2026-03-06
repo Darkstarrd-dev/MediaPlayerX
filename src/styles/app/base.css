@@ -471,15 +471,60 @@ select option {
 }
 
 .import-task-panel [data-slot='fg-import-task-error'] {
-  color: var(--mpx-slot-fg-import-task-error-text, inherit);
+  border: 1px solid
+    var(
+      --mpx-slot-fg-import-task-error-border,
+      var(--mpx-import-task-error-border)
+    );
+  background: var(
+    --mpx-slot-fg-import-task-error-bg,
+    var(--mpx-import-task-error-bg)
+  );
+  color: var(
+    --mpx-slot-fg-import-task-error-text,
+    var(--mpx-import-task-error-text)
+  );
+  border-radius: var(--mpx-card-radius-effective, 8px);
+  padding: var(--mpx-pane-stack-gap, 6px)
+    var(--mpx-pane-inner-padding-px, 8px);
+}
+
+.import-task-panel [data-slot='fg-import-task-hint'] {
+  border: 1px solid
+    var(
+      --mpx-slot-fg-import-task-hint-border,
+      var(--mpx-import-task-hint-border)
+    );
+  background: var(
+    --mpx-slot-fg-import-task-hint-bg,
+    var(--mpx-import-task-hint-bg)
+  );
+  color: var(
+    --mpx-slot-fg-import-task-hint-text,
+    var(--mpx-import-task-hint-text)
+  );
+  border-radius: var(--mpx-card-radius-effective, 8px);
+  padding: var(--mpx-pane-stack-gap, 6px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .import-task-panel-review-notice {
-  border: 1px solid var(--mpx-status-warning-border);
-  background: var(--mpx-status-warning-bg);
-  color: var(--mpx-status-warning-text);
-  border-radius: 8px;
-  padding: 6px 8px;
+  border: 1px solid
+    var(
+      --mpx-slot-fg-import-task-review-notice-border,
+      var(--mpx-import-task-review-notice-border)
+    );
+  background: var(
+    --mpx-slot-fg-import-task-review-notice-bg,
+    var(--mpx-import-task-review-notice-bg)
+  );
+  color: var(
+    --mpx-slot-fg-import-task-review-notice-text,
+    var(--mpx-import-task-review-notice-text)
+  );
+  border-radius: var(--mpx-card-radius-effective, 8px);
+  padding: var(--mpx-pane-stack-gap, 6px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .import-task-panel-review-notice-actions {
@@ -502,11 +547,22 @@ select option {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  border: 1px solid var(--mpx-status-info-border);
-  background: var(--mpx-status-info-bg);
-  color: var(--mpx-status-info-text);
-  border-radius: 8px;
-  padding: 4px 8px;
+  border: 1px solid
+    var(
+      --mpx-slot-fg-import-task-hash-log-list-border,
+      var(--mpx-import-task-hash-log-border)
+    );
+  background: var(
+    --mpx-slot-fg-import-task-hash-log-list-bg,
+    var(--mpx-import-task-hash-log-bg)
+  );
+  color: var(
+    --mpx-slot-fg-import-task-hash-log-list-text,
+    var(--mpx-import-task-hash-log-text)
+  );
+  border-radius: var(--mpx-card-radius-effective, 8px);
+  padding: calc(var(--mpx-pane-stack-gap, 6px) - 2px)
+    var(--mpx-pane-inner-padding-px, 8px);
 }
 
 .import-task-panel ul {

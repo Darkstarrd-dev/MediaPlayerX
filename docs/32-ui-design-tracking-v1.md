@@ -618,8 +618,51 @@ css 的触发点
 
 `[data-slot='fg-main-header-image-metadata-fetch-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
+内部件链路（Phase 2 已补齐）
+
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-metadata-fetch-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：`--mpx-slot-fg-main-header-image-metadata-fetch-panel-*`
+3. 消费层：`src/styles/app/manage.css`
+
+`A. 搜索行 / 控件行（search row / source group / search button）`
+
+`--mpx-metadata-fetch-control-border`
+`--mpx-metadata-fetch-control-bg`
+`--mpx-metadata-fetch-control-hover-bg`
+`--mpx-metadata-fetch-control-focus-bg`
+`--mpx-metadata-fetch-control-text`
+`--mpx-metadata-fetch-control-placeholder`
+`--mpx-metadata-fetch-control-font-size`
+
+`B. 双列结果区（results / source column / source head / source body）`
+
+`--mpx-metadata-fetch-results-border`
+`--mpx-metadata-fetch-results-bg`
+`--mpx-metadata-fetch-results-active-ring`
+`--mpx-metadata-fetch-head-border`
+`--mpx-metadata-fetch-head-bg`
+`--mpx-metadata-fetch-head-text`
+`--mpx-metadata-fetch-head-font-size`
+`--mpx-metadata-fetch-head-font-family`
+`--mpx-metadata-fetch-body-bg`
+`--mpx-metadata-fetch-result-meta-text`
+`--mpx-metadata-fetch-result-hover-text`
+
+`C. 预览区（preview stack / preview card / preview toggle）`
+
+`--mpx-metadata-fetch-preview-divider`
+`--mpx-metadata-fetch-preview-bg`
+`--mpx-metadata-fetch-preview-toggle-border`
+`--mpx-metadata-fetch-preview-toggle-bg`
+`--mpx-metadata-fetch-preview-toggle-text`
+`--mpx-metadata-fetch-preview-toggle-hover-bg`
+`--mpx-metadata-fetch-preview-toggle-active-bg`
+`--mpx-metadata-fetch-preview-toggle-focus-outline`
+
 说明
-本阶段仅统一外层尺寸与 `head/main`，内部双列检索结果区与预览区布局保持原逻辑。
+Metadata Fetch 现已不止统一外层尺寸；内部搜索行、结果列与预览卡也已进入 `largePanelLayer` 调试范围。
 
 ## 3.6 标签检索面板
 
@@ -673,8 +716,42 @@ css 的触发点
 
 `[data-slot='fg-main-header-manage-subtitle-cleanup-panel']` 已建立 slot -> 3.0 token 映射（`settings.part1.css`）。
 
+preview 子块链路（Phase 2 已补齐）
+
+已统一为 `语义 token -> slot token -> 选择器消费` 三段链路：
+
+1. 语义层：`--mpx-subtitle-cleanup-raw-preview-*`、`--mpx-subtitle-cleanup-clean-preview-*`（定义在 `src/styles/themes/contract.css`）
+2. slot 层：
+   - `--mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-*`
+   - `--mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-*`
+3. 消费层：`src/styles/app/settings/settings.part1.css` + `src/styles/app/manage.css`
+
+`A. Raw Preview`
+
+`--mpx-subtitle-cleanup-raw-preview-border`
+`--mpx-subtitle-cleanup-raw-preview-bg`
+`--mpx-subtitle-cleanup-raw-preview-text`
+`--mpx-subtitle-cleanup-raw-preview-toggle-border`
+`--mpx-subtitle-cleanup-raw-preview-toggle-bg`
+`--mpx-subtitle-cleanup-raw-preview-toggle-text`
+`--mpx-subtitle-cleanup-raw-preview-toggle-hover-bg`
+`--mpx-subtitle-cleanup-raw-preview-toggle-active-bg`
+`--mpx-subtitle-cleanup-raw-preview-toggle-focus-outline`
+
+`B. Clean Preview`
+
+`--mpx-subtitle-cleanup-clean-preview-border`
+`--mpx-subtitle-cleanup-clean-preview-bg`
+`--mpx-subtitle-cleanup-clean-preview-text`
+`--mpx-subtitle-cleanup-clean-preview-toggle-border`
+`--mpx-subtitle-cleanup-clean-preview-toggle-bg`
+`--mpx-subtitle-cleanup-clean-preview-toggle-text`
+`--mpx-subtitle-cleanup-clean-preview-toggle-hover-bg`
+`--mpx-subtitle-cleanup-clean-preview-toggle-active-bg`
+`--mpx-subtitle-cleanup-clean-preview-toggle-focus-outline`
+
 说明
-字幕清理保留原有参数与预览交互，仅将外层容器统一到 3.0 骨架。
+字幕清理现已不止统一外层容器；`raw / clean preview` 两个预览面板也已进入 `largePanelLayer` 调试范围。
 
 ## 3.8 音频转码面板
 
@@ -775,8 +852,33 @@ css 的触发点
 `--mpx-slot-fg-import-task-error-text = 未定义（走 fallback）`
 实际回退：`inherit`（`src/styles/app/base.css`）
 
+`--mpx-import-task-error-border/bg/text`（错误行语义 token）
+`--mpx-import-task-hint-border/bg/text`（提示行语义 token）
+`--mpx-import-task-review-notice-border/bg/text`（待审核提醒语义 token）
+`--mpx-import-task-hash-log-border/bg/text`（哈希日志项语义 token）
+
+默认回退定义在 `src/styles/themes/contract.css`：
+
+1. `error -> status-danger`
+2. `hint -> status-info`
+3. `review-notice -> status-warning`
+4. `hash-log -> status-info`
+
+消费点：`src/styles/app/base.css`
+
+1. `[data-slot='fg-import-task-error']`
+2. `[data-slot='fg-import-task-hint']`
+3. `.import-task-panel-review-notice`
+4. `.import-task-panel-hash-log-list li`
+
 说明
 3.10 改造后，Import Task 的外框视觉与调参入口对齐大面板层；状态线语义从 `root-border` 拆分到 `root-status-border`，避免与面板外框语义冲突。
+
+Phase 2 当前进度（2026-03-06）
+
+1. Import Task 子块已补齐 `contract semantic token -> slot token -> selector consume` 链路。
+2. `largePanelLayer` 页已可直接调试 `error / hint / review-notice / hash-log` 四组语义颜色字段。
+3. 快照导出将包含上述字段，便于后续进入正式 theme config schema。
 
 ## 4.0 按钮层（基架）
 
@@ -1070,3 +1172,52 @@ css 的触发点
 
 说明
 当前 6.2.3 与 6.2.1 在部分轨道 token 上存在共享；分页已分离，后续可继续下钻为独立 token 链路。
+
+## 7.0 Phase 1 收口基线（2026-03-06）
+
+### 7.0.1 ThemeParameter 分页归属总表
+
+| 层级范围 | 主语义 token 家族 | 主 slot / data-slot 家族 | 主消费点 | ThemeParameter 分页 | 状态 |
+|---|---|---|---|---|---|
+| `1.0 背景层` + `2.0~2.4 大容器层` | `--mpx-bg-*`、`--mpx-surface-chrome-*`、`--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*` | `--mpx-slot-bg-app-*`、`--mpx-slot-fg-header-root-*`、`--mpx-slot-fg-sidebar-root-*`、`--mpx-slot-fg-main-root-*`、`--mpx-slot-fg-meta-root-*` | `layout.part*.css`、`sidebar.css`、`main.part*.css`、`metadata.css`、`soft-skeuomorphic.components.part1.css` | `containerLayer` | 已建立主链路 |
+| `2.2.2.1 fg-sidebar-main` | `--mpx-sidebar-main-*` | `--mpx-slot-fg-sidebar-main-*` | `sidebar.css`、`manage.css`、`soft-skeuomorphic.components.part1.css`、`soft-skeuomorphic.components.part2.css` | `containerLayer` | 已进入分页；保留高特异性消费说明 |
+| `2.3.2.2 fg-main-content-image-name-list` | `--mpx-main-image-name-list-*` | `--mpx-slot-fg-main-content-image-name-list-*` | `main.part1.css`、`main.part2.css`、`manage.css` | `containerLayer` | 已进入分页 |
+| `3.0~3.10 大面板层` | `--mpx-large-panel-*` | 各大面板 `root/head/side/main/ovl` slot 家族 | `settings.part1.css`、`settings.part2.css`、业务面板 CSS | `largePanelLayer` | 骨架已统一，内部件仍有残余 |
+| `5.0 小面板层` | `--mpx-dialog-panel-*` | 各 dialog `ovl/panel` slot 家族 | `settings.part2.css`、`metadata.css` | `smallPanelLayer` | 骨架已统一 |
+| `4.0 按钮层` | `--mpx-btn-core-*`、`--mpx-btn-variant-*` | `--mpx-slot-<path>-*`（局部覆写） | `button-template.css`、`settings.part1.css`、业务消费端样式 | `buttonStates` | 已建立主链路 |
+| `6.1 滚动条` + `6.2 Slider` | `--mpx-scrollbar-*`、`--mpx-range-*`、`--mpx-runway-*` | 控件自身 slot/语义链路 | `base.css`、`soft-skeuomorphic.runway.css`、`layout.part2.css`、`settings.part1.css` | `commonControls` | 已进入分页，仍有别名与共享 token 尾项 |
+| 播放器 / 全屏图像调整 / 广告审核 overlay | `--mpx-player-surface-*`、`--mpx-player-hud-*`、`--mpx-fs-image-adjust-*`（预留）、`--mpx-ad-review-overlay-*` | 各子系统自有前缀或受控保留位 | `main.part2.css`、`main.part3.css`、`main.part4.css`、`layout.part3.css`、`manage.css` | 暂不并入当前分页 | 允许特例，保留独立语义域 |
+
+说明
+
+1. `ThemeParameterPanel` 当前分页只承接可稳定批量调节的层级；播放器、全屏图像调整、广告审核 overlay 保留为特例子系统。
+2. `parameters / snapshot` 两页用于通用参数与快照，不作为 UI 层级归属页。
+
+### 7.0.2 残余链路清单（Phase 1 冻结结果）
+
+| 区域 | 当前问题 | 现状归类 | 所属分页 | 后续 Phase |
+|---|---|---|---|---|
+| `FeatureTagPickerModal`、`metadata-preference-record`、`metadata-music-booklet-bindings`、`playlist-name-dialog` | 已挂 slot，但内部卡片与输入区仍偏类规则直写，缺统一语义家族 | 内部件未收口 | `largePanelLayer` / `smallPanelLayer` | Phase 2 |
+| `MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件 | 仍借用其他域 token（如 `sidebar-rename-soft-*`、`fg-header-g2-mode-image-*`） | 跨层借壳 token | `largePanelLayer` | Phase 2 |
+| `6.1` 滚动条 | 全局 `--mpx-scrollbar-*` 已建立，但仍与 `sidebar-tree` 别名链路并存 | 控件层尾项 | `commonControls` | Phase 2 |
+| `6.2.1` / `6.2.3` slider | 播放器 slider 与设置 slider 仍共享部分轨道 token | 控件层尾项 | `commonControls` | Phase 2 |
+
+冻结约束
+
+1. 上表区域在后续收口前，禁止继续新增匿名硬编码视觉值。
+2. 若必须临时新增变量，必须先登记到对应层级与分页，再落到 CSS。
+3. 不允许继续新增“借用别的业务区域 token 家族”这种跨层链路。
+
+### 7.0.3 特例白名单与命名空间
+
+| 区域 | 命名空间前缀 | 当前状态 | 不并入当前通用分页的原因 | 后续约束 |
+|---|---|---|---|---|
+| 播放器面板 / HUD / popover | `--mpx-player-surface-*`、`--mpx-player-hud-*` | 已在 contract / palette 中存在 | 属于播放器子系统，视觉语义与普通面板不同 | 继续保持独立语义，不回退到匿名类色值 |
+| 全屏图像调整（levels / curve） | `--mpx-fs-image-adjust-*`（预留） | Phase 1 先冻结命名空间，暂未全量落地 | 图示语义强，不适合强并入 `commonControls` 或 `largePanelLayer` | 后续若参数化，优先落到该前缀 |
+| 广告审核删除 overlay | `--mpx-ad-review-overlay-*` | 本次已统一为受控前缀 | 属于舞台化演出层，不适合并入常规面板 token | 保持独立前缀，允许少量结构化复合值 |
+
+### 7.0.4 Phase 1 结论
+
+1. 文档层已建立“层级 -> 语义 token -> slot token / data-slot -> 消费点 -> ThemeParameter 分页”的对照基线。
+2. Phase 2 起重点不再是继续铺大层，而是补齐上表列出的半成品链路与内部件收口。
+3. Phase 3 的 theme schema 只接收已经完成 Phase 1 / Phase 2 对照的字段，不再接收匿名 CSS 例外项。

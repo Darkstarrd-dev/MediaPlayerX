@@ -22,6 +22,23 @@
 说明
 按钮层 4.0 的变量值与当前接入范围，以 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）` 为准。
 
+## Phase 1 补充：ThemeParameter 分页归属索引
+
+| 稳定路径范围 | 对应分页 | 说明 |
+|---|---|---|
+| `bg.app.*`、`fg.header.root`、`fg.sidebar.root`、`fg.main.root`、`fg.meta.root` | `containerLayer` | 背景层与四大容器壳层 |
+| `fg.sidebar.main`、`fg.sidebar.main.label`、`fg.main.content.image.nameList*` | `containerLayer` | 已独立收口到容器层子页的重点调试区 |
+| `*.settings.root.*`、`*.themeParameter.root.*`、`*.help.root.*`、`*.metadataFetch.*`、`*.featureTagPicker.*`、`*.subtitleCleanup.*`、`*.musicTranscode.*`、`*.videoTranscode.*`、`fg.header.g1.task.importTask.*` | `largePanelLayer` | 3.0 大面板骨架与其内部件 |
+| `*.shortcutEdit.*`、`*.shortcutCapture.*`、`*.groupName.*`、`*.deleteConfirm.*`、`*.adReviewStart.*`、`*.convert.*`、`*.rename.single.*`、`*.playlistNameDialog.*` | `smallPanelLayer` | 5.0 小面板链路 |
+| 按钮触发器与按钮局部覆写路径 | `buttonStates` | 统一走 `4.0 core/variant/slot` |
+| 滚动条、Slider、Runway 等控件层 | `commonControls` | 控件层不按单一路径表维护，以 `docs/32-ui-design-tracking-v1.md` 为准 |
+
+特例白名单
+
+1. `fs.video.controls.*`、`fg.main.content.video.controls.*`、`fg.main.content.music.controls.*`：播放器子系统，保持独立语义域。
+2. `fs.image.controls.adjust.*`：全屏图像调整，Phase 1 冻结为特例，不并入当前通用分页。
+3. `fg.main.toolbar.image.deleteProgress.ovl`：广告审核删除 overlay，走独立特例前缀。
+
 ## 1. Core Layers
 
 | 稳定路径 | 当前实现锚点 | 唯一标识（拟定） | 出现条件 | 说明 | 其他 |

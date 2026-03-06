@@ -416,6 +416,271 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ffffff",
   },
   {
+    id: "large-panel-import-task-error-border",
+    cssVar: "--mpx-import-task-error-border",
+    fallback: "#d7a596",
+  },
+  {
+    id: "large-panel-import-task-error-bg",
+    cssVar: "--mpx-import-task-error-bg",
+    fallback: "#fdeee8",
+  },
+  {
+    id: "large-panel-import-task-error-text",
+    cssVar: "--mpx-import-task-error-text",
+    fallback: "#5f2a1e",
+  },
+  {
+    id: "large-panel-import-task-hint-border",
+    cssVar: "--mpx-import-task-hint-border",
+    fallback: "#c5d6de",
+  },
+  {
+    id: "large-panel-import-task-hint-bg",
+    cssVar: "--mpx-import-task-hint-bg",
+    fallback: "#edf6f9",
+  },
+  {
+    id: "large-panel-import-task-hint-text",
+    cssVar: "--mpx-import-task-hint-text",
+    fallback: "#173b47",
+  },
+  {
+    id: "large-panel-import-task-review-notice-border",
+    cssVar: "--mpx-import-task-review-notice-border",
+    fallback: "#d8c69b",
+  },
+  {
+    id: "large-panel-import-task-review-notice-bg",
+    cssVar: "--mpx-import-task-review-notice-bg",
+    fallback: "#fff7e7",
+  },
+  {
+    id: "large-panel-import-task-review-notice-text",
+    cssVar: "--mpx-import-task-review-notice-text",
+    fallback: "#5a3b12",
+  },
+  {
+    id: "large-panel-import-task-hash-log-border",
+    cssVar: "--mpx-import-task-hash-log-border",
+    fallback: "#c5d6de",
+  },
+  {
+    id: "large-panel-import-task-hash-log-bg",
+    cssVar: "--mpx-import-task-hash-log-bg",
+    fallback: "#edf6f9",
+  },
+  {
+    id: "large-panel-import-task-hash-log-text",
+    cssVar: "--mpx-import-task-hash-log-text",
+    fallback: "#173b47",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-border",
+    cssVar: "--mpx-metadata-fetch-control-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-bg",
+    cssVar: "--mpx-metadata-fetch-control-bg",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-hover-bg",
+    cssVar: "--mpx-metadata-fetch-control-hover-bg",
+    fallback: "#f7f3ee",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-focus-bg",
+    cssVar: "--mpx-metadata-fetch-control-focus-bg",
+    fallback: "#efe9df",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-text",
+    cssVar: "--mpx-metadata-fetch-control-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-placeholder",
+    cssVar: "--mpx-metadata-fetch-control-placeholder",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-border",
+    cssVar: "--mpx-metadata-fetch-results-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-bg",
+    cssVar: "--mpx-metadata-fetch-results-bg",
+    fallback: "#fffcf8",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-active-ring",
+    cssVar: "--mpx-metadata-fetch-results-active-ring",
+    fallback: "#4d8fa0",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-border",
+    cssVar: "--mpx-metadata-fetch-head-border",
+    fallback: "#d9d3c8",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-bg",
+    cssVar: "--mpx-metadata-fetch-head-bg",
+    fallback: "#f1ebe3",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-text",
+    cssVar: "--mpx-metadata-fetch-head-text",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-metadata-fetch-body-bg",
+    cssVar: "--mpx-metadata-fetch-body-bg",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "large-panel-metadata-fetch-result-meta-text",
+    cssVar: "--mpx-metadata-fetch-result-meta-text",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-metadata-fetch-result-hover-text",
+    cssVar: "--mpx-metadata-fetch-result-hover-text",
+    fallback: "#2f5f6d",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-divider",
+    cssVar: "--mpx-metadata-fetch-preview-divider",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-bg",
+    cssVar: "--mpx-metadata-fetch-preview-bg",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-border",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-border",
+    fallback: "#d9d3c8",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-bg",
+    fallback: "#f1ebe3",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-text",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-text",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-hover-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-active-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-focus-outline",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-border",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-border",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-bg",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-text",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-border",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-border",
+    fallback: "#d9d3c8",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-bg",
+    fallback: "#f1ebe3",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-text",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-text",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-hover-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-active-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-focus-outline",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-border",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-border",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-bg",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-text",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-border",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-border",
+    fallback: "#d9d3c8",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-bg",
+    fallback: "#f1ebe3",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-text",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-text",
+    fallback: "#6f6a61",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-hover-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-active-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-focus-outline",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+  },
+  {
     id: "small-panel-border-color",
     cssVar: "--mpx-dialog-panel-border-color",
     fallback: "#d6cfc1",
@@ -697,6 +962,18 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "container-main-image-name-list-row-main-pressed-font-weight",
     cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-font-size",
+    cssVar: "--mpx-metadata-fetch-control-font-size",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-font-size",
+    cssVar: "--mpx-metadata-fetch-head-font-size",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-font-family",
+    cssVar: "--mpx-metadata-fetch-head-font-family",
   },
   {
     id: "small-panel-shadow",

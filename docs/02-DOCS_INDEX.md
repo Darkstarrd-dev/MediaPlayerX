@@ -41,6 +41,7 @@
 | `30-全仓重复治理PR拆分清单-v1.md` | 当前计划 | 重复治理重构的 PR 级拆分清单与回归检查门禁 |
 | `31-ad-review-performance-mode-reimplementation-phased-plan-v1.md` | 当前计划 | Ad Review Performance 模式分阶段重实施计划（增量执行、防上下文压缩） |
 | `33-ad-review-import-known-hash-专家技术支持请求-2026-03-04.md` | 当前计划 | Ad Review 导入哈希告警/清理问题专家技术支持请求 |
+| `35-ui-theme-config-tauri-roadmap-v1.md` | 当前计划 | UI theme 配置收口与 Tauri 迁移实施路线图（含 phase/todo/check） |
 | `01-README.md` | 入口 | docs 子目录导航 |
 | `02-DOCS_INDEX.md` | 说明 | 本文档，维护规则与目录说明 |
 

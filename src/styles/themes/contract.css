@@ -684,6 +684,104 @@
   --mpx-large-panel-main-align-items: flex-start;
   --mpx-large-panel-main-justify-content: flex-start;
 
+  /* Import Task 子块语义（3.10 内部件） */
+  --mpx-import-task-error-border: var(--mpx-status-danger-border);
+  --mpx-import-task-error-bg: var(--mpx-status-danger-bg);
+  --mpx-import-task-error-text: var(--mpx-status-danger-text);
+  --mpx-import-task-hint-border: var(--mpx-status-info-border);
+  --mpx-import-task-hint-bg: var(--mpx-status-info-bg);
+  --mpx-import-task-hint-text: var(--mpx-status-info-text);
+  --mpx-import-task-review-notice-border: var(--mpx-status-warning-border);
+  --mpx-import-task-review-notice-bg: var(--mpx-status-warning-bg);
+  --mpx-import-task-review-notice-text: var(--mpx-status-warning-text);
+  --mpx-import-task-hash-log-border: var(--mpx-status-info-border);
+  --mpx-import-task-hash-log-bg: var(--mpx-status-info-bg);
+  --mpx-import-task-hash-log-text: var(--mpx-status-info-text);
+
+  /* Metadata Fetch 子块语义（3.5 内部件） */
+  --mpx-metadata-fetch-control-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-fetch-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-fetch-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-metadata-fetch-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-metadata-fetch-control-text: var(--mpx-text-1);
+  --mpx-metadata-fetch-control-placeholder: var(--mpx-text-2);
+  --mpx-metadata-fetch-control-font-size: 15px;
+  --mpx-metadata-fetch-results-border: var(--mpx-overlay-soft-border);
+  --mpx-metadata-fetch-results-bg: var(--mpx-bg-elevated);
+  --mpx-metadata-fetch-results-active-ring: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    transparent
+  );
+  --mpx-metadata-fetch-head-border: var(--mpx-overlay-soft-head-divider);
+  --mpx-metadata-fetch-head-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-metadata-fetch-head-text: var(--mpx-text-2);
+  --mpx-metadata-fetch-head-font-size: 15px;
+  --mpx-metadata-fetch-head-font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+  --mpx-metadata-fetch-body-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-fetch-result-meta-text: var(--mpx-text-2);
+  --mpx-metadata-fetch-result-hover-text: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-metadata-fetch-preview-divider: var(--mpx-overlay-soft-row-divider);
+  --mpx-metadata-fetch-preview-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-fetch-preview-toggle-border: var(--mpx-overlay-soft-head-divider);
+  --mpx-metadata-fetch-preview-toggle-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-metadata-fetch-preview-toggle-text: var(--mpx-text-2);
+  --mpx-metadata-fetch-preview-toggle-hover-bg: var(--mpx-overlay-soft-border);
+  --mpx-metadata-fetch-preview-toggle-active-bg: var(
+    --mpx-overlay-soft-head-divider
+  );
+  --mpx-metadata-fetch-preview-toggle-focus-outline: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    var(--mpx-border-2)
+  );
+
+  /* Subtitle Cleanup preview 子块语义（3.7 内部件） */
+  --mpx-subtitle-cleanup-raw-preview-border: var(--mpx-overlay-soft-row-divider);
+  --mpx-subtitle-cleanup-raw-preview-bg: var(--mpx-overlay-soft-bg);
+  --mpx-subtitle-cleanup-raw-preview-text: var(--mpx-text-1);
+  --mpx-subtitle-cleanup-raw-preview-toggle-border: var(
+    --mpx-overlay-soft-head-divider
+  );
+  --mpx-subtitle-cleanup-raw-preview-toggle-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-subtitle-cleanup-raw-preview-toggle-text: var(--mpx-text-2);
+  --mpx-subtitle-cleanup-raw-preview-toggle-hover-bg: var(
+    --mpx-overlay-soft-border
+  );
+  --mpx-subtitle-cleanup-raw-preview-toggle-active-bg: var(
+    --mpx-overlay-soft-head-divider
+  );
+  --mpx-subtitle-cleanup-raw-preview-toggle-focus-outline: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    var(--mpx-border-2)
+  );
+  --mpx-subtitle-cleanup-clean-preview-border: var(--mpx-overlay-soft-row-divider);
+  --mpx-subtitle-cleanup-clean-preview-bg: var(--mpx-overlay-soft-bg);
+  --mpx-subtitle-cleanup-clean-preview-text: var(--mpx-text-1);
+  --mpx-subtitle-cleanup-clean-preview-toggle-border: var(
+    --mpx-overlay-soft-head-divider
+  );
+  --mpx-subtitle-cleanup-clean-preview-toggle-bg: var(
+    --mpx-overlay-soft-head-bg
+  );
+  --mpx-subtitle-cleanup-clean-preview-toggle-text: var(--mpx-text-2);
+  --mpx-subtitle-cleanup-clean-preview-toggle-hover-bg: var(
+    --mpx-overlay-soft-border
+  );
+  --mpx-subtitle-cleanup-clean-preview-toggle-active-bg: var(
+    --mpx-overlay-soft-head-divider
+  );
+  --mpx-subtitle-cleanup-clean-preview-toggle-focus-outline: color-mix(
+    in srgb,
+    var(--mpx-accent) 52%,
+    var(--mpx-border-2)
+  );
+
   /* 小面板层（5.0） */
   --mpx-dialog-panel-width: min(520px, 92vw);
   --mpx-dialog-panel-max-width: 92vw;

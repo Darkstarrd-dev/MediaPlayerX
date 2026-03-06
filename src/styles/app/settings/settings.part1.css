@@ -560,6 +560,110 @@
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-main-bg,
     var(--mpx-bg-elevated)
   );
+  --mpx-metadata-fetch-control-border: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-border,
+    var(--mpx-metadata-fetch-control-border)
+  );
+  --mpx-metadata-fetch-control-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-bg,
+    var(--mpx-metadata-fetch-control-bg)
+  );
+  --mpx-metadata-fetch-control-hover-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-hover-bg,
+    var(--mpx-metadata-fetch-control-hover-bg)
+  );
+  --mpx-metadata-fetch-control-focus-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-focus-bg,
+    var(--mpx-metadata-fetch-control-focus-bg)
+  );
+  --mpx-metadata-fetch-control-text: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-text,
+    var(--mpx-metadata-fetch-control-text)
+  );
+  --mpx-metadata-fetch-control-placeholder: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-placeholder,
+    var(--mpx-metadata-fetch-control-placeholder)
+  );
+  --mpx-metadata-fetch-control-font-size: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-control-font-size,
+    var(--mpx-metadata-fetch-control-font-size)
+  );
+  --mpx-metadata-fetch-results-border: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-results-border,
+    var(--mpx-metadata-fetch-results-border)
+  );
+  --mpx-metadata-fetch-results-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-results-bg,
+    var(--mpx-metadata-fetch-results-bg)
+  );
+  --mpx-metadata-fetch-results-active-ring: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-results-active-ring,
+    var(--mpx-metadata-fetch-results-active-ring)
+  );
+  --mpx-metadata-fetch-head-border: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-inner-border,
+    var(--mpx-metadata-fetch-head-border)
+  );
+  --mpx-metadata-fetch-head-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-inner-bg,
+    var(--mpx-metadata-fetch-head-bg)
+  );
+  --mpx-metadata-fetch-head-text: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-inner-text,
+    var(--mpx-metadata-fetch-head-text)
+  );
+  --mpx-metadata-fetch-head-font-size: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-inner-font-size,
+    var(--mpx-metadata-fetch-head-font-size)
+  );
+  --mpx-metadata-fetch-head-font-family: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-inner-font-family,
+    var(--mpx-metadata-fetch-head-font-family)
+  );
+  --mpx-metadata-fetch-body-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-body-bg,
+    var(--mpx-metadata-fetch-body-bg)
+  );
+  --mpx-metadata-fetch-result-meta-text: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-result-meta-text,
+    var(--mpx-metadata-fetch-result-meta-text)
+  );
+  --mpx-metadata-fetch-result-hover-text: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-result-hover-text,
+    var(--mpx-metadata-fetch-result-hover-text)
+  );
+  --mpx-metadata-fetch-preview-divider: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-divider,
+    var(--mpx-metadata-fetch-preview-divider)
+  );
+  --mpx-metadata-fetch-preview-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-bg,
+    var(--mpx-metadata-fetch-preview-bg)
+  );
+  --mpx-metadata-fetch-preview-toggle-border: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-border,
+    var(--mpx-metadata-fetch-preview-toggle-border)
+  );
+  --mpx-metadata-fetch-preview-toggle-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-bg,
+    var(--mpx-metadata-fetch-preview-toggle-bg)
+  );
+  --mpx-metadata-fetch-preview-toggle-text: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-text,
+    var(--mpx-metadata-fetch-preview-toggle-text)
+  );
+  --mpx-metadata-fetch-preview-toggle-hover-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-hover-bg,
+    var(--mpx-metadata-fetch-preview-toggle-hover-bg)
+  );
+  --mpx-metadata-fetch-preview-toggle-active-bg: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-active-bg,
+    var(--mpx-metadata-fetch-preview-toggle-active-bg)
+  );
+  --mpx-metadata-fetch-preview-toggle-focus-outline: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-toggle-focus-outline,
+    var(--mpx-metadata-fetch-preview-toggle-focus-outline)
+  );
 }
 
 [data-slot="fg-main-header-manage-subtitle-cleanup-panel"] {
@@ -590,6 +694,84 @@
   --mpx-large-panel-main-bg: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-bg,
     var(--mpx-bg-elevated)
+  );
+}
+
+[data-slot="fg-main-header-manage-subtitle-cleanup-raw-preview-panel"] {
+  --mpx-subtitle-cleanup-preview-border-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-border,
+    var(--mpx-subtitle-cleanup-raw-preview-border)
+  );
+  --mpx-subtitle-cleanup-preview-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-bg,
+    var(--mpx-subtitle-cleanup-raw-preview-bg)
+  );
+  --mpx-subtitle-cleanup-preview-text-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-text,
+    var(--mpx-subtitle-cleanup-raw-preview-text)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-border-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-border,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-border)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-bg,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-text-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-text,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-text)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-hover-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-hover-bg,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-hover-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-active-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-active-bg,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-active-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-focus-outline-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-toggle-focus-outline,
+    var(--mpx-subtitle-cleanup-raw-preview-toggle-focus-outline)
+  );
+}
+
+[data-slot="fg-main-header-manage-subtitle-cleanup-clean-preview-panel"] {
+  --mpx-subtitle-cleanup-preview-border-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-border,
+    var(--mpx-subtitle-cleanup-clean-preview-border)
+  );
+  --mpx-subtitle-cleanup-preview-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-bg,
+    var(--mpx-subtitle-cleanup-clean-preview-bg)
+  );
+  --mpx-subtitle-cleanup-preview-text-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-text,
+    var(--mpx-subtitle-cleanup-clean-preview-text)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-border-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-border,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-border)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-bg,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-text-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-text,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-text)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-hover-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-hover-bg,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-hover-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-active-bg-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-active-bg,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-active-bg)
+  );
+  --mpx-subtitle-cleanup-preview-toggle-focus-outline-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-toggle-focus-outline,
+    var(--mpx-subtitle-cleanup-clean-preview-toggle-focus-outline)
   );
 }
 

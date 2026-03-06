@@ -28,14 +28,67 @@
 说明
 按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
 
-Import Task（3.10）补充
+## Import Task（3.10）补充
 `fg.header.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。
 3.10 起，推荐调节变量语义如下：
 
 1. 遮罩层链路：`--mpx-slot-fg-import-task-ovl-bg/ovl-text`
 2. 面板外框链路：`--mpx-slot-fg-import-task-root-border/bg/shadow/head-*/main-*`
 3. 状态线链路：`--mpx-slot-fg-import-task-root-status-border/status-text`
-4. 错误行文本：`--mpx-slot-fg-import-task-error-text`
+4. 子块 slot 链路：
+   - `--mpx-slot-fg-import-task-error-border/bg/text`
+   - `--mpx-slot-fg-import-task-hint-border/bg/text`
+   - `--mpx-slot-fg-import-task-review-notice-border/bg/text`
+   - `--mpx-slot-fg-import-task-hash-log-list-border/bg/text`
+5. 子块语义链路：
+   - `--mpx-import-task-error-border/bg/text`
+   - `--mpx-import-task-hint-border/bg/text`
+   - `--mpx-import-task-review-notice-border/bg/text`
+   - `--mpx-import-task-hash-log-border/bg/text`
+
+## Metadata Fetch（3.5）补充
+
+`fg.main.toolbar.image.metadataFetch.panel` 在实现层使用 `data-slot="fg-main-header-image-metadata-fetch-panel"`。
+
+1. 搜索行 / 控件链路：
+   - slot：`--mpx-slot-fg-main-header-image-metadata-fetch-panel-control-*`
+   - semantic：`--mpx-metadata-fetch-control-*`
+2. 结果区链路：
+   - slot：`--mpx-slot-fg-main-header-image-metadata-fetch-panel-results-*`
+   - semantic：`--mpx-metadata-fetch-results-*`
+   - 头部 / 表体补充：`head-inner-*`、`body-bg`、`result-meta-text`、`result-hover-text`
+   - Typography：`head-inner-font-size`、`head-inner-font-family`
+3. 预览区链路：
+   - slot：`--mpx-slot-fg-main-header-image-metadata-fetch-panel-preview-*`
+   - semantic：`--mpx-metadata-fetch-preview-*`
+
+## Subtitle Cleanup（3.7）补充
+
+`fg.main.toolbar.manage.subtitleCleanup.panel` 在实现层使用 `data-slot="fg-main-header-manage-subtitle-cleanup-panel"`。
+
+1. Raw Preview 链路：
+   - slot：`--mpx-slot-fg-main-header-manage-subtitle-cleanup-raw-preview-panel-*`
+   - semantic：`--mpx-subtitle-cleanup-raw-preview-*`
+2. Clean Preview 链路：
+   - slot：`--mpx-slot-fg-main-header-manage-subtitle-cleanup-clean-preview-panel-*`
+   - semantic：`--mpx-subtitle-cleanup-clean-preview-*`
+
+## Phase 1 冻结补充
+
+1. ThemeParameter 分页归属遵循 `docs/32-ui-design-tracking-v1.md` 的 `7.0.1`：
+   - 大容器与其已收口子层 -> `containerLayer`
+   - 大面板骨架与内部件 -> `largePanelLayer`
+   - 小面板骨架 -> `smallPanelLayer`
+   - 按钮基架 -> `buttonStates`
+   - 滚动条 / slider / runway -> `commonControls`
+2. 下列实现别名在 Phase 3 之前视为受控保留，不视为违规：
+   - `fg.header.g1.task.importTask.*` 的实现别名家族：`--mpx-slot-fg-import-task-*`
+   - `fg.sidebar.main` 的语义家族：`--mpx-sidebar-main-*`
+   - `fg.main.content.image.nameList*` 的语义家族：`--mpx-main-image-name-list-*`
+3. 特例白名单前缀：
+   - 播放器子系统：`--mpx-player-surface-*`、`--mpx-player-hud-*`
+   - 全屏图像调整：`--mpx-fs-image-adjust-*`（Phase 1 预留）
+   - 广告审核删除 overlay：`--mpx-ad-review-overlay-*`
 
 ## 稳定路径到 Token 前缀
 
