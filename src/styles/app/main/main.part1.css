@@ -3,27 +3,39 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--mpx-slot-fg-main-root-bg, var(--mpx-main-bg));
-  padding: var(--mpx-main-padding);
-  gap: 0;
-  border-radius: var(--mpx-slot-fg-main-root-radius, var(--mpx-main-radius));
-  border: var(--mpx-main-border-width) var(--mpx-main-border-style)
-    var(
-      --mpx-slot-fg-main-root-border,
-      var(--mpx-main-border-color, var(--mpx-border-1))
-    );
-  box-shadow: var(--mpx-slot-fg-main-root-shadow, var(--mpx-main-shadow));
-  backdrop-filter: var(--mpx-main-backdrop-filter);
-  transform: var(--mpx-main-transform);
-  transition: var(--mpx-main-transition);
-  overflow: hidden;
+  overflow: visible;
+  perspective: var(--mpx-main-frame-perspective, none);
 }
 
-.main-pane > * + * {
+.main-pane-frame {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--mpx-main-bg);
+  padding: var(--mpx-main-padding);
+  gap: 0;
+  border-radius: var(--mpx-main-radius);
+  border: var(--mpx-main-border-width) var(--mpx-main-border-style)
+    var(--mpx-main-border-color, var(--mpx-border-1));
+  box-shadow: var(--mpx-main-shadow);
+  backdrop-filter: var(--mpx-main-backdrop-filter);
+  transform: var(--mpx-main-transform);
+  transform-origin: var(--mpx-main-frame-origin-x, 50%)
+    var(--mpx-main-frame-origin-y, 50%);
+  transform-style: var(--mpx-main-frame-transform-style, flat);
+  backface-visibility: var(--mpx-main-frame-backface-visibility, visible);
+  transition: var(--mpx-main-transition);
+  overflow: hidden;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+}
+
+.main-pane-frame > * + * {
   margin-top: var(--mpx-pane-section-gap-px, 0px);
 }
 
-.workspace.is-focus .main-pane {
+.workspace.is-focus .main-pane-frame {
   box-shadow:
     var(--mpx-main-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-pane-focus-day-gap),
@@ -44,7 +56,7 @@
 
 :root[data-mpx-palette-mode="night"][data-mpx-style^="soft-skeuomorphic"]
   .workspace.is-focus
-  .main-pane {
+  .main-pane-frame {
   box-shadow:
     var(--mpx-main-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app),

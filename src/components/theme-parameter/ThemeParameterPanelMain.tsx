@@ -58,8 +58,16 @@ interface ThemeParameterPanelMainProps {
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
   setStyleExpanded: Dispatch<SetStateAction<boolean>>;
-  containerLegacyExpanded: boolean;
-  setContainerLegacyExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSharedShellExpanded: boolean;
+  setContainerSharedShellExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderExpanded: boolean;
+  setContainerHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarExpanded: boolean;
+  setContainerSidebarExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainExpanded: boolean;
+  setContainerMainExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataExpanded: boolean;
+  setContainerMetadataExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
@@ -189,22 +197,28 @@ const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "box",
   },
   {
-    id: "container-metal-light",
-    cssVar: "--mpx-metal-light",
+    id: "container-frame-fill-start",
+    cssVar: "--mpx-container-frame-fill-start",
     fallback: "#f5f2ec",
     groupId: "box",
   },
   {
-    id: "container-metal-base",
-    cssVar: "--mpx-metal-base",
+    id: "container-frame-fill-end",
+    cssVar: "--mpx-container-frame-fill-end",
     fallback: "#e6e2da",
     groupId: "box",
   },
   {
-    id: "container-metal-dark",
-    cssVar: "--mpx-metal-dark",
+    id: "container-frame-edge-color",
+    cssVar: "--mpx-container-frame-edge-color",
     fallback: "#cdc7bb",
     groupId: "shadow",
+  },
+  {
+    id: "container-frame-border-color",
+    cssVar: "--mpx-container-frame-border-color",
+    fallback: "#e5e4e0",
+    groupId: "border",
   },
   {
     id: "container-border-1",
@@ -222,13 +236,187 @@ const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 
 const CONTAINER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
-    id: "container-surface-chrome-shell-shadow",
-    cssVar: "--mpx-surface-chrome-shell-shadow",
+    id: "container-frame-shadow",
+    cssVar: "--mpx-container-frame-shadow",
     fallback:
-      "2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent)",
+      "2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-fill-start) 50%, transparent)",
     groupId: "shadow",
   },
 ];
+
+const CONTAINER_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-border-color",
+    cssVar: "--mpx-header-border-color",
+    fallback: "#e5e4e0",
+    groupId: "border",
+  },
+];
+
+const CONTAINER_HEADER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-header-fill",
+    cssVar: "--mpx-header-bg",
+    fallback:
+      "linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%)",
+    groupId: "box",
+  },
+  {
+    id: "container-header-shadow",
+    cssVar: "--mpx-header-shadow",
+    fallback: "var(--mpx-container-frame-shadow)",
+    groupId: "shadow",
+  },
+];
+
+const CONTAINER_SIDEBAR_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-sidebar-border-color",
+    cssVar: "--mpx-sidebar-border-color",
+    fallback: "#e5e4e0",
+    groupId: "border",
+  },
+];
+
+const CONTAINER_SIDEBAR_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-sidebar-fill",
+    cssVar: "--mpx-sidebar-bg",
+    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
+    groupId: "box",
+  },
+  {
+    id: "container-sidebar-shadow",
+    cssVar: "--mpx-sidebar-shadow",
+    fallback: "var(--mpx-container-frame-shadow)",
+    groupId: "shadow",
+  },
+];
+
+const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-main-border-color",
+    cssVar: "--mpx-main-border-color",
+    fallback: "#e5e4e0",
+    groupId: "border",
+  },
+];
+
+const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-main-fill",
+    cssVar: "--mpx-main-bg",
+    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
+    groupId: "box",
+  },
+  {
+    id: "container-main-shadow",
+    cssVar: "--mpx-main-shadow",
+    fallback: "var(--mpx-container-frame-shadow)",
+    groupId: "shadow",
+  },
+];
+
+const CONTAINER_METADATA_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-metadata-border-color",
+    cssVar: "--mpx-metadata-border-color",
+    fallback: "#e5e4e0",
+    groupId: "border",
+  },
+];
+
+const CONTAINER_METADATA_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "container-metadata-fill",
+    cssVar: "--mpx-metadata-bg",
+    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
+    groupId: "box",
+  },
+  {
+    id: "container-metadata-shadow",
+    cssVar: "--mpx-metadata-shadow",
+    fallback: "var(--mpx-container-frame-shadow)",
+    groupId: "shadow",
+  },
+];
+
+const CONTAINER_FRAME_SECTION_DEFINITIONS = [
+  {
+    id: "header",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeader",
+    colorFields: CONTAINER_HEADER_COLOR_FIELDS,
+    textFields: CONTAINER_HEADER_TEXT_FIELDS,
+    appearanceParameterIds: ["header-radius"],
+    transformParameterIds: [
+      "header-frame-translate-x",
+      "header-frame-translate-y",
+      "header-frame-rotate-z",
+      "header-frame-scale-x",
+      "header-frame-scale-y",
+      "header-frame-origin-x",
+      "header-frame-origin-y",
+    ],
+  },
+  {
+    id: "sidebar",
+    summaryKey: "ui.themeParameter.containerLayer.sectionSidebar",
+    colorFields: CONTAINER_SIDEBAR_COLOR_FIELDS,
+    textFields: CONTAINER_SIDEBAR_TEXT_FIELDS,
+    appearanceParameterIds: ["sidebar-radius"],
+    transformParameterIds: [
+      "sidebar-frame-translate-x",
+      "sidebar-frame-translate-y",
+      "sidebar-frame-rotate-z",
+      "sidebar-frame-scale-x",
+      "sidebar-frame-scale-y",
+      "sidebar-frame-origin-x",
+      "sidebar-frame-origin-y",
+    ],
+  },
+  {
+    id: "main",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMain",
+    colorFields: CONTAINER_MAIN_COLOR_FIELDS,
+    textFields: CONTAINER_MAIN_TEXT_FIELDS,
+    appearanceParameterIds: ["main-radius"],
+    transformParameterIds: [
+      "main-frame-translate-x",
+      "main-frame-translate-y",
+      "main-frame-rotate-z",
+      "main-frame-scale-x",
+      "main-frame-scale-y",
+      "main-frame-origin-x",
+      "main-frame-origin-y",
+    ],
+  },
+  {
+    id: "metadata",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMetadata",
+    colorFields: CONTAINER_METADATA_COLOR_FIELDS,
+    textFields: CONTAINER_METADATA_TEXT_FIELDS,
+    appearanceParameterIds: ["metadata-radius"],
+    transformParameterIds: [
+      "metadata-frame-translate-x",
+      "metadata-frame-translate-y",
+      "metadata-frame-rotate-z",
+      "metadata-frame-scale-x",
+      "metadata-frame-scale-y",
+      "metadata-frame-origin-x",
+      "metadata-frame-origin-y",
+    ],
+  },
+] as const;
+
+const CONTAINER_SHARED_PARAMETER_IDS = [
+  "layout-padding",
+  "splitter-width",
+  "panel-radius",
+  "header-radius",
+  "card-radius",
+  "panel-border-width",
+  "container-frame-fill-angle",
+] as const;
 
 const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -827,12 +1015,20 @@ const MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSectio
 
 const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_COLOR_FIELDS,
+  ...CONTAINER_HEADER_COLOR_FIELDS,
+  ...CONTAINER_SIDEBAR_COLOR_FIELDS,
+  ...CONTAINER_MAIN_COLOR_FIELDS,
+  ...CONTAINER_METADATA_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
 ];
 
 const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   ...CONTAINER_TEXT_FIELDS,
+  ...CONTAINER_HEADER_TEXT_FIELDS,
+  ...CONTAINER_SIDEBAR_TEXT_FIELDS,
+  ...CONTAINER_MAIN_TEXT_FIELDS,
+  ...CONTAINER_METADATA_TEXT_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
 ];
@@ -873,6 +1069,21 @@ function clearLegacySlotOverrideForSemanticVar(
 }
 
 function resolveDebugVarUsage(cssVar: string): string {
+  if (cssVar === "--mpx-container-frame-fill-start") {
+    return "用于共享壳层 fill 起始色";
+  }
+  if (cssVar === "--mpx-container-frame-fill-end") {
+    return "用于共享壳层 fill 结束色";
+  }
+  if (cssVar === "--mpx-container-frame-edge-color") {
+    return "用于共享壳层阴影边缘混色";
+  }
+  if (cssVar === "--mpx-container-frame-border-color") {
+    return "用于四大容器共享边框色";
+  }
+  if (cssVar === "--mpx-container-frame-shadow") {
+    return "用于四大容器共享壳层阴影";
+  }
   if (cssVar === "--mpx-sidebar-main-bg") {
     return "用于侧栏主列表壳层背景（.sidebar-tree）";
   }
@@ -2449,7 +2660,8 @@ function resolveContainerNumberGroup(
     id.includes("layout") ||
     id.includes("splitter") ||
     id.includes("padding") ||
-    id.includes("gap")
+    id.includes("gap") ||
+    id.includes("angle")
   ) {
     return "box";
   }
@@ -2514,8 +2726,16 @@ export function ThemeParameterPanelMain({
   setCommonExpanded,
   styleExpanded,
   setStyleExpanded,
-  containerLegacyExpanded,
-  setContainerLegacyExpanded,
+  containerSharedShellExpanded,
+  setContainerSharedShellExpanded,
+  containerHeaderExpanded,
+  setContainerHeaderExpanded,
+  containerSidebarExpanded,
+  setContainerSidebarExpanded,
+  containerMainExpanded,
+  setContainerMainExpanded,
+  containerMetadataExpanded,
+  setContainerMetadataExpanded,
   containerSidebarMainExpanded,
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
@@ -2587,6 +2807,10 @@ export function ThemeParameterPanelMain({
     () => new Set(CONTAINER_LAYER_TEXT_FIELDS.map((field) => field.cssVar)),
     [],
   );
+  const containerLayerParameterMap = useMemo(
+    () => new Map(containerLayerParameters.map((parameter) => [parameter.id, parameter])),
+    [containerLayerParameters],
+  );
 
   const notifyContainerDebugChanged = (cssVar: string) => {
     if (
@@ -2595,6 +2819,14 @@ export function ThemeParameterPanelMain({
     ) {
       onContainerDebugChanged();
     }
+  };
+
+  const pickContainerParameters = (parameterIds: readonly string[]) => {
+    return parameterIds
+      .map((id) => containerLayerParameterMap.get(id))
+      .filter((parameter): parameter is ThemeParameterDefinition =>
+        parameter !== undefined,
+      );
   };
 
   const containerNumberGroups = useMemo(() => {
@@ -2611,7 +2843,7 @@ export function ThemeParameterPanelMain({
       side: [],
       main: [],
     };
-    for (const parameter of containerLayerParameters) {
+    for (const parameter of pickContainerParameters(CONTAINER_SHARED_PARAMETER_IDS)) {
       groupMap[resolveContainerNumberGroup(parameter)].push(parameter);
     }
     return ["box", "border", "shadow"]
@@ -2624,7 +2856,7 @@ export function ThemeParameterPanelMain({
         };
       })
       .filter((group) => group.parameters.length > 0);
-  }, [containerLayerParameters]);
+  }, [containerLayerParameterMap]);
 
   const largePanelNumberGroups = useMemo(() => {
     const groupMap: Record<
@@ -3385,6 +3617,55 @@ export function ThemeParameterPanelMain({
     });
   };
 
+  const renderContainerFrameSection = (
+    section: (typeof CONTAINER_FRAME_SECTION_DEFINITIONS)[number],
+  ) => {
+    const appearanceParameters = pickContainerParameters(
+      section.appearanceParameterIds,
+    );
+    const transformParameters = pickContainerParameters(
+      section.transformParameterIds,
+    );
+    return (
+      <>
+        <section className="settings-group theme-parameter-debug-group">
+          <header className="settings-group-head">
+            <span>基础外观</span>
+          </header>
+          {section.colorFields.length > 0 ? (
+            <div className="theme-parameter-color-list">
+              {section.colorFields.map(renderColorFieldRow)}
+            </div>
+          ) : null}
+          {section.textFields.length > 0 ? (
+            <div className="theme-parameter-text-list">
+              {section.textFields.map(renderTextFieldRow)}
+            </div>
+          ) : null}
+          {appearanceParameters.length > 0
+            ? renderParameterRows(appearanceParameters)
+            : null}
+        </section>
+        <section className="settings-group theme-parameter-debug-group">
+          <header className="settings-group-head">
+            <span>视觉变换</span>
+          </header>
+          {transformParameters.length > 0
+            ? renderParameterRows(transformParameters)
+            : null}
+        </section>
+        <section className="settings-group theme-parameter-debug-group">
+          <header className="settings-group-head">
+            <span>高级 3D（预留）</span>
+          </header>
+          <p className="settings-placeholder">
+            当前已在 contract 预留 3D transform 变量，后续再补可视化调节控件。
+          </p>
+        </section>
+      </>
+    );
+  };
+
   const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
     const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
     return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
@@ -4095,14 +4376,16 @@ export function ThemeParameterPanelMain({
 
             <details
               className="settings-collapsible"
-              open={containerLegacyExpanded}
+              open={containerSharedShellExpanded}
               onToggle={(event) =>
-                setContainerLegacyExpanded(
+                setContainerSharedShellExpanded(
                   (event.currentTarget as HTMLDetailsElement).open,
                 )
               }
             >
-              <summary>{t("ui.themeParameter.containerLayer.sectionLegacy")}</summary>
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionSharedShell")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderColorGroups(CONTAINER_COLOR_FIELDS, [
                   "box",
@@ -4111,6 +4394,76 @@ export function ThemeParameterPanelMain({
                 ])}
                 {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
                 {renderNumberGroups(containerNumberGroups)}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerHeaderExpanded}
+              onToggle={(event) =>
+                setContainerHeaderExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.containerLayer.sectionHeader")}</summary>
+              <div className="settings-collapsible-content">
+                {renderContainerFrameSection(
+                  CONTAINER_FRAME_SECTION_DEFINITIONS[0],
+                )}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerSidebarExpanded}
+              onToggle={(event) =>
+                setContainerSidebarExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.containerLayer.sectionSidebar")}</summary>
+              <div className="settings-collapsible-content">
+                {renderContainerFrameSection(
+                  CONTAINER_FRAME_SECTION_DEFINITIONS[1],
+                )}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerMainExpanded}
+              onToggle={(event) =>
+                setContainerMainExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.containerLayer.sectionMain")}</summary>
+              <div className="settings-collapsible-content">
+                {renderContainerFrameSection(
+                  CONTAINER_FRAME_SECTION_DEFINITIONS[2],
+                )}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerMetadataExpanded}
+              onToggle={(event) =>
+                setContainerMetadataExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionMetadata")}
+              </summary>
+              <div className="settings-collapsible-content">
+                {renderContainerFrameSection(
+                  CONTAINER_FRAME_SECTION_DEFINITIONS[3],
+                )}
               </div>
             </details>
 

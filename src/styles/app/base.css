@@ -300,41 +300,35 @@ select option {
   display: flex;
   flex-direction: column;
   gap: var(--mpx-pane-stack-gap, 8px);
-  margin: var(--mpx-slot-fg-sysinfo-root-margin, var(--mpx-sysinfo-root-margin, var(--mpx-slot-fg-header-root-margin, var(--mpx-header-margin))));
+  margin: var(--mpx-sysinfo-root-margin, 0px);
   background: var(--mpx-slot-fg-sysinfo-root-bg, transparent);
 }
 
 .sysinfo-card-shell {
-  border: var(--mpx-sysinfo-card-border-width, var(--mpx-header-border-width)) solid
+  border: var(--mpx-large-panel-main-border-width, 1px) solid
     var(
       --mpx-slot-fg-sysinfo-card-root-border,
-      var(
-        --mpx-sysinfo-card-border-color,
-        var(--mpx-slot-fg-header-root-border, var(--mpx-header-border-color, var(--mpx-border-1)))
-      )
+      var(--mpx-large-panel-main-border-color, var(--mpx-border-1))
     );
   background: var(
     --mpx-slot-fg-sysinfo-card-root-bg,
-    var(--mpx-sysinfo-card-bg, var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg)))
+    var(--mpx-large-panel-main-bg, var(--mpx-bg-elevated))
   );
   border-radius: var(
     --mpx-slot-fg-sysinfo-card-root-radius,
-    var(--mpx-sysinfo-card-radius, var(--mpx-slot-fg-header-root-radius, var(--mpx-header-radius)))
+    var(--mpx-large-panel-main-radius, 10px)
   );
   box-shadow: var(
     --mpx-slot-fg-sysinfo-card-root-shadow,
-    var(--mpx-sysinfo-card-shadow, var(--mpx-slot-fg-header-root-shadow, var(--mpx-header-shadow)))
+    var(--mpx-large-panel-shadow, var(--mpx-shadow-panel))
   );
   backdrop-filter: var(
     --mpx-slot-fg-sysinfo-card-root-backdrop-filter,
-    var(--mpx-sysinfo-card-backdrop-filter, var(--mpx-slot-fg-header-root-backdrop-filter, var(--mpx-header-backdrop-filter)))
+    none
   );
-  transform: var(--mpx-sysinfo-card-transform, var(--mpx-header-transform));
-  transform-origin: var(
-    --mpx-sysinfo-card-transform-origin,
-    var(--mpx-header-transform-origin)
-  );
-  transition: var(--mpx-sysinfo-card-transition, var(--mpx-header-transition));
+  transform: none;
+  transform-origin: 50% 50%;
+  transition: none;
   overflow: hidden;
 }
 

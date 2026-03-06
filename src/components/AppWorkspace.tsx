@@ -154,10 +154,12 @@ function AppWorkspace({
             data-slot="fg-main-root"
             style={{ width: metadataCollapsed ? '100%' : `calc(${(1 - metadataRatio) * 100}% - var(--mpx-splitter-width))` }}
           >
-            {mainSection}
-            {musicSection}
+            <div className="main-pane-frame">
+              {mainSection}
+              {musicSection}
 
-            <footer className="main-footer" data-slot="fg-main-footer">{mainFooter}</footer>
+              <footer className="main-footer" data-slot="fg-main-footer">{mainFooter}</footer>
+            </div>
           </main>
 
           {metadataCollapsed ? null : (

@@ -313,8 +313,22 @@
   --mpx-help-overlay-tag-gap: 8px;
 
   /* Component Aliases (Default mappings) */
-  --mpx-surface-chrome-bg: var(--mpx-bg-panel);
-  --mpx-surface-chrome-shell-shadow: var(--mpx-panel-shadow);
+  --mpx-container-frame-fill-start: var(--mpx-bg-panel);
+  --mpx-container-frame-fill-end: var(--mpx-bg-panel);
+  --mpx-container-frame-fill-angle: 180deg;
+  --mpx-container-frame-fill: linear-gradient(
+    var(--mpx-container-frame-fill-angle),
+    var(--mpx-container-frame-fill-start) 0%,
+    var(--mpx-container-frame-fill-end) 100%
+  );
+  --mpx-container-frame-base-color: color-mix(
+    in srgb,
+    var(--mpx-container-frame-fill-start) 56%,
+    var(--mpx-container-frame-fill-end)
+  );
+  --mpx-container-frame-edge-color: var(--mpx-border-2);
+  --mpx-container-frame-border-color: var(--mpx-border-1);
+  --mpx-container-frame-shadow: var(--mpx-panel-shadow);
   --mpx-header-bg: linear-gradient(
     120deg,
     #f4ebe0 0%,
@@ -349,7 +363,10 @@
     --mpx-sidebar-main-label-active-bg
   );
   --mpx-sidebar-main-active-ring: var(--mpx-state-focus-color);
-  --mpx-sidebar-main-active-underlay: var(--mpx-sidebar-bg);
+  --mpx-sidebar-main-active-underlay: var(
+    --mpx-container-frame-base-color,
+    var(--mpx-bg-panel)
+  );
   --mpx-sidebar-main-label-marker-focus-bg: var(--mpx-state-focus-color);
   --mpx-sidebar-main-label-collapsed-marker-focus-bg: var(
     --mpx-sidebar-main-label-marker-focus-bg
@@ -565,6 +582,7 @@
   );
 
   /* 面板共享基底 */
+  --mpx-container-frame-radius: var(--mpx-panel-radius);
   --mpx-panel-radius: 0px;
   --mpx-panel-border-width: 1px;
   --mpx-panel-border-style: solid;
@@ -585,65 +603,133 @@
   --mpx-control-group-gap: var(--mpx-control-group-gap-px, 8px);
 
   /* Sidebar 覆写（默认继承 panel） */
+  --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);
   --mpx-sidebar-radius: var(--mpx-panel-radius);
   --mpx-sidebar-border-width: var(--mpx-panel-border-width);
   --mpx-sidebar-border-style: var(--mpx-panel-border-style);
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
   --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-sidebar-transform: var(--mpx-panel-transform);
+  --mpx-sidebar-frame-translate-x: 0px;
+  --mpx-sidebar-frame-translate-y: 0px;
+  --mpx-sidebar-frame-rotate-x: 0deg;
+  --mpx-sidebar-frame-rotate-y: 0deg;
+  --mpx-sidebar-frame-rotate-z: 0deg;
+  --mpx-sidebar-frame-scale-x: 1;
+  --mpx-sidebar-frame-scale-y: 1;
+  --mpx-sidebar-frame-origin-x: 50%;
+  --mpx-sidebar-frame-origin-y: 50%;
+  --mpx-sidebar-frame-perspective: none;
+  --mpx-sidebar-frame-transform-style: flat;
+  --mpx-sidebar-frame-backface-visibility: visible;
+  --mpx-sidebar-transform: translate(
+      var(--mpx-sidebar-frame-translate-x),
+      var(--mpx-sidebar-frame-translate-y)
+    ) rotateX(var(--mpx-sidebar-frame-rotate-x))
+    rotateY(var(--mpx-sidebar-frame-rotate-y))
+    rotateZ(var(--mpx-sidebar-frame-rotate-z))
+    scale(var(--mpx-sidebar-frame-scale-x), var(--mpx-sidebar-frame-scale-y));
   --mpx-sidebar-transition: var(--mpx-panel-transition);
   --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
-  --mpx-sidebar-bg: var(--mpx-bg-panel);
+  --mpx-sidebar-bg: var(--mpx-container-frame-fill);
 
   /* Main 覆写 */
+  --mpx-main-border-color: var(--mpx-container-frame-border-color);
   --mpx-main-radius: var(--mpx-panel-radius);
   --mpx-main-border-width: var(--mpx-panel-border-width);
   --mpx-main-border-style: var(--mpx-panel-border-style);
   --mpx-main-shadow: var(--mpx-panel-shadow);
   --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-main-transform: var(--mpx-panel-transform);
+  --mpx-main-frame-translate-x: 0px;
+  --mpx-main-frame-translate-y: 0px;
+  --mpx-main-frame-rotate-x: 0deg;
+  --mpx-main-frame-rotate-y: 0deg;
+  --mpx-main-frame-rotate-z: 0deg;
+  --mpx-main-frame-scale-x: 1;
+  --mpx-main-frame-scale-y: 1;
+  --mpx-main-frame-origin-x: 50%;
+  --mpx-main-frame-origin-y: 50%;
+  --mpx-main-frame-perspective: none;
+  --mpx-main-frame-transform-style: flat;
+  --mpx-main-frame-backface-visibility: visible;
+  --mpx-main-transform: translate(
+      var(--mpx-main-frame-translate-x),
+      var(--mpx-main-frame-translate-y)
+    ) rotateX(var(--mpx-main-frame-rotate-x))
+    rotateY(var(--mpx-main-frame-rotate-y))
+    rotateZ(var(--mpx-main-frame-rotate-z))
+    scale(var(--mpx-main-frame-scale-x), var(--mpx-main-frame-scale-y));
   --mpx-main-transition: var(--mpx-panel-transition);
   --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
-  --mpx-main-bg: var(--mpx-bg-panel);
+  --mpx-main-bg: var(--mpx-container-frame-fill);
 
   /* Metadata 覆写 */
+  --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
   --mpx-metadata-radius: var(--mpx-panel-radius);
   --mpx-metadata-border-width: var(--mpx-panel-border-width);
   --mpx-metadata-border-style: var(--mpx-panel-border-style);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
   --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-metadata-transform: var(--mpx-panel-transform);
+  --mpx-metadata-frame-translate-x: 0px;
+  --mpx-metadata-frame-translate-y: 0px;
+  --mpx-metadata-frame-rotate-x: 0deg;
+  --mpx-metadata-frame-rotate-y: 0deg;
+  --mpx-metadata-frame-rotate-z: 0deg;
+  --mpx-metadata-frame-scale-x: 1;
+  --mpx-metadata-frame-scale-y: 1;
+  --mpx-metadata-frame-origin-x: 50%;
+  --mpx-metadata-frame-origin-y: 50%;
+  --mpx-metadata-frame-perspective: none;
+  --mpx-metadata-frame-transform-style: flat;
+  --mpx-metadata-frame-backface-visibility: visible;
+  --mpx-metadata-transform: translate(
+      var(--mpx-metadata-frame-translate-x),
+      var(--mpx-metadata-frame-translate-y)
+    ) rotateX(var(--mpx-metadata-frame-rotate-x))
+    rotateY(var(--mpx-metadata-frame-rotate-y))
+    rotateZ(var(--mpx-metadata-frame-rotate-z))
+    scale(
+      var(--mpx-metadata-frame-scale-x),
+      var(--mpx-metadata-frame-scale-y)
+    );
   --mpx-metadata-transition: var(--mpx-panel-transition);
   --mpx-metadata-padding: var(
     --mpx-pane-frame-padding,
     var(--mpx-panel-padding)
   );
-  --mpx-metadata-bg: var(--mpx-bg-panel);
+  --mpx-metadata-bg: var(--mpx-container-frame-fill);
 
   /* Header 独立 */
+  --mpx-header-border-color: var(--mpx-container-frame-border-color);
   --mpx-header-radius: 0px;
   --mpx-header-shadow: none;
-  --mpx-header-margin: 0px;
+  --mpx-header-floating-gap: 0px;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
-  --mpx-header-transform: none;
-  --mpx-header-transform-origin: center top;
+  --mpx-header-frame-translate-x: 0px;
+  --mpx-header-frame-translate-y: 0px;
+  --mpx-header-frame-rotate-x: 0deg;
+  --mpx-header-frame-rotate-y: 0deg;
+  --mpx-header-frame-rotate-z: 0deg;
+  --mpx-header-frame-scale-x: 1;
+  --mpx-header-frame-scale-y: 1;
+  --mpx-header-frame-origin-x: 50%;
+  --mpx-header-frame-origin-y: 0%;
+  --mpx-header-frame-perspective: none;
+  --mpx-header-frame-transform-style: flat;
+  --mpx-header-frame-backface-visibility: visible;
+  --mpx-header-transform: translate(
+      var(--mpx-header-frame-translate-x),
+      var(--mpx-header-frame-translate-y)
+    ) rotateX(var(--mpx-header-frame-rotate-x))
+    rotateY(var(--mpx-header-frame-rotate-y))
+    rotateZ(var(--mpx-header-frame-rotate-z))
+    scale(var(--mpx-header-frame-scale-x), var(--mpx-header-frame-scale-y));
+  --mpx-header-transform-origin: var(--mpx-header-frame-origin-x)
+    var(--mpx-header-frame-origin-y);
   --mpx-header-transition: none;
 
-  /* SysInfo 卡片容器（默认跟随 Header） */
-  --mpx-sysinfo-root-margin: var(--mpx-header-margin);
-  --mpx-sysinfo-card-bg: var(--mpx-header-bg);
-  --mpx-sysinfo-card-radius: var(--mpx-header-radius);
-  --mpx-sysinfo-card-shadow: var(--mpx-header-shadow);
-  --mpx-sysinfo-card-border-width: var(--mpx-header-border-width);
-  --mpx-sysinfo-card-border-color: var(
-    --mpx-header-border-color,
-    var(--mpx-border-1)
-  );
-  --mpx-sysinfo-card-backdrop-filter: var(--mpx-header-backdrop-filter);
-  --mpx-sysinfo-card-transform: var(--mpx-header-transform);
-  --mpx-sysinfo-card-transform-origin: var(--mpx-header-transform-origin);
-  --mpx-sysinfo-card-transition: var(--mpx-header-transition);
+  /* SysInfo 卡片容器 */
+  --mpx-sysinfo-root-margin: 0px;
 
   /* 大面板层（3.0）：整体 / head / shell / side / main */
   --mpx-large-panel-width: 80vw;
@@ -919,10 +1005,6 @@
   --mpx-header-radius-effective: max(
     0px,
     calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-sysinfo-card-radius-effective: max(
-    0px,
-    calc(var(--mpx-sysinfo-card-radius) * var(--mpx-radius-value-scale-coeff))
   );
   --mpx-card-radius-effective: max(
     0px,

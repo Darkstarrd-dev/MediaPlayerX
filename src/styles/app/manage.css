@@ -40,7 +40,12 @@
       color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
     inset 0 0 0 2px
       color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--mpx-container-frame-base-color, var(--mpx-bg-panel)) 90%,
+        transparent
+      ),
     0 0 0 4px var(--mpx-manage-select-ring);
 }
 
@@ -52,7 +57,12 @@
       color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
     inset 0 0 0 2px
       color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--mpx-container-frame-base-color, var(--mpx-bg-panel)) 90%,
+        transparent
+      ),
     0 0 0 4px var(--mpx-manage-select-ring);
 }
 

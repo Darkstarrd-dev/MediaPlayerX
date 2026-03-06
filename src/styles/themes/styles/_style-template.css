@@ -100,7 +100,7 @@
   /* ---------- Header ---------- */
   --mpx-header-radius: 0px;
   --mpx-header-shadow: none;
-  --mpx-header-margin: 0px;
+  --mpx-header-floating-gap: 0px;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
   --mpx-header-transform: none;

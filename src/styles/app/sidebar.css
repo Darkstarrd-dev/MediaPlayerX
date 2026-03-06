@@ -1,24 +1,36 @@
 .sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+  perspective: var(--mpx-sidebar-frame-perspective, none);
+}
+
+.sidebar-frame {
   border-right: var(--mpx-sidebar-border-width) var(--mpx-sidebar-border-style)
-    var(
-      --mpx-slot-fg-sidebar-root-border,
-      var(--mpx-sidebar-border-color, var(--mpx-border-1))
-    );
-  background: var(--mpx-slot-fg-sidebar-root-bg, var(--mpx-sidebar-bg));
+    var(--mpx-sidebar-border-color, var(--mpx-border-1));
+  background: var(--mpx-sidebar-bg);
   display: flex;
   flex-direction: column;
   transition: var(--mpx-sidebar-transition);
-  border-radius: var(
-    --mpx-slot-fg-sidebar-root-radius,
-    var(--mpx-sidebar-radius)
-  );
-  box-shadow: var(--mpx-slot-fg-sidebar-root-shadow, var(--mpx-sidebar-shadow));
+  border-radius: var(--mpx-sidebar-radius);
+  box-shadow: var(--mpx-sidebar-shadow);
   backdrop-filter: var(--mpx-sidebar-backdrop-filter);
   transform: var(--mpx-sidebar-transform);
+  transform-origin: var(--mpx-sidebar-frame-origin-x, 50%)
+    var(--mpx-sidebar-frame-origin-y, 50%);
+  transform-style: var(--mpx-sidebar-frame-transform-style, flat);
+  backface-visibility: var(--mpx-sidebar-frame-backface-visibility, visible);
   padding: var(--mpx-sidebar-padding);
   gap: 0;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .sidebar
@@ -112,7 +124,7 @@
   opacity: 1;
 }
 
-.sidebar.is-focus {
+.sidebar.is-focus > .sidebar-frame {
   box-shadow:
     var(--mpx-sidebar-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-pane-focus-day-gap),
@@ -132,7 +144,8 @@
 }
 
 :root[data-mpx-palette-mode="night"][data-mpx-style^="soft-skeuomorphic"]
-  .sidebar.is-focus {
+  .sidebar.is-focus
+  > .sidebar-frame {
   box-shadow:
     var(--mpx-sidebar-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app),
@@ -400,7 +413,10 @@
         in srgb,
         var(
             --mpx-slot-fg-sidebar-main-active-underlay,
-            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+            var(
+                --mpx-sidebar-main-active-underlay,
+                var(--mpx-container-frame-base-color, var(--mpx-bg-panel))
+              )
           )
           90%,
         transparent
@@ -467,7 +483,10 @@
         in srgb,
         var(
             --mpx-slot-fg-sidebar-main-active-underlay,
-            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+            var(
+                --mpx-sidebar-main-active-underlay,
+                var(--mpx-container-frame-base-color, var(--mpx-bg-panel))
+              )
           )
           90%,
         transparent

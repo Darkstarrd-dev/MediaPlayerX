@@ -77,7 +77,7 @@
 
 - 状态：进行中
 - 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`、ThemeParameter 会话态补充“分页内滚动位置保留”、页内复位入口收口为 header 全局“恢复到打开时状态”按钮
-- 当前下一项：继续执行 `containerLayer -> 2.2.2.1 fg-sidebar-main` 手工验收，并同步记录字段用途说明缺口、预览错位项与当前主题下被统一壳层覆盖的无效项
+- 当前下一项：按 `docs/36-theme-container-frame-migration-plan-v1.md` 执行 `containerLayer` 基础层重构，先完成共享壳层新语义、root/frame 分层与单容器 visual transform 方案，再继续 `snapshot` 与 `largePanelLayer`
 
 ### 目标
 
@@ -105,7 +105,7 @@
 |---|---|---|
 | `parameters` | 会话保态、改值即时生效 | 进行中：已补“关闭重开 / 切页返回保持分页内滚动位置”；其余手工验收待继续 |
 | `snapshot` | 导出 / 导入 / 复位 / 恢复打开态 | 进行中：页内“复位到打开时状态”已收口到 header 全局复位按钮，导出/导入/恢复打开态手工记录待继续 |
-| `containerLayer` | `bg-only` / `bg-plus-container` 预览、单项复位、切页保态 | 待执行 |
+| `containerLayer` | `bg-only` / `bg-plus-container` 预览、单项复位、切页保态 | 进行中：`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata` 与两类内部件分页已进入新结构验收；`改值生效 / 单项复位生效 / 快照恢复生效 / 切页不丢状态` 已有样本通过 |
 | `largePanelLayer` | `bg-plus-large-panel` 预览、骨架命中、内部件命中 | 待执行 |
 | `smallPanelLayer` | `bg-plus-small-panel` 预览、dialog 骨架命中、文本串恢复 | 待执行 |
 | `commonControls` | scrollbar / range / runway / vertical / settings slider 命中 | 待执行 |
@@ -121,6 +121,14 @@
 1. 每页至少回填 `改值生效 / 单项复位生效 / 快照恢复生效 / 切页不丢状态` 四项结果。
 2. 手工验收结论以 `docs/32-ui-design-tracking-v1.md` 的分页验收对照表和清单为基准。
 3. 若执行中发现特例白名单需要扩容，先更新文档再继续验收，不直接口头豁免。
+
+当前阶段新增结论：
+
+- `containerLayer` 已确认不是“链路不通”，而是进入“字段说明不足 + 预览命中错位 + 当前主题统一壳层覆盖导致部分项不宜前置验收”的整理阶段。
+- `2.0 共享壳层` 中更适合前置验收的稳定项为：`--mpx-bg-app`、`--mpx-container-frame-fill-start`、`--mpx-container-frame-fill-end`、`--mpx-container-frame-edge-color`、`--mpx-container-frame-border-color`、`--mpx-container-frame-shadow`、`layout-padding`、`splitter-width`、`container-frame-fill-angle`、`panel-radius`、`header-radius`、`card-radius`。
+- 当前建议后置或降级的项包括：`--mpx-bg-workspace`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-border-2`，以及在 `soft-skeuomorphic × skeuomorphic-luxury-white` 下被统一壳层覆盖的大部分 pane 级边框/阴影细分项。
+- `fg-sidebar-main` 与 `fg-main-content-image-name-list` 已验证主体链路可调，但存在“状态拆分过细、需特定模式才可见、人工验收成本偏高”的问题；后续应优先收敛为主路径验收顺序，而不是继续平均铺开所有状态变量。
+- `containerLayer` 的后续实施与最终变量更名，以 `docs/36-theme-container-frame-migration-plan-v1.md` 为执行清单；迁移完成标准明确要求旧变量与 alias 兼容链路归零。
 
 ---
 

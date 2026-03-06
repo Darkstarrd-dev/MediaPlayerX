@@ -24,7 +24,7 @@ export interface ThemeParameterDefinition {
   max: number;
   step: number;
   fallback: number;
-  unit: "px" | "%" | "";
+  unit: "px" | "%" | "" | "deg";
   read: (computed: CSSStyleDeclaration) => number;
   apply: (
     root: HTMLElement,
@@ -101,6 +101,78 @@ function createCssPercentParameter({
     read: (computed) => parseNumber(computed.getPropertyValue(variableName).trim(), fallback),
     apply: (root, value) => {
       root.style.setProperty(variableName, `${value}${valueSuffix}`);
+    },
+    reset: (root) => {
+      root.style.removeProperty(variableName);
+    },
+  };
+}
+
+function createCssDegreeParameter({
+  id,
+  labelKey,
+  variableName,
+  min,
+  max,
+  step,
+  fallback,
+}: {
+  id: string;
+  labelKey: string;
+  variableName: string;
+  min: number;
+  max: number;
+  step: number;
+  fallback: number;
+}): ThemeParameterDefinition {
+  return {
+    id,
+    labelKey,
+    cssVarName: variableName,
+    min,
+    max,
+    step,
+    fallback,
+    unit: "deg",
+    read: (computed) => parseNumber(computed.getPropertyValue(variableName).trim(), fallback),
+    apply: (root, value) => {
+      root.style.setProperty(variableName, `${value}deg`);
+    },
+    reset: (root) => {
+      root.style.removeProperty(variableName);
+    },
+  };
+}
+
+function createCssNumberParameter({
+  id,
+  labelKey,
+  variableName,
+  min,
+  max,
+  step,
+  fallback,
+}: {
+  id: string;
+  labelKey: string;
+  variableName: string;
+  min: number;
+  max: number;
+  step: number;
+  fallback: number;
+}): ThemeParameterDefinition {
+  return {
+    id,
+    labelKey,
+    cssVarName: variableName,
+    min,
+    max,
+    step,
+    fallback,
+    unit: "",
+    read: (computed) => parseNumber(computed.getPropertyValue(variableName).trim(), fallback),
+    apply: (root, value) => {
+      root.style.setProperty(variableName, `${value}`);
     },
     reset: (root) => {
       root.style.removeProperty(variableName);
@@ -611,6 +683,118 @@ export const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
     step: 1,
     fallback: 1,
   }),
+  createCssDegreeParameter({
+    id: "container-frame-fill-angle",
+    labelKey: "ui.themeParameter.containerFrameFillAngle",
+    variableName: "--mpx-container-frame-fill-angle",
+    min: 0,
+    max: 360,
+    step: 1,
+    fallback: 180,
+  }),
+];
+
+export const CONTAINER_FRAME_PARAMETERS: ThemeParameterDefinition[] = [
+  createCssPxParameter({
+    id: "sidebar-radius",
+    labelKey: "ui.themeParameter.sidebarRadius",
+    variableName: "--mpx-sidebar-radius",
+    min: 0,
+    max: 30,
+    step: 1,
+    fallback: 0,
+  }),
+  createCssPxParameter({
+    id: "main-radius",
+    labelKey: "ui.themeParameter.mainRadius",
+    variableName: "--mpx-main-radius",
+    min: 0,
+    max: 30,
+    step: 1,
+    fallback: 0,
+  }),
+  createCssPxParameter({
+    id: "metadata-radius",
+    labelKey: "ui.themeParameter.metadataRadius",
+    variableName: "--mpx-metadata-radius",
+    min: 0,
+    max: 30,
+    step: 1,
+    fallback: 0,
+  }),
+  ...(["header", "sidebar", "main", "metadata"] as const).flatMap(
+    (scope) => {
+      const scopeLabel = scope[0].toUpperCase() + scope.slice(1);
+      const originYFallback = scope === "header" ? 0 : 50;
+      return [
+        createCssPxParameter({
+          id: `${scope}-frame-translate-x`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameTranslateX`,
+          variableName: `--mpx-${scope}-frame-translate-x`,
+          min: -240,
+          max: 240,
+          step: 1,
+          fallback: 0,
+        }),
+        createCssPxParameter({
+          id: `${scope}-frame-translate-y`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameTranslateY`,
+          variableName: `--mpx-${scope}-frame-translate-y`,
+          min: -240,
+          max: 240,
+          step: 1,
+          fallback: 0,
+        }),
+        createCssDegreeParameter({
+          id: `${scope}-frame-rotate-z`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameRotateZ`,
+          variableName: `--mpx-${scope}-frame-rotate-z`,
+          min: -180,
+          max: 180,
+          step: 1,
+          fallback: 0,
+        }),
+        createCssNumberParameter({
+          id: `${scope}-frame-scale-x`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameScaleX`,
+          variableName: `--mpx-${scope}-frame-scale-x`,
+          min: -2,
+          max: 2,
+          step: 0.01,
+          fallback: 1,
+        }),
+        createCssNumberParameter({
+          id: `${scope}-frame-scale-y`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameScaleY`,
+          variableName: `--mpx-${scope}-frame-scale-y`,
+          min: -2,
+          max: 2,
+          step: 0.01,
+          fallback: 1,
+        }),
+        createCssPercentParameter({
+          id: `${scope}-frame-origin-x`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameOriginX`,
+          variableName: `--mpx-${scope}-frame-origin-x`,
+          min: 0,
+          max: 100,
+          step: 1,
+          fallback: 50,
+          valueSuffix: "%",
+        }),
+        createCssPercentParameter({
+          id: `${scope}-frame-origin-y`,
+          labelKey: `ui.themeParameter.${scopeLabel}FrameOriginY`,
+          variableName: `--mpx-${scope}-frame-origin-y`,
+          min: 0,
+          max: 100,
+          step: 1,
+          fallback: originYFallback,
+          valueSuffix: "%",
+        }),
+      ];
+    },
+  ),
 ];
 
 export const LARGE_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
@@ -977,23 +1161,28 @@ export const STYLE_PARAMETERS: Record<
       },
     },
     {
-      id: "skeuo-header-gap",
-      labelKey: "ui.themeParameter.skeuoHeaderGap",
+      id: "header-floating-gap",
+      labelKey: "ui.themeParameter.headerFloatingGap",
       min: 8,
       max: 20,
       step: 1,
       fallback: 12,
       unit: "px",
       read: (computed) => {
-        const raw = computed.getPropertyValue("--mpx-header-margin").trim();
+        const raw = computed
+          .getPropertyValue("--mpx-header-floating-gap")
+          .trim();
         return parseFirstPxValueFromShadow(raw, 12);
       },
       apply: (root, value) => {
         const gap = clampValue(value, 8, 20);
-        root.style.setProperty("--mpx-header-margin", `${gap}px ${gap}px 0px`);
+        root.style.setProperty(
+          "--mpx-header-floating-gap",
+          `${gap}px ${gap}px 0px`,
+        );
       },
       reset: (root) => {
-        removeVariables(root, ["--mpx-header-margin"]);
+        removeVariables(root, ["--mpx-header-floating-gap"]);
       },
     },
     {

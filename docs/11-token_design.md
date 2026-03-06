@@ -90,9 +90,40 @@
     - 滚动条基础层与场景别名并存：`--mpx-scrollbar-*` + `--mpx-sidebar-tree-scrollbar-*`
     - 设置 slider 独立轨道：`--mpx-slider-settings-groove-*`（不再借用 `--mpx-runway-groove-*`）
 3. 特例白名单前缀：
-   - 播放器子系统：`--mpx-player-surface-*`、`--mpx-player-hud-*`
-   - 全屏图像调整：`--mpx-fs-image-adjust-*`（Phase 1 预留）
-   - 广告审核删除 overlay：`--mpx-ad-review-overlay-*`
+    - 播放器子系统：`--mpx-player-surface-*`、`--mpx-player-hud-*`
+    - 全屏图像调整：`--mpx-fs-image-adjust-*`（Phase 1 预留）
+    - 广告审核删除 overlay：`--mpx-ad-review-overlay-*`
+
+## 容器 frame / spacing 补充
+
+### 共享壳层与单容器 frame
+
+1. 四大容器共享壳层统一使用 `--mpx-container-frame-*`：
+   - `--mpx-container-frame-fill-start/end/angle/fill`
+   - `--mpx-container-frame-edge-color`
+   - `--mpx-container-frame-border-color`
+   - `--mpx-container-frame-shadow`
+   - `--mpx-container-frame-radius`
+2. 单容器 frame 覆写统一使用 `--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*`。
+3. 单容器 visual transform 统一使用 `--mpx-<container>-frame-*`：
+   - `translate-x / translate-y`
+   - `rotate-x / rotate-y / rotate-z`
+   - `scale-x / scale-y`
+   - `origin-x / origin-y`
+   - `perspective / transform-style / backface-visibility`
+
+### Header 浮动间距
+
+1. Header 根层布局间隙统一使用 `--mpx-header-floating-gap`。
+2. `--mpx-header-floating-gap` 属于布局层 spacing，不属于单容器 frame transform。
+3. `fg.header.root` 的 margin 已直接消费 `--mpx-header-floating-gap`，不再保留独立 slot margin fallback。
+4. `fg.sysinfo.root` 的 margin 已独立消费 `--mpx-sysinfo-root-margin`，默认值为 `0px`，不再跟随 Header。
+5. `sysinfo-card` 的视觉骨架已并入大面板体系，当前直接消费：
+   - `--mpx-large-panel-main-border-width`
+   - `--mpx-large-panel-main-border-color`
+   - `--mpx-large-panel-main-bg`
+   - `--mpx-large-panel-main-radius`
+   - `--mpx-large-panel-shadow`
 
 ## 稳定路径到 Token 前缀
 

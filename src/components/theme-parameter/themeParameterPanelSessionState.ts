@@ -8,7 +8,11 @@ interface ContainerDebugSessionState {
 interface ThemeParameterUISessionState {
   activePage: ThemeParameterPageId;
   pageScrollTops: Partial<Record<ThemeParameterPageId, number>>;
-  containerLegacyExpanded: boolean;
+  containerSharedShellExpanded: boolean;
+  containerHeaderExpanded: boolean;
+  containerSidebarExpanded: boolean;
+  containerMainExpanded: boolean;
+  containerMetadataExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
   commonExpanded: boolean;
@@ -23,7 +27,11 @@ const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   activePage: "parameters",
   pageScrollTops: {},
-  containerLegacyExpanded: true,
+  containerSharedShellExpanded: true,
+  containerHeaderExpanded: false,
+  containerSidebarExpanded: false,
+  containerMainExpanded: false,
+  containerMetadataExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
   commonExpanded: true,

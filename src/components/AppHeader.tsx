@@ -442,110 +442,111 @@ function AppHeader(props: AppHeaderProps) {
           : {}),
       }}
     >
-      <div className="header-left">
-        <div className="header-logo-group">
-          <div
-            className="logo-wrap"
-            onMouseEnter={() => {
-              if (!importMenuOpen) {
-                onToggleImportMenu();
-              }
-            }}
-            onMouseLeave={onCloseImportMenu}
-          >
-            <button
-              aria-label={taskStatusLabel}
-              className={`logo-btn mpx-random-sheen-host ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""} ${logoSweeping ? "is-sweeping" : ""}`}
-              data-slot="fg-header-logo"
-              data-slot-state={taskStateSlot}
-              data-tooltip-label={taskStatusLabel}
-              type="button"
-              onClick={onToggleImportTaskPanel}
-              onAnimationEnd={handleLogoSweepAnimationEnd}
+      <div className="app-header-frame">
+        <div className="header-left">
+          <div className="header-logo-group">
+            <div
+              className="logo-wrap"
+              onMouseEnter={() => {
+                if (!importMenuOpen) {
+                  onToggleImportMenu();
+                }
+              }}
+              onMouseLeave={onCloseImportMenu}
             >
-              <span className="logo-btn-text">
-                {taskStatusBusy ? "Processing..." : "MediaPlayerX"}
-              </span>
-            </button>
-            {importMenuOpen ? (
+              <button
+                aria-label={taskStatusLabel}
+                className={`logo-btn mpx-random-sheen-host ${taskStatusBusy ? "is-task-busy" : "is-task-idle"} ${importTaskPanelOpen ? "is-task-open" : ""} ${logoSweeping ? "is-sweeping" : ""}`}
+                data-slot="fg-header-logo"
+                data-slot-state={taskStateSlot}
+                data-tooltip-label={taskStatusLabel}
+                type="button"
+                onClick={onToggleImportTaskPanel}
+                onAnimationEnd={handleLogoSweepAnimationEnd}
+              >
+                <span className="logo-btn-text">
+                  {taskStatusBusy ? "Processing..." : "MediaPlayerX"}
+                </span>
+              </button>
+              {importMenuOpen ? (
+                <div
+                  className="import-menu"
+                  data-slot="fg-header-logo-import-menu-panel"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onImportFiles();
+                      onCloseImportMenu();
+                    }}
+                  >
+                    {t("ui.header.importFiles")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onImportFolders();
+                      onCloseImportMenu();
+                    }}
+                  >
+                    {t("ui.header.importFolders")}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            className="header-group header-group-primary"
+            data-slot="fg-header-g1"
+          >
+            {showPanelToggleControls ? (
               <div
-                className="import-menu"
-                data-slot="fg-header-logo-import-menu-panel"
+                className="panel-toggle-wrap"
+                data-slot="fg-header-g1-panel-toggles"
               >
                 <button
+                  className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? "is-collapsed" : ""}`}
+                  data-slot="fg-header-g1-toggle-sidebar"
                   type="button"
+                  aria-label={
+                    sidebarCollapsed
+                      ? t("a11y.common.expandSidebar")
+                      : collapseSidebarLabel
+                  }
+                  data-tooltip-label={
+                    sidebarCollapsed
+                      ? t("a11y.common.expandSidebar")
+                      : collapseSidebarLabel
+                  }
                   onClick={() => {
-                    onImportFiles();
-                    onCloseImportMenu();
+                    onToggleSidebarPanel?.();
                   }}
                 >
-                  {t("ui.header.importFiles")}
+                  <span className="window-control-btn-text">L</span>
                 </button>
                 <button
+                  className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? "is-collapsed" : ""}`}
+                  data-slot="fg-header-g1-toggle-metadata"
                   type="button"
+                  aria-label={
+                    metadataCollapsed
+                      ? t("a11y.common.expandMetadataPanel")
+                      : collapseMetadataPanelLabel
+                  }
+                  data-tooltip-label={
+                    metadataCollapsed
+                      ? t("a11y.common.expandMetadataPanel")
+                      : collapseMetadataPanelLabel
+                  }
                   onClick={() => {
-                    onImportFolders();
-                    onCloseImportMenu();
+                    onToggleMetadataPanel?.();
                   }}
                 >
-                  {t("ui.header.importFolders")}
+                  <span className="window-control-btn-text">R</span>
                 </button>
               </div>
             ) : null}
-          </div>
-        </div>
-
-        <div
-          className="header-group header-group-primary"
-          data-slot="fg-header-g1"
-        >
-          {showPanelToggleControls ? (
-            <div
-              className="panel-toggle-wrap"
-              data-slot="fg-header-g1-panel-toggles"
-            >
-              <button
-                className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? "is-collapsed" : ""}`}
-                data-slot="fg-header-g1-toggle-sidebar"
-                type="button"
-                aria-label={
-                  sidebarCollapsed
-                    ? t("a11y.common.expandSidebar")
-                    : collapseSidebarLabel
-                }
-                data-tooltip-label={
-                  sidebarCollapsed
-                    ? t("a11y.common.expandSidebar")
-                    : collapseSidebarLabel
-                }
-                onClick={() => {
-                  onToggleSidebarPanel?.();
-                }}
-              >
-                <span className="window-control-btn-text">L</span>
-              </button>
-              <button
-                className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? "is-collapsed" : ""}`}
-                data-slot="fg-header-g1-toggle-metadata"
-                type="button"
-                aria-label={
-                  metadataCollapsed
-                    ? t("a11y.common.expandMetadataPanel")
-                    : collapseMetadataPanelLabel
-                }
-                data-tooltip-label={
-                  metadataCollapsed
-                    ? t("a11y.common.expandMetadataPanel")
-                    : collapseMetadataPanelLabel
-                }
-                onClick={() => {
-                  onToggleMetadataPanel?.();
-                }}
-              >
-                <span className="window-control-btn-text">R</span>
-              </button>
-            </div>
-          ) : null}
 
           <button
             aria-label={
@@ -683,164 +684,165 @@ function AppHeader(props: AppHeaderProps) {
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
-      <div className="header-right">
-        {themeParameterButtonVisible && !headerDebugGroupVisible ? (
-          <button
-            {...themeParameterButtonA11y}
-            aria-pressed={themeParameterPanelOpen}
-            className="window-control-btn window-control-btn--theme-parameter"
-            data-slot="fg-header-g3-theme-parameter"
-            type="button"
-            onClick={onOpenThemeParameter}
-          >
-            <span className="window-control-btn-text">T</span>
-          </button>
-        ) : null}
-        {headerDebugGroupVisible ? (
-          <div
-            aria-label={t("ui.settings.sectionDebug")}
-            className="header-group header-group-debug"
-            data-slot="fg-header-g-debug"
-            role="group"
-          >
-            <button
-              aria-label={tooltipLabel}
-              aria-pressed={tooltipEnabled}
-              className="window-control-btn window-control-btn--theme-parameter"
-              data-tooltip-label={tooltipLabel}
-              data-slot="fg-header-g-debug-tooltips"
-              type="button"
-              onClick={() => {
-                onTooltipEnabledChange(!tooltipEnabled);
-              }}
-            >
-              <span className="window-control-btn-text">
-                TT {tooltipEnabled ? "on" : "off"}
-              </span>
-            </button>
-            <button
-              aria-label={nativeChromeLabel}
-              aria-pressed={electronNativeChromeEnabled}
-              className="window-control-btn window-control-btn--theme-parameter"
-              data-tooltip-label={nativeChromeLabel}
-              data-slot="fg-header-g-debug-native-chrome"
-              type="button"
-              onClick={() => {
-                onElectronNativeChromeEnabledChange(
-                  !electronNativeChromeEnabled,
-                );
-              }}
-            >
-              <span className="window-control-btn-text">
-                N {electronNativeChromeEnabled ? "on" : "off"}
-              </span>
-            </button>
+        <div className="header-right">
+          {themeParameterButtonVisible && !headerDebugGroupVisible ? (
             <button
               {...themeParameterButtonA11y}
               aria-pressed={themeParameterPanelOpen}
               className="window-control-btn window-control-btn--theme-parameter"
-              data-slot="fg-header-g-debug-theme-parameter"
+              data-slot="fg-header-g3-theme-parameter"
+              type="button"
+              onClick={onOpenThemeParameter}
+            >
+              <span className="window-control-btn-text">T</span>
+            </button>
+          ) : null}
+          {headerDebugGroupVisible ? (
+            <div
+              aria-label={t("ui.settings.sectionDebug")}
+              className="header-group header-group-debug"
+              data-slot="fg-header-g-debug"
+              role="group"
+            >
+              <button
+                aria-label={tooltipLabel}
+                aria-pressed={tooltipEnabled}
+                className="window-control-btn window-control-btn--theme-parameter"
+                data-tooltip-label={tooltipLabel}
+                data-slot="fg-header-g-debug-tooltips"
+                type="button"
+                onClick={() => {
+                  onTooltipEnabledChange(!tooltipEnabled);
+                }}
+              >
+                <span className="window-control-btn-text">
+                  TT {tooltipEnabled ? "on" : "off"}
+                </span>
+              </button>
+              <button
+                aria-label={nativeChromeLabel}
+                aria-pressed={electronNativeChromeEnabled}
+                className="window-control-btn window-control-btn--theme-parameter"
+                data-tooltip-label={nativeChromeLabel}
+                data-slot="fg-header-g-debug-native-chrome"
+                type="button"
+                onClick={() => {
+                  onElectronNativeChromeEnabledChange(
+                    !electronNativeChromeEnabled,
+                  );
+                }}
+              >
+                <span className="window-control-btn-text">
+                  N {electronNativeChromeEnabled ? "on" : "off"}
+                </span>
+              </button>
+              <button
+                {...themeParameterButtonA11y}
+                aria-pressed={themeParameterPanelOpen}
+                className="window-control-btn window-control-btn--theme-parameter"
+                data-slot="fg-header-g-debug-theme-parameter"
+                type="button"
+                onClick={() => {
+                  if (!themeParameterButtonVisible) {
+                    onThemeParameterButtonVisibleChange(true);
+                  }
+                  onOpenThemeParameter();
+                }}
+              >
+                <span className="window-control-btn-text">
+                  T {themeParameterPanelOpen ? "on" : "off"}
+                </span>
+              </button>
+              <button
+                {...popoverDebugPinnedButtonA11y}
+                aria-pressed={popoverDebugPinned}
+                className="window-control-btn window-control-btn--theme-parameter"
+                data-slot="fg-header-g3-popover-debug-pin"
+                type="button"
+                onClick={onTogglePopoverDebugPinned}
+              >
+                <span className="window-control-btn-text">
+                  {popoverDebugPinned ? "O" : "C"}
+                </span>
+              </button>
+            </div>
+          ) : null}
+          <div
+            aria-label={t(a11yRegistry.headerWindowControls.labelKey)}
+            className="window-controls header-group header-group-window"
+            data-slot="fg-header-g3"
+            role="group"
+          >
+              <button
+                {...helpButtonA11y}
+                aria-pressed={helpOpen}
+                className="window-control-btn"
+                data-slot="fg-header-g3-help"
+                type="button"
+                onClick={onOpenHelp}
+              >
+                <HeaderActionIcon name="help" />
+              </button>
+            <button
+              aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
+              className="window-control-btn"
+              data-slot="fg-header-g3-window-min"
+              data-tooltip-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
               type="button"
               onClick={() => {
-                if (!themeParameterButtonVisible) {
-                  onThemeParameterButtonVisibleChange(true);
-                }
-                onOpenThemeParameter();
+                void window.mediaPlayerWindow?.minimize();
               }}
             >
-              <span className="window-control-btn-text">
-                T {themeParameterPanelOpen ? "on" : "off"}
-              </span>
+              <HeaderActionIcon name="windowMinimize" />
             </button>
             <button
-              {...popoverDebugPinnedButtonA11y}
-              aria-pressed={popoverDebugPinned}
-              className="window-control-btn window-control-btn--theme-parameter"
-              data-slot="fg-header-g3-popover-debug-pin"
+              aria-label={windowMaxRestoreLabel}
+              className="window-control-btn"
+              data-slot="fg-header-g3-window-maxrestore"
+              data-tooltip-label={windowMaxRestoreLabel}
               type="button"
-              onClick={onTogglePopoverDebugPinned}
+              onClick={async () => {
+                const windowApi = window.mediaPlayerWindow;
+                if (!windowApi) {
+                  return;
+                }
+
+                if (windowFullscreen) {
+                  await windowApi.setFullscreen(false);
+                  const maximized = await windowApi
+                    .isMaximized()
+                    .catch(() => false);
+                  if (maximized) {
+                    await windowApi.toggleMaximize();
+                  }
+                  return;
+                }
+
+                if (windowMaximized) {
+                  await windowApi.setFullscreen(true);
+                  return;
+                }
+
+                await windowApi.toggleMaximize();
+              }}
             >
-              <span className="window-control-btn-text">
-                {popoverDebugPinned ? "O" : "C"}
-              </span>
+              <HeaderActionIcon name={windowMaxRestoreIconName} />
+            </button>
+            <button
+              aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
+              className="window-control-btn window-control-btn--close"
+              data-slot="fg-header-g3-window-close"
+              data-tooltip-label={t(a11yRegistry.headerWindowClose.labelKey)}
+              type="button"
+              onClick={() => {
+                void window.mediaPlayerWindow?.close();
+              }}
+            >
+              <HeaderActionIcon name="windowClose" />
             </button>
           </div>
-        ) : null}
-        <div
-          aria-label={t(a11yRegistry.headerWindowControls.labelKey)}
-          className="window-controls header-group header-group-window"
-          data-slot="fg-header-g3"
-          role="group"
-        >
-            <button
-              {...helpButtonA11y}
-              aria-pressed={helpOpen}
-              className="window-control-btn"
-              data-slot="fg-header-g3-help"
-            type="button"
-            onClick={onOpenHelp}
-          >
-            <HeaderActionIcon name="help" />
-          </button>
-          <button
-            aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
-            className="window-control-btn"
-            data-slot="fg-header-g3-window-min"
-            data-tooltip-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
-            type="button"
-            onClick={() => {
-              void window.mediaPlayerWindow?.minimize();
-            }}
-          >
-            <HeaderActionIcon name="windowMinimize" />
-          </button>
-          <button
-            aria-label={windowMaxRestoreLabel}
-            className="window-control-btn"
-            data-slot="fg-header-g3-window-maxrestore"
-            data-tooltip-label={windowMaxRestoreLabel}
-            type="button"
-            onClick={async () => {
-              const windowApi = window.mediaPlayerWindow;
-              if (!windowApi) {
-                return;
-              }
-
-              if (windowFullscreen) {
-                await windowApi.setFullscreen(false);
-                const maximized = await windowApi
-                  .isMaximized()
-                  .catch(() => false);
-                if (maximized) {
-                  await windowApi.toggleMaximize();
-                }
-                return;
-              }
-
-              if (windowMaximized) {
-                await windowApi.setFullscreen(true);
-                return;
-              }
-
-              await windowApi.toggleMaximize();
-            }}
-          >
-            <HeaderActionIcon name={windowMaxRestoreIconName} />
-          </button>
-          <button
-            aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
-            className="window-control-btn window-control-btn--close"
-            data-slot="fg-header-g3-window-close"
-            data-tooltip-label={t(a11yRegistry.headerWindowClose.labelKey)}
-            type="button"
-            onClick={() => {
-              void window.mediaPlayerWindow?.close();
-            }}
-          >
-            <HeaderActionIcon name="windowClose" />
-          </button>
         </div>
       </div>
     </header>

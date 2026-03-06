@@ -36,6 +36,7 @@
 - 高优化需求项目表：`24-high-optimization-demand-table.md`
 - Ad Review 导入哈希专家咨询申请：`33-ad-review-import-known-hash-专家技术支持请求-2026-03-04.md`
 - UI Theme Config 与 Tauri 迁移路线图：`35-ui-theme-config-tauri-roadmap-v1.md`
+- Theme 大容器层 frame 全量迁移计划：`36-theme-container-frame-migration-plan-v1.md`
 
 ## 待办
 
@@ -44,6 +45,11 @@
   - [ ] 每页至少记录四类结果：`改值生效`、`单项复位生效`、`快照恢复生效`、`切页不丢状态`
   - [ ] 将手工验收结果回填到 `docs/35-ui-theme-config-tauri-roadmap-v1.md` 的 `Phase 2 -> 手工验收记录`，并同步更新勾选状态
   - [ ] 继续清点尚未分页化的特例白名单区域；若需新增豁免或命名空间，先更新 `docs/32-ui-design-tracking-v1.md`、`docs/10-ui_definition.md`、`docs/11-token_design.md`
+
+- [ ] ThemeParameter `containerLayer` 共享壳层 / frame / visual transform 全量迁移
+  - [ ] 按 `docs/36-theme-container-frame-migration-plan-v1.md` 完成 `Phase 0 ~ Phase 6`
+  - [ ] 先完成共享壳层新语义、四大容器 `root/frame` 分层、单容器外观覆写与 visual transform
+  - [ ] 最终移除旧变量名、旧 UI 文案与 alias/fallback 兼容链路，仅保留新变量族
 
 - [ ] 排查 fullscreen dual 模式下视频播放约 5~6 分钟自动跳回片首的回归问题（远程机器接手）
   - [ ] 复现结论：问题发生在 `fullscreen + dual` 播放过程中，不是 single/dual 切换瞬间；从头连续播放时约 5~6 分钟触发。

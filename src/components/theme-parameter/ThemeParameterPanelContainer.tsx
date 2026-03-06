@@ -20,6 +20,7 @@ import type {
 import { includesSearch, readFileAsText } from "./themeParameterUtils";
 import {
   COMMON_PARAMETERS,
+  CONTAINER_FRAME_PARAMETERS,
   EMPTY_PARAMETERS,
   LARGE_PANEL_PARAMETERS,
   SMALL_PANEL_PARAMETERS,
@@ -44,13 +45,16 @@ const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
 const CONTAINER_LAYER_PARAMETER_IDS = new Set([
   "layout-padding",
   "splitter-width",
+  "container-frame-fill-angle",
   "panel-radius",
   "header-radius",
   "card-radius",
+  "sidebar-radius",
+  "main-radius",
+  "metadata-radius",
   "panel-border-width",
   "skeuo-pane-elevation",
   "skeuo-container-elevation",
-  "skeuo-header-gap",
   "liquid-glass-surface-opacity",
   "neobrutalism-shadow-offset",
   "neobrutalism-border-width",
@@ -63,7 +67,7 @@ function isContainerLayerParameter(
   if (CONTAINER_LAYER_PARAMETER_IDS.has(parameter.id)) {
     return true;
   }
-  return parameter.id.includes("-pane-");
+  return parameter.id.includes("-pane-") || parameter.id.includes("-frame-");
 }
 
 interface ThemeParameterPanelProps {
@@ -112,19 +116,44 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ffffff",
   },
   {
-    id: "container-metal-light",
-    cssVar: "--mpx-metal-light",
+    id: "container-frame-fill-start",
+    cssVar: "--mpx-container-frame-fill-start",
     fallback: "#f5f2ec",
   },
   {
-    id: "container-metal-base",
-    cssVar: "--mpx-metal-base",
+    id: "container-frame-fill-end",
+    cssVar: "--mpx-container-frame-fill-end",
     fallback: "#e6e2da",
   },
   {
-    id: "container-metal-dark",
-    cssVar: "--mpx-metal-dark",
+    id: "container-frame-edge-color",
+    cssVar: "--mpx-container-frame-edge-color",
     fallback: "#cdc7bb",
+  },
+  {
+    id: "container-frame-border-color",
+    cssVar: "--mpx-container-frame-border-color",
+    fallback: "#e5e4e0",
+  },
+  {
+    id: "container-header-border-color",
+    cssVar: "--mpx-header-border-color",
+    fallback: "#e5e4e0",
+  },
+  {
+    id: "container-sidebar-border-color",
+    cssVar: "--mpx-sidebar-border-color",
+    fallback: "#e5e4e0",
+  },
+  {
+    id: "container-main-border-color",
+    cssVar: "--mpx-main-border-color",
+    fallback: "#e5e4e0",
+  },
+  {
+    id: "container-metadata-border-color",
+    cssVar: "--mpx-metadata-border-color",
+    fallback: "#e5e4e0",
   },
   {
     id: "container-border-1",
@@ -1299,8 +1328,40 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
 
 const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
-    id: "container-surface-chrome-shell-shadow",
-    cssVar: "--mpx-surface-chrome-shell-shadow",
+    id: "container-frame-shadow",
+    cssVar: "--mpx-container-frame-shadow",
+  },
+  {
+    id: "container-header-fill",
+    cssVar: "--mpx-header-bg",
+  },
+  {
+    id: "container-header-shadow",
+    cssVar: "--mpx-header-shadow",
+  },
+  {
+    id: "container-sidebar-fill",
+    cssVar: "--mpx-sidebar-bg",
+  },
+  {
+    id: "container-sidebar-shadow",
+    cssVar: "--mpx-sidebar-shadow",
+  },
+  {
+    id: "container-main-fill",
+    cssVar: "--mpx-main-bg",
+  },
+  {
+    id: "container-main-shadow",
+    cssVar: "--mpx-main-shadow",
+  },
+  {
+    id: "container-metadata-fill",
+    cssVar: "--mpx-metadata-bg",
+  },
+  {
+    id: "container-metadata-shadow",
+    cssVar: "--mpx-metadata-shadow",
   },
   {
     id: "container-sidebar-main-label-bg",
@@ -1604,11 +1665,13 @@ function ThemeParameterPanel({
       styleGroup === "default"
         ? [
             ...COMMON_PARAMETERS,
+            ...CONTAINER_FRAME_PARAMETERS,
             ...LARGE_PANEL_PARAMETERS,
             ...SMALL_PANEL_PARAMETERS,
           ]
         : [
             ...COMMON_PARAMETERS,
+            ...CONTAINER_FRAME_PARAMETERS,
             ...STYLE_PARAMETERS[styleGroup],
             ...LARGE_PANEL_PARAMETERS,
             ...SMALL_PANEL_PARAMETERS,
@@ -1628,9 +1691,20 @@ function ThemeParameterPanel({
   const [styleExpanded, setStyleExpandedState] = useState(
     initialUiSessionState.styleExpanded,
   );
-  const [containerLegacyExpanded, setContainerLegacyExpandedState] = useState(
-    initialUiSessionState.containerLegacyExpanded,
+  const [containerSharedShellExpanded, setContainerSharedShellExpandedState] = useState(
+    initialUiSessionState.containerSharedShellExpanded,
   );
+  const [containerHeaderExpanded, setContainerHeaderExpandedState] = useState(
+    initialUiSessionState.containerHeaderExpanded,
+  );
+  const [containerSidebarExpanded, setContainerSidebarExpandedState] = useState(
+    initialUiSessionState.containerSidebarExpanded,
+  );
+  const [containerMainExpanded, setContainerMainExpandedState] = useState(
+    initialUiSessionState.containerMainExpanded,
+  );
+  const [containerMetadataExpanded, setContainerMetadataExpandedState] =
+    useState(initialUiSessionState.containerMetadataExpanded);
   const [containerSidebarMainExpanded, setContainerSidebarMainExpandedState] =
     useState(initialUiSessionState.containerSidebarMainExpanded);
   const [containerMainImageNameListExpanded, setContainerMainImageNameListExpandedState] =
@@ -1684,10 +1758,42 @@ function ThemeParameterPanel({
     });
   };
 
-  const setContainerLegacyExpanded = (action: SetStateAction<boolean>) => {
-    setContainerLegacyExpandedState((previous) => {
+  const setContainerSharedShellExpanded = (action: SetStateAction<boolean>) => {
+    setContainerSharedShellExpandedState((previous) => {
       const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerLegacyExpanded: next });
+      updateThemeParameterUiSessionState({ containerSharedShellExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerHeaderExpanded = (action: SetStateAction<boolean>) => {
+    setContainerHeaderExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerHeaderExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerSidebarExpanded = (action: SetStateAction<boolean>) => {
+    setContainerSidebarExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerSidebarExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMainExpanded = (action: SetStateAction<boolean>) => {
+    setContainerMainExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerMainExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMetadataExpanded = (action: SetStateAction<boolean>) => {
+    setContainerMetadataExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerMetadataExpanded: next });
       return next;
     });
   };
@@ -1795,7 +1901,11 @@ function ThemeParameterPanel({
     setActivePageState(uiSessionState.activePage);
     setCommonExpandedState(uiSessionState.commonExpanded);
     setStyleExpandedState(uiSessionState.styleExpanded);
-    setContainerLegacyExpandedState(uiSessionState.containerLegacyExpanded);
+    setContainerSharedShellExpandedState(uiSessionState.containerSharedShellExpanded);
+    setContainerHeaderExpandedState(uiSessionState.containerHeaderExpanded);
+    setContainerSidebarExpandedState(uiSessionState.containerSidebarExpanded);
+    setContainerMainExpandedState(uiSessionState.containerMainExpanded);
+    setContainerMetadataExpandedState(uiSessionState.containerMetadataExpanded);
     setContainerSidebarMainExpandedState(
       uiSessionState.containerSidebarMainExpanded,
     );
@@ -1860,7 +1970,11 @@ function ThemeParameterPanel({
         ...sessionState.pageScrollTops,
         [activePage]: scrollTop,
       },
-      containerLegacyExpanded,
+      containerSharedShellExpanded,
+      containerHeaderExpanded,
+      containerSidebarExpanded,
+      containerMainExpanded,
+      containerMetadataExpanded,
       containerSidebarMainExpanded,
       containerMainImageNameListExpanded,
       commonExpanded,
@@ -1870,7 +1984,11 @@ function ThemeParameterPanel({
   }, [
     activePage,
     commonExpanded,
-    containerLegacyExpanded,
+    containerSharedShellExpanded,
+    containerHeaderExpanded,
+    containerSidebarExpanded,
+    containerMainExpanded,
+    containerMetadataExpanded,
     containerMainImageNameListExpanded,
     containerSidebarMainExpanded,
     open,
@@ -2354,8 +2472,16 @@ function ThemeParameterPanel({
           setCommonExpanded={setCommonExpanded}
           styleExpanded={styleExpanded}
           setStyleExpanded={setStyleExpanded}
-          containerLegacyExpanded={containerLegacyExpanded}
-          setContainerLegacyExpanded={setContainerLegacyExpanded}
+          containerSharedShellExpanded={containerSharedShellExpanded}
+          setContainerSharedShellExpanded={setContainerSharedShellExpanded}
+          containerHeaderExpanded={containerHeaderExpanded}
+          setContainerHeaderExpanded={setContainerHeaderExpanded}
+          containerSidebarExpanded={containerSidebarExpanded}
+          setContainerSidebarExpanded={setContainerSidebarExpanded}
+          containerMainExpanded={containerMainExpanded}
+          setContainerMainExpanded={setContainerMainExpanded}
+          containerMetadataExpanded={containerMetadataExpanded}
+          setContainerMetadataExpanded={setContainerMetadataExpanded}
           containerSidebarMainExpanded={containerSidebarMainExpanded}
           setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}
           containerMainImageNameListExpanded={containerMainImageNameListExpanded}

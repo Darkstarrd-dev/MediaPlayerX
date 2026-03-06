@@ -34,22 +34,24 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:556`（`.metadata-panel`）
 
 变量与变量对应的值（按组）
-`--mpx-surface-chrome-bg`（四大容器共享的壳层背景语义）
-`--mpx-metal-light`（金属渐变高光浅色）
-`--mpx-metal-base`（金属渐变基底色）
+`--mpx-container-frame-fill-start`（四大容器共享壳层 fill 起始色）
+`--mpx-container-frame-fill-end`（四大容器共享壳层 fill 结束色）
+`--mpx-container-frame-fill-angle`（四大容器共享壳层渐变角度）
+`--mpx-container-frame-fill`（四大容器共享壳层 fill）
 
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
-`--mpx-metal-light = #f5f2ec`（`src/styles/themes/styles/soft-skeuomorphic.css:263`）
-`--mpx-metal-base = #e6e2da`（`src/styles/themes/styles/soft-skeuomorphic.css:264`）
+`--mpx-container-frame-fill = linear-gradient(var(--mpx-container-frame-fill-angle), var(--mpx-container-frame-fill-start) 0%, var(--mpx-container-frame-fill-end) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill-start = #f5f2ec`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill-end = #e6e2da`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
-`--mpx-surface-chrome-shell-shadow`（四大容器共享壳层凹凸阴影）
-`--mpx-metal-dark`（凹凸阴影深色边缘）
+`--mpx-container-frame-edge-color`（共享壳层阴影边缘混色）
+`--mpx-container-frame-border-color`（四大容器共享边框色）
+`--mpx-container-frame-shadow`（四大容器共享壳层阴影）
 
-`--mpx-surface-chrome-shell-shadow = 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-metal-dark) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-metal-light) 50%, transparent)`（`src/styles/themes/styles/soft-skeuomorphic.css:168`）
-`--mpx-metal-dark = #cdc7bb`（`src/styles/themes/styles/soft-skeuomorphic.css:265`）
+`--mpx-container-frame-shadow = 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-fill-start) 50%, transparent)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-edge-color = #cdc7bb`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
 说明
-`2.1~2.4` 都默认挂到这套通用壳层语义上；各容器仍可通过各自 `slot` 变量独立覆写。
+`2.1~2.4` 都默认挂到这套“共享壳层 + 单容器 frame”语义上；各容器仍可通过各自 `slot` 变量独立覆写。
 
 ## 2.1 Header 容器
 
@@ -62,13 +64,11 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:520`
 
 变量与变量对应的值（按组）
-`--mpx-slot-fg-header-root-bg`（Header 背景槽位变量）
 `--mpx-header-bg`（Header 语义背景变量）
-`--mpx-surface-chrome-bg`（通用壳层背景）
+`--mpx-container-frame-fill`（共享壳层背景）
 
-`--mpx-slot-fg-header-root-bg = var(--mpx-header-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:178`）
-`--mpx-header-bg = var(--mpx-surface-chrome-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:177`）
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
+`--mpx-header-bg = var(--mpx-container-frame-fill)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill = linear-gradient(var(--mpx-container-frame-fill-angle), var(--mpx-container-frame-fill-start) 0%, var(--mpx-container-frame-fill-end) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
 `--mpx-header-radius-effective`（Header 实际圆角）
 `--mpx-header-radius`（Header 基础圆角）
@@ -76,14 +76,13 @@ css 的触发点
 `--mpx-header-radius-effective = max(0px, calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff)))`（`src/styles/themes/contract.css:480`）
 `--mpx-header-radius = 16px`（`src/styles/themes/styles/soft-skeuomorphic.css:155`）
 
-`--mpx-slot-fg-header-root-margin`（Header 外边距槽位变量）
-`--mpx-header-margin`（Header 语义外边距）
+`--mpx-header-floating-gap`（Header 浮动间距语义变量）
 
-`--mpx-slot-fg-header-root-margin = 未定义（走 fallback）`
-`--mpx-header-margin = var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0`（`src/styles/themes/styles/soft-skeuomorphic.css:152`）
+`--mpx-header-floating-gap = var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
 说明
 Header 在当前主题下走通用壳层背景与阴影；`border` 在主题覆盖层为 `none`，外观线条主要由阴影体系实现。
+SysInfo 不再默认跟随 Header 视觉 token，已迁入大面板 token 体系。
 
 ## 2.2 Sidebar 容器
 
@@ -99,21 +98,17 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:548`
 
 变量与变量对应的值（按组）
-`--mpx-slot-fg-sidebar-root-bg`（Sidebar 背景槽位变量）
 `--mpx-sidebar-bg`（Sidebar 语义背景变量）
-`--mpx-surface-chrome-bg`（通用壳层背景）
+`--mpx-container-frame-fill`（共享壳层背景）
 
-`--mpx-slot-fg-sidebar-root-bg = 未定义（走 fallback）`
-`--mpx-sidebar-bg = var(--mpx-surface-chrome-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:175`）
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
+`--mpx-sidebar-bg = var(--mpx-container-frame-fill)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill = linear-gradient(var(--mpx-container-frame-fill-angle), var(--mpx-container-frame-fill-start) 0%, var(--mpx-container-frame-fill-end) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
-`--mpx-slot-fg-sidebar-root-shadow`（Sidebar 阴影槽位变量）
 `--mpx-sidebar-shadow`（Sidebar 语义阴影）
-`--mpx-surface-chrome-shell-shadow`（通用壳层阴影）
+`--mpx-container-frame-shadow`（共享壳层阴影）
 
-`--mpx-slot-fg-sidebar-root-shadow = 未定义（走 fallback）`
-`--mpx-sidebar-shadow = var(--mpx-panel-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css:193`）
-主题层实际值：`box-shadow: var(--mpx-surface-chrome-shell-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:552`）
+`--mpx-sidebar-shadow = var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+主题层实际值：`box-shadow: var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`）
 
 说明
 Sidebar 结构命名已去除 `toolbar`，统一为 `header/main/footer`；容器壳层默认与 `2.0` 通用样式一致。
@@ -226,21 +221,17 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:504`
 
 变量与变量对应的值（按组）
-`--mpx-slot-fg-main-root-bg`（Main 背景槽位变量）
 `--mpx-main-bg`（Main 语义背景变量）
-`--mpx-surface-chrome-bg`（通用壳层背景）
+`--mpx-container-frame-fill`（共享壳层背景）
 
-`--mpx-slot-fg-main-root-bg = 未定义（走 fallback）`
-`--mpx-main-bg = var(--mpx-surface-chrome-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:174`）
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
+`--mpx-main-bg = var(--mpx-container-frame-fill)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill = linear-gradient(var(--mpx-container-frame-fill-angle), var(--mpx-container-frame-fill-start) 0%, var(--mpx-container-frame-fill-end) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
-`--mpx-slot-fg-main-root-shadow`（Main 阴影槽位变量）
 `--mpx-main-shadow`（Main 语义阴影）
-`--mpx-surface-chrome-shell-shadow`（通用壳层阴影）
+`--mpx-container-frame-shadow`（共享壳层阴影）
 
-`--mpx-slot-fg-main-root-shadow = 未定义（走 fallback）`
-`--mpx-main-shadow = var(--mpx-panel-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css:194`）
-主题层实际值：`box-shadow: var(--mpx-surface-chrome-shell-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:510`）
+`--mpx-main-shadow = var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+主题层实际值：`box-shadow: var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`）
 
 说明
 Main 容器顶部命名已统一为 `main-header` / `fg-main-header`，不再使用 `toolbar` 称呼。
@@ -322,21 +313,17 @@ css 的触发点
 `src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:556`
 
 变量与变量对应的值（按组）
-`--mpx-slot-fg-meta-root-bg`（Meta 背景槽位变量）
 `--mpx-metadata-bg`（Meta 语义背景变量）
-`--mpx-surface-chrome-bg`（通用壳层背景）
+`--mpx-container-frame-fill`（共享壳层背景）
 
-`--mpx-slot-fg-meta-root-bg = 未定义（走 fallback）`
-`--mpx-metadata-bg = var(--mpx-surface-chrome-bg)`（`src/styles/themes/styles/soft-skeuomorphic.css:176`）
-`--mpx-surface-chrome-bg = linear-gradient(180deg, var(--mpx-metal-light) 0%, var(--mpx-metal-base) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css:167`）
+`--mpx-metadata-bg = var(--mpx-container-frame-fill)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+`--mpx-container-frame-fill = linear-gradient(var(--mpx-container-frame-fill-angle), var(--mpx-container-frame-fill-start) 0%, var(--mpx-container-frame-fill-end) 100%)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
 
-`--mpx-slot-fg-meta-root-shadow`（Meta 阴影槽位变量）
 `--mpx-metadata-shadow`（Meta 语义阴影）
-`--mpx-surface-chrome-shell-shadow`（通用壳层阴影）
+`--mpx-container-frame-shadow`（共享壳层阴影）
 
-`--mpx-slot-fg-meta-root-shadow = 未定义（走 fallback）`
-`--mpx-metadata-shadow = var(--mpx-panel-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css:195`）
-主题层实际值：`box-shadow: var(--mpx-surface-chrome-shell-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css:563`）
+`--mpx-metadata-shadow = var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic.css`）
+主题层实际值：`box-shadow: var(--mpx-container-frame-shadow)`（`src/styles/themes/styles/soft-skeuomorphic-components/soft-skeuomorphic.components.part1.css`）
 
 说明
 Meta 容器顶部命名已统一为 `metadata-header` / `fg-meta-header`，不再使用 `toolbar` 称呼。
@@ -608,9 +595,9 @@ css 的触发点
 
 补充
 `快照工具` 导出的 JSON 现已包含 `debugColors`，会覆盖并恢复 `3.2` 四个调试分页中的颜色调节结果。
-`快照工具` 导出的 JSON 现已包含 `debugTexts`，用于保存容器壳层阴影原始串（如 `--mpx-surface-chrome-shell-shadow`）。
+`快照工具` 导出的 JSON 现已包含 `debugTexts`，用于保存容器壳层阴影原始串（如 `--mpx-container-frame-shadow`、`--mpx-header-shadow`）。
 `3.2` 四个调试分页里每个已改动字段都显示“复位”按钮，点击后恢复到主题默认值（移除对应 inline 覆写）。
-`--mpx-metal-dark` 与 `--mpx-surface-chrome-shell-shadow` 已接入大容器层调试分页；颜色项支持透明度输入。
+`--mpx-container-frame-edge-color`、`--mpx-container-frame-border-color` 与 `--mpx-container-frame-shadow` 已接入大容器层调试分页；颜色项支持透明度输入。
 
 ## 3.3 帮助面板
 
@@ -1358,7 +1345,7 @@ css 的触发点
 
 | 层级范围 | 主语义 token 家族 | 主 slot / data-slot 家族 | 主消费点 | ThemeParameter 分页 | 状态 |
 |---|---|---|---|---|---|
-| `1.0 背景层` + `2.0~2.4 大容器层` | `--mpx-bg-*`、`--mpx-surface-chrome-*`、`--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*` | `--mpx-slot-bg-app-*`、`--mpx-slot-fg-header-root-*`、`--mpx-slot-fg-sidebar-root-*`、`--mpx-slot-fg-main-root-*`、`--mpx-slot-fg-meta-root-*` | `layout.part*.css`、`sidebar.css`、`main.part*.css`、`metadata.css`、`soft-skeuomorphic.components.part1.css` | `containerLayer` | 已建立主链路 |
+| `1.0 背景层` + `2.0~2.4 大容器层` | `--mpx-bg-*`、`--mpx-container-frame-*`、`--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*` | `--mpx-slot-bg-app-*`、`--mpx-slot-fg-header-root-*`、`--mpx-slot-fg-sidebar-root-*`、`--mpx-slot-fg-main-root-*`、`--mpx-slot-fg-meta-root-*` | `layout.part*.css`、`sidebar.css`、`main.part*.css`、`metadata.css`、`soft-skeuomorphic.components.part1.css` | `containerLayer` | 已建立主链路 |
 | `2.2.2.1 fg-sidebar-main` | `--mpx-sidebar-main-*` | `--mpx-slot-fg-sidebar-main-*` | `sidebar.css`、`manage.css`、`soft-skeuomorphic.components.part1.css`、`soft-skeuomorphic.components.part2.css` | `containerLayer` | 已进入分页；保留高特异性消费说明 |
 | `2.3.2.2 fg-main-content-image-name-list` | `--mpx-main-image-name-list-*` | `--mpx-slot-fg-main-content-image-name-list-*` | `main.part1.css`、`main.part2.css`、`manage.css` | `containerLayer` | 已进入分页 |
 | `3.0~3.10 大面板层` | `--mpx-large-panel-*` | 各大面板 `root/head/side/main/ovl` slot 家族 | `settings.part1.css`、`settings.part2.css`、业务面板 CSS | `largePanelLayer` | 骨架已统一，内部件仍有残余 |
@@ -1378,7 +1365,7 @@ css 的触发点
 |---|---|---|---|---|
 | `parameters` | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数 | 不承载特例白名单，只负责通用参数滑条 | 无独立预览；直接写入实际变量 | 该页是参数入口，不作为层级归属页 |
 | `snapshot` | 当前所有分页已暴露字段的导出 / 导入 / 复位 | 不负责新增字段定义 | 无独立预览；作用于当前 inline 覆写集合 | Phase 3 会把该结构继续收敛到正式 theme schema |
-| `containerLayer` | `1.0` 背景层、`2.0~2.4` 四大容器壳层、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay | `bg-only`、`bg-plus-container` | 已拆成 legacy / sidebar-main / image-name-list 三组验收区 |
+| `containerLayer` | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay | `bg-only`、`bg-plus-container` | 已按共享壳层 + 单容器 frame 结构重排 |
 | `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等 | 播放器独立 panel / HUD、未登记的舞台化 overlay | `bg-plus-large-panel` | 主验收对象是 `root/head/side/main` 骨架与受控内部语义 |
 | `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等 | 不承接大面板内部件与播放器 popover | `bg-plus-small-panel` | 以 dialog panel 本体与其局部控件为主 |
 | `commonControls` | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider sections） | 当前已补齐 scrollbar detail 与 settings groove 独立 token |
@@ -1390,7 +1377,7 @@ css 的触发点
 |---|---|---|---|
 | `parameters` | 调节任一通用参数后关闭并重新打开面板 | 变量值保持到当前会话态，UI 同步更新 | 待执行 |
 | `snapshot` | 导出当前快照 -> 清空 / 复位 -> 重新导入 | 已暴露字段全部恢复，提示文案正确 | 待执行 |
-| `containerLayer` | 在 `bg-only` / `bg-plus-container` 下分别修改颜色、文本串、数值项并单项复位 | 预览区即时生效，复位后回到主题默认值 | 待执行 |
+| `containerLayer` | 在 `bg-only` / `bg-plus-container` 下分别修改颜色、文本串、数值项并单项复位 | 预览区即时生效，复位后回到主题默认值 | 进行中：`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`2.2.2.1 fg-sidebar-main`、`2.3.2.2 fg-main-content-image-name-list` 已进入新结构验收 |
 | `largePanelLayer` | 在 `bg-plus-large-panel` 下修改 `root/head/side/main` 与内部件颜色项 | 大面板骨架与已收口内部件同步响应 | 待执行 |
 | `smallPanelLayer` | 在 `bg-plus-small-panel` 下修改 dialog 骨架与文本串并复位 | 小面板预览与实际 slot 命中一致 | 待执行 |
 | `commonControls` | 逐项测试 scrollbar、runway、vertical、settings slider 字段 | 对应控件样例即时变化；scrollbar detail 与 settings groove 命中新链路 | 待执行 |
@@ -1401,6 +1388,107 @@ css 的触发点
 1. 每页至少记录四类结果：`改值生效`、`单项复位生效`、`快照恢复生效`、`切页不丢状态`。
 2. 若发现“文档标注变量”与“实际命中变量”不一致，优先修正文档或实现，禁止口头跳过。
 3. 手工验收完成后，再回填 `docs/35-ui-theme-config-tauri-roadmap-v1.md` 的 Phase 2 勾选状态。
+
+### 7.0.1.3 `containerLayer` 首轮手工验收结论与重排建议
+
+已完成范围：
+
+1. `2.0 共享壳层`（背景层 / 壳层 / 通用数值项）
+2. `2.2.2.1 fg-sidebar-main`
+3. `2.3.2.2 fg-main-content-image-name-list`
+
+四类必填结果当前状态：
+
+- `改值生效`：已通过；首轮验收中已观察到大量稳定命中样本
+- `单项复位生效`：已通过；已验证可针对单字段独立复位
+- `快照恢复生效`：已通过；已验证当前页样本字段可被快照导出/导入恢复
+- `切页不丢状态`：已通过；已验证分页切换后 inline 覆写与输入状态保留
+
+#### 建议的新验收顺序（先主链路，后条件项）
+
+`A. 2.0 共享壳层：稳定有效、适合前置验收`
+
+- `--mpx-bg-app`
+- `--mpx-container-frame-fill-start`
+- `--mpx-container-frame-fill-end`
+- `--mpx-container-frame-edge-color`
+- `--mpx-container-frame-border-color`
+- `--mpx-container-frame-shadow`
+- `layout-padding`
+- `splitter-width`
+- `container-frame-fill-angle`
+- `panel-radius`
+- `header-radius`
+- `card-radius`
+
+`B. 2.2.2.1 fg-sidebar-main：先验稳定主路径`
+
+- `--mpx-sidebar-main-bg`
+- `--mpx-sidebar-main-label-text`
+- `--mpx-sidebar-main-label-border`
+- `--mpx-sidebar-main-label-shadow`
+- `--mpx-sidebar-main-label-hover-filter`
+- `--mpx-sidebar-main-active-underlay`
+- `--mpx-sidebar-main-label-active-shadow`
+- `--mpx-sidebar-main-label-active-hover-shadow`
+- `--mpx-sidebar-main-label-toggle-text`
+- `--mpx-sidebar-main-label-collapsed-bg`
+- `--mpx-sidebar-main-label-plain-border`
+- `--mpx-sidebar-main-label-plain-bg`
+- `--mpx-sidebar-main-count-text`
+- `--mpx-sidebar-main-count-border`
+- `--mpx-sidebar-main-count-shadow`
+
+`C. 2.3.2.2 fg-main-content-image-name-list：先验壳层 / 表头 / 行主链路`
+
+- `--mpx-main-image-name-list-border`
+- `--mpx-main-image-name-list-label-text`
+- `--mpx-main-image-name-list-head-border`
+- `--mpx-main-image-name-list-head-bg`
+- `--mpx-main-image-name-list-head-text`
+- `--mpx-main-image-name-list-row-border`
+- `--mpx-main-image-name-list-row-bg`
+- `--mpx-main-image-name-list-row-text`
+- `--mpx-main-image-name-list-row-hover-bg`
+- `--mpx-main-image-name-list-row-focused-border-left`
+- `--mpx-main-image-name-list-row-selected-border-left`
+- `--mpx-main-image-name-list-row-selected-focused-border-left`
+- `--mpx-main-image-name-list-row-main-active-bg`
+- `--mpx-main-image-name-list-row-main-pressed-bg`
+- `--mpx-main-image-name-list-row-main-hover-text`
+
+#### 当前建议后置或降级的字段类型
+
+`1. 预览错位 / 当前页难以验证`
+
+- `--mpx-bg-workspace`：文档预期应影响图片网格背景，但当前 `containerLayer` 预览未稳定复现
+- `--mpx-bg-panel`：在当前主题下更多是 fallback 或次级消费点，不适合作为首批容器验收样本
+- `--mpx-bg-elevated`：更容易先命中 ThemeParameter / overlay 内页，不适合作为当前页前置样本
+
+`2. 当前主题统一壳层覆盖导致不宜前置`
+
+- `--mpx-border-2`
+- `panel-border-width`
+- `skeuo-header-pane-border-contrast`
+- `skeuo-header-pane-border-color`
+- `skeuo-main-pane-border-contrast`
+- `skeuo-main-pane-border-color`
+- 大部分 pane 级 `elevation / shadow-strength / shadow-hardness` 细分项
+
+说明：在 `soft-skeuomorphic × skeuomorphic-luxury-white` 下，四大容器主视觉更偏向统一消费 `--mpx-container-frame-fill` 与 `--mpx-container-frame-shadow`，导致若干 pane 级字段虽存在链路，但不适合作为当前主题前置验收样本。
+
+`3. 条件生效 / 需特定状态`
+
+- `fg-sidebar-main` 中大量 `expanded / collapsed / manage-selected / marker-*` 变量，需切换展开态、管理态或文件管理模式才可观测
+- `fg-main-content-image-name-list` 中部分 `manage-selected` 与行内主按钮状态，需配合特定状态切换才明显
+- `bullet` 组当前不便稳定复测，继续保留为后置项
+
+#### 结构性问题（待后续收口）
+
+1. 字段用途说明仍有较多“泛描述”，不足以指导人工验收；需补充“主消费点 / fallback / 预览前提”。
+2. `fg-sidebar-main` 与 `fg-main-content-image-name-list` 当前状态拆分过细，存在“实现可调，但不适合作为首轮手工验收主路径”的变量组合。
+3. 后续继续验收时，优先走“稳定主路径 -> 条件状态 -> 后置项”的顺序，避免把当前主题下本就弱命中的变量排在前面，放大误判成本。
+4. `containerLayer` 基础层后续不再继续叠加旧 `legacy` 命名，而是改走 `docs/36-theme-container-frame-migration-plan-v1.md` 定义的“共享壳层 + 单容器 frame + visual transform”新结构；最终以新变量族替换旧变量与 alias。
 
 ### 7.0.2 残余链路清单（Phase 1 冻结结果）
 

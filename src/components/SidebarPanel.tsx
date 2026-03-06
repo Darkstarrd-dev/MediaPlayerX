@@ -1104,41 +1104,42 @@ function SidebarPanel({
         minWidth: `${sidebarMinWidth}px`,
       }}
     >
-      <div className="sidebar-header" data-slot="fg-sidebar-header">
-        <button
-          className="sidebar-title-btn"
-          data-slot="fg-sidebar-header-title"
-          type="button"
-          aria-label={sidebarTreeDisplayToggleLabel}
-          data-tooltip-label={sidebarTreeDisplayToggleTip}
-          onClick={() => {
-            if (onToggleSidebarTreeDisplayMode) {
-              onToggleSidebarTreeDisplayMode();
-              return;
-            }
+      <div className="sidebar-frame">
+        <div className="sidebar-header" data-slot="fg-sidebar-header">
+          <button
+            className="sidebar-title-btn"
+            data-slot="fg-sidebar-header-title"
+            type="button"
+            aria-label={sidebarTreeDisplayToggleLabel}
+            data-tooltip-label={sidebarTreeDisplayToggleTip}
+            onClick={() => {
+              if (onToggleSidebarTreeDisplayMode) {
+                onToggleSidebarTreeDisplayMode();
+                return;
+              }
 
-            setLocalSidebarTreeDisplayMode((previous) =>
-              previous === "direct" ? "hierarchy" : "direct",
-            );
-          }}
-        >
-          {currentRootLabel ?? t("ui.sidebar.structure")}
-        </button>
+              setLocalSidebarTreeDisplayMode((previous) =>
+                previous === "direct" ? "hierarchy" : "direct",
+              );
+            }}
+          >
+            {currentRootLabel ?? t("ui.sidebar.structure")}
+          </button>
 
-        <div className="sidebar-header-actions">
-          {searchResultMode ? (
-            <button
-              className="sidebar-header-icon-btn"
-              data-slot="fg-sidebar-header-back"
-              type="button"
-              aria-label={t("a11y.common.back")}
-              data-tooltip-label={t("tip.common.back")}
-              disabled={!canGoToFromSearchMode}
-              onClick={onGoToFromSearchMode}
-            >
-              <MainUiIcon name="return" />
-            </button>
-          ) : null}
+          <div className="sidebar-header-actions">
+            {searchResultMode ? (
+              <button
+                className="sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-back"
+                type="button"
+                aria-label={t("a11y.common.back")}
+                data-tooltip-label={t("tip.common.back")}
+                disabled={!canGoToFromSearchMode}
+                onClick={onGoToFromSearchMode}
+              >
+                <MainUiIcon name="return" />
+              </button>
+            ) : null}
 
           {showRootToggle ? (
             manageStyleEnabled ? (
@@ -1275,91 +1276,91 @@ function SidebarPanel({
               <MainUiIcon name={rootToggleIconName} />
             </button>
           ) : null}
+          </div>
         </div>
-      </div>
-
-      <div className="sidebar-main-shell" data-slot="fg-sidebar-main">
-        <div
-          ref={sidebarTreeRef}
-          className="sidebar-tree mpx-scroll-area"
-          onScroll={(event) => {
-            setSidebarScrollTop(event.currentTarget.scrollTop);
-          }}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: `${sidebarGapPx}px`,
-          }}
-        >
-          {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
-            <div
-              aria-hidden="true"
-              style={{
-                height: `${virtualRange.topSpacerHeight}px`,
-                pointerEvents: "none",
-              }}
-            />
-          ) : null}
-          {rowsForRender.map(({ node, depth }) => (
-            <SidebarPanelRow
-              key={node.id}
-              node={node}
-              depth={depth}
-              mode={mode}
-              selectedSidebarNodeId={selectedSidebarNodeId}
-              hoveredNodeId={hoveredNodeId}
-              focusedNodeId={focusedNodeId}
-              sidebarFocus={sidebarFocus}
-              overflowingNodeIds={overflowingNodeIds}
-              effectiveSidebarLabelDisplayMode={
-                effectiveSidebarLabelDisplayMode
-              }
-              imageNodeLoadStateById={imageNodeLoadStateById}
-              collapsedImageFolderNodeIds={collapsedImageFolderNodeIds}
-              manageStyleEnabled={manageStyleEnabled}
-              manageToggleEnabled={manageToggleEnabled}
-              metadataSingleSelectEnabled={metadataSingleSelectEnabled}
-              metadataManageMode={metadataManageMode}
-              checkedNodes={checkedNodes}
-              sidebarFontSize={sidebarFontSize}
-              sidebarCountFontSize={sidebarCountFontSize}
-              sidebarIndentStep={sidebarIndentStep}
-              sidebarTreeDisplayMode={effectiveSidebarTreeDisplayMode}
-              audioPlaylistIds={audioPlaylistIds}
-              searchResultReadonly={searchResultReadonly}
-              videoNodeBrowseMode={videoNodeBrowseMode}
-              suppressManageClickRef={suppressManageClickRef}
-              labelTextElementByNodeIdRef={labelTextElementByNodeIdRef}
-              scheduleOverflowMeasure={scheduleOverflowMeasure}
-              setHoveredNodeId={setHoveredNodeId}
-              setFocusedNodeId={setFocusedNodeId}
-              startManagePointerToggle={startManagePointerToggle}
-              updateCollapsedImageFolderNodeIds={
-                updateCollapsedImageFolderNodeIds
-              }
-              onToggleManageNode={onToggleManageNode}
-              onSelectMetadataSingleNode={onSelectMetadataSingleNode}
-              onSelectNode={onSelectNode}
-              onSelectPackage={onSelectPackage}
-              onSelectVideo={onSelectVideo}
-              onSelectVideoAndPlay={onSelectVideoAndPlay}
-              onSelectAudio={onSelectAudio}
-              onToggleAudioPlaylist={onToggleAudioPlaylist}
-              t={t}
-            />
-          ))}
-          {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
-            <div
-              aria-hidden="true"
-              style={{
-                height: `${virtualRange.bottomSpacerHeight}px`,
-                pointerEvents: "none",
-              }}
-            />
-          ) : null}
+        <div className="sidebar-main-shell" data-slot="fg-sidebar-main">
+          <div
+            ref={sidebarTreeRef}
+            className="sidebar-tree mpx-scroll-area"
+            onScroll={(event) => {
+              setSidebarScrollTop(event.currentTarget.scrollTop);
+            }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: `${sidebarGapPx}px`,
+            }}
+          >
+            {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  height: `${virtualRange.topSpacerHeight}px`,
+                  pointerEvents: "none",
+                }}
+              />
+            ) : null}
+            {rowsForRender.map(({ node, depth }) => (
+              <SidebarPanelRow
+                key={node.id}
+                node={node}
+                depth={depth}
+                mode={mode}
+                selectedSidebarNodeId={selectedSidebarNodeId}
+                hoveredNodeId={hoveredNodeId}
+                focusedNodeId={focusedNodeId}
+                sidebarFocus={sidebarFocus}
+                overflowingNodeIds={overflowingNodeIds}
+                effectiveSidebarLabelDisplayMode={
+                  effectiveSidebarLabelDisplayMode
+                }
+                imageNodeLoadStateById={imageNodeLoadStateById}
+                collapsedImageFolderNodeIds={collapsedImageFolderNodeIds}
+                manageStyleEnabled={manageStyleEnabled}
+                manageToggleEnabled={manageToggleEnabled}
+                metadataSingleSelectEnabled={metadataSingleSelectEnabled}
+                metadataManageMode={metadataManageMode}
+                checkedNodes={checkedNodes}
+                sidebarFontSize={sidebarFontSize}
+                sidebarCountFontSize={sidebarCountFontSize}
+                sidebarIndentStep={sidebarIndentStep}
+                sidebarTreeDisplayMode={effectiveSidebarTreeDisplayMode}
+                audioPlaylistIds={audioPlaylistIds}
+                searchResultReadonly={searchResultReadonly}
+                videoNodeBrowseMode={videoNodeBrowseMode}
+                suppressManageClickRef={suppressManageClickRef}
+                labelTextElementByNodeIdRef={labelTextElementByNodeIdRef}
+                scheduleOverflowMeasure={scheduleOverflowMeasure}
+                setHoveredNodeId={setHoveredNodeId}
+                setFocusedNodeId={setFocusedNodeId}
+                startManagePointerToggle={startManagePointerToggle}
+                updateCollapsedImageFolderNodeIds={
+                  updateCollapsedImageFolderNodeIds
+                }
+                onToggleManageNode={onToggleManageNode}
+                onSelectMetadataSingleNode={onSelectMetadataSingleNode}
+                onSelectNode={onSelectNode}
+                onSelectPackage={onSelectPackage}
+                onSelectVideo={onSelectVideo}
+                onSelectVideoAndPlay={onSelectVideoAndPlay}
+                onSelectAudio={onSelectAudio}
+                onToggleAudioPlaylist={onToggleAudioPlaylist}
+                t={t}
+              />
+            ))}
+            {shouldVirtualize && virtualRange.bottomSpacerHeight > 0 ? (
+              <div
+                aria-hidden="true"
+                style={{
+                  height: `${virtualRange.bottomSpacerHeight}px`,
+                  pointerEvents: "none",
+                }}
+              />
+            ) : null}
+          </div>
         </div>
+        <div aria-hidden="true" data-slot="fg-sidebar-footer" />
       </div>
-      <div aria-hidden="true" data-slot="fg-sidebar-footer" />
     </aside>
   );
 }

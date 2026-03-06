@@ -30,8 +30,8 @@
   border-radius: var(--mpx-radius-sidebar-inner, 12px);
   background: linear-gradient(
     to bottom,
-    var(--mpx-metal-light),
-    var(--mpx-metal-base)
+    var(--mpx-container-frame-fill-start),
+    var(--mpx-container-frame-fill-end)
   );
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
@@ -75,8 +75,8 @@
   padding: 0.5rem 1rem;
   background: linear-gradient(
     to bottom,
-    var(--mpx-metal-light),
-    var(--mpx-metal-base)
+    var(--mpx-container-frame-fill-start),
+    var(--mpx-container-frame-fill-end)
   );
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
@@ -125,8 +125,8 @@
   padding: 0.5rem 1rem;
   background: linear-gradient(
     to bottom,
-    var(--mpx-metal-light),
-    var(--mpx-metal-base)
+    var(--mpx-container-frame-fill-start),
+    var(--mpx-container-frame-fill-end)
   );
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
@@ -473,8 +473,8 @@
   border: 1px solid #b8b2a6;
   background: linear-gradient(
     to bottom,
-    var(--mpx-metal-light),
-    var(--mpx-metal-base)
+    var(--mpx-container-frame-fill-start),
+    var(--mpx-container-frame-fill-end)
   );
   backdrop-filter: blur(8px);
   box-shadow:
@@ -498,8 +498,8 @@
   padding: 0.5rem 1rem;
   background: linear-gradient(
     to bottom,
-    var(--mpx-metal-light),
-    var(--mpx-metal-base)
+    var(--mpx-container-frame-fill-start),
+    var(--mpx-container-frame-fill-end)
   );
   backdrop-filter: none;
   box-shadow:
@@ -524,26 +524,26 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .main-pane {
+  .main-pane-frame {
   position: relative;
   border: none;
   border-radius: var(--mpx-main-radius-effective, var(--mpx-main-radius));
-  background: var(--mpx-surface-chrome-bg);
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  background: var(--mpx-container-frame-fill);
+  box-shadow: var(--mpx-container-frame-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .workspace.is-focus
-  .main-pane {
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  .main-pane-frame {
+  box-shadow: var(--mpx-container-frame-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .app-header {
+  .app-header-frame {
   border: none;
   border-radius: var(--mpx-header-radius-effective, var(--mpx-header-radius));
-  background: var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg));
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  background: var(--mpx-header-bg);
+  box-shadow: var(--mpx-container-frame-shadow);
   --mpx-metadata-control-shadow: none;
 }
 
@@ -551,49 +551,41 @@
   .fg-sysinfo
   .sysinfo-card-shell {
   border: none;
-  border-radius: var(
-    --mpx-sysinfo-card-radius-effective,
-    var(
-      --mpx-sysinfo-card-radius,
-      var(--mpx-header-radius-effective, var(--mpx-header-radius))
-    )
-  );
+  border-radius: var(--mpx-large-panel-main-radius, 10px);
   background: var(
     --mpx-slot-fg-sysinfo-card-root-bg,
-    var(
-      --mpx-sysinfo-card-bg,
-      var(--mpx-slot-fg-header-root-bg, var(--mpx-header-bg))
-    )
+    var(--mpx-large-panel-main-bg, var(--mpx-bg-elevated))
   );
   box-shadow: var(
     --mpx-slot-fg-sysinfo-card-root-shadow,
-    var(--mpx-sysinfo-card-shadow, var(--mpx-surface-chrome-shell-shadow))
+    var(--mpx-large-panel-shadow, var(--mpx-container-frame-shadow))
   );
   --mpx-metadata-control-shadow: none;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar {
+  .sidebar-frame {
   border: none;
   border-radius: var(--mpx-sidebar-radius-effective, var(--mpx-sidebar-radius));
-  background: var(--mpx-surface-chrome-bg);
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  background: var(--mpx-container-frame-fill);
+  box-shadow: var(--mpx-container-frame-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .metadata-panel {
+  .metadata-frame {
   border: none;
   border-radius: var(
     --mpx-metadata-radius-effective,
     var(--mpx-metadata-radius)
   );
-  background: var(--mpx-surface-chrome-bg);
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  background: var(--mpx-container-frame-fill);
+  box-shadow: var(--mpx-container-frame-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar.is-focus {
-  box-shadow: var(--mpx-surface-chrome-shell-shadow);
+  .sidebar.is-focus
+  > .sidebar-frame {
+  box-shadow: var(--mpx-container-frame-shadow);
 }
 
 @supports not selector(::-webkit-scrollbar) {
@@ -758,7 +750,10 @@
         in srgb,
         var(
             --mpx-slot-fg-sidebar-main-active-underlay,
-            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+            var(
+                --mpx-sidebar-main-active-underlay,
+                var(--mpx-container-frame-base-color, var(--mpx-bg-panel))
+              )
           )
           90%,
         transparent
@@ -831,7 +826,10 @@
         in srgb,
         var(
             --mpx-slot-fg-sidebar-main-active-underlay,
-            var(--mpx-sidebar-main-active-underlay, var(--mpx-sidebar-bg))
+            var(
+                --mpx-sidebar-main-active-underlay,
+                var(--mpx-container-frame-base-color, var(--mpx-bg-panel))
+              )
           )
           90%,
         transparent
@@ -869,7 +867,12 @@
       color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
     inset 0 0 0 2px
       color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--mpx-container-frame-base-color, var(--mpx-bg-panel)) 90%,
+        transparent
+      ),
     0 0 0 4px var(--mpx-manage-select-ring);
 }
 
@@ -932,7 +935,12 @@
       color-mix(in srgb, var(--mpx-manage-select-ring) 34%, transparent),
     inset 0 0 0 2px
       color-mix(in srgb, var(--mpx-manage-select-ring) 52%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-sidebar-bg) 90%, transparent),
+    0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--mpx-container-frame-base-color, var(--mpx-bg-panel)) 90%,
+        transparent
+      ),
     0 0 0 4px var(--mpx-manage-select-ring);
 }
 

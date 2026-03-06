@@ -346,7 +346,7 @@ describe("ThemeParameterPanel", () => {
       values?: Record<string, number>;
     };
     expect(
-      snapshotWithoutComputed.values?.["skeuo-header-gap"],
+      snapshotWithoutComputed.values?.["header-floating-gap"],
     ).toBeUndefined();
 
     fireEvent.click(screen.getByLabelText("导出包含计算值"));
@@ -355,7 +355,7 @@ describe("ThemeParameterPanel", () => {
     const snapshotWithComputed = JSON.parse(snapshotTextarea.value) as {
       values?: Record<string, number>;
     };
-    expect(typeof snapshotWithComputed.values?.["skeuo-header-gap"]).toBe(
+    expect(typeof snapshotWithComputed.values?.["header-floating-gap"]).toBe(
       "number",
     );
   });
@@ -401,7 +401,7 @@ describe("ThemeParameterPanel", () => {
     ).toBe("");
     expect(
       document.documentElement.style
-        .getPropertyValue("--mpx-header-margin")
+        .getPropertyValue("--mpx-header-floating-gap")
         .trim(),
     ).toBe("");
   });
@@ -663,7 +663,11 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
 
-    expect(screen.getByText("2.0 通用（已有项）")).toBeInTheDocument();
+    expect(screen.getByText("2.0 共享壳层")).toBeInTheDocument();
+    expect(screen.getByText("2.1 Header")).toBeInTheDocument();
+    expect(screen.getByText("2.2 Sidebar")).toBeInTheDocument();
+    expect(screen.getByText("2.3 Main")).toBeInTheDocument();
+    expect(screen.getByText("2.4 Metadata")).toBeInTheDocument();
     const sidebarSummary = screen.getByText("2.2.2.1 fg-sidebar-main");
     const nameListSummary = screen.getByText(
       "2.3.2.2 fg-main-content-image-name-list",
@@ -744,6 +748,96 @@ describe("ThemeParameterPanel", () => {
     expect(snapshotTextarea.value).toContain(
       '"container-main-image-name-list-head-bg": "#445566"',
     );
+  });
+
+  it("大容器层支持单容器 frame 参数与文本快照导出", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    expect(screen.queryByText("Header 悬浮间距")).toBeNull();
+    fireEvent.click(screen.getByText("2.1 Header"));
+
+    fireEvent.change(getSliderByLabelText("Header 水平位移"), {
+      target: { value: "24" },
+    });
+    fireEvent.change(getSliderByLabelText("Header Z 轴旋转"), {
+      target: { value: "-12" },
+    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-header-bg" }),
+      {
+        target: {
+          value: "linear-gradient(135deg, #111111, #222222)",
+        },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-header-shadow" }),
+      {
+        target: { value: "0 8px 24px rgba(1, 2, 3, 0.4)" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-frame-translate-x",
+      ),
+    ).toBe("24px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-frame-rotate-z"),
+    ).toBe("-12deg");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-bg"),
+    ).toBe("linear-gradient(135deg, #111111, #222222)");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-shadow"),
+    ).toBe("0 8px 24px rgba(1, 2, 3, 0.4)");
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
+
+    const snapshotTextarea = screen.getByLabelText(
+      "参数快照 JSON",
+    ) as HTMLTextAreaElement;
+    expect(snapshotTextarea.value).toContain('"header-frame-translate-x": 24');
+    expect(snapshotTextarea.value).toContain('"header-frame-rotate-z": -12');
+    expect(snapshotTextarea.value).toContain(
+      '"container-header-fill": "linear-gradient(135deg, #111111, #222222)"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"container-header-shadow": "0 8px 24px rgba(1, 2, 3, 0.4)"',
+    );
+  });
+
+  it("大容器层的 Sidebar/Main/Metadata frame 数值项可写入变量", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+
+    fireEvent.click(screen.getByText("2.2 Sidebar"));
+    fireEvent.change(getSliderByLabelText("Sidebar 横向缩放"), {
+      target: { value: "0.88" },
+    });
+
+    fireEvent.click(screen.getByText("2.3 Main"));
+    fireEvent.change(getSliderByLabelText("Main 垂直位移"), {
+      target: { value: "18" },
+    });
+
+    fireEvent.click(screen.getByText("2.4 Metadata"));
+    fireEvent.change(getSliderByLabelText("Metadata 原点 Y"), {
+      target: { value: "72" },
+    });
+
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-frame-scale-x"),
+    ).toBe("0.88");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-frame-translate-y"),
+    ).toBe("18px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-metadata-frame-origin-y"),
+    ).toBe("72%");
   });
 
   it(

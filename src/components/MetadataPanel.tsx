@@ -917,25 +917,26 @@ function MetadataPanel({
         style={{ width: `${metadataRatio * 100}%` }}
         onContextMenu={handlePanelContextMenu}
       >
-        <div className="metadata-header" data-slot="fg-meta-header">
-          <div className="metadata-header-g3" data-slot="fg-meta-header-g3">
-            <button
-              {...searchButtonA11y}
-              className={`search-trigger-btn ${searchPanelOpen ? "is-active" : ""}`}
-              data-slot="fg-meta-header-g3-search"
-              type="button"
-              disabled={interactionLocked}
-              onClick={onToggleSearchPanel}
-            >
-              <span className="header-btn-content">
-                <span className="header-btn-icon">
-                  <MainUiIcon name="search" />
+        <div className="metadata-frame">
+          <div className="metadata-header" data-slot="fg-meta-header">
+            <div className="metadata-header-g3" data-slot="fg-meta-header-g3">
+              <button
+                {...searchButtonA11y}
+                className={`search-trigger-btn ${searchPanelOpen ? "is-active" : ""}`}
+                data-slot="fg-meta-header-g3-search"
+                type="button"
+                disabled={interactionLocked}
+                onClick={onToggleSearchPanel}
+              >
+                <span className="header-btn-content">
+                  <span className="header-btn-icon">
+                    <MainUiIcon name="search" />
+                  </span>
+                  <span className="header-btn-label">
+                    {t("ui.header.search")}
+                  </span>
                 </span>
-                <span className="header-btn-label">
-                  {t("ui.header.search")}
-                </span>
-              </span>
-            </button>
+              </button>
 
             <button
               {...manageButtonA11y}
@@ -1003,24 +1004,24 @@ function MetadataPanel({
             ) : null}
           </div>
 
-          {mode === "image" ? (
-            <button
-              className={`metadata-header-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
-              data-slot="fg-meta-header-toggle"
-              type="button"
-              aria-label={metadataToggleLabel}
-              data-tooltip-label={metadataToggleLabel}
-              onClick={() => setShowImagePreview((value) => !value)}
-            >
-              <MainUiIcon name={showImagePreview ? "dataMode" : "imageMode"} />
-            </button>
-          ) : null}
-        </div>
+            {mode === "image" ? (
+              <button
+                className={`metadata-header-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
+                data-slot="fg-meta-header-toggle"
+                type="button"
+                aria-label={metadataToggleLabel}
+                data-tooltip-label={metadataToggleLabel}
+                onClick={() => setShowImagePreview((value) => !value)}
+              >
+                <MainUiIcon name={showImagePreview ? "dataMode" : "imageMode"} />
+              </button>
+            ) : null}
+          </div>
 
-        <div className="mpx-scrollbar-hidden" data-slot="fg-meta-main">
-          {adReviewSection ? (
-            <div data-slot="fg-meta-main-ad-review">{adReviewSection}</div>
-          ) : null}
+          <div className="mpx-scrollbar-hidden" data-slot="fg-meta-main">
+            {adReviewSection ? (
+              <div data-slot="fg-meta-main-ad-review">{adReviewSection}</div>
+            ) : null}
 
           {metadataSearchSection ? (
             <div data-slot="fg-meta-main-search">{metadataSearchSection}</div>
@@ -1156,14 +1157,15 @@ function MetadataPanel({
               />
             </div>
           )}
-        </div>
-        <div data-slot="fg-meta-footer">
-          {mode === "image" && showImageCanvas && imageCaption ? (
-            <div className="metadata-image-caption">
-              <span>{imageCaption.fileName}</span>
-              <span>{imageCaption.metaLine}</span>
-            </div>
-          ) : null}
+          </div>
+          <div data-slot="fg-meta-footer">
+            {mode === "image" && showImageCanvas && imageCaption ? (
+              <div className="metadata-image-caption">
+                <span>{imageCaption.fileName}</span>
+                <span>{imageCaption.metaLine}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </aside>
       <FeatureTagPickerModal
