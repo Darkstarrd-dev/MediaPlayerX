@@ -51,9 +51,9 @@ interface ThemeParameterPanelMainProps {
   openSnapshotFilePicker: () => void;
   copySnapshotJson: () => Promise<void>;
   importSnapshotJson: () => void;
-  resetSnapshotToBaseline: () => void;
   onContainerDebugChanged: () => void;
-  onContainerDebugResetAll: () => void;
+  setMainScrollElement: (element: HTMLElement | null) => void;
+  onMainScroll: () => void;
   commonExpanded: boolean;
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
@@ -835,59 +835,6 @@ const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   ...CONTAINER_TEXT_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
-];
-
-const CONTAINER_LEGACY_SLOT_VARS: readonly string[] = [
-  "--mpx-slot-fg-sidebar-main-bg",
-  "--mpx-slot-fg-sidebar-main-label-text",
-  "--mpx-slot-fg-sidebar-main-label-border",
-  "--mpx-slot-fg-sidebar-main-label-plain-border",
-  "--mpx-slot-fg-sidebar-main-label-active-bg",
-  "--mpx-slot-fg-sidebar-main-active-ring",
-  "--mpx-slot-fg-sidebar-main-active-underlay",
-  "--mpx-slot-fg-sidebar-main-label-marker-focus-bg",
-  "--mpx-slot-fg-sidebar-main-label-marker-selected-bg",
-  "--mpx-slot-fg-sidebar-main-label-manage-selected-bg",
-  "--mpx-slot-fg-sidebar-main-label-toggle-text",
-  "--mpx-slot-fg-sidebar-main-count-text",
-  "--mpx-slot-fg-sidebar-main-count-border",
-  "--mpx-slot-fg-sidebar-main-count-bg",
-  "--mpx-slot-fg-sidebar-main-count-packages-text",
-  "--mpx-slot-fg-sidebar-main-count-packages-border",
-  "--mpx-slot-fg-sidebar-main-count-packages-bg",
-  "--mpx-slot-fg-sidebar-main-count-images-text",
-  "--mpx-slot-fg-sidebar-main-count-images-border",
-  "--mpx-slot-fg-sidebar-main-count-images-bg",
-  "--mpx-slot-fg-sidebar-main-bullet-pending-bg",
-  "--mpx-slot-fg-sidebar-main-bullet-running-bg",
-  "--mpx-slot-fg-sidebar-main-bullet-running-ring",
-  "--mpx-slot-fg-sidebar-main-bullet-active-bg",
-  "--mpx-slot-fg-main-content-image-name-list-border",
-  "--mpx-slot-fg-main-content-image-name-list-bg",
-  "--mpx-slot-fg-main-content-image-name-list-text",
-  "--mpx-slot-fg-main-content-image-name-list-head-border",
-  "--mpx-slot-fg-main-content-image-name-list-head-bg",
-  "--mpx-slot-fg-main-content-image-name-list-head-text",
-  "--mpx-slot-fg-main-content-image-name-list-body-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-border",
-  "--mpx-slot-fg-main-content-image-name-list-row-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-text",
-  "--mpx-slot-fg-main-content-image-name-list-row-hover-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-focused-border-left",
-  "--mpx-slot-fg-main-content-image-name-list-row-selected-border-left",
-  "--mpx-slot-fg-main-content-image-name-list-row-selected-focused-border-left",
-  "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-text",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-hover-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-active-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-bg",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-hover-text",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-active-text",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-width",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-color",
-  "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-font-weight",
-  "--mpx-slot-fg-main-content-image-name-list-label-text",
 ];
 
 const CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT: ReadonlyArray<{
@@ -2563,7 +2510,6 @@ export function ThemeParameterPanelMain({
   openSnapshotFilePicker,
   copySnapshotJson,
   importSnapshotJson,
-  resetSnapshotToBaseline,
   commonExpanded,
   setCommonExpanded,
   styleExpanded,
@@ -2586,7 +2532,8 @@ export function ThemeParameterPanelMain({
   resetSingleParameter,
   resolveLabel,
   onContainerDebugChanged,
-  onContainerDebugResetAll,
+  setMainScrollElement,
+  onMainScroll,
 }: ThemeParameterPanelMainProps) {
   const pages: ReadonlyArray<{
     id: ThemeParameterPageId;
@@ -2648,42 +2595,6 @@ export function ThemeParameterPanelMain({
     ) {
       onContainerDebugChanged();
     }
-  };
-
-  const resetAllContainerDebugFields = () => {
-    const root = document.documentElement;
-    for (const field of CONTAINER_LAYER_COLOR_FIELDS) {
-      root.style.removeProperty(field.cssVar);
-    }
-    for (const field of CONTAINER_LAYER_TEXT_FIELDS) {
-      root.style.removeProperty(field.cssVar);
-    }
-    for (const cssVar of CONTAINER_LEGACY_SLOT_VARS) {
-      root.style.removeProperty(cssVar);
-    }
-    const computed = getComputedStyle(root);
-    const nextColorValues: Record<string, ColorState> = {};
-    for (const field of CONTAINER_LAYER_COLOR_FIELDS) {
-      const parsed = readCssColorState(computed, field.cssVar, field.fallback);
-      nextColorValues[field.id] = {
-        hex: parsed.hex,
-        alpha: field.fallbackAlpha ?? parsed.alpha,
-      };
-    }
-    const nextTextValues: Record<string, string> = {};
-    for (const field of CONTAINER_LAYER_TEXT_FIELDS) {
-      nextTextValues[field.id] =
-        computed.getPropertyValue(field.cssVar).trim() || field.fallback;
-    }
-    setDebugColorValues((previous) => ({
-      ...previous,
-      ...nextColorValues,
-    }));
-    setDebugTextValues((previous) => ({
-      ...previous,
-      ...nextTextValues,
-    }));
-    onContainerDebugResetAll();
   };
 
   const containerNumberGroups = useMemo(() => {
@@ -3996,7 +3907,11 @@ export function ThemeParameterPanelMain({
         ))}
       </aside>
 
-      <main className="mpx-large-panel-main settings-main mpx-scroll-area theme-parameter-main">
+      <main
+        ref={setMainScrollElement}
+        className="mpx-large-panel-main settings-main mpx-scroll-area theme-parameter-main"
+        onScroll={onMainScroll}
+      >
         {activePage === "parameters" ? (
           <section className="settings-block theme-parameter-block">
             <section className="settings-group">
@@ -4108,9 +4023,6 @@ export function ThemeParameterPanelMain({
                 <button type="button" onClick={importSnapshotJson}>
                   {t("ui.themeParameter.importJson")}
                 </button>
-                <button type="button" onClick={resetSnapshotToBaseline}>
-                  {t("ui.themeParameter.resetSnapshotToOpenState")}
-                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -4177,13 +4089,6 @@ export function ThemeParameterPanelMain({
                   onClick={() => togglePreviewMode("bg-plus-container")}
                 >
                   {t("ui.themeParameter.preview.bgPlusContainer")}
-                </button>
-                <button
-                  type="button"
-                  className="theme-parameter-debug-preview-btn"
-                  onClick={resetAllContainerDebugFields}
-                >
-                  {t("ui.themeParameter.resetContainerDebugAll")}
                 </button>
               </div>
             </section>

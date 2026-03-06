@@ -76,8 +76,8 @@
 ### 状态
 
 - 状态：进行中
-- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`
-- 当前下一项：补逐页手工验收记录（改值 / 复位 / 快照恢复 / 切页保态），并继续清点尚未分页化的特例白名单区域
+- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`、ThemeParameter 会话态补充“分页内滚动位置保留”、页内复位入口收口为 header 全局“恢复到打开时状态”按钮
+- 当前下一项：继续执行 `containerLayer -> 2.2.2.1 fg-sidebar-main` 手工验收，并同步记录字段用途说明缺口、预览错位项与当前主题下被统一壳层覆盖的无效项
 
 ### 目标
 
@@ -99,17 +99,22 @@
 - [ ] 快照导出内容可以完整覆盖该页可调字段。
 - [ ] 同一字段的实际消费点与文档说明一致，不存在“文档写 A，实际命中 B”的长期偏差。
 
-### 手工验收记录（待执行）
+### 手工验收记录（进行中）
 
 | 分页 | 需验收项 | 记录状态 |
 |---|---|---|
-| `parameters` | 会话保态、改值即时生效 | 待执行 |
-| `snapshot` | 导出 / 导入 / 复位 / 恢复打开态 | 待执行 |
+| `parameters` | 会话保态、改值即时生效 | 进行中：已补“关闭重开 / 切页返回保持分页内滚动位置”；其余手工验收待继续 |
+| `snapshot` | 导出 / 导入 / 复位 / 恢复打开态 | 进行中：页内“复位到打开时状态”已收口到 header 全局复位按钮，导出/导入/恢复打开态手工记录待继续 |
 | `containerLayer` | `bg-only` / `bg-plus-container` 预览、单项复位、切页保态 | 待执行 |
 | `largePanelLayer` | `bg-plus-large-panel` 预览、骨架命中、内部件命中 | 待执行 |
 | `smallPanelLayer` | `bg-plus-small-panel` 预览、dialog 骨架命中、文本串恢复 | 待执行 |
 | `commonControls` | scrollbar / range / runway / vertical / settings slider 命中 | 待执行 |
 | `buttonStates` | side button state demo 与 slot 覆写命中 | 待执行 |
+
+补充说明：
+
+- ThemeParameter 当前“恢复到打开时状态”语义已统一为 header 全局按钮；不再在分页内重复放置局部复位入口。
+- 分页会话态当前至少覆盖：`activePage`、折叠展开状态、分页内滚动位置；便于继续执行逐页手工验收。
 
 记录约束：
 

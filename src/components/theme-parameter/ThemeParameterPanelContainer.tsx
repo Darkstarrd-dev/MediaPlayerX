@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -1642,11 +1643,25 @@ function ThemeParameterPanel({
     useState<Set<string>>(new Set());
   const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
   const snapshotBaselineRef = useRef<ThemeParameterSnapshot | null>(null);
+  const mainScrollElementRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
 
+  const capturePageScrollTop = (page: ThemeParameterPageId) => {
+    const scrollTop = mainScrollElementRef.current?.scrollTop ?? 0;
+    const sessionState = readThemeParameterUiSessionState();
+    writeThemeParameterUiSessionState({
+      ...sessionState,
+      pageScrollTops: {
+        ...sessionState.pageScrollTops,
+        [page]: scrollTop,
+      },
+    });
+  };
+
   const setActivePage = (action: SetStateAction<ThemeParameterPageId>) => {
     setActivePageState((previous) => {
+      capturePageScrollTop(previous);
       const next = resolveNextState(action, previous);
       updateThemeParameterUiSessionState({ activePage: next });
       return next;
@@ -1815,6 +1830,17 @@ function ThemeParameterPanel({
     };
   }, [open, parameters, styleId]);
 
+  useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+    const scrollTop =
+      readThemeParameterUiSessionState().pageScrollTops[activePage] ?? 0;
+    if (mainScrollElementRef.current) {
+      mainScrollElementRef.current.scrollTop = scrollTop;
+    }
+  }, [activePage, open]);
+
   useEffect(() => {
     if (open) {
       return;
@@ -1822,9 +1848,18 @@ function ThemeParameterPanel({
     if (!wasOpenRef.current) {
       return;
     }
+    const sessionState = readThemeParameterUiSessionState();
+    const scrollTop =
+      mainScrollElementRef.current?.scrollTop ??
+      sessionState.pageScrollTops[activePage] ??
+      0;
     captureContainerDebugSessionState(document.documentElement);
     writeThemeParameterUiSessionState({
       activePage,
+      pageScrollTops: {
+        ...sessionState.pageScrollTops,
+        [activePage]: scrollTop,
+      },
       containerLegacyExpanded,
       containerSidebarMainExpanded,
       containerMainImageNameListExpanded,
@@ -1872,6 +1907,12 @@ function ThemeParameterPanel({
     id: "themeParameter.hide",
     labelKey: "a11y.themeParameter.hide",
     titleKey: "tip.themeParameter.hide",
+    t,
+  });
+  const resetA11y = buildA11yProps({
+    id: "themeParameter.reset",
+    labelKey: "a11y.themeParameter.reset",
+    titleKey: "tip.themeParameter.reset",
     t,
   });
 
@@ -2196,8 +2237,9 @@ function ThemeParameterPanel({
     captureContainerDebugSessionState(document.documentElement);
   };
 
-  const handleContainerDebugResetAll = () => {
+  const handleResetToOpenState = () => {
     clearContainerDebugSessionState();
+    resetSnapshotToBaseline();
   };
 
   return (
@@ -2254,6 +2296,14 @@ function ThemeParameterPanel({
           <h2>{t("ui.themeParameter.panel")}</h2>
           <div className="settings-head-actions">
             <button
+              {...resetA11y}
+              className="settings-icon-btn main-icon-square-btn"
+              type="button"
+              onClick={handleResetToOpenState}
+            >
+              <MainUiIcon name="refresh" />
+            </button>
+            <button
               {...hideA11y}
               className="settings-icon-btn main-icon-square-btn"
               type="button"
@@ -2294,7 +2344,12 @@ function ThemeParameterPanel({
           openSnapshotFilePicker={openSnapshotFilePicker}
           copySnapshotJson={copySnapshotJson}
           importSnapshotJson={importSnapshotJson}
-          resetSnapshotToBaseline={resetSnapshotToBaseline}
+          setMainScrollElement={(element) => {
+            mainScrollElementRef.current = element;
+          }}
+          onMainScroll={() => {
+            capturePageScrollTop(activePage);
+          }}
           commonExpanded={commonExpanded}
           setCommonExpanded={setCommonExpanded}
           styleExpanded={styleExpanded}
@@ -2319,7 +2374,6 @@ function ThemeParameterPanel({
           resetSingleParameter={resetSingleParameter}
           resolveLabel={resolveLabel}
           onContainerDebugChanged={handleContainerDebugChanged}
-          onContainerDebugResetAll={handleContainerDebugResetAll}
         />
       </section>
     </div>

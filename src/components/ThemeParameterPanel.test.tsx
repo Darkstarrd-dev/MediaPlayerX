@@ -19,6 +19,14 @@ function getSliderByLabelText(text: string): HTMLInputElement {
   return slider as HTMLInputElement;
 }
 
+function getThemeParameterMain(): HTMLElement {
+  const container = document.querySelector(
+    ".theme-parameter-main",
+  ) as HTMLElement | null;
+  expect(container).not.toBeNull();
+  return container as HTMLElement;
+}
+
 function renderThemeParameterPanel(
   overrides: Partial<ComponentProps<typeof ThemeParameterPanel>> = {},
 ) {
@@ -114,8 +122,7 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-panel-radius"),
     ).toBe("18px");
 
-    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
-    fireEvent.click(screen.getByRole("button", { name: "复位到打开时状态" }));
+    fireEvent.click(screen.getByRole("button", { name: "恢复到打开时状态" }));
     fireEvent.click(screen.getByRole("button", { name: "参数调节" }));
     expect(getSliderByLabelText("布局内边距").value).toBe(
       baselineLayoutPadding,
@@ -353,7 +360,7 @@ describe("ThemeParameterPanel", () => {
     );
   });
 
-  it("参数导入导出页支持复位到打开时状态", () => {
+  it("header 全局复位支持恢复到打开时状态", () => {
     renderThemeParameterPanel();
 
     const layoutPaddingSlider = getSliderByLabelText("布局内边距");
@@ -365,12 +372,7 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
     ).toBe("14px");
 
-    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
-    fireEvent.click(screen.getByRole("button", { name: "复位到打开时状态" }));
-    expect(
-      screen.getByText("已恢复到打开面板时的样式状态。"),
-    ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "参数调节" }));
+    fireEvent.click(screen.getByRole("button", { name: "恢复到打开时状态" }));
 
     expect(getSliderByLabelText("布局内边距").value).toBe(
       baselineLayoutPaddingValue,
@@ -874,7 +876,7 @@ describe("ThemeParameterPanel", () => {
     10000,
   );
 
-  it("大容器层调试值在关闭后重新打开保持，点击完全复位后清空", () => {
+  it("大容器层调试值在关闭后重新打开保持，点击全局复位后清空", () => {
     const { rerender } = renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -917,16 +919,13 @@ describe("ThemeParameterPanel", () => {
       </I18nProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
-    fireEvent.click(
-      screen.getByRole("button", { name: "完全复位（大容器调试）" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "恢复到打开时状态" }));
 
     expect(
       document.documentElement.style
         .getPropertyValue("--mpx-sidebar-main-bg")
         .trim(),
-    ).toBe("");
+    ).toBe("#123456");
   });
 
   it("关闭后重开保持当前分页", () => {
@@ -958,6 +957,55 @@ describe("ThemeParameterPanel", () => {
     );
 
     expect(screen.getByLabelText("参数快照 JSON")).toBeInTheDocument();
+  });
+
+  it("切页后返回保持分页内滚动位置", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.click(screen.getByText("2.2.2.1 fg-sidebar-main"));
+
+    const main = getThemeParameterMain();
+    main.scrollTop = 180;
+    fireEvent.scroll(main);
+
+    fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+
+    expect(getThemeParameterMain().scrollTop).toBe(180);
+  });
+
+  it("关闭后重开保持分页内滚动位置", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "常用控件调试" }));
+    const main = getThemeParameterMain();
+    main.scrollTop = 220;
+    fireEvent.scroll(main);
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    expect(getThemeParameterMain().scrollTop).toBe(220);
   });
 
   it("关闭后重开保持容器折叠状态", () => {

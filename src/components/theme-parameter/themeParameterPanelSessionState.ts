@@ -7,6 +7,7 @@ interface ContainerDebugSessionState {
 
 interface ThemeParameterUISessionState {
   activePage: ThemeParameterPageId;
+  pageScrollTops: Partial<Record<ThemeParameterPageId, number>>;
   containerLegacyExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
@@ -21,6 +22,7 @@ const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
 
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   activePage: "parameters",
+  pageScrollTops: {},
   containerLegacyExpanded: true,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
