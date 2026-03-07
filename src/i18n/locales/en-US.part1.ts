@@ -388,6 +388,13 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 fg-main-content-image-name-list",
+  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Large panel root",
+  "ui.themeParameter.largePanelLayer.sectionShared":
+    "3.1 Head / Side / Main shared control",
+  "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",
+  "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
+  "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
+  "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
   "ui.themeParameter.sectionCommon": "Common parameters",
   "ui.themeParameter.sectionStyle": "Style parameters ({{styleId}})",
   "ui.themeParameter.sectionMetric": "{{scope}} {{target}} {{metric}}",
@@ -461,21 +468,29 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controlBorderWidth": "Control border width",
   "ui.themeParameter.largePanelWidth": "Large panel width",
   "ui.themeParameter.largePanelHeight": "Large panel height",
+  "ui.themeParameter.largePanelFillAngle": "Large panel fill angle",
   "ui.themeParameter.largePanelRadius": "Large panel radius",
   "ui.themeParameter.largePanelBorderWidth": "Large panel border width",
+  "ui.themeParameter.largePanelSectionFillAngle":
+    "Head / Side / Main shared fill angle",
+  "ui.themeParameter.largePanelSectionBorderWidth":
+    "Head / Side / Main shared border width",
   "ui.themeParameter.largePanelHeadPaddingY": "Large panel head padding Y",
   "ui.themeParameter.largePanelHeadPaddingX": "Large panel head padding X",
+  "ui.themeParameter.largePanelHeadFillAngle": "Large panel head fill angle",
   "ui.themeParameter.largePanelHeadBorderWidth":
     "Large panel head border width",
   "ui.themeParameter.largePanelShellPadding": "Large panel shell padding",
   "ui.themeParameter.largePanelShellGap": "Large panel shell gap",
   "ui.themeParameter.largePanelSidePadding": "Large panel side padding",
   "ui.themeParameter.largePanelSideGap": "Large panel side item gap",
+  "ui.themeParameter.largePanelSideFillAngle": "Large panel side fill angle",
   "ui.themeParameter.largePanelSideRadius": "Large panel side radius",
   "ui.themeParameter.largePanelSideBorderWidth":
     "Large panel side border width",
   "ui.themeParameter.largePanelMainPaddingY": "Large panel main padding Y",
   "ui.themeParameter.largePanelMainPaddingX": "Large panel main padding X",
+  "ui.themeParameter.largePanelMainFillAngle": "Large panel main fill angle",
   "ui.themeParameter.largePanelMainRadius": "Large panel main radius",
   "ui.themeParameter.largePanelMainBorderWidth":
     "Large panel main border width",

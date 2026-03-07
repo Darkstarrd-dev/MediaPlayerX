@@ -857,6 +857,150 @@ describe("ThemeParameterPanel", () => {
     ).toBeNull();
   });
 
+  it("大面板层调试按根层、共享总控与分控重排，并切到 fill 三件套", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+
+    expect(screen.getByText("3.0 大面板本体")).toBeInTheDocument();
+    expect(screen.getByText("3.1 Head / Side / Main 共享总控")).toBeInTheDocument();
+    expect(screen.getByText("3.2 Head")).toBeInTheDocument();
+    expect(screen.getByText("3.3 Side")).toBeInTheDocument();
+    expect(screen.getByText("3.4 Main")).toBeInTheDocument();
+    expect(screen.getByText("3.10 内部件")).toBeInTheDocument();
+
+    ensureDetailsOpen("3.0 大面板本体");
+    expect(
+      screen.getByRole("textbox", { name: "--mpx-large-panel-fill-start" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: "--mpx-large-panel-fill-end" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "--mpx-large-panel-bg" })).toBeNull();
+  });
+
+  it(
+    "大面板层共享总控会同步 Head/Side/Main 分控，分控仍可继续覆盖",
+    () => {
+      renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+    ensureDetailsOpen("3.1 Head / Side / Main 共享总控");
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-large-panel-section-fill-start",
+      }),
+      { target: { value: "#112233" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-large-panel-section-fill-start-alpha",
+      }),
+      { target: { value: "100" } },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-head-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-side-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-main-fill-start",
+      ),
+    ).toBe("#112233");
+
+    fireEvent.change(
+      getSliderByLabelText("--mpx-large-panel-section-border-width"),
+      {
+        target: { value: "3" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-head-border-width",
+      ),
+    ).toBe("3px");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-side-border-width",
+      ),
+    ).toBe("3px");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-main-border-width",
+      ),
+    ).toBe("3px");
+
+    ensureDetailsOpen("3.2 Head");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-large-panel-head-fill-start" }),
+      { target: { value: "#445566" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-large-panel-head-fill-start-alpha",
+      }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(getSliderByLabelText("--mpx-large-panel-head-border-width"), {
+      target: { value: "2" },
+    });
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-large-panel-section-fill-start",
+      }),
+      { target: { value: "#223344" } },
+    );
+    fireEvent.change(
+      getSliderByLabelText("--mpx-large-panel-section-border-width"),
+      {
+        target: { value: "4" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-head-fill-start",
+      ),
+    ).toBe("#445566");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-side-fill-start",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-main-fill-start",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-head-border-width",
+      ),
+    ).toBe("2px");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-side-border-width",
+      ),
+    ).toBe("4px");
+      expect(
+        document.documentElement.style.getPropertyValue(
+          "--mpx-large-panel-main-border-width",
+        ),
+      ).toBe("4px");
+    },
+    15000,
+  );
+
   it(
     "大容器层调试拆分为三段可折叠，并支持新增槽位调试与快照导出",
     () => {

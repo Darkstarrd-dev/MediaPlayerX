@@ -3297,6 +3297,7 @@ export function ThemeParameterPanelMain({
         [field.id]: nextState,
       };
       const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+      const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
           syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
@@ -3313,6 +3314,23 @@ export function ThemeParameterPanelMain({
           notifyContainerDebugChanged(targetField.cssVar);
           nextValues[targetId] = { ...nextState };
         }
+      } else if (largePanelSyncTargetIds.length > 0) {
+        if (!syncedLargePanelColorOverridesRef.current[field.id]) {
+          syncedLargePanelColorOverridesRef.current[field.id] = new Set(
+            largePanelSyncTargetIds,
+          );
+        }
+        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id]) {
+          const targetField = LARGE_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
       } else if (
         Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
           ids.includes(field.id as never),
@@ -3320,6 +3338,14 @@ export function ThemeParameterPanelMain({
       ) {
         for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
           syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
+      } else if (
+        Object.values(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+          syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
       return nextValues;
@@ -3355,6 +3381,7 @@ export function ThemeParameterPanelMain({
         [field.id]: nextState,
       };
       const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+      const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
           syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
@@ -3371,6 +3398,23 @@ export function ThemeParameterPanelMain({
           notifyContainerDebugChanged(targetField.cssVar);
           nextValues[targetId] = { ...nextState };
         }
+      } else if (largePanelSyncTargetIds.length > 0) {
+        if (!syncedLargePanelColorOverridesRef.current[field.id]) {
+          syncedLargePanelColorOverridesRef.current[field.id] = new Set(
+            largePanelSyncTargetIds,
+          );
+        }
+        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id]) {
+          const targetField = LARGE_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
       } else if (
         Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
           ids.includes(field.id as never),
@@ -3378,6 +3422,14 @@ export function ThemeParameterPanelMain({
       ) {
         for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
           syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
+      } else if (
+        Object.values(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+          syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
       return nextValues;
@@ -3394,6 +3446,7 @@ export function ThemeParameterPanelMain({
   const resetColorField = (field: ThemeDebugColorField) => {
     const root = document.documentElement;
     const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+    const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
     if (syncTargetIds.length > 0) {
       root.style.removeProperty(field.cssVar);
       clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
@@ -3439,6 +3492,49 @@ export function ThemeParameterPanelMain({
       syncedContainerFillColorOverridesRef.current[field.id] = new Set();
       return;
     }
+    if (largePanelSyncTargetIds.length > 0) {
+      root.style.removeProperty(field.cssVar);
+      clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
+      for (const targetId of syncedLargePanelColorOverridesRef.current[field.id] ?? []) {
+        const targetField = LARGE_PANEL_COLOR_FIELDS.find(
+          (candidate) => candidate.id === targetId,
+        );
+        if (!targetField) {
+          continue;
+        }
+        root.style.removeProperty(targetField.cssVar);
+        clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+      }
+      const computed = getComputedStyle(root);
+      setDebugColorValues((previous) => {
+        const nextValues = { ...previous };
+        const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
+        nextValues[field.id] = {
+          hex: nextValue.hex,
+          alpha: field.fallbackAlpha ?? nextValue.alpha,
+        };
+        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id] ?? []) {
+          const targetField = LARGE_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          const targetValue = readCssColorState(
+            computed,
+            targetField.cssVar,
+            targetField.fallback,
+          );
+          nextValues[targetId] = {
+            hex: targetValue.hex,
+            alpha: targetField.fallbackAlpha ?? targetValue.alpha,
+          };
+        }
+        return nextValues;
+      });
+      syncedLargePanelColorOverridesRef.current[field.id] = new Set();
+      return;
+    }
     root.style.removeProperty(field.cssVar);
     clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
@@ -3453,6 +3549,9 @@ export function ThemeParameterPanelMain({
     }));
     for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
       syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+    }
+    for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+      syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
     }
   };
 
@@ -4123,6 +4222,14 @@ export function ThemeParameterPanelMain({
     );
   };
 
+  const resolveLargePanelSyncTargets = (fieldId: string) => {
+    return (
+      LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS[
+        fieldId as keyof typeof LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS
+      ] ?? []
+    );
+  };
+
   const renderContainerFrameSection = (
     section: (typeof CONTAINER_FRAME_SECTION_DEFINITIONS)[number],
   ) => {
@@ -4188,6 +4295,63 @@ export function ThemeParameterPanelMain({
             当前已在 contract 预留 3D transform 变量，后续再补可视化调节控件。
           </p>
         </section>
+      </>
+    );
+  };
+
+  const renderLargePanelSectionRows = (options: {
+    colorFields: readonly ThemeDebugColorField[];
+    textFields?: readonly ThemeDebugTextField[];
+    parameters?: ThemeParameterDefinition[];
+  }) => {
+    const { colorFields, textFields = [], parameters = [] } = options;
+    return (
+      <>
+        {colorFields.length > 0 ? (
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>基础外观</span>
+            </header>
+            <div className="theme-parameter-color-list">
+              {colorFields.map(renderColorFieldRow)}
+            </div>
+            {textFields.length > 0 ? (
+              <div className="theme-parameter-text-list">
+                {textFields.map(renderTextFieldRow)}
+              </div>
+            ) : null}
+            {parameters.length > 0
+              ? renderParameterRowsWithVarLabel(parameters)
+              : null}
+          </section>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderLargePanelInternalSections = () => {
+    return (
+      <>
+        {LARGE_PANEL_INTERNAL_COLOR_FIELDS.length > 0 ? (
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>内部件颜色 / 状态</span>
+            </header>
+            <div className="theme-parameter-color-list">
+              {LARGE_PANEL_INTERNAL_COLOR_FIELDS.map(renderColorFieldRow)}
+            </div>
+          </section>
+        ) : null}
+        {LARGE_PANEL_INTERNAL_TEXT_FIELDS.length > 0 ? (
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>内部件文本 / 表达式</span>
+            </header>
+            <div className="theme-parameter-text-list">
+              {LARGE_PANEL_INTERNAL_TEXT_FIELDS.map(renderTextFieldRow)}
+            </div>
+          </section>
+        ) : null}
       </>
     );
   };
@@ -5172,14 +5336,87 @@ export function ThemeParameterPanelMain({
                 </button>
               </div>
             </section>
-            {renderColorGroups(LARGE_PANEL_COLOR_FIELDS, [
-              "root",
-              "head",
-              "side",
-              "main",
-            ])}
-            {renderTextGroups(LARGE_PANEL_TEXT_FIELDS, ["main"])}
-            {renderNumberGroups(largePanelNumberGroups)}
+            <details
+              className="settings-collapsible"
+              open={largePanelRootExpanded}
+              onToggle={(event) =>
+                setLargePanelRootExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.largePanelLayer.sectionRoot")}</summary>
+              <div className="settings-collapsible-content">
+                {renderLargePanelSectionRows({
+                  colorFields: LARGE_PANEL_ROOT_COLOR_FIELDS,
+                  textFields: LARGE_PANEL_ROOT_TEXT_FIELDS,
+                  parameters: largePanelRootParameters,
+                })}
+              </div>
+            </details>
+            <details
+              className="settings-collapsible"
+              open={largePanelSharedSectionExpanded}
+              onToggle={(event) =>
+                setLargePanelSharedSectionExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.largePanelLayer.sectionShared")}</summary>
+              <div className="settings-collapsible-content">
+                {renderLargePanelSectionRows({
+                  colorFields: LARGE_PANEL_SHARED_COLOR_FIELDS,
+                  parameters: largePanelSharedParameters,
+                })}
+              </div>
+            </details>
+            {LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
+              const expanded =
+                section.id === "head"
+                  ? largePanelHeadExpanded
+                  : section.id === "side"
+                    ? largePanelSideExpanded
+                    : largePanelMainExpanded;
+              const setExpanded =
+                section.id === "head"
+                  ? setLargePanelHeadExpanded
+                  : section.id === "side"
+                    ? setLargePanelSideExpanded
+                    : setLargePanelMainExpanded;
+              return (
+                <details
+                  key={section.id}
+                  className="settings-collapsible"
+                  open={expanded}
+                  onToggle={(event) =>
+                    setExpanded((event.currentTarget as HTMLDetailsElement).open)
+                  }
+                >
+                  <summary>{t(section.summaryKey)}</summary>
+                  <div className="settings-collapsible-content">
+                    {renderLargePanelSectionRows({
+                      colorFields: section.colorFields,
+                      parameters: pickLargePanelParameters(section.parameterIds),
+                    })}
+                  </div>
+                </details>
+              );
+            })}
+            <details
+              className="settings-collapsible"
+              open={largePanelInternalExpanded}
+              onToggle={(event) =>
+                setLargePanelInternalExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.largePanelLayer.sectionInternal")}</summary>
+              <div className="settings-collapsible-content">
+                {renderLargePanelInternalSections()}
+              </div>
+            </details>
           </section>
         ) : null}
 

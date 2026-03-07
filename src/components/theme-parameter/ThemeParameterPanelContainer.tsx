@@ -54,6 +54,16 @@ const CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS = [
   "main-fill-angle",
   "metadata-fill-angle",
 ] as const;
+const LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS = [
+  "large-panel-head-fill-angle",
+  "large-panel-side-fill-angle",
+  "large-panel-main-fill-angle",
+] as const;
+const LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS = [
+  "large-panel-head-border-width",
+  "large-panel-side-border-width",
+  "large-panel-main-border-width",
+] as const;
 
 const CONTAINER_LAYER_PARAMETER_IDS = new Set([
   "layout-padding",
@@ -469,9 +479,29 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "large-panel-bg",
-    cssVar: "--mpx-large-panel-bg",
+    id: "large-panel-fill-start",
+    cssVar: "--mpx-large-panel-fill-start",
     fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-fill-end",
+    cssVar: "--mpx-large-panel-fill-end",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-section-fill-start",
+    cssVar: "--mpx-large-panel-section-fill-start",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-section-fill-end",
+    cssVar: "--mpx-large-panel-section-fill-end",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-section-border-color",
+    cssVar: "--mpx-large-panel-section-border-color",
+    fallback: "#d6cfc1",
   },
   {
     id: "large-panel-head-border-color",
@@ -479,9 +509,19 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "large-panel-head-bg",
-    cssVar: "--mpx-large-panel-head-bg",
-    fallback: "#ffffff",
+    id: "large-panel-head-fill-start",
+    cssVar: "--mpx-large-panel-head-fill-start",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-head-fill-end",
+    cssVar: "--mpx-large-panel-head-fill-end",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-head-text",
+    cssVar: "--mpx-large-panel-head-text",
+    fallback: "#2e2a22",
   },
   {
     id: "large-panel-side-border-color",
@@ -489,14 +529,44 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "large-panel-side-bg",
-    cssVar: "--mpx-large-panel-side-bg",
+    id: "large-panel-side-fill-start",
+    cssVar: "--mpx-large-panel-side-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-side-fill-end",
+    cssVar: "--mpx-large-panel-side-fill-end",
     fallback: "#ffffff",
   },
   {
     id: "large-panel-main-border-color",
     cssVar: "--mpx-large-panel-main-border-color",
     fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-main-fill-start",
+    cssVar: "--mpx-large-panel-main-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-main-fill-end",
+    cssVar: "--mpx-large-panel-main-fill-end",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-bg",
+    cssVar: "--mpx-large-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-head-bg",
+    cssVar: "--mpx-large-panel-head-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-side-bg",
+    cssVar: "--mpx-large-panel-side-bg",
+    fallback: "#ffffff",
   },
   {
     id: "large-panel-main-bg",
@@ -1462,6 +1532,10 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
   },
   {
+    id: "large-panel-shadow",
+    cssVar: "--mpx-large-panel-shadow",
+  },
+  {
     id: "large-panel-metadata-fetch-control-font-size",
     cssVar: "--mpx-metadata-fetch-control-font-size",
   },
@@ -1731,6 +1805,12 @@ function ThemeParameterPanel({
   const [values, setValues] = useState<ThemeParameterValues>({});
   const syncedContainerRadiusOverridesRef = useRef<Set<string>>(new Set());
   const syncedContainerFillAngleOverridesRef = useRef<Set<string>>(new Set());
+  const syncedLargePanelSectionFillAngleOverridesRef = useRef<Set<string>>(
+    new Set(),
+  );
+  const syncedLargePanelSectionBorderWidthOverridesRef = useRef<Set<string>>(
+    new Set(),
+  );
   const [activePage, setActivePageState] = useState<ThemeParameterPageId>(
     initialUiSessionState.activePage,
   );
@@ -1766,6 +1846,23 @@ function ThemeParameterPanel({
     useState(initialUiSessionState.containerSidebarMainExpanded);
   const [containerMainImageNameListExpanded, setContainerMainImageNameListExpandedState] =
     useState(initialUiSessionState.containerMainImageNameListExpanded);
+  const [largePanelRootExpanded, setLargePanelRootExpandedState] = useState(
+    initialUiSessionState.largePanelRootExpanded,
+  );
+  const [largePanelSharedSectionExpanded, setLargePanelSharedSectionExpandedState] =
+    useState(initialUiSessionState.largePanelSharedSectionExpanded);
+  const [largePanelHeadExpanded, setLargePanelHeadExpandedState] = useState(
+    initialUiSessionState.largePanelHeadExpanded,
+  );
+  const [largePanelSideExpanded, setLargePanelSideExpandedState] = useState(
+    initialUiSessionState.largePanelSideExpanded,
+  );
+  const [largePanelMainExpanded, setLargePanelMainExpandedState] = useState(
+    initialUiSessionState.largePanelMainExpanded,
+  );
+  const [largePanelInternalExpanded, setLargePanelInternalExpandedState] = useState(
+    initialUiSessionState.largePanelInternalExpanded,
+  );
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -1891,6 +1988,58 @@ function ThemeParameterPanel({
     });
   };
 
+  const setLargePanelRootExpanded = (action: SetStateAction<boolean>) => {
+    setLargePanelRootExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ largePanelRootExpanded: next });
+      return next;
+    });
+  };
+
+  const setLargePanelSharedSectionExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setLargePanelSharedSectionExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        largePanelSharedSectionExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setLargePanelHeadExpanded = (action: SetStateAction<boolean>) => {
+    setLargePanelHeadExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ largePanelHeadExpanded: next });
+      return next;
+    });
+  };
+
+  const setLargePanelSideExpanded = (action: SetStateAction<boolean>) => {
+    setLargePanelSideExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ largePanelSideExpanded: next });
+      return next;
+    });
+  };
+
+  const setLargePanelMainExpanded = (action: SetStateAction<boolean>) => {
+    setLargePanelMainExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ largePanelMainExpanded: next });
+      return next;
+    });
+  };
+
+  const setLargePanelInternalExpanded = (action: SetStateAction<boolean>) => {
+    setLargePanelInternalExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ largePanelInternalExpanded: next });
+      return next;
+    });
+  };
+
   const containerLayerParameters = useMemo(
     () => parameters.filter(isContainerLayerParameter),
     [parameters],
@@ -1967,6 +2116,8 @@ function ThemeParameterPanel({
     wasOpenRef.current = true;
     syncedContainerRadiusOverridesRef.current = new Set();
     syncedContainerFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
     const root = document.documentElement;
     migrateLegacySidebarMainSlots(root);
     applyContainerDebugSessionState(root);
@@ -1988,6 +2139,14 @@ function ThemeParameterPanel({
     setContainerMainImageNameListExpandedState(
       uiSessionState.containerMainImageNameListExpanded,
     );
+    setLargePanelRootExpandedState(uiSessionState.largePanelRootExpanded);
+    setLargePanelSharedSectionExpandedState(
+      uiSessionState.largePanelSharedSectionExpanded,
+    );
+    setLargePanelHeadExpandedState(uiSessionState.largePanelHeadExpanded);
+    setLargePanelSideExpandedState(uiSessionState.largePanelSideExpanded);
+    setLargePanelMainExpandedState(uiSessionState.largePanelMainExpanded);
+    setLargePanelInternalExpandedState(uiSessionState.largePanelInternalExpanded);
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -2055,6 +2214,12 @@ function ThemeParameterPanel({
       containerMetadataExpanded,
       containerSidebarMainExpanded,
       containerMainImageNameListExpanded,
+      largePanelRootExpanded,
+      largePanelSharedSectionExpanded,
+      largePanelHeadExpanded,
+      largePanelSideExpanded,
+      largePanelMainExpanded,
+      largePanelInternalExpanded,
       commonExpanded,
       styleExpanded,
     });
@@ -2071,6 +2236,12 @@ function ThemeParameterPanel({
     containerMetadataExpanded,
     containerMainImageNameListExpanded,
     containerSidebarMainExpanded,
+    largePanelRootExpanded,
+    largePanelSharedSectionExpanded,
+    largePanelHeadExpanded,
+    largePanelSideExpanded,
+    largePanelMainExpanded,
+    largePanelInternalExpanded,
     open,
     styleExpanded,
   ]);
@@ -2145,6 +2316,10 @@ function ThemeParameterPanel({
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
     const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
+    const isLargePanelSectionFillAngle =
+      parameter.id === "large-panel-section-fill-angle";
+    const isLargePanelSectionBorderWidth =
+      parameter.id === "large-panel-section-border-width";
     setSnapshotExplicitParameterIds((previous) => {
       const next = new Set(previous);
       next.add(parameter.id);
@@ -2155,6 +2330,16 @@ function ThemeParameterPanel({
       }
       if (isContainerFrameFillAngle) {
         for (const parameterId of CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS) {
+          next.add(parameterId);
+        }
+      }
+      if (isLargePanelSectionFillAngle) {
+        for (const parameterId of LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS) {
+          next.add(parameterId);
+        }
+      }
+      if (isLargePanelSectionBorderWidth) {
+        for (const parameterId of LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS) {
           next.add(parameterId);
         }
       }
@@ -2194,6 +2379,34 @@ function ThemeParameterPanel({
           nextValues[parameterId] = nextValue;
           syncParameter.apply(root, nextValue, nextValues);
         }
+      } else if (isLargePanelSectionFillAngle) {
+        if (syncedLargePanelSectionFillAngleOverridesRef.current.size === 0) {
+          syncedLargePanelSectionFillAngleOverridesRef.current = new Set(
+            LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS,
+          );
+        }
+        for (const parameterId of syncedLargePanelSectionFillAngleOverridesRef.current) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = nextValue;
+          syncParameter.apply(root, nextValue, nextValues);
+        }
+      } else if (isLargePanelSectionBorderWidth) {
+        if (syncedLargePanelSectionBorderWidthOverridesRef.current.size === 0) {
+          syncedLargePanelSectionBorderWidthOverridesRef.current = new Set(
+            LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS,
+          );
+        }
+        for (const parameterId of syncedLargePanelSectionBorderWidthOverridesRef.current) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = nextValue;
+          syncParameter.apply(root, nextValue, nextValues);
+        }
       } else if (
         CONTAINER_RADIUS_SYNC_PARAMETER_IDS.includes(
           parameter.id as (typeof CONTAINER_RADIUS_SYNC_PARAMETER_IDS)[number],
@@ -2206,6 +2419,18 @@ function ThemeParameterPanel({
         )
       ) {
         syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
+      } else if (
+        LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
+      } else if (
+        LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
       }
       return nextValues;
     });
@@ -2352,6 +2577,8 @@ function ThemeParameterPanel({
     const importedParameterIds = new Set<string>();
     syncedContainerRadiusOverridesRef.current = new Set();
     syncedContainerFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
     for (const parameter of parameters) {
       const rawValue = importedValues[parameter.id];
       if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
@@ -2409,6 +2636,44 @@ function ThemeParameterPanel({
           importedParameterIds.add(parameterId);
           syncParameter.apply(root, normalized, nextValues);
         }
+      } else if (parameter.id === "large-panel-section-fill-angle") {
+        syncedLargePanelSectionFillAngleOverridesRef.current = new Set(
+          LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS,
+        );
+        for (const parameterId of syncedLargePanelSectionFillAngleOverridesRef.current) {
+          if (
+            typeof importedValues[parameterId] === "number" &&
+            Number.isFinite(importedValues[parameterId])
+          ) {
+            continue;
+          }
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = normalized;
+          importedParameterIds.add(parameterId);
+          syncParameter.apply(root, normalized, nextValues);
+        }
+      } else if (parameter.id === "large-panel-section-border-width") {
+        syncedLargePanelSectionBorderWidthOverridesRef.current = new Set(
+          LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS,
+        );
+        for (const parameterId of syncedLargePanelSectionBorderWidthOverridesRef.current) {
+          if (
+            typeof importedValues[parameterId] === "number" &&
+            Number.isFinite(importedValues[parameterId])
+          ) {
+            continue;
+          }
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = normalized;
+          importedParameterIds.add(parameterId);
+          syncParameter.apply(root, normalized, nextValues);
+        }
       } else if (
         CONTAINER_RADIUS_SYNC_PARAMETER_IDS.includes(
           parameter.id as (typeof CONTAINER_RADIUS_SYNC_PARAMETER_IDS)[number],
@@ -2421,6 +2686,18 @@ function ThemeParameterPanel({
         )
       ) {
         syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
+      } else if (
+        LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
+      } else if (
+        LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
       }
     }
     if (payload.debugColors && typeof payload.debugColors === "object") {
@@ -2528,6 +2805,10 @@ function ThemeParameterPanel({
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
     const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
+    const isLargePanelSectionFillAngle =
+      parameter.id === "large-panel-section-fill-angle";
+    const isLargePanelSectionBorderWidth =
+      parameter.id === "large-panel-section-border-width";
     if (isContainerFrameRadius) {
       const syncedIds = Array.from(syncedContainerRadiusOverridesRef.current);
       parameter.reset(root);
@@ -2592,6 +2873,74 @@ function ThemeParameterPanel({
       syncedContainerFillAngleOverridesRef.current = new Set();
       return;
     }
+    if (isLargePanelSectionFillAngle) {
+      const syncedIds = Array.from(
+        syncedLargePanelSectionFillAngleOverridesRef.current,
+      );
+      parameter.reset(root);
+      for (const parameterId of syncedIds) {
+        parameterMap.get(parameterId)?.reset(root);
+      }
+      const computed = getComputedStyle(root);
+      setValues((previous) => {
+        const nextValues = {
+          ...previous,
+          [parameter.id]: parameter.read(computed),
+        };
+        for (const parameterId of syncedIds) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = syncParameter.read(computed);
+        }
+        return nextValues;
+      });
+      setSnapshotExplicitParameterIds((previous) => {
+        const next = new Set(previous);
+        next.delete(parameter.id);
+        for (const parameterId of syncedIds) {
+          next.delete(parameterId);
+        }
+        return next;
+      });
+      syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
+      return;
+    }
+    if (isLargePanelSectionBorderWidth) {
+      const syncedIds = Array.from(
+        syncedLargePanelSectionBorderWidthOverridesRef.current,
+      );
+      parameter.reset(root);
+      for (const parameterId of syncedIds) {
+        parameterMap.get(parameterId)?.reset(root);
+      }
+      const computed = getComputedStyle(root);
+      setValues((previous) => {
+        const nextValues = {
+          ...previous,
+          [parameter.id]: parameter.read(computed),
+        };
+        for (const parameterId of syncedIds) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = syncParameter.read(computed);
+        }
+        return nextValues;
+      });
+      setSnapshotExplicitParameterIds((previous) => {
+        const next = new Set(previous);
+        next.delete(parameter.id);
+        for (const parameterId of syncedIds) {
+          next.delete(parameterId);
+        }
+        return next;
+      });
+      syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
+      return;
+    }
     parameter.reset(root);
     const computed = getComputedStyle(root);
     const nextValue = parameter.read(computed);
@@ -2618,6 +2967,20 @@ function ThemeParameterPanel({
     ) {
       syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
     }
+    if (
+      LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+        parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+      )
+    ) {
+      syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
+    }
+    if (
+      LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
+        parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
+      )
+    ) {
+      syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
+    }
   };
 
   const resolveLabel = (parameter: ThemeParameterDefinition): string => {
@@ -2638,6 +3001,8 @@ function ThemeParameterPanel({
     clearContainerDebugSessionState();
     syncedContainerRadiusOverridesRef.current = new Set();
     syncedContainerFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
+    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
     resetSnapshotToBaseline();
   };
 
@@ -2773,6 +3138,18 @@ function ThemeParameterPanel({
           setContainerMainImageNameListExpanded={
             setContainerMainImageNameListExpanded
           }
+          largePanelRootExpanded={largePanelRootExpanded}
+          setLargePanelRootExpanded={setLargePanelRootExpanded}
+          largePanelSharedSectionExpanded={largePanelSharedSectionExpanded}
+          setLargePanelSharedSectionExpanded={setLargePanelSharedSectionExpanded}
+          largePanelHeadExpanded={largePanelHeadExpanded}
+          setLargePanelHeadExpanded={setLargePanelHeadExpanded}
+          largePanelSideExpanded={largePanelSideExpanded}
+          setLargePanelSideExpanded={setLargePanelSideExpanded}
+          largePanelMainExpanded={largePanelMainExpanded}
+          setLargePanelMainExpanded={setLargePanelMainExpanded}
+          largePanelInternalExpanded={largePanelInternalExpanded}
+          setLargePanelInternalExpanded={setLargePanelInternalExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

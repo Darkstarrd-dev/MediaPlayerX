@@ -17,6 +17,12 @@ interface ThemeParameterUISessionState {
   containerMetadataExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
+  largePanelRootExpanded: boolean;
+  largePanelSharedSectionExpanded: boolean;
+  largePanelHeadExpanded: boolean;
+  largePanelSideExpanded: boolean;
+  largePanelMainExpanded: boolean;
+  largePanelInternalExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -38,6 +44,12 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
+  largePanelRootExpanded: true,
+  largePanelSharedSectionExpanded: true,
+  largePanelHeadExpanded: false,
+  largePanelSideExpanded: false,
+  largePanelMainExpanded: false,
+  largePanelInternalExpanded: false,
   commonExpanded: true,
   styleExpanded: true,
 };
