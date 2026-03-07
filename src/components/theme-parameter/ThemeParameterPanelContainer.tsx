@@ -73,7 +73,9 @@ const CONTAINER_LAYER_PARAMETER_IDS = new Set([
   "header-fill-angle",
   "sidebar-fill-angle",
   "main-fill-angle",
+  "main-header-fill-angle",
   "metadata-fill-angle",
+  "metadata-header-fill-angle",
   "header-radius",
   "header-z-index",
   "sidebar-radius",
@@ -179,6 +181,96 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#e5e4e0",
   },
   {
+    id: "container-header-buttons-border",
+    cssVar: "--mpx-slot-fg-header-button-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-buttons-bg",
+    cssVar: "--mpx-slot-fg-header-button-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-buttons-text",
+    cssVar: "--mpx-slot-fg-header-button-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-header-logo-border",
+    cssVar: "--mpx-slot-fg-header-logo-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-logo-bg",
+    cssVar: "--mpx-slot-fg-header-logo-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-logo-text",
+    cssVar: "--mpx-slot-fg-header-logo-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-header-g1-border",
+    cssVar: "--mpx-slot-fg-header-g1-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-g1-bg",
+    cssVar: "--mpx-slot-fg-header-g1-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-g1-text",
+    cssVar: "--mpx-slot-fg-header-g1-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-header-g2-mode-border",
+    cssVar: "--mpx-slot-fg-header-g2-mode-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-g2-mode-bg",
+    cssVar: "--mpx-slot-fg-header-g2-mode-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-g2-mode-text",
+    cssVar: "--mpx-slot-fg-header-g2-mode-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-header-g-debug-border",
+    cssVar: "--mpx-slot-fg-header-g-debug-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-g-debug-bg",
+    cssVar: "--mpx-slot-fg-header-g-debug-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-g-debug-text",
+    cssVar: "--mpx-slot-fg-header-g-debug-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-header-g3-border",
+    cssVar: "--mpx-slot-fg-header-g3-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-header-g3-bg",
+    cssVar: "--mpx-slot-fg-header-g3-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-header-g3-text",
+    cssVar: "--mpx-slot-fg-header-g3-text",
+    fallback: "#2e2a22",
+  },
+  {
     id: "container-sidebar-fill-start",
     cssVar: "--mpx-sidebar-fill-start",
     fallback: "#f5f2ec",
@@ -192,6 +284,66 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-sidebar-border-color",
     cssVar: "--mpx-sidebar-border-color",
     fallback: "#e5e4e0",
+  },
+  {
+    id: "container-sidebar-header-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-header-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-border",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-sidebar-header-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-sidebar-header-button-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-sidebar-header-button-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-sidebar-header-button-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-sidebar-header-title-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-title-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-sidebar-header-title-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-title-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-sidebar-header-title-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-title-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-sidebar-header-action-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-action-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-sidebar-header-action-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-action-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-sidebar-header-action-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-action-text",
+    fallback: "#2e2a22",
   },
   {
     id: "container-main-fill-start",
@@ -209,6 +361,36 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#e5e4e0",
   },
   {
+    id: "container-main-header-fill-start",
+    cssVar: "--mpx-main-header-fill-start",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-main-header-fill-end",
+    cssVar: "--mpx-main-header-fill-end",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-main-header-border-color",
+    cssVar: "--mpx-main-header-border-color",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-main-header-button-border",
+    cssVar: "--mpx-slot-fg-main-header-button-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-main-header-button-bg",
+    cssVar: "--mpx-slot-fg-main-header-button-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-main-header-button-text",
+    cssVar: "--mpx-slot-fg-main-header-button-text",
+    fallback: "#2e2a22",
+  },
+  {
     id: "container-metadata-fill-start",
     cssVar: "--mpx-metadata-fill-start",
     fallback: "#f5f2ec",
@@ -222,6 +404,36 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-metadata-border-color",
     cssVar: "--mpx-metadata-border-color",
     fallback: "#e5e4e0",
+  },
+  {
+    id: "container-metadata-header-fill-start",
+    cssVar: "--mpx-metadata-header-fill-start",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-metadata-header-fill-end",
+    cssVar: "--mpx-metadata-header-fill-end",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-metadata-header-border-color",
+    cssVar: "--mpx-metadata-header-border-color",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-metadata-header-button-border",
+    cssVar: "--mpx-slot-fg-meta-header-button-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-metadata-header-button-bg",
+    cssVar: "--mpx-slot-fg-meta-header-button-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-metadata-header-button-text",
+    cssVar: "--mpx-slot-fg-meta-header-button-text",
+    fallback: "#2e2a22",
   },
   {
     id: "container-border-1",
@@ -1695,7 +1907,9 @@ const LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC: ReadonlyArray<{
   },
 ];
 
-function resolveLegacyContainerSemanticVar(legacyCssVar: string): string | null {
+function resolveLegacyContainerSemanticVar(
+  legacyCssVar: string,
+): string | null {
   for (const mapping of LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC) {
     if (!legacyCssVar.startsWith(mapping.legacyPrefix)) {
       continue;
@@ -1706,7 +1920,8 @@ function resolveLegacyContainerSemanticVar(legacyCssVar: string): string | null 
 }
 
 function migrateLegacySidebarMainSlots(root: HTMLElement): void {
-  const legacyPairs: Array<{ legacyCssVar: string; semanticCssVar: string }> = [];
+  const legacyPairs: Array<{ legacyCssVar: string; semanticCssVar: string }> =
+    [];
   for (let index = 0; index < root.style.length; index += 1) {
     const legacyCssVar = root.style.item(index);
     const semanticCssVar = resolveLegacyContainerSemanticVar(legacyCssVar);
@@ -1717,7 +1932,9 @@ function migrateLegacySidebarMainSlots(root: HTMLElement): void {
   }
 
   for (const pair of legacyPairs) {
-    const semanticValue = root.style.getPropertyValue(pair.semanticCssVar).trim();
+    const semanticValue = root.style
+      .getPropertyValue(pair.semanticCssVar)
+      .trim();
     const legacyValue = root.style.getPropertyValue(pair.legacyCssVar).trim();
     if (legacyValue && !semanticValue) {
       root.style.setProperty(pair.semanticCssVar, legacyValue);
@@ -1726,10 +1943,7 @@ function migrateLegacySidebarMainSlots(root: HTMLElement): void {
   }
 }
 
-function resolveNextState<T>(
-  action: SetStateAction<T>,
-  previous: T,
-): T {
+function resolveNextState<T>(action: SetStateAction<T>, previous: T): T {
   if (typeof action === "function") {
     return (action as (previousValue: T) => T)(previous);
   }
@@ -1823,34 +2037,78 @@ function ThemeParameterPanel({
   const [styleExpanded, setStyleExpandedState] = useState(
     initialUiSessionState.styleExpanded,
   );
-  const [containerBackgroundExpanded, setContainerBackgroundExpandedState] = useState(
-    initialUiSessionState.containerBackgroundExpanded,
-  );
-  const [containerSharedShellExpanded, setContainerSharedShellExpandedState] = useState(
-    initialUiSessionState.containerSharedShellExpanded,
-  );
+  const [containerBackgroundExpanded, setContainerBackgroundExpandedState] =
+    useState(initialUiSessionState.containerBackgroundExpanded);
+  const [containerSharedShellExpanded, setContainerSharedShellExpandedState] =
+    useState(initialUiSessionState.containerSharedShellExpanded);
   const [containerHeaderExpanded, setContainerHeaderExpandedState] = useState(
     initialUiSessionState.containerHeaderExpanded,
   );
+  const [
+    containerHeaderButtonsExpanded,
+    setContainerHeaderButtonsExpandedState,
+  ] = useState(initialUiSessionState.containerHeaderButtonsExpanded);
+  const [containerHeaderLogoExpanded, setContainerHeaderLogoExpandedState] =
+    useState(initialUiSessionState.containerHeaderLogoExpanded);
+  const [containerHeaderG1Expanded, setContainerHeaderG1ExpandedState] =
+    useState(initialUiSessionState.containerHeaderG1Expanded);
+  const [containerHeaderG2Expanded, setContainerHeaderG2ExpandedState] =
+    useState(initialUiSessionState.containerHeaderG2Expanded);
+  const [containerHeaderGDebugExpanded, setContainerHeaderGDebugExpandedState] =
+    useState(initialUiSessionState.containerHeaderGDebugExpanded);
+  const [containerHeaderG3Expanded, setContainerHeaderG3ExpandedState] =
+    useState(initialUiSessionState.containerHeaderG3Expanded);
   const [containerSidebarExpanded, setContainerSidebarExpandedState] = useState(
     initialUiSessionState.containerSidebarExpanded,
   );
+  const [
+    containerSidebarHeaderExpanded,
+    setContainerSidebarHeaderExpandedState,
+  ] = useState(initialUiSessionState.containerSidebarHeaderExpanded);
+  const [
+    containerSidebarHeaderTitleExpanded,
+    setContainerSidebarHeaderTitleExpandedState,
+  ] = useState(initialUiSessionState.containerSidebarHeaderTitleExpanded);
+  const [
+    containerSidebarHeaderActionsExpanded,
+    setContainerSidebarHeaderActionsExpandedState,
+  ] = useState(initialUiSessionState.containerSidebarHeaderActionsExpanded);
   const [containerMainExpanded, setContainerMainExpandedState] = useState(
     initialUiSessionState.containerMainExpanded,
   );
-  const [containerMainWorkspaceExpanded, setContainerMainWorkspaceExpandedState] =
-    useState(initialUiSessionState.containerMainWorkspaceExpanded);
+  const [containerMainHeaderExpanded, setContainerMainHeaderExpandedState] =
+    useState(initialUiSessionState.containerMainHeaderExpanded);
+  const [
+    containerMainHeaderButtonsExpanded,
+    setContainerMainHeaderButtonsExpandedState,
+  ] = useState(initialUiSessionState.containerMainHeaderButtonsExpanded);
+  const [
+    containerMainWorkspaceExpanded,
+    setContainerMainWorkspaceExpandedState,
+  ] = useState(initialUiSessionState.containerMainWorkspaceExpanded);
   const [containerMetadataExpanded, setContainerMetadataExpandedState] =
     useState(initialUiSessionState.containerMetadataExpanded);
+  const [
+    containerMetadataHeaderExpanded,
+    setContainerMetadataHeaderExpandedState,
+  ] = useState(initialUiSessionState.containerMetadataHeaderExpanded);
+  const [
+    containerMetadataHeaderButtonsExpanded,
+    setContainerMetadataHeaderButtonsExpandedState,
+  ] = useState(initialUiSessionState.containerMetadataHeaderButtonsExpanded);
   const [containerSidebarMainExpanded, setContainerSidebarMainExpandedState] =
     useState(initialUiSessionState.containerSidebarMainExpanded);
-  const [containerMainImageNameListExpanded, setContainerMainImageNameListExpandedState] =
-    useState(initialUiSessionState.containerMainImageNameListExpanded);
+  const [
+    containerMainImageNameListExpanded,
+    setContainerMainImageNameListExpandedState,
+  ] = useState(initialUiSessionState.containerMainImageNameListExpanded);
   const [largePanelRootExpanded, setLargePanelRootExpandedState] = useState(
     initialUiSessionState.largePanelRootExpanded,
   );
-  const [largePanelSharedSectionExpanded, setLargePanelSharedSectionExpandedState] =
-    useState(initialUiSessionState.largePanelSharedSectionExpanded);
+  const [
+    largePanelSharedSectionExpanded,
+    setLargePanelSharedSectionExpandedState,
+  ] = useState(initialUiSessionState.largePanelSharedSectionExpanded);
   const [largePanelHeadExpanded, setLargePanelHeadExpandedState] = useState(
     initialUiSessionState.largePanelHeadExpanded,
   );
@@ -1860,9 +2118,8 @@ function ThemeParameterPanel({
   const [largePanelMainExpanded, setLargePanelMainExpandedState] = useState(
     initialUiSessionState.largePanelMainExpanded,
   );
-  const [largePanelInternalExpanded, setLargePanelInternalExpandedState] = useState(
-    initialUiSessionState.largePanelInternalExpanded,
-  );
+  const [largePanelInternalExpanded, setLargePanelInternalExpandedState] =
+    useState(initialUiSessionState.largePanelInternalExpanded);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -1923,7 +2180,9 @@ function ThemeParameterPanel({
   const setContainerSharedShellExpanded = (action: SetStateAction<boolean>) => {
     setContainerSharedShellExpandedState((previous) => {
       const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerSharedShellExpanded: next });
+      updateThemeParameterUiSessionState({
+        containerSharedShellExpanded: next,
+      });
       return next;
     });
   };
@@ -1936,10 +2195,102 @@ function ThemeParameterPanel({
     });
   };
 
+  const setContainerHeaderButtonsExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerHeaderButtonsExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerHeaderButtonsExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerHeaderLogoExpanded = (action: SetStateAction<boolean>) => {
+    setContainerHeaderLogoExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerHeaderLogoExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerHeaderG1Expanded = (action: SetStateAction<boolean>) => {
+    setContainerHeaderG1ExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerHeaderG1Expanded: next });
+      return next;
+    });
+  };
+
+  const setContainerHeaderG2Expanded = (action: SetStateAction<boolean>) => {
+    setContainerHeaderG2ExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerHeaderG2Expanded: next });
+      return next;
+    });
+  };
+
+  const setContainerHeaderGDebugExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerHeaderGDebugExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerHeaderGDebugExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerHeaderG3Expanded = (action: SetStateAction<boolean>) => {
+    setContainerHeaderG3ExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerHeaderG3Expanded: next });
+      return next;
+    });
+  };
+
   const setContainerSidebarExpanded = (action: SetStateAction<boolean>) => {
     setContainerSidebarExpandedState((previous) => {
       const next = resolveNextState(action, previous);
       updateThemeParameterUiSessionState({ containerSidebarExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerSidebarHeaderExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerSidebarHeaderExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerSidebarHeaderExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerSidebarHeaderTitleExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerSidebarHeaderTitleExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerSidebarHeaderTitleExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerSidebarHeaderActionsExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerSidebarHeaderActionsExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerSidebarHeaderActionsExpanded: next,
+      });
       return next;
     });
   };
@@ -1952,10 +2303,34 @@ function ThemeParameterPanel({
     });
   };
 
-  const setContainerMainWorkspaceExpanded = (action: SetStateAction<boolean>) => {
+  const setContainerMainHeaderExpanded = (action: SetStateAction<boolean>) => {
+    setContainerMainHeaderExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerMainHeaderExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMainHeaderButtonsExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMainHeaderButtonsExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMainHeaderButtonsExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerMainWorkspaceExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
     setContainerMainWorkspaceExpandedState((previous) => {
       const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerMainWorkspaceExpanded: next });
+      updateThemeParameterUiSessionState({
+        containerMainWorkspaceExpanded: next,
+      });
       return next;
     });
   };
@@ -1968,10 +2343,36 @@ function ThemeParameterPanel({
     });
   };
 
+  const setContainerMetadataHeaderExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMetadataHeaderExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMetadataHeaderExpanded: next,
+      });
+      return next;
+    });
+  };
+
+  const setContainerMetadataHeaderButtonsExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMetadataHeaderButtonsExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMetadataHeaderButtonsExpanded: next,
+      });
+      return next;
+    });
+  };
+
   const setContainerSidebarMainExpanded = (action: SetStateAction<boolean>) => {
     setContainerSidebarMainExpandedState((previous) => {
       const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerSidebarMainExpanded: next });
+      updateThemeParameterUiSessionState({
+        containerSidebarMainExpanded: next,
+      });
       return next;
     });
   };
@@ -2127,8 +2528,12 @@ function ThemeParameterPanel({
     setActivePageState(uiSessionState.activePage);
     setCommonExpandedState(uiSessionState.commonExpanded);
     setStyleExpandedState(uiSessionState.styleExpanded);
-    setContainerBackgroundExpandedState(uiSessionState.containerBackgroundExpanded);
-    setContainerSharedShellExpandedState(uiSessionState.containerSharedShellExpanded);
+    setContainerBackgroundExpandedState(
+      uiSessionState.containerBackgroundExpanded,
+    );
+    setContainerSharedShellExpandedState(
+      uiSessionState.containerSharedShellExpanded,
+    );
     setContainerHeaderExpandedState(uiSessionState.containerHeaderExpanded);
     setContainerSidebarExpandedState(uiSessionState.containerSidebarExpanded);
     setContainerMainExpandedState(uiSessionState.containerMainExpanded);
@@ -2146,7 +2551,9 @@ function ThemeParameterPanel({
     setLargePanelHeadExpandedState(uiSessionState.largePanelHeadExpanded);
     setLargePanelSideExpandedState(uiSessionState.largePanelSideExpanded);
     setLargePanelMainExpandedState(uiSessionState.largePanelMainExpanded);
-    setLargePanelInternalExpandedState(uiSessionState.largePanelInternalExpanded);
+    setLargePanelInternalExpandedState(
+      uiSessionState.largePanelInternalExpanded,
+    );
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -2208,10 +2615,23 @@ function ThemeParameterPanel({
       containerBackgroundExpanded,
       containerSharedShellExpanded,
       containerHeaderExpanded,
+      containerHeaderButtonsExpanded,
+      containerHeaderLogoExpanded,
+      containerHeaderG1Expanded,
+      containerHeaderG2Expanded,
+      containerHeaderGDebugExpanded,
+      containerHeaderG3Expanded,
       containerSidebarExpanded,
+      containerSidebarHeaderExpanded,
+      containerSidebarHeaderTitleExpanded,
+      containerSidebarHeaderActionsExpanded,
       containerMainExpanded,
+      containerMainHeaderExpanded,
+      containerMainHeaderButtonsExpanded,
       containerMainWorkspaceExpanded,
       containerMetadataExpanded,
+      containerMetadataHeaderExpanded,
+      containerMetadataHeaderButtonsExpanded,
       containerSidebarMainExpanded,
       containerMainImageNameListExpanded,
       largePanelRootExpanded,
@@ -2230,10 +2650,23 @@ function ThemeParameterPanel({
     containerBackgroundExpanded,
     containerSharedShellExpanded,
     containerHeaderExpanded,
+    containerHeaderButtonsExpanded,
+    containerHeaderLogoExpanded,
+    containerHeaderG1Expanded,
+    containerHeaderG2Expanded,
+    containerHeaderGDebugExpanded,
+    containerHeaderG3Expanded,
     containerSidebarExpanded,
+    containerSidebarHeaderExpanded,
+    containerSidebarHeaderTitleExpanded,
+    containerSidebarHeaderActionsExpanded,
     containerMainExpanded,
+    containerMainHeaderExpanded,
+    containerMainHeaderButtonsExpanded,
     containerMainWorkspaceExpanded,
     containerMetadataExpanded,
+    containerMetadataHeaderExpanded,
+    containerMetadataHeaderButtonsExpanded,
     containerMainImageNameListExpanded,
     containerSidebarMainExpanded,
     largePanelRootExpanded,
@@ -2315,7 +2748,8 @@ function ThemeParameterPanel({
     );
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
-    const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
+    const isContainerFrameFillAngle =
+      parameter.id === "container-frame-fill-angle";
     const isLargePanelSectionFillAngle =
       parameter.id === "large-panel-section-fill-angle";
     const isLargePanelSectionBorderWidth =
@@ -2424,13 +2858,17 @@ function ThemeParameterPanel({
           parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
         )
       ) {
-        syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
+        syncedLargePanelSectionFillAngleOverridesRef.current.delete(
+          parameter.id,
+        );
       } else if (
         LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
           parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
         )
       ) {
-        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
+        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
+          parameter.id,
+        );
       }
       return nextValues;
     });
@@ -2691,13 +3129,17 @@ function ThemeParameterPanel({
           parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
         )
       ) {
-        syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
+        syncedLargePanelSectionFillAngleOverridesRef.current.delete(
+          parameter.id,
+        );
       } else if (
         LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
           parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
         )
       ) {
-        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
+        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
+          parameter.id,
+        );
       }
     }
     if (payload.debugColors && typeof payload.debugColors === "object") {
@@ -2804,7 +3246,8 @@ function ThemeParameterPanel({
   const resetSingleParameter = (parameter: ThemeParameterDefinition) => {
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
-    const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
+    const isContainerFrameFillAngle =
+      parameter.id === "container-frame-fill-angle";
     const isLargePanelSectionFillAngle =
       parameter.id === "large-panel-section-fill-angle";
     const isLargePanelSectionBorderWidth =
@@ -2842,7 +3285,9 @@ function ThemeParameterPanel({
       return;
     }
     if (isContainerFrameFillAngle) {
-      const syncedIds = Array.from(syncedContainerFillAngleOverridesRef.current);
+      const syncedIds = Array.from(
+        syncedContainerFillAngleOverridesRef.current,
+      );
       parameter.reset(root);
       for (const parameterId of syncedIds) {
         parameterMap.get(parameterId)?.reset(root);
@@ -2979,7 +3424,9 @@ function ThemeParameterPanel({
         parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
       )
     ) {
-      syncedLargePanelSectionBorderWidthOverridesRef.current.delete(parameter.id);
+      syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
+        parameter.id,
+      );
     }
   };
 
@@ -3021,10 +3468,31 @@ function ThemeParameterPanel({
           aria-hidden="true"
         >
           <section className="mpx-large-panel theme-debug-large-panel-preview">
-            <header className="mpx-large-panel-head theme-debug-large-panel-preview-head" />
+            <header className="mpx-large-panel-head theme-debug-large-panel-preview-head">
+              <span className="mpx-large-panel-head-spacer settings-head-spacer" />
+              <h3 className="theme-debug-large-panel-preview-head-title">
+                {t("ui.themeParameter.panel")}
+              </h3>
+              <span className="theme-debug-large-panel-preview-head-action">
+                Debug
+              </span>
+            </header>
             <div className="mpx-large-panel-shell theme-debug-large-panel-preview-shell">
-              <aside className="mpx-large-panel-side theme-debug-large-panel-preview-side" />
-              <main className="mpx-large-panel-main theme-debug-large-panel-preview-main" />
+              <aside className="mpx-large-panel-side theme-debug-large-panel-preview-side">
+                <div className="theme-debug-large-panel-preview-item" />
+                <div className="theme-debug-large-panel-preview-item" />
+                <div className="theme-debug-large-panel-preview-item" />
+              </aside>
+              <main className="mpx-large-panel-main theme-debug-large-panel-preview-main">
+                <article className="theme-debug-large-panel-preview-card">
+                  <h4 className="theme-debug-large-panel-preview-card-title">
+                    Preview Content
+                  </h4>
+                  <div className="theme-debug-large-panel-preview-card-line" />
+                  <div className="theme-debug-large-panel-preview-card-line" />
+                  <div className="theme-debug-large-panel-preview-card-line is-short" />
+                </article>
+              </main>
             </div>
           </section>
         </div>
@@ -3124,24 +3592,72 @@ function ThemeParameterPanel({
           setContainerSharedShellExpanded={setContainerSharedShellExpanded}
           containerHeaderExpanded={containerHeaderExpanded}
           setContainerHeaderExpanded={setContainerHeaderExpanded}
+          containerHeaderButtonsExpanded={containerHeaderButtonsExpanded}
+          setContainerHeaderButtonsExpanded={setContainerHeaderButtonsExpanded}
+          containerHeaderLogoExpanded={containerHeaderLogoExpanded}
+          setContainerHeaderLogoExpanded={setContainerHeaderLogoExpanded}
+          containerHeaderG1Expanded={containerHeaderG1Expanded}
+          setContainerHeaderG1Expanded={setContainerHeaderG1Expanded}
+          containerHeaderG2Expanded={containerHeaderG2Expanded}
+          setContainerHeaderG2Expanded={setContainerHeaderG2Expanded}
+          containerHeaderGDebugExpanded={containerHeaderGDebugExpanded}
+          setContainerHeaderGDebugExpanded={setContainerHeaderGDebugExpanded}
+          containerHeaderG3Expanded={containerHeaderG3Expanded}
+          setContainerHeaderG3Expanded={setContainerHeaderG3Expanded}
           containerSidebarExpanded={containerSidebarExpanded}
           setContainerSidebarExpanded={setContainerSidebarExpanded}
+          containerSidebarHeaderExpanded={containerSidebarHeaderExpanded}
+          setContainerSidebarHeaderExpanded={setContainerSidebarHeaderExpanded}
+          containerSidebarHeaderTitleExpanded={
+            containerSidebarHeaderTitleExpanded
+          }
+          setContainerSidebarHeaderTitleExpanded={
+            setContainerSidebarHeaderTitleExpanded
+          }
+          containerSidebarHeaderActionsExpanded={
+            containerSidebarHeaderActionsExpanded
+          }
+          setContainerSidebarHeaderActionsExpanded={
+            setContainerSidebarHeaderActionsExpanded
+          }
           containerMainExpanded={containerMainExpanded}
           setContainerMainExpanded={setContainerMainExpanded}
+          containerMainHeaderExpanded={containerMainHeaderExpanded}
+          setContainerMainHeaderExpanded={setContainerMainHeaderExpanded}
+          containerMainHeaderButtonsExpanded={
+            containerMainHeaderButtonsExpanded
+          }
+          setContainerMainHeaderButtonsExpanded={
+            setContainerMainHeaderButtonsExpanded
+          }
           containerMainWorkspaceExpanded={containerMainWorkspaceExpanded}
           setContainerMainWorkspaceExpanded={setContainerMainWorkspaceExpanded}
           containerMetadataExpanded={containerMetadataExpanded}
           setContainerMetadataExpanded={setContainerMetadataExpanded}
+          containerMetadataHeaderExpanded={containerMetadataHeaderExpanded}
+          setContainerMetadataHeaderExpanded={
+            setContainerMetadataHeaderExpanded
+          }
+          containerMetadataHeaderButtonsExpanded={
+            containerMetadataHeaderButtonsExpanded
+          }
+          setContainerMetadataHeaderButtonsExpanded={
+            setContainerMetadataHeaderButtonsExpanded
+          }
           containerSidebarMainExpanded={containerSidebarMainExpanded}
           setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}
-          containerMainImageNameListExpanded={containerMainImageNameListExpanded}
+          containerMainImageNameListExpanded={
+            containerMainImageNameListExpanded
+          }
           setContainerMainImageNameListExpanded={
             setContainerMainImageNameListExpanded
           }
           largePanelRootExpanded={largePanelRootExpanded}
           setLargePanelRootExpanded={setLargePanelRootExpanded}
           largePanelSharedSectionExpanded={largePanelSharedSectionExpanded}
-          setLargePanelSharedSectionExpanded={setLargePanelSharedSectionExpanded}
+          setLargePanelSharedSectionExpanded={
+            setLargePanelSharedSectionExpanded
+          }
           largePanelHeadExpanded={largePanelHeadExpanded}
           setLargePanelHeadExpanded={setLargePanelHeadExpanded}
           largePanelSideExpanded={largePanelSideExpanded}

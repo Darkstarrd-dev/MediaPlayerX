@@ -64,14 +64,40 @@ interface ThemeParameterPanelMainProps {
   setContainerSharedShellExpanded: Dispatch<SetStateAction<boolean>>;
   containerHeaderExpanded: boolean;
   setContainerHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderButtonsExpanded: boolean;
+  setContainerHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderLogoExpanded: boolean;
+  setContainerHeaderLogoExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderG1Expanded: boolean;
+  setContainerHeaderG1Expanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderG2Expanded: boolean;
+  setContainerHeaderG2Expanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderGDebugExpanded: boolean;
+  setContainerHeaderGDebugExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderG3Expanded: boolean;
+  setContainerHeaderG3Expanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarExpanded: boolean;
   setContainerSidebarExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarHeaderExpanded: boolean;
+  setContainerSidebarHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarHeaderTitleExpanded: boolean;
+  setContainerSidebarHeaderTitleExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarHeaderActionsExpanded: boolean;
+  setContainerSidebarHeaderActionsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainExpanded: boolean;
   setContainerMainExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainHeaderExpanded: boolean;
+  setContainerMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainHeaderButtonsExpanded: boolean;
+  setContainerMainHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainWorkspaceExpanded: boolean;
   setContainerMainWorkspaceExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataExpanded: boolean;
   setContainerMetadataExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataHeaderExpanded: boolean;
+  setContainerMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataHeaderButtonsExpanded: boolean;
+  setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
@@ -177,6 +203,14 @@ interface MainImageNameListDebugSection {
   cssVars: readonly string[];
 }
 
+interface ContainerDebugSubsection {
+  id: string;
+  summaryKey: string;
+  colorFields?: readonly ThemeDebugColorField[];
+  textFields?: readonly ThemeDebugTextField[];
+  parameterIds?: readonly string[];
+}
+
 type ButtonStateKey =
   | "idle"
   | "hover"
@@ -263,6 +297,132 @@ const CONTAINER_HEADER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
 ];
 
+const CONTAINER_HEADER_BUTTONS_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-buttons-border",
+    cssVar: "--mpx-slot-fg-header-button-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-buttons-bg",
+    cssVar: "--mpx-slot-fg-header-button-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-buttons-text",
+    cssVar: "--mpx-slot-fg-header-button-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const CONTAINER_HEADER_LOGO_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-logo-border",
+    cssVar: "--mpx-slot-fg-header-logo-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-logo-bg",
+    cssVar: "--mpx-slot-fg-header-logo-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-logo-text",
+    cssVar: "--mpx-slot-fg-header-logo-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const CONTAINER_HEADER_G1_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-g1-border",
+    cssVar: "--mpx-slot-fg-header-g1-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g1-bg",
+    cssVar: "--mpx-slot-fg-header-g1-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g1-text",
+    cssVar: "--mpx-slot-fg-header-g1-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const CONTAINER_HEADER_G2_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-g2-mode-border",
+    cssVar: "--mpx-slot-fg-header-g2-mode-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g2-mode-bg",
+    cssVar: "--mpx-slot-fg-header-g2-mode-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g2-mode-text",
+    cssVar: "--mpx-slot-fg-header-g2-mode-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const CONTAINER_HEADER_GDEBUG_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-g-debug-border",
+    cssVar: "--mpx-slot-fg-header-g-debug-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g-debug-bg",
+    cssVar: "--mpx-slot-fg-header-g-debug-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g-debug-text",
+    cssVar: "--mpx-slot-fg-header-g-debug-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const CONTAINER_HEADER_G3_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-header-g3-border",
+    cssVar: "--mpx-slot-fg-header-g3-border",
+    fallback: "#b7ab95",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g3-bg",
+    cssVar: "--mpx-slot-fg-header-g3-bg",
+    fallback: "#ffffff",
+    groupId: "head",
+  },
+  {
+    id: "container-header-g3-text",
+    cssVar: "--mpx-slot-fg-header-g3-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
 const CONTAINER_SIDEBAR_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "container-sidebar-fill-start",
@@ -292,6 +452,91 @@ const CONTAINER_SIDEBAR_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     groupId: "shadow",
   },
 ];
+
+const CONTAINER_SIDEBAR_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-sidebar-header-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-header-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-border",
+    fallback: "rgba(0, 0, 0, 0)",
+    fallbackAlpha: 0,
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-header-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-text",
+    fallback: "#2e2a22",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-header-button-border",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-border",
+    fallback: "#b7ab95",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-header-button-bg",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-bg",
+    fallback: "#ffffff",
+    groupId: "side",
+  },
+  {
+    id: "container-sidebar-header-button-text",
+    cssVar: "--mpx-slot-fg-sidebar-header-button-text",
+    fallback: "#2e2a22",
+    groupId: "side",
+  },
+];
+
+const CONTAINER_SIDEBAR_HEADER_TITLE_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-sidebar-header-title-border",
+      cssVar: "--mpx-slot-fg-sidebar-header-title-border",
+      fallback: "#b7ab95",
+      groupId: "side",
+    },
+    {
+      id: "container-sidebar-header-title-bg",
+      cssVar: "--mpx-slot-fg-sidebar-header-title-bg",
+      fallback: "#ffffff",
+      groupId: "side",
+    },
+    {
+      id: "container-sidebar-header-title-text",
+      cssVar: "--mpx-slot-fg-sidebar-header-title-text",
+      fallback: "#2e2a22",
+      groupId: "side",
+    },
+  ];
+
+const CONTAINER_SIDEBAR_HEADER_ACTIONS_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-sidebar-header-action-border",
+      cssVar: "--mpx-slot-fg-sidebar-header-action-border",
+      fallback: "#b7ab95",
+      groupId: "side",
+    },
+    {
+      id: "container-sidebar-header-action-bg",
+      cssVar: "--mpx-slot-fg-sidebar-header-action-bg",
+      fallback: "#ffffff",
+      groupId: "side",
+    },
+    {
+      id: "container-sidebar-header-action-text",
+      cssVar: "--mpx-slot-fg-sidebar-header-action-text",
+      fallback: "#2e2a22",
+      groupId: "side",
+    },
+  ];
 
 const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -332,6 +577,52 @@ const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
 ];
 
+const CONTAINER_MAIN_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-main-header-fill-start",
+    cssVar: "--mpx-main-header-fill-start",
+    fallback: "rgba(0, 0, 0, 0)",
+    fallbackAlpha: 0,
+    groupId: "main",
+  },
+  {
+    id: "container-main-header-fill-end",
+    cssVar: "--mpx-main-header-fill-end",
+    fallback: "rgba(0, 0, 0, 0)",
+    fallbackAlpha: 0,
+    groupId: "main",
+  },
+  {
+    id: "container-main-header-border-color",
+    cssVar: "--mpx-main-header-border-color",
+    fallback: "rgba(0, 0, 0, 0)",
+    fallbackAlpha: 0,
+    groupId: "main",
+  },
+];
+
+const CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-main-header-button-border",
+      cssVar: "--mpx-slot-fg-main-header-button-border",
+      fallback: "#b7ab95",
+      groupId: "main",
+    },
+    {
+      id: "container-main-header-button-bg",
+      cssVar: "--mpx-slot-fg-main-header-button-bg",
+      fallback: "#ffffff",
+      groupId: "main",
+    },
+    {
+      id: "container-main-header-button-text",
+      cssVar: "--mpx-slot-fg-main-header-button-text",
+      fallback: "#2e2a22",
+      groupId: "main",
+    },
+  ];
+
 const CONTAINER_METADATA_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "container-metadata-fill-start",
@@ -362,13 +653,64 @@ const CONTAINER_METADATA_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
 ];
 
+const CONTAINER_METADATA_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-metadata-header-fill-start",
+      cssVar: "--mpx-metadata-header-fill-start",
+      fallback: "rgba(0, 0, 0, 0)",
+      fallbackAlpha: 0,
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-header-fill-end",
+      cssVar: "--mpx-metadata-header-fill-end",
+      fallback: "rgba(0, 0, 0, 0)",
+      fallbackAlpha: 0,
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-header-border-color",
+      cssVar: "--mpx-metadata-header-border-color",
+      fallback: "rgba(0, 0, 0, 0)",
+      fallbackAlpha: 0,
+      groupId: "main",
+    },
+  ];
+
+const CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-metadata-header-button-border",
+      cssVar: "--mpx-slot-fg-meta-header-button-border",
+      fallback: "#b7ab95",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-header-button-bg",
+      cssVar: "--mpx-slot-fg-meta-header-button-bg",
+      fallback: "#ffffff",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-header-button-text",
+      cssVar: "--mpx-slot-fg-meta-header-button-text",
+      fallback: "#2e2a22",
+      groupId: "main",
+    },
+  ];
+
 const CONTAINER_FRAME_SECTION_DEFINITIONS = [
   {
     id: "header",
     summaryKey: "ui.themeParameter.containerLayer.sectionHeader",
     colorFields: CONTAINER_HEADER_COLOR_FIELDS,
     textFields: CONTAINER_HEADER_TEXT_FIELDS,
-    appearanceParameterIds: ["header-fill-angle", "header-radius", "header-z-index"],
+    appearanceParameterIds: [
+      "header-fill-angle",
+      "header-radius",
+      "header-z-index",
+    ],
     transformParameterIds: [
       "header-frame-translate-x",
       "header-frame-translate-y",
@@ -384,7 +726,11 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionSidebar",
     colorFields: CONTAINER_SIDEBAR_COLOR_FIELDS,
     textFields: CONTAINER_SIDEBAR_TEXT_FIELDS,
-    appearanceParameterIds: ["sidebar-fill-angle", "sidebar-radius", "sidebar-z-index"],
+    appearanceParameterIds: [
+      "sidebar-fill-angle",
+      "sidebar-radius",
+      "sidebar-z-index",
+    ],
     transformParameterIds: [
       "sidebar-frame-translate-x",
       "sidebar-frame-translate-y",
@@ -416,7 +762,11 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionMetadata",
     colorFields: CONTAINER_METADATA_COLOR_FIELDS,
     textFields: CONTAINER_METADATA_TEXT_FIELDS,
-    appearanceParameterIds: ["metadata-fill-angle", "metadata-radius", "metadata-z-index"],
+    appearanceParameterIds: [
+      "metadata-fill-angle",
+      "metadata-radius",
+      "metadata-z-index",
+    ],
     transformParameterIds: [
       "metadata-frame-translate-x",
       "metadata-frame-translate-y",
@@ -446,7 +796,9 @@ const CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS = [
   "container-frame-edge-color",
 ] as const;
 
-const CONTAINER_SHARED_SHELL_TEXT_FIELD_IDS = ["container-frame-shadow"] as const;
+const CONTAINER_SHARED_SHELL_TEXT_FIELD_IDS = [
+  "container-frame-shadow",
+] as const;
 
 const CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS = [
   "container-header-shadow",
@@ -470,8 +822,11 @@ const CONTAINER_FILL_SYNC_COLOR_FIELD_IDS = {
   ],
 } as const;
 
-const LARGE_PANEL_ROOT_PARAMETER_IDS = [
+const LARGE_PANEL_ROOT_INLINE_PARAMETER_IDS = [
   "large-panel-fill-angle",
+] as const;
+
+const LARGE_PANEL_ROOT_PARAMETER_IDS = [
   "large-panel-border-width",
   "large-panel-width",
   "large-panel-height",
@@ -480,8 +835,11 @@ const LARGE_PANEL_ROOT_PARAMETER_IDS = [
   "large-panel-shell-gap",
 ] as const;
 
-const LARGE_PANEL_SHARED_PARAMETER_IDS = [
+const LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS = [
   "large-panel-section-fill-angle",
+] as const;
+
+const LARGE_PANEL_SHARED_PARAMETER_IDS = [
   "large-panel-section-border-width",
 ] as const;
 
@@ -768,19 +1126,22 @@ const CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "container-sidebar-main-label-active-shadow",
     cssVar: "--mpx-sidebar-main-label-active-shadow",
-    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    fallback:
+      "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
     groupId: "side",
   },
   {
     id: "container-sidebar-main-label-active-hover-shadow",
     cssVar: "--mpx-sidebar-main-label-active-hover-shadow",
-    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    fallback:
+      "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
     groupId: "side",
   },
   {
     id: "container-sidebar-main-label-manage-selected-shadow",
     cssVar: "--mpx-sidebar-main-label-manage-selected-shadow",
-    fallback: "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
+    fallback:
+      "var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))",
     groupId: "side",
   },
   {
@@ -1098,13 +1459,105 @@ const MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSectio
     },
   ];
 
+const HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
+  {
+    id: "header-buttons",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderButtons",
+    colorFields: CONTAINER_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+  {
+    id: "header-logo",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderLogo",
+    colorFields: CONTAINER_HEADER_LOGO_COLOR_FIELDS,
+  },
+  {
+    id: "header-g1",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderG1",
+    colorFields: CONTAINER_HEADER_G1_COLOR_FIELDS,
+  },
+  {
+    id: "header-g2",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderG2",
+    colorFields: CONTAINER_HEADER_G2_COLOR_FIELDS,
+  },
+  {
+    id: "header-g-debug",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderGDebug",
+    colorFields: CONTAINER_HEADER_GDEBUG_COLOR_FIELDS,
+  },
+  {
+    id: "header-g3",
+    summaryKey: "ui.themeParameter.containerLayer.sectionHeaderG3",
+    colorFields: CONTAINER_HEADER_G3_COLOR_FIELDS,
+  },
+];
+
+const SIDEBAR_HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
+  {
+    id: "sidebar-header-root",
+    summaryKey: "ui.themeParameter.containerLayer.sectionSidebarHeader",
+    colorFields: CONTAINER_SIDEBAR_HEADER_COLOR_FIELDS,
+  },
+  {
+    id: "sidebar-header-title",
+    summaryKey: "ui.themeParameter.containerLayer.sectionSidebarHeaderTitle",
+    colorFields: CONTAINER_SIDEBAR_HEADER_TITLE_COLOR_FIELDS,
+  },
+  {
+    id: "sidebar-header-actions",
+    summaryKey: "ui.themeParameter.containerLayer.sectionSidebarHeaderActions",
+    colorFields: CONTAINER_SIDEBAR_HEADER_ACTIONS_COLOR_FIELDS,
+  },
+];
+
+const MAIN_HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
+  {
+    id: "main-header-root",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMainHeader",
+    colorFields: CONTAINER_MAIN_HEADER_COLOR_FIELDS,
+    parameterIds: ["main-header-fill-angle"],
+  },
+  {
+    id: "main-header-buttons",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMainHeaderButtons",
+    colorFields: CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+];
+
+const METADATA_HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
+  {
+    id: "metadata-header-root",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMetadataHeader",
+    colorFields: CONTAINER_METADATA_HEADER_COLOR_FIELDS,
+    parameterIds: ["metadata-header-fill-angle"],
+  },
+  {
+    id: "metadata-header-buttons",
+    summaryKey: "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons",
+    colorFields: CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+];
+
 const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_SHARED_COLOR_FIELDS,
   ...CONTAINER_HEADER_COLOR_FIELDS,
+  ...CONTAINER_HEADER_BUTTONS_COLOR_FIELDS,
+  ...CONTAINER_HEADER_LOGO_COLOR_FIELDS,
+  ...CONTAINER_HEADER_G1_COLOR_FIELDS,
+  ...CONTAINER_HEADER_G2_COLOR_FIELDS,
+  ...CONTAINER_HEADER_GDEBUG_COLOR_FIELDS,
+  ...CONTAINER_HEADER_G3_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_COLOR_FIELDS,
+  ...CONTAINER_SIDEBAR_HEADER_COLOR_FIELDS,
+  ...CONTAINER_SIDEBAR_HEADER_TITLE_COLOR_FIELDS,
+  ...CONTAINER_SIDEBAR_HEADER_ACTIONS_COLOR_FIELDS,
   ...CONTAINER_MAIN_COLOR_FIELDS,
+  ...CONTAINER_MAIN_HEADER_COLOR_FIELDS,
+  ...CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
   ...CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
   ...CONTAINER_METADATA_COLOR_FIELDS,
+  ...CONTAINER_METADATA_HEADER_COLOR_FIELDS,
+  ...CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
 ];
@@ -1395,12 +1848,6 @@ function resolveDebugVarUsage(cssVar: string): string {
 
 const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
-    id: "large-panel-border-color",
-    cssVar: "--mpx-large-panel-border-color",
-    fallback: "#d6cfc1",
-    groupId: "root",
-  },
-  {
     id: "large-panel-fill-start",
     cssVar: "--mpx-large-panel-fill-start",
     fallback: "#ffffff",
@@ -1410,6 +1857,12 @@ const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     id: "large-panel-fill-end",
     cssVar: "--mpx-large-panel-fill-end",
     fallback: "#ffffff",
+    groupId: "root",
+  },
+  {
+    id: "large-panel-border-color",
+    cssVar: "--mpx-large-panel-border-color",
+    fallback: "#d6cfc1",
     groupId: "root",
   },
 ];
@@ -1430,6 +1883,13 @@ const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "root",
   },
   {
+    id: "large-panel-head-fill-start",
+    cssVar: "--mpx-large-panel-head-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "head",
+  },
+  {
     id: "large-panel-section-border-color",
     cssVar: "--mpx-large-panel-section-border-color",
     fallback: "#d6cfc1",
@@ -1438,12 +1898,6 @@ const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
-  {
-    id: "large-panel-head-border-color",
-    cssVar: "--mpx-large-panel-head-border-color",
-    fallback: "#d6cfc1",
-    groupId: "head",
-  },
   {
     id: "large-panel-head-fill-start",
     cssVar: "--mpx-large-panel-head-fill-start",
@@ -1459,6 +1913,12 @@ const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "head",
   },
   {
+    id: "large-panel-head-border-color",
+    cssVar: "--mpx-large-panel-head-border-color",
+    fallback: "#d6cfc1",
+    groupId: "head",
+  },
+  {
     id: "large-panel-head-text",
     cssVar: "--mpx-large-panel-head-text",
     fallback: "#2e2a22",
@@ -1467,12 +1927,6 @@ const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
-  {
-    id: "large-panel-side-border-color",
-    cssVar: "--mpx-large-panel-side-border-color",
-    fallback: "#d6cfc1",
-    groupId: "side",
-  },
   {
     id: "large-panel-side-fill-start",
     cssVar: "--mpx-large-panel-side-fill-start",
@@ -1485,15 +1939,15 @@ const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#ffffff",
     groupId: "side",
   },
+  {
+    id: "large-panel-side-border-color",
+    cssVar: "--mpx-large-panel-side-border-color",
+    fallback: "#d6cfc1",
+    groupId: "side",
+  },
 ];
 
 const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
-  {
-    id: "large-panel-main-border-color",
-    cssVar: "--mpx-large-panel-main-border-color",
-    fallback: "#d6cfc1",
-    groupId: "main",
-  },
   {
     id: "large-panel-main-fill-start",
     cssVar: "--mpx-large-panel-main-fill-start",
@@ -1504,6 +1958,12 @@ const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     id: "large-panel-main-fill-end",
     cssVar: "--mpx-large-panel-main-fill-end",
     fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-main-border-color",
+    cssVar: "--mpx-large-panel-main-border-color",
+    fallback: "#d6cfc1",
     groupId: "main",
   },
 ];
@@ -2245,8 +2705,8 @@ const LARGE_PANEL_SECTION_DEFINITIONS = [
     id: "head",
     summaryKey: "ui.themeParameter.largePanelLayer.sectionHead",
     colorFields: LARGE_PANEL_HEAD_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-head-fill-angle"],
     parameterIds: [
-      "large-panel-head-fill-angle",
       "large-panel-head-border-width",
       "large-panel-head-padding-y",
       "large-panel-head-padding-x",
@@ -2256,8 +2716,8 @@ const LARGE_PANEL_SECTION_DEFINITIONS = [
     id: "side",
     summaryKey: "ui.themeParameter.largePanelLayer.sectionSide",
     colorFields: LARGE_PANEL_SIDE_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-side-fill-angle"],
     parameterIds: [
-      "large-panel-side-fill-angle",
       "large-panel-side-border-width",
       "large-panel-side-radius",
       "large-panel-side-padding",
@@ -2268,8 +2728,8 @@ const LARGE_PANEL_SECTION_DEFINITIONS = [
     id: "main",
     summaryKey: "ui.themeParameter.largePanelLayer.sectionMain",
     colorFields: LARGE_PANEL_MAIN_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-main-fill-angle"],
     parameterIds: [
-      "large-panel-main-fill-angle",
       "large-panel-main-border-width",
       "large-panel-main-radius",
       "large-panel-main-padding-y",
@@ -3012,14 +3472,40 @@ export function ThemeParameterPanelMain({
   setContainerSharedShellExpanded,
   containerHeaderExpanded,
   setContainerHeaderExpanded,
+  containerHeaderButtonsExpanded,
+  setContainerHeaderButtonsExpanded,
+  containerHeaderLogoExpanded,
+  setContainerHeaderLogoExpanded,
+  containerHeaderG1Expanded,
+  setContainerHeaderG1Expanded,
+  containerHeaderG2Expanded,
+  setContainerHeaderG2Expanded,
+  containerHeaderGDebugExpanded,
+  setContainerHeaderGDebugExpanded,
+  containerHeaderG3Expanded,
+  setContainerHeaderG3Expanded,
   containerSidebarExpanded,
   setContainerSidebarExpanded,
+  containerSidebarHeaderExpanded,
+  setContainerSidebarHeaderExpanded,
+  containerSidebarHeaderTitleExpanded,
+  setContainerSidebarHeaderTitleExpanded,
+  containerSidebarHeaderActionsExpanded,
+  setContainerSidebarHeaderActionsExpanded,
   containerMainExpanded,
   setContainerMainExpanded,
+  containerMainHeaderExpanded,
+  setContainerMainHeaderExpanded,
+  containerMainHeaderButtonsExpanded,
+  setContainerMainHeaderButtonsExpanded,
   containerMainWorkspaceExpanded,
   setContainerMainWorkspaceExpanded,
   containerMetadataExpanded,
   setContainerMetadataExpanded,
+  containerMetadataHeaderExpanded,
+  setContainerMetadataHeaderExpanded,
+  containerMetadataHeaderButtonsExpanded,
+  setContainerMetadataHeaderButtonsExpanded,
   containerSidebarMainExpanded,
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
@@ -3089,9 +3575,9 @@ export function ThemeParameterPanelMain({
   const syncedContainerFillColorOverridesRef = useRef<
     Record<string, Set<string>>
   >({});
-  const syncedLargePanelColorOverridesRef = useRef<
-    Record<string, Set<string>>
-  >({});
+  const syncedLargePanelColorOverridesRef = useRef<Record<string, Set<string>>>(
+    {},
+  );
   const [controlPreviewValues, setControlPreviewValues] =
     useState<ControlPreviewValues>({
       sliderBaseHorizontal: 36,
@@ -3111,11 +3597,15 @@ export function ThemeParameterPanelMain({
     [],
   );
   const containerLayerParameterMap = useMemo(
-    () => new Map(containerLayerParameters.map((parameter) => [parameter.id, parameter])),
+    () =>
+      new Map(
+        containerLayerParameters.map((parameter) => [parameter.id, parameter]),
+      ),
     [containerLayerParameters],
   );
   const containerTextFieldMap = useMemo(
-    () => new Map(CONTAINER_LAYER_TEXT_FIELDS.map((field) => [field.id, field])),
+    () =>
+      new Map(CONTAINER_LAYER_TEXT_FIELDS.map((field) => [field.id, field])),
     [],
   );
 
@@ -3131,8 +3621,9 @@ export function ThemeParameterPanelMain({
   const pickContainerParameters = (parameterIds: readonly string[]) => {
     return parameterIds
       .map((id) => containerLayerParameterMap.get(id))
-      .filter((parameter): parameter is ThemeParameterDefinition =>
-        parameter !== undefined,
+      .filter(
+        (parameter): parameter is ThemeParameterDefinition =>
+          parameter !== undefined,
       );
   };
 
@@ -3157,15 +3648,19 @@ export function ThemeParameterPanelMain({
   }, []);
 
   const largePanelParameterMap = useMemo(
-    () => new Map(largePanelLayerParameters.map((parameter) => [parameter.id, parameter])),
+    () =>
+      new Map(
+        largePanelLayerParameters.map((parameter) => [parameter.id, parameter]),
+      ),
     [largePanelLayerParameters],
   );
 
   const pickLargePanelParameters = (parameterIds: readonly string[]) => {
     return parameterIds
       .map((id) => largePanelParameterMap.get(id))
-      .filter((parameter): parameter is ThemeParameterDefinition =>
-        parameter !== undefined,
+      .filter(
+        (parameter): parameter is ThemeParameterDefinition =>
+          parameter !== undefined,
       );
   };
 
@@ -3173,8 +3668,16 @@ export function ThemeParameterPanelMain({
     return pickLargePanelParameters(LARGE_PANEL_ROOT_PARAMETER_IDS);
   }, [largePanelParameterMap]);
 
+  const largePanelRootInlineParameters = useMemo(() => {
+    return pickLargePanelParameters(LARGE_PANEL_ROOT_INLINE_PARAMETER_IDS);
+  }, [largePanelParameterMap]);
+
   const largePanelSharedParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_SHARED_PARAMETER_IDS);
+  }, [largePanelParameterMap]);
+
+  const largePanelSharedInlineParameters = useMemo(() => {
+    return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
   }, [largePanelParameterMap]);
 
   const smallPanelNumberGroups = useMemo(() => {
@@ -3222,11 +3725,11 @@ export function ThemeParameterPanelMain({
         ? CONTAINER_LAYER_COLOR_FIELDS
         : activePage === "largePanelLayer"
           ? LARGE_PANEL_COLOR_FIELDS
-        : activePage === "smallPanelLayer"
-          ? SMALL_PANEL_COLOR_FIELDS
-          : activePage === "commonControls"
-            ? COMMON_CONTROL_COLOR_FIELDS
-          : BUTTON_STATE_COLOR_FIELDS;
+          : activePage === "smallPanelLayer"
+            ? SMALL_PANEL_COLOR_FIELDS
+            : activePage === "commonControls"
+              ? COMMON_CONTROL_COLOR_FIELDS
+              : BUTTON_STATE_COLOR_FIELDS;
     const nextValues: Record<string, ColorState> = {};
     for (const field of sourceFields) {
       const parsed = readCssColorState(computed, field.cssVar, field.fallback);
@@ -3249,9 +3752,9 @@ export function ThemeParameterPanelMain({
           ? CONTAINER_LAYER_TEXT_FIELDS
           : activePage === "largePanelLayer"
             ? LARGE_PANEL_TEXT_FIELDS
-          : activePage === "commonControls"
-            ? COMMON_CONTROL_TEXT_FIELDS
-          : SMALL_PANEL_TEXT_FIELDS;
+            : activePage === "commonControls"
+              ? COMMON_CONTROL_TEXT_FIELDS
+              : SMALL_PANEL_TEXT_FIELDS;
       for (const field of sourceTextFields) {
         nextTextValues[field.id] =
           computed.getPropertyValue(field.cssVar).trim() || field.fallback;
@@ -3300,9 +3803,13 @@ export function ThemeParameterPanelMain({
       const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
-          syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
+          syncedContainerFillColorOverridesRef.current[field.id] = new Set(
+            syncTargetIds,
+          );
         }
-        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id]) {
+        for (const targetId of syncedContainerFillColorOverridesRef.current[
+          field.id
+        ]) {
           const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3320,7 +3827,9 @@ export function ThemeParameterPanelMain({
             largePanelSyncTargetIds,
           );
         }
-        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id]) {
+        for (const targetId of syncedLargePanelColorOverridesRef.current[
+          field.id
+        ]) {
           const targetField = LARGE_PANEL_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3336,15 +3845,21 @@ export function ThemeParameterPanelMain({
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
-          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        for (const sourceId of Object.keys(
+          CONTAINER_FILL_SYNC_COLOR_FIELD_IDS,
+        )) {
+          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(
+            field.id,
+          );
         }
       } else if (
         Object.values(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS).some((ids) =>
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+        for (const sourceId of Object.keys(
+          LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS,
+        )) {
           syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
@@ -3384,9 +3899,13 @@ export function ThemeParameterPanelMain({
       const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
-          syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
+          syncedContainerFillColorOverridesRef.current[field.id] = new Set(
+            syncTargetIds,
+          );
         }
-        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id]) {
+        for (const targetId of syncedContainerFillColorOverridesRef.current[
+          field.id
+        ]) {
           const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3404,7 +3923,9 @@ export function ThemeParameterPanelMain({
             largePanelSyncTargetIds,
           );
         }
-        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id]) {
+        for (const targetId of syncedLargePanelColorOverridesRef.current[
+          field.id
+        ]) {
           const targetField = LARGE_PANEL_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3420,15 +3941,21 @@ export function ThemeParameterPanelMain({
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
-          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        for (const sourceId of Object.keys(
+          CONTAINER_FILL_SYNC_COLOR_FIELD_IDS,
+        )) {
+          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(
+            field.id,
+          );
         }
       } else if (
         Object.values(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS).some((ids) =>
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+        for (const sourceId of Object.keys(
+          LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS,
+        )) {
           syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
@@ -3451,7 +3978,9 @@ export function ThemeParameterPanelMain({
       root.style.removeProperty(field.cssVar);
       clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
       notifyContainerDebugChanged(field.cssVar);
-      for (const targetId of syncedContainerFillColorOverridesRef.current[field.id] ?? []) {
+      for (const targetId of syncedContainerFillColorOverridesRef.current[
+        field.id
+      ] ?? []) {
         const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
           (candidate) => candidate.id === targetId,
         );
@@ -3465,12 +3994,18 @@ export function ThemeParameterPanelMain({
       const computed = getComputedStyle(root);
       setDebugColorValues((previous) => {
         const nextValues = { ...previous };
-        const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
+        const nextValue = readCssColorState(
+          computed,
+          field.cssVar,
+          field.fallback,
+        );
         nextValues[field.id] = {
           hex: nextValue.hex,
           alpha: field.fallbackAlpha ?? nextValue.alpha,
         };
-        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id] ?? []) {
+        for (const targetId of syncedContainerFillColorOverridesRef.current[
+          field.id
+        ] ?? []) {
           const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3495,7 +4030,9 @@ export function ThemeParameterPanelMain({
     if (largePanelSyncTargetIds.length > 0) {
       root.style.removeProperty(field.cssVar);
       clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
-      for (const targetId of syncedLargePanelColorOverridesRef.current[field.id] ?? []) {
+      for (const targetId of syncedLargePanelColorOverridesRef.current[
+        field.id
+      ] ?? []) {
         const targetField = LARGE_PANEL_COLOR_FIELDS.find(
           (candidate) => candidate.id === targetId,
         );
@@ -3508,12 +4045,18 @@ export function ThemeParameterPanelMain({
       const computed = getComputedStyle(root);
       setDebugColorValues((previous) => {
         const nextValues = { ...previous };
-        const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
+        const nextValue = readCssColorState(
+          computed,
+          field.cssVar,
+          field.fallback,
+        );
         nextValues[field.id] = {
           hex: nextValue.hex,
           alpha: field.fallbackAlpha ?? nextValue.alpha,
         };
-        for (const targetId of syncedLargePanelColorOverridesRef.current[field.id] ?? []) {
+        for (const targetId of syncedLargePanelColorOverridesRef.current[
+          field.id
+        ] ?? []) {
           const targetField = LARGE_PANEL_COLOR_FIELDS.find(
             (candidate) => candidate.id === targetId,
           );
@@ -3550,7 +4093,9 @@ export function ThemeParameterPanelMain({
     for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
       syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
     }
-    for (const sourceId of Object.keys(LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS)) {
+    for (const sourceId of Object.keys(
+      LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS,
+    )) {
       syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
     }
   };
@@ -3562,11 +4107,15 @@ export function ThemeParameterPanelMain({
     );
   };
 
-  const isContainerSharedShadowField = (field: ThemeDebugTextField): boolean => {
+  const isContainerSharedShadowField = (
+    field: ThemeDebugTextField,
+  ): boolean => {
     return field.id === "container-frame-shadow";
   };
 
-  const isContainerShadowOverrideField = (field: ThemeDebugTextField): boolean => {
+  const isContainerShadowOverrideField = (
+    field: ThemeDebugTextField,
+  ): boolean => {
     return CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS.includes(
       field.id as (typeof CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS)[number],
     );
@@ -3631,7 +4180,8 @@ export function ThemeParameterPanelMain({
       setDebugTextValues((previous) => {
         const nextValues = {
           ...previous,
-          [field.id]: computed.getPropertyValue(field.cssVar).trim() || field.fallback,
+          [field.id]:
+            computed.getPropertyValue(field.cssVar).trim() || field.fallback,
         };
         for (const fieldId of syncedIds) {
           const syncedField = containerTextFieldMap.get(fieldId);
@@ -3639,7 +4189,8 @@ export function ThemeParameterPanelMain({
             continue;
           }
           nextValues[fieldId] =
-            computed.getPropertyValue(syncedField.cssVar).trim() || syncedField.fallback;
+            computed.getPropertyValue(syncedField.cssVar).trim() ||
+            syncedField.fallback;
         }
         return nextValues;
       });
@@ -3665,7 +4216,9 @@ export function ThemeParameterPanelMain({
     return (
       <span className="theme-parameter-var-label">
         {cssVar}
-        {usage ? <span className="theme-parameter-var-usage"> {usage}</span> : null}
+        {usage ? (
+          <span className="theme-parameter-var-usage"> {usage}</span>
+        ) : null}
       </span>
     );
   };
@@ -4099,7 +4652,9 @@ export function ThemeParameterPanelMain({
           aria-label={field.cssVar}
           className="theme-parameter-textarea"
           value={raw}
-          onChange={(event) => setDebugTextFieldValue(field, event.target.value)}
+          onChange={(event) =>
+            setDebugTextFieldValue(field, event.target.value)
+          }
         />
         {renderResetButton()}
       </label>
@@ -4109,7 +4664,10 @@ export function ThemeParameterPanelMain({
   const sidebarMainColorFieldMap = useMemo(
     () =>
       new Map(
-        CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS.map((field) => [field.cssVar, field]),
+        CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS.map((field) => [
+          field.cssVar,
+          field,
+        ]),
       ),
     [],
   );
@@ -4117,7 +4675,10 @@ export function ThemeParameterPanelMain({
   const sidebarMainTextFieldMap = useMemo(
     () =>
       new Map(
-        CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS.map((field) => [field.cssVar, field]),
+        CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS.map((field) => [
+          field.cssVar,
+          field,
+        ]),
       ),
     [],
   );
@@ -4246,7 +4807,8 @@ export function ThemeParameterPanelMain({
       section.transformParameterIds,
     );
     const fillColorFields = section.colorFields.filter(
-      (field) => field.id.includes("fill-start") || field.id.includes("fill-end"),
+      (field) =>
+        field.id.includes("fill-start") || field.id.includes("fill-end"),
     );
     const otherColorFields = section.colorFields.filter(
       (field) => !fillColorFields.includes(field),
@@ -4299,12 +4861,70 @@ export function ThemeParameterPanelMain({
     );
   };
 
+  const renderContainerDebugSubsectionRows = (
+    section: ContainerDebugSubsection,
+  ) => {
+    const parameters = section.parameterIds
+      ? pickContainerParameters(section.parameterIds)
+      : [];
+    return (
+      <>
+        {section.colorFields && section.colorFields.length > 0 ? (
+          <div className="theme-parameter-color-list">
+            {section.colorFields.map(renderColorFieldRow)}
+          </div>
+        ) : null}
+        {section.textFields && section.textFields.length > 0 ? (
+          <div className="theme-parameter-text-list">
+            {section.textFields.map(renderTextFieldRow)}
+          </div>
+        ) : null}
+        {parameters.length > 0
+          ? renderParameterRowsWithVarLabel(parameters)
+          : null}
+      </>
+    );
+  };
+
+  const renderContainerDebugSubsection = (
+    section: ContainerDebugSubsection,
+    open: boolean,
+    setOpen: Dispatch<SetStateAction<boolean>>,
+  ) => {
+    return (
+      <details
+        key={section.id}
+        className="settings-collapsible"
+        open={open}
+        onToggle={(event) =>
+          setOpen((event.currentTarget as HTMLDetailsElement).open)
+        }
+      >
+        <summary>{t(section.summaryKey)}</summary>
+        <div className="settings-collapsible-content">
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>变量</span>
+            </header>
+            {renderContainerDebugSubsectionRows(section)}
+          </section>
+        </div>
+      </details>
+    );
+  };
+
   const renderLargePanelSectionRows = (options: {
     colorFields: readonly ThemeDebugColorField[];
+    inlineParameters?: ThemeParameterDefinition[];
     textFields?: readonly ThemeDebugTextField[];
     parameters?: ThemeParameterDefinition[];
   }) => {
-    const { colorFields, textFields = [], parameters = [] } = options;
+    const {
+      colorFields,
+      inlineParameters = [],
+      textFields = [],
+      parameters = [],
+    } = options;
     return (
       <>
         {colorFields.length > 0 ? (
@@ -4315,6 +4935,9 @@ export function ThemeParameterPanelMain({
             <div className="theme-parameter-color-list">
               {colorFields.map(renderColorFieldRow)}
             </div>
+            {inlineParameters.length > 0
+              ? renderParameterRowsWithVarLabel(inlineParameters)
+              : null}
             {textFields.length > 0 ? (
               <div className="theme-parameter-text-list">
                 {textFields.map(renderTextFieldRow)}
@@ -4410,7 +5033,9 @@ export function ThemeParameterPanelMain({
           aria-label={field.cssVar}
           className="theme-parameter-textarea"
           value={raw}
-          onChange={(event) => setDebugTextFieldValue(field, event.target.value)}
+          onChange={(event) =>
+            setDebugTextFieldValue(field, event.target.value)
+          }
         />
         {isTextFieldChanged(field) ? (
           <button
@@ -4585,7 +5210,9 @@ export function ThemeParameterPanelMain({
             data-testid="theme-control-preview-slider-vertical-stack"
           >
             <label className="theme-parameter-control-vertical-item">
-              <span className="theme-parameter-control-preview-caption">朝上</span>
+              <span className="theme-parameter-control-preview-caption">
+                朝上
+              </span>
               <div className="theme-parameter-control-vertical-track-box">
                 <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis">
                   <SkeuoRunway
@@ -4609,11 +5236,11 @@ export function ThemeParameterPanelMain({
               </div>
             </label>
             <label className="theme-parameter-control-vertical-item">
-              <span className="theme-parameter-control-preview-caption">朝下</span>
+              <span className="theme-parameter-control-preview-caption">
+                朝下
+              </span>
               <div className="theme-parameter-control-vertical-track-box">
-                <div
-                  className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis is-down"
-                >
+                <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis is-down">
                   <SkeuoRunway
                     ariaLabel="slider-vertical-down-preview"
                     inputClassName="video-ctrl-volume-range"
@@ -4653,7 +5280,9 @@ export function ThemeParameterPanelMain({
       if (colorFields.length === 0 && textFields.length === 0) {
         return null;
       }
-      const horizontalPreview = renderCommonControlHorizontalPreview(section.id);
+      const horizontalPreview = renderCommonControlHorizontalPreview(
+        section.id,
+      );
       const verticalPreview = renderCommonControlVerticalPreview(section.id);
       return (
         <section
@@ -5162,7 +5791,9 @@ export function ThemeParameterPanelMain({
                       .slice(0, 2)
                       .map(renderColorFieldRow)}
                   </div>
-                  {renderParameterRowsWithVarLabel(containerSharedShellAngleParameters)}
+                  {renderParameterRowsWithVarLabel(
+                    containerSharedShellAngleParameters,
+                  )}
                   <div className="theme-parameter-color-list">
                     {containerSharedShellColorFields
                       .slice(2)
@@ -5192,10 +5823,42 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.containerLayer.sectionHeader")}</summary>
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionHeader")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[0],
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[0],
+                  containerHeaderButtonsExpanded,
+                  setContainerHeaderButtonsExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[1],
+                  containerHeaderLogoExpanded,
+                  setContainerHeaderLogoExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[2],
+                  containerHeaderG1Expanded,
+                  setContainerHeaderG1Expanded,
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[3],
+                  containerHeaderG2Expanded,
+                  setContainerHeaderG2Expanded,
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[4],
+                  containerHeaderGDebugExpanded,
+                  setContainerHeaderGDebugExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  HEADER_DEBUG_SUBSECTIONS[5],
+                  containerHeaderG3Expanded,
+                  setContainerHeaderG3Expanded,
                 )}
               </div>
             </details>
@@ -5209,10 +5872,27 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.containerLayer.sectionSidebar")}</summary>
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionSidebar")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[1],
+                )}
+                {renderContainerDebugSubsection(
+                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
+                  containerSidebarHeaderExpanded,
+                  setContainerSidebarHeaderExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1],
+                  containerSidebarHeaderTitleExpanded,
+                  setContainerSidebarHeaderTitleExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2],
+                  containerSidebarHeaderActionsExpanded,
+                  setContainerSidebarHeaderActionsExpanded,
                 )}
               </div>
             </details>
@@ -5226,10 +5906,22 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.containerLayer.sectionMain")}</summary>
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionMain")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[2],
+                )}
+                {renderContainerDebugSubsection(
+                  MAIN_HEADER_DEBUG_SUBSECTIONS[0],
+                  containerMainHeaderExpanded,
+                  setContainerMainHeaderExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  MAIN_HEADER_DEBUG_SUBSECTIONS[1],
+                  containerMainHeaderButtonsExpanded,
+                  setContainerMainHeaderButtonsExpanded,
                 )}
               </div>
             </details>
@@ -5255,7 +5947,9 @@ export function ThemeParameterPanelMain({
                     </span>
                   </header>
                   <div className="theme-parameter-color-list">
-                    {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(renderColorFieldRow)}
+                    {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
+                      renderColorFieldRow,
+                    )}
                   </div>
                 </section>
               </div>
@@ -5276,6 +5970,16 @@ export function ThemeParameterPanelMain({
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[3],
+                )}
+                {renderContainerDebugSubsection(
+                  METADATA_HEADER_DEBUG_SUBSECTIONS[0],
+                  containerMetadataHeaderExpanded,
+                  setContainerMetadataHeaderExpanded,
+                )}
+                {renderContainerDebugSubsection(
+                  METADATA_HEADER_DEBUG_SUBSECTIONS[1],
+                  containerMetadataHeaderButtonsExpanded,
+                  setContainerMetadataHeaderButtonsExpanded,
                 )}
               </div>
             </details>
@@ -5345,10 +6049,13 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.largePanelLayer.sectionRoot")}</summary>
+              <summary>
+                {t("ui.themeParameter.largePanelLayer.sectionRoot")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderLargePanelSectionRows({
                   colorFields: LARGE_PANEL_ROOT_COLOR_FIELDS,
+                  inlineParameters: largePanelRootInlineParameters,
                   textFields: LARGE_PANEL_ROOT_TEXT_FIELDS,
                   parameters: largePanelRootParameters,
                 })}
@@ -5363,10 +6070,13 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.largePanelLayer.sectionShared")}</summary>
+              <summary>
+                {t("ui.themeParameter.largePanelLayer.sectionShared")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderLargePanelSectionRows({
                   colorFields: LARGE_PANEL_SHARED_COLOR_FIELDS,
+                  inlineParameters: largePanelSharedInlineParameters,
                   parameters: largePanelSharedParameters,
                 })}
               </div>
@@ -5390,14 +6100,21 @@ export function ThemeParameterPanelMain({
                   className="settings-collapsible"
                   open={expanded}
                   onToggle={(event) =>
-                    setExpanded((event.currentTarget as HTMLDetailsElement).open)
+                    setExpanded(
+                      (event.currentTarget as HTMLDetailsElement).open,
+                    )
                   }
                 >
                   <summary>{t(section.summaryKey)}</summary>
                   <div className="settings-collapsible-content">
                     {renderLargePanelSectionRows({
                       colorFields: section.colorFields,
-                      parameters: pickLargePanelParameters(section.parameterIds),
+                      inlineParameters: pickLargePanelParameters(
+                        section.inlineParameterIds,
+                      ),
+                      parameters: pickLargePanelParameters(
+                        section.parameterIds,
+                      ),
                     })}
                   </div>
                 </details>
@@ -5412,7 +6129,9 @@ export function ThemeParameterPanelMain({
                 )
               }
             >
-              <summary>{t("ui.themeParameter.largePanelLayer.sectionInternal")}</summary>
+              <summary>
+                {t("ui.themeParameter.largePanelLayer.sectionInternal")}
+              </summary>
               <div className="settings-collapsible-content">
                 {renderLargePanelInternalSections()}
               </div>

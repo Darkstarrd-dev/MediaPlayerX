@@ -37,7 +37,9 @@ function ensureDetailsOpen(summaryText: string): void {
 }
 
 function getResetButtonByLabelText(text: string): HTMLButtonElement {
-  const label = screen.getByText(text).closest("label") as HTMLLabelElement | null;
+  const label = screen
+    .getByText(text)
+    .closest("label") as HTMLLabelElement | null;
   expect(label).not.toBeNull();
   const button = label?.querySelector(
     ".theme-parameter-reset-btn",
@@ -165,17 +167,19 @@ describe("ThemeParameterPanel", () => {
     });
 
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-container-frame-radius"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-container-frame-radius",
+      ),
     ).toBe("20px");
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-radius")).toBe(
-      "20px",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-radius")).toBe(
-      "20px",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-main-radius")).toBe(
-      "20px",
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-radius"),
+    ).toBe("20px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-radius"),
+    ).toBe("20px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-radius"),
+    ).toBe("20px");
     expect(
       document.documentElement.style.getPropertyValue("--mpx-metadata-radius"),
     ).toBe("20px");
@@ -194,30 +198,32 @@ describe("ThemeParameterPanel", () => {
       target: { value: "8" },
     });
 
-    expect(document.documentElement.style.getPropertyValue("--mpx-main-radius")).toBe(
-      "8px",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-radius")).toBe(
-      "20px",
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-radius"),
+    ).toBe("8px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-radius"),
+    ).toBe("20px");
 
     fireEvent.click(getResetButtonByLabelText("--mpx-container-frame-radius"));
 
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-container-frame-radius"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-container-frame-radius",
+      ),
     ).toBe("");
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-radius")).toBe(
-      "",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-radius")).toBe(
-      "",
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-radius"),
+    ).toBe("");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-radius"),
+    ).toBe("");
     expect(
       document.documentElement.style.getPropertyValue("--mpx-metadata-radius"),
     ).toBe("");
-    expect(document.documentElement.style.getPropertyValue("--mpx-main-radius")).toBe(
-      "8px",
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-radius"),
+    ).toBe("8px");
   });
 
   it("共享壳层阴影总控会同步四个分控阴影，分控仍可继续覆盖", () => {
@@ -239,15 +245,15 @@ describe("ThemeParameterPanel", () => {
       "--mpx-container-frame-shadow",
     );
     expect(sharedShadow).toContain("9px");
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-shadow")).toBe(
-      sharedShadow,
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow")).toBe(
-      sharedShadow,
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-main-shadow")).toBe(
-      sharedShadow,
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-shadow"),
+    ).toBe(sharedShadow);
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow"),
+    ).toBe(sharedShadow);
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-shadow"),
+    ).toBe(sharedShadow);
     expect(
       document.documentElement.style.getPropertyValue("--mpx-metadata-shadow"),
     ).toBe(sharedShadow);
@@ -262,12 +268,12 @@ describe("ThemeParameterPanel", () => {
       },
     );
 
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-shadow")).toContain(
-      "4px",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow")).toBe(
-      sharedShadow,
-    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-shadow"),
+    ).toContain("4px");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow"),
+    ).toBe(sharedShadow);
   }, 15000);
 
   it("共享壳层 fill 三件套会同步四个分控，分控仍可继续覆盖", () => {
@@ -276,41 +282,59 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
     ensureDetailsOpen("2.0 共享壳层");
 
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }), {
-      target: { value: "#111111" },
-    });
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-end" }), {
-      target: { value: "#222222" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }),
+      {
+        target: { value: "#111111" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-container-frame-fill-end" }),
+      {
+        target: { value: "#222222" },
+      },
+    );
     fireEvent.change(getSliderByLabelText("--mpx-container-frame-fill-angle"), {
       target: { value: "135" },
     });
 
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-fill-start")).toBe(
-      "#111111",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-fill-end")).toBe(
-      "#222222",
-    );
-    expect(document.documentElement.style.getPropertyValue("--mpx-main-fill-angle")).toBe(
-      "135deg",
-    );
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-fill-start",
+      ),
+    ).toBe("#111111");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-fill-end"),
+    ).toBe("#222222");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-main-fill-angle"),
+    ).toBe("135deg");
 
     ensureDetailsOpen("2.2 Sidebar");
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-sidebar-fill-start" }), {
-      target: { value: "#333333" },
-    });
-
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }), {
-      target: { value: "#444444" },
-    });
-
-    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-fill-start")).toBe(
-      "#333333",
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-sidebar-fill-start" }),
+      {
+        target: { value: "#333333" },
+      },
     );
-    expect(document.documentElement.style.getPropertyValue("--mpx-header-fill-start")).toBe(
-      "#444444",
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }),
+      {
+        target: { value: "#444444" },
+      },
     );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-sidebar-fill-start",
+      ),
+    ).toBe("#333333");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-fill-start",
+      ),
+    ).toBe("#444444");
   }, 15000);
 
   it("按 style 切换专属参数并应用变量覆盖", () => {
@@ -367,9 +391,12 @@ describe("ThemeParameterPanel", () => {
       target: { value: "14" },
     });
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }), {
-      target: { value: "#123456" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }),
+      {
+        target: { value: "#123456" },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
 
@@ -394,7 +421,8 @@ describe("ThemeParameterPanel", () => {
               "skeuo-shadow-strength": 26,
             },
             debugTexts: {
-              "container-bg-app-fill": "linear-gradient(90deg, #112233, #445566)",
+              "container-bg-app-fill":
+                "linear-gradient(90deg, #112233, #445566)",
             },
           },
           null,
@@ -414,34 +442,39 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toContain("26%");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-bg-app-fill").trim(),
+      document.documentElement.style
+        .getPropertyValue("--mpx-bg-app-fill")
+        .trim(),
     ).toBe("linear-gradient(90deg, #112233, #445566)");
     expect(screen.getByText(/快照来自风格 liquid-glass/)).toBeInTheDocument();
   });
 
-  it("应用背景 fill 支持基础纯色快捷选择", () => {
-    renderThemeParameterPanel();
+  it(
+    "应用背景 fill 支持基础纯色快捷选择",
+    () => {
+      renderThemeParameterPanel();
 
-    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
-    ensureDetailsOpen("1.0 背景");
+      fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+      ensureDetailsOpen("1.0 背景");
 
-    fireEvent.change(
-      screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }),
-      {
-        target: { value: "linear-gradient(90deg, #112233, #445566)" },
-      },
-    );
-    fireEvent.change(
-      screen.getByLabelText("--mpx-bg-app-fill-solid-picker"),
-      {
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }),
+        {
+          target: { value: "linear-gradient(90deg, #112233, #445566)" },
+        },
+      );
+      fireEvent.change(screen.getByLabelText("--mpx-bg-app-fill-solid-picker"), {
         target: { value: "#abcdef" },
-      },
-    );
+      });
 
-    expect(
-      document.documentElement.style.getPropertyValue("--mpx-bg-app-fill").trim(),
-    ).toBe("#abcdef");
-  });
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-bg-app-fill")
+          .trim(),
+      ).toBe("#abcdef");
+    },
+    15000,
+  );
 
   it("按钮状态页颜色参数支持写入样式并进入快照", () => {
     renderThemeParameterPanel();
@@ -489,7 +522,9 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.queryByTestId("theme-control-preview-slider-player-vertical"),
     ).toBeNull();
-    expect(screen.getByLabelText("slider-vertical-up-preview")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("slider-vertical-up-preview"),
+    ).toBeInTheDocument();
     expect(
       screen.getByLabelText("slider-vertical-down-preview"),
     ).toBeInTheDocument();
@@ -660,7 +695,8 @@ describe("ThemeParameterPanel", () => {
             version: 1,
             styleId: "soft-skeuomorphic",
             debugTexts: {
-              "container-bg-app-fill": "linear-gradient(90deg, #112233, #445566)",
+              "container-bg-app-fill":
+                "linear-gradient(90deg, #112233, #445566)",
             },
           },
           null,
@@ -675,7 +711,9 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
     ).toBe("14px");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-bg-app-fill").trim(),
+      document.documentElement.style
+        .getPropertyValue("--mpx-bg-app-fill")
+        .trim(),
     ).toBe("linear-gradient(90deg, #112233, #445566)");
   });
 
@@ -863,7 +901,9 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
 
     expect(screen.getByText("3.0 大面板本体")).toBeInTheDocument();
-    expect(screen.getByText("3.1 Head / Side / Main 共享总控")).toBeInTheDocument();
+    expect(
+      screen.getByText("3.1 Head / Side / Main 共享总控"),
+    ).toBeInTheDocument();
     expect(screen.getByText("3.2 Head")).toBeInTheDocument();
     expect(screen.getByText("3.3 Side")).toBeInTheDocument();
     expect(screen.getByText("3.4 Main")).toBeInTheDocument();
@@ -876,13 +916,103 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.getByRole("textbox", { name: "--mpx-large-panel-fill-end" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: "--mpx-large-panel-bg" })).toBeNull();
+    expect(
+      screen.getByText("Theme Parameter"),
+    ).toBeInTheDocument();
+    const fillEndField = screen.getByRole("textbox", {
+      name: "--mpx-large-panel-fill-end",
+    });
+    const fillAngleSlider = getSliderByLabelText("--mpx-large-panel-fill-angle");
+    expect(
+      fillEndField.compareDocumentPosition(fillAngleSlider) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+    expect(
+      screen.queryByRole("textbox", { name: "--mpx-large-panel-bg" }),
+    ).toBeNull();
   });
 
   it(
-    "大面板层共享总控会同步 Head/Side/Main 分控，分控仍可继续覆盖",
+    "大面板根层变量会作用到 Theme Parameter 面板本体",
     () => {
       renderThemeParameterPanel();
+
+      fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+      ensureDetailsOpen("3.0 大面板本体");
+
+      const panel = document.querySelector(".theme-parameter-panel") as HTMLElement;
+
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "--mpx-large-panel-border-color" }),
+        { target: { value: "#123456" } },
+      );
+      fireEvent.change(
+        screen.getByRole("textbox", {
+          name: "--mpx-large-panel-shadow-layer-0-blur",
+        }),
+        { target: { value: "40px" } },
+      );
+      fireEvent.change(getSliderByLabelText("--mpx-large-panel-width"), {
+        target: { value: "70" },
+      });
+      fireEvent.change(getSliderByLabelText("--mpx-large-panel-height"), {
+        target: { value: "60" },
+      });
+
+      ensureDetailsOpen("3.2 Head");
+      fireEvent.change(
+        screen.getByRole("textbox", {
+          name: "--mpx-large-panel-head-border-color",
+        }),
+        { target: { value: "#654321" } },
+      );
+      fireEvent.change(
+        screen.getByRole("textbox", { name: "--mpx-large-panel-head-text" }),
+        { target: { value: "#224466" } },
+      );
+
+      expect(panel.getAttribute("style") ?? "").not.toContain(
+        "--mpx-large-panel-width",
+      );
+      expect(panel.getAttribute("style") ?? "").not.toContain(
+        "--mpx-large-panel-height",
+      );
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-border-color")
+          .trim(),
+      ).toBe("#123456");
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-shadow")
+          .trim(),
+      ).toContain("40px");
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-width")
+          .trim(),
+      ).toBe("70vw");
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-height")
+          .trim(),
+      ).toBe("60vh");
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-head-border-color")
+          .trim(),
+      ).toBe("#654321");
+      expect(
+        document.documentElement.style
+          .getPropertyValue("--mpx-large-panel-head-text")
+          .trim(),
+      ).toBe("#224466");
+    },
+    15000,
+  );
+
+  it("大面板层共享总控会同步 Head/Side/Main 分控，分控仍可继续覆盖", () => {
+    renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
     ensureDetailsOpen("3.1 Head / Side / Main 共享总控");
@@ -941,18 +1071,23 @@ describe("ThemeParameterPanel", () => {
 
     ensureDetailsOpen("3.2 Head");
     fireEvent.change(
-      screen.getByRole("textbox", { name: "--mpx-large-panel-head-fill-start" }),
+      screen.getAllByRole("textbox", {
+        name: "--mpx-large-panel-head-fill-start",
+      })[0],
       { target: { value: "#445566" } },
     );
     fireEvent.change(
-      screen.getByRole("spinbutton", {
+      screen.getAllByRole("spinbutton", {
         name: "--mpx-large-panel-head-fill-start-alpha",
-      }),
+      })[0],
       { target: { value: "100" } },
     );
-    fireEvent.change(getSliderByLabelText("--mpx-large-panel-head-border-width"), {
-      target: { value: "2" },
-    });
+    fireEvent.change(
+      getSliderByLabelText("--mpx-large-panel-head-border-width"),
+      {
+        target: { value: "2" },
+      },
+    );
 
     fireEvent.change(
       screen.getByRole("textbox", {
@@ -992,18 +1127,14 @@ describe("ThemeParameterPanel", () => {
         "--mpx-large-panel-side-border-width",
       ),
     ).toBe("4px");
-      expect(
-        document.documentElement.style.getPropertyValue(
-          "--mpx-large-panel-main-border-width",
-        ),
-      ).toBe("4px");
-    },
-    15000,
-  );
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-large-panel-main-border-width",
+      ),
+    ).toBe("4px");
+  }, 15000);
 
-  it(
-    "大容器层调试拆分为三段可折叠，并支持新增槽位调试与快照导出",
-    () => {
+  it("大容器层调试拆分为三段可折叠，并支持新增槽位调试与快照导出", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -1021,7 +1152,9 @@ describe("ThemeParameterPanel", () => {
     expect(nameListSummary).toBeInTheDocument();
 
     fireEvent.click(sidebarSummary);
-    expect(screen.getByText("1、sidebar-main 本体与容器链路")).toBeInTheDocument();
+    expect(
+      screen.getByText("1、sidebar-main 本体与容器链路"),
+    ).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
       {
@@ -1035,9 +1168,7 @@ describe("ThemeParameterPanel", () => {
       },
     );
     expect(
-      document.documentElement.style.getPropertyValue(
-        "--mpx-sidebar-main-bg",
-      ),
+      document.documentElement.style.getPropertyValue("--mpx-sidebar-main-bg"),
     ).toBe("#112233");
     expect(
       document.documentElement.style.getPropertyValue(
@@ -1093,13 +1224,9 @@ describe("ThemeParameterPanel", () => {
     expect(snapshotTextarea.value).toContain(
       '"container-main-image-name-list-head-bg": "#445566"',
     );
-    },
-    15000,
-  );
+  }, 15000);
 
-  it(
-    "大容器层支持单容器 frame 参数与文本快照导出",
-    () => {
+  it("大容器层支持单容器 frame 参数与文本快照导出", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -1140,16 +1267,22 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toBe("24px");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-header-frame-rotate-z"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-frame-rotate-z",
+      ),
     ).toBe("-12deg");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-header-fill-start"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-fill-start",
+      ),
     ).toBe("#111111");
     expect(
       document.documentElement.style.getPropertyValue("--mpx-header-fill-end"),
     ).toBe("#222222");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-header-fill-angle"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-header-fill-angle",
+      ),
     ).toBe("135deg");
     expect(
       document.documentElement.style.getPropertyValue("--mpx-header-shadow"),
@@ -1163,15 +1296,17 @@ describe("ThemeParameterPanel", () => {
     ) as HTMLTextAreaElement;
     expect(snapshotTextarea.value).toContain('"header-frame-translate-x": 24');
     expect(snapshotTextarea.value).toContain('"header-frame-rotate-z": -12');
-    expect(snapshotTextarea.value).toContain('"container-header-fill-start": "#111111"');
-    expect(snapshotTextarea.value).toContain('"container-header-fill-end": "#222222"');
+    expect(snapshotTextarea.value).toContain(
+      '"container-header-fill-start": "#111111"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"container-header-fill-end": "#222222"',
+    );
     expect(snapshotTextarea.value).toContain('"header-fill-angle": 135');
     expect(snapshotTextarea.value).toContain(
       '"container-header-shadow": "0 8px 24px rgba(1, 2, 3, 0.4)"',
     );
-    },
-    30000,
-  );
+  }, 30000);
 
   it("大容器层的 Sidebar/Main/Metadata frame 数值项可写入变量", () => {
     renderThemeParameterPanel();
@@ -1194,19 +1329,160 @@ describe("ThemeParameterPanel", () => {
     });
 
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-sidebar-frame-scale-x"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-sidebar-frame-scale-x",
+      ),
     ).toBe("0.88");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-main-frame-translate-y"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-main-frame-translate-y",
+      ),
     ).toBe("18px");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-metadata-frame-origin-y"),
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-frame-origin-y",
+      ),
     ).toBe("72%");
   });
 
-  it(
-    "复杂文本变量支持结构化拆分编辑且导入导出保持原始 CSS 字符串",
-    () => {
+  it("Main/Metadata header root token 与按钮总控可独立写入", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+
+    ensureDetailsOpen("2.3 Main");
+    ensureDetailsOpen("2.3.1.0 Main header 总控");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-main-header-fill-start" }),
+      {
+        target: { value: "#112233" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-main-header-fill-start-alpha",
+      }),
+      {
+        target: { value: "100" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-main-header-fill-end" }),
+      {
+        target: { value: "#223344" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-main-header-fill-end-alpha",
+      }),
+      {
+        target: { value: "100" },
+      },
+    );
+    fireEvent.change(getSliderByLabelText("--mpx-main-header-fill-angle"), {
+      target: { value: "135" },
+    });
+    ensureDetailsOpen("2.3.1.1 Main header 按钮");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-main-header-button-bg",
+      }),
+      {
+        target: { value: "#334455" },
+      },
+    );
+
+    ensureDetailsOpen("2.4 Metadata");
+    ensureDetailsOpen("2.4.1.0 Metadata header 总控");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-header-fill-start",
+      }),
+      {
+        target: { value: "#445566" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-metadata-header-fill-start-alpha",
+      }),
+      {
+        target: { value: "100" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-header-fill-end",
+      }),
+      {
+        target: { value: "#556677" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-metadata-header-fill-end-alpha",
+      }),
+      {
+        target: { value: "100" },
+      },
+    );
+    fireEvent.change(getSliderByLabelText("--mpx-metadata-header-fill-angle"), {
+      target: { value: "90" },
+    });
+    ensureDetailsOpen("2.4.1.1 Metadata header 按钮");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-meta-header-button-text",
+      }),
+      {
+        target: { value: "#ddeeff" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-main-header-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-main-header-fill-end",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-main-header-fill-angle",
+      ),
+    ).toBe("135deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-main-header-button-bg",
+      ),
+    ).toBe("#334455");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-header-fill-start",
+      ),
+    ).toBe("#445566");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-header-fill-end",
+      ),
+    ).toBe("#556677");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-header-fill-angle",
+      ),
+    ).toBe("90deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-meta-header-button-text",
+      ),
+    ).toBe("#ddeeff");
+  }, 30000);
+
+  it("复杂文本变量支持结构化拆分编辑且导入导出保持原始 CSS 字符串", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -1316,23 +1592,27 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByText("2.2.2.1 fg-sidebar-main"));
 
     expect(
-      (screen.getByRole("spinbutton", {
-        name: "--mpx-sidebar-main-label-bg-angle",
-      }) as HTMLInputElement).value,
+      (
+        screen.getByRole("spinbutton", {
+          name: "--mpx-sidebar-main-label-bg-angle",
+        }) as HTMLInputElement
+      ).value,
     ).toBe("150");
     expect(
-      (screen.getByRole("textbox", {
-        name: "--mpx-sidebar-main-label-bg-color-1",
-      }) as HTMLInputElement).value,
+      (
+        screen.getByRole("textbox", {
+          name: "--mpx-sidebar-main-label-bg-color-1",
+        }) as HTMLInputElement
+      ).value,
     ).toBe("#333333");
     expect(
-      (screen.getByRole("spinbutton", {
-        name: "--mpx-sidebar-main-label-hover-filter-value",
-      }) as HTMLInputElement).value,
+      (
+        screen.getByRole("spinbutton", {
+          name: "--mpx-sidebar-main-label-hover-filter-value",
+        }) as HTMLInputElement
+      ).value,
     ).toBe("0.93");
-    },
-    30000,
-  );
+  }, 30000);
 
   it("大容器层调试值在关闭后重新打开保持，点击全局复位后清空", () => {
     const { rerender } = renderThemeParameterPanel();
@@ -1466,9 +1746,7 @@ describe("ThemeParameterPanel", () => {
     expect(getThemeParameterMain().scrollTop).toBe(220);
   });
 
-  it(
-    "关闭后重开保持容器折叠状态",
-    () => {
+  it("关闭后重开保持容器折叠状态", () => {
     const { rerender } = renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -1503,6 +1781,46 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
     ).toBeInTheDocument();
+  }, 15000);
+
+  it(
+    "关闭后重开保持新的 header 子分节折叠状态",
+    () => {
+      const { rerender } = renderThemeParameterPanel();
+
+      fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+      ensureDetailsOpen("2.1 Header");
+      ensureDetailsOpen("2.1.0 Header 按钮总控");
+      expect(
+        screen.getByRole("textbox", { name: "--mpx-slot-fg-header-button-bg" }),
+      ).toBeInTheDocument();
+
+      rerender(
+        <I18nProvider browserLocale="en-US">
+          <ThemeParameterPanel
+            open={false}
+            styleId="soft-skeuomorphic"
+            settingsFontSize={14}
+            onClose={vi.fn()}
+          />
+        </I18nProvider>,
+      );
+
+      rerender(
+        <I18nProvider browserLocale="en-US">
+          <ThemeParameterPanel
+            open
+            styleId="soft-skeuomorphic"
+            settingsFontSize={14}
+            onClose={vi.fn()}
+          />
+        </I18nProvider>,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+      expect(
+        screen.getByRole("textbox", { name: "--mpx-slot-fg-header-button-bg" }),
+      ).toBeInTheDocument();
     },
     15000,
   );
@@ -1559,9 +1877,12 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
     ensureDetailsOpen("1.0 背景");
-    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }), {
-      target: { value: "linear-gradient(180deg, #abcdef, #fedcba)" },
-    });
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-bg-app-fill" }),
+      {
+        target: { value: "linear-gradient(180deg, #abcdef, #fedcba)" },
+      },
+    );
 
     const fieldLabel = screen.getByText("--mpx-bg-app-fill");
     const control = fieldLabel.closest(".theme-parameter-text-row");
@@ -1573,7 +1894,9 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(resetButton as HTMLButtonElement);
 
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-bg-app-fill").trim(),
+      document.documentElement.style
+        .getPropertyValue("--mpx-bg-app-fill")
+        .trim(),
     ).toBe("");
   });
 });

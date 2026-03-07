@@ -258,6 +258,23 @@
   );
 }
 
+.theme-debug-large-panel-preview-head-title {
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+}
+
+.theme-debug-large-panel-preview-head-action {
+  justify-self: end;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
 .theme-debug-large-panel-preview-shell {
   min-height: 0;
   flex: 1;
@@ -266,6 +283,42 @@
 .theme-debug-large-panel-preview-side,
 .theme-debug-large-panel-preview-main {
   min-height: 0;
+}
+
+.theme-debug-large-panel-preview-item,
+.theme-debug-large-panel-preview-card {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.theme-debug-large-panel-preview-item {
+  min-height: 36px;
+}
+
+.theme-debug-large-panel-preview-card {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.theme-debug-large-panel-preview-card-title {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.theme-debug-large-panel-preview-card-line {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.theme-debug-large-panel-preview-card-line.is-short {
+  width: 46%;
 }
 
 [data-slot="fg-header-g1-settings-root-panel"] {
@@ -371,51 +424,51 @@
 }
 
 [data-slot="fg-header-g3-theme-parameter-root-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-fill-start: var(
+  --mpx-large-panel-fill-start-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-fill-end: var(
+  --mpx-large-panel-fill-end-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
-  --mpx-large-panel-head-border-color: var(
+  --mpx-large-panel-head-border-color-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-fill-start: var(
+  --mpx-large-panel-head-fill-start-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-bg,
     rgba(0, 0, 0, 0)
   );
-  --mpx-large-panel-head-fill-end: var(
+  --mpx-large-panel-head-fill-end-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-bg,
     rgba(0, 0, 0, 0)
   );
-  --mpx-large-panel-head-text: var(
+  --mpx-large-panel-head-text-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-text,
     inherit
   );
-  --mpx-large-panel-side-fill-start: var(
+  --mpx-large-panel-side-fill-start-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-side-fill-end: var(
+  --mpx-large-panel-side-fill-end-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-main-fill-start: var(
+  --mpx-large-panel-main-fill-start-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-main-fill-end: var(
+  --mpx-large-panel-main-fill-end-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -2262,8 +2315,6 @@ button.mpx-overlay-chip-btn:focus-visible {
 }
 
 .theme-parameter-panel {
-  --mpx-large-panel-width: 80vw;
-  --mpx-large-panel-height: 80vh;
   position: relative;
   z-index: 1;
 }
