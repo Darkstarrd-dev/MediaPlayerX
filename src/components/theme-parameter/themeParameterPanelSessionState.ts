@@ -11,10 +11,23 @@ interface ThemeParameterUISessionState {
   containerBackgroundExpanded: boolean;
   containerSharedShellExpanded: boolean;
   containerHeaderExpanded: boolean;
+  containerHeaderButtonsExpanded: boolean;
+  containerHeaderLogoExpanded: boolean;
+  containerHeaderG1Expanded: boolean;
+  containerHeaderG2Expanded: boolean;
+  containerHeaderGDebugExpanded: boolean;
+  containerHeaderG3Expanded: boolean;
   containerSidebarExpanded: boolean;
+  containerSidebarHeaderExpanded: boolean;
+  containerSidebarHeaderTitleExpanded: boolean;
+  containerSidebarHeaderActionsExpanded: boolean;
   containerMainExpanded: boolean;
+  containerMainHeaderExpanded: boolean;
+  containerMainHeaderButtonsExpanded: boolean;
   containerMainWorkspaceExpanded: boolean;
   containerMetadataExpanded: boolean;
+  containerMetadataHeaderExpanded: boolean;
+  containerMetadataHeaderButtonsExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
   largePanelRootExpanded: boolean;
@@ -38,10 +51,23 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerBackgroundExpanded: true,
   containerSharedShellExpanded: true,
   containerHeaderExpanded: false,
+  containerHeaderButtonsExpanded: false,
+  containerHeaderLogoExpanded: false,
+  containerHeaderG1Expanded: false,
+  containerHeaderG2Expanded: false,
+  containerHeaderGDebugExpanded: false,
+  containerHeaderG3Expanded: false,
   containerSidebarExpanded: false,
+  containerSidebarHeaderExpanded: false,
+  containerSidebarHeaderTitleExpanded: false,
+  containerSidebarHeaderActionsExpanded: false,
   containerMainExpanded: false,
+  containerMainHeaderExpanded: false,
+  containerMainHeaderButtonsExpanded: false,
   containerMainWorkspaceExpanded: false,
   containerMetadataExpanded: false,
+  containerMetadataHeaderExpanded: false,
+  containerMetadataHeaderButtonsExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
   largePanelRootExpanded: true,

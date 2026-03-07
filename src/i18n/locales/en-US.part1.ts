@@ -375,15 +375,35 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.preview.bgPlusSmallPanel":
     "Preview background + small panel layer",
   "ui.themeParameter.resetContainerDebugAll": "Full reset (container debug)",
-  "ui.themeParameter.containerLayer.sectionBackground":
-    "1.0 Background",
+  "ui.themeParameter.containerLayer.sectionBackground": "1.0 Background",
   "ui.themeParameter.containerLayer.sectionSharedShell": "2.0 shared shell",
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
+  "ui.themeParameter.containerLayer.sectionHeaderButtons":
+    "2.1.0 Header button control",
+  "ui.themeParameter.containerLayer.sectionHeaderLogo": "2.1.1 Header logo",
+  "ui.themeParameter.containerLayer.sectionHeaderG1": "2.1.2 Header g1",
+  "ui.themeParameter.containerLayer.sectionHeaderG2": "2.1.3 Header g2",
+  "ui.themeParameter.containerLayer.sectionHeaderGDebug": "2.1.4 Header gDebug",
+  "ui.themeParameter.containerLayer.sectionHeaderG3": "2.1.5 Header g3",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
+  "ui.themeParameter.containerLayer.sectionSidebarHeader":
+    "2.2.1.0 Sidebar header control",
+  "ui.themeParameter.containerLayer.sectionSidebarHeaderTitle":
+    "2.2.1.1 Sidebar header title",
+  "ui.themeParameter.containerLayer.sectionSidebarHeaderActions":
+    "2.2.1.2 Sidebar header other buttons",
   "ui.themeParameter.containerLayer.sectionMain": "2.3 Main",
+  "ui.themeParameter.containerLayer.sectionMainHeader":
+    "2.3.1.0 Main header control",
+  "ui.themeParameter.containerLayer.sectionMainHeaderButtons":
+    "2.3.1.1 Main header buttons",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
     "2.3.2.1 Workspace / Image Grid",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
+  "ui.themeParameter.containerLayer.sectionMetadataHeader":
+    "2.4.1.0 Metadata header control",
+  "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
+    "2.4.1.1 Metadata header buttons",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
@@ -411,14 +431,22 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.metricBorderColor": "border tint ratio",
   "ui.themeParameter.controls.section.scrollbar": "6.1 Scrollbar style",
   "ui.themeParameter.controls.section.sliderBase": "6.2.0 Slider base layer",
-  "ui.themeParameter.controls.section.sliderPlayer": "6.2.1 Slider variant: player panel",
-  "ui.themeParameter.controls.section.sliderVertical": "6.2.2 Slider variant: vertical (up/down shared)",
-  "ui.themeParameter.controls.section.sliderSettings": "6.2.3 Slider variant: settings panel",
-  "ui.themeParameter.controls.note.scrollbar": "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
-  "ui.themeParameter.controls.note.sliderBase": "Base style entry for slider variants, covering shared range track/thumb states.",
-  "ui.themeParameter.controls.note.sliderPlayer": "Player progress and volume sliders share the SkeuoRunway chain.",
-  "ui.themeParameter.controls.note.sliderVertical": "Vertical sliders (up/down) share one variable chain.",
-  "ui.themeParameter.controls.note.sliderSettings": "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
+  "ui.themeParameter.controls.section.sliderPlayer":
+    "6.2.1 Slider variant: player panel",
+  "ui.themeParameter.controls.section.sliderVertical":
+    "6.2.2 Slider variant: vertical (up/down shared)",
+  "ui.themeParameter.controls.section.sliderSettings":
+    "6.2.3 Slider variant: settings panel",
+  "ui.themeParameter.controls.note.scrollbar":
+    "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
+  "ui.themeParameter.controls.note.sliderBase":
+    "Base style entry for slider variants, covering shared range track/thumb states.",
+  "ui.themeParameter.controls.note.sliderPlayer":
+    "Player progress and volume sliders share the SkeuoRunway chain.",
+  "ui.themeParameter.controls.note.sliderVertical":
+    "Vertical sliders (up/down) share one variable chain.",
+  "ui.themeParameter.controls.note.sliderSettings":
+    "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

@@ -17,6 +17,18 @@
 }
 
 .app-header-frame {
+  --mpx-header-button-border-effective: var(
+    --mpx-slot-fg-header-button-border,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-header-button-bg-effective: var(
+    --mpx-slot-fg-header-button-bg,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-header-button-text-effective: var(
+    --mpx-slot-fg-header-button-text,
+    var(--mpx-btn-variant-default-text-idle)
+  );
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -179,6 +191,18 @@
 }
 
 .logo-btn {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-logo-border,
+    var(--mpx-header-button-border-effective)
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-logo-bg,
+    var(--mpx-header-button-bg-effective)
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-logo-text,
+    var(--mpx-header-button-text-effective)
+  );
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -220,6 +244,18 @@
 }
 
 .logo-btn.is-task-idle {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-logo-state-idle-border,
+    var(--mpx-slot-fg-header-logo-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-logo-state-idle-bg,
+    var(--mpx-slot-fg-header-logo-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-logo-state-idle-text,
+    var(--mpx-slot-fg-header-logo-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-logo-state-idle-border,
     var(--mpx-status-idle-border)
@@ -235,6 +271,18 @@
 }
 
 .logo-btn.is-task-busy {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-logo-state-busy-border,
+    var(--mpx-slot-fg-header-logo-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-logo-state-busy-bg,
+    var(--mpx-slot-fg-header-logo-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-logo-state-busy-text,
+    var(--mpx-slot-fg-header-logo-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-logo-state-busy-border,
     var(--mpx-status-busy-border)
@@ -555,62 +603,110 @@
 }
 
 [data-slot="fg-header-g1-palette"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-g1-palette-border,
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-g1-palette-bg,
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-g1-palette-text,
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-g1-palette-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
   );
   background: var(
     --mpx-slot-fg-header-g1-palette-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
   );
   color: var(
     --mpx-slot-fg-header-g1-palette-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
   );
 }
 
 [data-slot="fg-header-g1-settings"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-g1-settings-border,
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-g1-settings-bg,
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-g1-settings-text,
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-g1-settings-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
   );
   background: var(
     --mpx-slot-fg-header-g1-settings-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
   );
   color: var(
     --mpx-slot-fg-header-g1-settings-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
   );
 }
 
 [data-slot="fg-header-g1-toggle-sidebar"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-g1-toggle-sidebar-border,
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-g1-toggle-sidebar-bg,
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-g1-toggle-sidebar-text,
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-g1-toggle-sidebar-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
   );
   background: var(
     --mpx-slot-fg-header-g1-toggle-sidebar-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
   );
   color: var(
     --mpx-slot-fg-header-g1-toggle-sidebar-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
   );
 }
 
 [data-slot="fg-header-g1-toggle-metadata"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-header-g1-toggle-metadata-border,
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-header-g1-toggle-metadata-bg,
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-header-g1-toggle-metadata-text,
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
+  );
   border-color: var(
     --mpx-slot-fg-header-g1-toggle-metadata-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
   );
   background: var(
     --mpx-slot-fg-header-g1-toggle-metadata-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-header-g1-bg, var(--mpx-header-button-bg-effective))
   );
   color: var(
     --mpx-slot-fg-header-g1-toggle-metadata-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-header-g1-text, var(--mpx-header-button-text-effective))
   );
 }
 

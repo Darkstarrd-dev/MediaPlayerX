@@ -118,6 +118,21 @@
 }
 
 .main-header {
+  --mpx-main-header-button-border-effective: var(
+    --mpx-slot-fg-main-header-button-border,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-main-header-button-bg-effective: var(
+    --mpx-slot-fg-main-header-button-bg,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-main-header-button-text-effective: var(
+    --mpx-slot-fg-main-header-button-text,
+    var(--mpx-btn-variant-default-text-idle)
+  );
+  --mpx-btn-variant-default-border: var(--mpx-main-header-button-border-effective);
+  --mpx-btn-variant-default-bg-idle: var(--mpx-main-header-button-bg-effective);
+  --mpx-btn-variant-default-text-idle: var(--mpx-main-header-button-text-effective);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -130,11 +145,15 @@
   flex-shrink: 0;
   margin: 0;
   padding: 0;
-  background: var(--mpx-slot-fg-main-header-bg, var(--mpx-main-bg, transparent));
+  color: var(--mpx-slot-fg-main-header-text, inherit);
+  background: var(
+    --mpx-slot-fg-main-header-bg,
+    var(--mpx-main-header-bg, transparent)
+  );
   border-bottom: 1px solid
     var(
       --mpx-slot-fg-main-header-border,
-      var(--mpx-main-border-color, var(--mpx-border-1))
+      var(--mpx-main-header-border-color, transparent)
     );
 }
 

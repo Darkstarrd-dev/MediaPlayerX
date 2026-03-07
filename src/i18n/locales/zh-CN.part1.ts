@@ -353,11 +353,32 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.containerLayer.sectionBackground": "1.0 背景",
   "ui.themeParameter.containerLayer.sectionSharedShell": "2.0 共享壳层",
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
+  "ui.themeParameter.containerLayer.sectionHeaderButtons":
+    "2.1.0 Header 按钮总控",
+  "ui.themeParameter.containerLayer.sectionHeaderLogo": "2.1.1 Header logo",
+  "ui.themeParameter.containerLayer.sectionHeaderG1": "2.1.2 Header g1",
+  "ui.themeParameter.containerLayer.sectionHeaderG2": "2.1.3 Header g2",
+  "ui.themeParameter.containerLayer.sectionHeaderGDebug": "2.1.4 Header gDebug",
+  "ui.themeParameter.containerLayer.sectionHeaderG3": "2.1.5 Header g3",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
+  "ui.themeParameter.containerLayer.sectionSidebarHeader":
+    "2.2.1.0 Sidebar header 总控",
+  "ui.themeParameter.containerLayer.sectionSidebarHeaderTitle":
+    "2.2.1.1 Sidebar header title",
+  "ui.themeParameter.containerLayer.sectionSidebarHeaderActions":
+    "2.2.1.2 Sidebar header 其余按钮",
   "ui.themeParameter.containerLayer.sectionMain": "2.3 Main",
+  "ui.themeParameter.containerLayer.sectionMainHeader":
+    "2.3.1.0 Main header 总控",
+  "ui.themeParameter.containerLayer.sectionMainHeaderButtons":
+    "2.3.1.1 Main header 按钮",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
     "2.3.2.1 工作区 / 图片网格",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
+  "ui.themeParameter.containerLayer.sectionMetadataHeader":
+    "2.4.1.0 Metadata header 总控",
+  "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
+    "2.4.1.1 Metadata header 按钮",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
@@ -385,14 +406,22 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.metricBorderColor": "边界色调比例",
   "ui.themeParameter.controls.section.scrollbar": "6.1 滚动条样式",
   "ui.themeParameter.controls.section.sliderBase": "6.2.0 Slider 基础层",
-  "ui.themeParameter.controls.section.sliderPlayer": "6.2.1 Slider 变体：播放器面板",
-  "ui.themeParameter.controls.section.sliderVertical": "6.2.2 Slider 变体：竖向（上/下同链路）",
-  "ui.themeParameter.controls.section.sliderSettings": "6.2.3 Slider 变体：设置面板",
-  "ui.themeParameter.controls.note.scrollbar": "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
-  "ui.themeParameter.controls.note.sliderBase": "作为 slider 变体的基础样式入口，覆盖通用 range 控件轨道/滑块状态。",
-  "ui.themeParameter.controls.note.sliderPlayer": "播放器进度与音量滑条统一走 SkeuoRunway 链路。",
-  "ui.themeParameter.controls.note.sliderVertical": "竖向 slider（朝上/朝下）共享同一套变量。",
-  "ui.themeParameter.controls.note.sliderSettings": "设置面板 slider 轨道已独立到 --mpx-slider-settings-groove-*，便于与播放器 runway 分开调试。",
+  "ui.themeParameter.controls.section.sliderPlayer":
+    "6.2.1 Slider 变体：播放器面板",
+  "ui.themeParameter.controls.section.sliderVertical":
+    "6.2.2 Slider 变体：竖向（上/下同链路）",
+  "ui.themeParameter.controls.section.sliderSettings":
+    "6.2.3 Slider 变体：设置面板",
+  "ui.themeParameter.controls.note.scrollbar":
+    "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
+  "ui.themeParameter.controls.note.sliderBase":
+    "作为 slider 变体的基础样式入口，覆盖通用 range 控件轨道/滑块状态。",
+  "ui.themeParameter.controls.note.sliderPlayer":
+    "播放器进度与音量滑条统一走 SkeuoRunway 链路。",
+  "ui.themeParameter.controls.note.sliderVertical":
+    "竖向 slider（朝上/朝下）共享同一套变量。",
+  "ui.themeParameter.controls.note.sliderSettings":
+    "设置面板 slider 轨道已独立到 --mpx-slider-settings-groove-*，便于与播放器 runway 分开调试。",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",

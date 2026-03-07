@@ -17,19 +17,31 @@
 }
 
 .metadata-header-icon-btn {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-meta-header-toggle-border,
+    var(--mpx-metadata-header-button-border-effective)
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-meta-header-toggle-bg,
+    var(--mpx-metadata-header-button-bg-effective)
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-meta-header-toggle-text,
+    var(--mpx-metadata-header-button-text-effective)
+  );
   border: 1px solid
     var(
       --mpx-slot-fg-meta-header-toggle-border,
-      var(--mpx-btn-variant-player-border)
+      var(--mpx-metadata-header-button-border-effective)
     );
   border-radius: var(--mpx-radius-metadata-control, 8px);
   background: var(
     --mpx-slot-fg-meta-header-toggle-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-metadata-header-button-bg-effective)
   );
   color: var(
     --mpx-slot-fg-meta-header-toggle-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-metadata-header-button-text-effective)
   );
   cursor: pointer;
 }
@@ -134,6 +146,18 @@
 }
 
 .metadata-header {
+  --mpx-metadata-header-button-border-effective: var(
+    --mpx-slot-fg-meta-header-button-border,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-metadata-header-button-bg-effective: var(
+    --mpx-slot-fg-meta-header-button-bg,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-metadata-header-button-text-effective: var(
+    --mpx-slot-fg-meta-header-button-text,
+    var(--mpx-btn-variant-default-text-idle)
+  );
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -143,11 +167,31 @@
   flex-shrink: 0;
   margin: 0;
   padding: 0;
-  background: var(--mpx-slot-fg-meta-header-bg, var(--mpx-metadata-bg, transparent));
-  border-bottom: none;
+  color: var(--mpx-slot-fg-meta-header-text, inherit);
+  background: var(
+    --mpx-slot-fg-meta-header-bg,
+    var(--mpx-metadata-header-bg, transparent)
+  );
+  border-bottom: 1px solid
+    var(
+      --mpx-slot-fg-meta-header-border,
+      var(--mpx-metadata-header-border-color, transparent)
+    );
 }
 
 .metadata-header-g3 {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-meta-header-g3-border,
+    var(--mpx-metadata-header-button-border-effective)
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-meta-header-g3-bg,
+    var(--mpx-metadata-header-button-bg-effective)
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-meta-header-g3-text,
+    var(--mpx-metadata-header-button-text-effective)
+  );
   display: inline-flex;
   align-items: flex-end;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
@@ -163,6 +207,21 @@
 
 .metadata-header-g3 .header-btn-label {
   display: none;
+}
+
+[data-slot="fg-meta-header-g3-playlist"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-meta-header-g3-playlist-border,
+    var(--mpx-slot-fg-meta-header-g3-border, var(--mpx-metadata-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-meta-header-g3-playlist-bg,
+    var(--mpx-slot-fg-meta-header-g3-bg, var(--mpx-metadata-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-meta-header-g3-playlist-text,
+    var(--mpx-slot-fg-meta-header-g3-text, var(--mpx-metadata-header-button-text-effective))
+  );
 }
 
 .metadata-header-icon-btn.is-image {

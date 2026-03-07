@@ -173,6 +173,18 @@
 }
 
 .sidebar-header {
+  --mpx-sidebar-header-button-border-effective: var(
+    --mpx-slot-fg-sidebar-header-button-border,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-sidebar-header-button-bg-effective: var(
+    --mpx-slot-fg-sidebar-header-button-bg,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-sidebar-header-button-text-effective: var(
+    --mpx-slot-fg-sidebar-header-button-text,
+    var(--mpx-btn-variant-default-text-idle)
+  );
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -182,26 +194,54 @@
   flex-shrink: 0;
   margin: 0;
   padding: 0;
+  color: var(--mpx-slot-fg-sidebar-header-text, inherit);
   border-bottom: none;
 }
 
 .sidebar-header-actions {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-sidebar-header-action-border,
+    var(--mpx-sidebar-header-button-border-effective)
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-sidebar-header-action-bg,
+    var(--mpx-sidebar-header-button-bg-effective)
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-sidebar-header-action-text,
+    var(--mpx-sidebar-header-button-text-effective)
+  );
   display: flex;
   align-items: flex-end;
   gap: var(--mpx-pane-recessed-padding-px, 8px);
 }
 
 .sidebar-title-btn {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-sidebar-header-title-border,
+    var(--mpx-sidebar-header-button-border-effective)
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-sidebar-header-title-bg,
+    var(--mpx-sidebar-header-button-bg-effective)
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-sidebar-header-title-text,
+    var(--mpx-sidebar-header-button-text-effective)
+  );
   border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
+    var(--mpx-slot-fg-sidebar-header-title-border, var(--mpx-sidebar-header-button-border-effective));
   border-radius: var(
     --mpx-radius-sidebar-header-btn,
     var(--mpx-control-radius)
   );
-  background: var(--mpx-btn-variant-player-bg-idle);
+  background: var(
+    --mpx-slot-fg-sidebar-header-title-bg,
+    var(--mpx-sidebar-header-button-bg-effective)
+  );
   color: var(
     --mpx-slot-fg-sidebar-header-title-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-sidebar-header-button-text-effective)
   );
   font-weight: 700;
   font-size: 15px;
@@ -221,92 +261,107 @@
 }
 
 [data-slot="fg-sidebar-header-back"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-back-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-back-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-back-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
 [data-slot="fg-sidebar-header-clear"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-clear-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-clear-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-clear-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
+  );
+}
+
+[data-slot="fg-sidebar-header-label-mode-toggle"] {
+  --mpx-btn-variant-default-border: var(
+    --mpx-slot-fg-sidebar-header-label-mode-toggle-border,
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
+  );
+  --mpx-btn-variant-default-bg-idle: var(
+    --mpx-slot-fg-sidebar-header-label-mode-toggle-bg,
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
+  );
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-slot-fg-sidebar-header-label-mode-toggle-text,
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
 [data-slot="fg-sidebar-header-root-toggle"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-root-toggle-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-root-toggle-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-root-toggle-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
 [data-slot="fg-sidebar-header-collapse-all"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-collapse-all-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-collapse-all-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-collapse-all-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
 [data-slot="fg-sidebar-header-prev-image-parent"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
 [data-slot="fg-sidebar-header-next-image-parent"] {
-  border-color: var(
+  --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-border,
-    var(--mpx-btn-variant-player-border)
+    var(--mpx-slot-fg-sidebar-header-action-border, var(--mpx-sidebar-header-button-border-effective))
   );
-  background: var(
+  --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-slot-fg-sidebar-header-action-bg, var(--mpx-sidebar-header-button-bg-effective))
   );
-  color: var(
+  --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-slot-fg-sidebar-header-action-text, var(--mpx-sidebar-header-button-text-effective))
   );
 }
 
