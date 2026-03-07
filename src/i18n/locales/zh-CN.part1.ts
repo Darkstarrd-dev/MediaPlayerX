@@ -355,6 +355,8 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
   "ui.themeParameter.containerLayer.sectionMain": "2.3 Main",
+  "ui.themeParameter.containerLayer.sectionMainWorkspace":
+    "2.3.2.1 工作区 / 图片网格",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
@@ -397,6 +399,10 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.sidebarRadius": "Sidebar 圆角",
   "ui.themeParameter.mainRadius": "Main 圆角",
   "ui.themeParameter.metadataRadius": "Metadata 圆角",
+  "ui.themeParameter.headerZIndex": "Header 层级",
+  "ui.themeParameter.sidebarZIndex": "Sidebar 层级",
+  "ui.themeParameter.mainZIndex": "Main 层级",
+  "ui.themeParameter.metadataZIndex": "Metadata 层级",
   "ui.themeParameter.HeaderFrameTranslateX": "Header 水平位移",
   "ui.themeParameter.HeaderFrameTranslateY": "Header 垂直位移",
   "ui.themeParameter.HeaderFrameRotateZ": "Header Z 轴旋转",

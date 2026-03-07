@@ -5,7 +5,7 @@ import type {
   MutableRefObject,
   SetStateAction,
 } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
 
 import {
@@ -68,6 +68,8 @@ interface ThemeParameterPanelMainProps {
   setContainerSidebarExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainExpanded: boolean;
   setContainerMainExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainWorkspaceExpanded: boolean;
+  setContainerMainWorkspaceExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataExpanded: boolean;
   setContainerMetadataExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
@@ -221,6 +223,18 @@ const CONTAINER_SHARED_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 
 const CONTAINER_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
+    id: "container-header-fill-start",
+    cssVar: "--mpx-header-fill-start",
+    fallback: "#f5f2ec",
+    groupId: "box",
+  },
+  {
+    id: "container-header-fill-end",
+    cssVar: "--mpx-header-fill-end",
+    fallback: "#e6e2da",
+    groupId: "box",
+  },
+  {
     id: "container-header-border-color",
     cssVar: "--mpx-header-border-color",
     fallback: "#e5e4e0",
@@ -229,13 +243,6 @@ const CONTAINER_HEADER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const CONTAINER_HEADER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
-  {
-    id: "container-header-fill",
-    cssVar: "--mpx-header-bg",
-    fallback:
-      "linear-gradient(120deg, #f4ebe0 0%, #f7f4ef 42%, #ece6d8 100%)",
-    groupId: "box",
-  },
   {
     id: "container-header-shadow",
     cssVar: "--mpx-header-shadow",
@@ -246,6 +253,18 @@ const CONTAINER_HEADER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 
 const CONTAINER_SIDEBAR_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
+    id: "container-sidebar-fill-start",
+    cssVar: "--mpx-sidebar-fill-start",
+    fallback: "#f5f2ec",
+    groupId: "box",
+  },
+  {
+    id: "container-sidebar-fill-end",
+    cssVar: "--mpx-sidebar-fill-end",
+    fallback: "#e6e2da",
+    groupId: "box",
+  },
+  {
     id: "container-sidebar-border-color",
     cssVar: "--mpx-sidebar-border-color",
     fallback: "#e5e4e0",
@@ -254,12 +273,6 @@ const CONTAINER_SIDEBAR_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const CONTAINER_SIDEBAR_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
-  {
-    id: "container-sidebar-fill",
-    cssVar: "--mpx-sidebar-bg",
-    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
-    groupId: "box",
-  },
   {
     id: "container-sidebar-shadow",
     cssVar: "--mpx-sidebar-shadow",
@@ -270,9 +283,15 @@ const CONTAINER_SIDEBAR_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 
 const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
-    id: "container-bg-workspace",
-    cssVar: "--mpx-bg-workspace",
-    fallback: "#f3f0ea",
+    id: "container-main-fill-start",
+    cssVar: "--mpx-main-fill-start",
+    fallback: "#f5f2ec",
+    groupId: "box",
+  },
+  {
+    id: "container-main-fill-end",
+    cssVar: "--mpx-main-fill-end",
+    fallback: "#e6e2da",
     groupId: "box",
   },
   {
@@ -283,13 +302,16 @@ const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   },
 ];
 
-const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+const CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
-    id: "container-main-fill",
-    cssVar: "--mpx-main-bg",
-    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
+    id: "container-bg-workspace",
+    cssVar: "--mpx-bg-workspace",
+    fallback: "#f3f0ea",
     groupId: "box",
   },
+];
+
+const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "container-main-shadow",
     cssVar: "--mpx-main-shadow",
@@ -300,6 +322,18 @@ const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 
 const CONTAINER_METADATA_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
+    id: "container-metadata-fill-start",
+    cssVar: "--mpx-metadata-fill-start",
+    fallback: "#f5f2ec",
+    groupId: "box",
+  },
+  {
+    id: "container-metadata-fill-end",
+    cssVar: "--mpx-metadata-fill-end",
+    fallback: "#e6e2da",
+    groupId: "box",
+  },
+  {
     id: "container-metadata-border-color",
     cssVar: "--mpx-metadata-border-color",
     fallback: "#e5e4e0",
@@ -308,12 +342,6 @@ const CONTAINER_METADATA_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const CONTAINER_METADATA_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
-  {
-    id: "container-metadata-fill",
-    cssVar: "--mpx-metadata-bg",
-    fallback: "linear-gradient(180deg, #f5f2ec 0%, #e6e2da 100%)",
-    groupId: "box",
-  },
   {
     id: "container-metadata-shadow",
     cssVar: "--mpx-metadata-shadow",
@@ -328,7 +356,7 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionHeader",
     colorFields: CONTAINER_HEADER_COLOR_FIELDS,
     textFields: CONTAINER_HEADER_TEXT_FIELDS,
-    appearanceParameterIds: ["header-radius"],
+    appearanceParameterIds: ["header-fill-angle", "header-radius", "header-z-index"],
     transformParameterIds: [
       "header-frame-translate-x",
       "header-frame-translate-y",
@@ -344,7 +372,7 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionSidebar",
     colorFields: CONTAINER_SIDEBAR_COLOR_FIELDS,
     textFields: CONTAINER_SIDEBAR_TEXT_FIELDS,
-    appearanceParameterIds: ["sidebar-radius"],
+    appearanceParameterIds: ["sidebar-fill-angle", "sidebar-radius", "sidebar-z-index"],
     transformParameterIds: [
       "sidebar-frame-translate-x",
       "sidebar-frame-translate-y",
@@ -360,7 +388,7 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionMain",
     colorFields: CONTAINER_MAIN_COLOR_FIELDS,
     textFields: CONTAINER_MAIN_TEXT_FIELDS,
-    appearanceParameterIds: ["main-radius"],
+    appearanceParameterIds: ["main-fill-angle", "main-radius", "main-z-index"],
     transformParameterIds: [
       "main-frame-translate-x",
       "main-frame-translate-y",
@@ -376,7 +404,7 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
     summaryKey: "ui.themeParameter.containerLayer.sectionMetadata",
     colorFields: CONTAINER_METADATA_COLOR_FIELDS,
     textFields: CONTAINER_METADATA_TEXT_FIELDS,
-    appearanceParameterIds: ["metadata-radius"],
+    appearanceParameterIds: ["metadata-fill-angle", "metadata-radius", "metadata-z-index"],
     transformParameterIds: [
       "metadata-frame-translate-x",
       "metadata-frame-translate-y",
@@ -407,6 +435,28 @@ const CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS = [
 ] as const;
 
 const CONTAINER_SHARED_SHELL_TEXT_FIELD_IDS = ["container-frame-shadow"] as const;
+
+const CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS = [
+  "container-header-shadow",
+  "container-sidebar-shadow",
+  "container-main-shadow",
+  "container-metadata-shadow",
+] as const;
+
+const CONTAINER_FILL_SYNC_COLOR_FIELD_IDS = {
+  "container-frame-fill-start": [
+    "container-header-fill-start",
+    "container-sidebar-fill-start",
+    "container-main-fill-start",
+    "container-metadata-fill-start",
+  ],
+  "container-frame-fill-end": [
+    "container-header-fill-end",
+    "container-sidebar-fill-end",
+    "container-main-fill-end",
+    "container-metadata-fill-end",
+  ],
+} as const;
 
 const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -1008,6 +1058,7 @@ const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_HEADER_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_COLOR_FIELDS,
   ...CONTAINER_MAIN_COLOR_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
   ...CONTAINER_METADATA_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
@@ -1102,6 +1153,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-header-shadow") {
     return "用于 Header frame 阴影";
   }
+  if (cssVar === "--mpx-header-fill-start") {
+    return "用于 Header frame fill 起始色";
+  }
+  if (cssVar === "--mpx-header-fill-end") {
+    return "用于 Header frame fill 结束色";
+  }
+  if (cssVar === "--mpx-header-fill-angle") {
+    return "用于 Header frame 渐变角度";
+  }
+  if (cssVar === "--mpx-header-z-index") {
+    return "用于 Header 层级";
+  }
   if (cssVar === "--mpx-sidebar-bg") {
     return "用于 Sidebar frame 填充";
   }
@@ -1110,6 +1173,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar === "--mpx-sidebar-shadow") {
     return "用于 Sidebar frame 阴影";
+  }
+  if (cssVar === "--mpx-sidebar-fill-start") {
+    return "用于 Sidebar frame fill 起始色";
+  }
+  if (cssVar === "--mpx-sidebar-fill-end") {
+    return "用于 Sidebar frame fill 结束色";
+  }
+  if (cssVar === "--mpx-sidebar-fill-angle") {
+    return "用于 Sidebar frame 渐变角度";
+  }
+  if (cssVar === "--mpx-sidebar-z-index") {
+    return "用于 Sidebar 层级";
   }
   if (cssVar === "--mpx-main-bg") {
     return "用于 Main frame 填充";
@@ -1120,6 +1195,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-main-shadow") {
     return "用于 Main frame 阴影";
   }
+  if (cssVar === "--mpx-main-fill-start") {
+    return "用于 Main frame fill 起始色";
+  }
+  if (cssVar === "--mpx-main-fill-end") {
+    return "用于 Main frame fill 结束色";
+  }
+  if (cssVar === "--mpx-main-fill-angle") {
+    return "用于 Main frame 渐变角度";
+  }
+  if (cssVar === "--mpx-main-z-index") {
+    return "用于 Main 层级";
+  }
   if (cssVar === "--mpx-metadata-bg") {
     return "用于 Metadata frame 填充";
   }
@@ -1128,6 +1215,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar === "--mpx-metadata-shadow") {
     return "用于 Metadata frame 阴影";
+  }
+  if (cssVar === "--mpx-metadata-fill-start") {
+    return "用于 Metadata frame fill 起始色";
+  }
+  if (cssVar === "--mpx-metadata-fill-end") {
+    return "用于 Metadata frame fill 结束色";
+  }
+  if (cssVar === "--mpx-metadata-fill-angle") {
+    return "用于 Metadata frame 渐变角度";
+  }
+  if (cssVar === "--mpx-metadata-z-index") {
+    return "用于 Metadata 层级";
   }
   if (cssVar === "--mpx-sidebar-main-bg") {
     return "用于侧栏主列表壳层背景（.sidebar-tree）";
@@ -2762,6 +2861,8 @@ export function ThemeParameterPanelMain({
   setContainerSidebarExpanded,
   containerMainExpanded,
   setContainerMainExpanded,
+  containerMainWorkspaceExpanded,
+  setContainerMainWorkspaceExpanded,
   containerMetadataExpanded,
   setContainerMetadataExpanded,
   containerSidebarMainExpanded,
@@ -2817,6 +2918,10 @@ export function ThemeParameterPanelMain({
   const [debugTextValues, setDebugTextValues] = useState<
     Record<string, string>
   >({});
+  const syncedContainerShadowOverridesRef = useRef<Set<string>>(new Set());
+  const syncedContainerFillColorOverridesRef = useRef<
+    Record<string, Set<string>>
+  >({});
   const [controlPreviewValues, setControlPreviewValues] =
     useState<ControlPreviewValues>({
       sliderBaseHorizontal: 36,
@@ -2838,6 +2943,10 @@ export function ThemeParameterPanelMain({
   const containerLayerParameterMap = useMemo(
     () => new Map(containerLayerParameters.map((parameter) => [parameter.id, parameter])),
     [containerLayerParameters],
+  );
+  const containerTextFieldMap = useMemo(
+    () => new Map(CONTAINER_LAYER_TEXT_FIELDS.map((field) => [field.id, field])),
+    [],
   );
 
   const notifyContainerDebugChanged = (cssVar: string) => {
@@ -2983,6 +3092,10 @@ export function ThemeParameterPanelMain({
           computed.getPropertyValue(field.cssVar).trim() || field.fallback;
       }
       setDebugTextValues(nextTextValues);
+      if (activePage === "containerLayer") {
+        syncedContainerShadowOverridesRef.current = new Set();
+        syncedContainerFillColorOverridesRef.current = {};
+      }
       return;
     }
     setDebugTextValues({});
@@ -3006,16 +3119,44 @@ export function ThemeParameterPanelMain({
       hex: parsed.hex,
       alpha: previousState.alpha,
     };
-    document.documentElement.style.setProperty(
-      field.cssVar,
-      formatColorStateAsCss(nextState),
-    );
-    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
+    const root = document.documentElement;
+    const nextCssValue = formatColorStateAsCss(nextState);
+    root.style.setProperty(field.cssVar, nextCssValue);
+    clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
-    setDebugColorValues((previous) => ({
-      ...previous,
-      [field.id]: nextState,
-    }));
+    setDebugColorValues((previous) => {
+      const nextValues = {
+        ...previous,
+        [field.id]: nextState,
+      };
+      const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+      if (syncTargetIds.length > 0) {
+        if (!syncedContainerFillColorOverridesRef.current[field.id]) {
+          syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
+        }
+        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id]) {
+          const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          notifyContainerDebugChanged(targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
+      } else if (
+        Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
+          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
+      }
+      return nextValues;
+    });
   };
 
   const setDebugColorFieldAlpha = (
@@ -3036,16 +3177,44 @@ export function ThemeParameterPanelMain({
       ...previousState,
       alpha: bounded / 100,
     };
-    document.documentElement.style.setProperty(
-      field.cssVar,
-      formatColorStateAsCss(nextState),
-    );
-    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
+    const root = document.documentElement;
+    const nextCssValue = formatColorStateAsCss(nextState);
+    root.style.setProperty(field.cssVar, nextCssValue);
+    clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
-    setDebugColorValues((previous) => ({
-      ...previous,
-      [field.id]: nextState,
-    }));
+    setDebugColorValues((previous) => {
+      const nextValues = {
+        ...previous,
+        [field.id]: nextState,
+      };
+      const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+      if (syncTargetIds.length > 0) {
+        if (!syncedContainerFillColorOverridesRef.current[field.id]) {
+          syncedContainerFillColorOverridesRef.current[field.id] = new Set(syncTargetIds);
+        }
+        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id]) {
+          const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          notifyContainerDebugChanged(targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
+      } else if (
+        Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
+          syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
+      }
+      return nextValues;
+    });
   };
 
   const isColorFieldChanged = (field: ThemeDebugColorField): boolean => {
@@ -3057,6 +3226,52 @@ export function ThemeParameterPanelMain({
 
   const resetColorField = (field: ThemeDebugColorField) => {
     const root = document.documentElement;
+    const syncTargetIds = resolveContainerFillSyncTargets(field.id);
+    if (syncTargetIds.length > 0) {
+      root.style.removeProperty(field.cssVar);
+      clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
+      notifyContainerDebugChanged(field.cssVar);
+      for (const targetId of syncedContainerFillColorOverridesRef.current[field.id] ?? []) {
+        const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
+          (candidate) => candidate.id === targetId,
+        );
+        if (!targetField) {
+          continue;
+        }
+        root.style.removeProperty(targetField.cssVar);
+        clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+        notifyContainerDebugChanged(targetField.cssVar);
+      }
+      const computed = getComputedStyle(root);
+      setDebugColorValues((previous) => {
+        const nextValues = { ...previous };
+        const nextValue = readCssColorState(computed, field.cssVar, field.fallback);
+        nextValues[field.id] = {
+          hex: nextValue.hex,
+          alpha: field.fallbackAlpha ?? nextValue.alpha,
+        };
+        for (const targetId of syncedContainerFillColorOverridesRef.current[field.id] ?? []) {
+          const targetField = CONTAINER_LAYER_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          const targetValue = readCssColorState(
+            computed,
+            targetField.cssVar,
+            targetField.fallback,
+          );
+          nextValues[targetId] = {
+            hex: targetValue.hex,
+            alpha: targetField.fallbackAlpha ?? targetValue.alpha,
+          };
+        }
+        return nextValues;
+      });
+      syncedContainerFillColorOverridesRef.current[field.id] = new Set();
+      return;
+    }
     root.style.removeProperty(field.cssVar);
     clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
@@ -3069,6 +3284,9 @@ export function ThemeParameterPanelMain({
         alpha: field.fallbackAlpha ?? nextValue.alpha,
       },
     }));
+    for (const sourceId of Object.keys(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS)) {
+      syncedContainerFillColorOverridesRef.current[sourceId]?.delete(field.id);
+    }
   };
 
   const isTextFieldChanged = (field: ThemeDebugTextField): boolean => {
@@ -3078,18 +3296,90 @@ export function ThemeParameterPanelMain({
     );
   };
 
+  const isContainerSharedShadowField = (field: ThemeDebugTextField): boolean => {
+    return field.id === "container-frame-shadow";
+  };
+
+  const isContainerShadowOverrideField = (field: ThemeDebugTextField): boolean => {
+    return CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS.includes(
+      field.id as (typeof CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS)[number],
+    );
+  };
+
   const setDebugTextFieldValue = (field: ThemeDebugTextField, raw: string) => {
-    setDebugTextValues((previous) => ({ ...previous, [field.id]: raw }));
+    setDebugTextValues((previous) => {
+      const nextValues = { ...previous, [field.id]: raw };
+      if (isContainerSharedShadowField(field)) {
+        if (syncedContainerShadowOverridesRef.current.size === 0) {
+          syncedContainerShadowOverridesRef.current = new Set(
+            CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS,
+          );
+        }
+        for (const fieldId of syncedContainerShadowOverridesRef.current) {
+          nextValues[fieldId] = raw;
+        }
+      } else if (isContainerShadowOverrideField(field)) {
+        syncedContainerShadowOverridesRef.current.delete(field.id);
+      }
+      return nextValues;
+    });
     if (!raw.trim()) {
       return;
     }
-    document.documentElement.style.setProperty(field.cssVar, raw);
-    clearLegacySlotOverrideForSemanticVar(document.documentElement, field.cssVar);
+    const root = document.documentElement;
+    root.style.setProperty(field.cssVar, raw);
+    clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
+    if (isContainerSharedShadowField(field)) {
+      for (const fieldId of syncedContainerShadowOverridesRef.current.size > 0
+        ? syncedContainerShadowOverridesRef.current
+        : new Set(CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS)) {
+        const syncedField = containerTextFieldMap.get(fieldId);
+        if (!syncedField) {
+          continue;
+        }
+        root.style.setProperty(syncedField.cssVar, raw);
+        clearLegacySlotOverrideForSemanticVar(root, syncedField.cssVar);
+        notifyContainerDebugChanged(syncedField.cssVar);
+      }
+    }
   };
 
   const resetTextField = (field: ThemeDebugTextField) => {
     const root = document.documentElement;
+    if (isContainerSharedShadowField(field)) {
+      const syncedIds = Array.from(syncedContainerShadowOverridesRef.current);
+      root.style.removeProperty(field.cssVar);
+      clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
+      notifyContainerDebugChanged(field.cssVar);
+      for (const fieldId of syncedIds) {
+        const syncedField = containerTextFieldMap.get(fieldId);
+        if (!syncedField) {
+          continue;
+        }
+        root.style.removeProperty(syncedField.cssVar);
+        clearLegacySlotOverrideForSemanticVar(root, syncedField.cssVar);
+        notifyContainerDebugChanged(syncedField.cssVar);
+      }
+      const computed = getComputedStyle(root);
+      setDebugTextValues((previous) => {
+        const nextValues = {
+          ...previous,
+          [field.id]: computed.getPropertyValue(field.cssVar).trim() || field.fallback,
+        };
+        for (const fieldId of syncedIds) {
+          const syncedField = containerTextFieldMap.get(fieldId);
+          if (!syncedField) {
+            continue;
+          }
+          nextValues[fieldId] =
+            computed.getPropertyValue(syncedField.cssVar).trim() || syncedField.fallback;
+        }
+        return nextValues;
+      });
+      syncedContainerShadowOverridesRef.current = new Set();
+      return;
+    }
     root.style.removeProperty(field.cssVar);
     clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
@@ -3099,6 +3389,9 @@ export function ThemeParameterPanelMain({
       [field.id]:
         computed.getPropertyValue(field.cssVar).trim() || field.fallback,
     }));
+    if (isContainerShadowOverrideField(field)) {
+      syncedContainerShadowOverridesRef.current.delete(field.id);
+    }
   };
 
   const renderVarLabel = (cssVar: string) => {
@@ -3655,14 +3948,34 @@ export function ThemeParameterPanelMain({
     });
   };
 
+  const resolveContainerFillSyncTargets = (fieldId: string) => {
+    return (
+      CONTAINER_FILL_SYNC_COLOR_FIELD_IDS[
+        fieldId as keyof typeof CONTAINER_FILL_SYNC_COLOR_FIELD_IDS
+      ] ?? []
+    );
+  };
+
   const renderContainerFrameSection = (
     section: (typeof CONTAINER_FRAME_SECTION_DEFINITIONS)[number],
   ) => {
     const appearanceParameters = pickContainerParameters(
       section.appearanceParameterIds,
     );
+    const fillAngleParameters = appearanceParameters.filter((parameter) =>
+      parameter.id.endsWith("fill-angle"),
+    );
+    const shapeParameters = appearanceParameters.filter(
+      (parameter) => !parameter.id.endsWith("fill-angle"),
+    );
     const transformParameters = pickContainerParameters(
       section.transformParameterIds,
+    );
+    const fillColorFields = section.colorFields.filter(
+      (field) => field.id.includes("fill-start") || field.id.includes("fill-end"),
+    );
+    const otherColorFields = section.colorFields.filter(
+      (field) => !fillColorFields.includes(field),
     );
     return (
       <>
@@ -3670,9 +3983,17 @@ export function ThemeParameterPanelMain({
           <header className="settings-group-head">
             <span>基础外观</span>
           </header>
-          {section.colorFields.length > 0 ? (
+          {fillColorFields.length > 0 ? (
             <div className="theme-parameter-color-list">
-              {section.colorFields.map(renderColorFieldRow)}
+              {fillColorFields.map(renderColorFieldRow)}
+            </div>
+          ) : null}
+          {fillAngleParameters.length > 0
+            ? renderParameterRowsWithVarLabel(fillAngleParameters)
+            : null}
+          {otherColorFields.length > 0 ? (
+            <div className="theme-parameter-color-list">
+              {otherColorFields.map(renderColorFieldRow)}
             </div>
           ) : null}
           {section.textFields.length > 0 ? (
@@ -3680,8 +4001,8 @@ export function ThemeParameterPanelMain({
               {section.textFields.map(renderTextFieldRow)}
             </div>
           ) : null}
-          {appearanceParameters.length > 0
-            ? renderParameterRows(appearanceParameters)
+          {shapeParameters.length > 0
+            ? renderParameterRowsWithVarLabel(shapeParameters)
             : null}
         </section>
         <section className="settings-group theme-parameter-debug-group">
@@ -4579,6 +4900,33 @@ export function ThemeParameterPanelMain({
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[2],
                 )}
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
+              open={containerMainWorkspaceExpanded}
+              onToggle={(event) =>
+                setContainerMainWorkspaceExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
+              </summary>
+              <div className="settings-collapsible-content">
+                <section className="settings-group theme-parameter-debug-group">
+                  <header className="settings-group-head theme-parameter-subgroup-head">
+                    <span>工作区 / 图片网格</span>
+                    <span className="theme-parameter-subgroup-tag">
+                      fg-main-content-image-grid
+                    </span>
+                  </header>
+                  <div className="theme-parameter-color-list">
+                    {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(renderColorFieldRow)}
+                  </div>
+                </section>
               </div>
             </details>
 

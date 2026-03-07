@@ -4,6 +4,7 @@
   min-height: 0;
   overflow: visible;
   position: relative;
+  z-index: var(--mpx-sidebar-z-index, 2);
   perspective: var(--mpx-sidebar-frame-perspective, none);
 }
 
@@ -15,7 +16,7 @@
   flex-direction: column;
   transition: var(--mpx-sidebar-transition);
   border-radius: var(--mpx-sidebar-radius);
-  box-shadow: var(--mpx-sidebar-shadow);
+  box-shadow: var(--mpx-sidebar-shadow, var(--mpx-container-frame-shadow));
   backdrop-filter: var(--mpx-sidebar-backdrop-filter);
   transform: var(--mpx-sidebar-transform);
   transform-origin: var(--mpx-sidebar-frame-origin-x, 50%)

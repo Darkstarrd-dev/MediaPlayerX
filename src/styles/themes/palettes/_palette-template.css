@@ -101,7 +101,9 @@
   --mpx-status-idle-text: #35525c;
 
   /* ---------- Component aliases (D layer, color/effect only) ---------- */
-  --mpx-header-bg: var(--mpx-container-frame-fill);
+  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
   --mpx-header-border: var(--mpx-border-1);
 
   /* Sidebar Main (2.2.2.1) */

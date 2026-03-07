@@ -330,7 +330,14 @@
   --mpx-container-frame-edge-color: var(--mpx-border-2);
   --mpx-container-frame-border-color: var(--mpx-border-1);
   --mpx-container-frame-shadow: var(--mpx-panel-shadow);
-  --mpx-header-bg: var(--mpx-container-frame-fill);
+  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-header-bg: linear-gradient(
+    var(--mpx-header-fill-angle),
+    var(--mpx-header-fill-start) 0%,
+    var(--mpx-header-fill-end) 100%
+  );
   --mpx-header-border: var(--mpx-border-1);
   --mpx-sidebar-bullet-pending: #94a3ad;
   --mpx-sidebar-bullet-running: #2fb36e;
@@ -617,6 +624,7 @@
   --mpx-sidebar-frame-perspective: none;
   --mpx-sidebar-frame-transform-style: flat;
   --mpx-sidebar-frame-backface-visibility: visible;
+  --mpx-sidebar-z-index: 2;
   --mpx-sidebar-transform: translate(
       var(--mpx-sidebar-frame-translate-x),
       var(--mpx-sidebar-frame-translate-y)
@@ -626,7 +634,14 @@
     scale(var(--mpx-sidebar-frame-scale-x), var(--mpx-sidebar-frame-scale-y));
   --mpx-sidebar-transition: var(--mpx-panel-transition);
   --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
-  --mpx-sidebar-bg: var(--mpx-container-frame-fill);
+  --mpx-sidebar-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-sidebar-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-sidebar-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-sidebar-bg: linear-gradient(
+    var(--mpx-sidebar-fill-angle),
+    var(--mpx-sidebar-fill-start) 0%,
+    var(--mpx-sidebar-fill-end) 100%
+  );
 
   /* Main 覆写 */
   --mpx-main-border-color: var(--mpx-container-frame-border-color);
@@ -647,6 +662,7 @@
   --mpx-main-frame-perspective: none;
   --mpx-main-frame-transform-style: flat;
   --mpx-main-frame-backface-visibility: visible;
+  --mpx-main-z-index: 1;
   --mpx-main-transform: translate(
       var(--mpx-main-frame-translate-x),
       var(--mpx-main-frame-translate-y)
@@ -656,7 +672,14 @@
     scale(var(--mpx-main-frame-scale-x), var(--mpx-main-frame-scale-y));
   --mpx-main-transition: var(--mpx-panel-transition);
   --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
-  --mpx-main-bg: var(--mpx-container-frame-fill);
+  --mpx-main-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-main-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-main-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-main-bg: linear-gradient(
+    var(--mpx-main-fill-angle),
+    var(--mpx-main-fill-start) 0%,
+    var(--mpx-main-fill-end) 100%
+  );
 
   /* Metadata 覆写 */
   --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
@@ -677,6 +700,7 @@
   --mpx-metadata-frame-perspective: none;
   --mpx-metadata-frame-transform-style: flat;
   --mpx-metadata-frame-backface-visibility: visible;
+  --mpx-metadata-z-index: 2;
   --mpx-metadata-transform: translate(
       var(--mpx-metadata-frame-translate-x),
       var(--mpx-metadata-frame-translate-y)
@@ -692,7 +716,14 @@
     --mpx-pane-frame-padding,
     var(--mpx-panel-padding)
   );
-  --mpx-metadata-bg: var(--mpx-container-frame-fill);
+  --mpx-metadata-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-metadata-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-metadata-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-metadata-bg: linear-gradient(
+    var(--mpx-metadata-fill-angle),
+    var(--mpx-metadata-fill-start) 0%,
+    var(--mpx-metadata-fill-end) 100%
+  );
 
   /* Header 独立 */
   --mpx-header-border-color: var(--mpx-container-frame-border-color);
@@ -714,6 +745,7 @@
   --mpx-header-frame-perspective: none;
   --mpx-header-frame-transform-style: flat;
   --mpx-header-frame-backface-visibility: visible;
+  --mpx-header-z-index: 4;
   --mpx-header-transform: translate(
       var(--mpx-header-frame-translate-x),
       var(--mpx-header-frame-translate-y)

@@ -28,7 +28,7 @@
   .sidebar-main-shell {
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-sidebar-inner, 12px);
-  background: var(--mpx-container-frame-fill);
+  background: var(--mpx-sidebar-bg, var(--mpx-container-frame-fill));
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -69,7 +69,7 @@
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-main-card, 12px);
   padding: 0.5rem 1rem;
-  background: var(--mpx-container-frame-fill);
+  background: var(--mpx-sidebar-bg, var(--mpx-container-frame-fill));
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -115,7 +115,7 @@
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-main-card, 12px);
   padding: 0.5rem 1rem;
-  background: var(--mpx-container-frame-fill);
+  background: var(--mpx-metadata-bg, var(--mpx-container-frame-fill));
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -513,13 +513,13 @@
     var(--mpx-main-border-color, transparent);
   border-radius: var(--mpx-main-radius-effective, var(--mpx-main-radius));
   background: var(--mpx-container-frame-fill);
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-main-shadow, var(--mpx-container-frame-shadow));
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .workspace.is-focus
   .main-pane-frame {
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-main-shadow, var(--mpx-container-frame-shadow));
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -528,7 +528,7 @@
     var(--mpx-header-border-color, transparent);
   border-radius: var(--mpx-header-radius-effective, var(--mpx-header-radius));
   background: var(--mpx-header-bg);
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-header-shadow, var(--mpx-container-frame-shadow));
   --mpx-metadata-control-shadow: none;
 }
 
@@ -554,7 +554,7 @@
     var(--mpx-sidebar-border-color, transparent);
   border-radius: var(--mpx-sidebar-radius-effective, var(--mpx-sidebar-radius));
   background: var(--mpx-container-frame-fill);
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-sidebar-shadow, var(--mpx-container-frame-shadow));
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -566,13 +566,13 @@
     var(--mpx-metadata-radius)
   );
   background: var(--mpx-container-frame-fill);
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-metadata-shadow, var(--mpx-container-frame-shadow));
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar.is-focus
   > .sidebar-frame {
-  box-shadow: var(--mpx-container-frame-shadow);
+  box-shadow: var(--mpx-sidebar-shadow, var(--mpx-container-frame-shadow));
 }
 
 @supports not selector(::-webkit-scrollbar) {

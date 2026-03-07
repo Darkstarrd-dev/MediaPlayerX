@@ -55,6 +55,8 @@
   flex-direction: column;
   gap: 0;
   overflow: visible;
+  position: relative;
+  z-index: var(--mpx-metadata-z-index, 2);
   perspective: var(--mpx-metadata-frame-perspective, none);
 }
 
@@ -66,7 +68,7 @@
   min-width: 180px;
   overflow: hidden;
   border-radius: var(--mpx-metadata-radius);
-  box-shadow: var(--mpx-metadata-shadow);
+  box-shadow: var(--mpx-metadata-shadow, var(--mpx-container-frame-shadow));
   backdrop-filter: var(--mpx-metadata-backdrop-filter);
   transform: var(--mpx-metadata-transform);
   transform-origin: var(--mpx-metadata-frame-origin-x, 50%)
@@ -141,7 +143,7 @@
   flex-shrink: 0;
   margin: 0;
   padding: 0;
-  background: var(--mpx-slot-fg-meta-header-bg, transparent);
+  background: var(--mpx-slot-fg-meta-header-bg, var(--mpx-metadata-bg, transparent));
   border-bottom: none;
 }
 

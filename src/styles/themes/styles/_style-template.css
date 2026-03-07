@@ -67,7 +67,6 @@
   --mpx-sidebar-border-style: var(--mpx-panel-border-style);
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
   --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-sidebar-transform: var(--mpx-panel-transform);
   --mpx-sidebar-transition: var(--mpx-panel-transition);
   --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
   --mpx-sidebar-bg: var(--mpx-bg-panel);
@@ -78,7 +77,6 @@
   --mpx-main-border-style: var(--mpx-panel-border-style);
   --mpx-main-shadow: var(--mpx-panel-shadow);
   --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-main-transform: var(--mpx-panel-transform);
   --mpx-main-transition: var(--mpx-panel-transition);
   --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
   --mpx-main-bg: var(--mpx-bg-panel);
@@ -89,7 +87,6 @@
   --mpx-metadata-border-style: var(--mpx-panel-border-style);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
   --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-metadata-transform: var(--mpx-panel-transform);
   --mpx-metadata-transition: var(--mpx-panel-transition);
   --mpx-metadata-padding: var(
     --mpx-pane-frame-padding,

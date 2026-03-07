@@ -381,6 +381,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
   "ui.themeParameter.containerLayer.sectionMain": "2.3 Main",
+  "ui.themeParameter.containerLayer.sectionMainWorkspace":
+    "2.3.2.1 Workspace / Image Grid",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
@@ -424,6 +426,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.sidebarRadius": "Sidebar radius",
   "ui.themeParameter.mainRadius": "Main radius",
   "ui.themeParameter.metadataRadius": "Metadata radius",
+  "ui.themeParameter.headerZIndex": "Header z-index",
+  "ui.themeParameter.sidebarZIndex": "Sidebar z-index",
+  "ui.themeParameter.mainZIndex": "Main z-index",
+  "ui.themeParameter.metadataZIndex": "Metadata z-index",
   "ui.themeParameter.HeaderFrameTranslateX": "Header translate X",
   "ui.themeParameter.HeaderFrameTranslateY": "Header translate Y",
   "ui.themeParameter.HeaderFrameRotateZ": "Header rotate Z",

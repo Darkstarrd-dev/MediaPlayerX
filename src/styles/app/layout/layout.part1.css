@@ -5,13 +5,15 @@
   flex-direction: column;
   background: var(--mpx-slot-bg-app-root-bg, var(--mpx-bg-app-fill));
   color: var(--mpx-slot-bg-app-root-text, var(--mpx-text-1));
+  overflow: visible;
 }
 
 .app-header {
   position: relative;
-  z-index: 4;
+  z-index: var(--mpx-header-z-index, 4);
   margin: var(--mpx-header-floating-gap);
   perspective: var(--mpx-header-frame-perspective, none);
+  overflow: visible;
 }
 
 .app-header-frame {
@@ -25,7 +27,7 @@
   background: var(--mpx-header-bg);
   gap: var(--mpx-pane-stack-gap, 14px);
   border-radius: var(--mpx-header-radius);
-  box-shadow: var(--mpx-header-shadow);
+  box-shadow: var(--mpx-header-shadow, var(--mpx-container-frame-shadow));
   backdrop-filter: var(--mpx-header-backdrop-filter);
   transform: var(--mpx-header-transform);
   transform-origin: var(--mpx-header-transform-origin);

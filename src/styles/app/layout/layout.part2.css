@@ -372,6 +372,7 @@
   min-height: 0;
   position: relative;
   padding: var(--mpx-slot-bg-app-workspace-padding, var(--mpx-layout-padding));
+  overflow: visible;
 }
 
 .workspace {
@@ -380,6 +381,7 @@
   min-width: 0;
   background: transparent;
   position: relative;
+  overflow: visible;
 }
 
 .workspace-body {
@@ -387,6 +389,7 @@
   flex: 1;
   display: flex;
   background: transparent;
+  overflow: visible;
 }
 
 .fullscreen-layer {

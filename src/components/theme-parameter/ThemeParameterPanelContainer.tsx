@@ -48,16 +48,30 @@ const CONTAINER_RADIUS_SYNC_PARAMETER_IDS = [
   "main-radius",
   "metadata-radius",
 ] as const;
+const CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS = [
+  "header-fill-angle",
+  "sidebar-fill-angle",
+  "main-fill-angle",
+  "metadata-fill-angle",
+] as const;
 
 const CONTAINER_LAYER_PARAMETER_IDS = new Set([
   "layout-padding",
   "splitter-width",
   "container-frame-radius",
   "container-frame-fill-angle",
+  "header-fill-angle",
+  "sidebar-fill-angle",
+  "main-fill-angle",
+  "metadata-fill-angle",
   "header-radius",
+  "header-z-index",
   "sidebar-radius",
+  "sidebar-z-index",
   "main-radius",
+  "main-z-index",
   "metadata-radius",
+  "metadata-z-index",
   "skeuo-pane-elevation",
   "skeuo-container-elevation",
   "liquid-glass-surface-opacity",
@@ -140,9 +154,29 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#e5e4e0",
   },
   {
+    id: "container-header-fill-start",
+    cssVar: "--mpx-header-fill-start",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-header-fill-end",
+    cssVar: "--mpx-header-fill-end",
+    fallback: "#e6e2da",
+  },
+  {
     id: "container-header-border-color",
     cssVar: "--mpx-header-border-color",
     fallback: "#e5e4e0",
+  },
+  {
+    id: "container-sidebar-fill-start",
+    cssVar: "--mpx-sidebar-fill-start",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-sidebar-fill-end",
+    cssVar: "--mpx-sidebar-fill-end",
+    fallback: "#e6e2da",
   },
   {
     id: "container-sidebar-border-color",
@@ -150,9 +184,29 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#e5e4e0",
   },
   {
+    id: "container-main-fill-start",
+    cssVar: "--mpx-main-fill-start",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-main-fill-end",
+    cssVar: "--mpx-main-fill-end",
+    fallback: "#e6e2da",
+  },
+  {
     id: "container-main-border-color",
     cssVar: "--mpx-main-border-color",
     fallback: "#e5e4e0",
+  },
+  {
+    id: "container-metadata-fill-start",
+    cssVar: "--mpx-metadata-fill-start",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-metadata-fill-end",
+    cssVar: "--mpx-metadata-fill-end",
+    fallback: "#e6e2da",
   },
   {
     id: "container-metadata-border-color",
@@ -1340,32 +1394,16 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-container-frame-shadow",
   },
   {
-    id: "container-header-fill",
-    cssVar: "--mpx-header-bg",
-  },
-  {
     id: "container-header-shadow",
     cssVar: "--mpx-header-shadow",
-  },
-  {
-    id: "container-sidebar-fill",
-    cssVar: "--mpx-sidebar-bg",
   },
   {
     id: "container-sidebar-shadow",
     cssVar: "--mpx-sidebar-shadow",
   },
   {
-    id: "container-main-fill",
-    cssVar: "--mpx-main-bg",
-  },
-  {
     id: "container-main-shadow",
     cssVar: "--mpx-main-shadow",
-  },
-  {
-    id: "container-metadata-fill",
-    cssVar: "--mpx-metadata-bg",
   },
   {
     id: "container-metadata-shadow",
@@ -1692,6 +1730,7 @@ function ThemeParameterPanel({
   );
   const [values, setValues] = useState<ThemeParameterValues>({});
   const syncedContainerRadiusOverridesRef = useRef<Set<string>>(new Set());
+  const syncedContainerFillAngleOverridesRef = useRef<Set<string>>(new Set());
   const [activePage, setActivePageState] = useState<ThemeParameterPageId>(
     initialUiSessionState.activePage,
   );
@@ -1719,6 +1758,8 @@ function ThemeParameterPanel({
   const [containerMainExpanded, setContainerMainExpandedState] = useState(
     initialUiSessionState.containerMainExpanded,
   );
+  const [containerMainWorkspaceExpanded, setContainerMainWorkspaceExpandedState] =
+    useState(initialUiSessionState.containerMainWorkspaceExpanded);
   const [containerMetadataExpanded, setContainerMetadataExpandedState] =
     useState(initialUiSessionState.containerMetadataExpanded);
   const [containerSidebarMainExpanded, setContainerSidebarMainExpandedState] =
@@ -1810,6 +1851,14 @@ function ThemeParameterPanel({
     setContainerMainExpandedState((previous) => {
       const next = resolveNextState(action, previous);
       updateThemeParameterUiSessionState({ containerMainExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMainWorkspaceExpanded = (action: SetStateAction<boolean>) => {
+    setContainerMainWorkspaceExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ containerMainWorkspaceExpanded: next });
       return next;
     });
   };
@@ -1917,6 +1966,7 @@ function ThemeParameterPanel({
     }
     wasOpenRef.current = true;
     syncedContainerRadiusOverridesRef.current = new Set();
+    syncedContainerFillAngleOverridesRef.current = new Set();
     const root = document.documentElement;
     migrateLegacySidebarMainSlots(root);
     applyContainerDebugSessionState(root);
@@ -2001,6 +2051,7 @@ function ThemeParameterPanel({
       containerHeaderExpanded,
       containerSidebarExpanded,
       containerMainExpanded,
+      containerMainWorkspaceExpanded,
       containerMetadataExpanded,
       containerSidebarMainExpanded,
       containerMainImageNameListExpanded,
@@ -2016,6 +2067,7 @@ function ThemeParameterPanel({
     containerHeaderExpanded,
     containerSidebarExpanded,
     containerMainExpanded,
+    containerMainWorkspaceExpanded,
     containerMetadataExpanded,
     containerMainImageNameListExpanded,
     containerSidebarMainExpanded,
@@ -2092,11 +2144,17 @@ function ThemeParameterPanel({
     );
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
+    const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
     setSnapshotExplicitParameterIds((previous) => {
       const next = new Set(previous);
       next.add(parameter.id);
       if (isContainerFrameRadius) {
         for (const parameterId of CONTAINER_RADIUS_SYNC_PARAMETER_IDS) {
+          next.add(parameterId);
+        }
+      }
+      if (isContainerFrameFillAngle) {
+        for (const parameterId of CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS) {
           next.add(parameterId);
         }
       }
@@ -2109,10 +2167,26 @@ function ThemeParameterPanel({
       };
       parameter.apply(root, nextValue, nextValues);
       if (isContainerFrameRadius) {
-        syncedContainerRadiusOverridesRef.current = new Set(
-          CONTAINER_RADIUS_SYNC_PARAMETER_IDS,
-        );
-        for (const parameterId of CONTAINER_RADIUS_SYNC_PARAMETER_IDS) {
+        if (syncedContainerRadiusOverridesRef.current.size === 0) {
+          syncedContainerRadiusOverridesRef.current = new Set(
+            CONTAINER_RADIUS_SYNC_PARAMETER_IDS,
+          );
+        }
+        for (const parameterId of syncedContainerRadiusOverridesRef.current) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = nextValue;
+          syncParameter.apply(root, nextValue, nextValues);
+        }
+      } else if (isContainerFrameFillAngle) {
+        if (syncedContainerFillAngleOverridesRef.current.size === 0) {
+          syncedContainerFillAngleOverridesRef.current = new Set(
+            CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS,
+          );
+        }
+        for (const parameterId of syncedContainerFillAngleOverridesRef.current) {
           const syncParameter = parameterMap.get(parameterId);
           if (!syncParameter) {
             continue;
@@ -2126,6 +2200,12 @@ function ThemeParameterPanel({
         )
       ) {
         syncedContainerRadiusOverridesRef.current.delete(parameter.id);
+      } else if (
+        CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
       }
       return nextValues;
     });
@@ -2271,6 +2351,7 @@ function ThemeParameterPanel({
     const nextValues: ThemeParameterValues = { ...values };
     const importedParameterIds = new Set<string>();
     syncedContainerRadiusOverridesRef.current = new Set();
+    syncedContainerFillAngleOverridesRef.current = new Set();
     for (const parameter of parameters) {
       const rawValue = importedValues[parameter.id];
       if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
@@ -2294,7 +2375,26 @@ function ThemeParameterPanel({
         syncedContainerRadiusOverridesRef.current = new Set(
           CONTAINER_RADIUS_SYNC_PARAMETER_IDS,
         );
-        for (const parameterId of CONTAINER_RADIUS_SYNC_PARAMETER_IDS) {
+        for (const parameterId of syncedContainerRadiusOverridesRef.current) {
+          if (
+            typeof importedValues[parameterId] === "number" &&
+            Number.isFinite(importedValues[parameterId])
+          ) {
+            continue;
+          }
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = normalized;
+          importedParameterIds.add(parameterId);
+          syncParameter.apply(root, normalized, nextValues);
+        }
+      } else if (parameter.id === "container-frame-fill-angle") {
+        syncedContainerFillAngleOverridesRef.current = new Set(
+          CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS,
+        );
+        for (const parameterId of syncedContainerFillAngleOverridesRef.current) {
           if (
             typeof importedValues[parameterId] === "number" &&
             Number.isFinite(importedValues[parameterId])
@@ -2315,6 +2415,12 @@ function ThemeParameterPanel({
         )
       ) {
         syncedContainerRadiusOverridesRef.current.delete(parameter.id);
+      } else if (
+        CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+          parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+        )
+      ) {
+        syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
       }
     }
     if (payload.debugColors && typeof payload.debugColors === "object") {
@@ -2421,6 +2527,7 @@ function ThemeParameterPanel({
   const resetSingleParameter = (parameter: ThemeParameterDefinition) => {
     const root = document.documentElement;
     const isContainerFrameRadius = parameter.id === "container-frame-radius";
+    const isContainerFrameFillAngle = parameter.id === "container-frame-fill-angle";
     if (isContainerFrameRadius) {
       const syncedIds = Array.from(syncedContainerRadiusOverridesRef.current);
       parameter.reset(root);
@@ -2453,6 +2560,38 @@ function ThemeParameterPanel({
       syncedContainerRadiusOverridesRef.current = new Set();
       return;
     }
+    if (isContainerFrameFillAngle) {
+      const syncedIds = Array.from(syncedContainerFillAngleOverridesRef.current);
+      parameter.reset(root);
+      for (const parameterId of syncedIds) {
+        parameterMap.get(parameterId)?.reset(root);
+      }
+      const computed = getComputedStyle(root);
+      setValues((previous) => {
+        const nextValues = {
+          ...previous,
+          [parameter.id]: parameter.read(computed),
+        };
+        for (const parameterId of syncedIds) {
+          const syncParameter = parameterMap.get(parameterId);
+          if (!syncParameter) {
+            continue;
+          }
+          nextValues[parameterId] = syncParameter.read(computed);
+        }
+        return nextValues;
+      });
+      setSnapshotExplicitParameterIds((previous) => {
+        const next = new Set(previous);
+        next.delete(parameter.id);
+        for (const parameterId of syncedIds) {
+          next.delete(parameterId);
+        }
+        return next;
+      });
+      syncedContainerFillAngleOverridesRef.current = new Set();
+      return;
+    }
     parameter.reset(root);
     const computed = getComputedStyle(root);
     const nextValue = parameter.read(computed);
@@ -2471,6 +2610,13 @@ function ThemeParameterPanel({
       )
     ) {
       syncedContainerRadiusOverridesRef.current.delete(parameter.id);
+    }
+    if (
+      CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
+        parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
+      )
+    ) {
+      syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
     }
   };
 
@@ -2491,6 +2637,7 @@ function ThemeParameterPanel({
   const handleResetToOpenState = () => {
     clearContainerDebugSessionState();
     syncedContainerRadiusOverridesRef.current = new Set();
+    syncedContainerFillAngleOverridesRef.current = new Set();
     resetSnapshotToBaseline();
   };
 
@@ -2616,6 +2763,8 @@ function ThemeParameterPanel({
           setContainerSidebarExpanded={setContainerSidebarExpanded}
           containerMainExpanded={containerMainExpanded}
           setContainerMainExpanded={setContainerMainExpanded}
+          containerMainWorkspaceExpanded={containerMainWorkspaceExpanded}
+          setContainerMainWorkspaceExpanded={setContainerMainWorkspaceExpanded}
           containerMetadataExpanded={containerMetadataExpanded}
           setContainerMetadataExpanded={setContainerMetadataExpanded}
           containerSidebarMainExpanded={containerSidebarMainExpanded}

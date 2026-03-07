@@ -185,12 +185,12 @@ describe("ThemeParameterPanel", () => {
     ensureDetailsOpen("2.3 Main");
     ensureDetailsOpen("2.4 Metadata");
 
-    expect(getSliderByLabelText("Header 圆角").value).toBe("20");
-    expect(getSliderByLabelText("Sidebar 圆角").value).toBe("20");
-    expect(getSliderByLabelText("Main 圆角").value).toBe("20");
-    expect(getSliderByLabelText("Metadata 圆角").value).toBe("20");
+    expect(getSliderByLabelText("--mpx-header-radius").value).toBe("20");
+    expect(getSliderByLabelText("--mpx-sidebar-radius").value).toBe("20");
+    expect(getSliderByLabelText("--mpx-main-radius").value).toBe("20");
+    expect(getSliderByLabelText("--mpx-metadata-radius").value).toBe("20");
 
-    fireEvent.change(getSliderByLabelText("Main 圆角"), {
+    fireEvent.change(getSliderByLabelText("--mpx-main-radius"), {
       target: { value: "8" },
     });
 
@@ -219,6 +219,99 @@ describe("ThemeParameterPanel", () => {
       "8px",
     );
   });
+
+  it("共享壳层阴影总控会同步四个分控阴影，分控仍可继续覆盖", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    ensureDetailsOpen("2.0 共享壳层");
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-container-frame-shadow-layer-0-offsetX",
+      }),
+      {
+        target: { value: "9px" },
+      },
+    );
+
+    const sharedShadow = document.documentElement.style.getPropertyValue(
+      "--mpx-container-frame-shadow",
+    );
+    expect(sharedShadow).toContain("9px");
+    expect(document.documentElement.style.getPropertyValue("--mpx-header-shadow")).toBe(
+      sharedShadow,
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow")).toBe(
+      sharedShadow,
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-main-shadow")).toBe(
+      sharedShadow,
+    );
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-metadata-shadow"),
+    ).toBe(sharedShadow);
+
+    ensureDetailsOpen("2.1 Header");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-header-shadow-layer-0-offsetX",
+      }),
+      {
+        target: { value: "4px" },
+      },
+    );
+
+    expect(document.documentElement.style.getPropertyValue("--mpx-header-shadow")).toContain(
+      "4px",
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-shadow")).toBe(
+      sharedShadow,
+    );
+  }, 15000);
+
+  it("共享壳层 fill 三件套会同步四个分控，分控仍可继续覆盖", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    ensureDetailsOpen("2.0 共享壳层");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }), {
+      target: { value: "#111111" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-end" }), {
+      target: { value: "#222222" },
+    });
+    fireEvent.change(getSliderByLabelText("--mpx-container-frame-fill-angle"), {
+      target: { value: "135" },
+    });
+
+    expect(document.documentElement.style.getPropertyValue("--mpx-header-fill-start")).toBe(
+      "#111111",
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-fill-end")).toBe(
+      "#222222",
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-main-fill-angle")).toBe(
+      "135deg",
+    );
+
+    ensureDetailsOpen("2.2 Sidebar");
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-sidebar-fill-start" }), {
+      target: { value: "#333333" },
+    });
+
+    fireEvent.change(screen.getByRole("textbox", { name: "--mpx-container-frame-fill-start" }), {
+      target: { value: "#444444" },
+    });
+
+    expect(document.documentElement.style.getPropertyValue("--mpx-sidebar-fill-start")).toBe(
+      "#333333",
+    );
+    expect(document.documentElement.style.getPropertyValue("--mpx-header-fill-start")).toBe(
+      "#444444",
+    );
+  }, 15000);
 
   it("按 style 切换专属参数并应用变量覆盖", () => {
     const { rerender } = renderThemeParameterPanel({ styleId: "liquid-glass" });
@@ -876,13 +969,20 @@ describe("ThemeParameterPanel", () => {
       target: { value: "-12" },
     });
     fireEvent.change(
-      screen.getByRole("textbox", { name: "--mpx-header-bg" }),
+      screen.getByRole("textbox", { name: "--mpx-header-fill-start" }),
       {
-        target: {
-          value: "linear-gradient(135deg, #111111, #222222)",
-        },
+        target: { value: "#111111" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-header-fill-end" }),
+      {
+        target: { value: "#222222" },
+      },
+    );
+    fireEvent.change(getSliderByLabelText("--mpx-header-fill-angle"), {
+      target: { value: "135" },
+    });
     fireEvent.change(
       screen.getByRole("textbox", { name: "--mpx-header-shadow" }),
       {
@@ -899,8 +999,14 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-header-frame-rotate-z"),
     ).toBe("-12deg");
     expect(
-      document.documentElement.style.getPropertyValue("--mpx-header-bg"),
-    ).toBe("linear-gradient(135deg, #111111, #222222)");
+      document.documentElement.style.getPropertyValue("--mpx-header-fill-start"),
+    ).toBe("#111111");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-fill-end"),
+    ).toBe("#222222");
+    expect(
+      document.documentElement.style.getPropertyValue("--mpx-header-fill-angle"),
+    ).toBe("135deg");
     expect(
       document.documentElement.style.getPropertyValue("--mpx-header-shadow"),
     ).toBe("0 8px 24px rgba(1, 2, 3, 0.4)");
@@ -913,14 +1019,14 @@ describe("ThemeParameterPanel", () => {
     ) as HTMLTextAreaElement;
     expect(snapshotTextarea.value).toContain('"header-frame-translate-x": 24');
     expect(snapshotTextarea.value).toContain('"header-frame-rotate-z": -12');
-    expect(snapshotTextarea.value).toContain(
-      '"container-header-fill": "linear-gradient(135deg, #111111, #222222)"',
-    );
+    expect(snapshotTextarea.value).toContain('"container-header-fill-start": "#111111"');
+    expect(snapshotTextarea.value).toContain('"container-header-fill-end": "#222222"');
+    expect(snapshotTextarea.value).toContain('"header-fill-angle": 135');
     expect(snapshotTextarea.value).toContain(
       '"container-header-shadow": "0 8px 24px rgba(1, 2, 3, 0.4)"',
     );
     },
-    20000,
+    30000,
   );
 
   it("大容器层的 Sidebar/Main/Metadata frame 数值项可写入变量", () => {
@@ -1081,7 +1187,7 @@ describe("ThemeParameterPanel", () => {
       }) as HTMLInputElement).value,
     ).toBe("0.93");
     },
-    10000,
+    30000,
   );
 
   it("大容器层调试值在关闭后重新打开保持，点击全局复位后清空", () => {

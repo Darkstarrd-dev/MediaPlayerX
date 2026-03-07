@@ -164,7 +164,9 @@
   --mpx-status-idle-border: #a2b2c6;
   --mpx-status-idle-text: #3d5167;
 
-  --mpx-header-bg: var(--mpx-container-frame-fill);
+  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
   --mpx-header-border: var(--mpx-border-1);
 
   --mpx-sidebar-main-tree-bg: #e3e7ec;

@@ -52,7 +52,6 @@
   --mpx-sidebar-border-style: var(--mpx-panel-border-style);
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
   --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-sidebar-transform: var(--mpx-panel-transform);
   --mpx-sidebar-transition: var(--mpx-panel-transition);
   --mpx-sidebar-padding: var(--mpx-pane-frame-padding);
 
@@ -61,7 +60,6 @@
   --mpx-main-border-style: var(--mpx-panel-border-style);
   --mpx-main-shadow: var(--mpx-panel-shadow);
   --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-main-transform: var(--mpx-panel-transform);
   --mpx-main-transition: var(--mpx-panel-transition);
   --mpx-main-padding: var(--mpx-pane-frame-padding);
 
@@ -70,7 +68,6 @@
   --mpx-metadata-border-style: var(--mpx-panel-border-style);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
   --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-metadata-transform: var(--mpx-panel-transform);
   --mpx-metadata-transition: var(--mpx-panel-transition);
   --mpx-metadata-padding: var(--mpx-pane-frame-padding);
 
@@ -80,9 +77,6 @@
   --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
-  --mpx-main-bg: var(--mpx-container-frame-fill);
-  --mpx-sidebar-bg: var(--mpx-container-frame-fill);
-  --mpx-metadata-bg: var(--mpx-container-frame-fill);
 
   --mpx-card-radius: 12px;
   --mpx-card-shadow: 4px 4px 10px color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
@@ -177,7 +171,9 @@
   --mpx-sidebar-rename-preview-row-source-hover-bg: var(--mpx-overlay-soft-hover-bg);
   --mpx-sidebar-rename-preview-row-source-active-bg: var(--mpx-overlay-soft-focus-bg);
   --mpx-sidebar-rename-preview-row-source-pressed-bg: var(--mpx-overlay-soft-focus-bg);
-  --mpx-header-bg: var(--mpx-container-frame-fill);
+  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
@@ -236,9 +232,6 @@
       color-mix(in srgb, var(--mpx-container-frame-border-color) 90%, transparent),
     0 0 0 2px
       color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent);
-  --mpx-main-bg: var(--mpx-container-frame-fill);
-  --mpx-sidebar-bg: var(--mpx-container-frame-fill);
-  --mpx-metadata-bg: var(--mpx-container-frame-fill);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] .image-grid,
@@ -297,10 +290,9 @@
     2px 4px 10px rgba(116, 88, 50, 0.18),
     inset 1px 1px 2px rgba(255, 255, 255, 0.9),
     inset -2px -2px 4px rgba(116, 88, 50, 0.15);
-  --mpx-main-bg: var(--mpx-container-frame-fill);
-  --mpx-sidebar-bg: var(--mpx-container-frame-fill);
-  --mpx-metadata-bg: var(--mpx-container-frame-fill);
-  --mpx-header-bg: var(--mpx-container-frame-fill);
+  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
   --mpx-border-1: #e5e4e0;
   --mpx-header-border-color: var(--mpx-container-frame-border-color);
   --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);

@@ -13,6 +13,7 @@ interface ThemeParameterUISessionState {
   containerHeaderExpanded: boolean;
   containerSidebarExpanded: boolean;
   containerMainExpanded: boolean;
+  containerMainWorkspaceExpanded: boolean;
   containerMetadataExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
@@ -33,6 +34,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerHeaderExpanded: false,
   containerSidebarExpanded: false,
   containerMainExpanded: false,
+  containerMainWorkspaceExpanded: false,
   containerMetadataExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
