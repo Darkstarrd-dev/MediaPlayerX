@@ -771,17 +771,48 @@
     var(--mpx-border-2)
   );
   --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
-  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill));
+  --mpx-large-panel-fill-start: var(
+    --mpx-overlay-surface-bg,
+    var(--mpx-bg-panel, var(--mpx-bg-elevated))
+  );
+  --mpx-large-panel-fill-end: var(--mpx-large-panel-fill-start);
+  --mpx-large-panel-fill-angle: 180deg;
+  --mpx-large-panel-fill: linear-gradient(
+    var(--mpx-large-panel-fill-angle),
+    var(--mpx-large-panel-fill-start),
+    var(--mpx-large-panel-fill-end)
+  );
+  --mpx-large-panel-bg: var(--mpx-large-panel-fill);
   --mpx-large-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)
   );
 
-  --mpx-large-panel-head-border-width: 1px;
-  --mpx-large-panel-head-border-color: var(--mpx-border-1);
+  --mpx-large-panel-head-border-width: var(
+    --mpx-large-panel-section-border-width,
+    1px
+  );
+  --mpx-large-panel-head-border-color: var(
+    --mpx-large-panel-section-border-color,
+    var(--mpx-border-1)
+  );
   --mpx-large-panel-head-padding-y: 10px;
   --mpx-large-panel-head-padding-x: 14px;
-  --mpx-large-panel-head-bg: transparent;
+  --mpx-large-panel-head-fill: linear-gradient(
+    var(
+      --mpx-large-panel-head-fill-angle,
+      var(--mpx-large-panel-section-fill-angle, 180deg)
+    ),
+    var(
+      --mpx-large-panel-head-fill-start,
+      var(--mpx-large-panel-section-fill-start, rgba(0, 0, 0, 0))
+    ),
+    var(
+      --mpx-large-panel-head-fill-end,
+      var(--mpx-large-panel-section-fill-end, rgba(0, 0, 0, 0))
+    )
+  );
+  --mpx-large-panel-head-bg: var(--mpx-large-panel-head-fill);
   --mpx-large-panel-head-text: inherit;
 
   --mpx-large-panel-shell-columns: minmax(180px, 20%) 1fr;
@@ -789,17 +820,57 @@
   --mpx-large-panel-shell-gap: 10px;
   --mpx-large-panel-shell-padding: 10px;
 
-  --mpx-large-panel-side-border-width: 1px;
-  --mpx-large-panel-side-border-color: var(--mpx-border-1);
+  --mpx-large-panel-side-border-width: var(
+    --mpx-large-panel-section-border-width,
+    1px
+  );
+  --mpx-large-panel-side-border-color: var(
+    --mpx-large-panel-section-border-color,
+    var(--mpx-border-1)
+  );
   --mpx-large-panel-side-radius: 10px;
-  --mpx-large-panel-side-bg: var(--mpx-bg-elevated);
+  --mpx-large-panel-side-fill: linear-gradient(
+    var(
+      --mpx-large-panel-side-fill-angle,
+      var(--mpx-large-panel-section-fill-angle, 180deg)
+    ),
+    var(
+      --mpx-large-panel-side-fill-start,
+      var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+    ),
+    var(
+      --mpx-large-panel-side-fill-end,
+      var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+    )
+  );
+  --mpx-large-panel-side-bg: var(--mpx-large-panel-side-fill);
   --mpx-large-panel-side-padding: 10px;
   --mpx-large-panel-side-gap: 8px;
 
-  --mpx-large-panel-main-border-width: 1px;
-  --mpx-large-panel-main-border-color: var(--mpx-border-1);
+  --mpx-large-panel-main-border-width: var(
+    --mpx-large-panel-section-border-width,
+    1px
+  );
+  --mpx-large-panel-main-border-color: var(
+    --mpx-large-panel-section-border-color,
+    var(--mpx-border-1)
+  );
   --mpx-large-panel-main-radius: 10px;
-  --mpx-large-panel-main-bg: var(--mpx-bg-elevated);
+  --mpx-large-panel-main-fill: linear-gradient(
+    var(
+      --mpx-large-panel-main-fill-angle,
+      var(--mpx-large-panel-section-fill-angle, 180deg)
+    ),
+    var(
+      --mpx-large-panel-main-fill-start,
+      var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+    ),
+    var(
+      --mpx-large-panel-main-fill-end,
+      var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+    )
+  );
+  --mpx-large-panel-main-bg: var(--mpx-large-panel-main-fill);
   --mpx-large-panel-main-padding-y: 14px;
   --mpx-large-panel-main-padding-x: 16px;
   --mpx-large-panel-main-align-items: flex-start;

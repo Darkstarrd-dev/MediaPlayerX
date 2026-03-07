@@ -273,9 +273,13 @@
     --mpx-slot-fg-header-g1-settings-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-header-g1-settings-root-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-header-g1-settings-root-panel-shadow,
@@ -285,19 +289,31 @@
     --mpx-slot-fg-header-g1-settings-root-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-header-g1-settings-root-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-header-g1-settings-root-panel-head-text,
     inherit
   );
-  --mpx-large-panel-side-bg: var(
+  --mpx-large-panel-side-fill-start: var(
     --mpx-slot-fg-header-g1-settings-root-panel-side-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-side-fill-end: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-side-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-header-g1-settings-root-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -308,9 +324,13 @@
     --mpx-slot-fg-header-g3-help-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-header-g3-help-root-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-header-g3-help-root-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-header-g3-help-root-panel-shadow,
@@ -320,19 +340,31 @@
     --mpx-slot-fg-header-g3-help-root-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-header-g3-help-root-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-header-g3-help-root-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-header-g3-help-root-panel-head-text,
     inherit
   );
-  --mpx-large-panel-side-bg: var(
+  --mpx-large-panel-side-fill-start: var(
     --mpx-slot-fg-header-g3-help-root-panel-side-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-side-fill-end: var(
+    --mpx-slot-fg-header-g3-help-root-panel-side-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-header-g3-help-root-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-header-g3-help-root-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -343,9 +375,13 @@
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-shadow,
@@ -355,19 +391,31 @@
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-text,
     inherit
   );
-  --mpx-large-panel-side-bg: var(
+  --mpx-large-panel-side-fill-start: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-bg,
     var(--mpx-bg-elevated)
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-side-fill-end: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -478,9 +526,13 @@
     --mpx-slot-fg-sidebar-shortcut-rename-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-shadow,
@@ -490,15 +542,23 @@
     --mpx-slot-fg-sidebar-shortcut-rename-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -617,9 +677,13 @@
     --mpx-slot-fg-import-task-root-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-import-task-root-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-import-task-root-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-import-task-root-shadow,
@@ -629,15 +693,23 @@
     --mpx-slot-fg-import-task-root-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-import-task-root-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-import-task-root-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-import-task-root-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-import-task-root-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-import-task-root-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -648,9 +720,13 @@
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-shadow,
@@ -660,15 +736,23 @@
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -783,9 +867,13 @@
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-shadow,
@@ -795,15 +883,23 @@
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -892,9 +988,13 @@
     --mpx-slot-fg-main-header-manage-video-transcode-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-shadow,
@@ -904,15 +1004,23 @@
     --mpx-slot-fg-main-header-manage-video-transcode-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -959,9 +1067,13 @@
     --mpx-slot-fg-main-header-manage-music-transcode-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-shadow,
@@ -971,15 +1083,23 @@
     --mpx-slot-fg-main-header-manage-music-transcode-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-main-bg,
     var(--mpx-bg-elevated)
   );
@@ -1026,9 +1146,13 @@
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
-  --mpx-large-panel-bg: var(
+  --mpx-large-panel-fill-start: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+  );
+  --mpx-large-panel-fill-end: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
   --mpx-large-panel-shadow: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-shadow,
@@ -1038,15 +1162,23 @@
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-border,
     var(--mpx-border-1)
   );
-  --mpx-large-panel-head-bg: var(
+  --mpx-large-panel-head-fill-start: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-bg,
-    transparent
+    rgba(0, 0, 0, 0)
+  );
+  --mpx-large-panel-head-fill-end: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-bg,
+    rgba(0, 0, 0, 0)
   );
   --mpx-large-panel-head-text: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-text,
     inherit
   );
-  --mpx-large-panel-main-bg: var(
+  --mpx-large-panel-main-fill-start: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-main-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-large-panel-main-fill-end: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-main-bg,
     var(--mpx-bg-elevated)
   );

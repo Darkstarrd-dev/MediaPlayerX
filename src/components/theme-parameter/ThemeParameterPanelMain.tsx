@@ -76,6 +76,18 @@ interface ThemeParameterPanelMainProps {
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
   setContainerMainImageNameListExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelRootExpanded: boolean;
+  setLargePanelRootExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelSharedSectionExpanded: boolean;
+  setLargePanelSharedSectionExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelHeadExpanded: boolean;
+  setLargePanelHeadExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelSideExpanded: boolean;
+  setLargePanelSideExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelMainExpanded: boolean;
+  setLargePanelMainExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelInternalExpanded: boolean;
+  setLargePanelInternalExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -455,6 +467,39 @@ const CONTAINER_FILL_SYNC_COLOR_FIELD_IDS = {
     "container-sidebar-fill-end",
     "container-main-fill-end",
     "container-metadata-fill-end",
+  ],
+} as const;
+
+const LARGE_PANEL_ROOT_PARAMETER_IDS = [
+  "large-panel-fill-angle",
+  "large-panel-border-width",
+  "large-panel-width",
+  "large-panel-height",
+  "large-panel-radius",
+  "large-panel-shell-padding",
+  "large-panel-shell-gap",
+] as const;
+
+const LARGE_PANEL_SHARED_PARAMETER_IDS = [
+  "large-panel-section-fill-angle",
+  "large-panel-section-border-width",
+] as const;
+
+const LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS = {
+  "large-panel-section-fill-start": [
+    "large-panel-head-fill-start",
+    "large-panel-side-fill-start",
+    "large-panel-main-fill-start",
+  ],
+  "large-panel-section-fill-end": [
+    "large-panel-head-fill-end",
+    "large-panel-side-fill-end",
+    "large-panel-main-fill-end",
+  ],
+  "large-panel-section-border-color": [
+    "large-panel-head-border-color",
+    "large-panel-side-border-color",
+    "large-panel-main-border-color",
   ],
 } as const;
 
@@ -1348,7 +1393,7 @@ function resolveDebugVarUsage(cssVar: string): string {
   return "用于对应 CSS 消费点的主题调试变量";
 }
 
-const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "large-panel-border-color",
     cssVar: "--mpx-large-panel-border-color",
@@ -1356,11 +1401,43 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "root",
   },
   {
-    id: "large-panel-bg",
-    cssVar: "--mpx-large-panel-bg",
+    id: "large-panel-fill-start",
+    cssVar: "--mpx-large-panel-fill-start",
     fallback: "#ffffff",
     groupId: "root",
   },
+  {
+    id: "large-panel-fill-end",
+    cssVar: "--mpx-large-panel-fill-end",
+    fallback: "#ffffff",
+    groupId: "root",
+  },
+];
+
+const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-section-fill-start",
+    cssVar: "--mpx-large-panel-section-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "root",
+  },
+  {
+    id: "large-panel-section-fill-end",
+    cssVar: "--mpx-large-panel-section-fill-end",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "root",
+  },
+  {
+    id: "large-panel-section-border-color",
+    cssVar: "--mpx-large-panel-section-border-color",
+    fallback: "#d6cfc1",
+    groupId: "root",
+  },
+];
+
+const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "large-panel-head-border-color",
     cssVar: "--mpx-large-panel-head-border-color",
@@ -1368,11 +1445,28 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "head",
   },
   {
-    id: "large-panel-head-bg",
-    cssVar: "--mpx-large-panel-head-bg",
-    fallback: "#ffffff",
+    id: "large-panel-head-fill-start",
+    cssVar: "--mpx-large-panel-head-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
     groupId: "head",
   },
+  {
+    id: "large-panel-head-fill-end",
+    cssVar: "--mpx-large-panel-head-fill-end",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "head",
+  },
+  {
+    id: "large-panel-head-text",
+    cssVar: "--mpx-large-panel-head-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "large-panel-side-border-color",
     cssVar: "--mpx-large-panel-side-border-color",
@@ -1380,11 +1474,20 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "side",
   },
   {
-    id: "large-panel-side-bg",
-    cssVar: "--mpx-large-panel-side-bg",
+    id: "large-panel-side-fill-start",
+    cssVar: "--mpx-large-panel-side-fill-start",
     fallback: "#ffffff",
     groupId: "side",
   },
+  {
+    id: "large-panel-side-fill-end",
+    cssVar: "--mpx-large-panel-side-fill-end",
+    fallback: "#ffffff",
+    groupId: "side",
+  },
+];
+
+const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "large-panel-main-border-color",
     cssVar: "--mpx-large-panel-main-border-color",
@@ -1392,11 +1495,20 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
   {
-    id: "large-panel-main-bg",
-    cssVar: "--mpx-large-panel-main-bg",
+    id: "large-panel-main-fill-start",
+    cssVar: "--mpx-large-panel-main-fill-start",
     fallback: "#ffffff",
     groupId: "main",
   },
+  {
+    id: "large-panel-main-fill-end",
+    cssVar: "--mpx-large-panel-main-fill-end",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+];
+
+const LARGE_PANEL_INTERNAL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "large-panel-import-task-error-border",
     cssVar: "--mpx-import-task-error-border",
@@ -2083,7 +2195,26 @@ const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   },
 ];
 
-const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  ...LARGE_PANEL_ROOT_COLOR_FIELDS,
+  ...LARGE_PANEL_SHARED_COLOR_FIELDS,
+  ...LARGE_PANEL_HEAD_COLOR_FIELDS,
+  ...LARGE_PANEL_SIDE_COLOR_FIELDS,
+  ...LARGE_PANEL_MAIN_COLOR_FIELDS,
+  ...LARGE_PANEL_INTERNAL_COLOR_FIELDS,
+];
+
+const LARGE_PANEL_ROOT_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "large-panel-shadow",
+    cssVar: "--mpx-large-panel-shadow",
+    fallback:
+      "0 14px 38px rgba(30, 27, 21, 0.18), 0 2px 8px rgba(30, 27, 21, 0.08)",
+    groupId: "root",
+  },
+];
+
+const LARGE_PANEL_INTERNAL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "large-panel-metadata-fetch-control-font-size",
     cssVar: "--mpx-metadata-fetch-control-font-size",
@@ -2103,6 +2234,49 @@ const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     groupId: "main",
   },
 ];
+
+const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  ...LARGE_PANEL_ROOT_TEXT_FIELDS,
+  ...LARGE_PANEL_INTERNAL_TEXT_FIELDS,
+];
+
+const LARGE_PANEL_SECTION_DEFINITIONS = [
+  {
+    id: "head",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionHead",
+    colorFields: LARGE_PANEL_HEAD_COLOR_FIELDS,
+    parameterIds: [
+      "large-panel-head-fill-angle",
+      "large-panel-head-border-width",
+      "large-panel-head-padding-y",
+      "large-panel-head-padding-x",
+    ],
+  },
+  {
+    id: "side",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionSide",
+    colorFields: LARGE_PANEL_SIDE_COLOR_FIELDS,
+    parameterIds: [
+      "large-panel-side-fill-angle",
+      "large-panel-side-border-width",
+      "large-panel-side-radius",
+      "large-panel-side-padding",
+      "large-panel-side-gap",
+    ],
+  },
+  {
+    id: "main",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionMain",
+    colorFields: LARGE_PANEL_MAIN_COLOR_FIELDS,
+    parameterIds: [
+      "large-panel-main-fill-angle",
+      "large-panel-main-border-width",
+      "large-panel-main-radius",
+      "large-panel-main-padding-y",
+      "large-panel-main-padding-x",
+    ],
+  },
+] as const;
 
 const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -2796,25 +2970,6 @@ function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
   }
 }
 
-function resolveLargePanelNumberGroup(
-  parameter: ThemeParameterDefinition,
-): ThemeDebugNumberGroupId {
-  const id = parameter.id;
-  if (id.includes("head-")) {
-    return "head";
-  }
-  if (id.includes("shell-")) {
-    return "shell";
-  }
-  if (id.includes("side-")) {
-    return "side";
-  }
-  if (id.includes("main-")) {
-    return "main";
-  }
-  return "root";
-}
-
 function resolveSmallPanelNumberGroup(
   parameter: ThemeParameterDefinition,
 ): ThemeDebugNumberGroupId {
@@ -2869,6 +3024,18 @@ export function ThemeParameterPanelMain({
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
   setContainerMainImageNameListExpanded,
+  largePanelRootExpanded,
+  setLargePanelRootExpanded,
+  largePanelSharedSectionExpanded,
+  setLargePanelSharedSectionExpanded,
+  largePanelHeadExpanded,
+  setLargePanelHeadExpanded,
+  largePanelSideExpanded,
+  setLargePanelSideExpanded,
+  largePanelMainExpanded,
+  setLargePanelMainExpanded,
+  largePanelInternalExpanded,
+  setLargePanelInternalExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -2920,6 +3087,9 @@ export function ThemeParameterPanelMain({
   >({});
   const syncedContainerShadowOverridesRef = useRef<Set<string>>(new Set());
   const syncedContainerFillColorOverridesRef = useRef<
+    Record<string, Set<string>>
+  >({});
+  const syncedLargePanelColorOverridesRef = useRef<
     Record<string, Set<string>>
   >({});
   const [controlPreviewValues, setControlPreviewValues] =
@@ -2986,34 +3156,26 @@ export function ThemeParameterPanelMain({
     ).filter((field): field is ThemeDebugTextField => field !== undefined);
   }, []);
 
-  const largePanelNumberGroups = useMemo(() => {
-    const groupMap: Record<
-      ThemeDebugNumberGroupId,
-      ThemeParameterDefinition[]
-    > = {
-      box: [],
-      border: [],
-      shadow: [],
-      root: [],
-      head: [],
-      shell: [],
-      side: [],
-      main: [],
-    };
-    for (const parameter of largePanelLayerParameters) {
-      groupMap[resolveLargePanelNumberGroup(parameter)].push(parameter);
-    }
-    return ["root", "head", "shell", "side", "main"]
-      .map((groupId) => {
-        const id = groupId as ThemeDebugNumberGroupId;
-        return {
-          id,
-          title: resolveNumberGroupTitle(id),
-          parameters: groupMap[id],
-        };
-      })
-      .filter((group) => group.parameters.length > 0);
-  }, [largePanelLayerParameters]);
+  const largePanelParameterMap = useMemo(
+    () => new Map(largePanelLayerParameters.map((parameter) => [parameter.id, parameter])),
+    [largePanelLayerParameters],
+  );
+
+  const pickLargePanelParameters = (parameterIds: readonly string[]) => {
+    return parameterIds
+      .map((id) => largePanelParameterMap.get(id))
+      .filter((parameter): parameter is ThemeParameterDefinition =>
+        parameter !== undefined,
+      );
+  };
+
+  const largePanelRootParameters = useMemo(() => {
+    return pickLargePanelParameters(LARGE_PANEL_ROOT_PARAMETER_IDS);
+  }, [largePanelParameterMap]);
+
+  const largePanelSharedParameters = useMemo(() => {
+    return pickLargePanelParameters(LARGE_PANEL_SHARED_PARAMETER_IDS);
+  }, [largePanelParameterMap]);
 
   const smallPanelNumberGroups = useMemo(() => {
     const groupMap: Record<
@@ -3077,6 +3239,7 @@ export function ThemeParameterPanelMain({
 
     if (
       activePage === "containerLayer" ||
+      activePage === "largePanelLayer" ||
       activePage === "smallPanelLayer" ||
       activePage === "commonControls"
     ) {
@@ -3084,6 +3247,8 @@ export function ThemeParameterPanelMain({
       const sourceTextFields =
         activePage === "containerLayer"
           ? CONTAINER_LAYER_TEXT_FIELDS
+          : activePage === "largePanelLayer"
+            ? LARGE_PANEL_TEXT_FIELDS
           : activePage === "commonControls"
             ? COMMON_CONTROL_TEXT_FIELDS
           : SMALL_PANEL_TEXT_FIELDS;
@@ -3095,6 +3260,8 @@ export function ThemeParameterPanelMain({
       if (activePage === "containerLayer") {
         syncedContainerShadowOverridesRef.current = new Set();
         syncedContainerFillColorOverridesRef.current = {};
+      } else if (activePage === "largePanelLayer") {
+        syncedLargePanelColorOverridesRef.current = {};
       }
       return;
     }
