@@ -36,7 +36,8 @@
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
   /* ---------- Semantic surfaces/text/borders/accent (C layer) ---------- */
-  --mpx-bg-app: #f2eee7;
+  --mpx-bg-app-fill: #f2eee7;
+  --mpx-bg-app-base: #f2eee7;
   --mpx-bg-workspace: #f3f0ea;
   --mpx-bg-panel: #fbf8f3;
   --mpx-bg-elevated: #ffffff;
@@ -100,12 +101,7 @@
   --mpx-status-idle-text: #35525c;
 
   /* ---------- Component aliases (D layer, color/effect only) ---------- */
-  --mpx-header-bg: linear-gradient(
-    120deg,
-    #f4ebe0 0%,
-    #f7f4ef 42%,
-    #ece6d8 100%
-  );
+  --mpx-header-bg: var(--mpx-container-frame-fill);
   --mpx-header-border: var(--mpx-border-1);
 
   /* Sidebar Main (2.2.2.1) */

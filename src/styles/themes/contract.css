@@ -120,7 +120,8 @@
   --mpx-state-selected-color: #8a919a;
 
   /* Default Semantic (Parchment-like base) */
-  --mpx-bg-app: #f2eee7;
+  --mpx-bg-app-fill: #f2eee7;
+  --mpx-bg-app-base: #f2eee7;
   --mpx-bg-workspace: #f3f0ea;
   --mpx-bg-panel: #fbf8f3;
   --mpx-bg-elevated: #ffffff;
@@ -329,12 +330,7 @@
   --mpx-container-frame-edge-color: var(--mpx-border-2);
   --mpx-container-frame-border-color: var(--mpx-border-1);
   --mpx-container-frame-shadow: var(--mpx-panel-shadow);
-  --mpx-header-bg: linear-gradient(
-    120deg,
-    #f4ebe0 0%,
-    #f7f4ef 42%,
-    #ece6d8 100%
-  );
+  --mpx-header-bg: var(--mpx-container-frame-fill);
   --mpx-header-border: var(--mpx-border-1);
   --mpx-sidebar-bullet-pending: #94a3ad;
   --mpx-sidebar-bullet-running: #2fb36e;
@@ -485,7 +481,7 @@
    */
   --mpx-pane-focus-ring-width: 3px;
   --mpx-pane-focus-ring-offset: 2px;
-  --mpx-pane-focus-day-gap: var(--mpx-bg-app);
+  --mpx-pane-focus-day-gap: var(--mpx-bg-app-base);
   --mpx-pane-focus-day-inner: color-mix(
     in srgb,
     var(--mpx-bg-panel) 76%,
@@ -573,12 +569,12 @@
   --mpx-pane-header-height-px: 34px;
   --mpx-pane-footer-height-px: 40px;
   --mpx-metadata-edit-grid-label-gap-px: 4px;
-  --mpx-layout-padding: 0px;
-  --mpx-splitter-width: 8px;
+  --mpx-layout-padding: var(--mpx-layout-gap-px);
+  --mpx-splitter-width: var(--mpx-layout-gap-px);
   --mpx-bg-body: radial-gradient(
     circle at top right,
     var(--mpx-bg-muted),
-    var(--mpx-bg-app) 70%
+    var(--mpx-bg-app-base) 70%
   );
 
   /* 面板共享基底 */
@@ -604,7 +600,7 @@
 
   /* Sidebar 覆写（默认继承 panel） */
   --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);
-  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-radius: var(--mpx-container-frame-radius);
   --mpx-sidebar-border-width: var(--mpx-panel-border-width);
   --mpx-sidebar-border-style: var(--mpx-panel-border-style);
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
@@ -634,7 +630,7 @@
 
   /* Main 覆写 */
   --mpx-main-border-color: var(--mpx-container-frame-border-color);
-  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-radius: var(--mpx-container-frame-radius);
   --mpx-main-border-width: var(--mpx-panel-border-width);
   --mpx-main-border-style: var(--mpx-panel-border-style);
   --mpx-main-shadow: var(--mpx-panel-shadow);
@@ -664,7 +660,7 @@
 
   /* Metadata 覆写 */
   --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
-  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-radius: var(--mpx-container-frame-radius);
   --mpx-metadata-border-width: var(--mpx-panel-border-width);
   --mpx-metadata-border-style: var(--mpx-panel-border-style);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
@@ -700,9 +696,10 @@
 
   /* Header 独立 */
   --mpx-header-border-color: var(--mpx-container-frame-border-color);
-  --mpx-header-radius: 0px;
+  --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-header-shadow: none;
-  --mpx-header-floating-gap: 0px;
+  --mpx-header-floating-gap: var(--mpx-layout-gap-px) var(--mpx-layout-gap-px)
+    0px;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
   --mpx-header-frame-translate-x: 0px;
@@ -742,7 +739,7 @@
     var(--mpx-border-2)
   );
   --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
-  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app));
+  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill));
   --mpx-large-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)

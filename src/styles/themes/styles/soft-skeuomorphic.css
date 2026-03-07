@@ -18,11 +18,22 @@
     var(--mpx-container-frame-fill-start) 58%,
     var(--mpx-container-frame-fill-end)
   );
+  --mpx-container-frame-edge-color: color-mix(
+    in srgb,
+    var(--mpx-border-1) 68%,
+    var(--mpx-palette-surface)
+  );
   --mpx-container-frame-border-color: color-mix(
     in srgb,
     var(--mpx-border-1) 92%,
     var(--mpx-palette-base)
   );
+  --mpx-container-frame-shadow:
+    var(--mpx-panel-shadow),
+    0 0 0 1px
+      color-mix(in srgb, var(--mpx-container-frame-border-color) 88%, transparent),
+    0 0 0 2px
+      color-mix(in srgb, var(--mpx-container-frame-edge-color) 52%, transparent);
 
   --mpx-panel-radius: 16px;
   --mpx-panel-border-width: 1px;
@@ -36,7 +47,7 @@
   --mpx-pane-frame-padding: var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding));
   --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-pane-inner-gap-scale, 1) * 0.75 * var(--mpx-pane-stack-gap-scale, 1)));
 
-  --mpx-sidebar-radius: var(--mpx-panel-radius);
+  --mpx-sidebar-radius: var(--mpx-container-frame-radius);
   --mpx-sidebar-border-width: var(--mpx-panel-border-width);
   --mpx-sidebar-border-style: var(--mpx-panel-border-style);
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
@@ -45,7 +56,7 @@
   --mpx-sidebar-transition: var(--mpx-panel-transition);
   --mpx-sidebar-padding: var(--mpx-pane-frame-padding);
 
-  --mpx-main-radius: var(--mpx-panel-radius);
+  --mpx-main-radius: var(--mpx-container-frame-radius);
   --mpx-main-border-width: var(--mpx-panel-border-width);
   --mpx-main-border-style: var(--mpx-panel-border-style);
   --mpx-main-shadow: var(--mpx-panel-shadow);
@@ -54,7 +65,7 @@
   --mpx-main-transition: var(--mpx-panel-transition);
   --mpx-main-padding: var(--mpx-pane-frame-padding);
 
-  --mpx-metadata-radius: var(--mpx-panel-radius);
+  --mpx-metadata-radius: var(--mpx-container-frame-radius);
   --mpx-metadata-border-width: var(--mpx-panel-border-width);
   --mpx-metadata-border-style: var(--mpx-panel-border-style);
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
@@ -63,7 +74,7 @@
   --mpx-metadata-transition: var(--mpx-panel-transition);
   --mpx-metadata-padding: var(--mpx-pane-frame-padding);
 
-  --mpx-header-radius: 14px;
+  --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-header-shadow: 6px 6px 16px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
     -6px -6px 16px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
   --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
@@ -166,9 +177,7 @@
   --mpx-sidebar-rename-preview-row-source-hover-bg: var(--mpx-overlay-soft-hover-bg);
   --mpx-sidebar-rename-preview-row-source-active-bg: var(--mpx-overlay-soft-focus-bg);
   --mpx-sidebar-rename-preview-row-source-pressed-bg: var(--mpx-overlay-soft-focus-bg);
-  --mpx-header-bg: linear-gradient(145deg,
-      color-mix(in srgb, var(--mpx-palette-surface) 92%, var(--mpx-palette-base)),
-      color-mix(in srgb, var(--mpx-palette-surface) 70%, var(--mpx-palette-base)));
+  --mpx-header-bg: var(--mpx-container-frame-fill);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
@@ -176,7 +185,7 @@
   --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
   --mpx-panel-padding: 14px;
   --mpx-panel-radius: 18px;
-  --mpx-header-radius: 16px;
+  --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-card-radius: 13px;
 
   --mpx-panel-shadow: 0 14px 28px color-mix(in srgb, var(--mpx-palette-shadow-color) 88%, transparent),
@@ -211,11 +220,22 @@
     var(--mpx-container-frame-fill-start) 0%,
     var(--mpx-container-frame-fill-end) 100%
   );
+  --mpx-container-frame-edge-color: color-mix(
+    in srgb,
+    var(--mpx-container-frame-border-color) 72%,
+    var(--mpx-palette-surface)
+  );
   --mpx-container-frame-border-color: color-mix(
     in srgb,
     var(--mpx-border-1) 92%,
     var(--mpx-palette-base)
   );
+  --mpx-container-frame-shadow:
+    var(--mpx-panel-shadow),
+    0 0 0 1px
+      color-mix(in srgb, var(--mpx-container-frame-border-color) 90%, transparent),
+    0 0 0 2px
+      color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent);
   --mpx-main-bg: var(--mpx-container-frame-fill);
   --mpx-sidebar-bg: var(--mpx-container-frame-fill);
   --mpx-metadata-bg: var(--mpx-container-frame-fill);
@@ -244,7 +264,7 @@
   --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
   --mpx-panel-padding: 14px;
   --mpx-panel-radius: 18px;
-  --mpx-header-radius: 16px;
+  --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-card-radius: 13px;
   --mpx-panel-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
   --mpx-header-shadow: 0 8px 24px color-mix(in srgb, var(--mpx-palette-shadow-color) 8%, transparent), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px color-mix(in srgb, var(--mpx-palette-shadow-color) 5%, transparent);
@@ -272,11 +292,11 @@
     var(--mpx-container-frame-fill-end)
   );
   --mpx-container-frame-shadow:
+    0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-border-color) 92%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-edge-color) 72%, transparent),
     2px 4px 10px rgba(116, 88, 50, 0.18),
     inset 1px 1px 2px rgba(255, 255, 255, 0.9),
-    inset -2px -2px 4px rgba(116, 88, 50, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-fill-start) 50%, transparent);
+    inset -2px -2px 4px rgba(116, 88, 50, 0.15);
   --mpx-main-bg: var(--mpx-container-frame-fill);
   --mpx-sidebar-bg: var(--mpx-container-frame-fill);
   --mpx-metadata-bg: var(--mpx-container-frame-fill);
@@ -377,5 +397,5 @@
   --mpx-screen-bg: #110f0e;
 
   --mpx-slot-fg-main-content-video-controls-left-bg: var(--mpx-runway-groove-bg);
-  --mpx-slot-bg-app-root-bg: var(--mpx-bg-app);
+  --mpx-slot-bg-app-root-bg: var(--mpx-bg-app-fill);
 }

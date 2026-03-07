@@ -70,6 +70,51 @@ function createCssPxParameter({
   };
 }
 
+function createUnifiedContainerGapParameter({
+  id,
+  labelKey,
+  fallback,
+  min,
+  max,
+  step,
+}: {
+  id: string;
+  labelKey: string;
+  fallback: number;
+  min: number;
+  max: number;
+  step: number;
+}): ThemeParameterDefinition {
+  return {
+    id,
+    labelKey,
+    cssVarName: "--mpx-layout-padding",
+    min,
+    max,
+    step,
+    fallback,
+    unit: "px",
+    read: (computed) =>
+      readCssPxVariable(computed, "--mpx-layout-padding", fallback),
+    apply: (root, value) => {
+      const normalized = clampValue(value, min, max);
+      root.style.setProperty("--mpx-layout-padding", `${normalized}px`);
+      root.style.setProperty("--mpx-splitter-width", `${normalized}px`);
+      root.style.setProperty(
+        "--mpx-header-floating-gap",
+        `${normalized}px ${normalized}px 0px`,
+      );
+    },
+    reset: (root) => {
+      removeVariables(root, [
+        "--mpx-layout-padding",
+        "--mpx-splitter-width",
+        "--mpx-header-floating-gap",
+      ]);
+    },
+  };
+}
+
 function createCssPercentParameter({
   id,
   labelKey,
@@ -611,10 +656,9 @@ const SKEUO_SECTION_PARAMETERS: ThemeParameterDefinition[] = [
 ];
 
 export const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
-  createCssPxParameter({
+  createUnifiedContainerGapParameter({
     id: "layout-padding",
     labelKey: "ui.themeParameter.layoutPadding",
-    variableName: "--mpx-layout-padding",
     min: 0,
     max: 24,
     step: 1,
@@ -628,6 +672,15 @@ export const COMMON_PARAMETERS: ThemeParameterDefinition[] = [
     max: 24,
     step: 1,
     fallback: 8,
+  }),
+  createCssPxParameter({
+    id: "container-frame-radius",
+    labelKey: "ui.themeParameter.containerFrameRadius",
+    variableName: "--mpx-container-frame-radius",
+    min: 0,
+    max: 30,
+    step: 1,
+    fallback: 0,
   }),
   createCssPxParameter({
     id: "panel-radius",

@@ -38,7 +38,7 @@
   --mpx-bg-body: radial-gradient(
     circle at top right,
     var(--mpx-bg-muted),
-    var(--mpx-bg-app) 70%
+    var(--mpx-bg-app-base) 70%
   );
 
   /* ---------- Shared panel base ---------- */
@@ -118,7 +118,7 @@
     var(--mpx-border-2)
   );
   --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
-  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app));
+  --mpx-large-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill));
   --mpx-large-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)

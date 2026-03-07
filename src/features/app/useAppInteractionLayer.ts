@@ -728,6 +728,22 @@ export function useAppInteractionLayer({
         return;
       }
 
+      if (
+        event.code === "KeyR" &&
+        themeParameterPanelOpen &&
+        !themeParameterPanelHidden &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        !isEditableTarget(event.target)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.dispatchEvent(new Event("mpx-theme-parameter-reset"));
+        return;
+      }
+
       if (!fullscreenActive) {
         if (isEditableTarget(event.target)) {
           return;

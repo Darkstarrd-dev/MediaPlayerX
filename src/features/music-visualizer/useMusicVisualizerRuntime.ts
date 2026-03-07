@@ -159,7 +159,7 @@ function resolveThemeBackgroundColor(canvas: HTMLCanvasElement, paletteMode: 'da
   const colorCandidates = [
     styles.backgroundColor,
     styles.getPropertyValue('--mpx-bg-panel'),
-    styles.getPropertyValue('--mpx-bg-app'),
+    styles.getPropertyValue('--mpx-bg-app-base'),
   ]
 
   for (const colorText of colorCandidates) {

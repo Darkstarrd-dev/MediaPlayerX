@@ -76,17 +76,53 @@ function parseRgbColor(value: string): ColorState | null {
   };
 }
 
+function parseTransparentColor(value: string): ColorState | null {
+  if (value.trim().toLowerCase() !== "transparent") {
+    return null;
+  }
+  return {
+    hex: "#000000",
+    alpha: 0,
+  };
+}
+
+function tryParseColorState(value: string): ColorState | null {
+  return (
+    parseTransparentColor(value) ??
+    parseHexColor(value) ??
+    parseRgbColor(value)
+  );
+}
+
+function resolveComputedColorExpression(value: string): ColorState | null {
+  const raw = value.trim();
+  if (!raw || typeof document === "undefined") {
+    return null;
+  }
+  const host = document.body ?? document.documentElement;
+  if (!host) {
+    return null;
+  }
+
+  const probe = document.createElement("span");
+  probe.style.position = "fixed";
+  probe.style.pointerEvents = "none";
+  probe.style.opacity = "0";
+  probe.style.color = raw;
+  host.appendChild(probe);
+  const resolved = getComputedStyle(probe).color.trim();
+  probe.remove();
+
+  return tryParseColorState(resolved);
+}
+
 export function parseColorState(
   value: string,
   fallbackHex = "#ffffff",
 ): ColorState | null {
-  const parsedHex = parseHexColor(value);
-  if (parsedHex) {
-    return parsedHex;
-  }
-  const parsedRgb = parseRgbColor(value);
-  if (parsedRgb) {
-    return parsedRgb;
+  const parsed = tryParseColorState(value);
+  if (parsed) {
+    return parsed;
   }
   const fallback = parseHexColor(fallbackHex);
   if (!fallback) {
@@ -115,7 +151,9 @@ export function readCssColorState(
 ): ColorState {
   const raw = computed.getPropertyValue(cssVar).trim();
   return (
-    parseColorState(raw, fallbackHex) ?? {
+    tryParseColorState(raw) ??
+    resolveComputedColorExpression(raw) ??
+    parseColorState(fallbackHex, fallbackHex) ?? {
       hex: fallbackHex,
       alpha: 1,
     }

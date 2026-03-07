@@ -59,7 +59,7 @@
   .main-pane-frame {
   box-shadow:
     var(--mpx-main-shadow),
-    0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app),
+    0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app-base),
     -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)
       var(--mpx-pane-focus-metal-specular),
     1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)

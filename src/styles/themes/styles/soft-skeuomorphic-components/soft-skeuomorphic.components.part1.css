@@ -28,11 +28,7 @@
   .sidebar-main-shell {
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-sidebar-inner, 12px);
-  background: linear-gradient(
-    to bottom,
-    var(--mpx-container-frame-fill-start),
-    var(--mpx-container-frame-fill-end)
-  );
+  background: var(--mpx-container-frame-fill);
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -73,11 +69,7 @@
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-main-card, 12px);
   padding: 0.5rem 1rem;
-  background: linear-gradient(
-    to bottom,
-    var(--mpx-container-frame-fill-start),
-    var(--mpx-container-frame-fill-end)
-  );
+  background: var(--mpx-container-frame-fill);
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -123,11 +115,7 @@
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-main-card, 12px);
   padding: 0.5rem 1rem;
-  background: linear-gradient(
-    to bottom,
-    var(--mpx-container-frame-fill-start),
-    var(--mpx-container-frame-fill-end)
-  );
+  background: var(--mpx-container-frame-fill);
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(255, 255, 255, 0.8),
@@ -417,8 +405,11 @@
   [data-slot="fg-main-content-image-node-grid"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-preview"] {
-  border: none;
-  background: transparent;
+  border: 1px solid var(--mpx-slot-fg-main-content-image-grid-border, transparent);
+  background: var(
+    --mpx-slot-fg-main-content-image-grid-bg,
+    var(--mpx-bg-workspace)
+  );
   box-shadow: none;
   padding: 0;
   box-sizing: border-box;
@@ -471,11 +462,7 @@
   z-index: 4;
   padding: 0.5rem 1rem;
   border: 1px solid #b8b2a6;
-  background: linear-gradient(
-    to bottom,
-    var(--mpx-container-frame-fill-start),
-    var(--mpx-container-frame-fill-end)
-  );
+  background: var(--mpx-container-frame-fill);
   backdrop-filter: blur(8px);
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
@@ -496,11 +483,7 @@
   border: 1px solid #b8b2a6;
   border-radius: var(--mpx-radius-main-card, 12px);
   padding: 0.5rem 1rem;
-  background: linear-gradient(
-    to bottom,
-    var(--mpx-container-frame-fill-start),
-    var(--mpx-container-frame-fill-end)
-  );
+  background: var(--mpx-container-frame-fill);
   backdrop-filter: none;
   box-shadow:
     inset 1px 1px 5px rgba(0, 0, 0, 0.1),
@@ -526,7 +509,8 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .main-pane-frame {
   position: relative;
-  border: none;
+  border: var(--mpx-main-border-width) var(--mpx-main-border-style)
+    var(--mpx-main-border-color, transparent);
   border-radius: var(--mpx-main-radius-effective, var(--mpx-main-radius));
   background: var(--mpx-container-frame-fill);
   box-shadow: var(--mpx-container-frame-shadow);
@@ -540,7 +524,8 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .app-header-frame {
-  border: none;
+  border: var(--mpx-header-border-width) solid
+    var(--mpx-header-border-color, transparent);
   border-radius: var(--mpx-header-radius-effective, var(--mpx-header-radius));
   background: var(--mpx-header-bg);
   box-shadow: var(--mpx-container-frame-shadow);
@@ -565,7 +550,8 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .sidebar-frame {
-  border: none;
+  border: var(--mpx-sidebar-border-width) var(--mpx-sidebar-border-style)
+    var(--mpx-sidebar-border-color, transparent);
   border-radius: var(--mpx-sidebar-radius-effective, var(--mpx-sidebar-radius));
   background: var(--mpx-container-frame-fill);
   box-shadow: var(--mpx-container-frame-shadow);
@@ -573,7 +559,8 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .metadata-frame {
-  border: none;
+  border: var(--mpx-metadata-border-width) var(--mpx-metadata-border-style)
+    var(--mpx-metadata-border-color, transparent);
   border-radius: var(
     --mpx-metadata-radius-effective,
     var(--mpx-metadata-radius)

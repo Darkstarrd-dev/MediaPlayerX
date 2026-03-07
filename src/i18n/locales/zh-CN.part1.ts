@@ -68,9 +68,9 @@ export const zhCnCatalogPart1 = {
   "ui.help.image.keyboard.helpOverlayToggle":
     "非全屏下切换按钮说明覆盖层（? 打开/关闭，Esc 关闭）。",
   "ui.help.image.keyboard.fixedThemeParameterHideShortcut":
-    "T（打开） / H（隐藏） / Esc 或鼠标右键（恢复）",
+    "T（打开） / H（隐藏） / R（重置） / Esc 或鼠标右键（恢复）",
   "ui.help.image.keyboard.themeParameterTemporaryHide":
-    "按 T 可在任意模式打开 Theme Parameter；面板打开时按 H 临时隐藏，按 Esc 或鼠标右键恢复显示。",
+    "按 T 可在任意模式打开 Theme Parameter；面板打开时按 H 临时隐藏，按 R 恢复到打开时状态，按 Esc 或鼠标右键恢复显示。",
   "ui.help.fullscreen.sectionTitle": "全屏模式交互说明",
   "ui.help.fullscreen.groupMouse": "鼠标操作",
   "ui.help.fullscreen.groupKeyboard": "键盘操作",
@@ -350,6 +350,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.preview.bgPlusLargePanel": "背景层 + 大面板层预览",
   "ui.themeParameter.preview.bgPlusSmallPanel": "背景层 + 小面板层预览",
   "ui.themeParameter.resetContainerDebugAll": "完全复位（大容器调试）",
+  "ui.themeParameter.containerLayer.sectionBackground": "1.0 背景",
   "ui.themeParameter.containerLayer.sectionSharedShell": "2.0 共享壳层",
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
@@ -387,6 +388,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",
   "ui.themeParameter.panelRadius": "面板圆角",
+  "ui.themeParameter.containerFrameRadius": "共享壳层圆角",
   "ui.themeParameter.headerRadius": "Header 圆角",
   "ui.themeParameter.cardRadius": "卡片圆角",
   "ui.themeParameter.controlRadius": "控件圆角",
@@ -529,7 +531,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.tooltip.settingsFontScale":
     "调整设置面板字体大小，影响可读性与信息密度。",
   "ui.settings.tooltip.layoutGapScaleCoeff":
-    "调整 Header/导入任务面板/Sidebar/Main/Meta 五区之间的统一容器边距系数，基准为窗口宽度的 1%。",
+    "调整 Header/Sidebar/Main/Meta 四区之间的统一容器边距系数，基准为窗口宽度的 1%。",
   "ui.settings.tooltip.paneInnerGapScaleCoeff":
     "调整容器内部边距系数，基准为窗口宽度的 1%。",
   "ui.settings.tooltip.paneStackGapScaleCoeff":

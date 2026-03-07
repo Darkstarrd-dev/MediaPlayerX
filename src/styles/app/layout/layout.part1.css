@@ -3,7 +3,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--mpx-slot-bg-app-root-bg, var(--mpx-bg-app));
+  background: var(--mpx-slot-bg-app-root-bg, var(--mpx-bg-app-fill));
   color: var(--mpx-slot-bg-app-root-text, var(--mpx-text-1));
 }
 

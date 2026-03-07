@@ -36,6 +36,16 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
     await flushUiUpdates();
   };
 
+  const getSliderByLabelText = (text: string) => {
+    const label = screen.getByText(text).closest("label") as HTMLLabelElement | null;
+    expect(label).not.toBeNull();
+    const slider = label?.querySelector('input[type="range"]') as
+      | HTMLInputElement
+      | null;
+    expect(slider).not.toBeNull();
+    return slider as HTMLInputElement;
+  };
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -113,6 +123,17 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
             "--mpx-layout-gap-scale",
           ),
         ).toBe("1.50");
+        expect(
+          document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
+        ).not.toBe("");
+        expect(
+          document.documentElement.style.getPropertyValue("--mpx-splitter-width"),
+        ).not.toBe("");
+        expect(
+          document.documentElement.style.getPropertyValue(
+            "--mpx-header-floating-gap",
+          ),
+        ).not.toBe("");
       });
 
       const paneInnerGapSlider = screen.getByLabelText(/容器内边距系数/);
@@ -222,7 +243,7 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
   );
 
   it(
-    "Theme Parameter 面板支持 T 打开、H 临时隐藏，并可通过 Esc/右键恢复或关闭",
+    "Theme Parameter 面板支持 T 打开、R 重置、H 临时隐藏，并可通过 Esc/右键恢复或关闭",
     async () => {
       render(<App />);
 
@@ -230,6 +251,20 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
       expect(
         screen.getByRole("heading", { name: "Theme Parameter" }),
       ).toBeInTheDocument();
+
+      const baselineLayoutPadding = getSliderByLabelText("布局内边距").value;
+      fireEvent.change(getSliderByLabelText("布局内边距"), {
+        target: { value: "14" },
+      });
+      await flushUiUpdates();
+      expect(
+        document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
+      ).toBe("14px");
+
+      await keyDown(window, { key: "r", code: "KeyR" });
+      expect(getSliderByLabelText("布局内边距").value).toBe(
+        baselineLayoutPadding,
+      );
 
       await keyDown(window, { key: "h", code: "KeyH" });
       expect(

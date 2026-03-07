@@ -368,6 +368,18 @@ export function useAppThemeAndLayoutEffects({
         `${runtimeSpacing.layoutGapPx}px`,
       );
       document.documentElement.style.setProperty(
+        "--mpx-layout-padding",
+        `${runtimeSpacing.layoutGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-splitter-width",
+        `${runtimeSpacing.layoutGapPx}px`,
+      );
+      document.documentElement.style.setProperty(
+        "--mpx-header-floating-gap",
+        `${runtimeSpacing.layoutGapPx}px ${runtimeSpacing.layoutGapPx}px 0px`,
+      );
+      document.documentElement.style.setProperty(
         "--mpx-pane-inner-padding-px",
         `${runtimeSpacing.paneInnerPaddingPx}px`,
       );

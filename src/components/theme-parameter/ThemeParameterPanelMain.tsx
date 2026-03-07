@@ -58,6 +58,8 @@ interface ThemeParameterPanelMainProps {
   setCommonExpanded: Dispatch<SetStateAction<boolean>>;
   styleExpanded: boolean;
   setStyleExpanded: Dispatch<SetStateAction<boolean>>;
+  containerBackgroundExpanded: boolean;
+  setContainerBackgroundExpanded: Dispatch<SetStateAction<boolean>>;
   containerSharedShellExpanded: boolean;
   setContainerSharedShellExpanded: Dispatch<SetStateAction<boolean>>;
   containerHeaderExpanded: boolean;
@@ -171,31 +173,16 @@ type ButtonStateKey =
   | "pending"
   | "close-hover";
 
-const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+const CONTAINER_BACKGROUND_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
-    id: "container-bg-app",
-    cssVar: "--mpx-bg-app",
+    id: "container-bg-app-fill",
+    cssVar: "--mpx-bg-app-fill",
     fallback: "#f2eee7",
     groupId: "box",
   },
-  {
-    id: "container-bg-workspace",
-    cssVar: "--mpx-bg-workspace",
-    fallback: "#f3f0ea",
-    groupId: "box",
-  },
-  {
-    id: "container-bg-panel",
-    cssVar: "--mpx-bg-panel",
-    fallback: "#fbf8f3",
-    groupId: "box",
-  },
-  {
-    id: "container-bg-elevated",
-    cssVar: "--mpx-bg-elevated",
-    fallback: "#ffffff",
-    groupId: "box",
-  },
+];
+
+const CONTAINER_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "container-frame-fill-start",
     cssVar: "--mpx-container-frame-fill-start",
@@ -220,26 +207,14 @@ const CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#e5e4e0",
     groupId: "border",
   },
-  {
-    id: "container-border-1",
-    cssVar: "--mpx-border-1",
-    fallback: "#d6cfc1",
-    groupId: "border",
-  },
-  {
-    id: "container-border-2",
-    cssVar: "--mpx-border-2",
-    fallback: "#b7ab95",
-    groupId: "border",
-  },
 ];
 
-const CONTAINER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+const CONTAINER_SHARED_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "container-frame-shadow",
     cssVar: "--mpx-container-frame-shadow",
     fallback:
-      "2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15), 0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-edge-color) 60%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-fill-start) 50%, transparent)",
+      "0 0 0 1px color-mix(in srgb, var(--mpx-container-frame-border-color) 92%, transparent), 0 0 0 2px color-mix(in srgb, var(--mpx-container-frame-edge-color) 72%, transparent), 2px 4px 10px rgba(116, 88, 50, 0.18), inset 1px 1px 2px rgba(255, 255, 255, 0.9), inset -2px -2px 4px rgba(116, 88, 50, 0.15)",
     groupId: "shadow",
   },
 ];
@@ -294,6 +269,12 @@ const CONTAINER_SIDEBAR_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 ];
 
 const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "container-bg-workspace",
+    cssVar: "--mpx-bg-workspace",
+    fallback: "#f3f0ea",
+    groupId: "box",
+  },
   {
     id: "container-main-border-color",
     cssVar: "--mpx-main-border-color",
@@ -408,15 +389,24 @@ const CONTAINER_FRAME_SECTION_DEFINITIONS = [
   },
 ] as const;
 
-const CONTAINER_SHARED_PARAMETER_IDS = [
+const CONTAINER_SHARED_SHELL_PARAMETER_IDS = [
   "layout-padding",
   "splitter-width",
-  "panel-radius",
-  "header-radius",
-  "card-radius",
-  "panel-border-width",
+  "container-frame-radius",
+] as const;
+
+const CONTAINER_SHARED_SHELL_INLINE_PARAMETER_IDS = [
   "container-frame-fill-angle",
 ] as const;
+
+const CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS = [
+  "container-frame-fill-start",
+  "container-frame-fill-end",
+  "container-frame-border-color",
+  "container-frame-edge-color",
+] as const;
+
+const CONTAINER_SHARED_SHELL_TEXT_FIELD_IDS = ["container-frame-shadow"] as const;
 
 const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
@@ -1014,7 +1004,7 @@ const MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSectio
   ];
 
 const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
-  ...CONTAINER_COLOR_FIELDS,
+  ...CONTAINER_SHARED_COLOR_FIELDS,
   ...CONTAINER_HEADER_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_COLOR_FIELDS,
   ...CONTAINER_MAIN_COLOR_FIELDS,
@@ -1024,7 +1014,8 @@ const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
-  ...CONTAINER_TEXT_FIELDS,
+  ...CONTAINER_BACKGROUND_TEXT_FIELDS,
+  ...CONTAINER_SHARED_TEXT_FIELDS,
   ...CONTAINER_HEADER_TEXT_FIELDS,
   ...CONTAINER_SIDEBAR_TEXT_FIELDS,
   ...CONTAINER_MAIN_TEXT_FIELDS,
@@ -1069,11 +1060,20 @@ function clearLegacySlotOverrideForSemanticVar(
 }
 
 function resolveDebugVarUsage(cssVar: string): string {
+  if (cssVar === "--mpx-bg-app-fill") {
+    return "用于应用背景 fill（App background fill，支持渐变等高级效果）";
+  }
+  if (cssVar === "--mpx-bg-workspace") {
+    return "用于主区图片网格背景（image grid background）";
+  }
   if (cssVar === "--mpx-container-frame-fill-start") {
     return "用于共享壳层 fill 起始色";
   }
   if (cssVar === "--mpx-container-frame-fill-end") {
     return "用于共享壳层 fill 结束色";
+  }
+  if (cssVar === "--mpx-container-frame-fill-angle") {
+    return "用于共享壳层渐变角度";
   }
   if (cssVar === "--mpx-container-frame-edge-color") {
     return "用于共享壳层阴影边缘混色";
@@ -1083,6 +1083,51 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar === "--mpx-container-frame-shadow") {
     return "用于四大容器共享壳层阴影";
+  }
+  if (cssVar === "--mpx-container-frame-radius") {
+    return "用于共享壳层圆角";
+  }
+  if (cssVar === "--mpx-layout-padding") {
+    return "用于布局内边距";
+  }
+  if (cssVar === "--mpx-splitter-width") {
+    return "用于分割条宽度";
+  }
+  if (cssVar === "--mpx-header-bg") {
+    return "用于 Header frame 填充";
+  }
+  if (cssVar === "--mpx-header-border-color") {
+    return "用于 Header frame 边框色";
+  }
+  if (cssVar === "--mpx-header-shadow") {
+    return "用于 Header frame 阴影";
+  }
+  if (cssVar === "--mpx-sidebar-bg") {
+    return "用于 Sidebar frame 填充";
+  }
+  if (cssVar === "--mpx-sidebar-border-color") {
+    return "用于 Sidebar frame 边框色";
+  }
+  if (cssVar === "--mpx-sidebar-shadow") {
+    return "用于 Sidebar frame 阴影";
+  }
+  if (cssVar === "--mpx-main-bg") {
+    return "用于 Main frame 填充";
+  }
+  if (cssVar === "--mpx-main-border-color") {
+    return "用于 Main frame 边框色";
+  }
+  if (cssVar === "--mpx-main-shadow") {
+    return "用于 Main frame 阴影";
+  }
+  if (cssVar === "--mpx-metadata-bg") {
+    return "用于 Metadata frame 填充";
+  }
+  if (cssVar === "--mpx-metadata-border-color") {
+    return "用于 Metadata frame 边框色";
+  }
+  if (cssVar === "--mpx-metadata-shadow") {
+    return "用于 Metadata frame 阴影";
   }
   if (cssVar === "--mpx-sidebar-main-bg") {
     return "用于侧栏主列表壳层背景（.sidebar-tree）";
@@ -2652,25 +2697,6 @@ function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
   }
 }
 
-function resolveContainerNumberGroup(
-  parameter: ThemeParameterDefinition,
-): ThemeDebugNumberGroupId {
-  const id = parameter.id;
-  if (
-    id.includes("layout") ||
-    id.includes("splitter") ||
-    id.includes("padding") ||
-    id.includes("gap") ||
-    id.includes("angle")
-  ) {
-    return "box";
-  }
-  if (id.includes("border") || id.includes("radius")) {
-    return "border";
-  }
-  return "shadow";
-}
-
 function resolveLargePanelNumberGroup(
   parameter: ThemeParameterDefinition,
 ): ThemeDebugNumberGroupId {
@@ -2726,6 +2752,8 @@ export function ThemeParameterPanelMain({
   setCommonExpanded,
   styleExpanded,
   setStyleExpanded,
+  containerBackgroundExpanded,
+  setContainerBackgroundExpanded,
   containerSharedShellExpanded,
   setContainerSharedShellExpanded,
   containerHeaderExpanded,
@@ -2829,34 +2857,25 @@ export function ThemeParameterPanelMain({
       );
   };
 
-  const containerNumberGroups = useMemo(() => {
-    const groupMap: Record<
-      ThemeDebugNumberGroupId,
-      ThemeParameterDefinition[]
-    > = {
-      box: [],
-      border: [],
-      shadow: [],
-      root: [],
-      head: [],
-      shell: [],
-      side: [],
-      main: [],
-    };
-    for (const parameter of pickContainerParameters(CONTAINER_SHARED_PARAMETER_IDS)) {
-      groupMap[resolveContainerNumberGroup(parameter)].push(parameter);
-    }
-    return ["box", "border", "shadow"]
-      .map((groupId) => {
-        const id = groupId as ThemeDebugNumberGroupId;
-        return {
-          id,
-          title: resolveNumberGroupTitle(id),
-          parameters: groupMap[id],
-        };
-      })
-      .filter((group) => group.parameters.length > 0);
+  const containerSharedShellAngleParameters = useMemo(() => {
+    return pickContainerParameters(CONTAINER_SHARED_SHELL_INLINE_PARAMETER_IDS);
   }, [containerLayerParameterMap]);
+
+  const containerSharedShellLayoutParameters = useMemo(() => {
+    return pickContainerParameters(CONTAINER_SHARED_SHELL_PARAMETER_IDS);
+  }, [containerLayerParameterMap]);
+
+  const containerSharedShellColorFields = useMemo(() => {
+    return CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS.map((id) =>
+      CONTAINER_SHARED_COLOR_FIELDS.find((field) => field.id === id),
+    ).filter((field): field is ThemeDebugColorField => field !== undefined);
+  }, []);
+
+  const containerSharedShellTextFields = useMemo(() => {
+    return CONTAINER_SHARED_SHELL_TEXT_FIELD_IDS.map((id) =>
+      CONTAINER_SHARED_TEXT_FIELDS.find((field) => field.id === id),
+    ).filter((field): field is ThemeDebugTextField => field !== undefined);
+  }, []);
 
   const largePanelNumberGroups = useMemo(() => {
     const groupMap: Record<
@@ -3082,6 +3101,16 @@ export function ThemeParameterPanelMain({
     }));
   };
 
+  const renderVarLabel = (cssVar: string) => {
+    const usage = resolveDebugVarUsage(cssVar);
+    return (
+      <span className="theme-parameter-var-label">
+        {cssVar}
+        {usage ? <span className="theme-parameter-var-usage"> {usage}</span> : null}
+      </span>
+    );
+  };
+
   const renderColorFieldRow = (field: ThemeDebugColorField) => {
     const colorState = debugColorValues[field.id] ?? {
       hex: field.fallback,
@@ -3090,12 +3119,7 @@ export function ThemeParameterPanelMain({
     const alphaPercent = Math.round(colorState.alpha * 100);
     return (
       <label key={field.id} className="theme-parameter-color-row">
-        <span className="theme-parameter-var-label">
-          {field.cssVar}
-          <span className="theme-parameter-var-usage">
-            {`（${resolveDebugVarUsage(field.cssVar)}）`}
-          </span>
-        </span>
+        {renderVarLabel(field.cssVar)}
         <div className="theme-parameter-color-control">
           <input
             type="color"
@@ -3170,6 +3194,7 @@ export function ThemeParameterPanelMain({
     const parsedGradient = parseSimpleLinearGradient(raw);
     const parsedFilter = parseSimpleFilterFunction(raw);
     const parsedShadow = parseBoxShadowValue(raw);
+    const supportsBasicColorShortcut = field.cssVar === "--mpx-bg-app-fill";
 
     const updateTextValue = (nextRaw: string) => {
       setDebugTextFieldValue(field, nextRaw);
@@ -3216,6 +3241,37 @@ export function ThemeParameterPanelMain({
       );
     };
 
+    const renderBasicColorShortcut = () => {
+      if (!supportsBasicColorShortcut) {
+        return null;
+      }
+      const parsedSolidColor =
+        parseColorState(raw, "#ffffff") ??
+        parseColorState(field.fallback, "#ffffff");
+      if (!parsedSolidColor) {
+        return null;
+      }
+      return (
+        <label className="theme-parameter-inline-field color-expression">
+          <span>纯色快捷设置</span>
+          <div className="theme-parameter-color-control">
+            <input
+              type="color"
+              aria-label={`${field.cssVar}-solid-picker`}
+              value={parsedSolidColor.hex}
+              onChange={(event) => updateTextValue(event.target.value)}
+            />
+            <input
+              type="text"
+              aria-label={`${field.cssVar}-solid`}
+              value={parsedSolidColor.hex}
+              onChange={(event) => updateTextValue(event.target.value)}
+            />
+          </div>
+        </label>
+      );
+    };
+
     if (parsedGradient) {
       const updateGradient = (nextValue: SimpleLinearGradientValue) => {
         updateTextValue(formatSimpleLinearGradient(nextValue));
@@ -3223,13 +3279,9 @@ export function ThemeParameterPanelMain({
 
       return (
         <div key={field.id} className="theme-parameter-text-row is-structured">
-          <span className="theme-parameter-var-label">
-            {field.cssVar}
-            <span className="theme-parameter-var-usage">
-              {`（${resolveDebugVarUsage(field.cssVar)}）`}
-            </span>
-          </span>
+          {renderVarLabel(field.cssVar)}
           <div className="theme-parameter-structured-card">
+            {renderBasicColorShortcut()}
             <div className="theme-parameter-structured-grid is-gradient">
               <label className="theme-parameter-inline-field">
                 <span>角度</span>
@@ -3289,12 +3341,7 @@ export function ThemeParameterPanelMain({
 
       return (
         <div key={field.id} className="theme-parameter-text-row is-structured">
-          <span className="theme-parameter-var-label">
-            {field.cssVar}
-            <span className="theme-parameter-var-usage">
-              {`（${resolveDebugVarUsage(field.cssVar)}）`}
-            </span>
-          </span>
+          {renderVarLabel(field.cssVar)}
           <div className="theme-parameter-structured-card">
             <div className="theme-parameter-structured-grid is-filter">
               <label className="theme-parameter-inline-field">
@@ -3358,12 +3405,7 @@ export function ThemeParameterPanelMain({
 
       return (
         <div key={field.id} className="theme-parameter-text-row is-structured">
-          <span className="theme-parameter-var-label">
-            {field.cssVar}
-            <span className="theme-parameter-var-usage">
-              {`（${resolveDebugVarUsage(field.cssVar)}）`}
-            </span>
-          </span>
+          {renderVarLabel(field.cssVar)}
           <div className="theme-parameter-shadow-layer-list">
             {parsedShadow.map((layer, layerIndex) => (
               <section
@@ -3492,12 +3534,8 @@ export function ThemeParameterPanelMain({
 
     return (
       <label key={field.id} className="theme-parameter-text-row">
-        <span className="theme-parameter-var-label">
-          {field.cssVar}
-          <span className="theme-parameter-var-usage">
-            {`（${resolveDebugVarUsage(field.cssVar)}）`}
-          </span>
-        </span>
+        {renderVarLabel(field.cssVar)}
+        {renderBasicColorShortcut()}
         <textarea
           aria-label={field.cssVar}
           className="theme-parameter-textarea"
@@ -3715,12 +3753,7 @@ export function ThemeParameterPanelMain({
     const raw = debugTextValues[field.id] ?? field.fallback;
     return (
       <label key={field.id} className="theme-parameter-text-row">
-        <span className="theme-parameter-var-label">
-          {field.cssVar}
-          <span className="theme-parameter-var-usage">
-            {`（${resolveDebugVarUsage(field.cssVar)}）`}
-          </span>
-        </span>
+        {renderVarLabel(field.cssVar)}
         <textarea
           aria-label={field.cssVar}
           className="theme-parameter-textarea"
@@ -4091,6 +4124,68 @@ export function ThemeParameterPanelMain({
     );
   };
 
+  const renderParameterRowsWithVarLabel = (
+    parameters: ThemeParameterDefinition[],
+  ) => {
+    return (
+      <div className="theme-parameter-list">
+        {parameters.map((parameter) => {
+          const value = values[parameter.id] ?? parameter.fallback;
+          const cssVar = parameter.cssVarName ?? parameter.id;
+          return (
+            <label
+              key={parameter.id}
+              className="theme-parameter-row"
+              htmlFor={`theme-parameter-${parameter.id}`}
+            >
+              {renderVarLabel(cssVar)}
+              <div className="theme-parameter-control">
+                <input
+                  id={`theme-parameter-${parameter.id}`}
+                  type="range"
+                  min={parameter.min}
+                  max={parameter.max}
+                  step={parameter.step}
+                  value={value}
+                  onChange={(event) =>
+                    applyParameter(parameter, Number(event.target.value))
+                  }
+                />
+                <input
+                  className="theme-parameter-number-input"
+                  type="number"
+                  min={parameter.min}
+                  max={parameter.max}
+                  step={parameter.step}
+                  value={value}
+                  onChange={(event) => {
+                    const next = Number(event.target.value);
+                    if (!Number.isFinite(next)) {
+                      return;
+                    }
+                    applyParameter(parameter, next);
+                  }}
+                />
+                <code className="theme-parameter-value-text">
+                  {`${formatValue(value, parameter.step)}${parameter.unit}`}
+                </code>
+                {isParameterChanged(parameter) ? (
+                  <button
+                    type="button"
+                    className="theme-parameter-reset-btn"
+                    onClick={() => resetSingleParameter(parameter)}
+                  >
+                    {t("ui.themeParameter.resetField")}
+                  </button>
+                ) : null}
+              </div>
+            </label>
+          );
+        })}
+      </div>
+    );
+  };
+
   const buttonTemplateStates: ReadonlyArray<{
     key: ButtonStateKey;
     state: string;
@@ -4376,6 +4471,25 @@ export function ThemeParameterPanelMain({
 
             <details
               className="settings-collapsible"
+              open={containerBackgroundExpanded}
+              onToggle={(event) =>
+                setContainerBackgroundExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>
+                {t("ui.themeParameter.containerLayer.sectionBackground")}
+              </summary>
+              <div className="settings-collapsible-content">
+                <div className="theme-parameter-text-list">
+                  {CONTAINER_BACKGROUND_TEXT_FIELDS.map(renderTextFieldRow)}
+                </div>
+              </div>
+            </details>
+
+            <details
+              className="settings-collapsible"
               open={containerSharedShellExpanded}
               onToggle={(event) =>
                 setContainerSharedShellExpanded(
@@ -4387,13 +4501,33 @@ export function ThemeParameterPanelMain({
                 {t("ui.themeParameter.containerLayer.sectionSharedShell")}
               </summary>
               <div className="settings-collapsible-content">
-                {renderColorGroups(CONTAINER_COLOR_FIELDS, [
-                  "box",
-                  "border",
-                  "shadow",
-                ])}
-                {renderTextGroups(CONTAINER_TEXT_FIELDS, ["shadow"])}
-                {renderNumberGroups(containerNumberGroups)}
+                <section className="settings-group theme-parameter-debug-group">
+                  <header className="settings-group-head">
+                    <span>颜色</span>
+                  </header>
+                  <div className="theme-parameter-color-list">
+                    {containerSharedShellColorFields
+                      .slice(0, 2)
+                      .map(renderColorFieldRow)}
+                  </div>
+                  {renderParameterRowsWithVarLabel(containerSharedShellAngleParameters)}
+                  <div className="theme-parameter-color-list">
+                    {containerSharedShellColorFields
+                      .slice(2)
+                      .map(renderColorFieldRow)}
+                  </div>
+                  <div className="theme-parameter-text-list">
+                    {containerSharedShellTextFields.map(renderTextFieldRow)}
+                  </div>
+                </section>
+                <section className="settings-group theme-parameter-debug-group">
+                  <header className="settings-group-head">
+                    <span>形态/布局</span>
+                  </header>
+                  {renderParameterRowsWithVarLabel(
+                    containerSharedShellLayoutParameters,
+                  )}
+                </section>
               </div>
             </details>
 

@@ -35,7 +35,8 @@
   --mpx-checkbox-checked-bg: var(--mpx-accent);
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
-  --mpx-bg-app: #e0dfde;
+  --mpx-bg-app-fill: #e0dfde;
+  --mpx-bg-app-base: #e0dfde;
   --mpx-bg-workspace: #e7e0d4;
   --mpx-bg-panel: #fbf7f1;
   --mpx-bg-elevated: #fffcf8;
@@ -163,12 +164,7 @@
   --mpx-status-idle-border: #a2b2c6;
   --mpx-status-idle-text: #3d5167;
 
-  --mpx-header-bg: linear-gradient(
-    120deg,
-    #fefbf6 0%,
-    #f7efe2 52%,
-    #efe2cd 100%
-  );
+  --mpx-header-bg: var(--mpx-container-frame-fill);
   --mpx-header-border: var(--mpx-border-1);
 
   --mpx-sidebar-main-tree-bg: #e3e7ec;

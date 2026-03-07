@@ -74,9 +74,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.help.image.keyboard.helpOverlayToggle":
     "Outside fullscreen, toggle button-help overlay (? toggle, Esc close).",
   "ui.help.image.keyboard.fixedThemeParameterHideShortcut":
-    "T (open) / H (hide) / Esc or Right Click (restore)",
+    "T (open) / H (hide) / R (reset) / Esc or Right Click (restore)",
   "ui.help.image.keyboard.themeParameterTemporaryHide":
-    "Press T to open Theme Parameter in any mode; when it is open, press H to hide temporarily, then Esc or right click to restore.",
+    "Press T to open Theme Parameter in any mode; when it is open, press H to hide temporarily, press R to restore the open-state snapshot, then press Esc or right click to restore visibility.",
   "ui.help.fullscreen.sectionTitle": "Fullscreen interaction guide",
   "ui.help.fullscreen.groupMouse": "Mouse",
   "ui.help.fullscreen.groupKeyboard": "Keyboard",
@@ -375,6 +375,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.preview.bgPlusSmallPanel":
     "Preview background + small panel layer",
   "ui.themeParameter.resetContainerDebugAll": "Full reset (container debug)",
+  "ui.themeParameter.containerLayer.sectionBackground":
+    "1.0 Background",
   "ui.themeParameter.containerLayer.sectionSharedShell": "2.0 shared shell",
   "ui.themeParameter.containerLayer.sectionHeader": "2.1 Header",
   "ui.themeParameter.containerLayer.sectionSidebar": "2.2 Sidebar",
@@ -413,6 +415,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.layoutPadding": "Layout padding",
   "ui.themeParameter.splitterWidth": "Splitter width",
   "ui.themeParameter.panelRadius": "Panel radius",
+  "ui.themeParameter.containerFrameRadius": "Shared shell radius",
   "ui.themeParameter.headerRadius": "Header radius",
   "ui.themeParameter.cardRadius": "Card radius",
   "ui.themeParameter.controlRadius": "Control radius",
@@ -566,7 +569,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.tooltip.settingsFontScale":
     "Adjust settings panel font size for readability vs density.",
   "ui.settings.tooltip.layoutGapScaleCoeff":
-    "Adjust unified container margins across Header/Import task panel/Sidebar/Main/Meta. Baseline is 1% of window width.",
+    "Adjust unified container margins across Header/Sidebar/Main/Meta. Baseline is 1% of window width.",
   "ui.settings.tooltip.paneInnerGapScaleCoeff":
     "Adjust container inner padding. Baseline is 1% of window width.",
   "ui.settings.tooltip.paneStackGapScaleCoeff":
