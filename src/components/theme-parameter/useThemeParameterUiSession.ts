@@ -4,7 +4,7 @@ import type {
   LargePanelInternalSectionId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-} from "./ThemeParameterPanelMain";
+} from "./themeParameterPanelTypes";
 import {
   readThemeParameterUiSessionState,
   writeThemeParameterUiSessionState,
@@ -106,7 +106,10 @@ export function useThemeParameterUiSession() {
   );
 
   const setLargePanelInternalSectionExpanded = useCallback(
-    (sectionId: LargePanelInternalSectionId, action: SetStateAction<boolean>) => {
+    (
+      sectionId: LargePanelInternalSectionId,
+      action: SetStateAction<boolean>,
+    ) => {
       updateUiState((previous) => ({
         ...previous,
         largePanelInternalSectionsExpanded: {
@@ -147,7 +150,9 @@ export function useThemeParameterUiSession() {
       setContainerSharedShellExpanded: createBooleanSetter(
         "containerSharedShellExpanded",
       ),
-      setContainerHeaderExpanded: createBooleanSetter("containerHeaderExpanded"),
+      setContainerHeaderExpanded: createBooleanSetter(
+        "containerHeaderExpanded",
+      ),
       setContainerHeaderAppearanceExpanded: createBooleanSetter(
         "containerHeaderAppearanceExpanded",
       ),

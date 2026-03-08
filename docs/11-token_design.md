@@ -130,6 +130,7 @@
 
 | 稳定路径                                          | Token 前缀                                                       |
 | ------------------------------------------------- | ---------------------------------------------------------------- |
+| `bg.app.*`                                        | `--mpx-slot-bg-app-*-*`                                          |
 | `bg.app.root`                                     | `--mpx-slot-bg-app-root-*`                                       |
 | `bg.app.workspace`                                | `--mpx-slot-bg-app-workspace-*`                                  |
 | `fg.header.root`                                  | `--mpx-slot-fg-header-root-*`                                    |
@@ -149,14 +150,17 @@
 | `fg.header.g1.toggle.sidebar`                     | `--mpx-slot-fg-header-g1-toggle-sidebar-*`                       |
 | `fg.header.g1.toggle.metadata`                    | `--mpx-slot-fg-header-g1-toggle-metadata-*`                      |
 | `fg.header.g1.task.importTask.panel`              | `--mpx-slot-fg-header-g1-task-import-task-panel-*`               |
+| `fg.header.g1.task.importTask.ovl`                | `--mpx-slot-fg-header-g1-task-import-task-ovl-*`                 |
 | `fg.header.g1.task.importTask.error.panel`        | `--mpx-slot-fg-header-g1-task-import-task-error-panel-*`         |
 | `fg.header.g1.task.importTask.hint.panel`         | `--mpx-slot-fg-header-g1-task-import-task-hint-panel-*`          |
 | `fg.header.g1.task.importTask.reviewNotice.panel` | `--mpx-slot-fg-header-g1-task-import-task-review-notice-panel-*` |
 | `fg.header.g1.task.importTask.hashLogList.panel`  | `--mpx-slot-fg-header-g1-task-import-task-hash-log-list-panel-*` |
 | `fg.header.g1.palette`                            | `--mpx-slot-fg-header-g1-palette-*`                              |
 | `fg.header.g1.settings`                           | `--mpx-slot-fg-header-g1-settings-*`                             |
+| `*.settings.root.*`                               | `--mpx-slot-*-settings-root-*-*`                                 |
 | `fg.header.g1.settings.root.ovl`                  | `--mpx-slot-fg-header-g1-settings-root-ovl-*`                    |
 | `fg.header.g1.settings.root.panel`                | `--mpx-slot-fg-header-g1-settings-root-panel-*`                  |
+| `*.shortcutEdit.*`                                | `--mpx-slot-*-shortcut-edit-*-*`                                 |
 | `fg.header.g1.settings.shortcutEdit.ovl`          | `--mpx-slot-fg-header-g1-settings-shortcut-edit-ovl-*`           |
 | `fg.header.g1.settings.shortcutEdit.panel`        | `--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-*`         |
 | `fg.header.g1.settings.shortcutCapture.ovl`       | `--mpx-slot-fg-header-g1-settings-shortcut-capture-ovl-*`        |

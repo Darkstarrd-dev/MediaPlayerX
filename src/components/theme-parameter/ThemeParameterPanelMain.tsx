@@ -4,7 +4,7 @@ import type {
   MutableRefObject,
   SetStateAction,
 } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ThemeParameterButtonStatesPage,
   ThemeParameterCommonControlsPage,
@@ -201,7 +201,10 @@ interface ThemeParameterPanelMainProps {
   setLargePanelMainExpanded: Dispatch<SetStateAction<boolean>>;
   largePanelInternalExpanded: boolean;
   setLargePanelInternalExpanded: Dispatch<SetStateAction<boolean>>;
-  largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
+  largePanelInternalSectionsExpanded: Record<
+    LargePanelInternalSectionId,
+    boolean
+  >;
   setLargePanelInternalSectionExpanded: (
     sectionId: LargePanelInternalSectionId,
     action: SetStateAction<boolean>,
@@ -421,22 +424,25 @@ export function ThemeParameterPanelMain({
     }
   };
 
-  const pickContainerParameters = (parameterIds: readonly string[]) => {
-    return parameterIds
-      .map((id) => containerLayerParameterMap.get(id))
-      .filter(
-        (parameter): parameter is ThemeParameterDefinition =>
-          parameter !== undefined,
-      );
-  };
+  const pickContainerParameters = useCallback(
+    (parameterIds: readonly string[]) => {
+      return parameterIds
+        .map((id) => containerLayerParameterMap.get(id))
+        .filter(
+          (parameter): parameter is ThemeParameterDefinition =>
+            parameter !== undefined,
+        );
+    },
+    [containerLayerParameterMap],
+  );
 
   const containerSharedShellAngleParameters = useMemo(() => {
     return pickContainerParameters(CONTAINER_SHARED_SHELL_INLINE_PARAMETER_IDS);
-  }, [containerLayerParameterMap]);
+  }, [pickContainerParameters]);
 
   const containerSharedShellLayoutParameters = useMemo(() => {
     return pickContainerParameters(CONTAINER_SHARED_SHELL_PARAMETER_IDS);
-  }, [containerLayerParameterMap]);
+  }, [pickContainerParameters]);
 
   const containerSharedShellColorFields = useMemo(() => {
     return CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS.map((id) =>
@@ -458,30 +464,33 @@ export function ThemeParameterPanelMain({
     [largePanelLayerParameters],
   );
 
-  const pickLargePanelParameters = (parameterIds: readonly string[]) => {
-    return parameterIds
-      .map((id) => largePanelParameterMap.get(id))
-      .filter(
-        (parameter): parameter is ThemeParameterDefinition =>
-          parameter !== undefined,
-      );
-  };
+  const pickLargePanelParameters = useCallback(
+    (parameterIds: readonly string[]) => {
+      return parameterIds
+        .map((id) => largePanelParameterMap.get(id))
+        .filter(
+          (parameter): parameter is ThemeParameterDefinition =>
+            parameter !== undefined,
+        );
+    },
+    [largePanelParameterMap],
+  );
 
   const largePanelRootParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_ROOT_PARAMETER_IDS);
-  }, [largePanelParameterMap]);
+  }, [pickLargePanelParameters]);
 
   const largePanelRootInlineParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_ROOT_INLINE_PARAMETER_IDS);
-  }, [largePanelParameterMap]);
+  }, [pickLargePanelParameters]);
 
   const largePanelSharedParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_SHARED_PARAMETER_IDS);
-  }, [largePanelParameterMap]);
+  }, [pickLargePanelParameters]);
 
   const largePanelSharedInlineParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
-  }, [largePanelParameterMap]);
+  }, [pickLargePanelParameters]);
 
   const smallPanelRootParameters = useMemo(() => {
     return smallPanelLayerParameters;
@@ -1173,11 +1182,17 @@ export function ThemeParameterPanelMain({
               <span>颜色</span>
             </header>
             <div className="theme-parameter-color-list">
-              {containerSharedShellColorFields.slice(0, 2).map(renderColorFieldRow)}
+              {containerSharedShellColorFields
+                .slice(0, 2)
+                .map(renderColorFieldRow)}
             </div>
-            {renderParameterRowsWithVarLabel(containerSharedShellAngleParameters)}
+            {renderParameterRowsWithVarLabel(
+              containerSharedShellAngleParameters,
+            )}
             <div className="theme-parameter-color-list">
-              {containerSharedShellColorFields.slice(2).map(renderColorFieldRow)}
+              {containerSharedShellColorFields
+                .slice(2)
+                .map(renderColorFieldRow)}
             </div>
             <div className="theme-parameter-text-list">
               {containerSharedShellTextFields.map(renderTextFieldRow)}
@@ -1187,7 +1202,9 @@ export function ThemeParameterPanelMain({
             <header className="settings-group-head">
               <span>形态/布局</span>
             </header>
-            {renderParameterRowsWithVarLabel(containerSharedShellLayoutParameters)}
+            {renderParameterRowsWithVarLabel(
+              containerSharedShellLayoutParameters,
+            )}
           </section>
         </>
       }
@@ -1215,42 +1232,54 @@ export function ThemeParameterPanelMain({
             section={HEADER_DEBUG_SUBSECTIONS[0]}
             open={containerHeaderButtonsExpanded}
             setOpen={setContainerHeaderButtonsExpanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[0])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[0],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={HEADER_DEBUG_SUBSECTIONS[1]}
             open={containerHeaderLogoExpanded}
             setOpen={setContainerHeaderLogoExpanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[1])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[1],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={HEADER_DEBUG_SUBSECTIONS[2]}
             open={containerHeaderG1Expanded}
             setOpen={setContainerHeaderG1Expanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[2])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[2],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={HEADER_DEBUG_SUBSECTIONS[3]}
             open={containerHeaderG2Expanded}
             setOpen={setContainerHeaderG2Expanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[3])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[3],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={HEADER_DEBUG_SUBSECTIONS[4]}
             open={containerHeaderGDebugExpanded}
             setOpen={setContainerHeaderGDebugExpanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[4])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[4],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={HEADER_DEBUG_SUBSECTIONS[5]}
             open={containerHeaderG3Expanded}
             setOpen={setContainerHeaderG3Expanded}
-            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[5])}
+            content={renderContainerDebugSubsectionRows(
+              HEADER_DEBUG_SUBSECTIONS[5],
+            )}
           />
         </>
       }
@@ -1309,7 +1338,9 @@ export function ThemeParameterPanelMain({
               )
             }
           >
-            <summary>{t("ui.themeParameter.containerLayer.sectionSidebarMain")}</summary>
+            <summary>
+              {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
+            </summary>
             <div className="settings-collapsible-content">
               {renderSidebarMainDebugSections()}
             </div>
@@ -1340,14 +1371,18 @@ export function ThemeParameterPanelMain({
             section={MAIN_HEADER_DEBUG_SUBSECTIONS[0]}
             open={containerMainHeaderExpanded}
             setOpen={setContainerMainHeaderExpanded}
-            content={renderContainerDebugSubsectionRows(MAIN_HEADER_DEBUG_SUBSECTIONS[0])}
+            content={renderContainerDebugSubsectionRows(
+              MAIN_HEADER_DEBUG_SUBSECTIONS[0],
+            )}
           />
           <ThemeParameterDebugSubsection
             t={t}
             section={MAIN_HEADER_DEBUG_SUBSECTIONS[1]}
             open={containerMainHeaderButtonsExpanded}
             setOpen={setContainerMainHeaderButtonsExpanded}
-            content={renderContainerDebugSubsectionRows(MAIN_HEADER_DEBUG_SUBSECTIONS[1])}
+            content={renderContainerDebugSubsectionRows(
+              MAIN_HEADER_DEBUG_SUBSECTIONS[1],
+            )}
           />
           <details
             className="settings-collapsible"
@@ -1358,7 +1393,9 @@ export function ThemeParameterPanelMain({
               )
             }
           >
-            <summary>{t("ui.themeParameter.containerLayer.sectionMainWorkspace")}</summary>
+            <summary>
+              {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
+            </summary>
             <div className="settings-collapsible-content">
               <section className="settings-group theme-parameter-debug-group">
                 <header className="settings-group-head theme-parameter-subgroup-head">
@@ -1368,7 +1405,9 @@ export function ThemeParameterPanelMain({
                   </span>
                 </header>
                 <div className="theme-parameter-color-list">
-                  {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(renderColorFieldRow)}
+                  {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
+                    renderColorFieldRow,
+                  )}
                 </div>
               </section>
             </div>
@@ -1495,7 +1534,9 @@ export function ThemeParameterPanelMain({
                 parameters={pickLargePanelParameters(section.parameterIds)}
                 renderColorFieldRow={renderColorFieldRow}
                 renderTextFieldRow={renderTextFieldRow}
-                renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+                renderParameterRowsWithVarLabel={
+                  renderParameterRowsWithVarLabel
+                }
               />
             </div>
           </details>
@@ -1510,8 +1551,10 @@ export function ThemeParameterPanelMain({
               (event.currentTarget as HTMLDetailsElement).open,
             )
           }
-          >
-          <summary>{t("ui.themeParameter.largePanelLayer.sectionInternal")}</summary>
+        >
+          <summary>
+            {t("ui.themeParameter.largePanelLayer.sectionInternal")}
+          </summary>
           <div className="settings-collapsible-content">
             <ThemeParameterLargePanelInternalSections
               t={t}
@@ -1526,7 +1569,9 @@ export function ThemeParameterPanelMain({
                   parameters={options.parameters}
                   renderColorFieldRow={renderColorFieldRow}
                   renderTextFieldRow={renderTextFieldRow}
-                  renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+                  renderParameterRowsWithVarLabel={
+                    renderParameterRowsWithVarLabel
+                  }
                 />
               )}
             />
@@ -1600,7 +1645,11 @@ export function ThemeParameterPanelMain({
   const buttonStatesPage = (
     <ThemeParameterButtonStatesPage
       t={t}
-      content={<ThemeParameterButtonStateDebug renderColorFieldRow={renderColorFieldRow} />}
+      content={
+        <ThemeParameterButtonStateDebug
+          renderColorFieldRow={renderColorFieldRow}
+        />
+      }
     />
   );
 

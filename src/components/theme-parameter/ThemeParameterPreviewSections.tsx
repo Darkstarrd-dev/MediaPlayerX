@@ -1,7 +1,7 @@
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
-import { ThemeParameterCommonControlTextFieldRow, buildSkeuoRangeStyle } from "./ThemeParameterFieldRows";
+import { ThemeParameterCommonControlTextFieldRow } from "./ThemeParameterFieldRows";
 import {
   BUTTON_STATE_COLOR_FIELDS,
   BUTTON_STATE_FIELD_PREFIX,
@@ -9,6 +9,7 @@ import {
   COMMON_CONTROL_TEXT_FIELDS,
   CONTROL_SECTION_DEFINITIONS,
 } from "./themeParameterPanelCatalog";
+import { buildSkeuoRangeStyle } from "./themeParameterRangeStyle";
 import type {
   ButtonStateKey,
   ControlPreviewValues,
@@ -103,8 +104,7 @@ const BUTTON_TEMPLATE_STATES: ReadonlyArray<{
   {
     key: "close-hover",
     state: "危险悬停态 (close:hover)",
-    styleSource:
-      ".theme-parameter-side-btn.danger:hover / .danger.force-hover",
+    styleSource: ".theme-parameter-side-btn.danger:hover / .danger.force-hover",
     interaction: "关闭按钮 hover",
     usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
     demoLabel: "关闭悬停测试",
@@ -275,7 +275,9 @@ const renderCommonControlVerticalPreview = (
           data-testid="theme-control-preview-slider-vertical-stack"
         >
           <label className="theme-parameter-control-vertical-item">
-            <span className="theme-parameter-control-preview-caption">朝上</span>
+            <span className="theme-parameter-control-preview-caption">
+              朝上
+            </span>
             <div className="theme-parameter-control-vertical-track-box">
               <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis">
                 <SkeuoRunway
@@ -299,7 +301,9 @@ const renderCommonControlVerticalPreview = (
             </div>
           </label>
           <label className="theme-parameter-control-vertical-item">
-            <span className="theme-parameter-control-preview-caption">朝下</span>
+            <span className="theme-parameter-control-preview-caption">
+              朝下
+            </span>
             <div className="theme-parameter-control-vertical-track-box">
               <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis is-down">
                 <SkeuoRunway

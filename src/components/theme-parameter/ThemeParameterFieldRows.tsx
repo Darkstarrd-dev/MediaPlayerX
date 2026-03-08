@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { resolveDebugVarUsage } from "./themeParameterPanelCatalog";
 import type {
@@ -29,7 +29,9 @@ export function ThemeParameterVarLabel({ cssVar }: { cssVar: string }) {
   return (
     <span className="theme-parameter-var-label">
       {cssVar}
-      {usage ? <span className="theme-parameter-var-usage"> {usage}</span> : null}
+      {usage ? (
+        <span className="theme-parameter-var-usage"> {usage}</span>
+      ) : null}
     </span>
   );
 }
@@ -43,7 +45,15 @@ export function ThemeParameterColorFieldRow(props: {
   onReset: (field: ThemeDebugColorField) => void;
   resetLabel: string;
 }) {
-  const { field, colorState, isChanged, onHexChange, onAlphaChange, onReset, resetLabel } = props;
+  const {
+    field,
+    colorState,
+    isChanged,
+    onHexChange,
+    onAlphaChange,
+    onReset,
+    resetLabel,
+  } = props;
   const alphaPercent = Math.round(colorState.alpha * 100);
   return (
     <label key={field.id} className="theme-parameter-color-row">
@@ -126,7 +136,8 @@ function BasicColorShortcut(props: {
     return null;
   }
   const parsedSolidColor =
-    parseColorState(raw, "#ffffff") ?? parseColorState(field.fallback, "#ffffff");
+    parseColorState(raw, "#ffffff") ??
+    parseColorState(field.fallback, "#ffffff");
   if (!parsedSolidColor) {
     return null;
   }
@@ -193,7 +204,11 @@ export function ThemeParameterTextFieldRow(props: {
       <div key={field.id} className="theme-parameter-text-row is-structured">
         <ThemeParameterVarLabel cssVar={field.cssVar} />
         <div className="theme-parameter-structured-card">
-          <BasicColorShortcut field={field} raw={raw} onChange={updateTextValue} />
+          <BasicColorShortcut
+            field={field}
+            raw={raw}
+            onChange={updateTextValue}
+          />
           <div className="theme-parameter-structured-grid is-gradient">
             <label className="theme-parameter-inline-field">
               <span>角度</span>
@@ -361,12 +376,14 @@ export function ThemeParameterTextFieldRow(props: {
                 </div>
               </div>
               <div className="theme-parameter-structured-grid is-shadow">
-                {([
-                  ["offsetX", "X 偏移"],
-                  ["offsetY", "Y 偏移"],
-                  ["blur", "模糊"],
-                  ["spread", "扩散"],
-                ] as const).map(([key, label]) => (
+                {(
+                  [
+                    ["offsetX", "X 偏移"],
+                    ["offsetY", "Y 偏移"],
+                    ["blur", "模糊"],
+                    ["spread", "扩散"],
+                  ] as const
+                ).map(([key, label]) => (
                   <label
                     key={`${field.id}-layer-${layerIndex}-${key}`}
                     className="theme-parameter-inline-field"
@@ -499,7 +516,13 @@ export function ThemeParameterDebugSectionList(props: {
   renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
   renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
 }) {
-  const { sections, colorFields, textFields, renderColorFieldRow, renderTextFieldRow } = props;
+  const {
+    sections,
+    colorFields,
+    textFields,
+    renderColorFieldRow,
+    renderTextFieldRow,
+  } = props;
   const colorFieldMap = useMemo(
     () => new Map(colorFields.map((field) => [field.cssVar, field])),
     [colorFields],
@@ -552,7 +575,8 @@ function ParameterRow(props: {
   onReset: (parameter: ThemeParameterDefinition) => void;
   resetLabel: string;
 }) {
-  const { parameter, value, label, onApply, isChanged, onReset, resetLabel } = props;
+  const { parameter, value, label, onApply, isChanged, onReset, resetLabel } =
+    props;
   return (
     <label
       key={parameter.id}
@@ -606,7 +630,10 @@ export function ThemeParameterParameterRows(props: {
   parameters: ThemeParameterDefinition[];
   values: ThemeParameterValues;
   resolveLabel: (parameter: ThemeParameterDefinition) => string;
-  applyParameter: (parameter: ThemeParameterDefinition, rawValue: number) => void;
+  applyParameter: (
+    parameter: ThemeParameterDefinition,
+    rawValue: number,
+  ) => void;
   isParameterChanged: (parameter: ThemeParameterDefinition) => boolean;
   resetSingleParameter: (parameter: ThemeParameterDefinition) => void;
   resetLabel: string;
@@ -632,7 +659,9 @@ export function ThemeParameterParameterRows(props: {
             label={
               <>
                 <span>{resolveLabel(parameter)}</span>
-                <span className="theme-parameter-var-label">{parameter.id}</span>
+                <span className="theme-parameter-var-label">
+                  {parameter.id}
+                </span>
               </>
             }
             onApply={applyParameter}
@@ -649,7 +678,10 @@ export function ThemeParameterParameterRows(props: {
 export function ThemeParameterParameterRowsWithVarLabel(props: {
   parameters: ThemeParameterDefinition[];
   values: ThemeParameterValues;
-  applyParameter: (parameter: ThemeParameterDefinition, rawValue: number) => void;
+  applyParameter: (
+    parameter: ThemeParameterDefinition,
+    rawValue: number,
+  ) => void;
   isParameterChanged: (parameter: ThemeParameterDefinition) => boolean;
   resetSingleParameter: (parameter: ThemeParameterDefinition) => void;
   resetLabel: string;
@@ -682,12 +714,4 @@ export function ThemeParameterParameterRowsWithVarLabel(props: {
       })}
     </div>
   );
-}
-
-export function buildSkeuoRangeStyle(value: number, min = 0, max = 100) {
-  const percent =
-    max <= min ? 0 : Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-  return {
-    "--mpx-skeuo-range-pct": `${percent}%`,
-  } as CSSProperties;
 }

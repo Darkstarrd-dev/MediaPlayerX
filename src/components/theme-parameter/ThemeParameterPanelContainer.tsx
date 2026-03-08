@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -11,7 +12,6 @@ import { useDraggablePanel } from "../useDraggablePanel";
 import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
-import type { ThemeParameterPreviewMode } from "./ThemeParameterPanelMain";
 import {
   applyThemeParameterSyncTargets,
   collectThemeParameterSyncIds,
@@ -36,6 +36,7 @@ import {
   type ThemeParameterDefinition,
   type ThemeParameterValues,
 } from "./themeParameterDefinitions";
+import type { ThemeParameterPreviewMode } from "./themeParameterPanelTypes";
 import {
   clearContainerDebugSessionState,
   readContainerDebugSessionState,
@@ -254,9 +255,7 @@ function ThemeParameterPanel({
     setSmallPanelSectionExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
-  const parameterSyncStateRef = useRef(
-    createThemeParameterSyncState(),
-  );
+  const parameterSyncStateRef = useRef(createThemeParameterSyncState());
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
@@ -357,6 +356,12 @@ function ThemeParameterPanel({
     parameterSyncStateRef,
   });
 
+  const handleResetToOpenState = useCallback(() => {
+    clearContainerDebugSessionState();
+    resetThemeParameterSyncState(parameterSyncStateRef.current);
+    resetSnapshotToBaseline();
+  }, [resetSnapshotToBaseline]);
+
   useEffect(() => {
     if (!open) {
       return;
@@ -371,7 +376,7 @@ function ThemeParameterPanel({
     setActivePreviewMode("none");
     setValues(initialValues);
     initializeSnapshotSession(initialValues);
-  }, [open, parameters, styleId]);
+  }, [initializeSnapshotSession, open, parameters, restoreUiState, styleId]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -397,12 +402,7 @@ function ThemeParameterPanel({
     captureContainerDebugSessionState(document.documentElement);
     persistUiState(scrollTop);
     wasOpenRef.current = false;
-  }, [
-    open,
-    persistUiState,
-    uiState.pageScrollTops,
-    activePage,
-  ]);
+  }, [open, persistUiState, uiState.pageScrollTops, activePage]);
 
   useEffect(() => {
     if (!open || activePreviewMode === "none") {
@@ -426,7 +426,7 @@ function ThemeParameterPanel({
     return () => {
       window.removeEventListener(THEME_PARAMETER_RESET_EVENT, handlePanelReset);
     };
-  }, [hidden, open]);
+  }, [handleResetToOpenState, hidden, open]);
 
   if (!open || hidden) {
     return null;
@@ -489,12 +489,14 @@ function ThemeParameterPanel({
           nextValues,
         })
       ) {
-        pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
+        pruneThemeParameterSyncTarget(
+          parameterSyncStateRef.current,
+          parameter.id,
+        );
       }
       return nextValues;
     });
   };
-
 
   const isParameterChanged = (parameter: ThemeParameterDefinition): boolean => {
     if (parameter.cssVarName) {
@@ -560,12 +562,6 @@ function ThemeParameterPanel({
 
   const handleContainerDebugChanged = () => {
     captureContainerDebugSessionState(document.documentElement);
-  };
-
-  const handleResetToOpenState = () => {
-    clearContainerDebugSessionState();
-    resetThemeParameterSyncState(parameterSyncStateRef.current);
-    resetSnapshotToBaseline();
   };
 
   return (
@@ -699,7 +695,10 @@ function ThemeParameterPanel({
             mainScrollElementRef.current = element;
           }}
           onMainScroll={() => {
-            setPageScrollTop(activePage, mainScrollElementRef.current?.scrollTop ?? 0);
+            setPageScrollTop(
+              activePage,
+              mainScrollElementRef.current?.scrollTop ?? 0,
+            );
           }}
           commonExpanded={commonExpanded}
           setCommonExpanded={setCommonExpanded}
@@ -805,7 +804,9 @@ function ThemeParameterPanel({
           setLargePanelMainExpanded={setLargePanelMainExpanded}
           largePanelInternalExpanded={largePanelInternalExpanded}
           setLargePanelInternalExpanded={setLargePanelInternalExpanded}
-          largePanelInternalSectionsExpanded={largePanelInternalSectionsExpanded}
+          largePanelInternalSectionsExpanded={
+            largePanelInternalSectionsExpanded
+          }
           setLargePanelInternalSectionExpanded={
             setLargePanelInternalSectionExpanded
           }

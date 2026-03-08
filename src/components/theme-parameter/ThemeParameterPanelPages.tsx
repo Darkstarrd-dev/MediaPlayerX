@@ -10,9 +10,12 @@ import type {
 import type {
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
-} from "./ThemeParameterPanelMain";
+} from "./themeParameterPanelTypes";
 
-type Translate = (key: string, values?: Record<string, string | number>) => string;
+type Translate = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
 type BooleanSetter = Dispatch<SetStateAction<boolean>>;
 
 interface PageItem {
@@ -332,19 +335,29 @@ export function ThemeParameterContainerLayerPage({
       <details
         className="settings-collapsible"
         open={containerBackgroundExpanded}
-        onToggle={(event) => handleToggle(setContainerBackgroundExpanded, event)}
+        onToggle={(event) =>
+          handleToggle(setContainerBackgroundExpanded, event)
+        }
       >
-        <summary>{t("ui.themeParameter.containerLayer.sectionBackground")}</summary>
+        <summary>
+          {t("ui.themeParameter.containerLayer.sectionBackground")}
+        </summary>
         <div className="settings-collapsible-content">{backgroundContent}</div>
       </details>
 
       <details
         className="settings-collapsible"
         open={containerSharedShellExpanded}
-        onToggle={(event) => handleToggle(setContainerSharedShellExpanded, event)}
+        onToggle={(event) =>
+          handleToggle(setContainerSharedShellExpanded, event)
+        }
       >
-        <summary>{t("ui.themeParameter.containerLayer.sectionSharedShell")}</summary>
-        <div className="settings-collapsible-content">{containerSharedShellContent}</div>
+        <summary>
+          {t("ui.themeParameter.containerLayer.sectionSharedShell")}
+        </summary>
+        <div className="settings-collapsible-content">
+          {containerSharedShellContent}
+        </div>
       </details>
 
       <details
@@ -353,7 +366,9 @@ export function ThemeParameterContainerLayerPage({
         onToggle={(event) => handleToggle(setContainerHeaderExpanded, event)}
       >
         <summary>{t("ui.themeParameter.containerLayer.sectionHeader")}</summary>
-        <div className="settings-collapsible-content">{containerHeaderContent}</div>
+        <div className="settings-collapsible-content">
+          {containerHeaderContent}
+        </div>
       </details>
 
       <details
@@ -361,8 +376,12 @@ export function ThemeParameterContainerLayerPage({
         open={containerSidebarExpanded}
         onToggle={(event) => handleToggle(setContainerSidebarExpanded, event)}
       >
-        <summary>{t("ui.themeParameter.containerLayer.sectionSidebar")}</summary>
-        <div className="settings-collapsible-content">{containerSidebarContent}</div>
+        <summary>
+          {t("ui.themeParameter.containerLayer.sectionSidebar")}
+        </summary>
+        <div className="settings-collapsible-content">
+          {containerSidebarContent}
+        </div>
       </details>
 
       <details
@@ -371,7 +390,9 @@ export function ThemeParameterContainerLayerPage({
         onToggle={(event) => handleToggle(setContainerMainExpanded, event)}
       >
         <summary>{t("ui.themeParameter.containerLayer.sectionMain")}</summary>
-        <div className="settings-collapsible-content">{containerMainContent}</div>
+        <div className="settings-collapsible-content">
+          {containerMainContent}
+        </div>
       </details>
 
       <details
@@ -379,8 +400,12 @@ export function ThemeParameterContainerLayerPage({
         open={containerMetadataExpanded}
         onToggle={(event) => handleToggle(setContainerMetadataExpanded, event)}
       >
-        <summary>{t("ui.themeParameter.containerLayer.sectionMetadata")}</summary>
-        <div className="settings-collapsible-content">{containerMetadataContent}</div>
+        <summary>
+          {t("ui.themeParameter.containerLayer.sectionMetadata")}
+        </summary>
+        <div className="settings-collapsible-content">
+          {containerMetadataContent}
+        </div>
       </details>
     </section>
   );
@@ -444,7 +469,9 @@ export function ThemeParameterLargePanelLayerPage({
         open={sharedExpanded}
         onToggle={(event) => handleToggle(setSharedExpanded, event)}
       >
-        <summary>{t("ui.themeParameter.largePanelLayer.sectionShared")}</summary>
+        <summary>
+          {t("ui.themeParameter.largePanelLayer.sectionShared")}
+        </summary>
         <div className="settings-collapsible-content">{sharedSection}</div>
       </details>
       {bodySections}
