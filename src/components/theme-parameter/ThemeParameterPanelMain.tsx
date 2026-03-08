@@ -80,6 +80,7 @@ import {
   LARGE_PANEL_TEXT_FIELDS,
   MAIN_HEADER_DEBUG_SUBSECTIONS,
   MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS,
+  METADATA_INTERNAL_DEBUG_SUBSECTIONS,
   METADATA_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_MAIN_DEBUG_LAYERS,
@@ -188,6 +189,8 @@ interface ThemeParameterPanelMainProps {
   setContainerMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataHeaderButtonsExpanded: boolean;
   setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataInternalsExpanded: boolean;
+  setContainerMetadataInternalsExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
@@ -309,6 +312,8 @@ export function ThemeParameterPanelMain({
   setContainerMetadataHeaderExpanded,
   containerMetadataHeaderButtonsExpanded,
   setContainerMetadataHeaderButtonsExpanded,
+  containerMetadataInternalsExpanded,
+  setContainerMetadataInternalsExpanded,
   containerSidebarMainExpanded,
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
@@ -1620,6 +1625,15 @@ export function ThemeParameterPanelMain({
             setOpen={setContainerMetadataHeaderButtonsExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_HEADER_DEBUG_SUBSECTIONS[1],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[0]}
+            open={containerMetadataInternalsExpanded}
+            setOpen={setContainerMetadataInternalsExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[0],
             )}
           />
         </>

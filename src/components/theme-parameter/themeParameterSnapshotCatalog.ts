@@ -324,6 +324,81 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2e2a22",
   },
   {
+    id: "container-metadata-body-bg",
+    cssVar: "--mpx-metadata-body-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "container-metadata-body-text",
+    cssVar: "--mpx-metadata-body-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-metadata-section-border",
+    cssVar: "--mpx-metadata-section-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "container-metadata-section-label-text",
+    cssVar: "--mpx-metadata-section-label-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "container-metadata-edit-label-text",
+    cssVar: "--mpx-metadata-edit-label-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "container-metadata-edit-value-text",
+    cssVar: "--mpx-metadata-edit-value-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-metadata-edit-value-bg",
+    cssVar: "--mpx-metadata-edit-value-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-metadata-edit-value-border",
+    cssVar: "--mpx-metadata-edit-value-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "container-metadata-pref-card-bg",
+    cssVar: "--mpx-metadata-pref-card-bg",
+    fallback: "#f9f6ef",
+  },
+  {
+    id: "container-metadata-pref-card-border",
+    cssVar: "--mpx-metadata-pref-card-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "container-metadata-pref-card-text",
+    cssVar: "--mpx-metadata-pref-card-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "container-metadata-tag-editor-bg",
+    cssVar: "--mpx-metadata-tag-editor-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "container-metadata-tag-editor-border",
+    cssVar: "--mpx-metadata-tag-editor-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "container-metadata-tag-item-bg",
+    cssVar: "--mpx-metadata-tag-item-bg",
+    fallback: "#dcecf0",
+  },
+  {
+    id: "container-metadata-tag-item-text",
+    cssVar: "--mpx-metadata-tag-item-text",
+    fallback: "#2e6f7f",
+  },
+  {
     id: "container-border-1",
     cssVar: "--mpx-border-1",
     fallback: "#d6cfc1",

@@ -502,6 +502,101 @@ export const CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS: readonly ThemeDebug
     },
   ];
 
+export const CONTAINER_METADATA_INTERNAL_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-metadata-body-bg",
+      cssVar: "--mpx-metadata-body-bg",
+      fallback: "rgba(0, 0, 0, 0)",
+      fallbackAlpha: 0,
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-body-text",
+      cssVar: "--mpx-metadata-body-text",
+      fallback: "#2e2a22",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-section-border",
+      cssVar: "--mpx-metadata-section-border",
+      fallback: "#d6cfc1",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-section-label-text",
+      cssVar: "--mpx-metadata-section-label-text",
+      fallback: "#6a6358",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-edit-label-text",
+      cssVar: "--mpx-metadata-edit-label-text",
+      fallback: "#6a6358",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-edit-value-text",
+      cssVar: "--mpx-metadata-edit-value-text",
+      fallback: "#2e2a22",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-edit-value-bg",
+      cssVar: "--mpx-metadata-edit-value-bg",
+      fallback: "#ffffff",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-edit-value-border",
+      cssVar: "--mpx-metadata-edit-value-border",
+      fallback: "#d6cfc1",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-pref-card-bg",
+      cssVar: "--mpx-metadata-pref-card-bg",
+      fallback: "#f9f6ef",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-pref-card-border",
+      cssVar: "--mpx-metadata-pref-card-border",
+      fallback: "#d6cfc1",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-pref-card-text",
+      cssVar: "--mpx-metadata-pref-card-text",
+      fallback: "#2e2a22",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-tag-editor-bg",
+      cssVar: "--mpx-metadata-tag-editor-bg",
+      fallback: "#ffffff",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-tag-editor-border",
+      cssVar: "--mpx-metadata-tag-editor-border",
+      fallback: "#b7ab95",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-tag-item-bg",
+      cssVar: "--mpx-metadata-tag-item-bg",
+      fallback: "#dcecf0",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-tag-item-text",
+      cssVar: "--mpx-metadata-tag-item-text",
+      fallback: "#2e6f7f",
+      groupId: "main",
+    },
+  ];
+
 export const CONTAINER_FRAME_SECTION_DEFINITIONS = [
   {
     id: "header",
@@ -1501,6 +1596,15 @@ export const METADATA_HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsectio
     },
   ];
 
+export const METADATA_INTERNAL_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] =
+  [
+    {
+      id: "metadata-internals",
+      summaryKey: "ui.themeParameter.containerLayer.sectionMetadataInternals",
+      colorFields: CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
+    },
+  ];
+
 export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_SHARED_COLOR_FIELDS,
   ...CONTAINER_HEADER_COLOR_FIELDS,
@@ -1521,6 +1625,7 @@ export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_METADATA_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,
+  ...CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
 ];

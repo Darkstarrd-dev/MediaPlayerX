@@ -59,6 +59,7 @@ export interface ThemeParameterUISessionState {
   containerMetadataAppearanceExpanded: boolean;
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
+  containerMetadataInternalsExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
   largePanelRootExpanded: boolean;
@@ -129,6 +130,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataAppearanceExpanded: true,
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
+  containerMetadataInternalsExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
   largePanelRootExpanded: true,

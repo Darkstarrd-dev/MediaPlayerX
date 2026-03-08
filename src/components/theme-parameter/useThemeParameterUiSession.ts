@@ -214,6 +214,9 @@ export function useThemeParameterUiSession() {
       setContainerMetadataHeaderButtonsExpanded: createBooleanSetter(
         "containerMetadataHeaderButtonsExpanded",
       ),
+      setContainerMetadataInternalsExpanded: createBooleanSetter(
+        "containerMetadataInternalsExpanded",
+      ),
       setContainerSidebarMainExpanded: createBooleanSetter(
         "containerSidebarMainExpanded",
       ),

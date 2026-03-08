@@ -124,6 +124,32 @@
    - `--mpx-settings-danger-btn-border`
    - `--mpx-settings-danger-btn-text`
 
+## Metadata 内部件（2.4.2）补充
+
+Metadata 主面板 body / edit-grid / preference-record / tag 编辑区语义统一收口到 `--mpx-metadata-*`。
+
+1. Body 链路：
+   - `--mpx-metadata-body-bg`
+   - `--mpx-metadata-body-text`
+   - `--mpx-metadata-section-border`
+   - `--mpx-metadata-section-label-text`
+2. Edit-grid 链路：
+   - `--mpx-metadata-edit-label-text`
+   - `--mpx-metadata-edit-value-text`
+   - `--mpx-metadata-edit-value-bg`
+   - `--mpx-metadata-edit-value-border`
+3. Preference-record 链路：
+   - `--mpx-metadata-pref-card-bg`
+   - `--mpx-metadata-pref-card-border`
+   - `--mpx-metadata-pref-card-text`
+4. Tag 编辑区链路：
+   - `--mpx-metadata-tag-editor-bg`
+   - `--mpx-metadata-tag-editor-border`
+   - `--mpx-metadata-tag-item-bg`
+   - `--mpx-metadata-tag-item-text`
+
+兼容说明：既有 `--mpx-metadata-preference-record-*` 与 `--mpx-metadata-feature-tag-picker-*` 当前默认回落到上述新语义 token。
+
 ## 容器 frame / spacing 补充
 
 ### 共享壳层与单容器 frame

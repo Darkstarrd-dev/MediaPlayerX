@@ -242,6 +242,7 @@ function ThemeParameterPanel({
     setContainerMetadataAppearanceExpanded,
     setContainerMetadataHeaderExpanded,
     setContainerMetadataHeaderButtonsExpanded,
+    setContainerMetadataInternalsExpanded,
     setContainerSidebarMainExpanded,
     setContainerMainImageNameListExpanded,
     setLargePanelRootExpanded,
@@ -291,6 +292,7 @@ function ThemeParameterPanel({
     containerMetadataAppearanceExpanded,
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
+    containerMetadataInternalsExpanded,
     containerSidebarMainExpanded,
     containerMainImageNameListExpanded,
     largePanelRootExpanded,
@@ -855,6 +857,12 @@ function ThemeParameterPanel({
           }
           setContainerMetadataHeaderButtonsExpanded={
             setContainerMetadataHeaderButtonsExpanded
+          }
+          containerMetadataInternalsExpanded={
+            containerMetadataInternalsExpanded
+          }
+          setContainerMetadataInternalsExpanded={
+            setContainerMetadataInternalsExpanded
           }
           containerSidebarMainExpanded={containerSidebarMainExpanded}
           setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}

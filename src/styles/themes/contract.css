@@ -1028,14 +1028,30 @@
     var(--mpx-border-2)
   );
 
-  --mpx-metadata-preference-record-border: var(--mpx-overlay-soft-border);
-  --mpx-metadata-preference-record-bg: var(
-    --mpx-bg-elevated-soft,
-    var(--mpx-bg-elevated)
-  );
-  --mpx-metadata-preference-record-text: var(--mpx-text-1);
-  --mpx-metadata-preference-record-summary-text: var(--mpx-text-1);
-  --mpx-metadata-preference-record-hint-text: var(--mpx-text-2);
+  --mpx-metadata-body-bg: transparent;
+  --mpx-metadata-body-text: var(--mpx-text-1);
+  --mpx-metadata-section-border: var(--mpx-border-1);
+  --mpx-metadata-section-label-text: var(--mpx-text-2);
+
+  --mpx-metadata-edit-label-text: var(--mpx-metadata-section-label-text);
+  --mpx-metadata-edit-value-text: var(--mpx-metadata-body-text);
+  --mpx-metadata-edit-value-bg: var(--mpx-input-bg);
+  --mpx-metadata-edit-value-border: var(--mpx-input-border);
+
+  --mpx-metadata-pref-card-bg: var(--mpx-bg-muted);
+  --mpx-metadata-pref-card-border: var(--mpx-border-1);
+  --mpx-metadata-pref-card-text: var(--mpx-metadata-body-text);
+
+  --mpx-metadata-tag-editor-bg: var(--mpx-bg-elevated);
+  --mpx-metadata-tag-editor-border: var(--mpx-border-2);
+  --mpx-metadata-tag-item-bg: var(--mpx-accent-soft);
+  --mpx-metadata-tag-item-text: var(--mpx-accent);
+
+  --mpx-metadata-preference-record-border: var(--mpx-metadata-pref-card-border);
+  --mpx-metadata-preference-record-bg: var(--mpx-metadata-pref-card-bg);
+  --mpx-metadata-preference-record-text: var(--mpx-metadata-pref-card-text);
+  --mpx-metadata-preference-record-summary-text: var(--mpx-metadata-pref-card-text);
+  --mpx-metadata-preference-record-hint-text: var(--mpx-metadata-section-label-text);
   --mpx-metadata-preference-record-field-border: var(
     --mpx-input-readonly-border
   );
@@ -1050,13 +1066,19 @@
   --mpx-metadata-booklet-binding-control-bg: var(--mpx-input-bg);
   --mpx-metadata-booklet-binding-control-text: var(--mpx-input-text);
 
-  --mpx-metadata-feature-tag-picker-hint-text: var(--mpx-text-2);
-  --mpx-metadata-feature-tag-picker-group-key-text: var(--mpx-text-2);
-  --mpx-metadata-feature-tag-picker-popover-border: var(--mpx-border-1);
-  --mpx-metadata-feature-tag-picker-popover-bg: var(--mpx-bg-elevated);
-  --mpx-metadata-feature-tag-picker-tag-border: var(--mpx-border-2);
-  --mpx-metadata-feature-tag-picker-tag-bg: var(--mpx-bg-elevated);
-  --mpx-metadata-feature-tag-picker-tag-text: var(--mpx-text-1);
+  --mpx-metadata-feature-tag-picker-hint-text: var(
+    --mpx-metadata-section-label-text
+  );
+  --mpx-metadata-feature-tag-picker-group-key-text: var(
+    --mpx-metadata-section-label-text
+  );
+  --mpx-metadata-feature-tag-picker-popover-border: var(
+    --mpx-metadata-tag-editor-border
+  );
+  --mpx-metadata-feature-tag-picker-popover-bg: var(--mpx-metadata-tag-editor-bg);
+  --mpx-metadata-feature-tag-picker-tag-border: var(--mpx-metadata-tag-editor-border);
+  --mpx-metadata-feature-tag-picker-tag-bg: var(--mpx-metadata-tag-item-bg);
+  --mpx-metadata-feature-tag-picker-tag-text: var(--mpx-metadata-tag-item-text);
   --mpx-metadata-feature-tag-picker-tag-active-border: var(--mpx-accent);
   --mpx-metadata-feature-tag-picker-tag-active-bg: var(--mpx-accent-soft);
   --mpx-metadata-feature-tag-picker-tag-active-text: var(--mpx-accent);

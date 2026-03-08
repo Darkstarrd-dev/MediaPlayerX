@@ -404,6 +404,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.4.1.0 Metadata header control",
   "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
     "2.4.1.1 Metadata header buttons",
+  "ui.themeParameter.containerLayer.sectionMetadataInternals":
+    "2.4.2 Metadata internals",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":

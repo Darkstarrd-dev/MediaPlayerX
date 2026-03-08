@@ -379,6 +379,8 @@ export const zhCnCatalogPart1 = {
     "2.4.1.0 Metadata header 总控",
   "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
     "2.4.1.1 Metadata header 按钮",
+  "ui.themeParameter.containerLayer.sectionMetadataInternals":
+    "2.4.2 Metadata 内部件",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
