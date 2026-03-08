@@ -7,6 +7,16 @@ import type {
 } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
+import {
+  ThemeParameterButtonStatesPage,
+  ThemeParameterCommonControlsPage,
+  ThemeParameterContainerLayerPage,
+  ThemeParameterLargePanelLayerPage,
+  ThemeParameterPageSidebar,
+  ThemeParameterParametersPage,
+  ThemeParameterSnapshotPage,
+  ThemeParameterSmallPanelLayerPage,
+} from "./ThemeParameterPanelPages";
 
 import {
   formatBoxShadowValue,
@@ -6053,734 +6063,436 @@ export function ThemeParameterPanelMain({
     },
   ] as const;
 
+  const parametersPage = (
+    <ThemeParameterParametersPage
+      t={t}
+      styleId={styleId}
+      searchText={searchText}
+      setSearchText={setSearchText}
+      commonExpanded={commonExpanded}
+      setCommonExpanded={setCommonExpanded}
+      commonContent={renderParameterRows(filteredCommonParameters)}
+      showCommonNoResults={filteredCommonParameters.length === 0}
+      styleExpanded={styleExpanded}
+      setStyleExpanded={setStyleExpanded}
+      styleContent={renderParameterRows(filteredStyleParameters)}
+      showNoStyleSpecific={styleParameters.length === 0}
+      showStyleNoResults={
+        styleParameters.length > 0 && filteredStyleParameters.length === 0
+      }
+    />
+  );
+
+  const snapshotPage = (
+    <ThemeParameterSnapshotPage
+      t={t}
+      snapshotIncludeComputedValues={snapshotIncludeComputedValues}
+      setSnapshotIncludeComputedValues={setSnapshotIncludeComputedValues}
+      exportSnapshotJson={exportSnapshotJson}
+      downloadSnapshotJson={downloadSnapshotJson}
+      openSnapshotFilePicker={openSnapshotFilePicker}
+      copySnapshotJson={copySnapshotJson}
+      importSnapshotJson={importSnapshotJson}
+      setSnapshotJson={setSnapshotJson}
+      setSnapshotMessage={setSnapshotMessage}
+      snapshotFileInputRef={snapshotFileInputRef}
+      loadSnapshotFile={loadSnapshotFile}
+      snapshotJson={snapshotJson}
+      snapshotMessage={snapshotMessage}
+    />
+  );
+
+  const containerLayerPage = (
+    <ThemeParameterContainerLayerPage
+      t={t}
+      activePreviewMode={activePreviewMode}
+      togglePreviewMode={togglePreviewMode}
+      containerBackgroundExpanded={containerBackgroundExpanded}
+      setContainerBackgroundExpanded={setContainerBackgroundExpanded}
+      backgroundContent={
+        <div className="theme-parameter-text-list">
+          {CONTAINER_BACKGROUND_TEXT_FIELDS.map(renderTextFieldRow)}
+        </div>
+      }
+      containerSharedShellExpanded={containerSharedShellExpanded}
+      setContainerSharedShellExpanded={setContainerSharedShellExpanded}
+      containerSharedShellContent={
+        <>
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>颜色</span>
+            </header>
+            <div className="theme-parameter-color-list">
+              {containerSharedShellColorFields.slice(0, 2).map(renderColorFieldRow)}
+            </div>
+            {renderParameterRowsWithVarLabel(containerSharedShellAngleParameters)}
+            <div className="theme-parameter-color-list">
+              {containerSharedShellColorFields.slice(2).map(renderColorFieldRow)}
+            </div>
+            <div className="theme-parameter-text-list">
+              {containerSharedShellTextFields.map(renderTextFieldRow)}
+            </div>
+          </section>
+          <section className="settings-group theme-parameter-debug-group">
+            <header className="settings-group-head">
+              <span>形态/布局</span>
+            </header>
+            {renderParameterRowsWithVarLabel(containerSharedShellLayoutParameters)}
+          </section>
+        </>
+      }
+      containerHeaderExpanded={containerHeaderExpanded}
+      setContainerHeaderExpanded={setContainerHeaderExpanded}
+      containerHeaderContent={
+        <>
+          {renderContainerFrameSection(
+            CONTAINER_FRAME_SECTION_DEFINITIONS[0],
+            containerHeaderAppearanceExpanded,
+            setContainerHeaderAppearanceExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[0],
+            containerHeaderButtonsExpanded,
+            setContainerHeaderButtonsExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[1],
+            containerHeaderLogoExpanded,
+            setContainerHeaderLogoExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[2],
+            containerHeaderG1Expanded,
+            setContainerHeaderG1Expanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[3],
+            containerHeaderG2Expanded,
+            setContainerHeaderG2Expanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[4],
+            containerHeaderGDebugExpanded,
+            setContainerHeaderGDebugExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            HEADER_DEBUG_SUBSECTIONS[5],
+            containerHeaderG3Expanded,
+            setContainerHeaderG3Expanded,
+          )}
+        </>
+      }
+      containerSidebarExpanded={containerSidebarExpanded}
+      setContainerSidebarExpanded={setContainerSidebarExpanded}
+      containerSidebarContent={
+        <>
+          {renderContainerFrameSection(
+            CONTAINER_FRAME_SECTION_DEFINITIONS[1],
+            containerSidebarAppearanceExpanded,
+            setContainerSidebarAppearanceExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
+            containerSidebarHeaderExpanded,
+            setContainerSidebarHeaderExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1],
+            containerSidebarHeaderTitleExpanded,
+            setContainerSidebarHeaderTitleExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2],
+            containerSidebarHeaderActionsExpanded,
+            setContainerSidebarHeaderActionsExpanded,
+          )}
+          <details
+            className="settings-collapsible"
+            open={containerSidebarMainExpanded}
+            onToggle={(event) =>
+              setContainerSidebarMainExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>{t("ui.themeParameter.containerLayer.sectionSidebarMain")}</summary>
+            <div className="settings-collapsible-content">
+              {renderSidebarMainDebugSections()}
+            </div>
+          </details>
+        </>
+      }
+      containerMainExpanded={containerMainExpanded}
+      setContainerMainExpanded={setContainerMainExpanded}
+      containerMainContent={
+        <>
+          {renderContainerFrameSection(
+            CONTAINER_FRAME_SECTION_DEFINITIONS[2],
+            containerMainAppearanceExpanded,
+            setContainerMainAppearanceExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            MAIN_HEADER_DEBUG_SUBSECTIONS[0],
+            containerMainHeaderExpanded,
+            setContainerMainHeaderExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            MAIN_HEADER_DEBUG_SUBSECTIONS[1],
+            containerMainHeaderButtonsExpanded,
+            setContainerMainHeaderButtonsExpanded,
+          )}
+          <details
+            className="settings-collapsible"
+            open={containerMainWorkspaceExpanded}
+            onToggle={(event) =>
+              setContainerMainWorkspaceExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>{t("ui.themeParameter.containerLayer.sectionMainWorkspace")}</summary>
+            <div className="settings-collapsible-content">
+              <section className="settings-group theme-parameter-debug-group">
+                <header className="settings-group-head theme-parameter-subgroup-head">
+                  <span>工作区 / 图片网格</span>
+                  <span className="theme-parameter-subgroup-tag">
+                    fg-main-content-image-grid
+                  </span>
+                </header>
+                <div className="theme-parameter-color-list">
+                  {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(renderColorFieldRow)}
+                </div>
+              </section>
+            </div>
+          </details>
+          <details
+            className="settings-collapsible"
+            open={containerMainImageNameListExpanded}
+            onToggle={(event) =>
+              setContainerMainImageNameListExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>
+              {t("ui.themeParameter.containerLayer.sectionMainImageNameList")}
+            </summary>
+            <div className="settings-collapsible-content">
+              {renderMainImageNameListDebugSections()}
+            </div>
+          </details>
+        </>
+      }
+      containerMetadataExpanded={containerMetadataExpanded}
+      setContainerMetadataExpanded={setContainerMetadataExpanded}
+      containerMetadataContent={
+        <>
+          {renderContainerFrameSection(
+            CONTAINER_FRAME_SECTION_DEFINITIONS[3],
+            containerMetadataAppearanceExpanded,
+            setContainerMetadataAppearanceExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            METADATA_HEADER_DEBUG_SUBSECTIONS[0],
+            containerMetadataHeaderExpanded,
+            setContainerMetadataHeaderExpanded,
+          )}
+          {renderContainerDebugSubsection(
+            METADATA_HEADER_DEBUG_SUBSECTIONS[1],
+            containerMetadataHeaderButtonsExpanded,
+            setContainerMetadataHeaderButtonsExpanded,
+          )}
+        </>
+      }
+    />
+  );
+
+  const largePanelLayerPage = (
+    <ThemeParameterLargePanelLayerPage
+      t={t}
+      activePreviewMode={activePreviewMode}
+      togglePreviewMode={togglePreviewMode}
+      rootExpanded={largePanelRootExpanded}
+      setRootExpanded={setLargePanelRootExpanded}
+      rootSection={renderLargePanelSectionRows({
+        colorFields: LARGE_PANEL_ROOT_COLOR_FIELDS,
+        inlineParameters: largePanelRootInlineParameters,
+        textFields: LARGE_PANEL_ROOT_TEXT_FIELDS,
+        parameters: largePanelRootParameters,
+      })}
+      sharedExpanded={largePanelSharedSectionExpanded}
+      setSharedExpanded={setLargePanelSharedSectionExpanded}
+      sharedSection={renderLargePanelSectionRows({
+        colorFields: LARGE_PANEL_SHARED_COLOR_FIELDS,
+        inlineParameters: largePanelSharedInlineParameters,
+        parameters: largePanelSharedParameters,
+      })}
+      bodySections={LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
+        const expanded =
+          section.id === "head"
+            ? largePanelHeadExpanded
+            : section.id === "side"
+              ? largePanelSideExpanded
+              : largePanelMainExpanded;
+        const setExpanded =
+          section.id === "head"
+            ? setLargePanelHeadExpanded
+            : section.id === "side"
+              ? setLargePanelSideExpanded
+              : setLargePanelMainExpanded;
+        return (
+          <details
+            key={section.id}
+            className="settings-collapsible"
+            open={expanded}
+            onToggle={(event) =>
+              setExpanded((event.currentTarget as HTMLDetailsElement).open)
+            }
+          >
+            <summary>{t(section.summaryKey)}</summary>
+            <div className="settings-collapsible-content">
+              {renderLargePanelSectionRows({
+                colorFields: section.colorFields,
+                inlineParameters: pickLargePanelParameters(section.inlineParameterIds),
+                parameters: pickLargePanelParameters(section.parameterIds),
+              })}
+            </div>
+          </details>
+        );
+      })}
+      internalSection={
+        <details
+          className="settings-collapsible"
+          open={largePanelInternalExpanded}
+          onToggle={(event) =>
+            setLargePanelInternalExpanded(
+              (event.currentTarget as HTMLDetailsElement).open,
+            )
+          }
+        >
+          <summary>{t("ui.themeParameter.largePanelLayer.sectionInternal")}</summary>
+          <div className="settings-collapsible-content">
+            {renderLargePanelInternalSections()}
+          </div>
+        </details>
+      }
+    />
+  );
+
+  const smallPanelLayerPage = (
+    <ThemeParameterSmallPanelLayerPage
+      t={t}
+      activePreviewMode={activePreviewMode}
+      togglePreviewMode={togglePreviewMode}
+      rootExpanded={smallPanelRootExpanded}
+      setRootExpanded={setSmallPanelRootExpanded}
+      rootSection={renderLargePanelSectionRows({
+        colorFields: SMALL_PANEL_ROOT_COLOR_FIELDS,
+        textFields: SMALL_PANEL_ROOT_TEXT_FIELDS,
+        parameters: smallPanelRootParameters,
+      })}
+      bodySections={SMALL_PANEL_SECTION_DEFINITIONS.map((section) => (
+        <details
+          key={section.id}
+          className="settings-collapsible"
+          open={smallPanelSectionsExpanded[section.id]}
+          onToggle={(event) =>
+            setSmallPanelSectionExpanded(
+              section.id,
+              (event.currentTarget as HTMLDetailsElement).open,
+            )
+          }
+        >
+          <summary>{t(section.summaryKey)}</summary>
+          <div className="settings-collapsible-content">
+            {renderSmallPanelSectionGroups(section.groups)}
+          </div>
+        </details>
+      ))}
+    />
+  );
+
+  const commonControlsPage = (
+    <ThemeParameterCommonControlsPage
+      t={t}
+      content={renderCommonControlSections()}
+    />
+  );
+
+  const buttonStatesPage = (
+    <ThemeParameterButtonStatesPage
+      t={t}
+      content={
+        <section className="settings-group">
+          <p className="theme-parameter-note-intro">
+            当前页基于 4.0 按钮层（core/variant/slot）展示 side 分页按钮。
+            每个状态都对应独立的调节项和展示项（border/bg/text）。
+            颜色字段直接映射
+            <code>
+              --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-*
+            </code>
+            ，修改后立即作用到分页按钮样式。
+          </p>
+          <ul className="theme-parameter-note-list">
+            {buttonTemplateStates.map((item) => (
+              <li key={item.state}>
+                <div className="theme-parameter-note-title-row">
+                  <strong>{item.state}</strong>
+                  <div className="theme-parameter-state-demo">
+                    <button
+                      aria-pressed={item.key === "pressed"}
+                      className={[
+                        "theme-parameter-side-btn",
+                        item.key === "selected" ? "is-active" : "",
+                        item.key === "hover" ? "force-hover" : "",
+                        item.key === "active" ? "force-active" : "",
+                        item.key === "pending" ? "is-pending" : "",
+                        item.key === "close-hover" ? "danger force-hover" : "",
+                      ]
+                        .join(" ")
+                        .trim()}
+                      type="button"
+                      disabled={item.key === "disabled"}
+                    >
+                      {item.demoLabel}
+                    </button>
+                  </div>
+                </div>
+                <div className="theme-parameter-state-field-list">
+                  {resolveButtonStateFields(item.key).map(renderColorFieldRow)}
+                </div>
+                <span>样式来源：{item.styleSource}</span>
+                <span>交互事件：{item.interaction}</span>
+                <span>示例位置：{item.usage}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      }
+    />
+  );
+
   return (
     <div className="mpx-large-panel-shell settings-shell theme-parameter-shell">
-      <aside className="mpx-large-panel-side settings-side theme-parameter-side">
-        {pages.map((page) => (
-          <button
-            key={page.id}
-            type="button"
-            className={
-              activePage === page.id
-                ? "theme-parameter-side-btn is-active"
-                : "theme-parameter-side-btn"
-            }
-            onClick={() => setActivePage(page.id)}
-          >
-            {t(page.labelKey)}
-          </button>
-        ))}
-      </aside>
+      <ThemeParameterPageSidebar
+        t={t}
+        pages={pages}
+        activePage={activePage}
+        setActivePage={setActivePage}
+      />
 
       <main
         ref={setMainScrollElement}
         className="mpx-large-panel-main settings-main mpx-scroll-area theme-parameter-main"
         onScroll={onMainScroll}
       >
-        {activePage === "parameters" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.parameters")}</span>
-              </header>
-              <label
-                className="theme-parameter-search"
-                htmlFor="theme-parameter-search-input"
-              >
-                <span>{t("ui.themeParameter.searchLabel")}</span>
-                <input
-                  id="theme-parameter-search-input"
-                  type="text"
-                  value={searchText}
-                  placeholder={t("ui.themeParameter.searchPlaceholder")}
-                  onChange={(event) => setSearchText(event.target.value)}
-                />
-              </label>
-            </section>
-
-            <details
-              className="settings-collapsible"
-              open={commonExpanded}
-              onToggle={(event) =>
-                setCommonExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>{t("ui.themeParameter.sectionCommon")}</summary>
-              <div className="settings-collapsible-content">
-                {renderParameterRows(filteredCommonParameters)}
-                {filteredCommonParameters.length === 0 ? (
-                  <p className="settings-placeholder">
-                    {t("ui.common.noResults")}
-                  </p>
-                ) : null}
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={styleExpanded}
-              onToggle={(event) =>
-                setStyleExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.sectionStyle", { styleId })}
-              </summary>
-              <div className="settings-collapsible-content">
-                {styleParameters.length === 0 ? (
-                  <p className="settings-placeholder">
-                    {t("ui.themeParameter.noStyleSpecific")}
-                  </p>
-                ) : (
-                  renderParameterRows(filteredStyleParameters)
-                )}
-                {styleParameters.length > 0 &&
-                filteredStyleParameters.length === 0 ? (
-                  <p className="settings-placeholder">
-                    {t("ui.common.noResults")}
-                  </p>
-                ) : null}
-              </div>
-            </details>
-          </section>
-        ) : null}
-
-        {activePage === "snapshot" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.snapshot")}</span>
-              </header>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={snapshotIncludeComputedValues}
-                  onChange={(event) => {
-                    setSnapshotIncludeComputedValues(event.target.checked);
-                  }}
-                />
-                <span>
-                  {t("ui.themeParameter.snapshotIncludeComputedValues")}
-                </span>
-              </label>
-              <div className="theme-parameter-actions">
-                <button type="button" onClick={exportSnapshotJson}>
-                  {t("ui.themeParameter.exportJson")}
-                </button>
-                <button type="button" onClick={downloadSnapshotJson}>
-                  {t("ui.themeParameter.downloadJsonFile")}
-                </button>
-                <button type="button" onClick={openSnapshotFilePicker}>
-                  {t("ui.themeParameter.loadJsonFile")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void copySnapshotJson();
-                  }}
-                >
-                  {t("ui.themeParameter.copyJson")}
-                </button>
-                <button type="button" onClick={importSnapshotJson}>
-                  {t("ui.themeParameter.importJson")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSnapshotJson("");
-                    setSnapshotMessage("");
-                  }}
-                >
-                  {t("ui.themeParameter.clearJson")}
-                </button>
-              </div>
-              <input
-                ref={snapshotFileInputRef}
-                className="theme-parameter-file-input"
-                type="file"
-                accept="application/json,.json"
-                onChange={(event) => {
-                  void loadSnapshotFile(event);
-                }}
-              />
-              <label
-                className="theme-parameter-json-field"
-                htmlFor="theme-parameter-json-input"
-              >
-                <span>{t("ui.themeParameter.snapshotLabel")}</span>
-                <textarea
-                  id="theme-parameter-json-input"
-                  value={snapshotJson}
-                  placeholder={t("ui.themeParameter.snapshotPlaceholder")}
-                  onChange={(event) => setSnapshotJson(event.target.value)}
-                />
-              </label>
-              {snapshotMessage ? (
-                <p className="settings-placeholder">{snapshotMessage}</p>
-              ) : null}
-            </section>
-          </section>
-        ) : null}
-
-        {activePage === "containerLayer" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.containerLayer")}</span>
-              </header>
-              <div className="theme-parameter-debug-preview-actions">
-                <button
-                  type="button"
-                  className={
-                    activePreviewMode === "bg-only"
-                      ? "theme-parameter-debug-preview-btn is-active"
-                      : "theme-parameter-debug-preview-btn"
-                  }
-                  onClick={() => togglePreviewMode("bg-only")}
-                >
-                  {t("ui.themeParameter.preview.bgOnly")}
-                </button>
-                <button
-                  type="button"
-                  className={
-                    activePreviewMode === "bg-plus-container"
-                      ? "theme-parameter-debug-preview-btn is-active"
-                      : "theme-parameter-debug-preview-btn"
-                  }
-                  onClick={() => togglePreviewMode("bg-plus-container")}
-                >
-                  {t("ui.themeParameter.preview.bgPlusContainer")}
-                </button>
-              </div>
-            </section>
-
-            <details
-              className="settings-collapsible"
-              open={containerBackgroundExpanded}
-              onToggle={(event) =>
-                setContainerBackgroundExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionBackground")}
-              </summary>
-              <div className="settings-collapsible-content">
-                <div className="theme-parameter-text-list">
-                  {CONTAINER_BACKGROUND_TEXT_FIELDS.map(renderTextFieldRow)}
-                </div>
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerSharedShellExpanded}
-              onToggle={(event) =>
-                setContainerSharedShellExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionSharedShell")}
-              </summary>
-              <div className="settings-collapsible-content">
-                <section className="settings-group theme-parameter-debug-group">
-                  <header className="settings-group-head">
-                    <span>颜色</span>
-                  </header>
-                  <div className="theme-parameter-color-list">
-                    {containerSharedShellColorFields
-                      .slice(0, 2)
-                      .map(renderColorFieldRow)}
-                  </div>
-                  {renderParameterRowsWithVarLabel(
-                    containerSharedShellAngleParameters,
-                  )}
-                  <div className="theme-parameter-color-list">
-                    {containerSharedShellColorFields
-                      .slice(2)
-                      .map(renderColorFieldRow)}
-                  </div>
-                  <div className="theme-parameter-text-list">
-                    {containerSharedShellTextFields.map(renderTextFieldRow)}
-                  </div>
-                </section>
-                <section className="settings-group theme-parameter-debug-group">
-                  <header className="settings-group-head">
-                    <span>形态/布局</span>
-                  </header>
-                  {renderParameterRowsWithVarLabel(
-                    containerSharedShellLayoutParameters,
-                  )}
-                </section>
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerHeaderExpanded}
-              onToggle={(event) =>
-                setContainerHeaderExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionHeader")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderContainerFrameSection(
-                  CONTAINER_FRAME_SECTION_DEFINITIONS[0],
-                  containerHeaderAppearanceExpanded,
-                  setContainerHeaderAppearanceExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[0],
-                  containerHeaderButtonsExpanded,
-                  setContainerHeaderButtonsExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[1],
-                  containerHeaderLogoExpanded,
-                  setContainerHeaderLogoExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[2],
-                  containerHeaderG1Expanded,
-                  setContainerHeaderG1Expanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[3],
-                  containerHeaderG2Expanded,
-                  setContainerHeaderG2Expanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[4],
-                  containerHeaderGDebugExpanded,
-                  setContainerHeaderGDebugExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  HEADER_DEBUG_SUBSECTIONS[5],
-                  containerHeaderG3Expanded,
-                  setContainerHeaderG3Expanded,
-                )}
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerSidebarExpanded}
-              onToggle={(event) =>
-                setContainerSidebarExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionSidebar")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderContainerFrameSection(
-                  CONTAINER_FRAME_SECTION_DEFINITIONS[1],
-                  containerSidebarAppearanceExpanded,
-                  setContainerSidebarAppearanceExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
-                  containerSidebarHeaderExpanded,
-                  setContainerSidebarHeaderExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1],
-                  containerSidebarHeaderTitleExpanded,
-                  setContainerSidebarHeaderTitleExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2],
-                  containerSidebarHeaderActionsExpanded,
-                  setContainerSidebarHeaderActionsExpanded,
-                )}
-                <details
-                  className="settings-collapsible"
-                  open={containerSidebarMainExpanded}
-                  onToggle={(event) =>
-                    setContainerSidebarMainExpanded(
-                      (event.currentTarget as HTMLDetailsElement).open,
-                    )
-                  }
-                >
-                  <summary>
-                    {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
-                  </summary>
-                  <div className="settings-collapsible-content">
-                    {renderSidebarMainDebugSections()}
-                  </div>
-                </details>
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerMainExpanded}
-              onToggle={(event) =>
-                setContainerMainExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionMain")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderContainerFrameSection(
-                  CONTAINER_FRAME_SECTION_DEFINITIONS[2],
-                  containerMainAppearanceExpanded,
-                  setContainerMainAppearanceExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  MAIN_HEADER_DEBUG_SUBSECTIONS[0],
-                  containerMainHeaderExpanded,
-                  setContainerMainHeaderExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  MAIN_HEADER_DEBUG_SUBSECTIONS[1],
-                  containerMainHeaderButtonsExpanded,
-                  setContainerMainHeaderButtonsExpanded,
-                )}
-                <details
-                  className="settings-collapsible"
-                  open={containerMainWorkspaceExpanded}
-                  onToggle={(event) =>
-                    setContainerMainWorkspaceExpanded(
-                      (event.currentTarget as HTMLDetailsElement).open,
-                    )
-                  }
-                >
-                  <summary>
-                    {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
-                  </summary>
-                  <div className="settings-collapsible-content">
-                    <section className="settings-group theme-parameter-debug-group">
-                      <header className="settings-group-head theme-parameter-subgroup-head">
-                        <span>工作区 / 图片网格</span>
-                        <span className="theme-parameter-subgroup-tag">
-                          fg-main-content-image-grid
-                        </span>
-                      </header>
-                      <div className="theme-parameter-color-list">
-                        {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
-                          renderColorFieldRow,
-                        )}
-                      </div>
-                    </section>
-                  </div>
-                </details>
-                <details
-                  className="settings-collapsible"
-                  open={containerMainImageNameListExpanded}
-                  onToggle={(event) =>
-                    setContainerMainImageNameListExpanded(
-                      (event.currentTarget as HTMLDetailsElement).open,
-                    )
-                  }
-                >
-                  <summary>
-                    {t(
-                      "ui.themeParameter.containerLayer.sectionMainImageNameList",
-                    )}
-                  </summary>
-                  <div className="settings-collapsible-content">
-                    {renderMainImageNameListDebugSections()}
-                  </div>
-                </details>
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerMetadataExpanded}
-              onToggle={(event) =>
-                setContainerMetadataExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionMetadata")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderContainerFrameSection(
-                  CONTAINER_FRAME_SECTION_DEFINITIONS[3],
-                  containerMetadataAppearanceExpanded,
-                  setContainerMetadataAppearanceExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  METADATA_HEADER_DEBUG_SUBSECTIONS[0],
-                  containerMetadataHeaderExpanded,
-                  setContainerMetadataHeaderExpanded,
-                )}
-                {renderContainerDebugSubsection(
-                  METADATA_HEADER_DEBUG_SUBSECTIONS[1],
-                  containerMetadataHeaderButtonsExpanded,
-                  setContainerMetadataHeaderButtonsExpanded,
-                )}
-              </div>
-            </details>
-
-          </section>
-        ) : null}
-
-        {activePage === "largePanelLayer" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.largePanelLayer")}</span>
-              </header>
-              <div className="theme-parameter-debug-preview-actions">
-                <button
-                  type="button"
-                  className={
-                    activePreviewMode === "bg-plus-large-panel"
-                      ? "theme-parameter-debug-preview-btn is-active"
-                      : "theme-parameter-debug-preview-btn"
-                  }
-                  onClick={() => togglePreviewMode("bg-plus-large-panel")}
-                >
-                  {t("ui.themeParameter.preview.bgPlusLargePanel")}
-                </button>
-              </div>
-            </section>
-            <details
-              className="settings-collapsible"
-              open={largePanelRootExpanded}
-              onToggle={(event) =>
-                setLargePanelRootExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.largePanelLayer.sectionRoot")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderLargePanelSectionRows({
-                  colorFields: LARGE_PANEL_ROOT_COLOR_FIELDS,
-                  inlineParameters: largePanelRootInlineParameters,
-                  textFields: LARGE_PANEL_ROOT_TEXT_FIELDS,
-                  parameters: largePanelRootParameters,
-                })}
-              </div>
-            </details>
-            <details
-              className="settings-collapsible"
-              open={largePanelSharedSectionExpanded}
-              onToggle={(event) =>
-                setLargePanelSharedSectionExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.largePanelLayer.sectionShared")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderLargePanelSectionRows({
-                  colorFields: LARGE_PANEL_SHARED_COLOR_FIELDS,
-                  inlineParameters: largePanelSharedInlineParameters,
-                  parameters: largePanelSharedParameters,
-                })}
-              </div>
-            </details>
-            {LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
-              const expanded =
-                section.id === "head"
-                  ? largePanelHeadExpanded
-                  : section.id === "side"
-                    ? largePanelSideExpanded
-                    : largePanelMainExpanded;
-              const setExpanded =
-                section.id === "head"
-                  ? setLargePanelHeadExpanded
-                  : section.id === "side"
-                    ? setLargePanelSideExpanded
-                    : setLargePanelMainExpanded;
-              return (
-                <details
-                  key={section.id}
-                  className="settings-collapsible"
-                  open={expanded}
-                  onToggle={(event) =>
-                    setExpanded(
-                      (event.currentTarget as HTMLDetailsElement).open,
-                    )
-                  }
-                >
-                  <summary>{t(section.summaryKey)}</summary>
-                  <div className="settings-collapsible-content">
-                    {renderLargePanelSectionRows({
-                      colorFields: section.colorFields,
-                      inlineParameters: pickLargePanelParameters(
-                        section.inlineParameterIds,
-                      ),
-                      parameters: pickLargePanelParameters(
-                        section.parameterIds,
-                      ),
-                    })}
-                  </div>
-                </details>
-              );
-            })}
-            <details
-              className="settings-collapsible"
-              open={largePanelInternalExpanded}
-              onToggle={(event) =>
-                setLargePanelInternalExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.largePanelLayer.sectionInternal")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderLargePanelInternalSections()}
-              </div>
-            </details>
-          </section>
-        ) : null}
-
-        {activePage === "smallPanelLayer" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.smallPanelLayer")}</span>
-              </header>
-              <div className="theme-parameter-debug-preview-actions">
-                <button
-                  type="button"
-                  className={
-                    activePreviewMode === "bg-plus-small-panel"
-                      ? "theme-parameter-debug-preview-btn is-active"
-                      : "theme-parameter-debug-preview-btn"
-                  }
-                  onClick={() => togglePreviewMode("bg-plus-small-panel")}
-                >
-                  {t("ui.themeParameter.preview.bgPlusSmallPanel")}
-                </button>
-              </div>
-            </section>
-            <details
-              className="settings-collapsible"
-              open={smallPanelRootExpanded}
-              onToggle={(event) =>
-                setSmallPanelRootExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>{t("ui.themeParameter.smallPanelLayer.sectionRoot")}</summary>
-              <div className="settings-collapsible-content">
-                {renderLargePanelSectionRows({
-                  colorFields: SMALL_PANEL_ROOT_COLOR_FIELDS,
-                  textFields: SMALL_PANEL_ROOT_TEXT_FIELDS,
-                  parameters: smallPanelRootParameters,
-                })}
-              </div>
-            </details>
-            {SMALL_PANEL_SECTION_DEFINITIONS.map((section) => (
-              <details
-                key={section.id}
-                className="settings-collapsible"
-                open={smallPanelSectionsExpanded[section.id]}
-                onToggle={(event) =>
-                  setSmallPanelSectionExpanded(
-                    section.id,
-                    (event.currentTarget as HTMLDetailsElement).open,
-                  )
-                }
-              >
-                <summary>{t(section.summaryKey)}</summary>
-                <div className="settings-collapsible-content">
-                  {renderSmallPanelSectionGroups(section.groups)}
-                </div>
-              </details>
-            ))}
-          </section>
-        ) : null}
-
-        {activePage === "commonControls" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.commonControls")}</span>
-              </header>
-            </section>
-            {renderCommonControlSections()}
-          </section>
-        ) : null}
-
-        {activePage === "buttonStates" ? (
-          <section className="settings-block theme-parameter-block">
-            <section className="settings-group">
-              <header className="settings-group-head">
-                <span>{t("ui.themeParameter.page.buttonStates")}</span>
-              </header>
-              <p className="theme-parameter-note-intro">
-                当前页基于 4.0 按钮层（core/variant/slot）展示 side 分页按钮。
-                每个状态都对应独立的调节项和展示项（border/bg/text）。
-                颜色字段直接映射
-                <code>
-                  --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-*
-                </code>
-                ，修改后立即作用到分页按钮样式。
-              </p>
-              <ul className="theme-parameter-note-list">
-                {buttonTemplateStates.map((item) => (
-                  <li key={item.state}>
-                    <div className="theme-parameter-note-title-row">
-                      <strong>{item.state}</strong>
-                      <div className="theme-parameter-state-demo">
-                        <button
-                          aria-pressed={item.key === "pressed"}
-                          className={[
-                            "theme-parameter-side-btn",
-                            item.key === "selected" ? "is-active" : "",
-                            item.key === "hover" ? "force-hover" : "",
-                            item.key === "active" ? "force-active" : "",
-                            item.key === "pending" ? "is-pending" : "",
-                            item.key === "close-hover"
-                              ? "danger force-hover"
-                              : "",
-                          ]
-                            .join(" ")
-                            .trim()}
-                          type="button"
-                          disabled={item.key === "disabled"}
-                        >
-                          {item.demoLabel}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="theme-parameter-state-field-list">
-                      {resolveButtonStateFields(item.key).map(
-                        renderColorFieldRow,
-                      )}
-                    </div>
-                    <span>样式来源：{item.styleSource}</span>
-                    <span>交互事件：{item.interaction}</span>
-                    <span>示例位置：{item.usage}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </section>
-        ) : null}
+        {activePage === "parameters" ? parametersPage : null}
+        {activePage === "snapshot" ? snapshotPage : null}
+        {activePage === "containerLayer" ? containerLayerPage : null}
+        {activePage === "largePanelLayer" ? largePanelLayerPage : null}
+        {activePage === "smallPanelLayer" ? smallPanelLayerPage : null}
+        {activePage === "commonControls" ? commonControlsPage : null}
+        {activePage === "buttonStates" ? buttonStatesPage : null}
       </main>
     </div>
   );
