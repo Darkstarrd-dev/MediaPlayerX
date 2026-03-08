@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type SetStateAction,
 } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
@@ -13,13 +12,9 @@ import { useDraggablePanel } from "../useDraggablePanel";
 import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
-import type {
-  LargePanelInternalSectionId,
-  SmallPanelSectionId,
-  ThemeParameterPageId,
-  ThemeParameterPreviewMode,
-} from "./ThemeParameterPanelMain";
+import type { ThemeParameterPreviewMode } from "./ThemeParameterPanelMain";
 import { includesSearch, readFileAsText } from "./themeParameterUtils";
+import { useThemeParameterUiSession } from "./useThemeParameterUiSession";
 import {
   COMMON_PARAMETERS,
   CONTAINER_FRAME_PARAMETERS,
@@ -36,10 +31,7 @@ import {
 import {
   clearContainerDebugSessionState,
   readContainerDebugSessionState,
-  readThemeParameterUiSessionState,
-  updateThemeParameterUiSessionState,
   writeContainerDebugSessionState,
-  writeThemeParameterUiSessionState,
 } from "./themeParameterPanelSessionState";
 
 const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
@@ -2171,13 +2163,6 @@ function migrateLegacySidebarMainSlots(root: HTMLElement): void {
   }
 }
 
-function resolveNextState<T>(action: SetStateAction<T>, previous: T): T {
-  if (typeof action === "function") {
-    return (action as (previousValue: T) => T)(previous);
-  }
-  return action;
-}
-
 function captureContainerDebugSessionState(root: HTMLElement): void {
   const nextColors: Record<string, string> = {};
   for (const field of CONTAINER_DEBUG_COLOR_FIELDS) {
@@ -2217,7 +2202,6 @@ function ThemeParameterPanel({
   onClose,
   onHide = () => {},
 }: ThemeParameterPanelProps) {
-  const initialUiSessionState = readThemeParameterUiSessionState();
   const { t } = useI18n();
   const styleGroup = resolveStyleGroup(styleId);
   const styleParameters =
@@ -2244,6 +2228,50 @@ function ThemeParameterPanel({
     () => new Map(parameters.map((parameter) => [parameter.id, parameter])),
     [parameters],
   );
+  const {
+    uiState,
+    restoreUiState,
+    persistUiState,
+    setActivePage,
+    setPageScrollTop,
+    setCommonExpanded,
+    setStyleExpanded,
+    setContainerBackgroundExpanded,
+    setContainerSharedShellExpanded,
+    setContainerHeaderExpanded,
+    setContainerHeaderAppearanceExpanded,
+    setContainerHeaderButtonsExpanded,
+    setContainerHeaderLogoExpanded,
+    setContainerHeaderG1Expanded,
+    setContainerHeaderG2Expanded,
+    setContainerHeaderGDebugExpanded,
+    setContainerHeaderG3Expanded,
+    setContainerSidebarExpanded,
+    setContainerSidebarAppearanceExpanded,
+    setContainerSidebarHeaderExpanded,
+    setContainerSidebarHeaderTitleExpanded,
+    setContainerSidebarHeaderActionsExpanded,
+    setContainerMainExpanded,
+    setContainerMainAppearanceExpanded,
+    setContainerMainHeaderExpanded,
+    setContainerMainHeaderButtonsExpanded,
+    setContainerMainWorkspaceExpanded,
+    setContainerMetadataExpanded,
+    setContainerMetadataAppearanceExpanded,
+    setContainerMetadataHeaderExpanded,
+    setContainerMetadataHeaderButtonsExpanded,
+    setContainerSidebarMainExpanded,
+    setContainerMainImageNameListExpanded,
+    setLargePanelRootExpanded,
+    setLargePanelSharedSectionExpanded,
+    setLargePanelHeadExpanded,
+    setLargePanelSideExpanded,
+    setLargePanelMainExpanded,
+    setLargePanelInternalExpanded,
+    setLargePanelInternalSectionExpanded,
+    setSmallPanelRootExpanded,
+    setSmallPanelSectionExpanded,
+  } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const syncedContainerRadiusOverridesRef = useRef<Set<string>>(new Set());
   const syncedContainerFillAngleOverridesRef = useRef<Set<string>>(new Set());
@@ -2253,126 +2281,9 @@ function ThemeParameterPanel({
   const syncedLargePanelSectionBorderWidthOverridesRef = useRef<Set<string>>(
     new Set(),
   );
-  const [activePage, setActivePageState] = useState<ThemeParameterPageId>(
-    initialUiSessionState.activePage,
-  );
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
-  const [commonExpanded, setCommonExpandedState] = useState(
-    initialUiSessionState.commonExpanded,
-  );
-  const [styleExpanded, setStyleExpandedState] = useState(
-    initialUiSessionState.styleExpanded,
-  );
-  const [containerBackgroundExpanded, setContainerBackgroundExpandedState] =
-    useState(initialUiSessionState.containerBackgroundExpanded);
-  const [containerSharedShellExpanded, setContainerSharedShellExpandedState] =
-    useState(initialUiSessionState.containerSharedShellExpanded);
-  const [containerHeaderExpanded, setContainerHeaderExpandedState] = useState(
-    initialUiSessionState.containerHeaderExpanded,
-  );
-  const [
-    containerHeaderAppearanceExpanded,
-    setContainerHeaderAppearanceExpandedState,
-  ] = useState(initialUiSessionState.containerHeaderAppearanceExpanded);
-  const [
-    containerHeaderButtonsExpanded,
-    setContainerHeaderButtonsExpandedState,
-  ] = useState(initialUiSessionState.containerHeaderButtonsExpanded);
-  const [containerHeaderLogoExpanded, setContainerHeaderLogoExpandedState] =
-    useState(initialUiSessionState.containerHeaderLogoExpanded);
-  const [containerHeaderG1Expanded, setContainerHeaderG1ExpandedState] =
-    useState(initialUiSessionState.containerHeaderG1Expanded);
-  const [containerHeaderG2Expanded, setContainerHeaderG2ExpandedState] =
-    useState(initialUiSessionState.containerHeaderG2Expanded);
-  const [containerHeaderGDebugExpanded, setContainerHeaderGDebugExpandedState] =
-    useState(initialUiSessionState.containerHeaderGDebugExpanded);
-  const [containerHeaderG3Expanded, setContainerHeaderG3ExpandedState] =
-    useState(initialUiSessionState.containerHeaderG3Expanded);
-  const [containerSidebarExpanded, setContainerSidebarExpandedState] = useState(
-    initialUiSessionState.containerSidebarExpanded,
-  );
-  const [
-    containerSidebarAppearanceExpanded,
-    setContainerSidebarAppearanceExpandedState,
-  ] = useState(initialUiSessionState.containerSidebarAppearanceExpanded);
-  const [
-    containerSidebarHeaderExpanded,
-    setContainerSidebarHeaderExpandedState,
-  ] = useState(initialUiSessionState.containerSidebarHeaderExpanded);
-  const [
-    containerSidebarHeaderTitleExpanded,
-    setContainerSidebarHeaderTitleExpandedState,
-  ] = useState(initialUiSessionState.containerSidebarHeaderTitleExpanded);
-  const [
-    containerSidebarHeaderActionsExpanded,
-    setContainerSidebarHeaderActionsExpandedState,
-  ] = useState(initialUiSessionState.containerSidebarHeaderActionsExpanded);
-  const [containerMainExpanded, setContainerMainExpandedState] = useState(
-    initialUiSessionState.containerMainExpanded,
-  );
-  const [
-    containerMainAppearanceExpanded,
-    setContainerMainAppearanceExpandedState,
-  ] = useState(initialUiSessionState.containerMainAppearanceExpanded);
-  const [containerMainHeaderExpanded, setContainerMainHeaderExpandedState] =
-    useState(initialUiSessionState.containerMainHeaderExpanded);
-  const [
-    containerMainHeaderButtonsExpanded,
-    setContainerMainHeaderButtonsExpandedState,
-  ] = useState(initialUiSessionState.containerMainHeaderButtonsExpanded);
-  const [
-    containerMainWorkspaceExpanded,
-    setContainerMainWorkspaceExpandedState,
-  ] = useState(initialUiSessionState.containerMainWorkspaceExpanded);
-  const [containerMetadataExpanded, setContainerMetadataExpandedState] =
-    useState(initialUiSessionState.containerMetadataExpanded);
-  const [
-    containerMetadataAppearanceExpanded,
-    setContainerMetadataAppearanceExpandedState,
-  ] = useState(initialUiSessionState.containerMetadataAppearanceExpanded);
-  const [
-    containerMetadataHeaderExpanded,
-    setContainerMetadataHeaderExpandedState,
-  ] = useState(initialUiSessionState.containerMetadataHeaderExpanded);
-  const [
-    containerMetadataHeaderButtonsExpanded,
-    setContainerMetadataHeaderButtonsExpandedState,
-  ] = useState(initialUiSessionState.containerMetadataHeaderButtonsExpanded);
-  const [containerSidebarMainExpanded, setContainerSidebarMainExpandedState] =
-    useState(initialUiSessionState.containerSidebarMainExpanded);
-  const [
-    containerMainImageNameListExpanded,
-    setContainerMainImageNameListExpandedState,
-  ] = useState(initialUiSessionState.containerMainImageNameListExpanded);
-  const [largePanelRootExpanded, setLargePanelRootExpandedState] = useState(
-    initialUiSessionState.largePanelRootExpanded,
-  );
-  const [
-    largePanelSharedSectionExpanded,
-    setLargePanelSharedSectionExpandedState,
-  ] = useState(initialUiSessionState.largePanelSharedSectionExpanded);
-  const [largePanelHeadExpanded, setLargePanelHeadExpandedState] = useState(
-    initialUiSessionState.largePanelHeadExpanded,
-  );
-  const [largePanelSideExpanded, setLargePanelSideExpandedState] = useState(
-    initialUiSessionState.largePanelSideExpanded,
-  );
-  const [largePanelMainExpanded, setLargePanelMainExpandedState] = useState(
-    initialUiSessionState.largePanelMainExpanded,
-  );
-  const [largePanelInternalExpanded, setLargePanelInternalExpandedState] =
-    useState(initialUiSessionState.largePanelInternalExpanded);
-  const [
-    largePanelInternalSectionsExpanded,
-    setLargePanelInternalSectionsExpandedState,
-  ] = useState(initialUiSessionState.largePanelInternalSectionsExpanded);
-  const [smallPanelRootExpanded, setSmallPanelRootExpandedState] = useState(
-    initialUiSessionState.smallPanelRootExpanded,
-  );
-  const [smallPanelSectionsExpanded, setSmallPanelSectionsExpandedState] =
-    useState(initialUiSessionState.smallPanelSectionsExpanded);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -2385,404 +2296,46 @@ function ThemeParameterPanel({
   const wasOpenRef = useRef(false);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
 
-  const capturePageScrollTop = (page: ThemeParameterPageId) => {
-    const scrollTop = mainScrollElementRef.current?.scrollTop ?? 0;
-    const sessionState = readThemeParameterUiSessionState();
-    writeThemeParameterUiSessionState({
-      ...sessionState,
-      pageScrollTops: {
-        ...sessionState.pageScrollTops,
-        [page]: scrollTop,
-      },
-    });
-  };
-
-  const setActivePage = (action: SetStateAction<ThemeParameterPageId>) => {
-    setActivePageState((previous) => {
-      capturePageScrollTop(previous);
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ activePage: next });
-      return next;
-    });
-  };
-
-  const setCommonExpanded = (action: SetStateAction<boolean>) => {
-    setCommonExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ commonExpanded: next });
-      return next;
-    });
-  };
-
-  const setStyleExpanded = (action: SetStateAction<boolean>) => {
-    setStyleExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ styleExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerBackgroundExpanded = (action: SetStateAction<boolean>) => {
-    setContainerBackgroundExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerBackgroundExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerSharedShellExpanded = (action: SetStateAction<boolean>) => {
-    setContainerSharedShellExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSharedShellExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerHeaderExpanded = (action: SetStateAction<boolean>) => {
-    setContainerHeaderExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerHeaderExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerHeaderAppearanceExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerHeaderAppearanceExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerHeaderAppearanceExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerHeaderButtonsExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerHeaderButtonsExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerHeaderButtonsExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerHeaderLogoExpanded = (action: SetStateAction<boolean>) => {
-    setContainerHeaderLogoExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerHeaderLogoExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerHeaderG1Expanded = (action: SetStateAction<boolean>) => {
-    setContainerHeaderG1ExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerHeaderG1Expanded: next });
-      return next;
-    });
-  };
-
-  const setContainerHeaderG2Expanded = (action: SetStateAction<boolean>) => {
-    setContainerHeaderG2ExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerHeaderG2Expanded: next });
-      return next;
-    });
-  };
-
-  const setContainerHeaderGDebugExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerHeaderGDebugExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerHeaderGDebugExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerHeaderG3Expanded = (action: SetStateAction<boolean>) => {
-    setContainerHeaderG3ExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerHeaderG3Expanded: next });
-      return next;
-    });
-  };
-
-  const setContainerSidebarExpanded = (action: SetStateAction<boolean>) => {
-    setContainerSidebarExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerSidebarExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerSidebarAppearanceExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerSidebarAppearanceExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSidebarAppearanceExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerSidebarHeaderExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerSidebarHeaderExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSidebarHeaderExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerSidebarHeaderTitleExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerSidebarHeaderTitleExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSidebarHeaderTitleExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerSidebarHeaderActionsExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerSidebarHeaderActionsExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSidebarHeaderActionsExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMainExpanded = (action: SetStateAction<boolean>) => {
-    setContainerMainExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerMainExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerMainAppearanceExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMainAppearanceExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMainAppearanceExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMainHeaderExpanded = (action: SetStateAction<boolean>) => {
-    setContainerMainHeaderExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerMainHeaderExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerMainHeaderButtonsExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMainHeaderButtonsExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMainHeaderButtonsExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMainWorkspaceExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMainWorkspaceExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMainWorkspaceExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMetadataExpanded = (action: SetStateAction<boolean>) => {
-    setContainerMetadataExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ containerMetadataExpanded: next });
-      return next;
-    });
-  };
-
-  const setContainerMetadataAppearanceExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMetadataAppearanceExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMetadataAppearanceExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMetadataHeaderExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMetadataHeaderExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMetadataHeaderExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMetadataHeaderButtonsExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMetadataHeaderButtonsExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMetadataHeaderButtonsExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerSidebarMainExpanded = (action: SetStateAction<boolean>) => {
-    setContainerSidebarMainExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerSidebarMainExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setContainerMainImageNameListExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setContainerMainImageNameListExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        containerMainImageNameListExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setLargePanelRootExpanded = (action: SetStateAction<boolean>) => {
-    setLargePanelRootExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ largePanelRootExpanded: next });
-      return next;
-    });
-  };
-
-  const setLargePanelSharedSectionExpanded = (
-    action: SetStateAction<boolean>,
-  ) => {
-    setLargePanelSharedSectionExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({
-        largePanelSharedSectionExpanded: next,
-      });
-      return next;
-    });
-  };
-
-  const setLargePanelHeadExpanded = (action: SetStateAction<boolean>) => {
-    setLargePanelHeadExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ largePanelHeadExpanded: next });
-      return next;
-    });
-  };
-
-  const setLargePanelSideExpanded = (action: SetStateAction<boolean>) => {
-    setLargePanelSideExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ largePanelSideExpanded: next });
-      return next;
-    });
-  };
-
-  const setLargePanelMainExpanded = (action: SetStateAction<boolean>) => {
-    setLargePanelMainExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ largePanelMainExpanded: next });
-      return next;
-    });
-  };
-
-  const setLargePanelInternalExpanded = (action: SetStateAction<boolean>) => {
-    setLargePanelInternalExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ largePanelInternalExpanded: next });
-      return next;
-    });
-  };
-
-  const setLargePanelInternalSectionExpanded = (
-    sectionId: LargePanelInternalSectionId,
-    action: SetStateAction<boolean>,
-  ) => {
-    setLargePanelInternalSectionsExpandedState((previous) => {
-      const next = resolveNextState(action, previous[sectionId]);
-      const nextSections = {
-        ...previous,
-        [sectionId]: next,
-      };
-      updateThemeParameterUiSessionState({
-        largePanelInternalSectionsExpanded: nextSections,
-      });
-      return nextSections;
-    });
-  };
-
-  const setSmallPanelRootExpanded = (action: SetStateAction<boolean>) => {
-    setSmallPanelRootExpandedState((previous) => {
-      const next = resolveNextState(action, previous);
-      updateThemeParameterUiSessionState({ smallPanelRootExpanded: next });
-      return next;
-    });
-  };
-
-  const setSmallPanelSectionExpanded = (
-    sectionId: SmallPanelSectionId,
-    action: SetStateAction<boolean>,
-  ) => {
-    setSmallPanelSectionsExpandedState((previous) => {
-      const next = resolveNextState(action, previous[sectionId]);
-      const nextSections = {
-        ...previous,
-        [sectionId]: next,
-      };
-      updateThemeParameterUiSessionState({
-        smallPanelSectionsExpanded: nextSections,
-      });
-      return nextSections;
-    });
-  };
+  const {
+    activePage,
+    commonExpanded,
+    styleExpanded,
+    containerBackgroundExpanded,
+    containerSharedShellExpanded,
+    containerHeaderExpanded,
+    containerHeaderAppearanceExpanded,
+    containerHeaderButtonsExpanded,
+    containerHeaderLogoExpanded,
+    containerHeaderG1Expanded,
+    containerHeaderG2Expanded,
+    containerHeaderGDebugExpanded,
+    containerHeaderG3Expanded,
+    containerSidebarExpanded,
+    containerSidebarAppearanceExpanded,
+    containerSidebarHeaderExpanded,
+    containerSidebarHeaderTitleExpanded,
+    containerSidebarHeaderActionsExpanded,
+    containerMainExpanded,
+    containerMainAppearanceExpanded,
+    containerMainHeaderExpanded,
+    containerMainHeaderButtonsExpanded,
+    containerMainWorkspaceExpanded,
+    containerMetadataExpanded,
+    containerMetadataAppearanceExpanded,
+    containerMetadataHeaderExpanded,
+    containerMetadataHeaderButtonsExpanded,
+    containerSidebarMainExpanded,
+    containerMainImageNameListExpanded,
+    largePanelRootExpanded,
+    largePanelSharedSectionExpanded,
+    largePanelHeadExpanded,
+    largePanelSideExpanded,
+    largePanelMainExpanded,
+    largePanelInternalExpanded,
+    largePanelInternalSectionsExpanded,
+    smallPanelRootExpanded,
+    smallPanelSectionsExpanded,
+  } = uiState;
 
   const containerLayerParameters = useMemo(
     () => parameters.filter(isContainerLayerParameter),
@@ -2867,86 +2420,7 @@ function ThemeParameterPanel({
     applyContainerDebugSessionState(root);
     const initialValues = readParameterValues(parameters);
     const computed = getComputedStyle(root);
-    const uiSessionState = readThemeParameterUiSessionState();
-    setActivePageState(uiSessionState.activePage);
-    setCommonExpandedState(uiSessionState.commonExpanded);
-    setStyleExpandedState(uiSessionState.styleExpanded);
-    setContainerBackgroundExpandedState(
-      uiSessionState.containerBackgroundExpanded,
-    );
-    setContainerSharedShellExpandedState(
-      uiSessionState.containerSharedShellExpanded,
-    );
-    setContainerHeaderExpandedState(uiSessionState.containerHeaderExpanded);
-    setContainerHeaderAppearanceExpandedState(
-      uiSessionState.containerHeaderAppearanceExpanded,
-    );
-    setContainerHeaderButtonsExpandedState(
-      uiSessionState.containerHeaderButtonsExpanded,
-    );
-    setContainerHeaderLogoExpandedState(
-      uiSessionState.containerHeaderLogoExpanded,
-    );
-    setContainerHeaderG1ExpandedState(uiSessionState.containerHeaderG1Expanded);
-    setContainerHeaderG2ExpandedState(uiSessionState.containerHeaderG2Expanded);
-    setContainerHeaderGDebugExpandedState(
-      uiSessionState.containerHeaderGDebugExpanded,
-    );
-    setContainerHeaderG3ExpandedState(uiSessionState.containerHeaderG3Expanded);
-    setContainerSidebarExpandedState(uiSessionState.containerSidebarExpanded);
-    setContainerSidebarAppearanceExpandedState(
-      uiSessionState.containerSidebarAppearanceExpanded,
-    );
-    setContainerSidebarHeaderExpandedState(
-      uiSessionState.containerSidebarHeaderExpanded,
-    );
-    setContainerSidebarHeaderTitleExpandedState(
-      uiSessionState.containerSidebarHeaderTitleExpanded,
-    );
-    setContainerSidebarHeaderActionsExpandedState(
-      uiSessionState.containerSidebarHeaderActionsExpanded,
-    );
-    setContainerMainExpandedState(uiSessionState.containerMainExpanded);
-    setContainerMainAppearanceExpandedState(
-      uiSessionState.containerMainAppearanceExpanded,
-    );
-    setContainerMainHeaderExpandedState(
-      uiSessionState.containerMainHeaderExpanded,
-    );
-    setContainerMainHeaderButtonsExpandedState(
-      uiSessionState.containerMainHeaderButtonsExpanded,
-    );
-    setContainerMetadataExpandedState(uiSessionState.containerMetadataExpanded);
-    setContainerMetadataAppearanceExpandedState(
-      uiSessionState.containerMetadataAppearanceExpanded,
-    );
-    setContainerMetadataHeaderExpandedState(
-      uiSessionState.containerMetadataHeaderExpanded,
-    );
-    setContainerMetadataHeaderButtonsExpandedState(
-      uiSessionState.containerMetadataHeaderButtonsExpanded,
-    );
-    setContainerSidebarMainExpandedState(
-      uiSessionState.containerSidebarMainExpanded,
-    );
-    setContainerMainImageNameListExpandedState(
-      uiSessionState.containerMainImageNameListExpanded,
-    );
-    setLargePanelRootExpandedState(uiSessionState.largePanelRootExpanded);
-    setLargePanelSharedSectionExpandedState(
-      uiSessionState.largePanelSharedSectionExpanded,
-    );
-    setLargePanelHeadExpandedState(uiSessionState.largePanelHeadExpanded);
-    setLargePanelSideExpandedState(uiSessionState.largePanelSideExpanded);
-    setLargePanelMainExpandedState(uiSessionState.largePanelMainExpanded);
-    setLargePanelInternalExpandedState(
-      uiSessionState.largePanelInternalExpanded,
-    );
-    setLargePanelInternalSectionsExpandedState(
-      uiSessionState.largePanelInternalSectionsExpanded,
-    );
-    setSmallPanelRootExpandedState(uiSessionState.smallPanelRootExpanded);
-    setSmallPanelSectionsExpandedState(uiSessionState.smallPanelSectionsExpanded);
+    restoreUiState();
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -2979,12 +2453,11 @@ function ThemeParameterPanel({
     if (!open) {
       return;
     }
-    const scrollTop =
-      readThemeParameterUiSessionState().pageScrollTops[activePage] ?? 0;
+    const scrollTop = uiState.pageScrollTops[activePage] ?? 0;
     if (mainScrollElementRef.current) {
       mainScrollElementRef.current.scrollTop = scrollTop;
     }
-  }, [activePage, open]);
+  }, [activePage, open, uiState.pageScrollTops]);
 
   useEffect(() => {
     if (open) {
@@ -2993,97 +2466,18 @@ function ThemeParameterPanel({
     if (!wasOpenRef.current) {
       return;
     }
-    const sessionState = readThemeParameterUiSessionState();
     const scrollTop =
       mainScrollElementRef.current?.scrollTop ??
-      sessionState.pageScrollTops[activePage] ??
+      uiState.pageScrollTops[activePage] ??
       0;
     captureContainerDebugSessionState(document.documentElement);
-    writeThemeParameterUiSessionState({
-      activePage,
-      pageScrollTops: {
-        ...sessionState.pageScrollTops,
-        [activePage]: scrollTop,
-      },
-      containerBackgroundExpanded,
-      containerSharedShellExpanded,
-      containerHeaderExpanded,
-      containerHeaderAppearanceExpanded,
-      containerHeaderButtonsExpanded,
-      containerHeaderLogoExpanded,
-      containerHeaderG1Expanded,
-      containerHeaderG2Expanded,
-      containerHeaderGDebugExpanded,
-      containerHeaderG3Expanded,
-      containerSidebarExpanded,
-      containerSidebarAppearanceExpanded,
-      containerSidebarHeaderExpanded,
-      containerSidebarHeaderTitleExpanded,
-      containerSidebarHeaderActionsExpanded,
-      containerMainExpanded,
-      containerMainAppearanceExpanded,
-      containerMainHeaderExpanded,
-      containerMainHeaderButtonsExpanded,
-      containerMainWorkspaceExpanded,
-      containerMetadataExpanded,
-      containerMetadataAppearanceExpanded,
-      containerMetadataHeaderExpanded,
-      containerMetadataHeaderButtonsExpanded,
-      containerSidebarMainExpanded,
-      containerMainImageNameListExpanded,
-      largePanelRootExpanded,
-      largePanelSharedSectionExpanded,
-      largePanelHeadExpanded,
-      largePanelSideExpanded,
-      largePanelMainExpanded,
-      largePanelInternalExpanded,
-      largePanelInternalSectionsExpanded,
-      smallPanelRootExpanded,
-      smallPanelSectionsExpanded,
-      commonExpanded,
-      styleExpanded,
-    });
+    persistUiState(scrollTop);
     wasOpenRef.current = false;
   }, [
-    activePage,
-    commonExpanded,
-    containerBackgroundExpanded,
-    containerSharedShellExpanded,
-    containerHeaderExpanded,
-    containerHeaderAppearanceExpanded,
-    containerHeaderButtonsExpanded,
-    containerHeaderLogoExpanded,
-    containerHeaderG1Expanded,
-    containerHeaderG2Expanded,
-    containerHeaderGDebugExpanded,
-    containerHeaderG3Expanded,
-    containerSidebarExpanded,
-    containerSidebarAppearanceExpanded,
-    containerSidebarHeaderExpanded,
-    containerSidebarHeaderTitleExpanded,
-    containerSidebarHeaderActionsExpanded,
-    containerMainExpanded,
-    containerMainAppearanceExpanded,
-    containerMainHeaderExpanded,
-    containerMainHeaderButtonsExpanded,
-    containerMainWorkspaceExpanded,
-    containerMetadataExpanded,
-    containerMetadataAppearanceExpanded,
-    containerMetadataHeaderExpanded,
-    containerMetadataHeaderButtonsExpanded,
-    containerMainImageNameListExpanded,
-    containerSidebarMainExpanded,
-    largePanelRootExpanded,
-    largePanelSharedSectionExpanded,
-    largePanelHeadExpanded,
-    largePanelSideExpanded,
-    largePanelMainExpanded,
-    largePanelInternalExpanded,
-    largePanelInternalSectionsExpanded,
-    smallPanelRootExpanded,
-    smallPanelSectionsExpanded,
     open,
-    styleExpanded,
+    persistUiState,
+    uiState.pageScrollTops,
+    activePage,
   ]);
 
   useEffect(() => {
@@ -3967,7 +3361,9 @@ function ThemeParameterPanel({
           t={t}
           styleId={styleId}
           activePage={activePage}
-          setActivePage={setActivePage}
+          setActivePage={(action) => {
+            setActivePage(action, mainScrollElementRef.current?.scrollTop ?? 0);
+          }}
           activePreviewMode={activePreviewMode}
           togglePreviewMode={togglePreviewMode}
           searchText={searchText}
@@ -3989,7 +3385,7 @@ function ThemeParameterPanel({
             mainScrollElementRef.current = element;
           }}
           onMainScroll={() => {
-            capturePageScrollTop(activePage);
+            setPageScrollTop(activePage, mainScrollElementRef.current?.scrollTop ?? 0);
           }}
           commonExpanded={commonExpanded}
           setCommonExpanded={setCommonExpanded}

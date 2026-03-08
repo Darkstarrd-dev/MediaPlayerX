@@ -4,7 +4,7 @@ import type {
   ThemeParameterPageId,
 } from "./ThemeParameterPanelMain";
 
-interface ContainerDebugSessionState {
+export interface ContainerDebugSessionState {
   colors: Record<string, string>;
   texts: Record<string, string>;
 }
@@ -31,7 +31,7 @@ interface SmallPanelSectionsExpandedState {
   renameSingle: boolean;
 }
 
-interface ThemeParameterUISessionState {
+export interface ThemeParameterUISessionState {
   activePage: ThemeParameterPageId;
   pageScrollTops: Partial<Record<ThemeParameterPageId, number>>;
   containerBackgroundExpanded: boolean;
