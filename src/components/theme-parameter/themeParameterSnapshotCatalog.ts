@@ -654,6 +654,106 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ffffff",
   },
   {
+    id: "large-panel-settings-side-bg",
+    cssVar: "--mpx-settings-side-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-settings-side-text",
+    cssVar: "--mpx-settings-side-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-settings-side-item-bg",
+    cssVar: "--mpx-settings-side-item-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-settings-side-item-hover-bg",
+    cssVar: "--mpx-settings-side-item-hover-bg",
+    fallback: "rgba(46, 111, 127, 0.06)",
+  },
+  {
+    id: "large-panel-settings-side-item-active-bg",
+    cssVar: "--mpx-settings-side-item-active-bg",
+    fallback: "#e6f1f4",
+  },
+  {
+    id: "large-panel-settings-side-item-active-text",
+    cssVar: "--mpx-settings-side-item-active-text",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "large-panel-settings-side-border",
+    cssVar: "--mpx-settings-side-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-settings-main-bg",
+    cssVar: "--mpx-settings-main-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-settings-main-text",
+    cssVar: "--mpx-settings-main-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-settings-main-border",
+    cssVar: "--mpx-settings-main-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-settings-group-border",
+    cssVar: "--mpx-settings-group-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-settings-group-head-text",
+    cssVar: "--mpx-settings-group-head-text",
+    fallback: "#1a1814",
+  },
+  {
+    id: "large-panel-settings-group-head-bg",
+    cssVar: "--mpx-settings-group-head-bg",
+    fallback: "rgba(0, 0, 0, 0)",
+  },
+  {
+    id: "large-panel-settings-item-label-text",
+    cssVar: "--mpx-settings-item-label-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "large-panel-settings-item-value-text",
+    cssVar: "--mpx-settings-item-value-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "large-panel-settings-item-input-bg",
+    cssVar: "--mpx-settings-item-input-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "large-panel-settings-item-input-border",
+    cssVar: "--mpx-settings-item-input-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "large-panel-settings-danger-btn-bg",
+    cssVar: "--mpx-settings-danger-btn-bg",
+    fallback: "#fdeee8",
+  },
+  {
+    id: "large-panel-settings-danger-btn-border",
+    cssVar: "--mpx-settings-danger-btn-border",
+    fallback: "#d7a596",
+  },
+  {
+    id: "large-panel-settings-danger-btn-text",
+    cssVar: "--mpx-settings-danger-btn-text",
+    fallback: "#5f2a1e",
+  },
+  {
     id: "large-panel-import-task-error-border",
     cssVar: "--mpx-import-task-error-border",
     fallback: "#d7a596",

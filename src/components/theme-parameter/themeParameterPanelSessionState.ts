@@ -10,6 +10,7 @@ export interface ContainerDebugSessionState {
 }
 
 interface LargePanelInternalSectionsExpandedState {
+  settings: boolean;
   importTask: boolean;
   metadataFetch: boolean;
   metadataPreferenceRecord: boolean;
@@ -79,6 +80,7 @@ const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
 };
 
 const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSectionsExpandedState = {
+  settings: false,
   importTask: false,
   metadataFetch: false,
   metadataPreferenceRecord: false,

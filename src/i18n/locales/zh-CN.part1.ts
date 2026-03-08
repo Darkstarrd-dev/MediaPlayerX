@@ -390,6 +390,8 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 内部件",
+  "ui.themeParameter.largePanelLayer.sectionInternalSettings":
+    "3.10.0 Settings 内部件",
   "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
     "3.10.1 导入任务",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":

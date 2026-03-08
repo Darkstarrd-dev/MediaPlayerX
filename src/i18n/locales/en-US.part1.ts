@@ -415,6 +415,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
+  "ui.themeParameter.largePanelLayer.sectionInternalSettings":
+    "3.10.0 Settings internals",
   "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
     "3.10.1 Import task",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":

@@ -948,6 +948,30 @@
   --mpx-large-panel-main-align-items: flex-start;
   --mpx-large-panel-main-justify-content: flex-start;
 
+  /* Settings 内部件语义（3.10.0） */
+  --mpx-settings-side-bg: var(--mpx-large-panel-side-bg);
+  --mpx-settings-side-text: var(--mpx-text-1);
+  --mpx-settings-side-item-bg: transparent;
+  --mpx-settings-side-item-hover-bg: var(--mpx-bg-hover);
+  --mpx-settings-side-item-active-bg: var(--mpx-bg-selected);
+  --mpx-settings-side-item-active-text: var(--mpx-accent);
+  --mpx-settings-side-border: var(--mpx-large-panel-side-border-color);
+
+  --mpx-settings-main-bg: var(--mpx-large-panel-main-bg);
+  --mpx-settings-main-text: var(--mpx-text-1);
+  --mpx-settings-main-border: var(--mpx-large-panel-main-border-color);
+
+  --mpx-settings-group-border: var(--mpx-settings-main-border);
+  --mpx-settings-group-head-text: var(--mpx-text-heading);
+  --mpx-settings-group-head-bg: transparent;
+  --mpx-settings-item-label-text: var(--mpx-text-2);
+  --mpx-settings-item-value-text: var(--mpx-settings-main-text);
+  --mpx-settings-item-input-bg: var(--mpx-input-bg);
+  --mpx-settings-item-input-border: var(--mpx-input-border);
+  --mpx-settings-danger-btn-bg: var(--mpx-status-danger-bg);
+  --mpx-settings-danger-btn-border: var(--mpx-status-danger-border);
+  --mpx-settings-danger-btn-text: var(--mpx-status-danger-text);
+
   /* Import Task 子块语义（3.10 内部件） */
   --mpx-import-task-error-border: var(--mpx-status-danger-border);
   --mpx-import-task-error-bg: var(--mpx-status-danger-bg);

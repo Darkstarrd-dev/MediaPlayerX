@@ -95,6 +95,35 @@
    - 全屏图像调整：`--mpx-fs-image-adjust-*`（Phase 1 预留）
    - 广告审核删除 overlay：`--mpx-ad-review-overlay-*`
 
+## Settings 内部件（3.10.0）补充
+
+`fg.header.g1.settings.root.panel` 的 side / main / group / item 语义统一收口到 `--mpx-settings-*`。
+
+1. Side 导航链路：
+   - `--mpx-settings-side-bg`
+   - `--mpx-settings-side-text`
+   - `--mpx-settings-side-item-bg`
+   - `--mpx-settings-side-item-hover-bg`
+   - `--mpx-settings-side-item-active-bg`
+   - `--mpx-settings-side-item-active-text`
+   - `--mpx-settings-side-border`
+2. Main 内容区链路：
+   - `--mpx-settings-main-bg`
+   - `--mpx-settings-main-text`
+   - `--mpx-settings-main-border`
+3. Group / Item 链路：
+   - `--mpx-settings-group-border`
+   - `--mpx-settings-group-head-text`
+   - `--mpx-settings-group-head-bg`
+   - `--mpx-settings-item-label-text`
+   - `--mpx-settings-item-value-text`
+   - `--mpx-settings-item-input-bg`
+   - `--mpx-settings-item-input-border`
+4. Danger 操作链路：
+   - `--mpx-settings-danger-btn-bg`
+   - `--mpx-settings-danger-btn-border`
+   - `--mpx-settings-danger-btn-text`
+
 ## 容器 frame / spacing 补充
 
 ### 共享壳层与单容器 frame

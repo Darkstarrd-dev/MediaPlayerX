@@ -4,10 +4,10 @@
 .settings-block input,
 .settings-block select,
 .settings-block textarea {
-  border: 1px solid var(--mpx-input-border);
+  border: 1px solid var(--mpx-settings-item-input-border);
   border-radius: 8px;
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
+  background: var(--mpx-settings-item-input-bg);
+  color: var(--mpx-settings-item-value-text);
   padding: 6px 8px;
 }
 
@@ -1864,9 +1864,10 @@
   width: 100%;
   min-width: 0;
   border: var(--mpx-large-panel-side-border-width, 1px) solid
-    var(--mpx-large-panel-side-border-color, var(--mpx-border-1));
+    var(--mpx-settings-side-border);
   border-radius: var(--mpx-large-panel-side-radius, 10px);
-  background: var(--mpx-large-panel-side-bg, var(--mpx-bg-elevated));
+  background: var(--mpx-settings-side-bg);
+  color: var(--mpx-settings-side-text);
   padding: var(--mpx-large-panel-side-padding-effective, var(--mpx-large-panel-side-padding, 10px));
   display: flex;
   flex-direction: column;
@@ -1879,6 +1880,30 @@
   text-align: left;
 }
 
+.settings-side button:not(.theme-parameter-side-btn) {
+  --mpx-btn-variant-default-border: var(--mpx-settings-side-border);
+  --mpx-btn-variant-default-bg-idle: var(--mpx-settings-side-item-bg);
+  --mpx-btn-variant-default-bg-hover: var(--mpx-settings-side-item-hover-bg);
+  --mpx-btn-variant-default-bg-active: var(--mpx-settings-side-item-active-bg);
+  --mpx-btn-variant-default-bg-pressed: var(--mpx-settings-side-item-active-bg);
+  --mpx-btn-variant-default-text-idle: var(--mpx-settings-side-text);
+  --mpx-btn-variant-default-text-active: var(--mpx-settings-side-item-active-text);
+  --mpx-btn-variant-default-text-pressed: var(
+    --mpx-settings-side-item-active-text
+  );
+  --mpx-btn-variant-default-text-merged: var(
+    --mpx-settings-side-item-active-text
+  );
+  border-color: var(--mpx-settings-side-border);
+  background: var(--mpx-settings-side-item-bg);
+  color: var(--mpx-settings-side-text);
+}
+
+.settings-side button:not(.theme-parameter-side-btn).is-active {
+  background: var(--mpx-settings-side-item-active-bg);
+  color: var(--mpx-settings-side-item-active-text);
+}
+
 .mpx-large-panel-main,
 .settings-main {
   min-width: 0;
@@ -1887,9 +1912,10 @@
   align-items: var(--mpx-large-panel-main-align-items, flex-start);
   justify-content: var(--mpx-large-panel-main-justify-content, flex-start);
   border: var(--mpx-large-panel-main-border-width, 1px) solid
-    var(--mpx-large-panel-main-border-color, var(--mpx-border-1));
+    var(--mpx-settings-main-border);
   border-radius: var(--mpx-large-panel-main-radius, 10px);
-  background: var(--mpx-large-panel-main-bg, var(--mpx-bg-elevated));
+  background: var(--mpx-settings-main-bg);
+  color: var(--mpx-settings-main-text);
   padding: var(--mpx-large-panel-main-padding-y-effective, var(--mpx-large-panel-main-padding-y, 14px))
     var(--mpx-large-panel-main-padding-x-effective, var(--mpx-large-panel-main-padding-x, 16px));
   overflow: auto;
@@ -1899,6 +1925,7 @@
   border: 0;
   border-radius: 0;
   background: transparent;
+  color: var(--mpx-settings-main-text);
   padding: 0;
   overflow: visible;
   display: flex;
@@ -2397,7 +2424,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   display: grid;
   gap: 10px;
   padding-top: 12px;
-  border-top: 1px solid var(--mpx-border-1);
+  border-top: 1px solid var(--mpx-settings-group-border);
 }
 
 .settings-group:first-child {
@@ -2410,26 +2437,27 @@ button.mpx-overlay-chip-btn:focus-visible {
   align-items: center;
   gap: 10px;
   margin: 0;
-  color: var(--mpx-text-1);
+  background: var(--mpx-settings-group-head-bg);
+  color: var(--mpx-settings-group-head-text);
   font-weight: 700;
 }
 
 .settings-group-head::after {
   content: "";
   flex: 1;
-  border-top: 1px solid var(--mpx-border-1);
+  border-top: 1px solid var(--mpx-settings-group-border);
 }
 
 .settings-block label {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: var(--mpx-text-2);
+  color: var(--mpx-settings-item-label-text);
 }
 
 .settings-subsection {
   margin: 0;
-  border: 1px solid var(--mpx-border-1);
+  border: 1px solid var(--mpx-settings-group-border);
   border-radius: 10px;
   padding: 10px;
   display: grid;
@@ -2438,7 +2466,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .settings-subsection > legend {
   padding: 0 6px;
-  color: var(--mpx-text-2);
+  color: var(--mpx-settings-item-label-text);
 }
 
 .settings-placeholder {

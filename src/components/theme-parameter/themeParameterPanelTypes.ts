@@ -17,6 +17,7 @@ export type ThemeParameterPreviewMode =
   | "bg-plus-small-panel";
 
 export type LargePanelInternalSectionId =
+  | "settings"
   | "importTask"
   | "metadataFetch"
   | "metadataPreferenceRecord"
