@@ -16,6 +16,13 @@ import {
   ThemeParameterSmallPanelLayerPage,
 } from "./ThemeParameterPanelPages";
 import {
+  ThemeParameterContainerFrameSection,
+  ThemeParameterDebugSubsection,
+  ThemeParameterLargePanelInternalSections,
+  ThemeParameterLargePanelSectionRows,
+  ThemeParameterSmallPanelSectionGroups,
+} from "./ThemeParameterLayerSections";
+import {
   ThemeParameterButtonStateDebug,
   ThemeParameterCommonControlSections,
 } from "./ThemeParameterPreviewSections";
@@ -88,7 +95,6 @@ import type {
   ControlPreviewValues,
   LargePanelInternalSectionId,
   SmallPanelSectionId,
-  SmallPanelSectionGroupDefinition,
   ThemeDebugColorField,
   ThemeDebugTextField,
   ThemeParameterPageId,
@@ -1053,86 +1059,6 @@ export function ThemeParameterPanelMain({
     );
   };
 
-  const renderContainerFrameSection = (
-    section: (typeof CONTAINER_FRAME_SECTION_DEFINITIONS)[number],
-    appearanceOpen: boolean,
-    setAppearanceOpen: Dispatch<SetStateAction<boolean>>,
-  ) => {
-    const appearanceParameters = pickContainerParameters(
-      section.appearanceParameterIds,
-    );
-    const fillAngleParameters = appearanceParameters.filter((parameter) =>
-      parameter.id.endsWith("fill-angle"),
-    );
-    const shapeParameters = appearanceParameters.filter(
-      (parameter) => !parameter.id.endsWith("fill-angle"),
-    );
-    const transformParameters = pickContainerParameters(
-      section.transformParameterIds,
-    );
-    const fillColorFields = section.colorFields.filter(
-      (field) =>
-        field.id.includes("fill-start") || field.id.includes("fill-end"),
-    );
-    const otherColorFields = section.colorFields.filter(
-      (field) => !fillColorFields.includes(field),
-    );
-    return (
-      <>
-        <details
-          className="settings-collapsible"
-          open={appearanceOpen}
-          onToggle={(event) =>
-            setAppearanceOpen((event.currentTarget as HTMLDetailsElement).open)
-          }
-        >
-          <summary>基础外观</summary>
-          <div className="settings-collapsible-content">
-            <section className="settings-group theme-parameter-debug-group">
-              {fillColorFields.length > 0 ? (
-                <div className="theme-parameter-color-list">
-                  {fillColorFields.map(renderColorFieldRow)}
-                </div>
-              ) : null}
-              {fillAngleParameters.length > 0
-                ? renderParameterRowsWithVarLabel(fillAngleParameters)
-                : null}
-              {otherColorFields.length > 0 ? (
-                <div className="theme-parameter-color-list">
-                  {otherColorFields.map(renderColorFieldRow)}
-                </div>
-              ) : null}
-              {section.textFields.length > 0 ? (
-                <div className="theme-parameter-text-list">
-                  {section.textFields.map(renderTextFieldRow)}
-                </div>
-              ) : null}
-              {shapeParameters.length > 0
-                ? renderParameterRowsWithVarLabel(shapeParameters)
-                : null}
-            </section>
-            <section className="settings-group theme-parameter-debug-group">
-              <header className="settings-group-head">
-                <span>视觉变换</span>
-              </header>
-              {transformParameters.length > 0
-                ? renderParameterRows(transformParameters)
-                : null}
-            </section>
-          </div>
-        </details>
-        <section className="settings-group theme-parameter-debug-group">
-          <header className="settings-group-head">
-            <span>高级 3D（预留）</span>
-          </header>
-          <p className="settings-placeholder">
-            当前已在 contract 预留 3D transform 变量，后续再补可视化调节控件。
-          </p>
-        </section>
-      </>
-    );
-  };
-
   const renderContainerDebugSubsectionRows = (
     section: ContainerDebugSubsection,
   ) => {
@@ -1156,132 +1082,6 @@ export function ThemeParameterPanelMain({
           : null}
       </>
     );
-  };
-
-  const renderContainerDebugSubsection = (
-    section: ContainerDebugSubsection,
-    open: boolean,
-    setOpen: Dispatch<SetStateAction<boolean>>,
-  ) => {
-    return (
-      <details
-        key={section.id}
-        className="settings-collapsible"
-        open={open}
-        onToggle={(event) =>
-          setOpen((event.currentTarget as HTMLDetailsElement).open)
-        }
-      >
-        <summary>{t(section.summaryKey)}</summary>
-        <div className="settings-collapsible-content">
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>变量</span>
-            </header>
-            {renderContainerDebugSubsectionRows(section)}
-          </section>
-        </div>
-      </details>
-    );
-  };
-
-  const renderLargePanelSectionRows = (options: {
-    colorFields: readonly ThemeDebugColorField[];
-    inlineParameters?: ThemeParameterDefinition[];
-    textFields?: readonly ThemeDebugTextField[];
-    parameters?: ThemeParameterDefinition[];
-  }) => {
-    const {
-      colorFields,
-      inlineParameters = [],
-      textFields = [],
-      parameters = [],
-    } = options;
-    return (
-      <>
-        {colorFields.length > 0 ? (
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>基础外观</span>
-            </header>
-            <div className="theme-parameter-color-list">
-              {colorFields.map(renderColorFieldRow)}
-            </div>
-            {inlineParameters.length > 0
-              ? renderParameterRowsWithVarLabel(inlineParameters)
-              : null}
-            {textFields.length > 0 ? (
-              <div className="theme-parameter-text-list">
-                {textFields.map(renderTextFieldRow)}
-              </div>
-            ) : null}
-            {parameters.length > 0
-              ? renderParameterRowsWithVarLabel(parameters)
-              : null}
-          </section>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderLargePanelInternalSections = () => {
-    return (
-      <>
-        {LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS.map((section) => (
-          <details
-            key={section.id}
-            className="settings-collapsible"
-            open={largePanelInternalSectionsExpanded[section.id]}
-            onToggle={(event) =>
-              setLargePanelInternalSectionExpanded(
-                section.id,
-                (event.currentTarget as HTMLDetailsElement).open,
-              )
-            }
-          >
-            <summary>{t(section.summaryKey)}</summary>
-            <div className="settings-collapsible-content">
-              {renderLargePanelSectionRows({
-                colorFields: section.colorFields,
-                textFields: section.textFields,
-              })}
-            </div>
-          </details>
-        ))}
-      </>
-    );
-  };
-
-  const renderSmallPanelSectionGroups = (
-    groups: readonly SmallPanelSectionGroupDefinition[],
-  ) => {
-    return groups.map((group, index) => {
-      if (group.colorFields.length === 0 && group.textFields.length === 0) {
-        return null;
-      }
-      return (
-        <section
-          key={`${group.title ?? "root"}-${index}`}
-          className="settings-group theme-parameter-debug-group"
-        >
-          {group.title ? (
-            <header className="settings-group-head">
-              <span>{group.title}</span>
-            </header>
-          ) : null}
-          {group.colorFields.length > 0 ? (
-            <div className="theme-parameter-color-list">
-              {group.colorFields.map(renderColorFieldRow)}
-            </div>
-          ) : null}
-          {group.textFields.length > 0 ? (
-            <div className="theme-parameter-text-list">
-              {group.textFields.map(renderTextFieldRow)}
-            </div>
-          ) : null}
-        </section>
-      );
-    });
   };
 
   const renderParameterRows = (parameters: ThemeParameterDefinition[]) => {
@@ -1395,67 +1195,111 @@ export function ThemeParameterPanelMain({
       setContainerHeaderExpanded={setContainerHeaderExpanded}
       containerHeaderContent={
         <>
-          {renderContainerFrameSection(
-            CONTAINER_FRAME_SECTION_DEFINITIONS[0],
-            containerHeaderAppearanceExpanded,
-            setContainerHeaderAppearanceExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[0],
-            containerHeaderButtonsExpanded,
-            setContainerHeaderButtonsExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[1],
-            containerHeaderLogoExpanded,
-            setContainerHeaderLogoExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[2],
-            containerHeaderG1Expanded,
-            setContainerHeaderG1Expanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[3],
-            containerHeaderG2Expanded,
-            setContainerHeaderG2Expanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[4],
-            containerHeaderGDebugExpanded,
-            setContainerHeaderGDebugExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            HEADER_DEBUG_SUBSECTIONS[5],
-            containerHeaderG3Expanded,
-            setContainerHeaderG3Expanded,
-          )}
+          <ThemeParameterContainerFrameSection
+            section={CONTAINER_FRAME_SECTION_DEFINITIONS[0]}
+            appearanceOpen={containerHeaderAppearanceExpanded}
+            setAppearanceOpen={setContainerHeaderAppearanceExpanded}
+            appearanceParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[0].appearanceParameterIds,
+            )}
+            transformParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[0].transformParameterIds,
+            )}
+            renderColorFieldRow={renderColorFieldRow}
+            renderTextFieldRow={renderTextFieldRow}
+            renderParameterRows={renderParameterRows}
+            renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[0]}
+            open={containerHeaderButtonsExpanded}
+            setOpen={setContainerHeaderButtonsExpanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[0])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[1]}
+            open={containerHeaderLogoExpanded}
+            setOpen={setContainerHeaderLogoExpanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[1])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[2]}
+            open={containerHeaderG1Expanded}
+            setOpen={setContainerHeaderG1Expanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[2])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[3]}
+            open={containerHeaderG2Expanded}
+            setOpen={setContainerHeaderG2Expanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[3])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[4]}
+            open={containerHeaderGDebugExpanded}
+            setOpen={setContainerHeaderGDebugExpanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[4])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={HEADER_DEBUG_SUBSECTIONS[5]}
+            open={containerHeaderG3Expanded}
+            setOpen={setContainerHeaderG3Expanded}
+            content={renderContainerDebugSubsectionRows(HEADER_DEBUG_SUBSECTIONS[5])}
+          />
         </>
       }
       containerSidebarExpanded={containerSidebarExpanded}
       setContainerSidebarExpanded={setContainerSidebarExpanded}
       containerSidebarContent={
         <>
-          {renderContainerFrameSection(
-            CONTAINER_FRAME_SECTION_DEFINITIONS[1],
-            containerSidebarAppearanceExpanded,
-            setContainerSidebarAppearanceExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
-            containerSidebarHeaderExpanded,
-            setContainerSidebarHeaderExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1],
-            containerSidebarHeaderTitleExpanded,
-            setContainerSidebarHeaderTitleExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2],
-            containerSidebarHeaderActionsExpanded,
-            setContainerSidebarHeaderActionsExpanded,
-          )}
+          <ThemeParameterContainerFrameSection
+            section={CONTAINER_FRAME_SECTION_DEFINITIONS[1]}
+            appearanceOpen={containerSidebarAppearanceExpanded}
+            setAppearanceOpen={setContainerSidebarAppearanceExpanded}
+            appearanceParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[1].appearanceParameterIds,
+            )}
+            transformParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[1].transformParameterIds,
+            )}
+            renderColorFieldRow={renderColorFieldRow}
+            renderTextFieldRow={renderTextFieldRow}
+            renderParameterRows={renderParameterRows}
+            renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0]}
+            open={containerSidebarHeaderExpanded}
+            setOpen={setContainerSidebarHeaderExpanded}
+            content={renderContainerDebugSubsectionRows(
+              SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1]}
+            open={containerSidebarHeaderTitleExpanded}
+            setOpen={setContainerSidebarHeaderTitleExpanded}
+            content={renderContainerDebugSubsectionRows(
+              SIDEBAR_HEADER_DEBUG_SUBSECTIONS[1],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2]}
+            open={containerSidebarHeaderActionsExpanded}
+            setOpen={setContainerSidebarHeaderActionsExpanded}
+            content={renderContainerDebugSubsectionRows(
+              SIDEBAR_HEADER_DEBUG_SUBSECTIONS[2],
+            )}
+          />
           <details
             className="settings-collapsible"
             open={containerSidebarMainExpanded}
@@ -1476,21 +1320,35 @@ export function ThemeParameterPanelMain({
       setContainerMainExpanded={setContainerMainExpanded}
       containerMainContent={
         <>
-          {renderContainerFrameSection(
-            CONTAINER_FRAME_SECTION_DEFINITIONS[2],
-            containerMainAppearanceExpanded,
-            setContainerMainAppearanceExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            MAIN_HEADER_DEBUG_SUBSECTIONS[0],
-            containerMainHeaderExpanded,
-            setContainerMainHeaderExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            MAIN_HEADER_DEBUG_SUBSECTIONS[1],
-            containerMainHeaderButtonsExpanded,
-            setContainerMainHeaderButtonsExpanded,
-          )}
+          <ThemeParameterContainerFrameSection
+            section={CONTAINER_FRAME_SECTION_DEFINITIONS[2]}
+            appearanceOpen={containerMainAppearanceExpanded}
+            setAppearanceOpen={setContainerMainAppearanceExpanded}
+            appearanceParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[2].appearanceParameterIds,
+            )}
+            transformParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[2].transformParameterIds,
+            )}
+            renderColorFieldRow={renderColorFieldRow}
+            renderTextFieldRow={renderTextFieldRow}
+            renderParameterRows={renderParameterRows}
+            renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={MAIN_HEADER_DEBUG_SUBSECTIONS[0]}
+            open={containerMainHeaderExpanded}
+            setOpen={setContainerMainHeaderExpanded}
+            content={renderContainerDebugSubsectionRows(MAIN_HEADER_DEBUG_SUBSECTIONS[0])}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={MAIN_HEADER_DEBUG_SUBSECTIONS[1]}
+            open={containerMainHeaderButtonsExpanded}
+            setOpen={setContainerMainHeaderButtonsExpanded}
+            content={renderContainerDebugSubsectionRows(MAIN_HEADER_DEBUG_SUBSECTIONS[1])}
+          />
           <details
             className="settings-collapsible"
             open={containerMainWorkspaceExpanded}
@@ -1537,21 +1395,39 @@ export function ThemeParameterPanelMain({
       setContainerMetadataExpanded={setContainerMetadataExpanded}
       containerMetadataContent={
         <>
-          {renderContainerFrameSection(
-            CONTAINER_FRAME_SECTION_DEFINITIONS[3],
-            containerMetadataAppearanceExpanded,
-            setContainerMetadataAppearanceExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            METADATA_HEADER_DEBUG_SUBSECTIONS[0],
-            containerMetadataHeaderExpanded,
-            setContainerMetadataHeaderExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            METADATA_HEADER_DEBUG_SUBSECTIONS[1],
-            containerMetadataHeaderButtonsExpanded,
-            setContainerMetadataHeaderButtonsExpanded,
-          )}
+          <ThemeParameterContainerFrameSection
+            section={CONTAINER_FRAME_SECTION_DEFINITIONS[3]}
+            appearanceOpen={containerMetadataAppearanceExpanded}
+            setAppearanceOpen={setContainerMetadataAppearanceExpanded}
+            appearanceParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[3].appearanceParameterIds,
+            )}
+            transformParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[3].transformParameterIds,
+            )}
+            renderColorFieldRow={renderColorFieldRow}
+            renderTextFieldRow={renderTextFieldRow}
+            renderParameterRows={renderParameterRows}
+            renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_HEADER_DEBUG_SUBSECTIONS[0]}
+            open={containerMetadataHeaderExpanded}
+            setOpen={setContainerMetadataHeaderExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_HEADER_DEBUG_SUBSECTIONS[0],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_HEADER_DEBUG_SUBSECTIONS[1]}
+            open={containerMetadataHeaderButtonsExpanded}
+            setOpen={setContainerMetadataHeaderButtonsExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_HEADER_DEBUG_SUBSECTIONS[1],
+            )}
+          />
         </>
       }
     />
@@ -1564,19 +1440,29 @@ export function ThemeParameterPanelMain({
       togglePreviewMode={togglePreviewMode}
       rootExpanded={largePanelRootExpanded}
       setRootExpanded={setLargePanelRootExpanded}
-      rootSection={renderLargePanelSectionRows({
-        colorFields: LARGE_PANEL_ROOT_COLOR_FIELDS,
-        inlineParameters: largePanelRootInlineParameters,
-        textFields: LARGE_PANEL_ROOT_TEXT_FIELDS,
-        parameters: largePanelRootParameters,
-      })}
+      rootSection={
+        <ThemeParameterLargePanelSectionRows
+          colorFields={LARGE_PANEL_ROOT_COLOR_FIELDS}
+          inlineParameters={largePanelRootInlineParameters}
+          textFields={LARGE_PANEL_ROOT_TEXT_FIELDS}
+          parameters={largePanelRootParameters}
+          renderColorFieldRow={renderColorFieldRow}
+          renderTextFieldRow={renderTextFieldRow}
+          renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+        />
+      }
       sharedExpanded={largePanelSharedSectionExpanded}
       setSharedExpanded={setLargePanelSharedSectionExpanded}
-      sharedSection={renderLargePanelSectionRows({
-        colorFields: LARGE_PANEL_SHARED_COLOR_FIELDS,
-        inlineParameters: largePanelSharedInlineParameters,
-        parameters: largePanelSharedParameters,
-      })}
+      sharedSection={
+        <ThemeParameterLargePanelSectionRows
+          colorFields={LARGE_PANEL_SHARED_COLOR_FIELDS}
+          inlineParameters={largePanelSharedInlineParameters}
+          parameters={largePanelSharedParameters}
+          renderColorFieldRow={renderColorFieldRow}
+          renderTextFieldRow={renderTextFieldRow}
+          renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+        />
+      }
       bodySections={LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
         const expanded =
           section.id === "head"
@@ -1601,11 +1487,16 @@ export function ThemeParameterPanelMain({
           >
             <summary>{t(section.summaryKey)}</summary>
             <div className="settings-collapsible-content">
-              {renderLargePanelSectionRows({
-                colorFields: section.colorFields,
-                inlineParameters: pickLargePanelParameters(section.inlineParameterIds),
-                parameters: pickLargePanelParameters(section.parameterIds),
-              })}
+              <ThemeParameterLargePanelSectionRows
+                colorFields={section.colorFields}
+                inlineParameters={pickLargePanelParameters(
+                  section.inlineParameterIds,
+                )}
+                parameters={pickLargePanelParameters(section.parameterIds)}
+                renderColorFieldRow={renderColorFieldRow}
+                renderTextFieldRow={renderTextFieldRow}
+                renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+              />
             </div>
           </details>
         );
@@ -1619,10 +1510,26 @@ export function ThemeParameterPanelMain({
               (event.currentTarget as HTMLDetailsElement).open,
             )
           }
-        >
+          >
           <summary>{t("ui.themeParameter.largePanelLayer.sectionInternal")}</summary>
           <div className="settings-collapsible-content">
-            {renderLargePanelInternalSections()}
+            <ThemeParameterLargePanelInternalSections
+              t={t}
+              sections={LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS}
+              expanded={largePanelInternalSectionsExpanded}
+              setExpanded={setLargePanelInternalSectionExpanded}
+              renderSectionRows={(options) => (
+                <ThemeParameterLargePanelSectionRows
+                  colorFields={options.colorFields}
+                  inlineParameters={options.inlineParameters}
+                  textFields={options.textFields}
+                  parameters={options.parameters}
+                  renderColorFieldRow={renderColorFieldRow}
+                  renderTextFieldRow={renderTextFieldRow}
+                  renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+                />
+              )}
+            />
           </div>
         </details>
       }
@@ -1636,11 +1543,16 @@ export function ThemeParameterPanelMain({
       togglePreviewMode={togglePreviewMode}
       rootExpanded={smallPanelRootExpanded}
       setRootExpanded={setSmallPanelRootExpanded}
-      rootSection={renderLargePanelSectionRows({
-        colorFields: SMALL_PANEL_ROOT_COLOR_FIELDS,
-        textFields: SMALL_PANEL_ROOT_TEXT_FIELDS,
-        parameters: smallPanelRootParameters,
-      })}
+      rootSection={
+        <ThemeParameterLargePanelSectionRows
+          colorFields={SMALL_PANEL_ROOT_COLOR_FIELDS}
+          textFields={SMALL_PANEL_ROOT_TEXT_FIELDS}
+          parameters={smallPanelRootParameters}
+          renderColorFieldRow={renderColorFieldRow}
+          renderTextFieldRow={renderTextFieldRow}
+          renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+        />
+      }
       bodySections={SMALL_PANEL_SECTION_DEFINITIONS.map((section) => (
         <details
           key={section.id}
@@ -1655,7 +1567,11 @@ export function ThemeParameterPanelMain({
         >
           <summary>{t(section.summaryKey)}</summary>
           <div className="settings-collapsible-content">
-            {renderSmallPanelSectionGroups(section.groups)}
+            <ThemeParameterSmallPanelSectionGroups
+              groups={section.groups}
+              renderColorFieldRow={renderColorFieldRow}
+              renderTextFieldRow={renderTextFieldRow}
+            />
           </div>
         </details>
       ))}
