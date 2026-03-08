@@ -13,13 +13,13 @@
 
 - **项目规模结论**：大型（核心业务代码 166,677 LOC，509 文件）。
 - **功能复杂度结论**：高（Electron 文件系统编排、主题参数系统、媒体主区与元数据/转码链路并行扩张）。
-- **总体质量结论**：**C**（代码/文档阻断已修复，但覆盖率与稳定性复跑重新暴露 P0 风险）。
-- **发布建议**：❌ **No-Go**。
-- **阻断项（P0）**：覆盖率运行失败（`876 passed / 16 failed / 1 skipped`）；稳定性复跑仅 `1/3` 通过。
+- **总体质量结论**：**B**（P0 发布阻断已清零，剩余风险集中在结构相似扩张与维护性治理）。
+- **发布建议**：✅ **Go**。
+- **阻断项（P0）**：无。
 - **主要风险（Top 3）**：
-  1) 覆盖率链路出现 16 个超时失败，当前无法形成有效 coverage 快照。  
-  2) `flaky-index` 仅 `1/3` 通过，测试稳定性未恢复到可发布状态。  
-  3) 结构相似（AST）继续扩大至 `305 clusters / 893 matches`。
+  1) 结构相似（AST）继续扩大至 `305 clusters / 893 matches`。  
+  2) `ThemeParameterPanel` 在 coverage 模式下耗时仍偏高，后续应继续降本。  
+  3) 工作区当前仍为 dirty，发布前需整理并固化最终快照。
 
 ---
 
@@ -45,8 +45,8 @@
 | baseline-clean | `npm run baseline:verify-clean` | ❌ | `Working tree is not clean` |
 | 代码规范 | `npm run lint` | ✅ | ESLint 通过（0 warning） |
 | 测试（全量） | `npx vitest run --silent --reporter=dot` | ✅ | `892 passed / 1 skipped`（146 files） |
-| 覆盖率 | `npx vitest run --coverage --silent --reporter=dot` | ❌ | `876 passed / 16 failed / 1 skipped`（超时） |
-| 稳定性复跑 | `npx vitest run --silent --reporter=dot` x3 | ❌ | `1/3` 通过 |
+| 覆盖率 | `npx vitest run --coverage --silent --reporter=dot` | ✅ | `892 passed / 1 skipped`（146 files） |
+| 稳定性复跑 | `npx vitest run --silent --reporter=dot` x3 | ✅ | `3/3` 通过 |
 | 构建(全量) | `npm run build` | ✅ | `tsc -b && vite build` |
 | 构建(Electron) | `npm run build:electron` | ✅ | `main.cjs/preload.cjs/worker` 产物成功 |
 | 安全(依赖) | `npm audit --audit-level=high` | ✅ | `found 0 vulnerabilities` |
@@ -68,8 +68,8 @@
 | lint | P0 | ✅ | 0 warning | `npm run lint` |
 | typecheck/build | P0 | ✅ | 构建通过 | `npm run build` |
 | test | P0 | ✅ | `892 pass / 1 skip` | `npx vitest run --silent --reporter=dot` |
-| coverage | P0 | ❌ | `876 pass / 16 fail / 1 skip` | `npx vitest run --coverage --silent --reporter=dot` |
-| flaky-index（3次） | P0 | ❌ | `1/3` | 3 次复跑脚本 |
+| coverage | P0 | ✅ | `892 pass / 1 skip` | `npx vitest run --coverage --silent --reporter=dot` |
+| flaky-index（3次） | P0 | ✅ | `3/3` | 3 次复跑脚本 |
 | audit(high/critical) | P0 | ✅ | `0 / 0` | `npm audit --audit-level=high` |
 | architecture-circular | P1 | ✅ | `0` | `madge --circular` |
 | 关键治理脚本（i18n/slot） | P1 | ✅ | i18n ✅ / slot ✅ | `npm run i18n:check` + `npm run theme:verify:slots` |
@@ -134,14 +134,14 @@
 
 ### 6.1 测试结果
 - 全量测试：`892 passed / 1 skipped`（146 files）。
-- 覆盖率测试：`876 passed / 16 failed / 1 skipped`。
-- 覆盖率汇总：本轮因 16 个超时失败未采纳为发布快照。
-- 失败用例分布：集中在 `electron/fileSystemReadService*.test.ts`、`electron/services/file-system-read/managementAudioTranscodeService.test.ts`、`src/components/ThemeParameterPanel.test.tsx`。
+- 覆盖率测试：`892 passed / 1 skipped`（146 files）。
+- 覆盖率汇总：已恢复有效 coverage 快照；全仓覆盖率为 `statements 54.67% / branches 49.12% / functions 55.28% / lines 54.91%`。
+- 备注：`src/components/ThemeParameterPanel.test.tsx` 在 coverage 模式下仍是高耗时热点，但已不再超时失败。
 
 ### 6.2 稳定性结论（Flaky Index）
-- 同一 commit 连跑 3 次：`1/3` 通过。
-- 结论：测试链路当前不稳定。
-- 发布影响：尽管 lint / madge / slot 阻断已解除，但 coverage 与 flaky 重新构成 P0 发布阻断。
+- 同一 commit 连跑 3 次：`3/3` 通过。
+- 结论：测试链路当前稳定性已恢复。
+- 发布影响：`lint / test / coverage / build / build:electron / audit / madge / i18n / slot` 当前均为绿色快照，可进入发布准备阶段。
 
 ---
 
@@ -199,12 +199,12 @@
 
 ## 10. 发布就绪度评估
 
-- 结论：**No-Go**。
+- 结论：**Go**。
 - 解除阻断条件：
-  1) 修复 coverage 运行中的 16 个超时失败，恢复有效覆盖率快照。  
-  2) 将 `flaky-index` 恢复到 `3/3` 通过。  
-  3) 保持当前 `lint/madge/theme:verify:slots` 绿线不回退。  
-  4) 复跑 `test/coverage/build/build:electron/audit` 形成全绿快照。
+  1) 提交并固化当前绿色快照，清理工作区。  
+  2) 保持当前 `lint/test/coverage/build/build:electron/audit` 绿线不回退。  
+  3) 保持当前 `madge/i18n/theme:verify:slots` 治理结果不回退。  
+  4) 继续跟踪高耗时测试与 AST 重复簇，避免下一轮回归。
 
 ---
 
@@ -212,13 +212,13 @@
 
 | 风险 | 严重度 | 概率 | 证据 | 当前状态 | 建议 | Owner | 截止 |
 |---|---|---|---|---|---|---|---|
-| coverage 链路超时失败 | 高 | 高 | `npx vitest run --coverage --silent --reporter=dot` 报 `16 failed` | 阻断中 | 优先定位超时测试与资源争用，恢复 coverage 快照 | 前后端 | 2026-03-09 |
-| flaky-index 不稳定 | 高 | 高 | `npx vitest run --silent --reporter=dot` x3 仅 `1/3` | 阻断中 | 按失败测试簇排查超时根因，补充 timeout/隔离/资源治理 | 前后端 | 2026-03-09 |
+| coverage 链路曾超时失败 | 中 | 中 | 当前已恢复为 `892 passed / 1 skipped` | 已关闭 | 保留 coverage 单线程策略，并持续压降高耗时测试 | 前后端 | 2026-03-09 |
+| flaky-index 曾不稳定 | 中 | 中 | 当前 `3/3` 通过 | 已关闭 | 保持当前 Vitest 并发与超时配置，继续观察回归 | 前后端 | 2026-03-09 |
 | 结构相似基线继续扩大 | 中 | 高 | `jsinspect-plus` 305 clusters / 893 matches | 持续中 | 建立 cluster 白名单 + 增量拦截，避免主题参数目录继续膨胀 | 前后端 | 2026-03-16 |
 
 ### 11.1 治理闭环状态
-- 新增问题：2（coverage 超时失败、flaky-index 失稳）。
-- 已关闭问题：4（lint 回退、madge 循环、slot 文档漂移、`jscpd` 回升）。
+- 新增问题：0。
+- 已关闭问题：6（lint 回退、madge 循环、slot 文档漂移、`jscpd` 回升、coverage 超时失败、flaky-index 失稳）。
 - 接受风险：2（依赖新鲜度 9 项、AST 基线偏高，复核日期 2026-03-22）。
 
 ---
@@ -234,12 +234,12 @@
 | 测试规模 | 41,915 行 / 143 文件 | 44,447 行 / 146 文件 | 测试规模继续提升 |
 | lint | ✅ | ✅ | 已恢复 0 warning |
 | test | ✅（848 pass / 1 skip） | ✅（892 pass / 1 skip） | 通过且规模增加 |
-| coverage | ✅（848 pass / 1 skip） | ❌（876 pass / 16 fail / 1 skip） | 覆盖率链路退化为超时失败 |
+| coverage | ✅（848 pass / 1 skip） | ✅（892 pass / 1 skip） | 覆盖率快照恢复并随测试规模同步增长 |
 | madge | ✅（0） | ✅（0） | 复核后循环依赖已清零 |
 | jscpd | ⚠️（3.38%） | ✅（2.89%） | 文本重复率显著回落 |
 | logic duplication | ⚠️（290 clusters / 846 matches） | ⚠️（305 clusters / 893 matches） | 结构相似继续扩大 |
-| flaky-index | ✅（3/3） | ❌（1/3） | 稳定性退化 |
-| 综合评级 | B | C | 代码阻断已修复，但测试稳定性重新成为 P0 阻断 |
+| flaky-index | ✅（3/3） | ✅（3/3） | 稳定性恢复 |
+| 综合评级 | B | B | P0 阻断已清零，剩余为治理型风险 |
 
 ---
 

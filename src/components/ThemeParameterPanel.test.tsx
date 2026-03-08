@@ -476,7 +476,7 @@ describe("ThemeParameterPanel", () => {
         .getPropertyValue("--mpx-bg-app-fill")
         .trim(),
     ).toBe("#abcdef");
-  }, 15000);
+  });
 
   it("按钮状态页颜色参数支持写入样式并进入快照", () => {
     renderThemeParameterPanel();
@@ -1675,7 +1675,7 @@ describe("ThemeParameterPanel", () => {
         "--mpx-main-header-border-color",
       ),
     ).toBe("#445566");
-  }, 15000);
+  });
 
   it("复杂文本变量支持结构化拆分编辑且导入导出保持原始 CSS 字符串", () => {
     renderThemeParameterPanel();
