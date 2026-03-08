@@ -120,16 +120,7 @@
   );
   --mpx-btn-variant-overlay-cell-bg-pressed: var(
     --mpx-slot-fg-main-content-image-name-list-row-selected-bg,
-    var(
-      --mpx-main-image-name-list-row-selected-bg,
-      var(
-        --mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg,
-        var(
-          --mpx-main-image-name-list-row-manage-selected-bg,
-          transparent
-        )
-      )
-    )
+    var(--mpx-main-image-name-list-row-selected-bg, transparent)
   );
   --mpx-btn-variant-overlay-cell-text-hover: var(
     --mpx-slot-fg-main-content-image-name-list-row-main-hover-text,
@@ -144,16 +135,7 @@
   );
   --mpx-btn-variant-overlay-cell-text-pressed: var(
     --mpx-slot-fg-main-content-image-name-list-row-main-selected-text,
-    var(
-      --mpx-main-image-name-list-row-main-selected-text,
-      var(
-        --mpx-slot-fg-main-content-image-name-list-row-main-pressed-text,
-        var(
-          --mpx-main-image-name-list-row-main-pressed-text,
-          var(--mpx-text-1)
-        )
-      )
-    )
+    var(--mpx-main-image-name-list-row-main-selected-text, var(--mpx-text-1))
   );
   --mpx-btn-variant-overlay-cell-focus-outline-width: 0px;
   --mpx-btn-variant-overlay-cell-focus-outline-color: transparent;

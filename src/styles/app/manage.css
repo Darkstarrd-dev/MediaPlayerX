@@ -160,16 +160,7 @@
   z-index: 2;
   background: var(
     --mpx-slot-fg-main-content-image-name-list-row-selected-bg,
-    var(
-      --mpx-main-image-name-list-row-selected-bg,
-      var(
-        --mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg,
-        var(
-          --mpx-main-image-name-list-row-manage-selected-bg,
-          var(--mpx-state-selected-color)
-        )
-      )
-    )
+    var(--mpx-main-image-name-list-row-selected-bg, var(--mpx-state-selected-color))
   );
   box-shadow: none;
 }

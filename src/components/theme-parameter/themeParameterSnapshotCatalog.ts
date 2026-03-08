@@ -529,16 +529,6 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#9a885f",
   },
   {
-    id: "container-main-image-name-list-row-selected-focused-border-left",
-    cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
-    fallback: "#2d6e7d",
-  },
-  {
-    id: "container-main-image-name-list-row-manage-selected-bg",
-    cssVar: "--mpx-main-image-name-list-row-manage-selected-bg",
-    fallback: "#9a885f",
-  },
-  {
     id: "container-main-image-name-list-row-main-text",
     cssVar: "--mpx-main-image-name-list-row-main-text",
     fallback: "#30271d",
@@ -547,11 +537,6 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-main-image-name-list-row-main-hover-bg",
     cssVar: "--mpx-main-image-name-list-row-main-hover-bg",
     fallback: "#f3f6f8",
-  },
-  {
-    id: "container-main-image-name-list-row-main-active-bg",
-    cssVar: "--mpx-main-image-name-list-row-main-active-bg",
-    fallback: "#d7dde4",
   },
   {
     id: "container-main-image-name-list-row-main-pressed-bg",
@@ -567,21 +552,6 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-main-image-name-list-row-main-selected-text",
     cssVar: "--mpx-main-image-name-list-row-main-selected-text",
     fallback: "#30271d",
-  },
-  {
-    id: "container-main-image-name-list-row-main-active-text",
-    cssVar: "--mpx-main-image-name-list-row-main-active-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "container-main-image-name-list-row-main-pressed-text",
-    cssVar: "--mpx-main-image-name-list-row-main-pressed-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "container-main-image-name-list-row-main-focus-outline-color",
-    cssVar: "--mpx-main-image-name-list-row-main-focus-outline-color",
-    fallback: "#2d6e7d",
   },
   {
     id: "large-panel-border-color",
@@ -1776,14 +1746,6 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "container-sidebar-main-count-packages-shadow",
     cssVar: "--mpx-sidebar-main-count-packages-shadow",
-  },
-  {
-    id: "container-main-image-name-list-row-main-focus-outline-width",
-    cssVar: "--mpx-main-image-name-list-row-main-focus-outline-width",
-  },
-  {
-    id: "container-main-image-name-list-row-main-pressed-font-weight",
-    cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
   },
   {
     id: "large-panel-shadow",

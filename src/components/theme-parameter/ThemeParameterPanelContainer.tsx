@@ -109,24 +109,9 @@ const LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC: ReadonlyArray<{
   },
 ];
 
-const LEGACY_CONTAINER_RENAMED_SLOT_VARS = new Map<string, string>([
-  [
-    "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
-    "--mpx-main-image-name-list-row-selected-bg",
-  ],
-  [
-    "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
-    "--mpx-main-image-name-list-row-main-selected-text",
-  ],
-]);
-
 function resolveLegacyContainerSemanticVar(
   legacyCssVar: string,
 ): string | null {
-  const renamedSemanticVar = LEGACY_CONTAINER_RENAMED_SLOT_VARS.get(legacyCssVar);
-  if (renamedSemanticVar) {
-    return renamedSemanticVar;
-  }
   for (const mapping of LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC) {
     if (!legacyCssVar.startsWith(mapping.legacyPrefix)) {
       continue;

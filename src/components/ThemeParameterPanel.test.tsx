@@ -1294,6 +1294,18 @@ describe("ThemeParameterPanel", () => {
         target: { value: "25" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-root-border-color",
+      }),
+      { target: { value: "#334455" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-dialog-panel-root-border-color-alpha",
+      }),
+      { target: { value: "100" } },
+    );
 
     expect(
       document.documentElement.style.getPropertyValue(
@@ -1320,8 +1332,28 @@ describe("ThemeParameterPanel", () => {
         "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
       ),
     ).toBe("25deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+      ),
+    ).toBe("#334455");
 
     ensureDetailsOpen("5.1 Shortcut Edit");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+      }),
+    ).toHaveValue("#112233");
+    expect(
+      getSliderByLabelText(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle",
+      ),
+    ).toHaveValue("25");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+      }),
+    ).toHaveValue("#334455");
     fireEvent.change(
       screen.getByRole("textbox", {
         name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
@@ -1342,6 +1374,18 @@ describe("ThemeParameterPanel", () => {
       {
         target: { value: "90" },
       },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+      }),
+      { target: { value: "#556677" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border-alpha",
+      }),
+      { target: { value: "100" } },
     );
 
     fireEvent.change(
@@ -1377,6 +1421,16 @@ describe("ThemeParameterPanel", () => {
         "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
       ),
     ).toBe("45deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+      ),
+    ).toBe("#556677");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-main-header-image-convert-panel-border",
+      ),
+    ).toBe("#334455");
   }, 30000);
 
   it("大容器层调试拆分为三段可折叠，并支持新增槽位调试与快照导出", () => {
@@ -1434,16 +1488,6 @@ describe("ThemeParameterPanel", () => {
     expect(within(listLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
     expect(within(listLayerDetails).getByText("4、静态指示颜色")).toBeInTheDocument();
     expect(within(listLayerDetails).getByText("5、动态指示颜色")).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).queryByRole("textbox", {
-        name: "--mpx-main-image-name-list-row-manage-selected-bg",
-      }),
-    ).toBeNull();
-    expect(
-      within(listLayerDetails).queryByRole("textbox", {
-        name: "--mpx-main-image-name-list-row-selected-focused-border-left",
-      }),
-    ).toBeNull();
     fireEvent.change(
       screen.getByRole("textbox", {
         name: "--mpx-main-image-name-list-row-selected-bg",

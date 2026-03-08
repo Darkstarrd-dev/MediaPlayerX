@@ -458,17 +458,8 @@
     --mpx-state-selected-color
   );
   --mpx-main-image-name-list-row-selected-bg: var(--mpx-state-selected-color);
-  --mpx-main-image-name-list-row-selected-focused-border-left: var(
-    --mpx-main-image-name-list-row-focused-border-left
-  );
-  --mpx-main-image-name-list-row-manage-selected-bg: var(
-    --mpx-main-image-name-list-row-selected-bg
-  );
   --mpx-main-image-name-list-row-main-text: var(--mpx-main-image-name-list-row-text);
   --mpx-main-image-name-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-main-image-name-list-row-main-active-bg: var(
-    --mpx-main-image-name-list-row-main-pressed-bg
-  );
   --mpx-main-image-name-list-row-main-pressed-bg: var(
     --mpx-overlay-soft-focus-bg
   );
@@ -478,15 +469,6 @@
     var(--mpx-text-1)
   );
   --mpx-main-image-name-list-row-main-selected-text: var(--mpx-text-1);
-  --mpx-main-image-name-list-row-main-active-text: var(
-    --mpx-main-image-name-list-row-main-selected-text
-  );
-  --mpx-main-image-name-list-row-main-pressed-text: var(
-    --mpx-main-image-name-list-row-main-selected-text
-  );
-  --mpx-main-image-name-list-row-main-focus-outline-width: 0px;
-  --mpx-main-image-name-list-row-main-focus-outline-color: transparent;
-  --mpx-main-image-name-list-row-main-pressed-font-weight: inherit;
   --mpx-main-image-name-list-label-text: inherit;
 
   /* Focus ring (pane-level): shared by sidebar + main.
@@ -1154,10 +1136,7 @@
     --mpx-overlay-surface-border,
     var(--mpx-border-2)
   );
-  --mpx-dialog-panel-border-color: var(
-    --mpx-dialog-panel-border-color-current,
-    var(--mpx-dialog-panel-root-border-color)
-  );
+  --mpx-dialog-panel-border-color: var(--mpx-dialog-panel-root-border-color);
   --mpx-dialog-panel-radius: 12px;
   --mpx-dialog-panel-root-fill-start: var(
     --mpx-overlay-surface-bg,
@@ -1165,18 +1144,9 @@
   );
   --mpx-dialog-panel-root-fill-end: var(--mpx-dialog-panel-root-fill-start);
   --mpx-dialog-panel-root-fill-angle: 180deg;
-  --mpx-dialog-panel-fill-start: var(
-    --mpx-dialog-panel-fill-start-current,
-    var(--mpx-dialog-panel-root-fill-start)
-  );
-  --mpx-dialog-panel-fill-end: var(
-    --mpx-dialog-panel-fill-end-current,
-    var(--mpx-dialog-panel-root-fill-end)
-  );
-  --mpx-dialog-panel-fill-angle: var(
-    --mpx-dialog-panel-fill-angle-current,
-    var(--mpx-dialog-panel-root-fill-angle)
-  );
+  --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
+  --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
+  --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
   --mpx-dialog-panel-bg: linear-gradient(
     var(--mpx-dialog-panel-fill-angle),
     var(--mpx-dialog-panel-fill-start),

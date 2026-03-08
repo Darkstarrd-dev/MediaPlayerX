@@ -668,6 +668,17 @@ export const SMALL_PANEL_ROOT_PARAMETER_IDS = [
 ] as const;
 
 export const SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS = {
+  "small-panel-border-color": [
+    "small-panel-shortcut-edit-panel-border",
+    "small-panel-shortcut-capture-panel-border",
+    "small-panel-group-name-panel-border",
+    "small-panel-delete-confirm-panel-border",
+    "small-panel-ad-review-start-main-border",
+    "small-panel-ad-review-start-metadata-border",
+    "small-panel-convert-panel-border",
+    "small-panel-playlist-name-slot-border",
+    "small-panel-rename-single-slot-border",
+  ],
   "small-panel-fill-start": [
     "small-panel-shortcut-edit-panel-fill-start",
     "small-panel-shortcut-capture-panel-fill-start",
@@ -1168,18 +1179,6 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
       groupId: "main",
     },
     {
-      id: "container-main-image-name-list-row-selected-focused-border-left",
-      cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
-      fallback: "#2d6e7d",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-manage-selected-bg",
-      cssVar: "--mpx-main-image-name-list-row-manage-selected-bg",
-      fallback: "#9a885f",
-      groupId: "main",
-    },
-    {
       id: "container-main-image-name-list-row-main-text",
       cssVar: "--mpx-main-image-name-list-row-main-text",
       fallback: "#30271d",
@@ -1189,12 +1188,6 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
       id: "container-main-image-name-list-row-main-hover-bg",
       cssVar: "--mpx-main-image-name-list-row-main-hover-bg",
       fallback: "#f3f6f8",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-main-active-bg",
-      cssVar: "--mpx-main-image-name-list-row-main-active-bg",
-      fallback: "#d7dde4",
       groupId: "main",
     },
     {
@@ -1213,24 +1206,6 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
       id: "container-main-image-name-list-row-main-selected-text",
       cssVar: "--mpx-main-image-name-list-row-main-selected-text",
       fallback: "#30271d",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-main-active-text",
-      cssVar: "--mpx-main-image-name-list-row-main-active-text",
-      fallback: "#30271d",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-main-pressed-text",
-      cssVar: "--mpx-main-image-name-list-row-main-pressed-text",
-      fallback: "#30271d",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-main-focus-outline-color",
-      cssVar: "--mpx-main-image-name-list-row-main-focus-outline-color",
-      fallback: "#2d6e7d",
       groupId: "main",
     },
   ];
@@ -1347,17 +1322,6 @@ export const MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS: readonly MainImageNameListDebugL
     sections: MAIN_IMAGE_NAME_LIST_LIST_DEBUG_SECTIONS,
   },
 ];
-
-const LEGACY_RENAMED_CONTAINER_SLOT_VARS = new Map<string, string>([
-  [
-    "--mpx-main-image-name-list-row-selected-bg",
-    "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
-  ],
-  [
-    "--mpx-main-image-name-list-row-main-selected-text",
-    "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
-  ],
-]);
 
 export const HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
   {
@@ -1488,10 +1452,6 @@ export const CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT: ReadonlyArray<{
 ];
 
 export function resolveLegacySlotVarForSemanticVar(cssVar: string): string | null {
-  const renamedSlotVar = LEGACY_RENAMED_CONTAINER_SLOT_VARS.get(cssVar);
-  if (renamedSlotVar) {
-    return renamedSlotVar;
-  }
   for (const mapping of CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT) {
     if (!cssVar.startsWith(mapping.semanticPrefix)) {
       continue;
