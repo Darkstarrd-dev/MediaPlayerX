@@ -673,13 +673,13 @@
   min-width: 44px;
   height: 44px;
   min-height: 44px;
-  border-right: 1px solid var(--metadata-playlist-soft-border) !important;
-  background: var(--metadata-playlist-soft-input-bg) !important;
-  color: var(--mpx-text-1) !important;
+  border-right: 1px solid var(--metadata-playlist-soft-border);
+  background: var(--metadata-playlist-soft-input-bg);
+  color: var(--mpx-text-1);
 }
 
 .metadata-playlist-save-row > :last-child {
-  border-right: 0 !important;
+  border-right: 0;
 }
 
 .metadata-video-playlist-shell {
@@ -978,16 +978,16 @@
 }
 
 .metadata-video-playlist-shell > .metadata-music-playlist {
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .metadata-video-playlist-shell
   > .metadata-music-playlist
   > .metadata-empty-tip {
   margin: 0;
-  border: 0 !important;
-  border-radius: 0 !important;
+  border: 0;
+  border-radius: 0;
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -1007,10 +1007,10 @@
   );
   appearance: none;
   width: 100%;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: var(--mpx-text-1) !important;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--mpx-text-1);
   display: grid;
   grid-template-columns: 2.6ch minmax(0, 1fr) max-content;
   align-items: center;
@@ -1020,17 +1020,17 @@
   cursor: pointer;
   min-height: 44px;
   align-self: stretch;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  transform: none !important;
+  box-shadow: none;
+  backdrop-filter: none;
+  transform: none;
 }
 
 .metadata-music-playlist-item.is-active {
-  background: var(--mpx-state-selected-color) !important;
+  background: var(--mpx-state-selected-color);
 }
 
 .metadata-music-playlist-item.is-focused {
-  box-shadow: inset 4px 0 0 var(--mpx-state-focus-color) !important;
+  box-shadow: inset 4px 0 0 var(--mpx-state-focus-color);
 }
 
 .metadata-music-playlist-index {

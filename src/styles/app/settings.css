@@ -1,3 +1,5 @@
-@import './settings/settings.part1.css';
-@import './settings/settings.part2.css';
-@import './settings/settings.part3.css';
+@layer app-component;
+
+@import './settings/settings.part1.css' layer(app-component);
+@import './settings/settings.part2.css' layer(app-component);
+@import './settings/settings.part3.css' layer(app-component);

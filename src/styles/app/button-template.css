@@ -20,11 +20,11 @@
   .mode-switch > button
 ) {
   border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border) !important;
+    var(--mpx-btn-variant-default-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-btn-variant-default-bg-idle) !important;
-  color: var(--mpx-btn-variant-default-text-idle) !important;
-  box-shadow: none !important;
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
   transform: translateY(0);
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -55,8 +55,8 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).force-hover {
-  background: var(--mpx-btn-variant-default-bg-hover) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
@@ -86,8 +86,8 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).force-active {
-  background: var(--mpx-btn-variant-default-bg-active) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  background: var(--mpx-btn-variant-default-bg-active);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
@@ -104,7 +104,7 @@
   button.settings-icon-btn,
   .mode-switch > button
 ).is-active {
-  color: var(--mpx-btn-variant-default-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active);
 }
 
 :is(
@@ -120,10 +120,10 @@
   button.settings-icon-btn,
   .mode-switch > button
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-variant-default-bg-pressed) !important;
-  border-color: var(--mpx-btn-variant-default-border) !important;
-  color: var(--mpx-btn-variant-default-text-pressed) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
@@ -140,7 +140,7 @@
     button.settings-icon-btn,
     .mode-switch > button
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-variant-default-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged);
 }
 
 :is(
@@ -170,10 +170,10 @@
     .mode-switch > button
   ).danger.force-hover,
 button.window-control-btn.window-control-btn--close:not(:disabled):hover {
-  background: var(--mpx-btn-variant-default-danger-hover-bg) !important;
-  border-color: var(--mpx-btn-variant-default-danger-hover-border) !important;
-  color: var(--mpx-btn-variant-default-danger-hover-text) !important;
-  box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow) !important;
+  background: var(--mpx-btn-variant-default-danger-hover-bg);
+  border-color: var(--mpx-btn-variant-default-danger-hover-border);
+  color: var(--mpx-btn-variant-default-danger-hover-text);
+  box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow);
 }
 
 :is(
@@ -190,7 +190,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .mode-switch > button
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled);
   cursor: not-allowed;
   transform: translateY(0);
 }
@@ -208,23 +208,23 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   button.settings-icon-btn,
   .mode-switch > button
 ).is-pending {
-  color: var(--mpx-status-warning-text) !important;
-  border-color: var(--mpx-status-warning-border) !important;
-  background: var(--mpx-status-warning-bg) !important;
+  color: var(--mpx-status-warning-text);
+  border-color: var(--mpx-status-warning-border);
+  background: var(--mpx-status-warning-bg);
 }
 
 :is(
   .sidebar-header button,
-  .main-header-actions button,
+  .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button,
+  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-header button,
-  .settings-block button:not(.sidebar-mini-btn),
+  .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+  .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
   .auto-play-toggle-btn,
@@ -237,26 +237,26 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .manage-ad-review-icon-btn
 ) {
   border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border) !important;
-  background: var(--mpx-btn-variant-default-bg-idle) !important;
-  color: var(--mpx-btn-variant-default-text-idle) !important;
-  box-shadow: none !important;
+    var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
   transform: translateY(0);
 }
 
 :is(
     .sidebar-header button,
-    .main-header-actions button,
+    .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button,
+    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-header button,
-    .settings-block button:not(.sidebar-mini-btn),
+    .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+    .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
     .auto-play-toggle-btn,
@@ -268,24 +268,24 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):hover {
-  background: var(--mpx-btn-variant-default-bg-hover) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
 :is(
     .sidebar-header button,
-    .main-header-actions button,
+    .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button,
+    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-header button,
-    .settings-block button:not(.sidebar-mini-btn),
+    .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+    .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
     .auto-play-toggle-btn,
@@ -297,23 +297,23 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ):not(:disabled):active {
-  background: var(--mpx-btn-variant-default-bg-active) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  background: var(--mpx-btn-variant-default-bg-active);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
 :is(
   .sidebar-header button,
-  .main-header-actions button,
+  .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button,
+  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-header button,
-  .settings-block button:not(.sidebar-mini-btn),
+  .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+  .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
   .auto-play-toggle-btn,
@@ -327,21 +327,21 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 ).is-active,
 .toolbar-icon-btn.is-grid-mode,
 .toolbar-icon-btn.is-names-mode {
-  color: var(--mpx-btn-variant-default-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active);
 }
 
 :is(
   .sidebar-header button,
-  .main-header-actions button,
+  .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button,
+  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-header button,
-  .settings-block button:not(.sidebar-mini-btn),
+  .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+  .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
   .auto-play-toggle-btn,
@@ -353,26 +353,26 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-variant-default-bg-pressed) !important;
-  border-color: var(--mpx-btn-variant-default-border) !important;
-  color: var(--mpx-btn-variant-default-text-pressed) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
 :is(
     .sidebar-header button,
-    .main-header-actions button,
+    .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button,
+    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
     .fullscreen-footer
       button:not(.video-action-btn):not(.fullscreen-action-btn),
-    .main-header button,
-    .settings-block button:not(.sidebar-mini-btn),
+    .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+    .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .search-mode-switch button,
     .zoom-stepper .zoom-stepper-btn,
     .auto-play-toggle-btn,
@@ -384,21 +384,21 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .main-header-ad-review-running-pill,
     .manage-ad-review-icon-btn
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-variant-default-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged);
 }
 
 :is(
   .sidebar-header button,
-  .main-header-actions button,
+  .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button,
+  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
   .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-  .main-header button,
-  .settings-block button:not(.sidebar-mini-btn),
+  .main-header button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
+  .settings-block button:not(.sidebar-mini-btn):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .search-mode-switch button,
   .zoom-stepper .zoom-stepper-btn,
   .auto-play-toggle-btn,
@@ -411,7 +411,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .manage-ad-review-icon-btn
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled);
   cursor: not-allowed;
 }
 
@@ -420,14 +420,14 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ) {
   border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border) !important;
-  background: var(--mpx-btn-variant-default-bg-idle) !important;
-  color: var(--mpx-btn-variant-default-text-idle) !important;
-  box-shadow: none !important;
+    var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
   transform: translateY(0);
 }
 
@@ -436,11 +436,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):not(:disabled):hover {
-  background: var(--mpx-btn-variant-default-bg-hover) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
@@ -449,11 +449,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):not(:disabled):active {
-  background: var(--mpx-btn-variant-default-bg-active) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-active) !important;
+  background: var(--mpx-btn-variant-default-bg-active);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
@@ -462,10 +462,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ).is-active {
-  color: var(--mpx-btn-variant-default-text-active) !important;
+  color: var(--mpx-btn-variant-default-text-active);
 }
 
 :is(
@@ -473,13 +473,13 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 )[aria-pressed="true"] {
-  background: var(--mpx-btn-variant-default-bg-pressed) !important;
-  border-color: var(--mpx-btn-variant-default-border) !important;
-  color: var(--mpx-btn-variant-default-text-pressed) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
@@ -488,10 +488,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-variant-default-text-merged) !important;
+  color: var(--mpx-btn-variant-default-text-merged);
 }
 
 :is(
@@ -499,11 +499,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .settings-floating-panel
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):disabled {
   opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled) !important;
+  color: var(--mpx-btn-variant-default-text-disabled);
   cursor: not-allowed;
 }
 
@@ -523,7 +523,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus,
 :is(
@@ -542,10 +542,10 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
-    ):not(.mpx-overlay-cell-btn),
+    ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus-visible {
-  outline: none !important;
+  outline: none;
 }
 
 :is(
@@ -564,11 +564,11 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   ):focus-visible:not([aria-pressed="true"]) {
-  border-color: var(--mpx-btn-variant-default-border) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover) !important;
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
 }
 
 :is(
@@ -587,7 +587,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   )[aria-pressed="true"]:focus,
 :is(
@@ -606,35 +606,35 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
     .settings-floating-panel
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
-      ):not(.mpx-overlay-cell-btn),
+      ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   )[aria-pressed="true"]:focus-visible {
-  border-color: var(--mpx-btn-variant-default-border) !important;
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed) !important;
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
 }
 
 .video-controls-group.is-center .video-action-btn,
 .music-controls-group.is-center .video-action-btn,
 .fullscreen-group.is-center .fullscreen-action-btn {
   border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border) !important;
-  background: var(--mpx-btn-variant-player-bg-idle) !important;
-  color: var(--mpx-btn-variant-player-text-idle) !important;
-  box-shadow: none !important;
+    var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+  box-shadow: none;
   transform: translateY(0);
 }
 
 .video-controls-group.is-center .video-action-btn:not(:disabled):hover,
 .music-controls-group.is-center .video-action-btn:not(:disabled):hover,
 .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
-  background: var(--mpx-btn-variant-player-bg-hover) !important;
+  background: var(--mpx-btn-variant-player-bg-hover);
 }
 
 .video-controls-group.is-center .video-action-btn:not(:disabled):active,
 .music-controls-group.is-center .video-action-btn:not(:disabled):active,
 .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
-  background: var(--mpx-btn-variant-player-bg-active) !important;
-  border-color: var(--mpx-btn-variant-player-border-active) !important;
+  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-btn-variant-player-border-active);
 }
 
 .video-controls-group.is-center .video-action-btn:focus,
@@ -643,5 +643,5 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
 .video-controls-group.is-center .video-action-btn:focus-visible,
 .music-controls-group.is-center .video-action-btn:focus-visible,
 .fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
-  outline: none !important;
+  outline: none;
 }

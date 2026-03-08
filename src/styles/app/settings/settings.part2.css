@@ -663,7 +663,7 @@
 .music-audio-transcode-path-row > * {
   align-self: stretch;
   margin: 0;
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 .music-audio-transcode-output-input {
@@ -675,7 +675,7 @@
   border-radius: 0;
   background: var(--mpx-transcode-dialog-control-bg-current);
   color: var(--mpx-transcode-dialog-control-text-current);
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 .music-audio-transcode-output-input::placeholder {
@@ -683,7 +683,7 @@
 }
 
 .music-audio-transcode-dialog .sidebar-rename-mode-select {
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 button.music-audio-transcode-seamless-btn {
@@ -693,8 +693,8 @@ button.music-audio-transcode-seamless-btn {
   white-space: nowrap;
   border-color: var(--mpx-transcode-dialog-action-btn-border-current);
   background: var(--mpx-transcode-dialog-action-btn-bg-current);
-  color: var(--mpx-transcode-dialog-action-btn-text-current) !important;
-  box-shadow: none !important;
+  color: var(--mpx-transcode-dialog-action-btn-text-current);
+  box-shadow: none;
 }
 
 button.music-audio-transcode-seamless-btn:disabled {

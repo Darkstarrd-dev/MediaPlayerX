@@ -74,11 +74,11 @@ body {
 }
 
 *::-webkit-scrollbar-button {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: 0;
 }
 
 *::-webkit-scrollbar-button:single-button,
@@ -86,11 +86,11 @@ body {
 *::-webkit-scrollbar-button:vertical:increment,
 *::-webkit-scrollbar-button:horizontal:decrement,
 *::-webkit-scrollbar-button:horizontal:increment {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: 0;
 }
 
 .mpx-scroll-area {
@@ -110,30 +110,30 @@ body {
 
 .mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:decrement,
 .mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:increment {
-  display: block !important;
+  display: block;
   height: var(
     --mpx-scrollbar-end-gap,
     var(--mpx-sidebar-tree-scrollbar-end-gap, 0px)
-  ) !important;
-  background: transparent !important;
-  border: 0 !important;
+  );
+  background: transparent;
+  border: 0;
 }
 
 .mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:decrement,
 .mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:increment {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .mpx-scrollbar-hidden {
-  scrollbar-width: none !important;
+  scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
 .mpx-scrollbar-hidden::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
+  width: 0;
+  height: 0;
 }
 
 button,

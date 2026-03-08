@@ -440,8 +440,8 @@
   [data-slot="fg-main-content-music-preview"]:not(.is-fullscreen)
   .music-visualizer-canvas {
   inset: 0;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   z-index: 0;
 }
 

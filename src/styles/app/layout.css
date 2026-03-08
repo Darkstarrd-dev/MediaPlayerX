@@ -1,4 +1,6 @@
-@import './layout/layout.part1.css';
-@import './layout/layout.part2.css';
-@import './layout/layout.part3.css';
-@import './layout/layout.part4.css';
+@layer app-layout;
+
+@import './layout/layout.part1.css' layer(app-layout);
+@import './layout/layout.part2.css' layer(app-layout);
+@import './layout/layout.part3.css' layer(app-layout);
+@import './layout/layout.part4.css' layer(app-layout);

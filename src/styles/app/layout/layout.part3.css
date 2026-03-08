@@ -521,8 +521,8 @@
 
 .app-tooltip-bubble--measure {
   visibility: hidden;
-  left: -100000px !important;
-  top: -100000px !important;
+  left: -100000px;
+  top: -100000px;
 }
 
 .app-tooltip-bubble--measure::after {
