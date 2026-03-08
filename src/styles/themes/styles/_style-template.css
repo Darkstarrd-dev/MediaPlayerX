@@ -464,14 +464,24 @@
   /* ---------- Dialog panel layer (5.0) ---------- */
   --mpx-dialog-panel-width: min(520px, 92vw);
   --mpx-dialog-panel-max-width: 92vw;
+  --mpx-dialog-panel-height: auto;
   --mpx-dialog-panel-max-height: 80vh;
   --mpx-dialog-panel-border-width: 1px;
-  --mpx-dialog-panel-border-color: var(
+  --mpx-dialog-panel-root-border-color: var(
     --mpx-overlay-surface-border,
     var(--mpx-border-2)
   );
+  --mpx-dialog-panel-border-color: var(--mpx-dialog-panel-root-border-color);
   --mpx-dialog-panel-radius: 12px;
-  --mpx-dialog-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
+  --mpx-dialog-panel-root-fill-start: var(
+    --mpx-overlay-surface-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-dialog-panel-root-fill-end: var(--mpx-dialog-panel-root-fill-start);
+  --mpx-dialog-panel-root-fill-angle: 180deg;
+  --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
+  --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
+  --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
   --mpx-dialog-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)

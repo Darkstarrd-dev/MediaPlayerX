@@ -161,10 +161,7 @@
 [data-slot="fg-main-header-manage-group-name-ovl"] {
   background: var(
     --mpx-slot-fg-main-header-manage-group-name-ovl-bg,
-    var(
-      --mpx-slot-fg-main-header-manage-group-name-panel-bg,
-      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
-    )
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
   );
   color: var(
     --mpx-slot-fg-main-header-manage-group-name-ovl-text,
@@ -175,10 +172,7 @@
 [data-slot="fg-main-header-manage-delete-confirm-ovl"] {
   background: var(
     --mpx-slot-fg-main-header-manage-delete-confirm-ovl-bg,
-    var(
-      --mpx-slot-fg-main-header-manage-delete-confirm-panel-bg,
-      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
-    )
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
   );
   color: var(
     --mpx-slot-fg-main-header-manage-delete-confirm-ovl-text,
@@ -189,14 +183,11 @@
 [data-slot="fg-sidebar-shortcut-rename-single-ovl"] {
   background: var(
     --mpx-slot-fg-sidebar-shortcut-rename-single-ovl-bg,
-    var(
-      --mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg,
-      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
-    )
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
   );
   color: var(
     --mpx-slot-fg-sidebar-shortcut-rename-single-ovl-text,
-    var(--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text, inherit)
+    var(--mpx-sidebar-rename-dialog-text, inherit)
   );
 }
 
@@ -292,8 +283,14 @@
 
 .mpx-dialog-panel,
 .settings-floating-panel {
+  --mpx-dialog-panel-bg: linear-gradient(
+    var(--mpx-dialog-panel-fill-angle),
+    var(--mpx-dialog-panel-fill-start),
+    var(--mpx-dialog-panel-fill-end)
+  );
   width: var(--mpx-dialog-panel-width, min(520px, 92vw));
   max-width: var(--mpx-dialog-panel-max-width, 92vw);
+  height: var(--mpx-dialog-panel-height, auto);
   max-height: var(--mpx-dialog-panel-max-height, 80vh);
   border: var(--mpx-dialog-panel-border-width, 1px) solid
     var(
@@ -318,11 +315,19 @@
 [data-slot="fg-main-header-image-convert-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-main-header-image-convert-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-main-header-image-convert-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-main-header-image-convert-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-main-header-image-convert-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-main-header-image-convert-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-main-header-image-convert-panel-shadow,
@@ -334,11 +339,19 @@
 [data-slot="fg-main-header-manage-group-name-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-main-header-manage-group-name-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-main-header-manage-group-name-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-main-header-manage-group-name-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-main-header-manage-group-name-panel-shadow,
@@ -349,11 +362,19 @@
 [data-slot="fg-main-header-manage-delete-confirm-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-main-header-manage-delete-confirm-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-main-header-manage-delete-confirm-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-main-header-manage-delete-confirm-panel-shadow,
@@ -364,11 +385,19 @@
 [data-slot="fg-header-g1-settings-shortcut-edit-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-header-g1-settings-shortcut-edit-panel-shadow,
@@ -383,11 +412,19 @@
 [data-slot="fg-header-g1-settings-shortcut-capture-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-header-g1-settings-shortcut-capture-panel-shadow,
@@ -402,67 +439,69 @@
 [data-slot="fg-sidebar-shortcut-rename-single-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-sidebar-shortcut-rename-single-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-sidebar-shortcut-rename-single-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
   --mpx-dialog-panel-width: min(520px, 92vw);
-  color: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-text,
-    var(--mpx-sidebar-rename-dialog-text)
-  );
-  --mpx-sidebar-rename-dialog-text-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-text,
-    var(--mpx-sidebar-rename-dialog-text)
-  );
+  color: var(--mpx-sidebar-rename-dialog-text, inherit);
+  --mpx-sidebar-rename-dialog-text-current: var(--mpx-sidebar-rename-dialog-text);
   --mpx-sidebar-rename-dialog-muted-text-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text,
-    var(--mpx-sidebar-rename-dialog-muted-text)
+    --mpx-sidebar-rename-dialog-muted-text
   );
   --mpx-sidebar-rename-dialog-control-border-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border,
-    var(--mpx-sidebar-rename-dialog-control-border)
+    --mpx-sidebar-rename-dialog-control-border
   );
   --mpx-sidebar-rename-dialog-control-bg-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg,
-    var(--mpx-sidebar-rename-dialog-control-bg)
+    --mpx-sidebar-rename-dialog-control-bg
   );
   --mpx-sidebar-rename-dialog-control-text-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text,
-    var(--mpx-sidebar-rename-dialog-control-text)
+    --mpx-sidebar-rename-dialog-control-text
   );
   --mpx-sidebar-rename-dialog-control-placeholder-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder,
-    var(--mpx-sidebar-rename-dialog-control-placeholder)
+    --mpx-sidebar-rename-dialog-control-placeholder
   );
   --mpx-sidebar-rename-dialog-action-btn-border-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border,
-    var(--mpx-sidebar-rename-dialog-action-btn-border)
+    --mpx-sidebar-rename-dialog-action-btn-border
   );
   --mpx-sidebar-rename-dialog-action-btn-bg-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg,
-    var(--mpx-sidebar-rename-dialog-action-btn-bg)
+    --mpx-sidebar-rename-dialog-action-btn-bg
   );
   --mpx-sidebar-rename-dialog-action-btn-text-current: var(
-    --mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text,
-    var(--mpx-sidebar-rename-dialog-action-btn-text)
+    --mpx-sidebar-rename-dialog-action-btn-text
   );
 }
 
 [data-slot="fg-meta-main-video-editor-playlist-name-dialog-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow,
@@ -476,11 +515,10 @@
 
 [data-slot="fg-main-header-image-ad-review-start-panel"],
 [data-slot="fg-meta-main-ad-review-start-panel"] {
-  --mpx-dialog-panel-border-color: var(
-    --mpx-overlay-surface-border,
-    var(--mpx-border-2)
-  );
-  --mpx-dialog-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
+  --mpx-dialog-panel-border-color: var(--mpx-dialog-panel-root-border-color);
+  --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
+  --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
+  --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
   --mpx-dialog-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)
@@ -491,11 +529,19 @@
 [data-slot="fg-main-header-image-ad-review-start-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-main-header-image-ad-review-start-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-main-header-image-ad-review-start-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-main-header-image-ad-review-start-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-main-header-image-ad-review-start-panel-shadow,
@@ -510,11 +556,19 @@
 [data-slot="fg-meta-main-ad-review-start-panel"] {
   --mpx-dialog-panel-border-color: var(
     --mpx-slot-fg-meta-main-ad-review-start-panel-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-dialog-panel-root-border-color)
   );
-  --mpx-dialog-panel-bg: var(
-    --mpx-slot-fg-meta-main-ad-review-start-panel-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-fill-start,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-fill-end,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-slot-fg-meta-main-ad-review-start-panel-fill-angle,
+    var(--mpx-dialog-panel-root-fill-angle)
   );
   --mpx-dialog-panel-shadow: var(
     --mpx-slot-fg-meta-main-ad-review-start-panel-shadow,

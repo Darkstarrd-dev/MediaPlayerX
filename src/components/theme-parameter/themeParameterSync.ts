@@ -38,6 +38,20 @@ export const THEME_PARAMETER_SYNC_GROUPS: readonly ThemeParameterSyncGroup[] = [
       "large-panel-main-border-width",
     ],
   },
+  {
+    sourceId: "small-panel-fill-angle",
+    targetIds: [
+      "small-panel-shortcut-edit-fill-angle",
+      "small-panel-shortcut-capture-fill-angle",
+      "small-panel-group-name-fill-angle",
+      "small-panel-delete-confirm-fill-angle",
+      "small-panel-ad-review-start-main-fill-angle",
+      "small-panel-ad-review-start-metadata-fill-angle",
+      "small-panel-convert-fill-angle",
+      "small-panel-playlist-name-dialog-fill-angle",
+      "small-panel-rename-single-fill-angle",
+    ],
+  },
 ] as const;
 
 export interface ThemeParameterSyncState {

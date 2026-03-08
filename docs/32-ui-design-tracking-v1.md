@@ -1145,15 +1145,15 @@ css 的触发点
 `--mpx-dialog-panel-max-height = 80vh`（小面板最大高度）
 `--mpx-dialog-panel-border-width = 1px`（小面板边框宽度）
 `--mpx-dialog-panel-root-border-color = var(--mpx-overlay-surface-border, var(--mpx-border-2))`（小面板 root 默认边框颜色）
-`--mpx-dialog-panel-border-color = var(--mpx-dialog-panel-border-color-current, var(--mpx-dialog-panel-root-border-color))`（小面板最终边框颜色）
+`--mpx-dialog-panel-border-color = var(--mpx-dialog-panel-root-border-color)`（小面板默认边框颜色，slot 可在元素级直接覆写）
 `--mpx-dialog-panel-radius = 12px`（小面板圆角）
 `--mpx-dialog-panel-root-fill-start = var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))`（小面板 root 默认渐变起点）
 `--mpx-dialog-panel-root-fill-end = var(--mpx-dialog-panel-root-fill-start)`（小面板 root 默认渐变终点）
 `--mpx-dialog-panel-root-fill-angle = 180deg`（小面板 root 默认渐变角度）
-`--mpx-dialog-panel-fill-start = var(--mpx-dialog-panel-fill-start-current, var(--mpx-dialog-panel-root-fill-start))`（小面板最终渐变起点）
-`--mpx-dialog-panel-fill-end = var(--mpx-dialog-panel-fill-end-current, var(--mpx-dialog-panel-root-fill-end))`（小面板最终渐变终点）
-`--mpx-dialog-panel-fill-angle = var(--mpx-dialog-panel-fill-angle-current, var(--mpx-dialog-panel-root-fill-angle))`（小面板最终渐变角度）
-`--mpx-dialog-panel-bg = linear-gradient(...)`（仅供小面板 root 本体消费的派生背景）
+`--mpx-dialog-panel-fill-start = var(--mpx-dialog-panel-root-fill-start)`（小面板默认渐变起点，slot 可在元素级直接覆写）
+`--mpx-dialog-panel-fill-end = var(--mpx-dialog-panel-root-fill-end)`（小面板默认渐变终点，slot 可在元素级直接覆写）
+`--mpx-dialog-panel-fill-angle = var(--mpx-dialog-panel-root-fill-angle)`（小面板默认渐变角度，slot 可在元素级直接覆写）
+`--mpx-dialog-panel-bg = linear-gradient(...)`（在 `.mpx-dialog-panel` / `.settings-floating-panel` 元素级现场合成）
 `--mpx-dialog-panel-shadow = var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))`（小面板阴影）
 `--mpx-dialog-panel-padding = 14px`（小面板内边距）
 `--mpx-dialog-panel-gap = 10px`（小面板内部间距）
@@ -1174,7 +1174,7 @@ css 的触发点
 说明
 
 1. 所有纳入项统一挂到 `mpx-dialog-mask + mpx-dialog-panel` 基架。
-2. 小面板按 `root source -> slot current -> final token` 链路消费 `border-color / fill-start / fill-end / fill-angle`；实际渲染优先吃 slot 分控，未覆写时回退到 root 总控。
+2. 小面板按 `root source -> slot element override -> element-level bg composition -> consumption` 链路消费 `border-color / fill-start / fill-end / fill-angle`；实际渲染优先吃 slot 分控，未覆写时回退到 root 总控。
 3. 遮罩层 `ovl-bg` 不再回退到 `panel fill`，避免调试 panel 本体时误改整屏遮罩。
 4. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。
 

@@ -366,6 +366,12 @@ Main / Metadata header 语义 token 补充（2026-03）：
 - `fg.main.toolbar.manage.musicTranscode.panel` 与 `fg.main.toolbar.manage.videoTranscode.panel` 额外承载 `control-* / action-btn-*` 后缀，消费 `--mpx-transcode-dialog-*`。
 - `fg.sidebar.shortcut.rename.single.panel` 额外承载 `input-* / action-btn-* / text / muted-text` 后缀，`fg.sidebar.shortcut.rename.batch.panel`（实现层 `fg-sidebar-shortcut-rename-panel`）额外承载 `control-* / action-btn-* / preview-* / text / muted-text` 后缀，分别消费 `--mpx-sidebar-rename-dialog-*` 与 `--mpx-sidebar-rename-preview-*`。
 
+## Phase 2 补充（2026-03-08）
+
+- 小面板 root 骨架从单一 `bg` 改为 `fill-start / fill-end / fill-angle` 三件套；`--mpx-dialog-panel-bg` 不再在 `:root` 预合成，而是下沉到 `.mpx-dialog-panel` / `.settings-floating-panel` 元素级消费层生成，避免 slot 覆写被继承的已解析 gradient 吞掉。
+- `fg.header.g1.settings.shortcutEdit.panel`、`fg.header.g1.settings.shortcutCapture.panel`、`fg.main.header.manage.groupName.panel`、`fg.main.header.manage.deleteConfirm.panel`、`fg.main.header.image.convert.panel`、`fg.main.header.image.adReviewStart.panel`、`fg.meta.main.adReviewStart.panel`、`fg.meta.main.videoEditor.playlistNameDialog.panel`、`fg.sidebar.shortcut.rename.single.panel` 均新增 `fill-start / fill-end / fill-angle` 后缀，统一按 `root 总控 -> slot 分控 -> 个别覆写` 链路消费。
+- `fg.sidebar.shortcut.rename.single.panel` 在 ThemeParameter 小面板页只保留 `border / fill-start / fill-end / fill-angle / shadow`；共享内部件统一并入大面板内部件页，通过 `--mpx-sidebar-rename-dialog-*` 调试。
+
 ## 变更约束
 
 | 变更类型     | 必做动作                                                                 |

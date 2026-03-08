@@ -240,6 +240,51 @@ function readFirstUnitValue(
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function createOptionalCssViewportHeightParameter({
+  id,
+  labelKey,
+  variableName,
+  min,
+  max,
+  step,
+}: {
+  id: string;
+  labelKey: string;
+  variableName: string;
+  min: number;
+  max: number;
+  step: number;
+}): ThemeParameterDefinition {
+  return {
+    id,
+    labelKey,
+    cssVarName: variableName,
+    min,
+    max,
+    step,
+    fallback: 0,
+    unit: "%",
+    read: (computed) => {
+      const raw = computed.getPropertyValue(variableName).trim();
+      if (!raw || raw === "auto") {
+        return 0;
+      }
+      return readFirstUnitValue(raw, "vh", 0);
+    },
+    apply: (root, value) => {
+      const normalized = clampValue(value, min, max);
+      if (normalized <= 0) {
+        root.style.removeProperty(variableName);
+        return;
+      }
+      root.style.setProperty(variableName, `${normalized}vh`);
+    },
+    reset: (root) => {
+      root.style.removeProperty(variableName);
+    },
+  };
+}
+
 type SectionScope = "header" | "sidebar" | "main" | "metadata";
 type SectionTarget = "pane" | "control";
 type SectionMetric =
@@ -1153,6 +1198,15 @@ export const LARGE_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
 ];
 
 export const SMALL_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
+  createCssDegreeParameter({
+    id: "small-panel-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelFillAngle",
+    variableName: "--mpx-dialog-panel-root-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
   {
     id: "small-panel-width",
     labelKey: "ui.themeParameter.smallPanelWidth",
@@ -1209,6 +1263,14 @@ export const SMALL_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
       root.style.removeProperty("--mpx-dialog-panel-width");
     },
   },
+  createOptionalCssViewportHeightParameter({
+    id: "small-panel-height",
+    labelKey: "ui.themeParameter.smallPanelHeight",
+    variableName: "--mpx-dialog-panel-height",
+    min: 0,
+    max: 100,
+    step: 1,
+  }),
   createCssPercentParameter({
     id: "small-panel-max-height",
     labelKey: "ui.themeParameter.smallPanelMaxHeight",
@@ -1254,6 +1316,89 @@ export const SMALL_PANEL_PARAMETERS: ThemeParameterDefinition[] = [
     max: 24,
     step: 1,
     fallback: 10,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-shortcut-edit-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelShortcutEditFillAngle",
+    variableName: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-shortcut-capture-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelShortcutCaptureFillAngle",
+    variableName: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-group-name-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelGroupNameFillAngle",
+    variableName: "--mpx-slot-fg-main-header-manage-group-name-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-delete-confirm-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelDeleteConfirmFillAngle",
+    variableName: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-ad-review-start-main-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelAdReviewStartMainFillAngle",
+    variableName: "--mpx-slot-fg-main-header-image-ad-review-start-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-ad-review-start-metadata-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelAdReviewStartMetadataFillAngle",
+    variableName: "--mpx-slot-fg-meta-main-ad-review-start-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-convert-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelConvertFillAngle",
+    variableName: "--mpx-slot-fg-main-header-image-convert-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-playlist-name-dialog-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelPlaylistNameDialogFillAngle",
+    variableName:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
+  }),
+  createCssDegreeParameter({
+    id: "small-panel-rename-single-fill-angle",
+    labelKey: "ui.themeParameter.smallPanelRenameSingleFillAngle",
+    variableName:
+      "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
+    min: -180,
+    max: 180,
+    step: 1,
+    fallback: 180,
   }),
 ];
 

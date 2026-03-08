@@ -66,8 +66,14 @@ interface ThemeParameterLargePanelInternalSectionsProps {
 
 interface ThemeParameterSmallPanelSectionGroupsProps {
   groups: readonly SmallPanelSectionGroupDefinition[];
+  resolveInlineParameters: (
+    parameterIds: readonly string[],
+  ) => ThemeParameterDefinition[];
   renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
   renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
+  renderParameterRowsWithVarLabel: (
+    parameters: ThemeParameterDefinition[],
+  ) => ReactNode;
 }
 
 export function ThemeParameterContainerFrameSection({
@@ -244,11 +250,21 @@ export function ThemeParameterLargePanelInternalSections({
 
 export function ThemeParameterSmallPanelSectionGroups({
   groups,
+  resolveInlineParameters,
   renderColorFieldRow,
   renderTextFieldRow,
+  renderParameterRowsWithVarLabel,
 }: ThemeParameterSmallPanelSectionGroupsProps) {
   return groups.map((group, index) => {
-    if (group.colorFields.length === 0 && group.textFields.length === 0) {
+    const inlineParameters = group.inlineParameterIds
+      ? resolveInlineParameters(group.inlineParameterIds)
+      : [];
+
+    if (
+      group.colorFields.length === 0 &&
+      group.textFields.length === 0 &&
+      inlineParameters.length === 0
+    ) {
       return null;
     }
 
@@ -272,6 +288,9 @@ export function ThemeParameterSmallPanelSectionGroups({
             {group.textFields.map(renderTextFieldRow)}
           </div>
         ) : null}
+        {inlineParameters.length > 0
+          ? renderParameterRowsWithVarLabel(inlineParameters)
+          : null}
       </section>
     );
   });

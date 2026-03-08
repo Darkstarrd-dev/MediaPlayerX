@@ -21,6 +21,7 @@
 - 不做业务逻辑改动。
 - 优先改 token，其次才写局部 selector override。
 - 大面板个例若需特化，优先走 `global large-panel token -> panel *-current override` 链路；不要在个例类上直接硬写 `--mpx-large-panel-width/height/radius/padding` 截断统一调节。
+- 小面板个例若需特化，优先走 `dialog-panel root fill -> slot fill current override` 链路；不要再新增 `panel-bg -> ovl-bg` 的回退耦合。
 - 若目标 style 为 `soft-skeuomorphic`，必须遵守拆分文件边界：
   - 全屏 transport 仅改 `soft-skeuomorphic.fullscreen-transport.css`
   - 非全屏 transport 仅改 `soft-skeuomorphic.main-transport.css`

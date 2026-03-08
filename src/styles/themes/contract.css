@@ -1147,11 +1147,6 @@
   --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
   --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
   --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
-  --mpx-dialog-panel-bg: linear-gradient(
-    var(--mpx-dialog-panel-fill-angle),
-    var(--mpx-dialog-panel-fill-start),
-    var(--mpx-dialog-panel-fill-end)
-  );
   --mpx-dialog-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)

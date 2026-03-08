@@ -83,6 +83,12 @@ npm run theme:verify:slots
 2. 非全屏 transport 只允许在 `soft-skeuomorphic.main-transport.css` 维护。
 3. 调整 `fg-main-content-*` 三模式容器（image/video/music）时，优先修改 `soft-skeuomorphic.components.css` 的 slot 规则，避免各模式分叉。
 
+### 1.7 小面板渐变总控约束（2026-03-08）
+
+- 小面板 root 与各 dialog slot 统一使用 `fill-start / fill-end / fill-angle` 三件套建模，不再把 `panel-bg` 当作调试主入口。
+- `--mpx-dialog-panel-bg` 不在 `:root` 层预合成，必须在 `.mpx-dialog-panel` / `.settings-floating-panel` 元素级由 `fill-start / fill-end / fill-angle` 现场合成；禁止继续把 slot `panel bg` 直接回退给遮罩层 `ovl-bg`。
+- ThemeParameter 小面板页遵循 `root 总控 -> slot 分控 -> 个别覆写` 链路；当总控被调节时，分控需同步写入，确保“当前显示 = 分控”的心智一致。
+
 ---
 
 ## 2. 文件结构
