@@ -543,8 +543,6 @@
 
 .sidebar-rename-dialog {
   --sidebar-rename-mode-col-width: clamp(220px, 28%, 320px);
-  --mpx-large-panel-width: 80vw;
-  --mpx-large-panel-height: 80vh;
   overflow: hidden;
 }
 
@@ -564,20 +562,7 @@
 
 .music-audio-transcode-dialog {
   --sidebar-rename-mode-col-width: clamp(220px, 28%, 320px);
-  --mpx-large-panel-width: min(960px, 94vw);
-  --mpx-large-panel-height: min(760px, 86vh);
-  --mpx-large-panel-radius: 26px;
-  --mpx-large-panel-main-padding-y: 0;
-  --mpx-large-panel-main-padding-x: 0;
   overflow: hidden;
-}
-
-.video-transcode-panel {
-  --mpx-large-panel-width: min(960px, 94vw);
-  --mpx-large-panel-height: min(760px, 86vh);
-  --mpx-large-panel-radius: 26px;
-  --mpx-large-panel-main-padding-y: 0;
-  --mpx-large-panel-main-padding-x: 0;
 }
 
 .music-audio-transcode-shell,
@@ -600,7 +585,7 @@
 .music-audio-transcode-header-caption {
   margin: 0;
   min-width: 0;
-  padding: 0 14px;
+  padding: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

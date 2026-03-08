@@ -64,6 +64,8 @@ interface ThemeParameterPanelMainProps {
   setContainerSharedShellExpanded: Dispatch<SetStateAction<boolean>>;
   containerHeaderExpanded: boolean;
   setContainerHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  containerHeaderAppearanceExpanded: boolean;
+  setContainerHeaderAppearanceExpanded: Dispatch<SetStateAction<boolean>>;
   containerHeaderButtonsExpanded: boolean;
   setContainerHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerHeaderLogoExpanded: boolean;
@@ -78,6 +80,8 @@ interface ThemeParameterPanelMainProps {
   setContainerHeaderG3Expanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarExpanded: boolean;
   setContainerSidebarExpanded: Dispatch<SetStateAction<boolean>>;
+  containerSidebarAppearanceExpanded: boolean;
+  setContainerSidebarAppearanceExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarHeaderExpanded: boolean;
   setContainerSidebarHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarHeaderTitleExpanded: boolean;
@@ -86,6 +90,8 @@ interface ThemeParameterPanelMainProps {
   setContainerSidebarHeaderActionsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainExpanded: boolean;
   setContainerMainExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainAppearanceExpanded: boolean;
+  setContainerMainAppearanceExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainHeaderExpanded: boolean;
   setContainerMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainHeaderButtonsExpanded: boolean;
@@ -94,6 +100,8 @@ interface ThemeParameterPanelMainProps {
   setContainerMainWorkspaceExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataExpanded: boolean;
   setContainerMetadataExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataAppearanceExpanded: boolean;
+  setContainerMetadataAppearanceExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataHeaderExpanded: boolean;
   setContainerMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataHeaderButtonsExpanded: boolean;
@@ -1663,6 +1671,30 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-header-z-index") {
     return "用于 Header 层级";
   }
+  if (cssVar === "--mpx-slot-fg-header-button-border") {
+    return "用于 Header 按钮总控边框（fg-header 全局按钮 fallback）";
+  }
+  if (cssVar === "--mpx-slot-fg-header-button-bg") {
+    return "用于 Header 按钮总控背景（fg-header 全局按钮 fallback）";
+  }
+  if (cssVar === "--mpx-slot-fg-header-button-text") {
+    return "用于 Header 按钮总控文字（fg-header 全局按钮 fallback）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-header-logo-")) {
+    return "用于 Header logo 按钮链路（fg-header-logo）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-header-g1-")) {
+    return "用于 Header g1 分组链路（fg-header-g1）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-header-g2-mode-")) {
+    return "用于 Header g2 模式切换链路（fg-header-g2）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-header-g-debug-")) {
+    return "用于 Header gDebug 分组链路（fg-header-g-debug）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-header-g3-")) {
+    return "用于 Header g3 分组链路（fg-header-g3）";
+  }
   if (cssVar === "--mpx-sidebar-bg") {
     return "用于 Sidebar frame 填充";
   }
@@ -1683,6 +1715,24 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar === "--mpx-sidebar-z-index") {
     return "用于 Sidebar 层级";
+  }
+  if (cssVar === "--mpx-slot-fg-sidebar-header-bg") {
+    return "用于 Sidebar header 根背景（.sidebar-header）";
+  }
+  if (cssVar === "--mpx-slot-fg-sidebar-header-border") {
+    return "用于 Sidebar header 根分隔线（.sidebar-header border-bottom）";
+  }
+  if (cssVar === "--mpx-slot-fg-sidebar-header-text") {
+    return "用于 Sidebar header 根文字 fallback（title / action text fallback）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-sidebar-header-button-")) {
+    return "用于 Sidebar header 按钮总控（fg-sidebar-header 按钮 fallback）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-sidebar-header-title-")) {
+    return "用于 Sidebar header title 按钮（fg-sidebar-header-title）";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-sidebar-header-action-")) {
+    return "用于 Sidebar header 其余按钮总控（fg-sidebar-header action）";
   }
   if (cssVar === "--mpx-main-bg") {
     return "用于 Main frame 填充";
@@ -1705,6 +1755,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-main-z-index") {
     return "用于 Main 层级";
   }
+  if (cssVar === "--mpx-main-header-fill-start") {
+    return "用于 Main header 根背景起始色";
+  }
+  if (cssVar === "--mpx-main-header-fill-end") {
+    return "用于 Main header 根背景结束色";
+  }
+  if (cssVar === "--mpx-main-header-border-color") {
+    return "用于 Main header 根分隔线颜色";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-main-header-button-")) {
+    return "用于 Main header 按钮总控（fg-main-header button fallback）";
+  }
   if (cssVar === "--mpx-metadata-bg") {
     return "用于 Metadata frame 填充";
   }
@@ -1725,6 +1787,18 @@ function resolveDebugVarUsage(cssVar: string): string {
   }
   if (cssVar === "--mpx-metadata-z-index") {
     return "用于 Metadata 层级";
+  }
+  if (cssVar === "--mpx-metadata-header-fill-start") {
+    return "用于 Metadata header 根背景起始色";
+  }
+  if (cssVar === "--mpx-metadata-header-fill-end") {
+    return "用于 Metadata header 根背景结束色";
+  }
+  if (cssVar === "--mpx-metadata-header-border-color") {
+    return "用于 Metadata header 根分隔线颜色";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-meta-header-button-")) {
+    return "用于 Metadata header 按钮总控（fg-meta-header button fallback）";
   }
   if (cssVar === "--mpx-sidebar-main-bg") {
     return "用于侧栏主列表壳层背景（.sidebar-tree）";
@@ -1789,8 +1863,23 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-main-image-name-list-")) {
     return "用于图片文件名列表（fg-main-content-image-name-list）样式链路";
   }
+  if (cssVar.startsWith("--mpx-large-panel-section-")) {
+    return "用于大面板 Head / Side / Main 共享默认值";
+  }
+  if (cssVar.startsWith("--mpx-large-panel-head-")) {
+    return "仅用于大面板 Head 分区";
+  }
+  if (cssVar.startsWith("--mpx-large-panel-shell-")) {
+    return "仅用于大面板 shell 分栏容器";
+  }
+  if (cssVar.startsWith("--mpx-large-panel-side-")) {
+    return "仅用于大面板 Side 分区";
+  }
+  if (cssVar.startsWith("--mpx-large-panel-main-")) {
+    return "仅用于大面板 Main 分区";
+  }
   if (cssVar.startsWith("--mpx-large-panel-")) {
-    return "用于大面板骨架（root/head/shell/side/main）";
+    return "仅用于大面板 root 本体";
   }
   if (cssVar.startsWith("--mpx-import-task-")) {
     return "用于导入任务面板子块（error / hint / review notice / hash log）";
@@ -3472,6 +3561,8 @@ export function ThemeParameterPanelMain({
   setContainerSharedShellExpanded,
   containerHeaderExpanded,
   setContainerHeaderExpanded,
+  containerHeaderAppearanceExpanded,
+  setContainerHeaderAppearanceExpanded,
   containerHeaderButtonsExpanded,
   setContainerHeaderButtonsExpanded,
   containerHeaderLogoExpanded,
@@ -3486,6 +3577,8 @@ export function ThemeParameterPanelMain({
   setContainerHeaderG3Expanded,
   containerSidebarExpanded,
   setContainerSidebarExpanded,
+  containerSidebarAppearanceExpanded,
+  setContainerSidebarAppearanceExpanded,
   containerSidebarHeaderExpanded,
   setContainerSidebarHeaderExpanded,
   containerSidebarHeaderTitleExpanded,
@@ -3494,6 +3587,8 @@ export function ThemeParameterPanelMain({
   setContainerSidebarHeaderActionsExpanded,
   containerMainExpanded,
   setContainerMainExpanded,
+  containerMainAppearanceExpanded,
+  setContainerMainAppearanceExpanded,
   containerMainHeaderExpanded,
   setContainerMainHeaderExpanded,
   containerMainHeaderButtonsExpanded,
@@ -3502,6 +3597,8 @@ export function ThemeParameterPanelMain({
   setContainerMainWorkspaceExpanded,
   containerMetadataExpanded,
   setContainerMetadataExpanded,
+  containerMetadataAppearanceExpanded,
+  setContainerMetadataAppearanceExpanded,
   containerMetadataHeaderExpanded,
   setContainerMetadataHeaderExpanded,
   containerMetadataHeaderButtonsExpanded,
@@ -3779,15 +3876,9 @@ export function ThemeParameterPanelMain({
     if (!parsed) {
       return;
     }
-    const previousState =
-      debugColorValues[field.id] ??
-      ({
-        hex: field.fallback,
-        alpha: field.fallbackAlpha ?? 1,
-      } satisfies ColorState);
     const nextState: ColorState = {
       hex: parsed.hex,
-      alpha: previousState.alpha,
+      alpha: parsed.alpha,
     };
     const root = document.documentElement;
     const nextCssValue = formatColorStateAsCss(nextState);
@@ -4793,6 +4884,8 @@ export function ThemeParameterPanelMain({
 
   const renderContainerFrameSection = (
     section: (typeof CONTAINER_FRAME_SECTION_DEFINITIONS)[number],
+    appearanceOpen: boolean,
+    setAppearanceOpen: Dispatch<SetStateAction<boolean>>,
   ) => {
     const appearanceParameters = pickContainerParameters(
       section.appearanceParameterIds,
@@ -4815,32 +4908,40 @@ export function ThemeParameterPanelMain({
     );
     return (
       <>
-        <section className="settings-group theme-parameter-debug-group">
-          <header className="settings-group-head">
-            <span>基础外观</span>
-          </header>
-          {fillColorFields.length > 0 ? (
-            <div className="theme-parameter-color-list">
-              {fillColorFields.map(renderColorFieldRow)}
-            </div>
-          ) : null}
-          {fillAngleParameters.length > 0
-            ? renderParameterRowsWithVarLabel(fillAngleParameters)
-            : null}
-          {otherColorFields.length > 0 ? (
-            <div className="theme-parameter-color-list">
-              {otherColorFields.map(renderColorFieldRow)}
-            </div>
-          ) : null}
-          {section.textFields.length > 0 ? (
-            <div className="theme-parameter-text-list">
-              {section.textFields.map(renderTextFieldRow)}
-            </div>
-          ) : null}
-          {shapeParameters.length > 0
-            ? renderParameterRowsWithVarLabel(shapeParameters)
-            : null}
-        </section>
+        <details
+          className="settings-collapsible"
+          open={appearanceOpen}
+          onToggle={(event) =>
+            setAppearanceOpen((event.currentTarget as HTMLDetailsElement).open)
+          }
+        >
+          <summary>基础外观</summary>
+          <div className="settings-collapsible-content">
+            <section className="settings-group theme-parameter-debug-group">
+              {fillColorFields.length > 0 ? (
+                <div className="theme-parameter-color-list">
+                  {fillColorFields.map(renderColorFieldRow)}
+                </div>
+              ) : null}
+              {fillAngleParameters.length > 0
+                ? renderParameterRowsWithVarLabel(fillAngleParameters)
+                : null}
+              {otherColorFields.length > 0 ? (
+                <div className="theme-parameter-color-list">
+                  {otherColorFields.map(renderColorFieldRow)}
+                </div>
+              ) : null}
+              {section.textFields.length > 0 ? (
+                <div className="theme-parameter-text-list">
+                  {section.textFields.map(renderTextFieldRow)}
+                </div>
+              ) : null}
+              {shapeParameters.length > 0
+                ? renderParameterRowsWithVarLabel(shapeParameters)
+                : null}
+            </section>
+          </div>
+        </details>
         <section className="settings-group theme-parameter-debug-group">
           <header className="settings-group-head">
             <span>视觉变换</span>
@@ -5829,6 +5930,8 @@ export function ThemeParameterPanelMain({
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[0],
+                  containerHeaderAppearanceExpanded,
+                  setContainerHeaderAppearanceExpanded,
                 )}
                 {renderContainerDebugSubsection(
                   HEADER_DEBUG_SUBSECTIONS[0],
@@ -5878,6 +5981,8 @@ export function ThemeParameterPanelMain({
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[1],
+                  containerSidebarAppearanceExpanded,
+                  setContainerSidebarAppearanceExpanded,
                 )}
                 {renderContainerDebugSubsection(
                   SIDEBAR_HEADER_DEBUG_SUBSECTIONS[0],
@@ -5894,6 +5999,22 @@ export function ThemeParameterPanelMain({
                   containerSidebarHeaderActionsExpanded,
                   setContainerSidebarHeaderActionsExpanded,
                 )}
+                <details
+                  className="settings-collapsible"
+                  open={containerSidebarMainExpanded}
+                  onToggle={(event) =>
+                    setContainerSidebarMainExpanded(
+                      (event.currentTarget as HTMLDetailsElement).open,
+                    )
+                  }
+                >
+                  <summary>
+                    {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
+                  </summary>
+                  <div className="settings-collapsible-content">
+                    {renderSidebarMainDebugSections()}
+                  </div>
+                </details>
               </div>
             </details>
 
@@ -5912,6 +6033,8 @@ export function ThemeParameterPanelMain({
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[2],
+                  containerMainAppearanceExpanded,
+                  setContainerMainAppearanceExpanded,
                 )}
                 {renderContainerDebugSubsection(
                   MAIN_HEADER_DEBUG_SUBSECTIONS[0],
@@ -5923,35 +6046,34 @@ export function ThemeParameterPanelMain({
                   containerMainHeaderButtonsExpanded,
                   setContainerMainHeaderButtonsExpanded,
                 )}
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerMainWorkspaceExpanded}
-              onToggle={(event) =>
-                setContainerMainWorkspaceExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
-              </summary>
-              <div className="settings-collapsible-content">
-                <section className="settings-group theme-parameter-debug-group">
-                  <header className="settings-group-head theme-parameter-subgroup-head">
-                    <span>工作区 / 图片网格</span>
-                    <span className="theme-parameter-subgroup-tag">
-                      fg-main-content-image-grid
-                    </span>
-                  </header>
-                  <div className="theme-parameter-color-list">
-                    {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
-                      renderColorFieldRow,
-                    )}
+                <details
+                  className="settings-collapsible"
+                  open={containerMainWorkspaceExpanded}
+                  onToggle={(event) =>
+                    setContainerMainWorkspaceExpanded(
+                      (event.currentTarget as HTMLDetailsElement).open,
+                    )
+                  }
+                >
+                  <summary>
+                    {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
+                  </summary>
+                  <div className="settings-collapsible-content">
+                    <section className="settings-group theme-parameter-debug-group">
+                      <header className="settings-group-head theme-parameter-subgroup-head">
+                        <span>工作区 / 图片网格</span>
+                        <span className="theme-parameter-subgroup-tag">
+                          fg-main-content-image-grid
+                        </span>
+                      </header>
+                      <div className="theme-parameter-color-list">
+                        {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
+                          renderColorFieldRow,
+                        )}
+                      </div>
+                    </section>
                   </div>
-                </section>
+                </details>
               </div>
             </details>
 
@@ -5970,6 +6092,8 @@ export function ThemeParameterPanelMain({
               <div className="settings-collapsible-content">
                 {renderContainerFrameSection(
                   CONTAINER_FRAME_SECTION_DEFINITIONS[3],
+                  containerMetadataAppearanceExpanded,
+                  setContainerMetadataAppearanceExpanded,
                 )}
                 {renderContainerDebugSubsection(
                   METADATA_HEADER_DEBUG_SUBSECTIONS[0],
@@ -5981,23 +6105,6 @@ export function ThemeParameterPanelMain({
                   containerMetadataHeaderButtonsExpanded,
                   setContainerMetadataHeaderButtonsExpanded,
                 )}
-              </div>
-            </details>
-
-            <details
-              className="settings-collapsible"
-              open={containerSidebarMainExpanded}
-              onToggle={(event) =>
-                setContainerSidebarMainExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionSidebarMain")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderSidebarMainDebugSections()}
               </div>
             </details>
 

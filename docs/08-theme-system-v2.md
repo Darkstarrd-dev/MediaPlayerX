@@ -927,6 +927,8 @@ Chromium 111+ / Electron 当前版本完全支持 `color-mix()`。
 | 全屏模式 | `--mpx-fullscreen-{bg,footer-bg}` — 不受 style layout token 影响 |
 | 拖拽导入遮罩 | `--mpx-bg-tooltip` + `--mpx-accent*` + `--mpx-text-inverse` |
 
+补充约定：大面板布局类 token（如 `--mpx-large-panel-width/height/radius` 与 `head/shell/side/main padding`）统一先由全局语义 token 提供，再由单面板 `*-current` 覆盖链消费；禁止在个例面板类上直接硬写 `--mpx-large-panel-*` 破坏统一调节入口。
+
 ---
 
 ## 9. 视觉 QA 清单

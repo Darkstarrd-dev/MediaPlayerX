@@ -135,7 +135,9 @@ function ImportTaskPanel({
       >
         <header className="import-task-panel-head mpx-large-panel-head settings-head settings-head-draggable" {...headHandlers}>
           <span className="settings-head-spacer" />
-          <h2>{t('ui.importTask.title')}</h2>
+          <h2 style={{ color: 'var(--mpx-large-panel-head-text, inherit)' }}>
+            {t('ui.importTask.title')}
+          </h2>
           <div className="import-task-panel-head-actions">
             <button type="button" onClick={onClose}>
               {t('ui.common.close')}

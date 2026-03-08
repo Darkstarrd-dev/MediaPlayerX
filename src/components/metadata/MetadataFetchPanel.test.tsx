@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import MetadataFetchPanel from './MetadataFetchPanel'
@@ -44,7 +44,7 @@ describe('MetadataFetchPanel', () => {
     const onSaveParsedMetadataToTarget = vi.fn().mockResolvedValue(undefined)
     const onClose = vi.fn()
 
-    const { container } = render(
+    render(
         <MetadataFetchPanel
           open={true}
           targets={[
@@ -61,7 +61,7 @@ describe('MetadataFetchPanel', () => {
         />,
       )
 
-    fireEvent.click(within(container).getByRole('button', { name: '检索' }))
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
 
     await waitFor(() => {
       expect(searchExternalMetadata).toHaveBeenCalledWith(
@@ -69,7 +69,7 @@ describe('MetadataFetchPanel', () => {
       )
     })
 
-    const nhColumn = container.querySelector('[data-source="nhentai"]') as HTMLElement | null
+    const nhColumn = document.body.querySelector('[data-source="nhentai"]') as HTMLElement | null
     expect(nhColumn).not.toBeNull()
     if (!nhColumn) {
       throw new Error('nhentai column not found')
@@ -139,7 +139,7 @@ describe('MetadataFetchPanel', () => {
 
     const onSaveParsedMetadataToTarget = vi.fn().mockResolvedValue(undefined)
 
-    const { container } = render(
+    render(
       <MetadataFetchPanel
         open={true}
         targets={[
@@ -153,11 +153,11 @@ describe('MetadataFetchPanel', () => {
       />,
     )
 
-    fireEvent.change(within(container).getByPlaceholderText('请求间隔(ms)'), {
+    fireEvent.change(screen.getByPlaceholderText('请求间隔(ms)'), {
       target: { value: '0' },
     })
 
-    fireEvent.click(within(container).getByRole('button', { name: '检索' }))
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
 
     await waitFor(() => {
       expect(searchExternalMetadata).toHaveBeenCalledWith(
@@ -168,7 +168,7 @@ describe('MetadataFetchPanel', () => {
       )
     })
 
-    const nhColumn = container.querySelector('[data-source="nhentai"]') as HTMLElement | null
+    const nhColumn = document.body.querySelector('[data-source="nhentai"]') as HTMLElement | null
     expect(nhColumn).not.toBeNull()
     if (!nhColumn) {
       throw new Error('nhentai column not found')
@@ -218,7 +218,7 @@ describe('MetadataFetchPanel', () => {
       searchExternalMetadata,
     } as unknown as typeof window.mediaPlayerBackend
 
-    const { container, rerender } = render(
+    const { rerender } = render(
       <MetadataFetchPanel
         open={true}
         targets={[{ packageId: 'pkg-1', label: 'pkg-1', defaultText: 'kw-1' }]}
@@ -229,15 +229,15 @@ describe('MetadataFetchPanel', () => {
       />,
     )
 
-    const keywordInput = within(container).getByPlaceholderText('检索关键字') as HTMLInputElement
+    const keywordInput = screen.getByPlaceholderText('检索关键字') as HTMLInputElement
     fireEvent.change(keywordInput, { target: { value: 'manual-keyword' } })
-    fireEvent.click(within(container).getByRole('button', { name: '检索' }))
+    fireEvent.click(screen.getByRole('button', { name: '检索' }))
 
     await waitFor(() => {
       expect(searchExternalMetadata).toHaveBeenCalledWith(
         expect.objectContaining({ source: 'nhentai', input_text: 'manual-keyword' }),
       )
-      expect(within(container).getByText('[Artist One]')).toBeInTheDocument()
+      expect(screen.getByText('[Artist One]')).toBeInTheDocument()
     })
 
     rerender(
@@ -252,9 +252,26 @@ describe('MetadataFetchPanel', () => {
     )
 
     await waitFor(() => {
-      const nextKeywordInput = within(container).getByPlaceholderText('检索关键字') as HTMLInputElement
+      const nextKeywordInput = screen.getByPlaceholderText('检索关键字') as HTMLInputElement
       expect(nextKeywordInput.value).toBe('manual-keyword')
-      expect(within(container).getByText('[Artist One]')).toBeInTheDocument()
+      expect(screen.getByText('[Artist One]')).toBeInTheDocument()
     })
+  })
+
+  it('以 portal 弹层形式挂载到 document.body', () => {
+    const { container } = render(
+      <MetadataFetchPanel
+        open={true}
+        targets={[{ packageId: 'pkg-1', label: 'pkg-1', defaultText: 'kw-1' }]}
+        proxyServer=""
+        metadataPending={false}
+        onClose={vi.fn()}
+        onSaveParsedMetadataToTarget={vi.fn().mockResolvedValue(undefined)}
+      />,
+    )
+
+    expect(container.querySelector('[data-slot="fg-main-header-image-metadata-fetch-ovl"]')).toBeNull()
+    expect(document.body.querySelector('[data-slot="fg-main-header-image-metadata-fetch-ovl"]')).not.toBeNull()
+    expect(document.body.querySelector('[data-slot="fg-main-header-image-metadata-fetch-panel"]')).not.toBeNull()
   })
 })

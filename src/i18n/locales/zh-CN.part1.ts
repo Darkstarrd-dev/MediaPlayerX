@@ -383,7 +383,7 @@ export const zhCnCatalogPart1 = {
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 fg-main-content-image-name-list",
-  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 大面板本体",
+  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root / Shell",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main 共享总控",
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",

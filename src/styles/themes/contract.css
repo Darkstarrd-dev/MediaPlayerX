@@ -783,12 +783,32 @@
   --mpx-large-panel-height: 80vh;
   --mpx-large-panel-max-width: none;
   --mpx-large-panel-max-height: none;
+  --mpx-large-panel-width-effective: var(
+    --mpx-large-panel-width-current,
+    var(--mpx-large-panel-width, 80vw)
+  );
+  --mpx-large-panel-height-effective: var(
+    --mpx-large-panel-height-current,
+    var(--mpx-large-panel-height, 80vh)
+  );
+  --mpx-large-panel-max-width-effective: var(
+    --mpx-large-panel-max-width-current,
+    var(--mpx-large-panel-max-width, none)
+  );
+  --mpx-large-panel-max-height-effective: var(
+    --mpx-large-panel-max-height-current,
+    var(--mpx-large-panel-max-height, none)
+  );
   --mpx-large-panel-border-width: 1px;
   --mpx-large-panel-border-color: var(
     --mpx-large-panel-border-color-current,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
   --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
+  --mpx-large-panel-radius-effective: var(
+    --mpx-large-panel-radius-current,
+    var(--mpx-large-panel-radius, var(--mpx-radius-overlay-pop, 14px))
+  );
   --mpx-large-panel-fill-start: var(
     --mpx-large-panel-fill-start-current,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
@@ -819,6 +839,14 @@
   );
   --mpx-large-panel-head-padding-y: 10px;
   --mpx-large-panel-head-padding-x: 14px;
+  --mpx-large-panel-head-padding-y-effective: var(
+    --mpx-large-panel-head-padding-y-current,
+    var(--mpx-large-panel-head-padding-y, 10px)
+  );
+  --mpx-large-panel-head-padding-x-effective: var(
+    --mpx-large-panel-head-padding-x-current,
+    var(--mpx-large-panel-head-padding-x, 14px)
+  );
   --mpx-large-panel-head-fill: linear-gradient(
     var(
       --mpx-large-panel-head-fill-angle,
@@ -846,6 +874,10 @@
   --mpx-large-panel-shell-no-side-columns: 1fr;
   --mpx-large-panel-shell-gap: 10px;
   --mpx-large-panel-shell-padding: 10px;
+  --mpx-large-panel-shell-padding-effective: var(
+    --mpx-large-panel-shell-padding-current,
+    var(--mpx-large-panel-shell-padding, 10px)
+  );
 
   --mpx-large-panel-side-border-width: var(
     --mpx-large-panel-section-border-width,
@@ -878,6 +910,10 @@
   );
   --mpx-large-panel-side-bg: var(--mpx-large-panel-side-fill);
   --mpx-large-panel-side-padding: 10px;
+  --mpx-large-panel-side-padding-effective: var(
+    --mpx-large-panel-side-padding-current,
+    var(--mpx-large-panel-side-padding, 10px)
+  );
   --mpx-large-panel-side-gap: 8px;
 
   --mpx-large-panel-main-border-width: var(
@@ -912,6 +948,14 @@
   --mpx-large-panel-main-bg: var(--mpx-large-panel-main-fill);
   --mpx-large-panel-main-padding-y: 14px;
   --mpx-large-panel-main-padding-x: 16px;
+  --mpx-large-panel-main-padding-y-effective: var(
+    --mpx-large-panel-main-padding-y-current,
+    var(--mpx-large-panel-main-padding-y, 14px)
+  );
+  --mpx-large-panel-main-padding-x-effective: var(
+    --mpx-large-panel-main-padding-x-current,
+    var(--mpx-large-panel-main-padding-x, 16px)
+  );
   --mpx-large-panel-main-align-items: flex-start;
   --mpx-large-panel-main-justify-content: flex-start;
 

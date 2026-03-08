@@ -11,6 +11,7 @@ interface ThemeParameterUISessionState {
   containerBackgroundExpanded: boolean;
   containerSharedShellExpanded: boolean;
   containerHeaderExpanded: boolean;
+  containerHeaderAppearanceExpanded: boolean;
   containerHeaderButtonsExpanded: boolean;
   containerHeaderLogoExpanded: boolean;
   containerHeaderG1Expanded: boolean;
@@ -18,14 +19,17 @@ interface ThemeParameterUISessionState {
   containerHeaderGDebugExpanded: boolean;
   containerHeaderG3Expanded: boolean;
   containerSidebarExpanded: boolean;
+  containerSidebarAppearanceExpanded: boolean;
   containerSidebarHeaderExpanded: boolean;
   containerSidebarHeaderTitleExpanded: boolean;
   containerSidebarHeaderActionsExpanded: boolean;
   containerMainExpanded: boolean;
+  containerMainAppearanceExpanded: boolean;
   containerMainHeaderExpanded: boolean;
   containerMainHeaderButtonsExpanded: boolean;
   containerMainWorkspaceExpanded: boolean;
   containerMetadataExpanded: boolean;
+  containerMetadataAppearanceExpanded: boolean;
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
   containerSidebarMainExpanded: boolean;
@@ -51,6 +55,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerBackgroundExpanded: true,
   containerSharedShellExpanded: true,
   containerHeaderExpanded: false,
+  containerHeaderAppearanceExpanded: true,
   containerHeaderButtonsExpanded: false,
   containerHeaderLogoExpanded: false,
   containerHeaderG1Expanded: false,
@@ -58,14 +63,17 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerHeaderGDebugExpanded: false,
   containerHeaderG3Expanded: false,
   containerSidebarExpanded: false,
+  containerSidebarAppearanceExpanded: true,
   containerSidebarHeaderExpanded: false,
   containerSidebarHeaderTitleExpanded: false,
   containerSidebarHeaderActionsExpanded: false,
   containerMainExpanded: false,
+  containerMainAppearanceExpanded: true,
   containerMainHeaderExpanded: false,
   containerMainHeaderButtonsExpanded: false,
   containerMainWorkspaceExpanded: false,
   containerMetadataExpanded: false,
+  containerMetadataAppearanceExpanded: true,
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
   containerSidebarMainExpanded: false,

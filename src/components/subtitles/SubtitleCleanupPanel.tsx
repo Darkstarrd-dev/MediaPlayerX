@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { MainUiIcon } from "../MainUiIcon";
 import { useI18n } from "../../i18n/useI18n";
@@ -221,7 +222,11 @@ function SubtitleCleanupPanel({
     }
   };
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="settings-mask"
       data-slot="fg-main-header-manage-subtitle-cleanup-ovl"
@@ -234,13 +239,15 @@ function SubtitleCleanupPanel({
         className="mpx-large-panel mpx-large-panel--subtitle-cleanup settings-panel subtitle-cleanup-panel"
         data-slot="fg-main-header-manage-subtitle-cleanup-panel"
         data-overlay-close="subtitle-cleanup-panel"
-      >
-        <header className="mpx-large-panel-head settings-head metadata-fetch-head">
-          <span className="settings-head-spacer" />
-          <h2>{t("ui.media.subtitleCleanupTitle")}</h2>
-          <button
-            className="feature-action-btn main-icon-square-btn"
-            type="button"
+        >
+          <header className="mpx-large-panel-head settings-head metadata-fetch-head">
+            <span className="settings-head-spacer" />
+            <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
+              {t("ui.media.subtitleCleanupTitle")}
+            </h2>
+            <button
+              className="feature-action-btn main-icon-square-btn"
+              type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
             onClick={onClose}
@@ -362,7 +369,8 @@ function SubtitleCleanupPanel({
           </main>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

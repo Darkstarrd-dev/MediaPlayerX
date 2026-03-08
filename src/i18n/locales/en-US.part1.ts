@@ -408,7 +408,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 fg-main-content-image-name-list",
-  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Large panel root",
+  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root / Shell",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main shared control",
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",

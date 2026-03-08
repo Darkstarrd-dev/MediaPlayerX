@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 
 import { MainUiIcon } from '../MainUiIcon'
 import { useDraggablePanel } from '../useDraggablePanel'
@@ -511,7 +512,11 @@ function MetadataFetchPanel({
     }
   }
 
-  return (
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  return createPortal(
     <div className="settings-mask" data-slot="fg-main-header-image-metadata-fetch-ovl" role="dialog" aria-modal="true" aria-label={t('a11y.metadata.fetchDialog')} data-overlay-close="metadata-fetch-panel">
       <section
         className={`mpx-large-panel mpx-large-panel--metadata-fetch settings-panel metadata-fetch-panel ${panelDragging ? 'is-dragging' : ''}`}
@@ -521,7 +526,9 @@ function MetadataFetchPanel({
       >
         <header className="mpx-large-panel-head settings-head settings-head-draggable metadata-fetch-head" {...headHandlers}>
           <div className="metadata-fetch-head-main">
-            <h2>{t('ui.metadata.fetchTitle')}</h2>
+            <h2 style={{ color: 'var(--mpx-large-panel-head-text, inherit)' }}>
+              {t('ui.metadata.fetchTitle')}
+            </h2>
             <p className="settings-placeholder metadata-fetch-head-placeholder">
               {`\t\t${t('ui.metadata.fetchTargetPackage', { label: currentTarget?.label || '-' })} (${Math.min(activeTargetIndex + 1, Math.max(1, targets.length))}/${Math.max(1, targets.length)})\t\t${t('ui.metadata.fetchTotalSummary', { count: resultCount, source: getSourceLabel(selectedSource) })}`}
             </p>
@@ -899,7 +906,8 @@ function MetadataFetchPanel({
           </main>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

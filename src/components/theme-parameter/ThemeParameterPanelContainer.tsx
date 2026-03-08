@@ -2045,6 +2045,10 @@ function ThemeParameterPanel({
     initialUiSessionState.containerHeaderExpanded,
   );
   const [
+    containerHeaderAppearanceExpanded,
+    setContainerHeaderAppearanceExpandedState,
+  ] = useState(initialUiSessionState.containerHeaderAppearanceExpanded);
+  const [
     containerHeaderButtonsExpanded,
     setContainerHeaderButtonsExpandedState,
   ] = useState(initialUiSessionState.containerHeaderButtonsExpanded);
@@ -2062,6 +2066,10 @@ function ThemeParameterPanel({
     initialUiSessionState.containerSidebarExpanded,
   );
   const [
+    containerSidebarAppearanceExpanded,
+    setContainerSidebarAppearanceExpandedState,
+  ] = useState(initialUiSessionState.containerSidebarAppearanceExpanded);
+  const [
     containerSidebarHeaderExpanded,
     setContainerSidebarHeaderExpandedState,
   ] = useState(initialUiSessionState.containerSidebarHeaderExpanded);
@@ -2076,6 +2084,10 @@ function ThemeParameterPanel({
   const [containerMainExpanded, setContainerMainExpandedState] = useState(
     initialUiSessionState.containerMainExpanded,
   );
+  const [
+    containerMainAppearanceExpanded,
+    setContainerMainAppearanceExpandedState,
+  ] = useState(initialUiSessionState.containerMainAppearanceExpanded);
   const [containerMainHeaderExpanded, setContainerMainHeaderExpandedState] =
     useState(initialUiSessionState.containerMainHeaderExpanded);
   const [
@@ -2088,6 +2100,10 @@ function ThemeParameterPanel({
   ] = useState(initialUiSessionState.containerMainWorkspaceExpanded);
   const [containerMetadataExpanded, setContainerMetadataExpandedState] =
     useState(initialUiSessionState.containerMetadataExpanded);
+  const [
+    containerMetadataAppearanceExpanded,
+    setContainerMetadataAppearanceExpandedState,
+  ] = useState(initialUiSessionState.containerMetadataAppearanceExpanded);
   const [
     containerMetadataHeaderExpanded,
     setContainerMetadataHeaderExpandedState,
@@ -2195,6 +2211,18 @@ function ThemeParameterPanel({
     });
   };
 
+  const setContainerHeaderAppearanceExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerHeaderAppearanceExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerHeaderAppearanceExpanded: next,
+      });
+      return next;
+    });
+  };
+
   const setContainerHeaderButtonsExpanded = (
     action: SetStateAction<boolean>,
   ) => {
@@ -2259,6 +2287,18 @@ function ThemeParameterPanel({
     });
   };
 
+  const setContainerSidebarAppearanceExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerSidebarAppearanceExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerSidebarAppearanceExpanded: next,
+      });
+      return next;
+    });
+  };
+
   const setContainerSidebarHeaderExpanded = (
     action: SetStateAction<boolean>,
   ) => {
@@ -2303,6 +2343,18 @@ function ThemeParameterPanel({
     });
   };
 
+  const setContainerMainAppearanceExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMainAppearanceExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMainAppearanceExpanded: next,
+      });
+      return next;
+    });
+  };
+
   const setContainerMainHeaderExpanded = (action: SetStateAction<boolean>) => {
     setContainerMainHeaderExpandedState((previous) => {
       const next = resolveNextState(action, previous);
@@ -2339,6 +2391,18 @@ function ThemeParameterPanel({
     setContainerMetadataExpandedState((previous) => {
       const next = resolveNextState(action, previous);
       updateThemeParameterUiSessionState({ containerMetadataExpanded: next });
+      return next;
+    });
+  };
+
+  const setContainerMetadataAppearanceExpanded = (
+    action: SetStateAction<boolean>,
+  ) => {
+    setContainerMetadataAppearanceExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({
+        containerMetadataAppearanceExpanded: next,
+      });
       return next;
     });
   };
@@ -2535,9 +2599,54 @@ function ThemeParameterPanel({
       uiSessionState.containerSharedShellExpanded,
     );
     setContainerHeaderExpandedState(uiSessionState.containerHeaderExpanded);
+    setContainerHeaderAppearanceExpandedState(
+      uiSessionState.containerHeaderAppearanceExpanded,
+    );
+    setContainerHeaderButtonsExpandedState(
+      uiSessionState.containerHeaderButtonsExpanded,
+    );
+    setContainerHeaderLogoExpandedState(
+      uiSessionState.containerHeaderLogoExpanded,
+    );
+    setContainerHeaderG1ExpandedState(uiSessionState.containerHeaderG1Expanded);
+    setContainerHeaderG2ExpandedState(uiSessionState.containerHeaderG2Expanded);
+    setContainerHeaderGDebugExpandedState(
+      uiSessionState.containerHeaderGDebugExpanded,
+    );
+    setContainerHeaderG3ExpandedState(uiSessionState.containerHeaderG3Expanded);
     setContainerSidebarExpandedState(uiSessionState.containerSidebarExpanded);
+    setContainerSidebarAppearanceExpandedState(
+      uiSessionState.containerSidebarAppearanceExpanded,
+    );
+    setContainerSidebarHeaderExpandedState(
+      uiSessionState.containerSidebarHeaderExpanded,
+    );
+    setContainerSidebarHeaderTitleExpandedState(
+      uiSessionState.containerSidebarHeaderTitleExpanded,
+    );
+    setContainerSidebarHeaderActionsExpandedState(
+      uiSessionState.containerSidebarHeaderActionsExpanded,
+    );
     setContainerMainExpandedState(uiSessionState.containerMainExpanded);
+    setContainerMainAppearanceExpandedState(
+      uiSessionState.containerMainAppearanceExpanded,
+    );
+    setContainerMainHeaderExpandedState(
+      uiSessionState.containerMainHeaderExpanded,
+    );
+    setContainerMainHeaderButtonsExpandedState(
+      uiSessionState.containerMainHeaderButtonsExpanded,
+    );
     setContainerMetadataExpandedState(uiSessionState.containerMetadataExpanded);
+    setContainerMetadataAppearanceExpandedState(
+      uiSessionState.containerMetadataAppearanceExpanded,
+    );
+    setContainerMetadataHeaderExpandedState(
+      uiSessionState.containerMetadataHeaderExpanded,
+    );
+    setContainerMetadataHeaderButtonsExpandedState(
+      uiSessionState.containerMetadataHeaderButtonsExpanded,
+    );
     setContainerSidebarMainExpandedState(
       uiSessionState.containerSidebarMainExpanded,
     );
@@ -2615,6 +2724,7 @@ function ThemeParameterPanel({
       containerBackgroundExpanded,
       containerSharedShellExpanded,
       containerHeaderExpanded,
+      containerHeaderAppearanceExpanded,
       containerHeaderButtonsExpanded,
       containerHeaderLogoExpanded,
       containerHeaderG1Expanded,
@@ -2622,14 +2732,17 @@ function ThemeParameterPanel({
       containerHeaderGDebugExpanded,
       containerHeaderG3Expanded,
       containerSidebarExpanded,
+      containerSidebarAppearanceExpanded,
       containerSidebarHeaderExpanded,
       containerSidebarHeaderTitleExpanded,
       containerSidebarHeaderActionsExpanded,
       containerMainExpanded,
+      containerMainAppearanceExpanded,
       containerMainHeaderExpanded,
       containerMainHeaderButtonsExpanded,
       containerMainWorkspaceExpanded,
       containerMetadataExpanded,
+      containerMetadataAppearanceExpanded,
       containerMetadataHeaderExpanded,
       containerMetadataHeaderButtonsExpanded,
       containerSidebarMainExpanded,
@@ -2650,6 +2763,7 @@ function ThemeParameterPanel({
     containerBackgroundExpanded,
     containerSharedShellExpanded,
     containerHeaderExpanded,
+    containerHeaderAppearanceExpanded,
     containerHeaderButtonsExpanded,
     containerHeaderLogoExpanded,
     containerHeaderG1Expanded,
@@ -2657,14 +2771,17 @@ function ThemeParameterPanel({
     containerHeaderGDebugExpanded,
     containerHeaderG3Expanded,
     containerSidebarExpanded,
+    containerSidebarAppearanceExpanded,
     containerSidebarHeaderExpanded,
     containerSidebarHeaderTitleExpanded,
     containerSidebarHeaderActionsExpanded,
     containerMainExpanded,
+    containerMainAppearanceExpanded,
     containerMainHeaderExpanded,
     containerMainHeaderButtonsExpanded,
     containerMainWorkspaceExpanded,
     containerMetadataExpanded,
+    containerMetadataAppearanceExpanded,
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
     containerMainImageNameListExpanded,
@@ -3525,7 +3642,9 @@ function ThemeParameterPanel({
             className="mpx-large-panel-head-spacer settings-head-spacer"
             aria-hidden="true"
           />
-          <h2>{t("ui.themeParameter.panel")}</h2>
+          <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
+            {t("ui.themeParameter.panel")}
+          </h2>
           <div className="settings-head-actions">
             <button
               {...resetA11y}
@@ -3592,6 +3711,10 @@ function ThemeParameterPanel({
           setContainerSharedShellExpanded={setContainerSharedShellExpanded}
           containerHeaderExpanded={containerHeaderExpanded}
           setContainerHeaderExpanded={setContainerHeaderExpanded}
+          containerHeaderAppearanceExpanded={containerHeaderAppearanceExpanded}
+          setContainerHeaderAppearanceExpanded={
+            setContainerHeaderAppearanceExpanded
+          }
           containerHeaderButtonsExpanded={containerHeaderButtonsExpanded}
           setContainerHeaderButtonsExpanded={setContainerHeaderButtonsExpanded}
           containerHeaderLogoExpanded={containerHeaderLogoExpanded}
@@ -3606,6 +3729,12 @@ function ThemeParameterPanel({
           setContainerHeaderG3Expanded={setContainerHeaderG3Expanded}
           containerSidebarExpanded={containerSidebarExpanded}
           setContainerSidebarExpanded={setContainerSidebarExpanded}
+          containerSidebarAppearanceExpanded={
+            containerSidebarAppearanceExpanded
+          }
+          setContainerSidebarAppearanceExpanded={
+            setContainerSidebarAppearanceExpanded
+          }
           containerSidebarHeaderExpanded={containerSidebarHeaderExpanded}
           setContainerSidebarHeaderExpanded={setContainerSidebarHeaderExpanded}
           containerSidebarHeaderTitleExpanded={
@@ -3622,6 +3751,10 @@ function ThemeParameterPanel({
           }
           containerMainExpanded={containerMainExpanded}
           setContainerMainExpanded={setContainerMainExpanded}
+          containerMainAppearanceExpanded={containerMainAppearanceExpanded}
+          setContainerMainAppearanceExpanded={
+            setContainerMainAppearanceExpanded
+          }
           containerMainHeaderExpanded={containerMainHeaderExpanded}
           setContainerMainHeaderExpanded={setContainerMainHeaderExpanded}
           containerMainHeaderButtonsExpanded={
@@ -3634,6 +3767,12 @@ function ThemeParameterPanel({
           setContainerMainWorkspaceExpanded={setContainerMainWorkspaceExpanded}
           containerMetadataExpanded={containerMetadataExpanded}
           setContainerMetadataExpanded={setContainerMetadataExpanded}
+          containerMetadataAppearanceExpanded={
+            containerMetadataAppearanceExpanded
+          }
+          setContainerMetadataAppearanceExpanded={
+            setContainerMetadataAppearanceExpanded
+          }
           containerMetadataHeaderExpanded={containerMetadataHeaderExpanded}
           setContainerMetadataHeaderExpanded={
             setContainerMetadataHeaderExpanded

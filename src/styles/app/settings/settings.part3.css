@@ -217,11 +217,6 @@
 }
 
 @media (max-width: 900px) {
-  .sidebar-rename-dialog {
-    --mpx-large-panel-width: 96vw;
-    --mpx-large-panel-height: 90vh;
-  }
-
   .sidebar-rename-title {
     font-size: 24px;
   }
@@ -286,18 +281,6 @@
   .sidebar-rename-dialog .mpx-overlay-footer-btn {
     font-size: 18px;
     height: 38px;
-  }
-
-  .music-audio-transcode-dialog {
-    --mpx-large-panel-width: min(960px, 96vw);
-    --mpx-large-panel-height: min(760px, 90vh);
-    --mpx-large-panel-radius: 18px;
-  }
-
-  .video-transcode-panel {
-    --mpx-large-panel-width: min(960px, 96vw);
-    --mpx-large-panel-height: min(760px, 90vh);
-    --mpx-large-panel-radius: 18px;
   }
 
   .music-audio-transcode-path-row {

@@ -113,6 +113,7 @@
 }
 
 [data-slot="fg-header-g3-theme-parameter-root-ovl"] {
+  z-index: 3800;
   background: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-ovl-bg,
     var(
@@ -322,7 +323,43 @@
 }
 
 [data-slot="fg-header-g1-settings-root-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-header-g1-settings-root-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-header-g1-settings-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -334,7 +371,7 @@
     --mpx-slot-fg-header-g1-settings-root-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-header-g1-settings-root-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -373,7 +410,43 @@
 }
 
 [data-slot="fg-header-g3-help-root-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-header-g3-help-root-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-header-g3-help-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -385,7 +458,7 @@
     --mpx-slot-fg-header-g3-help-root-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-header-g3-help-root-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -424,6 +497,42 @@
 }
 
 [data-slot="fg-header-g3-theme-parameter-root-panel"] {
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-header-g3-theme-parameter-root-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
   --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
@@ -575,7 +684,43 @@
 }
 
 [data-slot="fg-sidebar-shortcut-rename-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-sidebar-shortcut-rename-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -587,7 +732,7 @@
     --mpx-slot-fg-sidebar-shortcut-rename-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-sidebar-shortcut-rename-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -726,7 +871,43 @@
 }
 
 [data-slot="fg-import-task-root"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-import-task-root-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-import-task-root-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-import-task-root-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-import-task-root-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-import-task-root-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-import-task-root-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-import-task-root-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-import-task-root-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-import-task-root-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-import-task-root-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -738,7 +919,7 @@
     --mpx-slot-fg-import-task-root-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-import-task-root-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -769,7 +950,43 @@
 }
 
 [data-slot="fg-main-header-image-metadata-fetch-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-main-header-image-metadata-fetch-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -781,7 +998,7 @@
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-main-header-image-metadata-fetch-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -916,7 +1133,43 @@
 }
 
 [data-slot="fg-main-header-manage-subtitle-cleanup-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -928,7 +1181,7 @@
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-main-header-manage-subtitle-cleanup-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -1037,7 +1290,43 @@
 }
 
 [data-slot="fg-main-header-manage-video-transcode-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-video-transcode-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -1049,7 +1338,7 @@
     --mpx-slot-fg-main-header-manage-video-transcode-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-main-header-manage-video-transcode-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -1116,7 +1405,43 @@
 }
 
 [data-slot="fg-main-header-manage-music-transcode-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-main-header-manage-music-transcode-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -1128,7 +1453,7 @@
     --mpx-slot-fg-main-header-manage-music-transcode-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-main-header-manage-music-transcode-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -1195,7 +1520,43 @@
 }
 
 [data-slot="fg-meta-main-search-feature-tag-picker-panel"] {
-  --mpx-large-panel-border-color: var(
+  --mpx-large-panel-width-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-width,
+    var(--mpx-large-panel-width)
+  );
+  --mpx-large-panel-height-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-height,
+    var(--mpx-large-panel-height)
+  );
+  --mpx-large-panel-radius-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-radius,
+    var(--mpx-large-panel-radius)
+  );
+  --mpx-large-panel-head-padding-y-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-padding-y,
+    var(--mpx-large-panel-head-padding-y)
+  );
+  --mpx-large-panel-head-padding-x-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-head-padding-x,
+    var(--mpx-large-panel-head-padding-x)
+  );
+  --mpx-large-panel-shell-padding-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-shell-padding,
+    var(--mpx-large-panel-shell-padding)
+  );
+  --mpx-large-panel-side-padding-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-side-padding,
+    var(--mpx-large-panel-side-padding)
+  );
+  --mpx-large-panel-main-padding-y-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-main-padding-y,
+    var(--mpx-large-panel-main-padding-y)
+  );
+  --mpx-large-panel-main-padding-x-current: var(
+    --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-main-padding-x,
+    var(--mpx-large-panel-main-padding-x)
+  );
+  --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-border,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
@@ -1207,7 +1568,7 @@
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
   );
-  --mpx-large-panel-shadow: var(
+  --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-meta-main-search-feature-tag-picker-panel-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
@@ -1380,16 +1741,16 @@
 
 .mpx-large-panel,
 .settings-panel {
-  width: var(--mpx-large-panel-width, 80vw);
-  height: var(--mpx-large-panel-height, 80vh);
-  max-width: var(--mpx-large-panel-max-width, none);
-  max-height: var(--mpx-large-panel-max-height, none);
+  width: var(--mpx-large-panel-width-effective, var(--mpx-large-panel-width, 80vw));
+  height: var(--mpx-large-panel-height-effective, var(--mpx-large-panel-height, 80vh));
+  max-width: var(--mpx-large-panel-max-width-effective, var(--mpx-large-panel-max-width, none));
+  max-height: var(--mpx-large-panel-max-height-effective, var(--mpx-large-panel-max-height, none));
   border: var(--mpx-large-panel-border-width, 1px) solid
     var(
       --mpx-large-panel-border-color,
       var(--mpx-overlay-surface-border, var(--mpx-border-2))
     );
-  border-radius: var(--mpx-large-panel-radius, 14px);
+  border-radius: var(--mpx-large-panel-radius-effective, var(--mpx-large-panel-radius, 14px));
   background: var(
     --mpx-large-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
@@ -1407,8 +1768,8 @@
 .settings-head {
   border-bottom: var(--mpx-large-panel-head-border-width, 1px) solid
     var(--mpx-large-panel-head-border-color, var(--mpx-border-1));
-  padding: var(--mpx-large-panel-head-padding-y, 10px)
-    var(--mpx-large-panel-head-padding-x, 14px);
+  padding: var(--mpx-large-panel-head-padding-y-effective, var(--mpx-large-panel-head-padding-y, 10px))
+    var(--mpx-large-panel-head-padding-x-effective, var(--mpx-large-panel-head-padding-x, 14px));
   background: var(--mpx-large-panel-head-bg, transparent);
   color: var(--mpx-large-panel-head-text, inherit);
   display: grid;
@@ -1436,6 +1797,10 @@
 .settings-head h2 {
   margin: 0;
   text-align: center;
+}
+
+.theme-parameter-panel .settings-head h2 {
+  color: var(--mpx-large-panel-head-text, inherit);
 }
 
 .mpx-large-panel-head button,
@@ -1466,7 +1831,7 @@
     minmax(180px, 20%) 1fr
   );
   gap: var(--mpx-large-panel-shell-gap, 10px);
-  padding: var(--mpx-large-panel-shell-padding, 10px);
+  padding: var(--mpx-large-panel-shell-padding-effective, var(--mpx-large-panel-shell-padding, 10px));
 }
 
 .mpx-large-panel-shell.is-no-side,
@@ -1482,7 +1847,7 @@
     var(--mpx-large-panel-side-border-color, var(--mpx-border-1));
   border-radius: var(--mpx-large-panel-side-radius, 10px);
   background: var(--mpx-large-panel-side-bg, var(--mpx-bg-elevated));
-  padding: var(--mpx-large-panel-side-padding, 10px);
+  padding: var(--mpx-large-panel-side-padding-effective, var(--mpx-large-panel-side-padding, 10px));
   display: flex;
   flex-direction: column;
   gap: var(--mpx-large-panel-side-gap, 8px);
@@ -1505,8 +1870,8 @@
     var(--mpx-large-panel-main-border-color, var(--mpx-border-1));
   border-radius: var(--mpx-large-panel-main-radius, 10px);
   background: var(--mpx-large-panel-main-bg, var(--mpx-bg-elevated));
-  padding: var(--mpx-large-panel-main-padding-y, 14px)
-    var(--mpx-large-panel-main-padding-x, 16px);
+  padding: var(--mpx-large-panel-main-padding-y-effective, var(--mpx-large-panel-main-padding-y, 14px))
+    var(--mpx-large-panel-main-padding-x-effective, var(--mpx-large-panel-main-padding-x, 16px));
   overflow: auto;
 }
 

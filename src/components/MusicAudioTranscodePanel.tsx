@@ -1,4 +1,5 @@
 import { useMemo, useState, type MouseEvent } from "react";
+import { createPortal } from "react-dom";
 
 import type { AppSettings } from "../contracts/settings";
 import type {
@@ -141,7 +142,11 @@ export function MusicAudioTranscodePanel({
     return null;
   }
 
-  return (
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
     <div
       className="settings-mask"
       data-slot="fg-main-header-manage-music-transcode-ovl"
@@ -165,7 +170,9 @@ export function MusicAudioTranscodePanel({
             className="mpx-large-panel-head-spacer settings-head-spacer"
             aria-hidden="true"
           />
-          <h2>{t("ui.music.audioTranscodeTitle")}</h2>
+          <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
+            {t("ui.music.audioTranscodeTitle")}
+          </h2>
           <button
             className="feature-action-btn main-icon-square-btn settings-icon-btn"
             type="button"
@@ -645,6 +652,7 @@ export function MusicAudioTranscodePanel({
           </main>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

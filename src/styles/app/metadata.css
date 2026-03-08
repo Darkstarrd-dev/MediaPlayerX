@@ -1263,8 +1263,6 @@
 }
 
 .feature-tag-modal-panel {
-  --mpx-large-panel-width: 80vw;
-  --mpx-large-panel-height: 80vh;
   overflow: hidden;
 }
 

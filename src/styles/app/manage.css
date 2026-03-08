@@ -624,8 +624,6 @@
 }
 
 .metadata-fetch-panel {
-  --mpx-large-panel-width: 80vw;
-  --mpx-large-panel-height: 80vh;
   overflow: hidden;
 }
 
@@ -1118,11 +1116,6 @@
 }
 
 @media (max-width: 960px) {
-  .metadata-fetch-panel {
-    --mpx-large-panel-width: 96vw;
-    --mpx-large-panel-height: 92vh;
-  }
-
   .metadata-fetch-search-row {
     min-width: 820px;
   }

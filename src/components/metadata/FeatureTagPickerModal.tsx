@@ -69,7 +69,9 @@ export function FeatureTagPickerModal({
         >
           <header className="mpx-large-panel-head settings-head settings-head-draggable feature-tag-modal-head" {...headHandlers}>
             <span className="mpx-large-panel-head-spacer settings-head-spacer" aria-hidden="true" />
-            <h2>{t('ui.tags.selectTitle')}</h2>
+            <h2 style={{ color: 'var(--mpx-large-panel-head-text, inherit)' }}>
+              {t('ui.tags.selectTitle')}
+            </h2>
             <button
               className="settings-icon-btn main-icon-square-btn"
               type="button"
