@@ -159,10 +159,16 @@
   position: relative;
   z-index: 2;
   background: var(
-    --mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg,
+    --mpx-slot-fg-main-content-image-name-list-row-selected-bg,
     var(
-      --mpx-main-image-name-list-row-manage-selected-bg,
-      var(--mpx-state-selected-color)
+      --mpx-main-image-name-list-row-selected-bg,
+      var(
+        --mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg,
+        var(
+          --mpx-main-image-name-list-row-manage-selected-bg,
+          var(--mpx-state-selected-color)
+        )
+      )
     )
   );
   box-shadow: none;
@@ -398,10 +404,7 @@
 [data-slot="fg-main-header-image-ad-review-start-ovl"] {
   background: var(
     --mpx-slot-fg-main-header-image-ad-review-start-ovl-bg,
-    var(
-      --mpx-slot-fg-main-header-image-ad-review-start-panel-bg,
-      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
-    )
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
   );
   color: var(
     --mpx-slot-fg-main-header-image-ad-review-start-ovl-text,
@@ -412,10 +415,7 @@
 [data-slot="fg-meta-main-ad-review-start-ovl"] {
   background: var(
     --mpx-slot-fg-meta-main-ad-review-start-ovl-bg,
-    var(
-      --mpx-slot-fg-meta-main-ad-review-start-panel-bg,
-      color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
-    )
+    color-mix(in srgb, var(--mpx-bg-tooltip) 30%, transparent)
   );
   color: var(
     --mpx-slot-fg-meta-main-ad-review-start-ovl-text,

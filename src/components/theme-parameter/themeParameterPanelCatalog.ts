@@ -2,9 +2,11 @@ import type {
   ButtonStateKey,
   ContainerDebugSubsection,
   LargePanelInternalSectionId,
+  MainImageNameListDebugLayer,
   MainImageNameListDebugSection,
   SidebarMainDebugSection,
-  SmallPanelSectionId,
+  SmallPanelSectionDefinition,
+  SmallPanelSectionGroupDefinition,
   ThemeControlSectionId,
   ThemeDebugColorField,
   ThemeDebugTextField,
@@ -650,6 +652,46 @@ export const LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS = {
   ],
 } as const;
 
+export const SMALL_PANEL_ROOT_INLINE_PARAMETER_IDS = [
+  "small-panel-fill-angle",
+] as const;
+
+export const SMALL_PANEL_ROOT_PARAMETER_IDS = [
+  "small-panel-width",
+  "small-panel-max-width",
+  "small-panel-height",
+  "small-panel-max-height",
+  "small-panel-border-width",
+  "small-panel-radius",
+  "small-panel-padding",
+  "small-panel-gap",
+] as const;
+
+export const SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS = {
+  "small-panel-fill-start": [
+    "small-panel-shortcut-edit-panel-fill-start",
+    "small-panel-shortcut-capture-panel-fill-start",
+    "small-panel-group-name-panel-fill-start",
+    "small-panel-delete-confirm-panel-fill-start",
+    "small-panel-ad-review-start-main-fill-start",
+    "small-panel-ad-review-start-metadata-fill-start",
+    "small-panel-convert-panel-fill-start",
+    "small-panel-playlist-name-slot-fill-start",
+    "small-panel-rename-single-slot-fill-start",
+  ],
+  "small-panel-fill-end": [
+    "small-panel-shortcut-edit-panel-fill-end",
+    "small-panel-shortcut-capture-panel-fill-end",
+    "small-panel-group-name-panel-fill-end",
+    "small-panel-delete-confirm-panel-fill-end",
+    "small-panel-ad-review-start-main-fill-end",
+    "small-panel-ad-review-start-metadata-fill-end",
+    "small-panel-convert-panel-fill-end",
+    "small-panel-playlist-name-slot-fill-end",
+    "small-panel-rename-single-slot-fill-end",
+  ],
+} as const;
+
 export const CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "container-sidebar-main-bg",
@@ -1120,6 +1162,12 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
       groupId: "main",
     },
     {
+      id: "container-main-image-name-list-row-selected-bg",
+      cssVar: "--mpx-main-image-name-list-row-selected-bg",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+    {
       id: "container-main-image-name-list-row-selected-focused-border-left",
       cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
       fallback: "#2d6e7d",
@@ -1162,6 +1210,12 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
       groupId: "main",
     },
     {
+      id: "container-main-image-name-list-row-main-selected-text",
+      cssVar: "--mpx-main-image-name-list-row-main-selected-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
       id: "container-main-image-name-list-row-main-active-text",
       cssVar: "--mpx-main-image-name-list-row-main-active-text",
       fallback: "#30271d",
@@ -1182,71 +1236,128 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
   ];
 
 export const CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS: readonly ThemeDebugTextField[] =
-  [
-    {
-      id: "container-main-image-name-list-row-main-focus-outline-width",
-      cssVar: "--mpx-main-image-name-list-row-main-focus-outline-width",
-      fallback: "1px",
-      groupId: "main",
-    },
-    {
-      id: "container-main-image-name-list-row-main-pressed-font-weight",
-      cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
-      fallback: "600",
-      groupId: "main",
-    },
-  ];
+  [];
 
-export const MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] =
+const MAIN_IMAGE_NAME_LIST_ROOT_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] = [
+  {
+    id: "main-image-name-list-root-text",
+    title: "1、文字颜色",
+    tag: "text",
+    cssVars: ["--mpx-main-image-name-list-text"],
+  },
+  {
+    id: "main-image-name-list-root-border",
+    title: "2、边框颜色",
+    tag: "border",
+    cssVars: ["--mpx-main-image-name-list-border"],
+  },
+  {
+    id: "main-image-name-list-root-bg",
+    title: "3、背景颜色",
+    tag: "bg",
+    cssVars: ["--mpx-main-image-name-list-bg"],
+  },
+];
+
+const MAIN_IMAGE_NAME_LIST_HEADER_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] = [
+  {
+    id: "main-image-name-list-header-text",
+    title: "1、文字颜色",
+    tag: "text",
+    cssVars: ["--mpx-main-image-name-list-head-text"],
+  },
+  {
+    id: "main-image-name-list-header-border",
+    title: "2、边框颜色",
+    tag: "border",
+    cssVars: ["--mpx-main-image-name-list-head-border"],
+  },
+  {
+    id: "main-image-name-list-header-bg",
+    title: "3、背景颜色",
+    tag: "bg",
+    cssVars: ["--mpx-main-image-name-list-head-bg"],
+  },
+];
+
+const MAIN_IMAGE_NAME_LIST_LIST_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] = [
+  {
+    id: "main-image-name-list-list-text",
+    title: "1、文字颜色",
+    tag: "text",
+    cssVars: [
+      "--mpx-main-image-name-list-label-text",
+      "--mpx-main-image-name-list-row-text",
+      "--mpx-main-image-name-list-row-main-text",
+      "--mpx-main-image-name-list-row-main-selected-text",
+      "--mpx-main-image-name-list-row-main-hover-text",
+    ],
+  },
+  {
+    id: "main-image-name-list-list-border",
+    title: "2、边框颜色",
+    tag: "border",
+    cssVars: ["--mpx-main-image-name-list-row-border"],
+  },
+  {
+    id: "main-image-name-list-list-bg",
+    title: "3、背景颜色",
+    tag: "bg",
+    cssVars: [
+      "--mpx-main-image-name-list-body-bg",
+      "--mpx-main-image-name-list-row-bg",
+      "--mpx-main-image-name-list-row-selected-bg",
+    ],
+  },
+  {
+    id: "main-image-name-list-list-state",
+    title: "4、静态指示颜色",
+    tag: "state",
+    cssVars: [
+      "--mpx-main-image-name-list-row-selected-border-left",
+      "--mpx-main-image-name-list-row-focused-border-left",
+    ],
+  },
+  {
+    id: "main-image-name-list-list-interactive",
+    title: "5、动态指示颜色",
+    tag: "interactive",
+    cssVars: [
+      "--mpx-main-image-name-list-row-hover-bg",
+      "--mpx-main-image-name-list-row-main-hover-bg",
+      "--mpx-main-image-name-list-row-main-pressed-bg",
+    ],
+  },
+];
+
+export const MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS: readonly MainImageNameListDebugLayer[] = [
+  {
+    id: "main-image-name-list-root",
+    title: "1、root",
+    sections: MAIN_IMAGE_NAME_LIST_ROOT_DEBUG_SECTIONS,
+  },
+  {
+    id: "main-image-name-list-header",
+    title: "2、header",
+    sections: MAIN_IMAGE_NAME_LIST_HEADER_DEBUG_SECTIONS,
+  },
+  {
+    id: "main-image-name-list-list",
+    title: "3、list",
+    sections: MAIN_IMAGE_NAME_LIST_LIST_DEBUG_SECTIONS,
+  },
+];
+
+const LEGACY_RENAMED_CONTAINER_SLOT_VARS = new Map<string, string>([
   [
-    {
-      id: "main-image-name-list-bg",
-      title: "1、bg 背景与外层链路",
-      tag: "bg",
-      cssVars: [
-        "--mpx-main-image-name-list-border",
-        "--mpx-main-image-name-list-bg",
-        "--mpx-main-image-name-list-text",
-        "--mpx-main-image-name-list-label-text",
-      ],
-    },
-    {
-      id: "main-image-name-list-header",
-      title: "2、header 表头链路",
-      tag: "header",
-      cssVars: [
-        "--mpx-main-image-name-list-head-border",
-        "--mpx-main-image-name-list-head-bg",
-        "--mpx-main-image-name-list-head-text",
-      ],
-    },
-    {
-      id: "main-image-name-list-table",
-      title: "3、table 表格主体链路",
-      tag: "table",
-      cssVars: [
-        "--mpx-main-image-name-list-body-bg",
-        "--mpx-main-image-name-list-row-border",
-        "--mpx-main-image-name-list-row-bg",
-        "--mpx-main-image-name-list-row-text",
-        "--mpx-main-image-name-list-row-hover-bg",
-        "--mpx-main-image-name-list-row-focused-border-left",
-        "--mpx-main-image-name-list-row-selected-border-left",
-        "--mpx-main-image-name-list-row-selected-focused-border-left",
-        "--mpx-main-image-name-list-row-manage-selected-bg",
-        "--mpx-main-image-name-list-row-main-text",
-        "--mpx-main-image-name-list-row-main-hover-bg",
-        "--mpx-main-image-name-list-row-main-active-bg",
-        "--mpx-main-image-name-list-row-main-pressed-bg",
-        "--mpx-main-image-name-list-row-main-hover-text",
-        "--mpx-main-image-name-list-row-main-active-text",
-        "--mpx-main-image-name-list-row-main-pressed-text",
-        "--mpx-main-image-name-list-row-main-focus-outline-width",
-        "--mpx-main-image-name-list-row-main-focus-outline-color",
-        "--mpx-main-image-name-list-row-main-pressed-font-weight",
-      ],
-    },
-  ];
+    "--mpx-main-image-name-list-row-selected-bg",
+    "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
+  ],
+  [
+    "--mpx-main-image-name-list-row-main-selected-text",
+    "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
+  ],
+]);
 
 export const HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] = [
   {
@@ -1377,6 +1488,10 @@ export const CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT: ReadonlyArray<{
 ];
 
 export function resolveLegacySlotVarForSemanticVar(cssVar: string): string | null {
+  const renamedSlotVar = LEGACY_RENAMED_CONTAINER_SLOT_VARS.get(cssVar);
+  if (renamedSlotVar) {
+    return renamedSlotVar;
+  }
   for (const mapping of CONTAINER_SEMANTIC_PREFIX_TO_LEGACY_SLOT) {
     if (!cssVar.startsWith(mapping.semanticPrefix)) {
       continue;
@@ -2959,6 +3074,72 @@ const LARGE_PANEL_INTERNAL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
   {
+    id: "large-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
     id: "large-panel-sidebar-rename-preview-border",
     cssVar: "--mpx-sidebar-rename-preview-border",
     fallback: "#c7d0d8",
@@ -3169,7 +3350,7 @@ const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
     id: "sidebarRenamePreview",
     summaryKey:
       "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview",
-    prefixes: ["--mpx-sidebar-rename-preview-"],
+    prefixes: ["--mpx-sidebar-rename-dialog-", "--mpx-sidebar-rename-preview-"],
   },
  ] as const satisfies readonly {
   id: LargePanelInternalSectionId;
@@ -3231,15 +3412,21 @@ export const LARGE_PANEL_SECTION_DEFINITIONS = [
 export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "small-panel-border-color",
-    cssVar: "--mpx-dialog-panel-border-color",
+    cssVar: "--mpx-dialog-panel-root-border-color",
     fallback: "#d6cfc1",
     groupId: "border",
   },
   {
-    id: "small-panel-bg",
-    cssVar: "--mpx-dialog-panel-bg",
+    id: "small-panel-fill-start",
+    cssVar: "--mpx-dialog-panel-root-fill-start",
     fallback: "#ffffff",
-    groupId: "box",
+    groupId: "root",
+  },
+  {
+    id: "small-panel-fill-end",
+    cssVar: "--mpx-dialog-panel-root-fill-end",
+    fallback: "#ffffff",
+    groupId: "root",
   },
   {
     id: "small-panel-shortcut-edit-panel-border",
@@ -3248,8 +3435,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-shortcut-edit-panel-bg",
-    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg",
+    id: "small-panel-shortcut-edit-panel-fill-start",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-fill-end",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3266,8 +3459,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-shortcut-capture-panel-bg",
-    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg",
+    id: "small-panel-shortcut-capture-panel-fill-start",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-fill-end",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3284,8 +3483,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-group-name-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-bg",
+    id: "small-panel-group-name-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-group-name-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3296,8 +3501,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-delete-confirm-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg",
+    id: "small-panel-delete-confirm-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3308,8 +3519,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-convert-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-bg",
+    id: "small-panel-convert-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-convert-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3320,8 +3537,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-ad-review-start-main-bg",
-    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-bg",
+    id: "small-panel-ad-review-start-main-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-main-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3338,8 +3561,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-ad-review-start-metadata-bg",
-    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-bg",
+    id: "small-panel-ad-review-start-metadata-fill-start",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-fill-end",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3356,8 +3585,14 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-playlist-name-slot-bg",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+    id: "small-panel-playlist-name-slot-fill-start",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-fill-end",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end",
     fallback: "#ffffff",
     groupId: "box",
   },
@@ -3428,129 +3663,15 @@ export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "border",
   },
   {
-    id: "small-panel-rename-single-slot-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+    id: "small-panel-rename-single-slot-fill-start",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
     fallback: "#ffffff",
     groupId: "box",
   },
   {
-    id: "small-panel-rename-single-slot-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text",
-    fallback: "#2e2a22",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-muted-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text",
-    fallback: "#6a6358",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-border",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border",
-    fallback: "#c7d0d8",
-    groupId: "border",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg",
-    fallback: "#ecf0f3",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text",
-    fallback: "#2e2a22",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-placeholder",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder",
-    fallback: "#6a6358",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-border",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border",
-    fallback: "#b7ab95",
-    groupId: "border",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg",
+    id: "small-panel-rename-single-slot-fill-end",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-end",
     fallback: "#ffffff",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text",
-    fallback: "#2e2a22",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-text",
-    cssVar: "--mpx-sidebar-rename-dialog-text",
-    fallback: "#2e2a22",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-muted-text",
-    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
-    fallback: "#6a6358",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-border",
-    cssVar: "--mpx-sidebar-rename-dialog-control-border",
-    fallback: "#c7d0d8",
-    groupId: "border",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
-    fallback: "#ecf0f3",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-hover-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
-    fallback: "#e3e9ef",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-focus-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
-    fallback: "#dbe3eb",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-text",
-    cssVar: "--mpx-sidebar-rename-dialog-control-text",
-    fallback: "#2e2a22",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-placeholder",
-    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
-    fallback: "#6a6358",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-border",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
-    fallback: "#b7ab95",
-    groupId: "border",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
-    fallback: "#ffffff",
-    groupId: "box",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-text",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
-    fallback: "#2e2a22",
     groupId: "box",
   },
 ];
@@ -3629,32 +3750,25 @@ export const SMALL_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 ];
 
 export const SMALL_PANEL_ROOT_COLOR_FIELDS = SMALL_PANEL_COLOR_FIELDS.filter(
-  (field) => field.cssVar === "--mpx-dialog-panel-border-color" || field.cssVar === "--mpx-dialog-panel-bg",
+  (field) =>
+    field.cssVar === "--mpx-dialog-panel-root-border-color" ||
+    field.cssVar === "--mpx-dialog-panel-root-fill-start" ||
+    field.cssVar === "--mpx-dialog-panel-root-fill-end",
 );
 
 export const SMALL_PANEL_ROOT_TEXT_FIELDS = SMALL_PANEL_TEXT_FIELDS.filter(
   (field) => field.cssVar === "--mpx-dialog-panel-shadow",
 );
 
-interface SmallPanelSectionGroupDefinition {
-  title: string | null;
-  colorFields: readonly ThemeDebugColorField[];
-  textFields: readonly ThemeDebugTextField[];
-}
-
-interface SmallPanelSectionDefinition {
-  id: SmallPanelSectionId;
-  summaryKey: string;
-  groups: readonly SmallPanelSectionGroupDefinition[];
-}
-
 const createSmallPanelSectionGroup = (
   title: string | null,
   prefixes: readonly string[],
+  inlineParameterIds?: readonly string[],
 ): SmallPanelSectionGroupDefinition => ({
   title,
   colorFields: filterDebugFieldsByPrefixes(SMALL_PANEL_COLOR_FIELDS, prefixes),
   textFields: filterDebugFieldsByPrefixes(SMALL_PANEL_TEXT_FIELDS, prefixes),
+  inlineParameterIds,
 });
 
 export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefinition[] = [
@@ -3664,7 +3778,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup(null, [
         "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-",
-      ]),
+      ], ["small-panel-shortcut-edit-fill-angle"]),
     ],
   },
   {
@@ -3673,7 +3787,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup(null, [
         "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-",
-      ]),
+      ], ["small-panel-shortcut-capture-fill-angle"]),
     ],
   },
   {
@@ -3682,7 +3796,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup(null, [
         "--mpx-slot-fg-main-header-manage-group-name-panel-",
-      ]),
+      ], ["small-panel-group-name-fill-angle"]),
     ],
   },
   {
@@ -3691,7 +3805,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup(null, [
         "--mpx-slot-fg-main-header-manage-delete-confirm-panel-",
-      ]),
+      ], ["small-panel-delete-confirm-fill-angle"]),
     ],
   },
   {
@@ -3700,10 +3814,10 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup("Main Toolbar", [
         "--mpx-slot-fg-main-header-image-ad-review-start-panel-",
-      ]),
+      ], ["small-panel-ad-review-start-main-fill-angle"]),
       createSmallPanelSectionGroup("Metadata", [
         "--mpx-slot-fg-meta-main-ad-review-start-panel-",
-      ]),
+      ], ["small-panel-ad-review-start-metadata-fill-angle"]),
     ],
   },
   {
@@ -3712,7 +3826,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup(null, [
         "--mpx-slot-fg-main-header-image-convert-panel-",
-      ]),
+      ], ["small-panel-convert-fill-angle"]),
     ],
   },
   {
@@ -3721,7 +3835,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup("Panel Slot Override", [
         "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-",
-      ]),
+      ], ["small-panel-playlist-name-dialog-fill-angle"]),
       createSmallPanelSectionGroup("Shared Internals", [
         "--mpx-metadata-playlist-name-dialog-",
       ]),
@@ -3733,10 +3847,7 @@ export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefiniti
     groups: [
       createSmallPanelSectionGroup("Panel Slot Override", [
         "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-",
-      ]),
-      createSmallPanelSectionGroup("Shared Internals", [
-        "--mpx-sidebar-rename-dialog-",
-      ]),
+      ], ["small-panel-rename-single-fill-angle"]),
     ],
   },
 ];

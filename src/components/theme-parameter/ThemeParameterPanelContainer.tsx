@@ -109,9 +109,24 @@ const LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC: ReadonlyArray<{
   },
 ];
 
+const LEGACY_CONTAINER_RENAMED_SLOT_VARS = new Map<string, string>([
+  [
+    "--mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg",
+    "--mpx-main-image-name-list-row-selected-bg",
+  ],
+  [
+    "--mpx-slot-fg-main-content-image-name-list-row-main-pressed-text",
+    "--mpx-main-image-name-list-row-main-selected-text",
+  ],
+]);
+
 function resolveLegacyContainerSemanticVar(
   legacyCssVar: string,
 ): string | null {
+  const renamedSemanticVar = LEGACY_CONTAINER_RENAMED_SLOT_VARS.get(legacyCssVar);
+  if (renamedSemanticVar) {
+    return renamedSemanticVar;
+  }
   for (const mapping of LEGACY_CONTAINER_SLOT_PREFIX_TO_SEMANTIC) {
     if (!legacyCssVar.startsWith(mapping.legacyPrefix)) {
       continue;
@@ -564,6 +579,67 @@ function ThemeParameterPanel({
     captureContainerDebugSessionState(document.documentElement);
   };
 
+  const smallPanelPreviewCards = [
+    {
+      key: "shortcut-edit",
+      title: "5.1 Shortcut Edit",
+      slot: "fg-header-g1-settings-shortcut-edit-panel",
+      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "shortcut-capture",
+      title: "5.2 Shortcut Capture",
+      slot: "fg-header-g1-settings-shortcut-capture-panel",
+      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "group-name",
+      title: "5.3 Group Name",
+      slot: "fg-main-header-manage-group-name-panel",
+      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "delete-confirm",
+      title: "5.4 Delete Confirm",
+      slot: "fg-main-header-manage-delete-confirm-panel",
+      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "ad-review-start-main",
+      title: "5.5 Ad Review Start / Main",
+      slot: "fg-main-header-image-ad-review-start-panel",
+      className:
+        "mpx-dialog-panel theme-debug-small-panel-preview-card manage-ad-review-start-dialog",
+    },
+    {
+      key: "ad-review-start-metadata",
+      title: "5.5 Ad Review Start / Metadata",
+      slot: "fg-meta-main-ad-review-start-panel",
+      className:
+        "mpx-dialog-panel theme-debug-small-panel-preview-card manage-ad-review-start-dialog",
+    },
+    {
+      key: "convert",
+      title: "5.6 Convert",
+      slot: "fg-main-header-image-convert-panel",
+      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "playlist-name",
+      title: "5.7 Playlist Name Dialog",
+      slot: "fg-meta-main-video-editor-playlist-name-dialog-panel",
+      className:
+        "mpx-dialog-panel mpx-dialog-panel--inline metadata-playlist-save-dialog theme-debug-small-panel-preview-card",
+    },
+    {
+      key: "rename-single",
+      title: "5.8 Rename Single",
+      slot: "fg-sidebar-shortcut-rename-single-panel",
+      className:
+        "mpx-dialog-panel sidebar-rename-single-dialog theme-debug-small-panel-preview-card",
+    },
+  ] as const;
+
   return (
     <div
       {...panelA11y}
@@ -613,11 +689,24 @@ function ThemeParameterPanel({
           className="theme-debug-small-panel-preview-layer"
           aria-hidden="true"
         >
-          <section className="mpx-dialog-panel theme-debug-small-panel-preview">
-            <h3>Dialog Preview</h3>
-            <div className="theme-debug-small-panel-preview-content" />
-            <div className="theme-debug-small-panel-preview-actions" />
-          </section>
+          <div className="theme-debug-small-panel-preview-grid">
+            <section className="mpx-dialog-panel theme-debug-small-panel-preview">
+              <h3>5.0 Root</h3>
+              <div className="theme-debug-small-panel-preview-content" />
+              <div className="theme-debug-small-panel-preview-actions" />
+            </section>
+            {smallPanelPreviewCards.map((card) => (
+              <section
+                key={card.key}
+                className={card.className}
+                data-slot={card.slot}
+              >
+                <h3>{card.title}</h3>
+                <div className="theme-debug-small-panel-preview-content" />
+                <div className="theme-debug-small-panel-preview-actions" />
+              </section>
+            ))}
+          </div>
         </div>
       ) : null}
       <section

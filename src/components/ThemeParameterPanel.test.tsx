@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -880,6 +880,16 @@ describe("ThemeParameterPanel", () => {
     expect(
       document.querySelector(".theme-debug-small-panel-preview"),
     ).not.toBeNull();
+    expect(
+      document.querySelector(
+        '.theme-debug-small-panel-preview-card[data-slot="fg-header-g1-settings-shortcut-edit-panel"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      document.querySelector(
+        '.theme-debug-small-panel-preview-card[data-slot="fg-sidebar-shortcut-rename-single-panel"]',
+      ),
+    ).not.toBeNull();
 
     rerender(
       <I18nProvider browserLocale="en-US">
@@ -943,7 +953,9 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("3.10.5 标签检索")).toBeInTheDocument();
     expect(screen.getByText("3.10.6 字幕清理")).toBeInTheDocument();
     expect(screen.getByText("3.10.7 转码")).toBeInTheDocument();
-    expect(screen.getByText("3.10.8 侧栏批量重命名预览")).toBeInTheDocument();
+    expect(
+      screen.getByText("3.10.8 侧栏重命名（共享内部件 + 预览）"),
+    ).toBeInTheDocument();
 
     ensureDetailsOpen("3.10.2 元数据抓取");
     expect(
@@ -951,18 +963,19 @@ describe("ThemeParameterPanel", () => {
         name: "--mpx-metadata-fetch-control-font-size",
       }),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("textbox", {
-        name: "--mpx-sidebar-rename-dialog-text",
-      }),
-    ).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    ensureDetailsOpen("3.10.8 侧栏重命名（共享内部件 + 预览）");
     expect(
       screen.getByRole("textbox", {
         name: "--mpx-sidebar-rename-dialog-text",
       }),
     ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    expect(
+      screen.queryByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-text",
+      }),
+    ).toBeNull();
   }, 15000);
 
   it("小面板层调试按 root 与面板族重排", () => {
@@ -982,7 +995,21 @@ describe("ThemeParameterPanel", () => {
 
     ensureDetailsOpen("5.0 Root");
     expect(
-      screen.getByRole("textbox", { name: "--mpx-dialog-panel-bg" }),
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-root-fill-start",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-root-fill-end",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      getSliderByLabelText("--mpx-dialog-panel-root-fill-angle"),
+    ).toBeInTheDocument();
+    expect(getSliderByLabelText("--mpx-dialog-panel-height")).toBeInTheDocument();
+    expect(
+      getSliderByLabelText("--mpx-dialog-panel-max-height"),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", {
@@ -995,8 +1022,20 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getAllByText("Shared Internals").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("textbox", {
-        name: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+        name:
+          "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start",
       }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name:
+          "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      getSliderByLabelText(
+        "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-angle",
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", {
@@ -1007,14 +1046,24 @@ describe("ThemeParameterPanel", () => {
     ensureDetailsOpen("5.8 Rename Single");
     expect(
       screen.getByRole("textbox", {
-        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", {
-        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-end",
       }),
     ).toBeInTheDocument();
+    expect(
+      getSliderByLabelText(
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+      }),
+    ).toBeNull();
   }, 15000);
 
   it("大面板根层变量会作用到 Theme Parameter 面板本体", () => {
@@ -1221,6 +1270,115 @@ describe("ThemeParameterPanel", () => {
     ).toBe("4px");
   }, 30000);
 
+  it("小面板层 root 总控会同步各分控，分控仍可继续覆盖", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    ensureDetailsOpen("5.0 Root");
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-root-fill-start",
+      }),
+      { target: { value: "#112233" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-dialog-panel-root-fill-start-alpha",
+      }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      getSliderByLabelText("--mpx-dialog-panel-root-fill-angle"),
+      {
+        target: { value: "25" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-main-header-image-convert-panel-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle",
+      ),
+    ).toBe("25deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
+      ),
+    ).toBe("25deg");
+
+    ensureDetailsOpen("5.1 Shortcut Edit");
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+      }),
+      { target: { value: "#445566" } },
+    );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name:
+          "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start-alpha",
+      }),
+      { target: { value: "100" } },
+    );
+    fireEvent.change(
+      getSliderByLabelText(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle",
+      ),
+      {
+        target: { value: "90" },
+      },
+    );
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-root-fill-start",
+      }),
+      { target: { value: "#223344" } },
+    );
+    fireEvent.change(
+      getSliderByLabelText("--mpx-dialog-panel-root-fill-angle"),
+      {
+        target: { value: "45" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+      ),
+    ).toBe("#445566");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-main-header-image-convert-panel-fill-start",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-angle",
+      ),
+    ).toBe("90deg");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-angle",
+      ),
+    ).toBe("45deg");
+  }, 30000);
+
   it("大容器层调试拆分为三段可折叠，并支持新增槽位调试与快照导出", () => {
     renderThemeParameterPanel();
 
@@ -1232,9 +1390,7 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("2.3 Main")).toBeInTheDocument();
     expect(screen.getByText("2.4 Metadata")).toBeInTheDocument();
     const sidebarSummary = screen.getByText("2.2.2.1 fg-sidebar-main");
-    const nameListSummary = screen.getByText(
-      "2.3.2.2 fg-main-content-image-name-list",
-    );
+    const nameListSummary = screen.getByText("2.3.2.2 工作区 文件列表模式");
     expect(sidebarSummary).toBeInTheDocument();
     expect(nameListSummary).toBeInTheDocument();
 
@@ -1264,12 +1420,33 @@ describe("ThemeParameterPanel", () => {
     ).toBe("#223344");
 
     fireEvent.click(nameListSummary);
-    expect(screen.getByText("1、bg 背景与外层链路")).toBeInTheDocument();
-    expect(screen.getByText("2、header 表头链路")).toBeInTheDocument();
-    expect(screen.getByText("3、table 表格主体链路")).toBeInTheDocument();
+    const rootLayerDetails = getDetailsBySummaryText("1、root");
+    const headerLayerDetails = getDetailsBySummaryText("2、header");
+    const listLayerDetails = getDetailsBySummaryText("3、list");
+    expect(within(rootLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
+    expect(within(rootLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
+    expect(within(rootLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
+    expect(within(headerLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
+    expect(within(headerLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
+    expect(within(headerLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
+    expect(within(listLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
+    expect(within(listLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
+    expect(within(listLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
+    expect(within(listLayerDetails).getByText("4、静态指示颜色")).toBeInTheDocument();
+    expect(within(listLayerDetails).getByText("5、动态指示颜色")).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).queryByRole("textbox", {
+        name: "--mpx-main-image-name-list-row-manage-selected-bg",
+      }),
+    ).toBeNull();
+    expect(
+      within(listLayerDetails).queryByRole("textbox", {
+        name: "--mpx-main-image-name-list-row-selected-focused-border-left",
+      }),
+    ).toBeNull();
     fireEvent.change(
       screen.getByRole("textbox", {
-        name: "--mpx-main-image-name-list-row-bg",
+        name: "--mpx-main-image-name-list-row-selected-bg",
       }),
       {
         target: { value: "#334455" },
@@ -1285,7 +1462,7 @@ describe("ThemeParameterPanel", () => {
     );
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-main-image-name-list-row-bg",
+        "--mpx-main-image-name-list-row-selected-bg",
       ),
     ).toBe("#334455");
     expect(
@@ -1306,7 +1483,7 @@ describe("ThemeParameterPanel", () => {
       '"container-sidebar-main-label-border": "#223344"',
     );
     expect(snapshotTextarea.value).toContain(
-      '"container-main-image-name-list-row-bg": "#334455"',
+      '"container-main-image-name-list-row-selected-bg": "#334455"',
     );
     expect(snapshotTextarea.value).toContain(
       '"container-main-image-name-list-head-bg": "#445566"',
@@ -1351,12 +1528,10 @@ describe("ThemeParameterPanel", () => {
       ".settings-collapsible-content",
     );
     expect(
-      mainContent?.contains(screen.getByText("2.3.2.1 工作区 / 图片网格")),
+      mainContent?.contains(screen.getByText("2.3.2.1 工作区 缩略图模式")),
     ).toBe(true);
     expect(
-      mainContent?.contains(
-        screen.getByText("2.3.2.2 fg-main-content-image-name-list"),
-      ),
+      mainContent?.contains(screen.getByText("2.3.2.2 工作区 文件列表模式")),
     ).toBe(true);
   });
 
@@ -2065,7 +2240,7 @@ describe("ThemeParameterPanel", () => {
     ensureDetailsOpen("5.8 Rename Single");
     expect(
       screen.getByRole("textbox", {
-        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
       }),
     ).toBeInTheDocument();
 
@@ -2094,7 +2269,7 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
     expect(
       screen.getByRole("textbox", {
-        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
       }),
     ).toBeInTheDocument();
   }, 15000);

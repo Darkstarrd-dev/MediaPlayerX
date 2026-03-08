@@ -524,6 +524,11 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#9a885f",
   },
   {
+    id: "container-main-image-name-list-row-selected-bg",
+    cssVar: "--mpx-main-image-name-list-row-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
     id: "container-main-image-name-list-row-selected-focused-border-left",
     cssVar: "--mpx-main-image-name-list-row-selected-focused-border-left",
     fallback: "#2d6e7d",
@@ -557,6 +562,11 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "container-main-image-name-list-row-main-hover-text",
     cssVar: "--mpx-main-image-name-list-row-main-hover-text",
     fallback: "#2f5f6d",
+  },
+  {
+    id: "container-main-image-name-list-row-main-selected-text",
+    cssVar: "--mpx-main-image-name-list-row-main-selected-text",
+    fallback: "#30271d",
   },
   {
     id: "container-main-image-name-list-row-main-active-text",
@@ -1245,12 +1255,17 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "small-panel-border-color",
-    cssVar: "--mpx-dialog-panel-border-color",
+    cssVar: "--mpx-dialog-panel-root-border-color",
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-bg",
-    cssVar: "--mpx-dialog-panel-bg",
+    id: "small-panel-fill-start",
+    cssVar: "--mpx-dialog-panel-root-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-fill-end",
+    cssVar: "--mpx-dialog-panel-root-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1259,8 +1274,13 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-shortcut-edit-panel-bg",
-    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg",
+    id: "small-panel-shortcut-edit-panel-fill-start",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-fill-end",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1274,8 +1294,14 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-shortcut-capture-panel-bg",
-    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg",
+    id: "small-panel-shortcut-capture-panel-fill-start",
+    cssVar:
+      "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-fill-end",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1289,8 +1315,13 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-group-name-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-bg",
+    id: "small-panel-group-name-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-group-name-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1299,8 +1330,14 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-delete-confirm-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg",
+    id: "small-panel-delete-confirm-panel-fill-start",
+    cssVar:
+      "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1309,8 +1346,13 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-convert-panel-bg",
-    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-bg",
+    id: "small-panel-convert-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-convert-panel-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1319,8 +1361,13 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-ad-review-start-main-bg",
-    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-bg",
+    id: "small-panel-ad-review-start-main-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-ad-review-start-main-fill-end",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1334,8 +1381,13 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-ad-review-start-metadata-bg",
-    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-bg",
+    id: "small-panel-ad-review-start-metadata-fill-start",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-fill-end",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1349,8 +1401,15 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-playlist-name-slot-bg",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+    id: "small-panel-playlist-name-slot-fill-start",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-playlist-name-slot-fill-end",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end",
     fallback: "#ffffff",
   },
   {
@@ -1404,114 +1463,19 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#6a6358",
   },
   {
-    id: "small-panel-sidebar-rename-dialog-text",
-    cssVar: "--mpx-sidebar-rename-dialog-text",
-    fallback: "#2e2a22",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-muted-text",
-    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
-    fallback: "#6a6358",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-border",
-    cssVar: "--mpx-sidebar-rename-dialog-control-border",
-    fallback: "#c7d0d8",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
-    fallback: "#ecf0f3",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-hover-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
-    fallback: "#e3e9ef",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-focus-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
-    fallback: "#dbe3eb",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-text",
-    cssVar: "--mpx-sidebar-rename-dialog-control-text",
-    fallback: "#2e2a22",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-control-placeholder",
-    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
-    fallback: "#6a6358",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-border",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
-    fallback: "#b7ab95",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
-    fallback: "#ffffff",
-  },
-  {
-    id: "small-panel-sidebar-rename-dialog-action-btn-text",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
-    fallback: "#2e2a22",
-  },
-  {
     id: "small-panel-rename-single-slot-border",
     cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-border",
     fallback: "#d6cfc1",
   },
   {
-    id: "small-panel-rename-single-slot-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+    id: "small-panel-rename-single-slot-fill-start",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-start",
     fallback: "#ffffff",
   },
   {
-    id: "small-panel-rename-single-slot-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text",
-    fallback: "#2e2a22",
-  },
-  {
-    id: "small-panel-rename-single-slot-muted-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text",
-    fallback: "#6a6358",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-border",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border",
-    fallback: "#c7d0d8",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg",
-    fallback: "#ecf0f3",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text",
-    fallback: "#2e2a22",
-  },
-  {
-    id: "small-panel-rename-single-slot-input-placeholder",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder",
-    fallback: "#6a6358",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-border",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border",
-    fallback: "#b7ab95",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-bg",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg",
+    id: "small-panel-rename-single-slot-fill-end",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-fill-end",
     fallback: "#ffffff",
-  },
-  {
-    id: "small-panel-rename-single-slot-action-btn-text",
-    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text",
-    fallback: "#2e2a22",
   },
   {
     id: "button-side-idle-border",

@@ -93,6 +93,12 @@ export interface MainImageNameListDebugSection {
   cssVars: readonly string[];
 }
 
+export interface MainImageNameListDebugLayer {
+  id: string;
+  title: string;
+  sections: readonly MainImageNameListDebugSection[];
+}
+
 export interface ContainerDebugSubsection {
   id: string;
   summaryKey: string;
@@ -132,6 +138,7 @@ export interface SmallPanelSectionGroupDefinition {
   title: string | null;
   colorFields: readonly ThemeDebugColorField[];
   textFields: readonly ThemeDebugTextField[];
+  inlineParameterIds?: readonly string[];
 }
 
 export interface SmallPanelSectionDefinition {

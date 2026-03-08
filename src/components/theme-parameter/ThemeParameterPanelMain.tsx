@@ -35,6 +35,7 @@ import {
 } from "./themeParameterUtils";
 import {
   ThemeParameterColorFieldRow,
+  ThemeParameterDebugLayerList,
   ThemeParameterDebugSectionList,
   ThemeParameterParameterRows,
   ThemeParameterParameterRowsWithVarLabel,
@@ -79,12 +80,15 @@ import {
   LARGE_PANEL_SHARED_PARAMETER_IDS,
   LARGE_PANEL_TEXT_FIELDS,
   MAIN_HEADER_DEBUG_SUBSECTIONS,
-  MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS,
+  MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS,
   METADATA_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_MAIN_DEBUG_SECTIONS,
   SMALL_PANEL_COLOR_FIELDS,
+  SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS,
   SMALL_PANEL_ROOT_COLOR_FIELDS,
+  SMALL_PANEL_ROOT_INLINE_PARAMETER_IDS,
+  SMALL_PANEL_ROOT_PARAMETER_IDS,
   SMALL_PANEL_ROOT_TEXT_FIELDS,
   SMALL_PANEL_SECTION_DEFINITIONS,
   SMALL_PANEL_TEXT_FIELDS,
@@ -384,6 +388,7 @@ export function ThemeParameterPanelMain({
   const syncedLargePanelColorOverridesRef = useRef<Record<string, Set<string>>>(
     {},
   );
+  const syncedSmallPanelColorOverridesRef = useRef<Record<string, Set<string>>>({});
   const [controlPreviewValues, setControlPreviewValues] =
     useState<ControlPreviewValues>({
       sliderBaseHorizontal: 36,
@@ -464,6 +469,14 @@ export function ThemeParameterPanelMain({
     [largePanelLayerParameters],
   );
 
+  const smallPanelParameterMap = useMemo(
+    () =>
+      new Map(
+        smallPanelLayerParameters.map((parameter) => [parameter.id, parameter]),
+      ),
+    [smallPanelLayerParameters],
+  );
+
   const pickLargePanelParameters = useCallback(
     (parameterIds: readonly string[]) => {
       return parameterIds
@@ -492,9 +505,25 @@ export function ThemeParameterPanelMain({
     return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
   }, [pickLargePanelParameters]);
 
+  const pickSmallPanelParameters = useCallback(
+    (parameterIds: readonly string[]) => {
+      return parameterIds
+        .map((id) => smallPanelParameterMap.get(id))
+        .filter(
+          (parameter): parameter is ThemeParameterDefinition =>
+            parameter !== undefined,
+        );
+    },
+    [smallPanelParameterMap],
+  );
+
+  const smallPanelRootInlineParameters = useMemo(() => {
+    return pickSmallPanelParameters(SMALL_PANEL_ROOT_INLINE_PARAMETER_IDS);
+  }, [pickSmallPanelParameters]);
+
   const smallPanelRootParameters = useMemo(() => {
-    return smallPanelLayerParameters;
-  }, [smallPanelLayerParameters]);
+    return pickSmallPanelParameters(SMALL_PANEL_ROOT_PARAMETER_IDS);
+  }, [pickSmallPanelParameters]);
 
   useEffect(() => {
     if (
@@ -552,6 +581,8 @@ export function ThemeParameterPanelMain({
         syncedContainerFillColorOverridesRef.current = {};
       } else if (activePage === "largePanelLayer") {
         syncedLargePanelColorOverridesRef.current = {};
+      } else if (activePage === "smallPanelLayer") {
+        syncedSmallPanelColorOverridesRef.current = {};
       }
       return;
     }
@@ -582,6 +613,7 @@ export function ThemeParameterPanelMain({
       };
       const syncTargetIds = resolveContainerFillSyncTargets(field.id);
       const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
+      const smallPanelSyncTargetIds = resolveSmallPanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
           syncedContainerFillColorOverridesRef.current[field.id] = new Set(
@@ -621,6 +653,25 @@ export function ThemeParameterPanelMain({
           clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
           nextValues[targetId] = { ...nextState };
         }
+      } else if (smallPanelSyncTargetIds.length > 0) {
+        if (!syncedSmallPanelColorOverridesRef.current[field.id]) {
+          syncedSmallPanelColorOverridesRef.current[field.id] = new Set(
+            smallPanelSyncTargetIds,
+          );
+        }
+        for (const targetId of syncedSmallPanelColorOverridesRef.current[
+          field.id
+        ]) {
+          const targetField = SMALL_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
       } else if (
         Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
           ids.includes(field.id as never),
@@ -642,6 +693,14 @@ export function ThemeParameterPanelMain({
           LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS,
         )) {
           syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
+      } else if (
+        Object.values(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS)) {
+          syncedSmallPanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
       return nextValues;
@@ -678,6 +737,7 @@ export function ThemeParameterPanelMain({
       };
       const syncTargetIds = resolveContainerFillSyncTargets(field.id);
       const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
+      const smallPanelSyncTargetIds = resolveSmallPanelSyncTargets(field.id);
       if (syncTargetIds.length > 0) {
         if (!syncedContainerFillColorOverridesRef.current[field.id]) {
           syncedContainerFillColorOverridesRef.current[field.id] = new Set(
@@ -717,6 +777,25 @@ export function ThemeParameterPanelMain({
           clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
           nextValues[targetId] = { ...nextState };
         }
+      } else if (smallPanelSyncTargetIds.length > 0) {
+        if (!syncedSmallPanelColorOverridesRef.current[field.id]) {
+          syncedSmallPanelColorOverridesRef.current[field.id] = new Set(
+            smallPanelSyncTargetIds,
+          );
+        }
+        for (const targetId of syncedSmallPanelColorOverridesRef.current[
+          field.id
+        ]) {
+          const targetField = SMALL_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          root.style.setProperty(targetField.cssVar, nextCssValue);
+          clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+          nextValues[targetId] = { ...nextState };
+        }
       } else if (
         Object.values(CONTAINER_FILL_SYNC_COLOR_FIELD_IDS).some((ids) =>
           ids.includes(field.id as never),
@@ -739,6 +818,14 @@ export function ThemeParameterPanelMain({
         )) {
           syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
+      } else if (
+        Object.values(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS).some((ids) =>
+          ids.includes(field.id as never),
+        )
+      ) {
+        for (const sourceId of Object.keys(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS)) {
+          syncedSmallPanelColorOverridesRef.current[sourceId]?.delete(field.id);
+        }
       }
       return nextValues;
     });
@@ -755,6 +842,7 @@ export function ThemeParameterPanelMain({
     const root = document.documentElement;
     const syncTargetIds = resolveContainerFillSyncTargets(field.id);
     const largePanelSyncTargetIds = resolveLargePanelSyncTargets(field.id);
+    const smallPanelSyncTargetIds = resolveSmallPanelSyncTargets(field.id);
     if (syncTargetIds.length > 0) {
       root.style.removeProperty(field.cssVar);
       clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
@@ -859,6 +947,57 @@ export function ThemeParameterPanelMain({
       syncedLargePanelColorOverridesRef.current[field.id] = new Set();
       return;
     }
+    if (smallPanelSyncTargetIds.length > 0) {
+      root.style.removeProperty(field.cssVar);
+      clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
+      for (const targetId of syncedSmallPanelColorOverridesRef.current[
+        field.id
+      ] ?? []) {
+        const targetField = SMALL_PANEL_COLOR_FIELDS.find(
+          (candidate) => candidate.id === targetId,
+        );
+        if (!targetField) {
+          continue;
+        }
+        root.style.removeProperty(targetField.cssVar);
+        clearLegacySlotOverrideForSemanticVar(root, targetField.cssVar);
+      }
+      const computed = getComputedStyle(root);
+      setDebugColorValues((previous) => {
+        const nextValues = { ...previous };
+        const nextValue = readCssColorState(
+          computed,
+          field.cssVar,
+          field.fallback,
+        );
+        nextValues[field.id] = {
+          hex: nextValue.hex,
+          alpha: field.fallbackAlpha ?? nextValue.alpha,
+        };
+        for (const targetId of syncedSmallPanelColorOverridesRef.current[
+          field.id
+        ] ?? []) {
+          const targetField = SMALL_PANEL_COLOR_FIELDS.find(
+            (candidate) => candidate.id === targetId,
+          );
+          if (!targetField) {
+            continue;
+          }
+          const targetValue = readCssColorState(
+            computed,
+            targetField.cssVar,
+            targetField.fallback,
+          );
+          nextValues[targetId] = {
+            hex: targetValue.hex,
+            alpha: targetField.fallbackAlpha ?? targetValue.alpha,
+          };
+        }
+        return nextValues;
+      });
+      syncedSmallPanelColorOverridesRef.current[field.id] = new Set();
+      return;
+    }
     root.style.removeProperty(field.cssVar);
     clearLegacySlotOverrideForSemanticVar(root, field.cssVar);
     notifyContainerDebugChanged(field.cssVar);
@@ -878,6 +1017,9 @@ export function ThemeParameterPanelMain({
       LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS,
     )) {
       syncedLargePanelColorOverridesRef.current[sourceId]?.delete(field.id);
+    }
+    for (const sourceId of Object.keys(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS)) {
+      syncedSmallPanelColorOverridesRef.current[sourceId]?.delete(field.id);
     }
   };
 
@@ -1042,8 +1184,8 @@ export function ThemeParameterPanelMain({
 
   const renderMainImageNameListDebugSections = () => {
     return (
-      <ThemeParameterDebugSectionList
-        sections={MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS}
+      <ThemeParameterDebugLayerList
+        layers={MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS}
         colorFields={CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS}
         textFields={CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS}
         renderColorFieldRow={renderColorFieldRow}
@@ -1064,6 +1206,14 @@ export function ThemeParameterPanelMain({
     return (
       LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS[
         fieldId as keyof typeof LARGE_PANEL_SHARED_COLOR_FIELD_SYNC_IDS
+      ] ?? []
+    );
+  };
+
+  const resolveSmallPanelSyncTargets = (fieldId: string) => {
+    return (
+      SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS[
+        fieldId as keyof typeof SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS
       ] ?? []
     );
   };
@@ -1399,7 +1549,7 @@ export function ThemeParameterPanelMain({
             <div className="settings-collapsible-content">
               <section className="settings-group theme-parameter-debug-group">
                 <header className="settings-group-head theme-parameter-subgroup-head">
-                  <span>工作区 / 图片网格</span>
+                  <span>工作区 缩略图模式</span>
                   <span className="theme-parameter-subgroup-tag">
                     fg-main-content-image-grid
                   </span>
@@ -1591,6 +1741,7 @@ export function ThemeParameterPanelMain({
       rootSection={
         <ThemeParameterLargePanelSectionRows
           colorFields={SMALL_PANEL_ROOT_COLOR_FIELDS}
+          inlineParameters={smallPanelRootInlineParameters}
           textFields={SMALL_PANEL_ROOT_TEXT_FIELDS}
           parameters={smallPanelRootParameters}
           renderColorFieldRow={renderColorFieldRow}
@@ -1614,8 +1765,10 @@ export function ThemeParameterPanelMain({
           <div className="settings-collapsible-content">
             <ThemeParameterSmallPanelSectionGroups
               groups={section.groups}
+              resolveInlineParameters={pickSmallPanelParameters}
               renderColorFieldRow={renderColorFieldRow}
               renderTextFieldRow={renderTextFieldRow}
+              renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
             />
           </div>
         </details>

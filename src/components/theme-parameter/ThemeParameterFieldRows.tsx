@@ -509,6 +509,12 @@ interface DebugSectionDefinition {
   cssVars: readonly string[];
 }
 
+interface DebugLayerDefinition {
+  id: string;
+  title: string;
+  sections: readonly DebugSectionDefinition[];
+}
+
 export function ThemeParameterDebugSectionList(props: {
   sections: readonly DebugSectionDefinition[];
   colorFields: readonly ThemeDebugColorField[];
@@ -564,6 +570,37 @@ export function ThemeParameterDebugSectionList(props: {
       </section>
     );
   });
+}
+
+export function ThemeParameterDebugLayerList(props: {
+  layers: readonly DebugLayerDefinition[];
+  colorFields: readonly ThemeDebugColorField[];
+  textFields: readonly ThemeDebugTextField[];
+  renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
+  renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
+}) {
+  const {
+    layers,
+    colorFields,
+    textFields,
+    renderColorFieldRow,
+    renderTextFieldRow,
+  } = props;
+
+  return layers.map((layer) => (
+    <details key={layer.id} className="settings-collapsible" open>
+      <summary>{layer.title}</summary>
+      <div className="settings-collapsible-content">
+        <ThemeParameterDebugSectionList
+          sections={layer.sections}
+          colorFields={colorFields}
+          textFields={textFields}
+          renderColorFieldRow={renderColorFieldRow}
+          renderTextFieldRow={renderTextFieldRow}
+        />
+      </div>
+    </details>
+  ));
 }
 
 function ParameterRow(props: {

@@ -72,16 +72,6 @@
   );
 }
 
-.name-list-row.is-focused {
-  border-left-color: var(
-    --mpx-slot-fg-main-content-image-name-list-row-focused-border-left,
-    var(
-      --mpx-main-image-name-list-row-focused-border-left,
-      var(--mpx-state-focus-color)
-    )
-  );
-}
-
 .name-list-row.is-selected {
   border-left-color: var(
     --mpx-slot-fg-main-content-image-name-list-row-selected-border-left,
@@ -92,11 +82,11 @@
   );
 }
 
-.name-list-row.is-selected.is-focused {
+.name-list-row.is-focused {
   border-left-color: var(
-    --mpx-slot-fg-main-content-image-name-list-row-selected-focused-border-left,
+    --mpx-slot-fg-main-content-image-name-list-row-focused-border-left,
     var(
-      --mpx-main-image-name-list-row-selected-focused-border-left,
+      --mpx-main-image-name-list-row-focused-border-left,
       var(--mpx-state-focus-color)
     )
   );
@@ -122,17 +112,23 @@
     )
   );
   --mpx-btn-variant-overlay-cell-bg-active: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-active-bg,
-    var(
-      --mpx-main-image-name-list-row-main-active-bg,
-      var(--mpx-overlay-soft-focus-bg)
-    )
-  );
-  --mpx-btn-variant-overlay-cell-bg-pressed: var(
     --mpx-slot-fg-main-content-image-name-list-row-main-pressed-bg,
     var(
       --mpx-main-image-name-list-row-main-pressed-bg,
       var(--mpx-overlay-soft-focus-bg)
+    )
+  );
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(
+    --mpx-slot-fg-main-content-image-name-list-row-selected-bg,
+    var(
+      --mpx-main-image-name-list-row-selected-bg,
+      var(
+        --mpx-slot-fg-main-content-image-name-list-row-manage-selected-bg,
+        var(
+          --mpx-main-image-name-list-row-manage-selected-bg,
+          transparent
+        )
+      )
     )
   );
   --mpx-btn-variant-overlay-cell-text-hover: var(
@@ -143,28 +139,25 @@
     )
   );
   --mpx-btn-variant-overlay-cell-text-active: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-active-text,
-    var(--mpx-main-image-name-list-row-main-active-text, var(--mpx-text-1))
+    --mpx-slot-fg-main-content-image-name-list-row-main-text,
+    var(--mpx-main-image-name-list-row-main-text, var(--mpx-text-1))
   );
   --mpx-btn-variant-overlay-cell-text-pressed: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-pressed-text,
-    var(--mpx-main-image-name-list-row-main-pressed-text, var(--mpx-text-1))
-  );
-  --mpx-btn-variant-overlay-cell-focus-outline-width: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-width,
-    var(--mpx-main-image-name-list-row-main-focus-outline-width, 1px)
-  );
-  --mpx-btn-variant-overlay-cell-focus-outline-color: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-focus-outline-color,
+    --mpx-slot-fg-main-content-image-name-list-row-main-selected-text,
     var(
-      --mpx-main-image-name-list-row-main-focus-outline-color,
-      var(--mpx-state-focus-color)
+      --mpx-main-image-name-list-row-main-selected-text,
+      var(
+        --mpx-slot-fg-main-content-image-name-list-row-main-pressed-text,
+        var(
+          --mpx-main-image-name-list-row-main-pressed-text,
+          var(--mpx-text-1)
+        )
+      )
     )
   );
-  --mpx-btn-variant-overlay-cell-font-weight-pressed: var(
-    --mpx-slot-fg-main-content-image-name-list-row-main-pressed-font-weight,
-    var(--mpx-main-image-name-list-row-main-pressed-font-weight, 600)
-  );
+  --mpx-btn-variant-overlay-cell-focus-outline-width: 0px;
+  --mpx-btn-variant-overlay-cell-focus-outline-color: transparent;
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: inherit;
   appearance: none;
   border: 0;
   padding: 9px 12px;

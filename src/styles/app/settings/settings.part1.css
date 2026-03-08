@@ -229,11 +229,31 @@
   z-index: 0;
 }
 
+.theme-debug-small-panel-preview-grid {
+  width: min(1120px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  align-items: start;
+  overflow: auto;
+  padding: 24px;
+}
+
 .theme-debug-small-panel-preview {
   pointer-events: none;
 }
 
+.theme-debug-small-panel-preview-card {
+  pointer-events: none;
+  min-height: 0;
+}
+
 .theme-debug-small-panel-preview > h3 {
+  margin: 0;
+}
+
+.theme-debug-small-panel-preview-card > h3 {
   margin: 0;
 }
 
@@ -2050,6 +2070,23 @@ button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn[aria-press
   background: var(
     --mpx-btn-variant-overlay-cell-bg-pressed,
     var(--mpx-btn-variant-overlay-cell-bg-pressed)
+  ) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn[aria-pressed="true"]:active {
+  color: var(
+    --mpx-btn-variant-overlay-cell-text-pressed,
+    var(--mpx-btn-variant-overlay-cell-text-pressed)
+  ) !important;
+  font-weight: var(
+    --mpx-btn-variant-overlay-cell-font-weight-pressed,
+    var(--mpx-btn-variant-overlay-cell-font-weight-pressed)
+  );
+  background: var(
+    --mpx-btn-variant-overlay-cell-bg-active,
+    var(--mpx-btn-variant-overlay-cell-bg-active)
   ) !important;
   box-shadow: none !important;
   transform: none !important;

@@ -373,7 +373,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.containerLayer.sectionMainHeaderButtons":
     "2.3.1.1 Main header 按钮",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
-    "2.3.2.1 工作区 / 图片网格",
+    "2.3.2.1 工作区 缩略图模式",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionMetadataHeader":
     "2.4.1.0 Metadata header 总控",
@@ -382,7 +382,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
-    "2.3.2.2 fg-main-content-image-name-list",
+    "2.3.2.2 工作区 文件列表模式",
   "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root / Shell",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main 共享总控",
@@ -405,7 +405,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog":
     "3.10.7 转码",
   "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview":
-    "3.10.8 侧栏批量重命名预览",
+    "3.10.8 侧栏重命名（共享内部件 + 预览）",
   "ui.themeParameter.smallPanelLayer.sectionRoot": "5.0 Root",
   "ui.themeParameter.smallPanelLayer.sectionShortcutEdit": "5.1 Shortcut Edit",
   "ui.themeParameter.smallPanelLayer.sectionShortcutCapture":
@@ -525,11 +525,30 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelMainBorderWidth": "大面板主区边框宽度",
   "ui.themeParameter.smallPanelWidth": "小面板宽度",
   "ui.themeParameter.smallPanelMaxWidth": "小面板最大宽度",
+  "ui.themeParameter.smallPanelHeight": "小面板高度（0=自动）",
   "ui.themeParameter.smallPanelMaxHeight": "小面板最大高度",
+  "ui.themeParameter.smallPanelFillAngle": "小面板 root 渐变角度",
   "ui.themeParameter.smallPanelBorderWidth": "小面板边框宽度",
   "ui.themeParameter.smallPanelRadius": "小面板圆角",
   "ui.themeParameter.smallPanelPadding": "小面板内边距",
   "ui.themeParameter.smallPanelGap": "小面板内容间距",
+  "ui.themeParameter.smallPanelShortcutEditFillAngle":
+    "Shortcut Edit 渐变角度",
+  "ui.themeParameter.smallPanelShortcutCaptureFillAngle":
+    "Shortcut Capture 渐变角度",
+  "ui.themeParameter.smallPanelGroupNameFillAngle":
+    "Group Name 渐变角度",
+  "ui.themeParameter.smallPanelDeleteConfirmFillAngle":
+    "Delete Confirm 渐变角度",
+  "ui.themeParameter.smallPanelAdReviewStartMainFillAngle":
+    "Ad Review Start Main 渐变角度",
+  "ui.themeParameter.smallPanelAdReviewStartMetadataFillAngle":
+    "Ad Review Start Metadata 渐变角度",
+  "ui.themeParameter.smallPanelConvertFillAngle": "Convert 渐变角度",
+  "ui.themeParameter.smallPanelPlaylistNameDialogFillAngle":
+    "Playlist Name Dialog 渐变角度",
+  "ui.themeParameter.smallPanelRenameSingleFillAngle":
+    "Rename Single 渐变角度",
   "ui.themeParameter.panelPadding": "面板内边距",
   "ui.themeParameter.headerButtonSize": "Header 按钮尺寸",
   "ui.themeParameter.headerButtonRadius": "Header 按钮圆角",

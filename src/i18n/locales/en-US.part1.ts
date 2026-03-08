@@ -398,7 +398,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.containerLayer.sectionMainHeaderButtons":
     "2.3.1.1 Main header buttons",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
-    "2.3.2.1 Workspace / Image Grid",
+    "2.3.2.1 Workspace / Thumbnail Mode",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionMetadataHeader":
     "2.4.1.0 Metadata header control",
@@ -407,7 +407,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
-    "2.3.2.2 fg-main-content-image-name-list",
+    "2.3.2.2 Workspace / File List Mode",
   "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root / Shell",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main shared control",
@@ -430,7 +430,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog":
     "3.10.7 Transcode",
   "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview":
-    "3.10.8 Sidebar batch rename preview",
+    "3.10.8 Sidebar rename (shared internals + preview)",
   "ui.themeParameter.smallPanelLayer.sectionRoot": "5.0 Root",
   "ui.themeParameter.smallPanelLayer.sectionShortcutEdit": "5.1 Shortcut Edit",
   "ui.themeParameter.smallPanelLayer.sectionShortcutCapture":
@@ -554,11 +554,29 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Large panel main border width",
   "ui.themeParameter.smallPanelWidth": "Small panel width",
   "ui.themeParameter.smallPanelMaxWidth": "Small panel max width",
+  "ui.themeParameter.smallPanelHeight": "Small panel height (0 = auto)",
   "ui.themeParameter.smallPanelMaxHeight": "Small panel max height",
+  "ui.themeParameter.smallPanelFillAngle": "Small panel root fill angle",
   "ui.themeParameter.smallPanelBorderWidth": "Small panel border width",
   "ui.themeParameter.smallPanelRadius": "Small panel radius",
   "ui.themeParameter.smallPanelPadding": "Small panel padding",
   "ui.themeParameter.smallPanelGap": "Small panel content gap",
+  "ui.themeParameter.smallPanelShortcutEditFillAngle":
+    "Shortcut Edit fill angle",
+  "ui.themeParameter.smallPanelShortcutCaptureFillAngle":
+    "Shortcut Capture fill angle",
+  "ui.themeParameter.smallPanelGroupNameFillAngle": "Group Name fill angle",
+  "ui.themeParameter.smallPanelDeleteConfirmFillAngle":
+    "Delete Confirm fill angle",
+  "ui.themeParameter.smallPanelAdReviewStartMainFillAngle":
+    "Ad Review Start Main fill angle",
+  "ui.themeParameter.smallPanelAdReviewStartMetadataFillAngle":
+    "Ad Review Start Metadata fill angle",
+  "ui.themeParameter.smallPanelConvertFillAngle": "Convert fill angle",
+  "ui.themeParameter.smallPanelPlaylistNameDialogFillAngle":
+    "Playlist Name Dialog fill angle",
+  "ui.themeParameter.smallPanelRenameSingleFillAngle":
+    "Rename Single fill angle",
   "ui.themeParameter.panelPadding": "Panel padding",
   "ui.themeParameter.headerButtonSize": "Header button size",
   "ui.themeParameter.headerButtonRadius": "Header button radius",

@@ -255,49 +255,48 @@ css 的触发点
 slot 与语义映射规则（同名后缀）：
 `--mpx-slot-fg-main-content-image-name-list-<suffix> = 未设置时 -> --mpx-main-image-name-list-<suffix> -> 最终 fallback`
 
-`A. 列表壳层（name-list）`
+ThemeParameter 面板结构改为 3 个可折叠层，固定顺序如下；每层内部再按 `文字颜色 -> 边框颜色 -> 背景颜色 -> 静态指示颜色 -> 动态指示颜色` 排列，无对应项则跳过。
 
+`1. root`
+
+`--mpx-main-image-name-list-text`
 `--mpx-main-image-name-list-border`
 `--mpx-main-image-name-list-bg`
-`--mpx-main-image-name-list-text`
 
-`B. 表头与表体（header/body）`
+`2. header`
 
+`--mpx-main-image-name-list-head-text`
 `--mpx-main-image-name-list-head-border`
 `--mpx-main-image-name-list-head-bg`
-`--mpx-main-image-name-list-head-text`
-`--mpx-main-image-name-list-body-bg`
 
-`C. 列表行（name-list-row）`
-
-`--mpx-main-image-name-list-row-border`
-`--mpx-main-image-name-list-row-bg`
-`--mpx-main-image-name-list-row-text`
-`--mpx-main-image-name-list-row-hover-bg`
-`--mpx-main-image-name-list-row-focused-border-left`
-`--mpx-main-image-name-list-row-selected-border-left`
-`--mpx-main-image-name-list-row-selected-focused-border-left`
-`--mpx-main-image-name-list-row-manage-selected-bg`
-
-`D. 行内主按钮（name-list-row-main / overlay-cell）`
-
-`--mpx-main-image-name-list-row-main-text`（新增 idle 文本语义入口）
-`--mpx-main-image-name-list-row-main-hover-bg`
-`--mpx-main-image-name-list-row-main-active-bg`
-`--mpx-main-image-name-list-row-main-pressed-bg`
-`--mpx-main-image-name-list-row-main-hover-text`
-`--mpx-main-image-name-list-row-main-active-text`
-`--mpx-main-image-name-list-row-main-pressed-text`
-`--mpx-main-image-name-list-row-main-focus-outline-color`
-`--mpx-main-image-name-list-row-main-focus-outline-width`
-`--mpx-main-image-name-list-row-main-pressed-font-weight`
-
-`E. 文件名列文本（label）`
+`3. list`
 
 `--mpx-main-image-name-list-label-text`
+`--mpx-main-image-name-list-row-text`
+`--mpx-main-image-name-list-row-main-text`
+`--mpx-main-image-name-list-row-main-selected-text`
+`--mpx-main-image-name-list-row-main-hover-text`
+`--mpx-main-image-name-list-row-border`
+`--mpx-main-image-name-list-body-bg`
+`--mpx-main-image-name-list-row-bg`
+`--mpx-main-image-name-list-row-selected-bg`
+`--mpx-main-image-name-list-row-selected-border-left`
+`--mpx-main-image-name-list-row-focused-border-left`
+`--mpx-main-image-name-list-row-hover-bg`
+`--mpx-main-image-name-list-row-main-hover-bg`
+`--mpx-main-image-name-list-row-main-pressed-bg`
 
 说明
 `fg-main-content-image-name-list` 调试入口已切到语义 token（`--mpx-main-image-name-list-*`）；slot 变量继续保留用于局部覆写，快照字段 `id` 保持兼容。
+
+表格主体状态收口规则（2026-03）：
+
+1. `无状态`：使用 `row-border / row-bg / row-main-text`。
+2. `hover`：仅强调 `row-main-hover-bg / row-main-hover-text`。
+3. `pressed`：表示鼠标按下未放手前的瞬时态，仅强调 `row-main-pressed-bg`；优先级高于 `selected`。
+4. `selected`：保留左侧 `selected-border-left`，并叠加 `row-selected-bg + row-main-selected-text`。
+5. `focused`：仅使用 `focused-border-left`。
+6. `selected + focused`：背景与文字继续沿用 `selected`，左侧色条改用 `focused`；不再保留独立 `selected-focused` token。
 
 ## 2.4 Meta 容器
 
@@ -1113,11 +1112,19 @@ css 的触发点
 变量与变量对应的值（按组）
 `--mpx-dialog-panel-width = min(520px, 92vw)`（小面板宽度）
 `--mpx-dialog-panel-max-width = 92vw`（小面板最大宽度）
+`--mpx-dialog-panel-height = auto`（小面板高度，root 可选显式覆盖）
 `--mpx-dialog-panel-max-height = 80vh`（小面板最大高度）
 `--mpx-dialog-panel-border-width = 1px`（小面板边框宽度）
-`--mpx-dialog-panel-border-color = var(--mpx-overlay-surface-border, var(--mpx-border-2))`（小面板边框颜色）
+`--mpx-dialog-panel-root-border-color = var(--mpx-overlay-surface-border, var(--mpx-border-2))`（小面板 root 默认边框颜色）
+`--mpx-dialog-panel-border-color = var(--mpx-dialog-panel-border-color-current, var(--mpx-dialog-panel-root-border-color))`（小面板最终边框颜色）
 `--mpx-dialog-panel-radius = 12px`（小面板圆角）
-`--mpx-dialog-panel-bg = var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))`（小面板背景）
+`--mpx-dialog-panel-root-fill-start = var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))`（小面板 root 默认渐变起点）
+`--mpx-dialog-panel-root-fill-end = var(--mpx-dialog-panel-root-fill-start)`（小面板 root 默认渐变终点）
+`--mpx-dialog-panel-root-fill-angle = 180deg`（小面板 root 默认渐变角度）
+`--mpx-dialog-panel-fill-start = var(--mpx-dialog-panel-fill-start-current, var(--mpx-dialog-panel-root-fill-start))`（小面板最终渐变起点）
+`--mpx-dialog-panel-fill-end = var(--mpx-dialog-panel-fill-end-current, var(--mpx-dialog-panel-root-fill-end))`（小面板最终渐变终点）
+`--mpx-dialog-panel-fill-angle = var(--mpx-dialog-panel-fill-angle-current, var(--mpx-dialog-panel-root-fill-angle))`（小面板最终渐变角度）
+`--mpx-dialog-panel-bg = linear-gradient(...)`（仅供小面板 root 本体消费的派生背景）
 `--mpx-dialog-panel-shadow = var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))`（小面板阴影）
 `--mpx-dialog-panel-padding = 14px`（小面板内边距）
 `--mpx-dialog-panel-gap = 10px`（小面板内部间距）
@@ -1126,8 +1133,9 @@ css 的触发点
 `--mpx-overlay-surface-bg = #f5f2ec`（`src/styles/themes/styles/soft-skeuomorphic.css:268`）
 `--mpx-overlay-surface-shadow = 0 0 0 1px rgba(247, 242, 232, 0.96), 0 0 0 2px rgba(190, 176, 154, 0.42), 0 1px 0 rgba(255, 255, 255, 0.96), 0 2px 0 rgba(172, 155, 129, 0.68), 0 12px 30px rgba(120, 110, 100, 0.3), 0 4px 10px rgba(120, 110, 100, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(165, 146, 119, 0.45)`（`src/styles/themes/styles/soft-skeuomorphic.css:269`）
 
-`--mpx-dialog-panel-border-color = #b8ac9b`（当前主题实际命中）
-`--mpx-dialog-panel-bg = #f5f2ec`（当前主题实际命中）
+`--mpx-dialog-panel-root-border-color = #b8ac9b`（当前主题实际命中）
+`--mpx-dialog-panel-root-fill-start = #f5f2ec`（当前主题实际命中）
+`--mpx-dialog-panel-root-fill-end = #f5f2ec`（当前主题实际命中）
 `--mpx-dialog-panel-shadow = 0 0 0 1px rgba(247, 242, 232, 0.96), 0 0 0 2px rgba(190, 176, 154, 0.42), 0 1px 0 rgba(255, 255, 255, 0.96), 0 2px 0 rgba(172, 155, 129, 0.68), 0 12px 30px rgba(120, 110, 100, 0.3), 0 4px 10px rgba(120, 110, 100, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(165, 146, 119, 0.45)`（当前主题实际命中）
 
 `--mpx-border-2 = #b08d5c`（回退值，`src/styles/themes/palettes/skeuomorphic-luxury-white.css:54`）
@@ -1137,8 +1145,9 @@ css 的触发点
 说明
 
 1. 所有纳入项统一挂到 `mpx-dialog-mask + mpx-dialog-panel` 基架。
-2. 各 dialog 仍可通过各自 slot 变量做局部覆写（边框/背景/文字/阴影/尺寸）。
-3. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。
+2. 小面板按 `root source -> slot current -> final token` 链路消费 `border-color / fill-start / fill-end / fill-angle`；实际渲染优先吃 slot 分控，未覆写时回退到 root 总控。
+3. 遮罩层 `ovl-bg` 不再回退到 `panel fill`，避免调试 panel 本体时误改整屏遮罩。
+4. 单文件更名从 3.0 大面板拆出，改走 5.0 小面板；批量更名仍保留在 3.4。
 
 ### 5.2 SidebarRenameDialog 小面板 / 大面板内部件
 
@@ -1150,11 +1159,12 @@ css 的触发点
 1. 通用 dialog 控件：`--mpx-sidebar-rename-dialog-text`、`--mpx-sidebar-rename-dialog-muted-text`、`--mpx-sidebar-rename-dialog-control-*`、`--mpx-sidebar-rename-dialog-action-btn-*`
 2. 批量预览表：`--mpx-sidebar-rename-preview-border/bg/head-*/list-bg/row-*`
 3. slot 映射：
-   - 小面板：`--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-*`、`action-btn-*`、`text`、`muted-text`
-   - 大面板：`--mpx-slot-fg-sidebar-shortcut-rename-panel-control-*`、`action-btn-*`、`preview-*`、`text`、`muted-text`
+   - 小面板本体：`--mpx-slot-fg-sidebar-shortcut-rename-single-panel-border/fill-start/fill-end/fill-angle/shadow`
+   - 大面板共享内部件：`--mpx-sidebar-rename-dialog-*`
+   - 大面板预览表：`--mpx-sidebar-rename-preview-*`
 
 说明
-`SidebarRenameDialog` 已不再借壳 `sidebar-rename-soft-*` 与 `fg-header-g2-mode-image-*`；单文件重命名纳入 `smallPanelLayer`，批量预览表纳入 `largePanelLayer`。
+`SidebarRenameDialog` 已不再借壳 `sidebar-rename-soft-*` 与 `fg-header-g2-mode-image-*`；单文件重命名在 `smallPanelLayer` 只暴露本体边框 / fill / 阴影，共享内部件与批量预览表统一纳入 `largePanelLayer`。
 
 ### 5.1 播放列表命名小面板
 
@@ -1448,14 +1458,13 @@ css 的触发点
 - `--mpx-main-image-name-list-head-text`
 - `--mpx-main-image-name-list-row-border`
 - `--mpx-main-image-name-list-row-bg`
-- `--mpx-main-image-name-list-row-text`
-- `--mpx-main-image-name-list-row-hover-bg`
+- `--mpx-main-image-name-list-row-main-text`
 - `--mpx-main-image-name-list-row-focused-border-left`
 - `--mpx-main-image-name-list-row-selected-border-left`
-- `--mpx-main-image-name-list-row-selected-focused-border-left`
-- `--mpx-main-image-name-list-row-main-active-bg`
+- `--mpx-main-image-name-list-row-selected-bg`
 - `--mpx-main-image-name-list-row-main-pressed-bg`
 - `--mpx-main-image-name-list-row-main-hover-text`
+- `--mpx-main-image-name-list-row-main-selected-text`
 
 #### 当前建议后置或降级的字段类型
 
@@ -1480,7 +1489,7 @@ css 的触发点
 `3. 条件生效 / 需特定状态`
 
 - `fg-sidebar-main` 中大量 `expanded / collapsed / manage-selected / marker-*` 变量，需切换展开态、管理态或文件管理模式才可观测
-- `fg-main-content-image-name-list` 中部分 `manage-selected` 与行内主按钮状态，需配合特定状态切换才明显
+- `fg-main-content-image-name-list` 中 `selected` / `focused` / `hover` / `pressed` 已收敛为主路径；`row-hover-bg` 与 `body-bg` 仍属于次级链路
 - `bullet` 组当前不便稳定复测，继续保留为后置项
 
 #### 结构性问题（待后续收口）

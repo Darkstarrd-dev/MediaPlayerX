@@ -451,21 +451,24 @@
   --mpx-main-image-name-list-body-bg: var(--mpx-overlay-soft-bg);
   --mpx-main-image-name-list-row-border: var(--mpx-overlay-soft-row-divider);
   --mpx-main-image-name-list-row-bg: var(--mpx-overlay-soft-bg);
-  --mpx-main-image-name-list-row-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-text: var(--mpx-main-image-name-list-text);
   --mpx-main-image-name-list-row-hover-bg: var(--mpx-overlay-soft-bg);
   --mpx-main-image-name-list-row-focused-border-left: var(--mpx-state-focus-color);
   --mpx-main-image-name-list-row-selected-border-left: var(
     --mpx-state-selected-color
   );
+  --mpx-main-image-name-list-row-selected-bg: var(--mpx-state-selected-color);
   --mpx-main-image-name-list-row-selected-focused-border-left: var(
-    --mpx-state-focus-color
+    --mpx-main-image-name-list-row-focused-border-left
   );
   --mpx-main-image-name-list-row-manage-selected-bg: var(
-    --mpx-state-selected-color
+    --mpx-main-image-name-list-row-selected-bg
   );
-  --mpx-main-image-name-list-row-main-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-main-text: var(--mpx-main-image-name-list-row-text);
   --mpx-main-image-name-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-main-image-name-list-row-main-active-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-main-image-name-list-row-main-active-bg: var(
+    --mpx-main-image-name-list-row-main-pressed-bg
+  );
   --mpx-main-image-name-list-row-main-pressed-bg: var(
     --mpx-overlay-soft-focus-bg
   );
@@ -474,13 +477,16 @@
     var(--mpx-accent) 72%,
     var(--mpx-text-1)
   );
-  --mpx-main-image-name-list-row-main-active-text: var(--mpx-text-1);
-  --mpx-main-image-name-list-row-main-pressed-text: var(--mpx-text-1);
-  --mpx-main-image-name-list-row-main-focus-outline-width: 1px;
-  --mpx-main-image-name-list-row-main-focus-outline-color: var(
-    --mpx-state-focus-color
+  --mpx-main-image-name-list-row-main-selected-text: var(--mpx-text-1);
+  --mpx-main-image-name-list-row-main-active-text: var(
+    --mpx-main-image-name-list-row-main-selected-text
   );
-  --mpx-main-image-name-list-row-main-pressed-font-weight: 600;
+  --mpx-main-image-name-list-row-main-pressed-text: var(
+    --mpx-main-image-name-list-row-main-selected-text
+  );
+  --mpx-main-image-name-list-row-main-focus-outline-width: 0px;
+  --mpx-main-image-name-list-row-main-focus-outline-color: transparent;
+  --mpx-main-image-name-list-row-main-pressed-font-weight: inherit;
   --mpx-main-image-name-list-label-text: inherit;
 
   /* Focus ring (pane-level): shared by sidebar + main.
@@ -1141,14 +1147,41 @@
   /* 小面板层（5.0） */
   --mpx-dialog-panel-width: min(520px, 92vw);
   --mpx-dialog-panel-max-width: 92vw;
+  --mpx-dialog-panel-height: auto;
   --mpx-dialog-panel-max-height: 80vh;
   --mpx-dialog-panel-border-width: 1px;
-  --mpx-dialog-panel-border-color: var(
+  --mpx-dialog-panel-root-border-color: var(
     --mpx-overlay-surface-border,
     var(--mpx-border-2)
   );
+  --mpx-dialog-panel-border-color: var(
+    --mpx-dialog-panel-border-color-current,
+    var(--mpx-dialog-panel-root-border-color)
+  );
   --mpx-dialog-panel-radius: 12px;
-  --mpx-dialog-panel-bg: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
+  --mpx-dialog-panel-root-fill-start: var(
+    --mpx-overlay-surface-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-dialog-panel-root-fill-end: var(--mpx-dialog-panel-root-fill-start);
+  --mpx-dialog-panel-root-fill-angle: 180deg;
+  --mpx-dialog-panel-fill-start: var(
+    --mpx-dialog-panel-fill-start-current,
+    var(--mpx-dialog-panel-root-fill-start)
+  );
+  --mpx-dialog-panel-fill-end: var(
+    --mpx-dialog-panel-fill-end-current,
+    var(--mpx-dialog-panel-root-fill-end)
+  );
+  --mpx-dialog-panel-fill-angle: var(
+    --mpx-dialog-panel-fill-angle-current,
+    var(--mpx-dialog-panel-root-fill-angle)
+  );
+  --mpx-dialog-panel-bg: linear-gradient(
+    var(--mpx-dialog-panel-fill-angle),
+    var(--mpx-dialog-panel-fill-start),
+    var(--mpx-dialog-panel-fill-end)
+  );
   --mpx-dialog-panel-shadow: var(
     --mpx-overlay-surface-shadow,
     var(--mpx-shadow-panel)
