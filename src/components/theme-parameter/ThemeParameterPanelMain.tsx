@@ -36,7 +36,6 @@ import {
 import {
   ThemeParameterColorFieldRow,
   ThemeParameterDebugLayerList,
-  ThemeParameterDebugSectionList,
   ThemeParameterParameterRows,
   ThemeParameterParameterRowsWithVarLabel,
   ThemeParameterTextFieldRow,
@@ -83,7 +82,7 @@ import {
   MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS,
   METADATA_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_HEADER_DEBUG_SUBSECTIONS,
-  SIDEBAR_MAIN_DEBUG_SECTIONS,
+  SIDEBAR_MAIN_DEBUG_LAYERS,
   SMALL_PANEL_COLOR_FIELDS,
   SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS,
   SMALL_PANEL_ROOT_COLOR_FIELDS,
@@ -388,7 +387,9 @@ export function ThemeParameterPanelMain({
   const syncedLargePanelColorOverridesRef = useRef<Record<string, Set<string>>>(
     {},
   );
-  const syncedSmallPanelColorOverridesRef = useRef<Record<string, Set<string>>>({});
+  const syncedSmallPanelColorOverridesRef = useRef<Record<string, Set<string>>>(
+    {},
+  );
   const [controlPreviewValues, setControlPreviewValues] =
     useState<ControlPreviewValues>({
       sliderBaseHorizontal: 36,
@@ -699,7 +700,9 @@ export function ThemeParameterPanelMain({
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS)) {
+        for (const sourceId of Object.keys(
+          SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS,
+        )) {
           syncedSmallPanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
@@ -823,7 +826,9 @@ export function ThemeParameterPanelMain({
           ids.includes(field.id as never),
         )
       ) {
-        for (const sourceId of Object.keys(SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS)) {
+        for (const sourceId of Object.keys(
+          SMALL_PANEL_ROOT_COLOR_FIELD_SYNC_IDS,
+        )) {
           syncedSmallPanelColorOverridesRef.current[sourceId]?.delete(field.id);
         }
       }
@@ -1172,8 +1177,8 @@ export function ThemeParameterPanelMain({
 
   const renderSidebarMainDebugSections = () => {
     return (
-      <ThemeParameterDebugSectionList
-        sections={SIDEBAR_MAIN_DEBUG_SECTIONS}
+      <ThemeParameterDebugLayerList
+        layers={SIDEBAR_MAIN_DEBUG_LAYERS}
         colorFields={CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS}
         textFields={CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS}
         renderColorFieldRow={renderColorFieldRow}

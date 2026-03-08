@@ -42,6 +42,16 @@ function getDetailsBySummaryText(summaryText: string): HTMLDetailsElement {
   return details as HTMLDetailsElement;
 }
 
+function getDetailsBySummaryTextWithin(
+  container: HTMLElement,
+  summaryText: string,
+): HTMLDetailsElement {
+  const summary = within(container).getByText(summaryText);
+  const details = summary.closest("details") as HTMLDetailsElement | null;
+  expect(details).not.toBeNull();
+  return details as HTMLDetailsElement;
+}
+
 function getResetButtonByLabelText(text: string): HTMLButtonElement {
   const label = screen
     .getByText(text)
@@ -942,8 +952,12 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.queryByRole("textbox", { name: "--mpx-large-panel-bg" }),
     ).toBeNull();
-    expect(screen.getAllByText("仅用于大面板 root 本体").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("仅用于大面板 shell 分栏容器").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("仅用于大面板 root 本体").length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("仅用于大面板 shell 分栏容器").length,
+    ).toBeGreaterThan(0);
 
     ensureDetailsOpen("3.10 内部件");
     expect(screen.getByText("3.10.1 导入任务")).toBeInTheDocument();
@@ -1007,7 +1021,9 @@ describe("ThemeParameterPanel", () => {
     expect(
       getSliderByLabelText("--mpx-dialog-panel-root-fill-angle"),
     ).toBeInTheDocument();
-    expect(getSliderByLabelText("--mpx-dialog-panel-height")).toBeInTheDocument();
+    expect(
+      getSliderByLabelText("--mpx-dialog-panel-height"),
+    ).toBeInTheDocument();
     expect(
       getSliderByLabelText("--mpx-dialog-panel-max-height"),
     ).toBeInTheDocument();
@@ -1018,18 +1034,18 @@ describe("ThemeParameterPanel", () => {
     ).toBeInTheDocument();
 
     ensureDetailsOpen("5.7 Playlist Name Dialog");
-    expect(screen.getAllByText("Panel Slot Override").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Panel Slot Override").length).toBeGreaterThan(
+      0,
+    );
     expect(screen.getAllByText("Shared Internals").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("textbox", {
-        name:
-          "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start",
+        name: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-start",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", {
-        name:
-          "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end",
+        name: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-fill-end",
       }),
     ).toBeInTheDocument();
     expect(
@@ -1362,8 +1378,7 @@ describe("ThemeParameterPanel", () => {
     );
     fireEvent.change(
       screen.getByRole("spinbutton", {
-        name:
-          "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start-alpha",
+        name: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-fill-start-alpha",
       }),
       { target: { value: "100" } },
     );
@@ -1449,8 +1464,58 @@ describe("ThemeParameterPanel", () => {
     expect(nameListSummary).toBeInTheDocument();
 
     fireEvent.click(sidebarSummary);
+    const sidebarDetails = getDetailsBySummaryText("2.2.2.1 fg-sidebar-main");
+    const sidebarRootLayerDetails = getDetailsBySummaryTextWithin(
+      sidebarDetails,
+      "1、root",
+    );
+    const sidebarLabelLayerDetails = getDetailsBySummaryTextWithin(
+      sidebarDetails,
+      "2、label",
+    );
+    const sidebarCountLayerDetails = getDetailsBySummaryTextWithin(
+      sidebarDetails,
+      "3、count",
+    );
+    const sidebarBulletLayerDetails = getDetailsBySummaryTextWithin(
+      sidebarDetails,
+      "4、bullet",
+    );
     expect(
-      screen.getByText("1、sidebar-main 本体与容器链路"),
+      within(sidebarRootLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarLabelLayerDetails).getByText("1、文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarLabelLayerDetails).getByText("2、边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarLabelLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarLabelLayerDetails).getByText("4、静态指示颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarLabelLayerDetails).getByText("5、动态指示颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarCountLayerDetails).getByText("1、文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarCountLayerDetails).getByText("2、边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarCountLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarCountLayerDetails).getByText("5、动态指示颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarBulletLayerDetails).getByText("4、静态指示颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sidebarBulletLayerDetails).getByText("5、动态指示颜色"),
     ).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
@@ -1473,21 +1538,54 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toBe("#223344");
 
+    fireEvent.click(sidebarSummary);
     fireEvent.click(nameListSummary);
-    const rootLayerDetails = getDetailsBySummaryText("1、root");
-    const headerLayerDetails = getDetailsBySummaryText("2、header");
-    const listLayerDetails = getDetailsBySummaryText("3、list");
-    expect(within(rootLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
-    expect(within(rootLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
-    expect(within(rootLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
-    expect(within(headerLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
-    expect(within(headerLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
-    expect(within(headerLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
-    expect(within(listLayerDetails).getByText("1、文字颜色")).toBeInTheDocument();
-    expect(within(listLayerDetails).getByText("2、边框颜色")).toBeInTheDocument();
-    expect(within(listLayerDetails).getByText("3、背景颜色")).toBeInTheDocument();
-    expect(within(listLayerDetails).getByText("4、静态指示颜色")).toBeInTheDocument();
-    expect(within(listLayerDetails).getByText("5、动态指示颜色")).toBeInTheDocument();
+    const nameListDetails = getDetailsBySummaryText("2.3.2.2 工作区 文件列表模式");
+    const rootLayerDetails = getDetailsBySummaryTextWithin(
+      nameListDetails,
+      "1、root",
+    );
+    const headerLayerDetails = getDetailsBySummaryTextWithin(
+      nameListDetails,
+      "2、header",
+    );
+    const listLayerDetails = getDetailsBySummaryTextWithin(
+      nameListDetails,
+      "3、list",
+    );
+    expect(
+      within(rootLayerDetails).getByText("1、文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(rootLayerDetails).getByText("2、边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(rootLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(headerLayerDetails).getByText("1、文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(headerLayerDetails).getByText("2、边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(headerLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).getByText("1、文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).getByText("2、边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).getByText("3、背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).getByText("4、静态指示颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(listLayerDetails).getByText("5、动态指示颜色"),
+    ).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("textbox", {
         name: "--mpx-main-image-name-list-row-selected-bg",
@@ -1552,9 +1650,10 @@ describe("ThemeParameterPanel", () => {
     expect(headerAppearanceDetails).not.toBeNull();
     const ensuredHeaderAppearanceDetails =
       headerAppearanceDetails as HTMLDetailsElement;
-    const headerAppearanceContent = ensuredHeaderAppearanceDetails.querySelector(
-      ".settings-collapsible-content",
-    );
+    const headerAppearanceContent =
+      ensuredHeaderAppearanceDetails.querySelector(
+        ".settings-collapsible-content",
+      );
     expect(headerAppearanceContent?.textContent).toContain("视觉变换");
     fireEvent.click(ensuredHeaderAppearanceDetails.querySelector("summary")!);
     expect(ensuredHeaderAppearanceDetails.open).toBe(false);

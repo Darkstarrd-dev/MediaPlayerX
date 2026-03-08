@@ -149,31 +149,61 @@ slot 与语义映射规则（同名后缀）：
 
 `sidebar.css / manage.css` 对应规则保留为非 soft-skeuomorphic 主题的 fallback。
 
-`A. 主列表壳层`
+ThemeParameter 面板结构改为 4 个可折叠层，固定顺序如下；每层内部再按 `文字颜色 -> 边框颜色 -> 背景颜色 -> 静态指示颜色 -> 动态指示颜色` 排列，无对应项则跳过。
 
-`--mpx-sidebar-main-bg`（主列表背景）
+`1. root`
 
-`B. label（默认态 / active / manage selected / collapsible）`
+`--mpx-sidebar-main-bg`
+
+`2. label`
 
 `--mpx-sidebar-main-label-text`
-`--mpx-sidebar-main-label-border`
-`--mpx-sidebar-main-label-bg`
-`--mpx-sidebar-main-label-shadow`
-`--mpx-sidebar-main-label-hover-filter`
-`--mpx-sidebar-main-label-active-bg`
-`--mpx-sidebar-main-label-active-shadow`
-`--mpx-sidebar-main-label-active-hover-shadow`
-`--mpx-sidebar-main-label-manage-selected-bg`
-`--mpx-sidebar-main-label-manage-selected-shadow`
-`--mpx-sidebar-main-active-ring`
-`--mpx-sidebar-main-active-underlay`
 `--mpx-sidebar-main-label-toggle-text`
+`--mpx-sidebar-main-label-border`
+`--mpx-sidebar-main-label-plain-border`
+`--mpx-sidebar-main-label-bg`
 `--mpx-sidebar-main-label-collapsed-bg`
 `--mpx-sidebar-main-label-expanded-bg`
 `--mpx-sidebar-main-label-plain-bg`
-`--mpx-sidebar-main-label-plain-border`
+`--mpx-sidebar-main-label-active-bg`
+`--mpx-sidebar-main-active-underlay`
+`--mpx-sidebar-main-active-ring`
+`--mpx-sidebar-main-label-marker-focus-bg`
+`--mpx-sidebar-main-label-marker-selected-bg`
+`--mpx-sidebar-main-label-manage-selected-bg`
+`--mpx-sidebar-main-label-collapsed-active-bg`
+`--mpx-sidebar-main-label-expanded-active-bg`
+`--mpx-sidebar-main-label-plain-active-bg`
+`--mpx-sidebar-main-label-collapsed-marker-focus-bg`
+`--mpx-sidebar-main-label-expanded-marker-focus-bg`
+`--mpx-sidebar-main-label-plain-marker-focus-bg`
+`--mpx-sidebar-main-label-collapsed-marker-selected-bg`
+`--mpx-sidebar-main-label-expanded-marker-selected-bg`
+`--mpx-sidebar-main-label-plain-marker-selected-bg`
+`--mpx-sidebar-main-label-collapsed-manage-selected-bg`
+`--mpx-sidebar-main-label-expanded-manage-selected-bg`
+`--mpx-sidebar-main-label-plain-manage-selected-bg`
+`--mpx-sidebar-main-label-hover-filter`
+`--mpx-sidebar-main-label-shadow`
+`--mpx-sidebar-main-label-active-shadow`
+`--mpx-sidebar-main-label-active-hover-shadow`
+`--mpx-sidebar-main-label-manage-selected-shadow`
 
-`C. marker / bullet`
+`3. count`
+
+`--mpx-sidebar-main-count-text`
+`--mpx-sidebar-main-count-packages-text`
+`--mpx-sidebar-main-count-images-text`
+`--mpx-sidebar-main-count-border`
+`--mpx-sidebar-main-count-packages-border`
+`--mpx-sidebar-main-count-images-border`
+`--mpx-sidebar-main-count-bg`
+`--mpx-sidebar-main-count-packages-bg`
+`--mpx-sidebar-main-count-images-bg`
+`--mpx-sidebar-main-count-shadow`
+`--mpx-sidebar-main-count-packages-shadow`
+
+`4. bullet`
 
 marker 实现方式：
 `sidebar-label` 左侧色带通过 `::before` 伪元素实现（不是 `border-left`）。
@@ -186,19 +216,10 @@ marker 实现方式：
 
 对 `is-collapsible` 节点，`::before` 会被折叠箭头 `content` 覆盖，因此不显示 marker（与基线行为一致）。
 
-`--mpx-sidebar-main-label-marker-focus-bg`
-`--mpx-sidebar-main-label-marker-selected-bg`
 `--mpx-sidebar-main-bullet-pending-bg`
 `--mpx-sidebar-main-bullet-running-bg`
 `--mpx-sidebar-main-bullet-running-ring`
 `--mpx-sidebar-main-bullet-active-bg`
-
-`D. count 徽标（默认 / packages / images）`
-
-`--mpx-sidebar-main-count-text`（默认 count 文本色，也是 packages/images 的 fallback 父变量）
-`--mpx-sidebar-main-count-border/bg/shadow`
-`--mpx-sidebar-main-count-packages-text/border/bg/shadow`（含 `packages-shadow`，消费点在 `part2.css`）
-`--mpx-sidebar-main-count-images-text/border/bg`
 
 说明
 `fg-sidebar-main` 调试入口已切到语义 token（`--mpx-sidebar-main-*`）；slot 变量继续保留用于局部覆写，快照字段 `id` 保持兼容。
@@ -206,6 +227,14 @@ marker 实现方式：
 注意：在 `soft-skeuomorphic` 主题下，`active / manage-selected / bg` 相关变量的主消费点在 `part1.css`，不是 `sidebar.css`，原因是 `part1.css` 基础 label 规则特异性更高。
 
 `marker` 使用 `::before`，`sweeping` 使用 `::after`。若更改伪元素分配，`is-sweeping` 高光动画会失效。
+
+当前状态语义建议按实现理解为：
+
+1. `is-active` = 当前项（current item），不是 DOM focus。
+2. `is-hover-active` = hover。
+3. `is-manage.is-selected` = 批量选择态（manage-selected）。
+4. `focus-visible` 仅补充键盘焦点下的 marker 可见性。
+5. `is-pressed-active` 当前只是内部兼容 class，不建议继续作为主调试语义对外暴露。
 
 ## 2.3 Main 容器
 
@@ -1353,16 +1382,16 @@ css 的触发点
 
 ### 7.0.1 ThemeParameter 分页归属总表
 
-| 层级范围 | 主语义 token 家族 | 主 slot / data-slot 家族 | 主消费点 | ThemeParameter 分页 | 状态 |
-|---|---|---|---|---|---|
-| `1.0 背景层` + `2.0~2.4 大容器层` | `--mpx-bg-*`、`--mpx-container-frame-*`、`--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*` | `--mpx-slot-bg-app-*`、`--mpx-slot-fg-header-root-*`、`--mpx-slot-fg-sidebar-root-*`、`--mpx-slot-fg-main-root-*`、`--mpx-slot-fg-meta-root-*` | `layout.part*.css`、`sidebar.css`、`main.part*.css`、`metadata.css`、`soft-skeuomorphic.components.part1.css` | `containerLayer` | 已建立主链路 |
-| `2.2.2.1 fg-sidebar-main` | `--mpx-sidebar-main-*` | `--mpx-slot-fg-sidebar-main-*` | `sidebar.css`、`manage.css`、`soft-skeuomorphic.components.part1.css`、`soft-skeuomorphic.components.part2.css` | `containerLayer` | 已进入分页；保留高特异性消费说明 |
-| `2.3.2.2 fg-main-content-image-name-list` | `--mpx-main-image-name-list-*` | `--mpx-slot-fg-main-content-image-name-list-*` | `main.part1.css`、`main.part2.css`、`manage.css` | `containerLayer` | 已进入分页 |
-| `3.0~3.10 大面板层` | `--mpx-large-panel-*` | 各大面板 `root/head/side/main/ovl` slot 家族 | `settings.part1.css`、`settings.part2.css`、业务面板 CSS | `largePanelLayer` | 骨架已统一，内部件仍有残余 |
-| `5.0 小面板层` | `--mpx-dialog-panel-*` | 各 dialog `ovl/panel` slot 家族 | `settings.part2.css`、`metadata.css` | `smallPanelLayer` | 骨架已统一 |
-| `4.0 按钮层` | `--mpx-btn-core-*`、`--mpx-btn-variant-*` | `--mpx-slot-<path>-*`（局部覆写） | `button-template.css`、`settings.part1.css`、业务消费端样式 | `buttonStates` | 已建立主链路 |
-| `6.1 滚动条` + `6.2 Slider` | `--mpx-scrollbar-*`、`--mpx-range-*`、`--mpx-runway-*`、`--mpx-slider-settings-*` | 控件自身 slot/语义链路 | `base.css`、`soft-skeuomorphic.runway.css`、`layout.part2.css`、`settings.part1.css` | `commonControls` | 已进入分页，scrollbar detail 与 settings slider groove 已补齐 |
-| 播放器 / 全屏图像调整 / 广告审核 overlay | `--mpx-player-surface-*`、`--mpx-player-hud-*`、`--mpx-fs-image-adjust-*`（预留）、`--mpx-ad-review-overlay-*` | 各子系统自有前缀或受控保留位 | `main.part2.css`、`main.part3.css`、`main.part4.css`、`layout.part3.css`、`manage.css` | 暂不并入当前分页 | 允许特例，保留独立语义域 |
+| 层级范围                                  | 主语义 token 家族                                                                                                | 主 slot / data-slot 家族                                                                                                                       | 主消费点                                                                                                        | ThemeParameter 分页 | 状态                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------- |
+| `1.0 背景层` + `2.0~2.4 大容器层`         | `--mpx-bg-*`、`--mpx-container-frame-*`、`--mpx-header-*`、`--mpx-sidebar-*`、`--mpx-main-*`、`--mpx-metadata-*` | `--mpx-slot-bg-app-*`、`--mpx-slot-fg-header-root-*`、`--mpx-slot-fg-sidebar-root-*`、`--mpx-slot-fg-main-root-*`、`--mpx-slot-fg-meta-root-*` | `layout.part*.css`、`sidebar.css`、`main.part*.css`、`metadata.css`、`soft-skeuomorphic.components.part1.css`   | `containerLayer`    | 已建立主链路                                                  |
+| `2.2.2.1 fg-sidebar-main`                 | `--mpx-sidebar-main-*`                                                                                           | `--mpx-slot-fg-sidebar-main-*`                                                                                                                 | `sidebar.css`、`manage.css`、`soft-skeuomorphic.components.part1.css`、`soft-skeuomorphic.components.part2.css` | `containerLayer`    | 已进入分页；保留高特异性消费说明                              |
+| `2.3.2.2 fg-main-content-image-name-list` | `--mpx-main-image-name-list-*`                                                                                   | `--mpx-slot-fg-main-content-image-name-list-*`                                                                                                 | `main.part1.css`、`main.part2.css`、`manage.css`                                                                | `containerLayer`    | 已进入分页                                                    |
+| `3.0~3.10 大面板层`                       | `--mpx-large-panel-*`                                                                                            | 各大面板 `root/head/side/main/ovl` slot 家族                                                                                                   | `settings.part1.css`、`settings.part2.css`、业务面板 CSS                                                        | `largePanelLayer`   | 骨架已统一，内部件仍有残余                                    |
+| `5.0 小面板层`                            | `--mpx-dialog-panel-*`                                                                                           | 各 dialog `ovl/panel` slot 家族                                                                                                                | `settings.part2.css`、`metadata.css`                                                                            | `smallPanelLayer`   | 骨架已统一                                                    |
+| `4.0 按钮层`                              | `--mpx-btn-core-*`、`--mpx-btn-variant-*`                                                                        | `--mpx-slot-<path>-*`（局部覆写）                                                                                                              | `button-template.css`、`settings.part1.css`、业务消费端样式                                                     | `buttonStates`      | 已建立主链路                                                  |
+| `6.1 滚动条` + `6.2 Slider`               | `--mpx-scrollbar-*`、`--mpx-range-*`、`--mpx-runway-*`、`--mpx-slider-settings-*`                                | 控件自身 slot/语义链路                                                                                                                         | `base.css`、`soft-skeuomorphic.runway.css`、`layout.part2.css`、`settings.part1.css`                            | `commonControls`    | 已进入分页，scrollbar detail 与 settings slider groove 已补齐 |
+| 播放器 / 全屏图像调整 / 广告审核 overlay  | `--mpx-player-surface-*`、`--mpx-player-hud-*`、`--mpx-fs-image-adjust-*`（预留）、`--mpx-ad-review-overlay-*`   | 各子系统自有前缀或受控保留位                                                                                                                   | `main.part2.css`、`main.part3.css`、`main.part4.css`、`layout.part3.css`、`manage.css`                          | 暂不并入当前分页    | 允许特例，保留独立语义域                                      |
 
 说明
 
@@ -1371,27 +1400,27 @@ css 的触发点
 
 ### 7.0.1.1 ThemeParameter 分页验收对照表（Phase 2）
 
-| 分页 | 必须覆盖的层级节点 | 暂不纳入的特例节点 | 当前预览入口 | 说明 |
-|---|---|---|---|---|
-| `parameters` | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数 | 不承载特例白名单，只负责通用参数滑条 | 无独立预览；直接写入实际变量 | 该页是参数入口，不作为层级归属页 |
-| `snapshot` | 当前所有分页已暴露字段的导出 / 导入 / 复位 | 不负责新增字段定义 | 无独立预览；作用于当前 inline 覆写集合 | Phase 3 会把该结构继续收敛到正式 theme schema |
-| `containerLayer` | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay | `bg-only`、`bg-plus-container` | 已按共享壳层 + 单容器 frame 结构重排 |
-| `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等 | 播放器独立 panel / HUD、未登记的舞台化 overlay | `bg-plus-large-panel` | 主验收对象是 `root/head/side/main` 骨架与受控内部语义 |
-| `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等 | 不承接大面板内部件与播放器 popover | `bg-plus-small-panel` | 以 dialog panel 本体与其局部控件为主 |
-| `commonControls` | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider sections） | 当前已补齐 scrollbar detail 与 settings groove 独立 token |
-| `buttonStates` | `4.0` 按钮层里 ThemeParameter side 按钮的 state 样例与 slot 覆写链路 | 业务按钮全集并不在本页逐个复刻 | 页内 state demo 按钮 | 用于验收 `core/variant/slot` 到 side button 的命中情况 |
+| 分页              | 必须覆盖的层级节点                                                                                                                          | 暂不纳入的特例节点                                    | 当前预览入口                                | 说明                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------- |
+| `parameters`      | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数                                                                                   | 不承载特例白名单，只负责通用参数滑条                  | 无独立预览；直接写入实际变量                | 该页是参数入口，不作为层级归属页                          |
+| `snapshot`        | 当前所有分页已暴露字段的导出 / 导入 / 复位                                                                                                  | 不负责新增字段定义                                    | 无独立预览；作用于当前 inline 覆写集合      | Phase 3 会把该结构继续收敛到正式 theme schema             |
+| `containerLayer`  | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay          | `bg-only`、`bg-plus-container`              | 已按共享壳层 + 单容器 frame 结构重排                      |
+| `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等   | 播放器独立 panel / HUD、未登记的舞台化 overlay        | `bg-plus-large-panel`                       | 主验收对象是 `root/head/side/main` 骨架与受控内部语义     |
+| `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等                                                                      | 不承接大面板内部件与播放器 popover                    | `bg-plus-small-panel`                       | 以 dialog panel 本体与其局部控件为主                      |
+| `commonControls`  | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove       | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider sections） | 当前已补齐 scrollbar detail 与 settings groove 独立 token |
+| `buttonStates`    | `4.0` 按钮层里 ThemeParameter side 按钮的 state 样例与 slot 覆写链路                                                                        | 业务按钮全集并不在本页逐个复刻                        | 页内 state demo 按钮                        | 用于验收 `core/variant/slot` 到 side button 的命中情况    |
 
 ### 7.0.1.2 ThemeParameter 逐页手工验收清单（待执行）
 
-| 分页 | 验收动作 | 预期结果 | 当前记录状态 |
-|---|---|---|---|
-| `parameters` | 调节任一通用参数后关闭并重新打开面板 | 变量值保持到当前会话态，UI 同步更新 | 待执行 |
-| `snapshot` | 导出当前快照 -> 清空 / 复位 -> 重新导入 | 已暴露字段全部恢复，提示文案正确 | 待执行 |
-| `containerLayer` | 在 `bg-only` / `bg-plus-container` 下分别修改颜色、文本串、数值项并单项复位 | 预览区即时生效，复位后回到主题默认值 | 进行中：`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`2.2.2.1 fg-sidebar-main`、`2.3.2.2 fg-main-content-image-name-list` 已进入新结构验收 |
-| `largePanelLayer` | 在 `bg-plus-large-panel` 下修改 `root/head/side/main` 与内部件颜色项 | 大面板骨架与已收口内部件同步响应 | 待执行 |
-| `smallPanelLayer` | 在 `bg-plus-small-panel` 下修改 dialog 骨架与文本串并复位 | 小面板预览与实际 slot 命中一致 | 待执行 |
-| `commonControls` | 逐项测试 scrollbar、runway、vertical、settings slider 字段 | 对应控件样例即时变化；scrollbar detail 与 settings groove 命中新链路 | 待执行 |
-| `buttonStates` | 切换各状态样例并修改 side button 颜色项 | state demo 与左侧分页按钮命中一致 | 待执行 |
+| 分页              | 验收动作                                                                    | 预期结果                                                             | 当前记录状态                                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `parameters`      | 调节任一通用参数后关闭并重新打开面板                                        | 变量值保持到当前会话态，UI 同步更新                                  | 待执行                                                                                                                                                                 |
+| `snapshot`        | 导出当前快照 -> 清空 / 复位 -> 重新导入                                     | 已暴露字段全部恢复，提示文案正确                                     | 待执行                                                                                                                                                                 |
+| `containerLayer`  | 在 `bg-only` / `bg-plus-container` 下分别修改颜色、文本串、数值项并单项复位 | 预览区即时生效，复位后回到主题默认值                                 | 进行中：`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`2.2.2.1 fg-sidebar-main`、`2.3.2.2 fg-main-content-image-name-list` 已进入新结构验收 |
+| `largePanelLayer` | 在 `bg-plus-large-panel` 下修改 `root/head/side/main` 与内部件颜色项        | 大面板骨架与已收口内部件同步响应                                     | 待执行                                                                                                                                                                 |
+| `smallPanelLayer` | 在 `bg-plus-small-panel` 下修改 dialog 骨架与文本串并复位                   | 小面板预览与实际 slot 命中一致                                       | 待执行                                                                                                                                                                 |
+| `commonControls`  | 逐项测试 scrollbar、runway、vertical、settings slider 字段                  | 对应控件样例即时变化；scrollbar detail 与 settings groove 命中新链路 | 待执行                                                                                                                                                                 |
+| `buttonStates`    | 切换各状态样例并修改 side button 颜色项                                     | state demo 与左侧分页按钮命中一致                                    | 待执行                                                                                                                                                                 |
 
 执行约束
 
@@ -1501,11 +1530,11 @@ css 的触发点
 
 ### 7.0.2 残余链路清单（Phase 1 冻结结果）
 
-| 区域 | 当前问题 | 现状归类 | 所属分页 | 后续 Phase |
-|---|---|---|---|---|
-| `MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件 | 已收口到 `--mpx-transcode-dialog-*` / `--mpx-sidebar-rename-dialog-*` / `--mpx-sidebar-rename-preview-*` | 已完成 | `largePanelLayer` + `smallPanelLayer` | 已完成 |
-| `6.1` 滚动条 | `ThemeParameterPanel` 已补齐 sidebar-tree scrollbar detail 字段；全局 `--mpx-scrollbar-*` 继续作为基础层，`sidebar-tree` 保留受控别名覆写 | 已完成 | `commonControls` | 已完成 |
-| `6.2.1` / `6.2.3` slider | 设置页 slider groove 已拆到 `--mpx-slider-settings-groove-*`，与播放器 runway 轨道分离 | 已完成 | `commonControls` | 已完成 |
+| 区域                                                                                | 当前问题                                                                                                                                  | 现状归类 | 所属分页                              | 后续 Phase |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------- | ---------- |
+| `MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件 | 已收口到 `--mpx-transcode-dialog-*` / `--mpx-sidebar-rename-dialog-*` / `--mpx-sidebar-rename-preview-*`                                  | 已完成   | `largePanelLayer` + `smallPanelLayer` | 已完成     |
+| `6.1` 滚动条                                                                        | `ThemeParameterPanel` 已补齐 sidebar-tree scrollbar detail 字段；全局 `--mpx-scrollbar-*` 继续作为基础层，`sidebar-tree` 保留受控别名覆写 | 已完成   | `commonControls`                      | 已完成     |
+| `6.2.1` / `6.2.3` slider                                                            | 设置页 slider groove 已拆到 `--mpx-slider-settings-groove-*`，与播放器 runway 轨道分离                                                    | 已完成   | `commonControls`                      | 已完成     |
 
 冻结约束
 
@@ -1515,11 +1544,11 @@ css 的触发点
 
 ### 7.0.3 特例白名单与命名空间
 
-| 区域 | 命名空间前缀 | 当前状态 | 不并入当前通用分页的原因 | 后续约束 |
-|---|---|---|---|---|
-| 播放器面板 / HUD / popover | `--mpx-player-surface-*`、`--mpx-player-hud-*` | 已在 contract / palette 中存在 | 属于播放器子系统，视觉语义与普通面板不同 | 继续保持独立语义，不回退到匿名类色值 |
-| 全屏图像调整（levels / curve） | `--mpx-fs-image-adjust-*`（预留） | Phase 1 先冻结命名空间，暂未全量落地 | 图示语义强，不适合强并入 `commonControls` 或 `largePanelLayer` | 后续若参数化，优先落到该前缀 |
-| 广告审核删除 overlay | `--mpx-ad-review-overlay-*` | 本次已统一为受控前缀 | 属于舞台化演出层，不适合并入常规面板 token | 保持独立前缀，允许少量结构化复合值 |
+| 区域                           | 命名空间前缀                                   | 当前状态                             | 不并入当前通用分页的原因                                       | 后续约束                             |
+| ------------------------------ | ---------------------------------------------- | ------------------------------------ | -------------------------------------------------------------- | ------------------------------------ |
+| 播放器面板 / HUD / popover     | `--mpx-player-surface-*`、`--mpx-player-hud-*` | 已在 contract / palette 中存在       | 属于播放器子系统，视觉语义与普通面板不同                       | 继续保持独立语义，不回退到匿名类色值 |
+| 全屏图像调整（levels / curve） | `--mpx-fs-image-adjust-*`（预留）              | Phase 1 先冻结命名空间，暂未全量落地 | 图示语义强，不适合强并入 `commonControls` 或 `largePanelLayer` | 后续若参数化，优先落到该前缀         |
+| 广告审核删除 overlay           | `--mpx-ad-review-overlay-*`                    | 本次已统一为受控前缀                 | 属于舞台化演出层，不适合并入常规面板 token                     | 保持独立前缀，允许少量结构化复合值   |
 
 ### 7.0.4 Phase 1 结论
 
