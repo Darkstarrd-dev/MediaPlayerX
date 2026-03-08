@@ -390,6 +390,22 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 内部件",
+  "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
+    "3.10.1 导入任务",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":
+    "3.10.2 元数据抓取",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord":
+    "3.10.3 Metadata 偏好记录",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding":
+    "3.10.4 Booklet 绑定",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker":
+    "3.10.5 标签检索",
+  "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup":
+    "3.10.6 字幕清理",
+  "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog":
+    "3.10.7 转码",
+  "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview":
+    "3.10.8 侧栏批量重命名预览",
   "ui.themeParameter.sectionCommon": "通用参数",
   "ui.themeParameter.sectionStyle": "风格参数（{{styleId}}）",
   "ui.themeParameter.sectionMetric": "{{scope}}{{target}}{{metric}}",

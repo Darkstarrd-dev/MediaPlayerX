@@ -1,8 +1,22 @@
-import type { ThemeParameterPageId } from "./ThemeParameterPanelMain";
+import type {
+  LargePanelInternalSectionId,
+  ThemeParameterPageId,
+} from "./ThemeParameterPanelMain";
 
 interface ContainerDebugSessionState {
   colors: Record<string, string>;
   texts: Record<string, string>;
+}
+
+interface LargePanelInternalSectionsExpandedState {
+  importTask: boolean;
+  metadataFetch: boolean;
+  metadataPreferenceRecord: boolean;
+  metadataBookletBinding: boolean;
+  metadataFeatureTagPicker: boolean;
+  subtitleCleanup: boolean;
+  transcodeDialog: boolean;
+  sidebarRenamePreview: boolean;
 }
 
 interface ThemeParameterUISessionState {
@@ -40,6 +54,7 @@ interface ThemeParameterUISessionState {
   largePanelSideExpanded: boolean;
   largePanelMainExpanded: boolean;
   largePanelInternalExpanded: boolean;
+  largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -47,6 +62,17 @@ interface ThemeParameterUISessionState {
 const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
   colors: {},
   texts: {},
+};
+
+const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSectionsExpandedState = {
+  importTask: false,
+  metadataFetch: false,
+  metadataPreferenceRecord: false,
+  metadataBookletBinding: false,
+  metadataFeatureTagPicker: false,
+  subtitleCleanup: false,
+  transcodeDialog: false,
+  sidebarRenamePreview: false,
 };
 
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
@@ -84,6 +110,9 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   largePanelSideExpanded: false,
   largePanelMainExpanded: false,
   largePanelInternalExpanded: false,
+  largePanelInternalSectionsExpanded: {
+    ...DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED,
+  },
   commonExpanded: true,
   styleExpanded: true,
 };
@@ -94,6 +123,9 @@ let containerDebugSessionState: ContainerDebugSessionState = {
 
 let uiSessionState: ThemeParameterUISessionState = {
   ...DEFAULT_UI_SESSION_STATE,
+  largePanelInternalSectionsExpanded: {
+    ...DEFAULT_UI_SESSION_STATE.largePanelInternalSectionsExpanded,
+  },
 };
 
 export function readContainerDebugSessionState(): ContainerDebugSessionState {
@@ -121,6 +153,9 @@ export function clearContainerDebugSessionState(): void {
 export function readThemeParameterUiSessionState(): ThemeParameterUISessionState {
   return {
     ...uiSessionState,
+    largePanelInternalSectionsExpanded: {
+      ...uiSessionState.largePanelInternalSectionsExpanded,
+    },
   };
 }
 
@@ -129,6 +164,9 @@ export function writeThemeParameterUiSessionState(
 ): void {
   uiSessionState = {
     ...nextState,
+    largePanelInternalSectionsExpanded: {
+      ...nextState.largePanelInternalSectionsExpanded,
+    },
   };
 }
 
@@ -138,6 +176,10 @@ export function updateThemeParameterUiSessionState(
   uiSessionState = {
     ...uiSessionState,
     ...patch,
+    largePanelInternalSectionsExpanded: {
+      ...(patch.largePanelInternalSectionsExpanded ??
+        uiSessionState.largePanelInternalSectionsExpanded),
+    },
   };
 }
 
@@ -145,5 +187,8 @@ export function resetThemeParameterPanelSessionStateForTest(): void {
   clearContainerDebugSessionState();
   uiSessionState = {
     ...DEFAULT_UI_SESSION_STATE,
+    largePanelInternalSectionsExpanded: {
+      ...DEFAULT_UI_SESSION_STATE.largePanelInternalSectionsExpanded,
+    },
   };
 }

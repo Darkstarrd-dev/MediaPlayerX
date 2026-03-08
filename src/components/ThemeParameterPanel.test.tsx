@@ -934,7 +934,36 @@ describe("ThemeParameterPanel", () => {
     ).toBeNull();
     expect(screen.getAllByText("仅用于大面板 root 本体").length).toBeGreaterThan(0);
     expect(screen.getAllByText("仅用于大面板 shell 分栏容器").length).toBeGreaterThan(0);
-  });
+
+    ensureDetailsOpen("3.10 内部件");
+    expect(screen.getByText("3.10.1 导入任务")).toBeInTheDocument();
+    expect(screen.getByText("3.10.2 元数据抓取")).toBeInTheDocument();
+    expect(screen.getByText("3.10.3 Metadata 偏好记录")).toBeInTheDocument();
+    expect(screen.getByText("3.10.4 Booklet 绑定")).toBeInTheDocument();
+    expect(screen.getByText("3.10.5 标签检索")).toBeInTheDocument();
+    expect(screen.getByText("3.10.6 字幕清理")).toBeInTheDocument();
+    expect(screen.getByText("3.10.7 转码")).toBeInTheDocument();
+    expect(screen.getByText("3.10.8 侧栏批量重命名预览")).toBeInTheDocument();
+
+    ensureDetailsOpen("3.10.2 元数据抓取");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-fetch-control-font-size",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-text",
+      }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-text",
+      }),
+    ).toBeInTheDocument();
+  }, 15000);
 
   it("大面板根层变量会作用到 Theme Parameter 面板本体", () => {
     renderThemeParameterPanel();
@@ -1250,6 +1279,10 @@ describe("ThemeParameterPanel", () => {
     expect(headerAppearanceDetails).not.toBeNull();
     const ensuredHeaderAppearanceDetails =
       headerAppearanceDetails as HTMLDetailsElement;
+    const headerAppearanceContent = ensuredHeaderAppearanceDetails.querySelector(
+      ".settings-collapsible-content",
+    );
+    expect(headerAppearanceContent?.textContent).toContain("视觉变换");
     fireEvent.click(ensuredHeaderAppearanceDetails.querySelector("summary")!);
     expect(ensuredHeaderAppearanceDetails.open).toBe(false);
 
@@ -1267,6 +1300,11 @@ describe("ThemeParameterPanel", () => {
     );
     expect(
       mainContent?.contains(screen.getByText("2.3.2.1 工作区 / 图片网格")),
+    ).toBe(true);
+    expect(
+      mainContent?.contains(
+        screen.getByText("2.3.2.2 fg-main-content-image-name-list"),
+      ),
     ).toBe(true);
   });
 
@@ -1923,6 +1961,48 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
     expect(
       screen.getByRole("textbox", { name: "--mpx-slot-fg-header-button-bg" }),
+    ).toBeInTheDocument();
+  }, 15000);
+
+  it("关闭后重开保持大面板内部件子分区折叠状态", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+    ensureDetailsOpen("3.10 内部件");
+    ensureDetailsOpen("3.10.2 元数据抓取");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-fetch-control-font-size",
+      }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-fetch-control-font-size",
+      }),
     ).toBeInTheDocument();
   }, 15000);
 

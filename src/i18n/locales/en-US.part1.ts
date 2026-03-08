@@ -415,6 +415,22 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
+  "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
+    "3.10.1 Import task",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":
+    "3.10.2 Metadata fetch",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord":
+    "3.10.3 Metadata preference record",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding":
+    "3.10.4 Booklet binding",
+  "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker":
+    "3.10.5 Tag search",
+  "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup":
+    "3.10.6 Subtitle cleanup",
+  "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog":
+    "3.10.7 Transcode",
+  "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview":
+    "3.10.8 Sidebar batch rename preview",
   "ui.themeParameter.sectionCommon": "Common parameters",
   "ui.themeParameter.sectionStyle": "Style parameters ({{styleId}})",
   "ui.themeParameter.sectionMetric": "{{scope}} {{target}} {{metric}}",

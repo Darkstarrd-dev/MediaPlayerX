@@ -14,6 +14,7 @@ import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
 import type {
+  LargePanelInternalSectionId,
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
 } from "./ThemeParameterPanelMain";
@@ -2136,6 +2137,10 @@ function ThemeParameterPanel({
   );
   const [largePanelInternalExpanded, setLargePanelInternalExpandedState] =
     useState(initialUiSessionState.largePanelInternalExpanded);
+  const [
+    largePanelInternalSectionsExpanded,
+    setLargePanelInternalSectionsExpandedState,
+  ] = useState(initialUiSessionState.largePanelInternalSectionsExpanded);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -2505,6 +2510,23 @@ function ThemeParameterPanel({
     });
   };
 
+  const setLargePanelInternalSectionExpanded = (
+    sectionId: LargePanelInternalSectionId,
+    action: SetStateAction<boolean>,
+  ) => {
+    setLargePanelInternalSectionsExpandedState((previous) => {
+      const next = resolveNextState(action, previous[sectionId]);
+      const nextSections = {
+        ...previous,
+        [sectionId]: next,
+      };
+      updateThemeParameterUiSessionState({
+        largePanelInternalSectionsExpanded: nextSections,
+      });
+      return nextSections;
+    });
+  };
+
   const containerLayerParameters = useMemo(
     () => parameters.filter(isContainerLayerParameter),
     [parameters],
@@ -2663,6 +2685,9 @@ function ThemeParameterPanel({
     setLargePanelInternalExpandedState(
       uiSessionState.largePanelInternalExpanded,
     );
+    setLargePanelInternalSectionsExpandedState(
+      uiSessionState.largePanelInternalSectionsExpanded,
+    );
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -2753,6 +2778,7 @@ function ThemeParameterPanel({
       largePanelSideExpanded,
       largePanelMainExpanded,
       largePanelInternalExpanded,
+      largePanelInternalSectionsExpanded,
       commonExpanded,
       styleExpanded,
     });
@@ -2792,6 +2818,7 @@ function ThemeParameterPanel({
     largePanelSideExpanded,
     largePanelMainExpanded,
     largePanelInternalExpanded,
+    largePanelInternalSectionsExpanded,
     open,
     styleExpanded,
   ]);
@@ -3805,6 +3832,10 @@ function ThemeParameterPanel({
           setLargePanelMainExpanded={setLargePanelMainExpanded}
           largePanelInternalExpanded={largePanelInternalExpanded}
           setLargePanelInternalExpanded={setLargePanelInternalExpanded}
+          largePanelInternalSectionsExpanded={largePanelInternalSectionsExpanded}
+          setLargePanelInternalSectionExpanded={
+            setLargePanelInternalSectionExpanded
+          }
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

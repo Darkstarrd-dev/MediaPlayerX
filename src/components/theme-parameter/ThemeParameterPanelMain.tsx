@@ -122,6 +122,11 @@ interface ThemeParameterPanelMainProps {
   setLargePanelMainExpanded: Dispatch<SetStateAction<boolean>>;
   largePanelInternalExpanded: boolean;
   setLargePanelInternalExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
+  setLargePanelInternalSectionExpanded: (
+    sectionId: LargePanelInternalSectionId,
+    action: SetStateAction<boolean>,
+  ) => void;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -153,6 +158,16 @@ export type ThemeParameterPreviewMode =
   | "bg-plus-container"
   | "bg-plus-large-panel"
   | "bg-plus-small-panel";
+
+export type LargePanelInternalSectionId =
+  | "importTask"
+  | "metadataFetch"
+  | "metadataPreferenceRecord"
+  | "metadataBookletBinding"
+  | "metadataFeatureTagPicker"
+  | "subtitleCleanup"
+  | "transcodeDialog"
+  | "sidebarRenamePreview";
 
 type ThemeDebugNumberGroupId =
   | "box"
@@ -2581,72 +2596,6 @@ const LARGE_PANEL_INTERNAL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
   },
   {
-    id: "large-panel-sidebar-rename-dialog-text",
-    cssVar: "--mpx-sidebar-rename-dialog-text",
-    fallback: "#2e2a22",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-muted-text",
-    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
-    fallback: "#6a6358",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-border",
-    cssVar: "--mpx-sidebar-rename-dialog-control-border",
-    fallback: "#c7d0d8",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
-    fallback: "#ecf0f3",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-hover-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
-    fallback: "#e3e9ef",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-focus-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
-    fallback: "#dbe3eb",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-text",
-    cssVar: "--mpx-sidebar-rename-dialog-control-text",
-    fallback: "#2e2a22",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-control-placeholder",
-    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
-    fallback: "#6a6358",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-action-btn-border",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
-    fallback: "#b7ab95",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-action-btn-bg",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
-    fallback: "#ffffff",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-sidebar-rename-dialog-action-btn-text",
-    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
-    fallback: "#2e2a22",
-    groupId: "main",
-  },
-  {
     id: "large-panel-sidebar-rename-preview-border",
     cssVar: "--mpx-sidebar-rename-preview-border",
     fallback: "#c7d0d8",
@@ -2788,6 +2737,95 @@ const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   ...LARGE_PANEL_ROOT_TEXT_FIELDS,
   ...LARGE_PANEL_INTERNAL_TEXT_FIELDS,
 ];
+
+const filterDebugFieldsByPrefixes = <
+  T extends ThemeDebugColorField | ThemeDebugTextField,
+>(
+  fields: readonly T[],
+  prefixes: readonly string[],
+) => {
+  return fields.filter((field) =>
+    prefixes.some((prefix) => field.cssVar.startsWith(prefix)),
+  );
+};
+
+interface LargePanelInternalSectionDefinition {
+  id: LargePanelInternalSectionId;
+  summaryKey: string;
+  prefixes: readonly string[];
+  colorFields: readonly ThemeDebugColorField[];
+  textFields: readonly ThemeDebugTextField[];
+}
+
+const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
+  {
+    id: "importTask",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionInternalImportTask",
+    prefixes: ["--mpx-import-task-"],
+  },
+  {
+    id: "metadataFetch",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch",
+    prefixes: ["--mpx-metadata-fetch-"],
+  },
+  {
+    id: "metadataPreferenceRecord",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord",
+    prefixes: ["--mpx-metadata-preference-record-"],
+  },
+  {
+    id: "metadataBookletBinding",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding",
+    prefixes: ["--mpx-metadata-booklet-binding-"],
+  },
+  {
+    id: "metadataFeatureTagPicker",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker",
+    prefixes: ["--mpx-metadata-feature-tag-picker-"],
+  },
+  {
+    id: "subtitleCleanup",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup",
+    prefixes: [
+      "--mpx-subtitle-cleanup-raw-preview-",
+      "--mpx-subtitle-cleanup-clean-preview-",
+    ],
+  },
+  {
+    id: "transcodeDialog",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog",
+    prefixes: ["--mpx-transcode-dialog-"],
+  },
+  {
+    id: "sidebarRenamePreview",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview",
+    prefixes: ["--mpx-sidebar-rename-preview-"],
+  },
+ ] as const satisfies readonly {
+  id: LargePanelInternalSectionId;
+  summaryKey: string;
+  prefixes: readonly string[];
+}[];
+
+const LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS: readonly LargePanelInternalSectionDefinition[] =
+  LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS.map((section) => ({
+  ...section,
+  colorFields: filterDebugFieldsByPrefixes(
+    LARGE_PANEL_INTERNAL_COLOR_FIELDS,
+    section.prefixes,
+  ),
+  textFields: filterDebugFieldsByPrefixes(
+    LARGE_PANEL_INTERNAL_TEXT_FIELDS,
+    section.prefixes,
+  ),
+}));
 
 const LARGE_PANEL_SECTION_DEFINITIONS = [
   {
@@ -3619,6 +3657,8 @@ export function ThemeParameterPanelMain({
   setLargePanelMainExpanded,
   largePanelInternalExpanded,
   setLargePanelInternalExpanded,
+  largePanelInternalSectionsExpanded,
+  setLargePanelInternalSectionExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -4940,16 +4980,16 @@ export function ThemeParameterPanelMain({
                 ? renderParameterRowsWithVarLabel(shapeParameters)
                 : null}
             </section>
+            <section className="settings-group theme-parameter-debug-group">
+              <header className="settings-group-head">
+                <span>视觉变换</span>
+              </header>
+              {transformParameters.length > 0
+                ? renderParameterRows(transformParameters)
+                : null}
+            </section>
           </div>
         </details>
-        <section className="settings-group theme-parameter-debug-group">
-          <header className="settings-group-head">
-            <span>视觉变换</span>
-          </header>
-          {transformParameters.length > 0
-            ? renderParameterRows(transformParameters)
-            : null}
-        </section>
         <section className="settings-group theme-parameter-debug-group">
           <header className="settings-group-head">
             <span>高级 3D（预留）</span>
@@ -5056,26 +5096,27 @@ export function ThemeParameterPanelMain({
   const renderLargePanelInternalSections = () => {
     return (
       <>
-        {LARGE_PANEL_INTERNAL_COLOR_FIELDS.length > 0 ? (
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>内部件颜色 / 状态</span>
-            </header>
-            <div className="theme-parameter-color-list">
-              {LARGE_PANEL_INTERNAL_COLOR_FIELDS.map(renderColorFieldRow)}
+        {LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS.map((section) => (
+          <details
+            key={section.id}
+            className="settings-collapsible"
+            open={largePanelInternalSectionsExpanded[section.id]}
+            onToggle={(event) =>
+              setLargePanelInternalSectionExpanded(
+                section.id,
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>{t(section.summaryKey)}</summary>
+            <div className="settings-collapsible-content">
+              {renderLargePanelSectionRows({
+                colorFields: section.colorFields,
+                textFields: section.textFields,
+              })}
             </div>
-          </section>
-        ) : null}
-        {LARGE_PANEL_INTERNAL_TEXT_FIELDS.length > 0 ? (
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>内部件文本 / 表达式</span>
-            </header>
-            <div className="theme-parameter-text-list">
-              {LARGE_PANEL_INTERNAL_TEXT_FIELDS.map(renderTextFieldRow)}
-            </div>
-          </section>
-        ) : null}
+          </details>
+        ))}
       </>
     );
   };
@@ -6074,6 +6115,24 @@ export function ThemeParameterPanelMain({
                     </section>
                   </div>
                 </details>
+                <details
+                  className="settings-collapsible"
+                  open={containerMainImageNameListExpanded}
+                  onToggle={(event) =>
+                    setContainerMainImageNameListExpanded(
+                      (event.currentTarget as HTMLDetailsElement).open,
+                    )
+                  }
+                >
+                  <summary>
+                    {t(
+                      "ui.themeParameter.containerLayer.sectionMainImageNameList",
+                    )}
+                  </summary>
+                  <div className="settings-collapsible-content">
+                    {renderMainImageNameListDebugSections()}
+                  </div>
+                </details>
               </div>
             </details>
 
@@ -6108,22 +6167,6 @@ export function ThemeParameterPanelMain({
               </div>
             </details>
 
-            <details
-              className="settings-collapsible"
-              open={containerMainImageNameListExpanded}
-              onToggle={(event) =>
-                setContainerMainImageNameListExpanded(
-                  (event.currentTarget as HTMLDetailsElement).open,
-                )
-              }
-            >
-              <summary>
-                {t("ui.themeParameter.containerLayer.sectionMainImageNameList")}
-              </summary>
-              <div className="settings-collapsible-content">
-                {renderMainImageNameListDebugSections()}
-              </div>
-            </details>
           </section>
         ) : null}
 
