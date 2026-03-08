@@ -1,6 +1,5 @@
 import type {
   ChangeEvent,
-  CSSProperties,
   Dispatch,
   MutableRefObject,
   SetStateAction,
@@ -19,21 +18,20 @@ import {
 } from "./ThemeParameterPanelPages";
 
 import {
-  formatBoxShadowValue,
   formatColorStateAsCss,
-  formatSimpleFilterFunction,
-  formatSimpleLinearGradient,
-  formatValue,
-  parseBoxShadowValue,
   parseColorState,
-  parseSimpleFilterFunction,
-  parseSimpleLinearGradient,
   readCssColorState,
-  type BoxShadowLayerValue,
   type ColorState,
-  type SimpleFilterFunctionValue,
-  type SimpleLinearGradientValue,
 } from "./themeParameterUtils";
+import {
+  ThemeParameterColorFieldRow,
+  ThemeParameterCommonControlTextFieldRow,
+  ThemeParameterDebugSectionList,
+  ThemeParameterParameterRows,
+  ThemeParameterParameterRowsWithVarLabel,
+  ThemeParameterTextFieldRow,
+  buildSkeuoRangeStyle,
+} from "./ThemeParameterFieldRows";
 import type {
   ThemeParameterDefinition,
   ThemeParameterValues,
@@ -73,7 +71,6 @@ import {
   SIDEBAR_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_MAIN_DEBUG_SECTIONS,
   clearLegacySlotOverrideForSemanticVar,
-  resolveDebugVarUsage,
 } from "./themeParameterPanelCatalog";
 import type {
   ButtonStateKey,
@@ -2398,543 +2395,64 @@ export function ThemeParameterPanelMain({
     }
   };
 
-  const renderVarLabel = (cssVar: string) => {
-    const usage = resolveDebugVarUsage(cssVar);
-    return (
-      <span className="theme-parameter-var-label">
-        {cssVar}
-        {usage ? (
-          <span className="theme-parameter-var-usage"> {usage}</span>
-        ) : null}
-      </span>
-    );
-  };
+  const resetFieldLabel = t("ui.themeParameter.resetField");
 
   const renderColorFieldRow = (field: ThemeDebugColorField) => {
-    const colorState = debugColorValues[field.id] ?? {
-      hex: field.fallback,
-      alpha: field.fallbackAlpha ?? 1,
-    };
-    const alphaPercent = Math.round(colorState.alpha * 100);
     return (
-      <label key={field.id} className="theme-parameter-color-row">
-        {renderVarLabel(field.cssVar)}
-        <div className="theme-parameter-color-control">
-          <input
-            type="color"
-            aria-label={`${field.cssVar}-picker`}
-            value={colorState.hex}
-            onChange={(event) =>
-              setDebugColorFieldHex(field, event.target.value)
-            }
-          />
-          <input
-            type="text"
-            aria-label={field.cssVar}
-            value={colorState.hex}
-            onChange={(event) =>
-              setDebugColorFieldHex(field, event.target.value)
-            }
-            placeholder={field.fallback}
-          />
-          <input
-            type="number"
-            className="theme-parameter-alpha-input"
-            aria-label={`${field.cssVar}-alpha`}
-            min={0}
-            max={100}
-            step={1}
-            value={alphaPercent}
-            onChange={(event) =>
-              setDebugColorFieldAlpha(field, Number(event.target.value))
-            }
-          />
-          {isColorFieldChanged(field) ? (
-            <button
-              type="button"
-              className="theme-parameter-reset-btn"
-              onClick={() => resetColorField(field)}
-            >
-              {t("ui.themeParameter.resetField")}
-            </button>
-          ) : null}
-        </div>
-      </label>
+      <ThemeParameterColorFieldRow
+        key={field.id}
+        field={field}
+        colorState={
+          debugColorValues[field.id] ?? {
+            hex: field.fallback,
+            alpha: field.fallbackAlpha ?? 1,
+          }
+        }
+        isChanged={isColorFieldChanged(field)}
+        onHexChange={setDebugColorFieldHex}
+        onAlphaChange={setDebugColorFieldAlpha}
+        onReset={resetColorField}
+        resetLabel={resetFieldLabel}
+      />
     );
   };
 
   const renderTextFieldRow = (field: ThemeDebugTextField) => {
-    const raw = debugTextValues[field.id] ?? field.fallback;
-    const parsedGradient = parseSimpleLinearGradient(raw);
-    const parsedFilter = parseSimpleFilterFunction(raw);
-    const parsedShadow = parseBoxShadowValue(raw);
-    const supportsBasicColorShortcut = field.cssVar === "--mpx-bg-app-fill";
-
-    const updateTextValue = (nextRaw: string) => {
-      setDebugTextFieldValue(field, nextRaw);
-    };
-
-    const renderResetButton = () => {
-      return isTextFieldChanged(field) ? (
-        <button
-          type="button"
-          className="theme-parameter-reset-btn"
-          onClick={() => resetTextField(field)}
-        >
-          {t("ui.themeParameter.resetField")}
-        </button>
-      ) : null;
-    };
-
-    const renderColorExpressionInput = (
-      ariaLabel: string,
-      value: string,
-      onChange: (nextValue: string) => void,
-    ) => {
-      const parsedColor = parseColorState(value, "#ffffff");
-      const normalizedColorValue = parsedColor?.hex ?? "#ffffff";
-      const isPlainColor = parseColorState(value, "#ffffff") !== null;
-
-      return (
-        <div className="theme-parameter-inline-field color-expression">
-          {isPlainColor ? (
-            <input
-              type="color"
-              aria-label={`${ariaLabel}-picker`}
-              value={normalizedColorValue}
-              onChange={(event) => onChange(event.target.value)}
-            />
-          ) : null}
-          <input
-            type="text"
-            aria-label={ariaLabel}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-          />
-        </div>
-      );
-    };
-
-    const renderBasicColorShortcut = () => {
-      if (!supportsBasicColorShortcut) {
-        return null;
-      }
-      const parsedSolidColor =
-        parseColorState(raw, "#ffffff") ??
-        parseColorState(field.fallback, "#ffffff");
-      if (!parsedSolidColor) {
-        return null;
-      }
-      return (
-        <label className="theme-parameter-inline-field color-expression">
-          <span>纯色快捷设置</span>
-          <div className="theme-parameter-color-control">
-            <input
-              type="color"
-              aria-label={`${field.cssVar}-solid-picker`}
-              value={parsedSolidColor.hex}
-              onChange={(event) => updateTextValue(event.target.value)}
-            />
-            <input
-              type="text"
-              aria-label={`${field.cssVar}-solid`}
-              value={parsedSolidColor.hex}
-              onChange={(event) => updateTextValue(event.target.value)}
-            />
-          </div>
-        </label>
-      );
-    };
-
-    if (parsedGradient) {
-      const updateGradient = (nextValue: SimpleLinearGradientValue) => {
-        updateTextValue(formatSimpleLinearGradient(nextValue));
-      };
-
-      return (
-        <div key={field.id} className="theme-parameter-text-row is-structured">
-          {renderVarLabel(field.cssVar)}
-          <div className="theme-parameter-structured-card">
-            {renderBasicColorShortcut()}
-            <div className="theme-parameter-structured-grid is-gradient">
-              <label className="theme-parameter-inline-field">
-                <span>角度</span>
-                <input
-                  type="number"
-                  aria-label={`${field.cssVar}-angle`}
-                  value={parsedGradient.angle}
-                  onChange={(event) => {
-                    const nextAngle = Number(event.target.value);
-                    if (!Number.isFinite(nextAngle)) {
-                      return;
-                    }
-                    updateGradient({
-                      ...parsedGradient,
-                      angle: nextAngle,
-                    });
-                  }}
-                />
-              </label>
-              <label className="theme-parameter-inline-field">
-                <span>颜色 1</span>
-                {renderColorExpressionInput(
-                  `${field.cssVar}-color-1`,
-                  parsedGradient.colorStops[0],
-                  (nextColor) => {
-                    updateGradient({
-                      ...parsedGradient,
-                      colorStops: [nextColor, parsedGradient.colorStops[1]],
-                    });
-                  },
-                )}
-              </label>
-              <label className="theme-parameter-inline-field">
-                <span>颜色 2</span>
-                {renderColorExpressionInput(
-                  `${field.cssVar}-color-2`,
-                  parsedGradient.colorStops[1],
-                  (nextColor) => {
-                    updateGradient({
-                      ...parsedGradient,
-                      colorStops: [parsedGradient.colorStops[0], nextColor],
-                    });
-                  },
-                )}
-              </label>
-            </div>
-          </div>
-          {renderResetButton()}
-        </div>
-      );
-    }
-
-    if (parsedFilter) {
-      const updateFilter = (nextValue: SimpleFilterFunctionValue) => {
-        updateTextValue(formatSimpleFilterFunction(nextValue));
-      };
-
-      return (
-        <div key={field.id} className="theme-parameter-text-row is-structured">
-          {renderVarLabel(field.cssVar)}
-          <div className="theme-parameter-structured-card">
-            <div className="theme-parameter-structured-grid is-filter">
-              <label className="theme-parameter-inline-field">
-                <span>函数</span>
-                <input
-                  type="text"
-                  aria-label={`${field.cssVar}-fn`}
-                  value={parsedFilter.name}
-                  onChange={(event) => {
-                    updateFilter({
-                      ...parsedFilter,
-                      name: event.target.value,
-                    });
-                  }}
-                />
-              </label>
-              <label className="theme-parameter-inline-field">
-                <span>数值</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  aria-label={`${field.cssVar}-value`}
-                  value={parsedFilter.numericValue}
-                  onChange={(event) => {
-                    const nextNumericValue = Number(event.target.value);
-                    if (!Number.isFinite(nextNumericValue)) {
-                      return;
-                    }
-                    updateFilter({
-                      ...parsedFilter,
-                      numericValue: nextNumericValue,
-                    });
-                  }}
-                />
-              </label>
-              <label className="theme-parameter-inline-field">
-                <span>单位</span>
-                <input
-                  type="text"
-                  aria-label={`${field.cssVar}-unit`}
-                  value={parsedFilter.unit}
-                  onChange={(event) => {
-                    updateFilter({
-                      ...parsedFilter,
-                      unit: event.target.value,
-                    });
-                  }}
-                />
-              </label>
-            </div>
-          </div>
-          {renderResetButton()}
-        </div>
-      );
-    }
-
-    if (parsedShadow) {
-      const updateShadowLayers = (nextLayers: BoxShadowLayerValue[]) => {
-        updateTextValue(formatBoxShadowValue(nextLayers));
-      };
-
-      return (
-        <div key={field.id} className="theme-parameter-text-row is-structured">
-          {renderVarLabel(field.cssVar)}
-          <div className="theme-parameter-shadow-layer-list">
-            {parsedShadow.map((layer, layerIndex) => (
-              <section
-                key={`${field.id}-layer-${layerIndex}`}
-                className="theme-parameter-structured-card theme-parameter-shadow-layer"
-              >
-                <div className="theme-parameter-shadow-layer-head">
-                  <strong>{`阴影层 ${layerIndex + 1}`}</strong>
-                  <div className="theme-parameter-shadow-layer-actions">
-                    <label className="theme-parameter-inline-toggle">
-                      <input
-                        type="checkbox"
-                        aria-label={`${field.cssVar}-layer-${layerIndex}-inset`}
-                        checked={layer.inset}
-                        onChange={(event) => {
-                          const nextLayers = parsedShadow.map(
-                            (currentLayer, currentIndex) =>
-                              currentIndex === layerIndex
-                                ? {
-                                    ...currentLayer,
-                                    inset: event.target.checked,
-                                  }
-                                : currentLayer,
-                          );
-                          updateShadowLayers(nextLayers);
-                        }}
-                      />
-                      <span>Inset</span>
-                    </label>
-                    {parsedShadow.length > 1 ? (
-                      <button
-                        type="button"
-                        className="theme-parameter-reset-btn"
-                        onClick={() => {
-                          updateShadowLayers(
-                            parsedShadow.filter(
-                              (_, currentIndex) => currentIndex !== layerIndex,
-                            ),
-                          );
-                        }}
-                      >
-                        删除层
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="theme-parameter-structured-grid is-shadow">
-                  {(
-                    [
-                      ["offsetX", "X 偏移"],
-                      ["offsetY", "Y 偏移"],
-                      ["blur", "模糊"],
-                      ["spread", "扩散"],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <label
-                      key={`${field.id}-layer-${layerIndex}-${key}`}
-                      className="theme-parameter-inline-field"
-                    >
-                      <span>{label}</span>
-                      <input
-                        type="text"
-                        aria-label={`${field.cssVar}-layer-${layerIndex}-${key}`}
-                        value={layer[key]}
-                        onChange={(event) => {
-                          const nextLayers = parsedShadow.map(
-                            (currentLayer, currentIndex) =>
-                              currentIndex === layerIndex
-                                ? {
-                                    ...currentLayer,
-                                    [key]: event.target.value,
-                                  }
-                                : currentLayer,
-                          );
-                          updateShadowLayers(nextLayers);
-                        }}
-                      />
-                    </label>
-                  ))}
-                  <label className="theme-parameter-inline-field is-span-all">
-                    <span>颜色 / 表达式</span>
-                    {renderColorExpressionInput(
-                      `${field.cssVar}-layer-${layerIndex}-color`,
-                      layer.color,
-                      (nextColor) => {
-                        const nextLayers = parsedShadow.map(
-                          (currentLayer, currentIndex) =>
-                            currentIndex === layerIndex
-                              ? {
-                                  ...currentLayer,
-                                  color: nextColor,
-                                }
-                              : currentLayer,
-                        );
-                        updateShadowLayers(nextLayers);
-                      },
-                    )}
-                  </label>
-                </div>
-              </section>
-            ))}
-            <button
-              type="button"
-              className="theme-parameter-debug-preview-btn"
-              onClick={() => {
-                updateShadowLayers([
-                  ...parsedShadow,
-                  {
-                    inset: false,
-                    offsetX: "0px",
-                    offsetY: "2px",
-                    blur: "4px",
-                    spread: "0px",
-                    color: "rgba(0, 0, 0, 0.2)",
-                  },
-                ]);
-              }}
-            >
-              添加阴影层
-            </button>
-          </div>
-          {renderResetButton()}
-        </div>
-      );
-    }
-
     return (
-      <label key={field.id} className="theme-parameter-text-row">
-        {renderVarLabel(field.cssVar)}
-        {renderBasicColorShortcut()}
-        <textarea
-          aria-label={field.cssVar}
-          className="theme-parameter-textarea"
-          value={raw}
-          onChange={(event) =>
-            setDebugTextFieldValue(field, event.target.value)
-          }
-        />
-        {renderResetButton()}
-      </label>
+      <ThemeParameterTextFieldRow
+        key={field.id}
+        field={field}
+        raw={debugTextValues[field.id] ?? field.fallback}
+        isChanged={isTextFieldChanged(field)}
+        onChange={setDebugTextFieldValue}
+        onReset={resetTextField}
+        resetLabel={resetFieldLabel}
+      />
     );
   };
 
-  const sidebarMainColorFieldMap = useMemo(
-    () =>
-      new Map(
-        CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS.map((field) => [
-          field.cssVar,
-          field,
-        ]),
-      ),
-    [],
-  );
-
-  const sidebarMainTextFieldMap = useMemo(
-    () =>
-      new Map(
-        CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS.map((field) => [
-          field.cssVar,
-          field,
-        ]),
-      ),
-    [],
-  );
-
   const renderSidebarMainDebugSections = () => {
-    return SIDEBAR_MAIN_DEBUG_SECTIONS.map((section) => {
-      const sectionRows = section.cssVars
-        .map((cssVar) => {
-          const colorField = sidebarMainColorFieldMap.get(cssVar);
-          if (colorField) {
-            return renderColorFieldRow(colorField);
-          }
-          const textField = sidebarMainTextFieldMap.get(cssVar);
-          if (textField) {
-            return renderTextFieldRow(textField);
-          }
-          return null;
-        })
-        .filter((row): row is NonNullable<typeof row> => row !== null);
-
-      if (sectionRows.length === 0) {
-        return null;
-      }
-
-      return (
-        <section
-          key={section.id}
-          className="settings-group theme-parameter-debug-group"
-        >
-          <header className="settings-group-head theme-parameter-subgroup-head">
-            <span>{section.title}</span>
-            <span className="theme-parameter-subgroup-tag">{section.tag}</span>
-          </header>
-          <div className="theme-parameter-color-list">{sectionRows}</div>
-        </section>
-      );
-    });
+    return (
+      <ThemeParameterDebugSectionList
+        sections={SIDEBAR_MAIN_DEBUG_SECTIONS}
+        colorFields={CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS}
+        textFields={CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS}
+        renderColorFieldRow={renderColorFieldRow}
+        renderTextFieldRow={renderTextFieldRow}
+      />
+    );
   };
 
-  const mainImageNameListColorFieldMap = useMemo(
-    () =>
-      new Map(
-        CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS.map((field) => [
-          field.cssVar,
-          field,
-        ]),
-      ),
-    [],
-  );
-
-  const mainImageNameListTextFieldMap = useMemo(
-    () =>
-      new Map(
-        CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS.map((field) => [
-          field.cssVar,
-          field,
-        ]),
-      ),
-    [],
-  );
-
   const renderMainImageNameListDebugSections = () => {
-    return MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS.map((section) => {
-      const sectionRows = section.cssVars
-        .map((cssVar) => {
-          const colorField = mainImageNameListColorFieldMap.get(cssVar);
-          if (colorField) {
-            return renderColorFieldRow(colorField);
-          }
-          const textField = mainImageNameListTextFieldMap.get(cssVar);
-          if (textField) {
-            return renderTextFieldRow(textField);
-          }
-          return null;
-        })
-        .filter((row): row is NonNullable<typeof row> => row !== null);
-
-      if (sectionRows.length === 0) {
-        return null;
-      }
-
-      return (
-        <section
-          key={section.id}
-          className="settings-group theme-parameter-debug-group"
-        >
-          <header className="settings-group-head theme-parameter-subgroup-head">
-            <span>{section.title}</span>
-            <span className="theme-parameter-subgroup-tag">{section.tag}</span>
-          </header>
-          <div className="theme-parameter-color-list">{sectionRows}</div>
-        </section>
-      );
-    });
+    return (
+      <ThemeParameterDebugSectionList
+        sections={MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS}
+        colorFields={CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS}
+        textFields={CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS}
+        renderColorFieldRow={renderColorFieldRow}
+        renderTextFieldRow={renderTextFieldRow}
+      />
+    );
   };
 
   const resolveContainerFillSyncTargets = (fieldId: string) => {
@@ -3191,42 +2709,17 @@ export function ThemeParameterPanelMain({
     );
   };
 
-  const toRangePercent = (value: number, min: number, max: number) => {
-    if (max <= min) {
-      return 0;
-    }
-    return Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-  };
-
-  const buildSkeuoRangeStyle = (value: number) => {
-    return {
-      "--mpx-skeuo-range-pct": `${toRangePercent(value, 0, 100)}%`,
-    } as CSSProperties;
-  };
-
   const renderCommonControlTextFieldRow = (field: ThemeDebugTextField) => {
-    const raw = debugTextValues[field.id] ?? field.fallback;
     return (
-      <label key={field.id} className="theme-parameter-text-row">
-        {renderVarLabel(field.cssVar)}
-        <textarea
-          aria-label={field.cssVar}
-          className="theme-parameter-textarea"
-          value={raw}
-          onChange={(event) =>
-            setDebugTextFieldValue(field, event.target.value)
-          }
-        />
-        {isTextFieldChanged(field) ? (
-          <button
-            type="button"
-            className="theme-parameter-reset-btn"
-            onClick={() => resetTextField(field)}
-          >
-            {t("ui.themeParameter.resetField")}
-          </button>
-        ) : null}
-      </label>
+      <ThemeParameterCommonControlTextFieldRow
+        key={field.id}
+        field={field}
+        raw={debugTextValues[field.id] ?? field.fallback}
+        isChanged={isTextFieldChanged(field)}
+        onChange={setDebugTextFieldValue}
+        onReset={resetTextField}
+        resetLabel={resetFieldLabel}
+      />
     );
   };
 
@@ -3507,61 +3000,15 @@ export function ThemeParameterPanelMain({
 
   const renderParameterRows = (parameters: ThemeParameterDefinition[]) => {
     return (
-      <div className="theme-parameter-list">
-        {parameters.map((parameter) => {
-          const value = values[parameter.id] ?? parameter.fallback;
-          return (
-            <label
-              key={parameter.id}
-              className="theme-parameter-row"
-              htmlFor={`theme-parameter-${parameter.id}`}
-            >
-              <span>{resolveLabel(parameter)}</span>
-              <span className="theme-parameter-var-label">{parameter.id}</span>
-              <div className="theme-parameter-control">
-                <input
-                  id={`theme-parameter-${parameter.id}`}
-                  type="range"
-                  min={parameter.min}
-                  max={parameter.max}
-                  step={parameter.step}
-                  value={value}
-                  onChange={(event) =>
-                    applyParameter(parameter, Number(event.target.value))
-                  }
-                />
-                <input
-                  className="theme-parameter-number-input"
-                  type="number"
-                  min={parameter.min}
-                  max={parameter.max}
-                  step={parameter.step}
-                  value={value}
-                  onChange={(event) => {
-                    const next = Number(event.target.value);
-                    if (!Number.isFinite(next)) {
-                      return;
-                    }
-                    applyParameter(parameter, next);
-                  }}
-                />
-                <code className="theme-parameter-value-text">
-                  {`${formatValue(value, parameter.step)}${parameter.unit}`}
-                </code>
-                {isParameterChanged(parameter) ? (
-                  <button
-                    type="button"
-                    className="theme-parameter-reset-btn"
-                    onClick={() => resetSingleParameter(parameter)}
-                  >
-                    {t("ui.themeParameter.resetField")}
-                  </button>
-                ) : null}
-              </div>
-            </label>
-          );
-        })}
-      </div>
+      <ThemeParameterParameterRows
+        parameters={parameters}
+        values={values}
+        resolveLabel={resolveLabel}
+        applyParameter={applyParameter}
+        isParameterChanged={isParameterChanged}
+        resetSingleParameter={resetSingleParameter}
+        resetLabel={resetFieldLabel}
+      />
     );
   };
 
@@ -3569,61 +3016,14 @@ export function ThemeParameterPanelMain({
     parameters: ThemeParameterDefinition[],
   ) => {
     return (
-      <div className="theme-parameter-list">
-        {parameters.map((parameter) => {
-          const value = values[parameter.id] ?? parameter.fallback;
-          const cssVar = parameter.cssVarName ?? parameter.id;
-          return (
-            <label
-              key={parameter.id}
-              className="theme-parameter-row"
-              htmlFor={`theme-parameter-${parameter.id}`}
-            >
-              {renderVarLabel(cssVar)}
-              <div className="theme-parameter-control">
-                <input
-                  id={`theme-parameter-${parameter.id}`}
-                  type="range"
-                  min={parameter.min}
-                  max={parameter.max}
-                  step={parameter.step}
-                  value={value}
-                  onChange={(event) =>
-                    applyParameter(parameter, Number(event.target.value))
-                  }
-                />
-                <input
-                  className="theme-parameter-number-input"
-                  type="number"
-                  min={parameter.min}
-                  max={parameter.max}
-                  step={parameter.step}
-                  value={value}
-                  onChange={(event) => {
-                    const next = Number(event.target.value);
-                    if (!Number.isFinite(next)) {
-                      return;
-                    }
-                    applyParameter(parameter, next);
-                  }}
-                />
-                <code className="theme-parameter-value-text">
-                  {`${formatValue(value, parameter.step)}${parameter.unit}`}
-                </code>
-                {isParameterChanged(parameter) ? (
-                  <button
-                    type="button"
-                    className="theme-parameter-reset-btn"
-                    onClick={() => resetSingleParameter(parameter)}
-                  >
-                    {t("ui.themeParameter.resetField")}
-                  </button>
-                ) : null}
-              </div>
-            </label>
-          );
-        })}
-      </div>
+      <ThemeParameterParameterRowsWithVarLabel
+        parameters={parameters}
+        values={values}
+        applyParameter={applyParameter}
+        isParameterChanged={isParameterChanged}
+        resetSingleParameter={resetSingleParameter}
+        resetLabel={resetFieldLabel}
+      />
     );
   };
 

@@ -4,7 +4,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
 } from "react";
 
 import { MainUiIcon } from "../MainUiIcon";
@@ -14,7 +13,6 @@ import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
 import type { ThemeParameterPreviewMode } from "./ThemeParameterPanelMain";
 import {
-  applyImportedThemeParameterSyncTargets,
   applyThemeParameterSyncTargets,
   collectThemeParameterSyncIds,
   consumeThemeParameterSyncTargetsForReset,
@@ -22,8 +20,9 @@ import {
   pruneThemeParameterSyncTarget,
   resetThemeParameterSyncState,
 } from "./themeParameterSync";
-import { includesSearch, readFileAsText } from "./themeParameterUtils";
+import { includesSearch } from "./themeParameterUtils";
 import { useThemeParameterUiSession } from "./useThemeParameterUiSession";
+import { useThemeParameterSnapshotControls } from "./useThemeParameterSnapshotControls";
 import {
   COMMON_PARAMETERS,
   CONTAINER_FRAME_PARAMETERS,
@@ -45,9 +44,6 @@ import {
 import {
   CONTAINER_DEBUG_COLOR_FIELDS,
   CONTAINER_DEBUG_TEXT_FIELDS,
-  SNAPSHOT_COLOR_FIELDS,
-  SNAPSHOT_TEXT_FIELDS,
-  type ThemeParameterSnapshot,
 } from "./themeParameterSnapshotCatalog";
 
 const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
@@ -264,14 +260,6 @@ function ThemeParameterPanel({
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
   const [searchText, setSearchText] = useState("");
-  const [snapshotJson, setSnapshotJson] = useState("");
-  const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
-    useState(false);
-  const [snapshotMessage, setSnapshotMessage] = useState("");
-  const [snapshotExplicitParameterIds, setSnapshotExplicitParameterIds] =
-    useState<Set<string>>(new Set());
-  const snapshotFileInputRef = useRef<HTMLInputElement | null>(null);
-  const snapshotBaselineRef = useRef<ThemeParameterSnapshot | null>(null);
   const mainScrollElementRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
   const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(open);
@@ -341,50 +329,33 @@ function ThemeParameterPanel({
       includesSearch(resolveParameterLabel(parameter, t), keyword),
     );
   }, [searchText, styleParameters, t]);
-
-  const buildSnapshotPayload = (options?: {
-    includeComputedValues?: boolean;
-    sourceValues?: ThemeParameterValues;
-  }): ThemeParameterSnapshot => {
-    const computed = getComputedStyle(document.documentElement);
-    const includeComputedValues =
-      options?.includeComputedValues ?? snapshotIncludeComputedValues;
-    const sourceValues = options?.sourceValues ?? values;
-    const valueEntries = parameters
-      .filter(
-        (parameter) =>
-          includeComputedValues ||
-          snapshotExplicitParameterIds.has(parameter.id),
-      )
-      .map(
-        (parameter) =>
-          [
-            parameter.id,
-            sourceValues[parameter.id] ?? parameter.read(computed),
-          ] as const,
-      );
-    const snapshotValues = Object.fromEntries(valueEntries);
-
-    return {
-      version: 1,
-      styleId,
-      ...(Object.keys(snapshotValues).length > 0
-        ? { values: snapshotValues }
-        : {}),
-      debugColors: Object.fromEntries(
-        SNAPSHOT_COLOR_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-      debugTexts: Object.fromEntries(
-        SNAPSHOT_TEXT_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-    };
-  };
+  const {
+    snapshotJson,
+    setSnapshotJson,
+    snapshotIncludeComputedValues,
+    setSnapshotIncludeComputedValues,
+    snapshotMessage,
+    setSnapshotMessage,
+    snapshotFileInputRef,
+    exportSnapshotJson,
+    downloadSnapshotJson,
+    openSnapshotFilePicker,
+    loadSnapshotFile,
+    copySnapshotJson,
+    importSnapshotJson,
+    resetSnapshotToBaseline,
+    initializeSnapshotSession,
+    addSnapshotExplicitParameterIds,
+    removeSnapshotExplicitParameterIds,
+  } = useThemeParameterSnapshotControls({
+    t,
+    styleId,
+    parameters,
+    values,
+    setValues,
+    parameterMap,
+    parameterSyncStateRef,
+  });
 
   useEffect(() => {
     if (!open) {
@@ -396,34 +367,10 @@ function ThemeParameterPanel({
     migrateLegacySidebarMainSlots(root);
     applyContainerDebugSessionState(root);
     const initialValues = readParameterValues(parameters);
-    const computed = getComputedStyle(root);
     restoreUiState();
     setActivePreviewMode("none");
     setValues(initialValues);
-    setSnapshotMessage("");
-    setSnapshotExplicitParameterIds(new Set());
-    snapshotBaselineRef.current = {
-      version: 1,
-      styleId,
-      values: Object.fromEntries(
-        parameters.map((parameter) => [
-          parameter.id,
-          initialValues[parameter.id] ?? parameter.read(computed),
-        ]),
-      ),
-      debugColors: Object.fromEntries(
-        SNAPSHOT_COLOR_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-      debugTexts: Object.fromEntries(
-        SNAPSHOT_TEXT_FIELDS.map((field) => [
-          field.id,
-          computed.getPropertyValue(field.cssVar).trim(),
-        ]),
-      ),
-    };
+    initializeSnapshotSession(initialValues);
   }, [open, parameters, styleId]);
 
   useLayoutEffect(() => {
@@ -525,13 +472,7 @@ function ThemeParameterPanel({
       ),
     );
     const root = document.documentElement;
-    setSnapshotExplicitParameterIds((previous) => {
-      const next = new Set(previous);
-      for (const parameterId of collectThemeParameterSyncIds(parameter.id)) {
-        next.add(parameterId);
-      }
-      return next;
-    });
+    addSnapshotExplicitParameterIds(collectThemeParameterSyncIds(parameter.id));
     setValues((previous) => {
       const nextValues = {
         ...previous,
@@ -554,268 +495,6 @@ function ThemeParameterPanel({
     });
   };
 
-  const buildSnapshotJson = (): string => {
-    return JSON.stringify(buildSnapshotPayload(), null, 2);
-  };
-
-  const exportSnapshotJson = () => {
-    setSnapshotJson(buildSnapshotJson());
-    setSnapshotMessage(t("ui.themeParameter.snapshotExported"));
-  };
-
-  const downloadSnapshotJson = () => {
-    const snapshotText = buildSnapshotJson();
-    setSnapshotJson(snapshotText);
-
-    try {
-      if (typeof URL.createObjectURL !== "function") {
-        throw new Error("blob url unavailable");
-      }
-      const blob = new Blob([snapshotText], { type: "application/json" });
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const normalizedStyleId = styleId.replace(/[^a-zA-Z0-9-_]/g, "-");
-      link.href = blobUrl;
-      link.download = `theme-parameter-${normalizedStyleId}-${timestamp}.json`;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-      setSnapshotMessage(t("ui.themeParameter.snapshotDownloaded"));
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotDownloadFailed"));
-    }
-  };
-
-  const openSnapshotFilePicker = () => {
-    snapshotFileInputRef.current?.click();
-  };
-
-  const loadSnapshotFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-    try {
-      const text = await readFileAsText(file);
-      setSnapshotJson(text);
-      setSnapshotMessage(
-        t("ui.themeParameter.snapshotFileLoaded", { fileName: file.name }),
-      );
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotFileLoadFailed"));
-    } finally {
-      event.target.value = "";
-    }
-  };
-
-  const copySnapshotJson = async () => {
-    if (!snapshotJson.trim()) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
-      return;
-    }
-
-    const copyText = async (text: string): Promise<boolean> => {
-      if (navigator.clipboard?.writeText) {
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch {
-          // noop
-        }
-      }
-
-      if (typeof document === "undefined") {
-        return false;
-      }
-
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "true");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      textarea.style.pointerEvents = "none";
-      document.body.appendChild(textarea);
-
-      try {
-        textarea.select();
-        textarea.setSelectionRange(0, textarea.value.length);
-        return document.execCommand("copy");
-      } catch {
-        return false;
-      } finally {
-        document.body.removeChild(textarea);
-      }
-    };
-
-    try {
-      const copied = await copyText(snapshotJson);
-      setSnapshotMessage(
-        copied
-          ? t("ui.themeParameter.snapshotCopied")
-          : t("ui.themeParameter.snapshotCopyFailed"),
-      );
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotCopyFailed"));
-    }
-  };
-
-  const applySnapshotPayload = (
-    payload: Partial<ThemeParameterSnapshot>,
-    options?: {
-      successMessageKey?: string;
-      reportStyleMismatch?: boolean;
-    },
-  ) => {
-    const hasValues = payload.values !== undefined;
-    const hasDebugColors = payload.debugColors !== undefined;
-    const hasDebugTexts = payload.debugTexts !== undefined;
-
-    if (
-      (!hasValues && !hasDebugColors && !hasDebugTexts) ||
-      (hasValues &&
-        (!payload.values ||
-          typeof payload.values !== "object" ||
-          Array.isArray(payload.values))) ||
-      (hasDebugColors &&
-        (!payload.debugColors ||
-          typeof payload.debugColors !== "object" ||
-          Array.isArray(payload.debugColors))) ||
-      (hasDebugTexts &&
-        (!payload.debugTexts ||
-          typeof payload.debugTexts !== "object" ||
-          Array.isArray(payload.debugTexts)))
-    ) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return false;
-    }
-
-    const importedValues = (payload.values ?? {}) as Record<string, unknown>;
-    const root = document.documentElement;
-    const nextValues: ThemeParameterValues = { ...values };
-    const importedParameterIds = new Set<string>();
-    resetThemeParameterSyncState(parameterSyncStateRef.current);
-    for (const parameter of parameters) {
-      const rawValue = importedValues[parameter.id];
-      if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
-        continue;
-      }
-      const normalized = Math.max(
-        parameter.min,
-        Math.min(
-          parameter.max,
-          Number(
-            (Math.round(rawValue / parameter.step) * parameter.step).toFixed(
-              parameter.step < 1 ? 2 : 0,
-            ),
-          ),
-        ),
-      );
-      nextValues[parameter.id] = normalized;
-      importedParameterIds.add(parameter.id);
-      parameter.apply(root, normalized, nextValues);
-      if (
-        !applyImportedThemeParameterSyncTargets({
-          state: parameterSyncStateRef.current,
-          parameterId: parameter.id,
-          importedValues,
-          importedParameterIds,
-          parameterMap,
-          root,
-          nextValue: normalized,
-          nextValues,
-        })
-      ) {
-        pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
-      }
-    }
-    if (payload.debugColors && typeof payload.debugColors === "object") {
-      const debugColors = payload.debugColors as Record<string, unknown>;
-      for (const field of SNAPSHOT_COLOR_FIELDS) {
-        const rawColor = debugColors[field.id];
-        if (typeof rawColor !== "string") {
-          continue;
-        }
-        const normalizedColor = rawColor.trim();
-        if (!normalizedColor) {
-          root.style.removeProperty(field.cssVar);
-          continue;
-        }
-        root.style.setProperty(field.cssVar, normalizedColor);
-      }
-    }
-    if (payload.debugTexts && typeof payload.debugTexts === "object") {
-      const debugTexts = payload.debugTexts as Record<string, unknown>;
-      for (const field of SNAPSHOT_TEXT_FIELDS) {
-        const rawText = debugTexts[field.id];
-        if (typeof rawText !== "string") {
-          continue;
-        }
-        if (!rawText.trim()) {
-          root.style.removeProperty(field.cssVar);
-          continue;
-        }
-        root.style.setProperty(field.cssVar, rawText);
-      }
-    }
-    setValues(nextValues);
-    if (importedParameterIds.size > 0) {
-      setSnapshotExplicitParameterIds((previous) => {
-        const next = new Set(previous);
-        for (const parameterId of importedParameterIds) {
-          next.add(parameterId);
-        }
-        return next;
-      });
-    }
-    if (payload.styleId && payload.styleId !== styleId) {
-      if (options?.reportStyleMismatch !== false) {
-        setSnapshotMessage(
-          t("ui.themeParameter.snapshotImportedStyleMismatch", {
-            styleId: payload.styleId,
-          }),
-        );
-      }
-      return false;
-    }
-    setSnapshotMessage(
-      t(options?.successMessageKey ?? "ui.themeParameter.snapshotImported"),
-    );
-    return true;
-  };
-
-  const importSnapshotJson = () => {
-    if (!snapshotJson.trim()) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotEmpty"));
-      return;
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(snapshotJson);
-    } catch {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-    if (!parsed || typeof parsed !== "object") {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-    applySnapshotPayload(parsed as Partial<ThemeParameterSnapshot>, {
-      reportStyleMismatch: true,
-    });
-  };
-
-  const resetSnapshotToBaseline = () => {
-    const baseline = snapshotBaselineRef.current;
-    if (!baseline) {
-      setSnapshotMessage(t("ui.themeParameter.snapshotImportFailed"));
-      return;
-    }
-    setSnapshotJson(JSON.stringify(baseline, null, 2));
-    applySnapshotPayload(baseline, {
-      successMessageKey: "ui.themeParameter.snapshotResetToOpenState",
-      reportStyleMismatch: false,
-    });
-  };
 
   const isParameterChanged = (parameter: ThemeParameterDefinition): boolean => {
     if (parameter.cssVarName) {
@@ -855,14 +534,7 @@ function ThemeParameterPanel({
         }
         return nextValues;
       });
-      setSnapshotExplicitParameterIds((previous) => {
-        const next = new Set(previous);
-        next.delete(parameter.id);
-        for (const parameterId of syncedIds) {
-          next.delete(parameterId);
-        }
-        return next;
-      });
+      removeSnapshotExplicitParameterIds([parameter.id, ...syncedIds]);
       return;
     }
     parameter.reset(root);
@@ -872,11 +544,7 @@ function ThemeParameterPanel({
       ...previous,
       [parameter.id]: nextValue,
     }));
-    setSnapshotExplicitParameterIds((previous) => {
-      const next = new Set(previous);
-      next.delete(parameter.id);
-      return next;
-    });
+    removeSnapshotExplicitParameterIds([parameter.id]);
     pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
   };
 
