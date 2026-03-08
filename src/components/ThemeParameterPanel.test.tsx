@@ -965,6 +965,58 @@ describe("ThemeParameterPanel", () => {
     ).toBeInTheDocument();
   }, 15000);
 
+  it("小面板层调试按 root 与面板族重排", () => {
+    renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+
+    expect(screen.getByText("5.0 Root")).toBeInTheDocument();
+    expect(screen.getByText("5.1 Shortcut Edit")).toBeInTheDocument();
+    expect(screen.getByText("5.2 Shortcut Capture")).toBeInTheDocument();
+    expect(screen.getByText("5.3 Group Name")).toBeInTheDocument();
+    expect(screen.getByText("5.4 Delete Confirm")).toBeInTheDocument();
+    expect(screen.getByText("5.5 Ad Review Start")).toBeInTheDocument();
+    expect(screen.getByText("5.6 Convert")).toBeInTheDocument();
+    expect(screen.getByText("5.7 Playlist Name Dialog")).toBeInTheDocument();
+    expect(screen.getByText("5.8 Rename Single")).toBeInTheDocument();
+
+    ensureDetailsOpen("5.0 Root");
+    expect(
+      screen.getByRole("textbox", { name: "--mpx-dialog-panel-bg" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-dialog-panel-shadow-layer-0-blur",
+      }),
+    ).toBeInTheDocument();
+
+    ensureDetailsOpen("5.7 Playlist Name Dialog");
+    expect(screen.getAllByText("Panel Slot Override").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Shared Internals").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-playlist-name-dialog-input-bg",
+      }),
+    ).toBeInTheDocument();
+
+    ensureDetailsOpen("5.8 Rename Single");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+      }),
+    ).toBeInTheDocument();
+  }, 15000);
+
   it("大面板根层变量会作用到 Theme Parameter 面板本体", () => {
     renderThemeParameterPanel();
 
@@ -2002,6 +2054,47 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.getByRole("textbox", {
         name: "--mpx-metadata-fetch-control-font-size",
+      }),
+    ).toBeInTheDocument();
+  }, 15000);
+
+  it("关闭后重开保持小面板分区折叠状态", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    ensureDetailsOpen("5.8 Rename Single");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
+      }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "小面板层调试" }));
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-sidebar-rename-dialog-control-hover-bg",
       }),
     ).toBeInTheDocument();
   }, 15000);

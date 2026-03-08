@@ -127,6 +127,13 @@ interface ThemeParameterPanelMainProps {
     sectionId: LargePanelInternalSectionId,
     action: SetStateAction<boolean>,
   ) => void;
+  smallPanelRootExpanded: boolean;
+  setSmallPanelRootExpanded: Dispatch<SetStateAction<boolean>>;
+  smallPanelSectionsExpanded: Record<SmallPanelSectionId, boolean>;
+  setSmallPanelSectionExpanded: (
+    sectionId: SmallPanelSectionId,
+    action: SetStateAction<boolean>,
+  ) => void;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -168,6 +175,16 @@ export type LargePanelInternalSectionId =
   | "subtitleCleanup"
   | "transcodeDialog"
   | "sidebarRenamePreview";
+
+export type SmallPanelSectionId =
+  | "shortcutEdit"
+  | "shortcutCapture"
+  | "groupName"
+  | "deleteConfirm"
+  | "adReviewStart"
+  | "convert"
+  | "playlistNameDialog"
+  | "renameSingle";
 
 type ThemeDebugNumberGroupId =
   | "box"
@@ -1914,6 +1931,43 @@ function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-subtitle-cleanup-")) {
     return "用于字幕清理面板预览区（raw / clean preview panels）";
   }
+  if (cssVar.startsWith("--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-")) {
+    return "用于快捷键编辑小面板 slot 覆写";
+  }
+  if (
+    cssVar.startsWith("--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-")
+  ) {
+    return "用于快捷键录制小面板 slot 覆写";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-main-header-manage-group-name-panel-")) {
+    return "用于分组命名小面板 slot 覆写";
+  }
+  if (
+    cssVar.startsWith("--mpx-slot-fg-main-header-manage-delete-confirm-panel-")
+  ) {
+    return "用于删除确认小面板 slot 覆写";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-main-header-image-convert-panel-")) {
+    return "用于图片转换小面板 slot 覆写";
+  }
+  if (
+    cssVar.startsWith("--mpx-slot-fg-main-header-image-ad-review-start-panel-")
+  ) {
+    return "用于主区广告审查起始小面板 slot 覆写";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-meta-main-ad-review-start-panel-")) {
+    return "用于 Metadata 广告审查起始小面板 slot 覆写";
+  }
+  if (
+    cssVar.startsWith(
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-",
+    )
+  ) {
+    return "用于播放列表命名小面板 slot 覆写";
+  }
+  if (cssVar.startsWith("--mpx-slot-fg-sidebar-shortcut-rename-single-panel-")) {
+    return "用于单文件重命名小面板 slot 覆写";
+  }
   if (cssVar.startsWith("--mpx-metadata-playlist-name-dialog-")) {
     return "用于视频 metadata 的播放列表命名小面板";
   }
@@ -1927,7 +1981,7 @@ function resolveDebugVarUsage(cssVar: string): string {
     return "用于侧栏批量重命名预览表（head / row / source button）";
   }
   if (cssVar.startsWith("--mpx-dialog-panel-")) {
-    return "用于小面板骨架（dialog panel）";
+    return "仅用于小面板 root 本体";
   }
   if (cssVar.startsWith("--mpx-btn-variant-theme-parameter-side-")) {
     return "用于 Theme Parameter 侧栏按钮状态";
@@ -2879,6 +2933,156 @@ const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "box",
   },
   {
+    id: "small-panel-shortcut-edit-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-group-name-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-group-name-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-convert-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-convert-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-main-border",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-ad-review-start-main-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-main-text",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-border",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-bg",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-text",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-playlist-name-slot-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
     id: "small-panel-metadata-playlist-name-dialog-text",
     cssVar: "--mpx-metadata-playlist-name-dialog-text",
     fallback: "#2e2a22",
@@ -2909,6 +3113,72 @@ const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "box",
   },
   {
+    id: "small-panel-rename-single-slot-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-muted-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border",
+    fallback: "#c7d0d8",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg",
+    fallback: "#ecf0f3",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
     id: "small-panel-sidebar-rename-dialog-text",
     cssVar: "--mpx-sidebar-rename-dialog-text",
     fallback: "#2e2a22",
@@ -2930,6 +3200,18 @@ const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     id: "small-panel-sidebar-rename-dialog-control-bg",
     cssVar: "--mpx-sidebar-rename-dialog-control-bg",
     fallback: "#ecf0f3",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
     groupId: "box",
   },
   {
@@ -2971,6 +3253,182 @@ const SMALL_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     fallback:
       "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
     groupId: "shadow",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-group-name-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-convert-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-main-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-playlist-name-slot-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-rename-single-slot-shadow",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+];
+
+const SMALL_PANEL_ROOT_COLOR_FIELDS = SMALL_PANEL_COLOR_FIELDS.filter(
+  (field) => field.cssVar === "--mpx-dialog-panel-border-color" || field.cssVar === "--mpx-dialog-panel-bg",
+);
+
+const SMALL_PANEL_ROOT_TEXT_FIELDS = SMALL_PANEL_TEXT_FIELDS.filter(
+  (field) => field.cssVar === "--mpx-dialog-panel-shadow",
+);
+
+interface SmallPanelSectionGroupDefinition {
+  title: string | null;
+  colorFields: readonly ThemeDebugColorField[];
+  textFields: readonly ThemeDebugTextField[];
+}
+
+interface SmallPanelSectionDefinition {
+  id: SmallPanelSectionId;
+  summaryKey: string;
+  groups: readonly SmallPanelSectionGroupDefinition[];
+}
+
+const createSmallPanelSectionGroup = (
+  title: string | null,
+  prefixes: readonly string[],
+): SmallPanelSectionGroupDefinition => ({
+  title,
+  colorFields: filterDebugFieldsByPrefixes(SMALL_PANEL_COLOR_FIELDS, prefixes),
+  textFields: filterDebugFieldsByPrefixes(SMALL_PANEL_TEXT_FIELDS, prefixes),
+});
+
+const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefinition[] = [
+  {
+    id: "shortcutEdit",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionShortcutEdit",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "shortcutCapture",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionShortcutCapture",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "groupName",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionGroupName",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-manage-group-name-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "deleteConfirm",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionDeleteConfirm",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-manage-delete-confirm-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "adReviewStart",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionAdReviewStart",
+    groups: [
+      createSmallPanelSectionGroup("Main Toolbar", [
+        "--mpx-slot-fg-main-header-image-ad-review-start-panel-",
+      ]),
+      createSmallPanelSectionGroup("Metadata", [
+        "--mpx-slot-fg-meta-main-ad-review-start-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "convert",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionConvert",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-image-convert-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "playlistNameDialog",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionPlaylistNameDialog",
+    groups: [
+      createSmallPanelSectionGroup("Panel Slot Override", [
+        "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-",
+      ]),
+      createSmallPanelSectionGroup("Shared Internals", [
+        "--mpx-metadata-playlist-name-dialog-",
+      ]),
+    ],
+  },
+  {
+    id: "renameSingle",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionRenameSingle",
+    groups: [
+      createSmallPanelSectionGroup("Panel Slot Override", [
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-",
+      ]),
+      createSmallPanelSectionGroup("Shared Internals", [
+        "--mpx-sidebar-rename-dialog-",
+      ]),
+    ],
   },
 ];
 
@@ -3534,39 +3992,6 @@ const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
 ];
 
-function resolveNumberGroupTitle(groupId: ThemeDebugNumberGroupId): string {
-  switch (groupId) {
-    case "box":
-      return "F12: 盒模型 / 布局";
-    case "border":
-      return "F12: 边框 / 圆角";
-    case "shadow":
-      return "F12: 阴影 / 浮起";
-    case "root":
-      return "F12: Root";
-    case "head":
-      return "F12: Head";
-    case "shell":
-      return "F12: Shell";
-    case "side":
-      return "F12: Side";
-    case "main":
-      return "F12: Main";
-    default:
-      return "F12: 其它";
-  }
-}
-
-function resolveSmallPanelNumberGroup(
-  parameter: ThemeParameterDefinition,
-): ThemeDebugNumberGroupId {
-  const id = parameter.id;
-  if (id.includes("border") || id.includes("radius")) {
-    return "border";
-  }
-  return "box";
-}
-
 export function ThemeParameterPanelMain({
   t,
   styleId,
@@ -3659,6 +4084,10 @@ export function ThemeParameterPanelMain({
   setLargePanelInternalExpanded,
   largePanelInternalSectionsExpanded,
   setLargePanelInternalSectionExpanded,
+  smallPanelRootExpanded,
+  setSmallPanelRootExpanded,
+  smallPanelSectionsExpanded,
+  setSmallPanelSectionExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -3817,33 +4246,8 @@ export function ThemeParameterPanelMain({
     return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
   }, [largePanelParameterMap]);
 
-  const smallPanelNumberGroups = useMemo(() => {
-    const groupMap: Record<
-      ThemeDebugNumberGroupId,
-      ThemeParameterDefinition[]
-    > = {
-      box: [],
-      border: [],
-      shadow: [],
-      root: [],
-      head: [],
-      shell: [],
-      side: [],
-      main: [],
-    };
-    for (const parameter of smallPanelLayerParameters) {
-      groupMap[resolveSmallPanelNumberGroup(parameter)].push(parameter);
-    }
-    return ["box", "border"]
-      .map((groupId) => {
-        const id = groupId as ThemeDebugNumberGroupId;
-        return {
-          id,
-          title: resolveNumberGroupTitle(id),
-          parameters: groupMap[id],
-        };
-      })
-      .filter((group) => group.parameters.length > 0);
+  const smallPanelRootParameters = useMemo(() => {
+    return smallPanelLayerParameters;
   }, [smallPanelLayerParameters]);
 
   useEffect(() => {
@@ -4405,31 +4809,6 @@ export function ThemeParameterPanelMain({
         </div>
       </label>
     );
-  };
-
-  const renderColorGroups = (
-    fields: readonly ThemeDebugColorField[],
-    groupIds: readonly ThemeDebugNumberGroupId[],
-  ) => {
-    return groupIds.map((groupId) => {
-      const groupFields = fields.filter((field) => field.groupId === groupId);
-      if (groupFields.length === 0) {
-        return null;
-      }
-      return (
-        <section
-          key={groupId}
-          className="settings-group theme-parameter-debug-group"
-        >
-          <header className="settings-group-head">
-            <span>{resolveNumberGroupTitle(groupId)}</span>
-          </header>
-          <div className="theme-parameter-color-list">
-            {groupFields.map(renderColorFieldRow)}
-          </div>
-        </section>
-      );
-    });
   };
 
   const renderTextFieldRow = (field: ThemeDebugTextField) => {
@@ -5121,36 +5500,43 @@ export function ThemeParameterPanelMain({
     );
   };
 
+  const renderSmallPanelSectionGroups = (
+    groups: readonly SmallPanelSectionGroupDefinition[],
+  ) => {
+    return groups.map((group, index) => {
+      if (group.colorFields.length === 0 && group.textFields.length === 0) {
+        return null;
+      }
+      return (
+        <section
+          key={`${group.title ?? "root"}-${index}`}
+          className="settings-group theme-parameter-debug-group"
+        >
+          {group.title ? (
+            <header className="settings-group-head">
+              <span>{group.title}</span>
+            </header>
+          ) : null}
+          {group.colorFields.length > 0 ? (
+            <div className="theme-parameter-color-list">
+              {group.colorFields.map(renderColorFieldRow)}
+            </div>
+          ) : null}
+          {group.textFields.length > 0 ? (
+            <div className="theme-parameter-text-list">
+              {group.textFields.map(renderTextFieldRow)}
+            </div>
+          ) : null}
+        </section>
+      );
+    });
+  };
+
   const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
     const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
     return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
       field.id.startsWith(`button-side-${prefix}-`),
     );
-  };
-
-  const renderTextGroups = (
-    fields: readonly ThemeDebugTextField[],
-    groupIds: readonly ThemeDebugNumberGroupId[],
-  ) => {
-    return groupIds.map((groupId) => {
-      const groupFields = fields.filter((field) => field.groupId === groupId);
-      if (groupFields.length === 0) {
-        return null;
-      }
-      return (
-        <section
-          key={`text-${groupId}`}
-          className="settings-group theme-parameter-debug-group"
-        >
-          <header className="settings-group-head">
-            <span>{resolveNumberGroupTitle(groupId)}</span>
-          </header>
-          <div className="theme-parameter-text-list">
-            {groupFields.map(renderTextFieldRow)}
-          </div>
-        </section>
-      );
-    });
   };
 
   const toRangePercent = (value: number, min: number, max: number) => {
@@ -5465,26 +5851,6 @@ export function ThemeParameterPanelMain({
         </section>
       );
     });
-  };
-
-  const renderNumberGroups = (
-    groups: ReadonlyArray<{
-      id: ThemeDebugNumberGroupId;
-      title: string;
-      parameters: ThemeParameterDefinition[];
-    }>,
-  ) => {
-    return groups.map((group) => (
-      <section
-        key={group.id}
-        className="settings-group theme-parameter-debug-group"
-      >
-        <header className="settings-group-head">
-          <span>{group.title}</span>
-        </header>
-        {renderParameterRows(group.parameters)}
-      </section>
-    ));
   };
 
   const renderParameterRows = (parameters: ThemeParameterDefinition[]) => {
@@ -6309,9 +6675,42 @@ export function ThemeParameterPanelMain({
                 </button>
               </div>
             </section>
-            {renderColorGroups(SMALL_PANEL_COLOR_FIELDS, ["box", "border"])}
-            {renderTextGroups(SMALL_PANEL_TEXT_FIELDS, ["shadow"])}
-            {renderNumberGroups(smallPanelNumberGroups)}
+            <details
+              className="settings-collapsible"
+              open={smallPanelRootExpanded}
+              onToggle={(event) =>
+                setSmallPanelRootExpanded(
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t("ui.themeParameter.smallPanelLayer.sectionRoot")}</summary>
+              <div className="settings-collapsible-content">
+                {renderLargePanelSectionRows({
+                  colorFields: SMALL_PANEL_ROOT_COLOR_FIELDS,
+                  textFields: SMALL_PANEL_ROOT_TEXT_FIELDS,
+                  parameters: smallPanelRootParameters,
+                })}
+              </div>
+            </details>
+            {SMALL_PANEL_SECTION_DEFINITIONS.map((section) => (
+              <details
+                key={section.id}
+                className="settings-collapsible"
+                open={smallPanelSectionsExpanded[section.id]}
+                onToggle={(event) =>
+                  setSmallPanelSectionExpanded(
+                    section.id,
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>{t(section.summaryKey)}</summary>
+                <div className="settings-collapsible-content">
+                  {renderSmallPanelSectionGroups(section.groups)}
+                </div>
+              </details>
+            ))}
           </section>
         ) : null}
 

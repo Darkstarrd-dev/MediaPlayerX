@@ -406,6 +406,20 @@ export const zhCnCatalogPart1 = {
     "3.10.7 转码",
   "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview":
     "3.10.8 侧栏批量重命名预览",
+  "ui.themeParameter.smallPanelLayer.sectionRoot": "5.0 Root",
+  "ui.themeParameter.smallPanelLayer.sectionShortcutEdit": "5.1 Shortcut Edit",
+  "ui.themeParameter.smallPanelLayer.sectionShortcutCapture":
+    "5.2 Shortcut Capture",
+  "ui.themeParameter.smallPanelLayer.sectionGroupName": "5.3 Group Name",
+  "ui.themeParameter.smallPanelLayer.sectionDeleteConfirm":
+    "5.4 Delete Confirm",
+  "ui.themeParameter.smallPanelLayer.sectionAdReviewStart":
+    "5.5 Ad Review Start",
+  "ui.themeParameter.smallPanelLayer.sectionConvert": "5.6 Convert",
+  "ui.themeParameter.smallPanelLayer.sectionPlaylistNameDialog":
+    "5.7 Playlist Name Dialog",
+  "ui.themeParameter.smallPanelLayer.sectionRenameSingle":
+    "5.8 Rename Single",
   "ui.themeParameter.sectionCommon": "通用参数",
   "ui.themeParameter.sectionStyle": "风格参数（{{styleId}}）",
   "ui.themeParameter.sectionMetric": "{{scope}}{{target}}{{metric}}",

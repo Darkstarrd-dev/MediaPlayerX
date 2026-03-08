@@ -1,5 +1,6 @@
 import type {
   LargePanelInternalSectionId,
+  SmallPanelSectionId,
   ThemeParameterPageId,
 } from "./ThemeParameterPanelMain";
 
@@ -17,6 +18,17 @@ interface LargePanelInternalSectionsExpandedState {
   subtitleCleanup: boolean;
   transcodeDialog: boolean;
   sidebarRenamePreview: boolean;
+}
+
+interface SmallPanelSectionsExpandedState {
+  shortcutEdit: boolean;
+  shortcutCapture: boolean;
+  groupName: boolean;
+  deleteConfirm: boolean;
+  adReviewStart: boolean;
+  convert: boolean;
+  playlistNameDialog: boolean;
+  renameSingle: boolean;
 }
 
 interface ThemeParameterUISessionState {
@@ -55,6 +67,8 @@ interface ThemeParameterUISessionState {
   largePanelMainExpanded: boolean;
   largePanelInternalExpanded: boolean;
   largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
+  smallPanelRootExpanded: boolean;
+  smallPanelSectionsExpanded: Record<SmallPanelSectionId, boolean>;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -73,6 +87,17 @@ const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSections
   subtitleCleanup: false,
   transcodeDialog: false,
   sidebarRenamePreview: false,
+};
+
+const DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED: SmallPanelSectionsExpandedState = {
+  shortcutEdit: false,
+  shortcutCapture: false,
+  groupName: false,
+  deleteConfirm: false,
+  adReviewStart: false,
+  convert: false,
+  playlistNameDialog: false,
+  renameSingle: false,
 };
 
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
@@ -113,6 +138,10 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   largePanelInternalSectionsExpanded: {
     ...DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED,
   },
+  smallPanelRootExpanded: true,
+  smallPanelSectionsExpanded: {
+    ...DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED,
+  },
   commonExpanded: true,
   styleExpanded: true,
 };
@@ -125,6 +154,9 @@ let uiSessionState: ThemeParameterUISessionState = {
   ...DEFAULT_UI_SESSION_STATE,
   largePanelInternalSectionsExpanded: {
     ...DEFAULT_UI_SESSION_STATE.largePanelInternalSectionsExpanded,
+  },
+  smallPanelSectionsExpanded: {
+    ...DEFAULT_UI_SESSION_STATE.smallPanelSectionsExpanded,
   },
 };
 
@@ -156,6 +188,9 @@ export function readThemeParameterUiSessionState(): ThemeParameterUISessionState
     largePanelInternalSectionsExpanded: {
       ...uiSessionState.largePanelInternalSectionsExpanded,
     },
+    smallPanelSectionsExpanded: {
+      ...uiSessionState.smallPanelSectionsExpanded,
+    },
   };
 }
 
@@ -166,6 +201,9 @@ export function writeThemeParameterUiSessionState(
     ...nextState,
     largePanelInternalSectionsExpanded: {
       ...nextState.largePanelInternalSectionsExpanded,
+    },
+    smallPanelSectionsExpanded: {
+      ...nextState.smallPanelSectionsExpanded,
     },
   };
 }
@@ -180,6 +218,9 @@ export function updateThemeParameterUiSessionState(
       ...(patch.largePanelInternalSectionsExpanded ??
         uiSessionState.largePanelInternalSectionsExpanded),
     },
+    smallPanelSectionsExpanded: {
+      ...(patch.smallPanelSectionsExpanded ?? uiSessionState.smallPanelSectionsExpanded),
+    },
   };
 }
 
@@ -189,6 +230,9 @@ export function resetThemeParameterPanelSessionStateForTest(): void {
     ...DEFAULT_UI_SESSION_STATE,
     largePanelInternalSectionsExpanded: {
       ...DEFAULT_UI_SESSION_STATE.largePanelInternalSectionsExpanded,
+    },
+    smallPanelSectionsExpanded: {
+      ...DEFAULT_UI_SESSION_STATE.smallPanelSectionsExpanded,
     },
   };
 }

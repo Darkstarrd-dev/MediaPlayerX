@@ -15,6 +15,7 @@ import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
 import type {
   LargePanelInternalSectionId,
+  SmallPanelSectionId,
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
 } from "./ThemeParameterPanelMain";
@@ -1367,6 +1368,131 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ffffff",
   },
   {
+    id: "small-panel-shortcut-edit-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-group-name-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-group-name-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-convert-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-convert-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-ad-review-start-main-border",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-ad-review-start-main-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-ad-review-start-main-text",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-border",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-bg",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-text",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-playlist-name-slot-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-playlist-name-slot-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-playlist-name-slot-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder",
+    fallback: "#6a6358",
+  },
+  {
     id: "small-panel-metadata-playlist-name-dialog-text",
     cssVar: "--mpx-metadata-playlist-name-dialog-text",
     fallback: "#2e2a22",
@@ -1412,6 +1538,16 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ecf0f3",
   },
   {
+    id: "small-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+  },
+  {
     id: "small-panel-sidebar-rename-dialog-control-text",
     cssVar: "--mpx-sidebar-rename-dialog-control-text",
     fallback: "#2e2a22",
@@ -1434,6 +1570,61 @@ const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   {
     id: "small-panel-sidebar-rename-dialog-action-btn-text",
     cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-rename-single-slot-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "small-panel-rename-single-slot-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-rename-single-slot-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-rename-single-slot-muted-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text",
+    fallback: "#6a6358",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder",
+    fallback: "#6a6358",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border",
+    fallback: "#b7ab95",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text",
     fallback: "#2e2a22",
   },
   {
@@ -1763,6 +1954,42 @@ const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "small-panel-shadow",
     cssVar: "--mpx-dialog-panel-shadow",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-shadow",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-shadow",
+  },
+  {
+    id: "small-panel-group-name-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-shadow",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-shadow",
+  },
+  {
+    id: "small-panel-convert-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-main-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-shadow",
+  },
+  {
+    id: "small-panel-playlist-name-slot-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow",
+  },
+  {
+    id: "small-panel-rename-single-slot-shadow",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-shadow",
   },
   {
     id: "control-scrollbar-size",
@@ -2141,6 +2368,11 @@ function ThemeParameterPanel({
     largePanelInternalSectionsExpanded,
     setLargePanelInternalSectionsExpandedState,
   ] = useState(initialUiSessionState.largePanelInternalSectionsExpanded);
+  const [smallPanelRootExpanded, setSmallPanelRootExpandedState] = useState(
+    initialUiSessionState.smallPanelRootExpanded,
+  );
+  const [smallPanelSectionsExpanded, setSmallPanelSectionsExpandedState] =
+    useState(initialUiSessionState.smallPanelSectionsExpanded);
   const [snapshotJson, setSnapshotJson] = useState("");
   const [snapshotIncludeComputedValues, setSnapshotIncludeComputedValues] =
     useState(false);
@@ -2527,6 +2759,31 @@ function ThemeParameterPanel({
     });
   };
 
+  const setSmallPanelRootExpanded = (action: SetStateAction<boolean>) => {
+    setSmallPanelRootExpandedState((previous) => {
+      const next = resolveNextState(action, previous);
+      updateThemeParameterUiSessionState({ smallPanelRootExpanded: next });
+      return next;
+    });
+  };
+
+  const setSmallPanelSectionExpanded = (
+    sectionId: SmallPanelSectionId,
+    action: SetStateAction<boolean>,
+  ) => {
+    setSmallPanelSectionsExpandedState((previous) => {
+      const next = resolveNextState(action, previous[sectionId]);
+      const nextSections = {
+        ...previous,
+        [sectionId]: next,
+      };
+      updateThemeParameterUiSessionState({
+        smallPanelSectionsExpanded: nextSections,
+      });
+      return nextSections;
+    });
+  };
+
   const containerLayerParameters = useMemo(
     () => parameters.filter(isContainerLayerParameter),
     [parameters],
@@ -2688,6 +2945,8 @@ function ThemeParameterPanel({
     setLargePanelInternalSectionsExpandedState(
       uiSessionState.largePanelInternalSectionsExpanded,
     );
+    setSmallPanelRootExpandedState(uiSessionState.smallPanelRootExpanded);
+    setSmallPanelSectionsExpandedState(uiSessionState.smallPanelSectionsExpanded);
     setActivePreviewMode("none");
     setValues(initialValues);
     setSnapshotMessage("");
@@ -2779,6 +3038,8 @@ function ThemeParameterPanel({
       largePanelMainExpanded,
       largePanelInternalExpanded,
       largePanelInternalSectionsExpanded,
+      smallPanelRootExpanded,
+      smallPanelSectionsExpanded,
       commonExpanded,
       styleExpanded,
     });
@@ -2819,6 +3080,8 @@ function ThemeParameterPanel({
     largePanelMainExpanded,
     largePanelInternalExpanded,
     largePanelInternalSectionsExpanded,
+    smallPanelRootExpanded,
+    smallPanelSectionsExpanded,
     open,
     styleExpanded,
   ]);
@@ -3836,6 +4099,10 @@ function ThemeParameterPanel({
           setLargePanelInternalSectionExpanded={
             setLargePanelInternalSectionExpanded
           }
+          smallPanelRootExpanded={smallPanelRootExpanded}
+          setSmallPanelRootExpanded={setSmallPanelRootExpanded}
+          smallPanelSectionsExpanded={smallPanelSectionsExpanded}
+          setSmallPanelSectionExpanded={setSmallPanelSectionExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}
