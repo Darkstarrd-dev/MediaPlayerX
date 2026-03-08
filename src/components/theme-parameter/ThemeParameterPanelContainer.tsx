@@ -13,6 +13,15 @@ import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
 import type { ThemeParameterPreviewMode } from "./ThemeParameterPanelMain";
+import {
+  applyImportedThemeParameterSyncTargets,
+  applyThemeParameterSyncTargets,
+  collectThemeParameterSyncIds,
+  consumeThemeParameterSyncTargetsForReset,
+  createThemeParameterSyncState,
+  pruneThemeParameterSyncTarget,
+  resetThemeParameterSyncState,
+} from "./themeParameterSync";
 import { includesSearch, readFileAsText } from "./themeParameterUtils";
 import { useThemeParameterUiSession } from "./useThemeParameterUiSession";
 import {
@@ -36,28 +45,6 @@ import {
 
 const PREVIEW_MODE_ATTR = "data-mpx-theme-debug-preview";
 const THEME_PARAMETER_RESET_EVENT = "mpx-theme-parameter-reset";
-const CONTAINER_RADIUS_SYNC_PARAMETER_IDS = [
-  "header-radius",
-  "sidebar-radius",
-  "main-radius",
-  "metadata-radius",
-] as const;
-const CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS = [
-  "header-fill-angle",
-  "sidebar-fill-angle",
-  "main-fill-angle",
-  "metadata-fill-angle",
-] as const;
-const LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS = [
-  "large-panel-head-fill-angle",
-  "large-panel-side-fill-angle",
-  "large-panel-main-fill-angle",
-] as const;
-const LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS = [
-  "large-panel-head-border-width",
-  "large-panel-side-border-width",
-  "large-panel-main-border-width",
-] as const;
 
 const CONTAINER_LAYER_PARAMETER_IDS = new Set([
   "layout-padding",
@@ -2273,13 +2260,8 @@ function ThemeParameterPanel({
     setSmallPanelSectionExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
-  const syncedContainerRadiusOverridesRef = useRef<Set<string>>(new Set());
-  const syncedContainerFillAngleOverridesRef = useRef<Set<string>>(new Set());
-  const syncedLargePanelSectionFillAngleOverridesRef = useRef<Set<string>>(
-    new Set(),
-  );
-  const syncedLargePanelSectionBorderWidthOverridesRef = useRef<Set<string>>(
-    new Set(),
+  const parameterSyncStateRef = useRef(
+    createThemeParameterSyncState(),
   );
   const [activePreviewMode, setActivePreviewMode] =
     useState<ThemeParameterPreviewMode>("none");
@@ -2411,10 +2393,7 @@ function ThemeParameterPanel({
       return;
     }
     wasOpenRef.current = true;
-    syncedContainerRadiusOverridesRef.current = new Set();
-    syncedContainerFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
+    resetThemeParameterSyncState(parameterSyncStateRef.current);
     const root = document.documentElement;
     migrateLegacySidebarMainSlots(root);
     applyContainerDebugSessionState(root);
@@ -2548,35 +2527,10 @@ function ThemeParameterPanel({
       ),
     );
     const root = document.documentElement;
-    const isContainerFrameRadius = parameter.id === "container-frame-radius";
-    const isContainerFrameFillAngle =
-      parameter.id === "container-frame-fill-angle";
-    const isLargePanelSectionFillAngle =
-      parameter.id === "large-panel-section-fill-angle";
-    const isLargePanelSectionBorderWidth =
-      parameter.id === "large-panel-section-border-width";
     setSnapshotExplicitParameterIds((previous) => {
       const next = new Set(previous);
-      next.add(parameter.id);
-      if (isContainerFrameRadius) {
-        for (const parameterId of CONTAINER_RADIUS_SYNC_PARAMETER_IDS) {
-          next.add(parameterId);
-        }
-      }
-      if (isContainerFrameFillAngle) {
-        for (const parameterId of CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS) {
-          next.add(parameterId);
-        }
-      }
-      if (isLargePanelSectionFillAngle) {
-        for (const parameterId of LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS) {
-          next.add(parameterId);
-        }
-      }
-      if (isLargePanelSectionBorderWidth) {
-        for (const parameterId of LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS) {
-          next.add(parameterId);
-        }
+      for (const parameterId of collectThemeParameterSyncIds(parameter.id)) {
+        next.add(parameterId);
       }
       return next;
     });
@@ -2586,90 +2540,17 @@ function ThemeParameterPanel({
         [parameter.id]: nextValue,
       };
       parameter.apply(root, nextValue, nextValues);
-      if (isContainerFrameRadius) {
-        if (syncedContainerRadiusOverridesRef.current.size === 0) {
-          syncedContainerRadiusOverridesRef.current = new Set(
-            CONTAINER_RADIUS_SYNC_PARAMETER_IDS,
-          );
-        }
-        for (const parameterId of syncedContainerRadiusOverridesRef.current) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = nextValue;
-          syncParameter.apply(root, nextValue, nextValues);
-        }
-      } else if (isContainerFrameFillAngle) {
-        if (syncedContainerFillAngleOverridesRef.current.size === 0) {
-          syncedContainerFillAngleOverridesRef.current = new Set(
-            CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS,
-          );
-        }
-        for (const parameterId of syncedContainerFillAngleOverridesRef.current) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = nextValue;
-          syncParameter.apply(root, nextValue, nextValues);
-        }
-      } else if (isLargePanelSectionFillAngle) {
-        if (syncedLargePanelSectionFillAngleOverridesRef.current.size === 0) {
-          syncedLargePanelSectionFillAngleOverridesRef.current = new Set(
-            LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS,
-          );
-        }
-        for (const parameterId of syncedLargePanelSectionFillAngleOverridesRef.current) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = nextValue;
-          syncParameter.apply(root, nextValue, nextValues);
-        }
-      } else if (isLargePanelSectionBorderWidth) {
-        if (syncedLargePanelSectionBorderWidthOverridesRef.current.size === 0) {
-          syncedLargePanelSectionBorderWidthOverridesRef.current = new Set(
-            LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS,
-          );
-        }
-        for (const parameterId of syncedLargePanelSectionBorderWidthOverridesRef.current) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = nextValue;
-          syncParameter.apply(root, nextValue, nextValues);
-        }
-      } else if (
-        CONTAINER_RADIUS_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof CONTAINER_RADIUS_SYNC_PARAMETER_IDS)[number],
-        )
+      if (
+        !applyThemeParameterSyncTargets({
+          state: parameterSyncStateRef.current,
+          parameterId: parameter.id,
+          parameterMap,
+          root,
+          nextValue,
+          nextValues,
+        })
       ) {
-        syncedContainerRadiusOverridesRef.current.delete(parameter.id);
-      } else if (
-        CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
-      } else if (
-        LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedLargePanelSectionFillAngleOverridesRef.current.delete(
-          parameter.id,
-        );
-      } else if (
-        LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
-          parameter.id,
-        );
+        pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
       }
       return nextValues;
     });
@@ -2814,10 +2695,7 @@ function ThemeParameterPanel({
     const root = document.documentElement;
     const nextValues: ThemeParameterValues = { ...values };
     const importedParameterIds = new Set<string>();
-    syncedContainerRadiusOverridesRef.current = new Set();
-    syncedContainerFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
+    resetThemeParameterSyncState(parameterSyncStateRef.current);
     for (const parameter of parameters) {
       const rawValue = importedValues[parameter.id];
       if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
@@ -2837,110 +2715,19 @@ function ThemeParameterPanel({
       nextValues[parameter.id] = normalized;
       importedParameterIds.add(parameter.id);
       parameter.apply(root, normalized, nextValues);
-      if (parameter.id === "container-frame-radius") {
-        syncedContainerRadiusOverridesRef.current = new Set(
-          CONTAINER_RADIUS_SYNC_PARAMETER_IDS,
-        );
-        for (const parameterId of syncedContainerRadiusOverridesRef.current) {
-          if (
-            typeof importedValues[parameterId] === "number" &&
-            Number.isFinite(importedValues[parameterId])
-          ) {
-            continue;
-          }
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = normalized;
-          importedParameterIds.add(parameterId);
-          syncParameter.apply(root, normalized, nextValues);
-        }
-      } else if (parameter.id === "container-frame-fill-angle") {
-        syncedContainerFillAngleOverridesRef.current = new Set(
-          CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS,
-        );
-        for (const parameterId of syncedContainerFillAngleOverridesRef.current) {
-          if (
-            typeof importedValues[parameterId] === "number" &&
-            Number.isFinite(importedValues[parameterId])
-          ) {
-            continue;
-          }
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = normalized;
-          importedParameterIds.add(parameterId);
-          syncParameter.apply(root, normalized, nextValues);
-        }
-      } else if (parameter.id === "large-panel-section-fill-angle") {
-        syncedLargePanelSectionFillAngleOverridesRef.current = new Set(
-          LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS,
-        );
-        for (const parameterId of syncedLargePanelSectionFillAngleOverridesRef.current) {
-          if (
-            typeof importedValues[parameterId] === "number" &&
-            Number.isFinite(importedValues[parameterId])
-          ) {
-            continue;
-          }
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = normalized;
-          importedParameterIds.add(parameterId);
-          syncParameter.apply(root, normalized, nextValues);
-        }
-      } else if (parameter.id === "large-panel-section-border-width") {
-        syncedLargePanelSectionBorderWidthOverridesRef.current = new Set(
-          LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS,
-        );
-        for (const parameterId of syncedLargePanelSectionBorderWidthOverridesRef.current) {
-          if (
-            typeof importedValues[parameterId] === "number" &&
-            Number.isFinite(importedValues[parameterId])
-          ) {
-            continue;
-          }
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = normalized;
-          importedParameterIds.add(parameterId);
-          syncParameter.apply(root, normalized, nextValues);
-        }
-      } else if (
-        CONTAINER_RADIUS_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof CONTAINER_RADIUS_SYNC_PARAMETER_IDS)[number],
-        )
+      if (
+        !applyImportedThemeParameterSyncTargets({
+          state: parameterSyncStateRef.current,
+          parameterId: parameter.id,
+          importedValues,
+          importedParameterIds,
+          parameterMap,
+          root,
+          nextValue: normalized,
+          nextValues,
+        })
       ) {
-        syncedContainerRadiusOverridesRef.current.delete(parameter.id);
-      } else if (
-        CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
-      } else if (
-        LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedLargePanelSectionFillAngleOverridesRef.current.delete(
-          parameter.id,
-        );
-      } else if (
-        LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
-          parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
-        )
-      ) {
-        syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
-          parameter.id,
-        );
+        pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
       }
     }
     if (payload.debugColors && typeof payload.debugColors === "object") {
@@ -3046,15 +2833,11 @@ function ThemeParameterPanel({
 
   const resetSingleParameter = (parameter: ThemeParameterDefinition) => {
     const root = document.documentElement;
-    const isContainerFrameRadius = parameter.id === "container-frame-radius";
-    const isContainerFrameFillAngle =
-      parameter.id === "container-frame-fill-angle";
-    const isLargePanelSectionFillAngle =
-      parameter.id === "large-panel-section-fill-angle";
-    const isLargePanelSectionBorderWidth =
-      parameter.id === "large-panel-section-border-width";
-    if (isContainerFrameRadius) {
-      const syncedIds = Array.from(syncedContainerRadiusOverridesRef.current);
+    const syncedIds = consumeThemeParameterSyncTargetsForReset(
+      parameterSyncStateRef.current,
+      parameter.id,
+    );
+    if (syncedIds !== null) {
       parameter.reset(root);
       for (const parameterId of syncedIds) {
         parameterMap.get(parameterId)?.reset(root);
@@ -3082,109 +2865,6 @@ function ThemeParameterPanel({
         }
         return next;
       });
-      syncedContainerRadiusOverridesRef.current = new Set();
-      return;
-    }
-    if (isContainerFrameFillAngle) {
-      const syncedIds = Array.from(
-        syncedContainerFillAngleOverridesRef.current,
-      );
-      parameter.reset(root);
-      for (const parameterId of syncedIds) {
-        parameterMap.get(parameterId)?.reset(root);
-      }
-      const computed = getComputedStyle(root);
-      setValues((previous) => {
-        const nextValues = {
-          ...previous,
-          [parameter.id]: parameter.read(computed),
-        };
-        for (const parameterId of syncedIds) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = syncParameter.read(computed);
-        }
-        return nextValues;
-      });
-      setSnapshotExplicitParameterIds((previous) => {
-        const next = new Set(previous);
-        next.delete(parameter.id);
-        for (const parameterId of syncedIds) {
-          next.delete(parameterId);
-        }
-        return next;
-      });
-      syncedContainerFillAngleOverridesRef.current = new Set();
-      return;
-    }
-    if (isLargePanelSectionFillAngle) {
-      const syncedIds = Array.from(
-        syncedLargePanelSectionFillAngleOverridesRef.current,
-      );
-      parameter.reset(root);
-      for (const parameterId of syncedIds) {
-        parameterMap.get(parameterId)?.reset(root);
-      }
-      const computed = getComputedStyle(root);
-      setValues((previous) => {
-        const nextValues = {
-          ...previous,
-          [parameter.id]: parameter.read(computed),
-        };
-        for (const parameterId of syncedIds) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = syncParameter.read(computed);
-        }
-        return nextValues;
-      });
-      setSnapshotExplicitParameterIds((previous) => {
-        const next = new Set(previous);
-        next.delete(parameter.id);
-        for (const parameterId of syncedIds) {
-          next.delete(parameterId);
-        }
-        return next;
-      });
-      syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
-      return;
-    }
-    if (isLargePanelSectionBorderWidth) {
-      const syncedIds = Array.from(
-        syncedLargePanelSectionBorderWidthOverridesRef.current,
-      );
-      parameter.reset(root);
-      for (const parameterId of syncedIds) {
-        parameterMap.get(parameterId)?.reset(root);
-      }
-      const computed = getComputedStyle(root);
-      setValues((previous) => {
-        const nextValues = {
-          ...previous,
-          [parameter.id]: parameter.read(computed),
-        };
-        for (const parameterId of syncedIds) {
-          const syncParameter = parameterMap.get(parameterId);
-          if (!syncParameter) {
-            continue;
-          }
-          nextValues[parameterId] = syncParameter.read(computed);
-        }
-        return nextValues;
-      });
-      setSnapshotExplicitParameterIds((previous) => {
-        const next = new Set(previous);
-        next.delete(parameter.id);
-        for (const parameterId of syncedIds) {
-          next.delete(parameterId);
-        }
-        return next;
-      });
-      syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
       return;
     }
     parameter.reset(root);
@@ -3199,36 +2879,7 @@ function ThemeParameterPanel({
       next.delete(parameter.id);
       return next;
     });
-    if (
-      CONTAINER_RADIUS_SYNC_PARAMETER_IDS.includes(
-        parameter.id as (typeof CONTAINER_RADIUS_SYNC_PARAMETER_IDS)[number],
-      )
-    ) {
-      syncedContainerRadiusOverridesRef.current.delete(parameter.id);
-    }
-    if (
-      CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-        parameter.id as (typeof CONTAINER_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-      )
-    ) {
-      syncedContainerFillAngleOverridesRef.current.delete(parameter.id);
-    }
-    if (
-      LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS.includes(
-        parameter.id as (typeof LARGE_PANEL_SECTION_FILL_ANGLE_SYNC_PARAMETER_IDS)[number],
-      )
-    ) {
-      syncedLargePanelSectionFillAngleOverridesRef.current.delete(parameter.id);
-    }
-    if (
-      LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS.includes(
-        parameter.id as (typeof LARGE_PANEL_SECTION_BORDER_WIDTH_SYNC_PARAMETER_IDS)[number],
-      )
-    ) {
-      syncedLargePanelSectionBorderWidthOverridesRef.current.delete(
-        parameter.id,
-      );
-    }
+    pruneThemeParameterSyncTarget(parameterSyncStateRef.current, parameter.id);
   };
 
   const resolveLabel = (parameter: ThemeParameterDefinition): string => {
@@ -3247,10 +2898,7 @@ function ThemeParameterPanel({
 
   const handleResetToOpenState = () => {
     clearContainerDebugSessionState();
-    syncedContainerRadiusOverridesRef.current = new Set();
-    syncedContainerFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionFillAngleOverridesRef.current = new Set();
-    syncedLargePanelSectionBorderWidthOverridesRef.current = new Set();
+    resetThemeParameterSyncState(parameterSyncStateRef.current);
     resetSnapshotToBaseline();
   };
 
