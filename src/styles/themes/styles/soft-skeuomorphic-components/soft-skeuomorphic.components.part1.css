@@ -1,4 +1,5 @@
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+@layer theme-style {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .image-grid,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .metadata-music-booklet-bindings,
@@ -1227,7 +1228,7 @@
   [data-slot="fg-header-logo"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-g1-palette"],
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-g1-settings"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-g-debug-tooltips"],
@@ -1248,7 +1249,7 @@
     0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-@keyframes mpx-random-sheen-once {
+  @keyframes mpx-random-sheen-once {
   0% {
     transform: translate(
         var(--mpx-random-sheen-start-translate),
@@ -1308,10 +1309,11 @@
   z-index: 2;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .mpx-random-sheen-host.is-sweeping::after,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-logo"].is-sweeping::after {
   animation: mpx-random-sheen-once var(--mpx-random-sheen-duration)
     var(--mpx-random-sheen-easing) forwards;
+  }
 }

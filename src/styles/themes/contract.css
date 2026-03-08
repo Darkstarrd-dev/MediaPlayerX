@@ -1,6 +1,7 @@
 /* MediaPlayer Theme System Contract */
 
-:root {
+@layer contract {
+  :root {
   /* Foundations */
   --mpx-font-ui:
     "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -1395,4 +1396,5 @@
   --mpx-palette-accent-raw: #2e6f7f;
   --mpx-palette-text-raw: #2e2a22;
   --mpx-palette-shadow-color: rgba(60, 48, 30, 0.15);
+  }
 }

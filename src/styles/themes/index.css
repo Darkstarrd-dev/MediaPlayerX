@@ -1,5 +1,7 @@
 /* Global Theme Entry */
 
+@layer contract, palette, theme-style;
+
 @import './contract.css';
 
 /* Palette presets (color layer) */

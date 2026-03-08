@@ -1,4 +1,5 @@
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+@layer theme-style {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-logo"] {
   --mpx-random-sheen-duration: 1.9s;
   --mpx-header-logo-max-height: calc(var(--mpx-header-btn-size) + 4px);
@@ -1028,7 +1029,7 @@
   transform: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
+  :root[data-mpx-style^="soft-skeuomorphic"]
   .video-action-btn:disabled
   .video-action-icon,
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -1045,4 +1046,5 @@
   .header-action-icon {
   transform: translateY(0);
   transition: none;
+  }
 }

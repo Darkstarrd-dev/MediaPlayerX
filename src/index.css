@@ -1,3 +1,5 @@
+@layer contract, palette, theme-style, app-base, app-layout, app-component, app-state;
+
 @import './styles/themes/index.css';
 
 html,

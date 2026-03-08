@@ -1,4 +1,5 @@
-:root[data-mpx-style^="soft-skeuomorphic"] {
+@layer theme-style {
+  :root[data-mpx-style^="soft-skeuomorphic"] {
   --mpx-layout-gap-unit: 1vw;
   --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
   --mpx-splitter-width: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
@@ -176,7 +177,7 @@
   --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
   --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
   --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
   --mpx-panel-padding: 14px;
@@ -390,4 +391,5 @@
 
   --mpx-slot-fg-main-content-video-controls-left-bg: var(--mpx-runway-groove-bg);
   --mpx-slot-bg-app-root-bg: var(--mpx-bg-app-fill);
+  }
 }

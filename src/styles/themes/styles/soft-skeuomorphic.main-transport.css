@@ -1,5 +1,6 @@
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) .music-controls-group.is-center {
+@layer theme-style {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center,
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) .music-controls-group.is-center {
   gap: 16px;
 }
 
@@ -39,11 +40,12 @@
     inset -2px -2px 3px rgba(255, 255, 255, 0.72);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center .video-action-icon,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) .music-controls-group.is-center .music-action-icon {
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center .video-action-icon,
+  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) .music-controls-group.is-center .music-action-icon {
   width: 20px;
   height: 20px;
   color: #574226;
   fill: currentColor;
   transform: none;
+  }
 }

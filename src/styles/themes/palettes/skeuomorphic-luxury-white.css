@@ -1,4 +1,5 @@
-:root[data-mpx-palette="skeuomorphic-luxury-white"] {
+@layer palette {
+  :root[data-mpx-palette="skeuomorphic-luxury-white"] {
   color-scheme: light;
 
   --mpx-palette-surface: #fbf7f1;
@@ -305,4 +306,5 @@
     -1px -1px 2px rgba(255, 255, 255, 0.76);
   --mpx-sidebar-tree-scrollbar-thumb-active-shadow: inset 1px 1px 2px
     rgba(186, 182, 174, 0.78);
+  }
 }
