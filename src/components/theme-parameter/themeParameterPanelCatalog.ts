@@ -1,9 +1,10 @@
 import type {
   ButtonStateKey,
   ContainerDebugSubsection,
-  ContainerFrameSectionDefinition,
+  LargePanelInternalSectionId,
   MainImageNameListDebugSection,
   SidebarMainDebugSection,
+  SmallPanelSectionId,
   ThemeControlSectionId,
   ThemeDebugColorField,
   ThemeDebugTextField,
@@ -2309,5 +2310,1433 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
       "inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)",
     groupId: "box",
     sectionId: "control-slider-settings",
+  },
+];
+
+export const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-fill-start",
+    cssVar: "--mpx-large-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "root",
+  },
+  {
+    id: "large-panel-fill-end",
+    cssVar: "--mpx-large-panel-fill-end",
+    fallback: "#ffffff",
+    groupId: "root",
+  },
+  {
+    id: "large-panel-border-color",
+    cssVar: "--mpx-large-panel-border-color",
+    fallback: "#d6cfc1",
+    groupId: "root",
+  },
+];
+
+export const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-section-fill-start",
+    cssVar: "--mpx-large-panel-section-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "root",
+  },
+  {
+    id: "large-panel-section-fill-end",
+    cssVar: "--mpx-large-panel-section-fill-end",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "root",
+  },
+  {
+    id: "large-panel-head-fill-start",
+    cssVar: "--mpx-large-panel-head-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "head",
+  },
+  {
+    id: "large-panel-section-border-color",
+    cssVar: "--mpx-large-panel-section-border-color",
+    fallback: "#d6cfc1",
+    groupId: "root",
+  },
+];
+
+const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-head-fill-start",
+    cssVar: "--mpx-large-panel-head-fill-start",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "head",
+  },
+  {
+    id: "large-panel-head-fill-end",
+    cssVar: "--mpx-large-panel-head-fill-end",
+    fallback: "#000000",
+    fallbackAlpha: 0,
+    groupId: "head",
+  },
+  {
+    id: "large-panel-head-border-color",
+    cssVar: "--mpx-large-panel-head-border-color",
+    fallback: "#d6cfc1",
+    groupId: "head",
+  },
+  {
+    id: "large-panel-head-text",
+    cssVar: "--mpx-large-panel-head-text",
+    fallback: "#2e2a22",
+    groupId: "head",
+  },
+];
+
+const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-side-fill-start",
+    cssVar: "--mpx-large-panel-side-fill-start",
+    fallback: "#ffffff",
+    groupId: "side",
+  },
+  {
+    id: "large-panel-side-fill-end",
+    cssVar: "--mpx-large-panel-side-fill-end",
+    fallback: "#ffffff",
+    groupId: "side",
+  },
+  {
+    id: "large-panel-side-border-color",
+    cssVar: "--mpx-large-panel-side-border-color",
+    fallback: "#d6cfc1",
+    groupId: "side",
+  },
+];
+
+const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-main-fill-start",
+    cssVar: "--mpx-large-panel-main-fill-start",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-main-fill-end",
+    cssVar: "--mpx-large-panel-main-fill-end",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-main-border-color",
+    cssVar: "--mpx-large-panel-main-border-color",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+];
+
+const LARGE_PANEL_INTERNAL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-import-task-error-border",
+    cssVar: "--mpx-import-task-error-border",
+    fallback: "#d7a596",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-error-bg",
+    cssVar: "--mpx-import-task-error-bg",
+    fallback: "#fdeee8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-error-text",
+    cssVar: "--mpx-import-task-error-text",
+    fallback: "#5f2a1e",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hint-border",
+    cssVar: "--mpx-import-task-hint-border",
+    fallback: "#c5d6de",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hint-bg",
+    cssVar: "--mpx-import-task-hint-bg",
+    fallback: "#edf6f9",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hint-text",
+    cssVar: "--mpx-import-task-hint-text",
+    fallback: "#173b47",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-review-notice-border",
+    cssVar: "--mpx-import-task-review-notice-border",
+    fallback: "#d8c69b",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-review-notice-bg",
+    cssVar: "--mpx-import-task-review-notice-bg",
+    fallback: "#fff7e7",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-review-notice-text",
+    cssVar: "--mpx-import-task-review-notice-text",
+    fallback: "#5a3b12",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hash-log-border",
+    cssVar: "--mpx-import-task-hash-log-border",
+    fallback: "#c5d6de",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hash-log-bg",
+    cssVar: "--mpx-import-task-hash-log-bg",
+    fallback: "#edf6f9",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-import-task-hash-log-text",
+    cssVar: "--mpx-import-task-hash-log-text",
+    fallback: "#173b47",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-border",
+    cssVar: "--mpx-metadata-fetch-control-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-bg",
+    cssVar: "--mpx-metadata-fetch-control-bg",
+    fallback: "#f5f2ec",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-hover-bg",
+    cssVar: "--mpx-metadata-fetch-control-hover-bg",
+    fallback: "#f7f3ee",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-focus-bg",
+    cssVar: "--mpx-metadata-fetch-control-focus-bg",
+    fallback: "#efe9df",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-text",
+    cssVar: "--mpx-metadata-fetch-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-control-placeholder",
+    cssVar: "--mpx-metadata-fetch-control-placeholder",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-border",
+    cssVar: "--mpx-metadata-fetch-results-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-bg",
+    cssVar: "--mpx-metadata-fetch-results-bg",
+    fallback: "#fffcf8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-results-active-ring",
+    cssVar: "--mpx-metadata-fetch-results-active-ring",
+    fallback: "#4d8fa0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-border",
+    cssVar: "--mpx-metadata-fetch-head-border",
+    fallback: "#d9d3c8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-bg",
+    cssVar: "--mpx-metadata-fetch-head-bg",
+    fallback: "#f1ebe3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-text",
+    cssVar: "--mpx-metadata-fetch-head-text",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-body-bg",
+    cssVar: "--mpx-metadata-fetch-body-bg",
+    fallback: "#f5f2ec",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-result-meta-text",
+    cssVar: "--mpx-metadata-fetch-result-meta-text",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-result-hover-text",
+    cssVar: "--mpx-metadata-fetch-result-hover-text",
+    fallback: "#2f5f6d",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-divider",
+    cssVar: "--mpx-metadata-fetch-preview-divider",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-bg",
+    cssVar: "--mpx-metadata-fetch-preview-bg",
+    fallback: "#f5f2ec",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-border",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-border",
+    fallback: "#d9d3c8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-bg",
+    fallback: "#f1ebe3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-text",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-text",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-hover-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-active-bg",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-preview-toggle-focus-outline",
+    cssVar: "--mpx-metadata-fetch-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-border",
+    cssVar: "--mpx-metadata-preference-record-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-bg",
+    cssVar: "--mpx-metadata-preference-record-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-text",
+    cssVar: "--mpx-metadata-preference-record-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-summary-text",
+    cssVar: "--mpx-metadata-preference-record-summary-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-hint-text",
+    cssVar: "--mpx-metadata-preference-record-hint-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-border",
+    cssVar: "--mpx-metadata-preference-record-field-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-bg",
+    cssVar: "--mpx-metadata-preference-record-field-bg",
+    fallback: "#f8f5ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-preference-record-field-text",
+    cssVar: "--mpx-metadata-preference-record-field-text",
+    fallback: "#6b6356",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-border",
+    cssVar: "--mpx-metadata-booklet-binding-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-bg",
+    cssVar: "--mpx-metadata-booklet-binding-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-text",
+    cssVar: "--mpx-metadata-booklet-binding-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-meta-text",
+    cssVar: "--mpx-metadata-booklet-binding-meta-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-border",
+    cssVar: "--mpx-metadata-booklet-binding-control-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-bg",
+    cssVar: "--mpx-metadata-booklet-binding-control-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-booklet-binding-control-text",
+    cssVar: "--mpx-metadata-booklet-binding-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-hint-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-hint-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-group-key-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-group-key-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-popover-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-popover-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-border",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-border",
+    fallback: "#2e6f7f",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-bg",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-bg",
+    fallback: "#dcecf0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-feature-tag-picker-tag-active-text",
+    cssVar: "--mpx-metadata-feature-tag-picker-tag-active-text",
+    fallback: "#2e6f7f",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-border",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-border",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-bg",
+    fallback: "#f5f2ec",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-text",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-border",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-border",
+    fallback: "#d9d3c8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-bg",
+    fallback: "#f1ebe3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-text",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-text",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-hover-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-active-bg",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-raw-preview-toggle-focus-outline",
+    cssVar: "--mpx-subtitle-cleanup-raw-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-border",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-border",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-bg",
+    fallback: "#f5f2ec",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-text",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-border",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-border",
+    fallback: "#d9d3c8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-bg",
+    fallback: "#f1ebe3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-text",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-text",
+    fallback: "#6f6a61",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-hover-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-hover-bg",
+    fallback: "#e7dfd2",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-active-bg",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-active-bg",
+    fallback: "#ddd7cc",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-subtitle-cleanup-clean-preview-toggle-focus-outline",
+    cssVar: "--mpx-subtitle-cleanup-clean-preview-toggle-focus-outline",
+    fallback: "#4d8fa0",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-border",
+    cssVar: "--mpx-transcode-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-bg",
+    cssVar: "--mpx-transcode-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-hover-bg",
+    cssVar: "--mpx-transcode-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-focus-bg",
+    cssVar: "--mpx-transcode-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-text",
+    cssVar: "--mpx-transcode-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-control-placeholder",
+    cssVar: "--mpx-transcode-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-border",
+    cssVar: "--mpx-transcode-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-bg",
+    cssVar: "--mpx-transcode-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-transcode-dialog-action-btn-text",
+    cssVar: "--mpx-transcode-dialog-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-border",
+    cssVar: "--mpx-sidebar-rename-preview-border",
+    fallback: "#c7d0d8",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-bg",
+    cssVar: "--mpx-sidebar-rename-preview-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-border",
+    cssVar: "--mpx-sidebar-rename-preview-head-border",
+    fallback: "#bcc7d1",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-bg",
+    cssVar: "--mpx-sidebar-rename-preview-head-bg",
+    fallback: "#d1d5db",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-head-text",
+    cssVar: "--mpx-sidebar-rename-preview-head-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-list-bg",
+    cssVar: "--mpx-sidebar-rename-preview-list-bg",
+    fallback: "#ecf0f3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-border",
+    cssVar: "--mpx-sidebar-rename-preview-row-border",
+    fallback: "#cfd7df",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-arrow-text",
+    cssVar: "--mpx-sidebar-rename-preview-arrow-text",
+    fallback: "rgba(106, 99, 88, 0.7)",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-hover-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-active-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-active-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-source-pressed-bg",
+    cssVar: "--mpx-sidebar-rename-preview-row-source-pressed-bg",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-changed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-changed-accent",
+    fallback: "#9fb1c3",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-accent",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-accent",
+    fallback: "#c7928a",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-failed-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-failed-text",
+    fallback: "#5f2a1e",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-sidebar-rename-preview-row-unchanged-text",
+    cssVar: "--mpx-sidebar-rename-preview-row-unchanged-text",
+    fallback: "#6a6358",
+    groupId: "main",
+  },
+];
+
+export const LARGE_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  ...LARGE_PANEL_ROOT_COLOR_FIELDS,
+  ...LARGE_PANEL_SHARED_COLOR_FIELDS,
+  ...LARGE_PANEL_HEAD_COLOR_FIELDS,
+  ...LARGE_PANEL_SIDE_COLOR_FIELDS,
+  ...LARGE_PANEL_MAIN_COLOR_FIELDS,
+  ...LARGE_PANEL_INTERNAL_COLOR_FIELDS,
+];
+
+export const LARGE_PANEL_ROOT_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "large-panel-shadow",
+    cssVar: "--mpx-large-panel-shadow",
+    fallback:
+      "0 14px 38px rgba(30, 27, 21, 0.18), 0 2px 8px rgba(30, 27, 21, 0.08)",
+    groupId: "root",
+  },
+];
+
+const LARGE_PANEL_INTERNAL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "large-panel-metadata-fetch-control-font-size",
+    cssVar: "--mpx-metadata-fetch-control-font-size",
+    fallback: "15px",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-font-size",
+    cssVar: "--mpx-metadata-fetch-head-font-size",
+    fallback: "15px",
+    groupId: "main",
+  },
+  {
+    id: "large-panel-metadata-fetch-head-font-family",
+    cssVar: "--mpx-metadata-fetch-head-font-family",
+    fallback: '"Microsoft YaHei", "微软雅黑", sans-serif',
+    groupId: "main",
+  },
+];
+
+export const LARGE_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  ...LARGE_PANEL_ROOT_TEXT_FIELDS,
+  ...LARGE_PANEL_INTERNAL_TEXT_FIELDS,
+];
+
+const filterDebugFieldsByPrefixes = <
+  T extends ThemeDebugColorField | ThemeDebugTextField,
+>(
+  fields: readonly T[],
+  prefixes: readonly string[],
+) => {
+  return fields.filter((field) =>
+    prefixes.some((prefix) => field.cssVar.startsWith(prefix)),
+  );
+};
+
+interface LargePanelInternalSectionDefinition {
+  id: LargePanelInternalSectionId;
+  summaryKey: string;
+  prefixes: readonly string[];
+  colorFields: readonly ThemeDebugColorField[];
+  textFields: readonly ThemeDebugTextField[];
+}
+
+const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
+  {
+    id: "importTask",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionInternalImportTask",
+    prefixes: ["--mpx-import-task-"],
+  },
+  {
+    id: "metadataFetch",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch",
+    prefixes: ["--mpx-metadata-fetch-"],
+  },
+  {
+    id: "metadataPreferenceRecord",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord",
+    prefixes: ["--mpx-metadata-preference-record-"],
+  },
+  {
+    id: "metadataBookletBinding",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding",
+    prefixes: ["--mpx-metadata-booklet-binding-"],
+  },
+  {
+    id: "metadataFeatureTagPicker",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker",
+    prefixes: ["--mpx-metadata-feature-tag-picker-"],
+  },
+  {
+    id: "subtitleCleanup",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup",
+    prefixes: [
+      "--mpx-subtitle-cleanup-raw-preview-",
+      "--mpx-subtitle-cleanup-clean-preview-",
+    ],
+  },
+  {
+    id: "transcodeDialog",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalTranscodeDialog",
+    prefixes: ["--mpx-transcode-dialog-"],
+  },
+  {
+    id: "sidebarRenamePreview",
+    summaryKey:
+      "ui.themeParameter.largePanelLayer.sectionInternalSidebarRenamePreview",
+    prefixes: ["--mpx-sidebar-rename-preview-"],
+  },
+ ] as const satisfies readonly {
+  id: LargePanelInternalSectionId;
+  summaryKey: string;
+  prefixes: readonly string[];
+}[];
+
+export const LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS: readonly LargePanelInternalSectionDefinition[] =
+  LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS.map((section) => ({
+  ...section,
+  colorFields: filterDebugFieldsByPrefixes(
+    LARGE_PANEL_INTERNAL_COLOR_FIELDS,
+    section.prefixes,
+  ),
+  textFields: filterDebugFieldsByPrefixes(
+    LARGE_PANEL_INTERNAL_TEXT_FIELDS,
+    section.prefixes,
+  ),
+}));
+
+export const LARGE_PANEL_SECTION_DEFINITIONS = [
+  {
+    id: "head",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionHead",
+    colorFields: LARGE_PANEL_HEAD_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-head-fill-angle"],
+    parameterIds: [
+      "large-panel-head-border-width",
+      "large-panel-head-padding-y",
+      "large-panel-head-padding-x",
+    ],
+  },
+  {
+    id: "side",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionSide",
+    colorFields: LARGE_PANEL_SIDE_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-side-fill-angle"],
+    parameterIds: [
+      "large-panel-side-border-width",
+      "large-panel-side-radius",
+      "large-panel-side-padding",
+      "large-panel-side-gap",
+    ],
+  },
+  {
+    id: "main",
+    summaryKey: "ui.themeParameter.largePanelLayer.sectionMain",
+    colorFields: LARGE_PANEL_MAIN_COLOR_FIELDS,
+    inlineParameterIds: ["large-panel-main-fill-angle"],
+    parameterIds: [
+      "large-panel-main-border-width",
+      "large-panel-main-radius",
+      "large-panel-main-padding-y",
+      "large-panel-main-padding-x",
+    ],
+  },
+] as const;
+
+export const SMALL_PANEL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "small-panel-border-color",
+    cssVar: "--mpx-dialog-panel-border-color",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-bg",
+    cssVar: "--mpx-dialog-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-border",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-bg",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-text",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-group-name-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-group-name-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-convert-panel-border",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-convert-panel-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-main-border",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-ad-review-start-main-bg",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-main-text",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-border",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-bg",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-text",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-playlist-name-slot-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-border",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-bg",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-text",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-playlist-name-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-border",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-bg",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-text",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-metadata-playlist-name-dialog-input-placeholder",
+    cssVar: "--mpx-metadata-playlist-name-dialog-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-border",
+    fallback: "#d6cfc1",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-muted-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-muted-text",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-border",
+    fallback: "#c7d0d8",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-bg",
+    fallback: "#ecf0f3",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-input-placeholder",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-input-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-border",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-bg",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-rename-single-slot-action-btn-text",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-text",
+    cssVar: "--mpx-sidebar-rename-dialog-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-muted-text",
+    cssVar: "--mpx-sidebar-rename-dialog-muted-text",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-border",
+    cssVar: "--mpx-sidebar-rename-dialog-control-border",
+    fallback: "#c7d0d8",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-bg",
+    fallback: "#ecf0f3",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-hover-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-hover-bg",
+    fallback: "#e3e9ef",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-focus-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-control-focus-bg",
+    fallback: "#dbe3eb",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-text",
+    cssVar: "--mpx-sidebar-rename-dialog-control-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-control-placeholder",
+    cssVar: "--mpx-sidebar-rename-dialog-control-placeholder",
+    fallback: "#6a6358",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-border",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-border",
+    fallback: "#b7ab95",
+    groupId: "border",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-bg",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-bg",
+    fallback: "#ffffff",
+    groupId: "box",
+  },
+  {
+    id: "small-panel-sidebar-rename-dialog-action-btn-text",
+    cssVar: "--mpx-sidebar-rename-dialog-action-btn-text",
+    fallback: "#2e2a22",
+    groupId: "box",
+  },
+];
+
+export const SMALL_PANEL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "small-panel-shadow",
+    cssVar: "--mpx-dialog-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-shortcut-edit-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-shortcut-capture-panel-shadow",
+    cssVar: "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-group-name-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-group-name-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-delete-confirm-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-convert-panel-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-convert-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-main-shadow",
+    cssVar: "--mpx-slot-fg-main-header-image-ad-review-start-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-ad-review-start-metadata-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-playlist-name-slot-shadow",
+    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+  {
+    id: "small-panel-rename-single-slot-shadow",
+    cssVar: "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-shadow",
+    fallback:
+      "0 18px 40px color-mix(in srgb, var(--mpx-palette-text-raw) 18%, transparent)",
+    groupId: "shadow",
+  },
+];
+
+export const SMALL_PANEL_ROOT_COLOR_FIELDS = SMALL_PANEL_COLOR_FIELDS.filter(
+  (field) => field.cssVar === "--mpx-dialog-panel-border-color" || field.cssVar === "--mpx-dialog-panel-bg",
+);
+
+export const SMALL_PANEL_ROOT_TEXT_FIELDS = SMALL_PANEL_TEXT_FIELDS.filter(
+  (field) => field.cssVar === "--mpx-dialog-panel-shadow",
+);
+
+interface SmallPanelSectionGroupDefinition {
+  title: string | null;
+  colorFields: readonly ThemeDebugColorField[];
+  textFields: readonly ThemeDebugTextField[];
+}
+
+interface SmallPanelSectionDefinition {
+  id: SmallPanelSectionId;
+  summaryKey: string;
+  groups: readonly SmallPanelSectionGroupDefinition[];
+}
+
+const createSmallPanelSectionGroup = (
+  title: string | null,
+  prefixes: readonly string[],
+): SmallPanelSectionGroupDefinition => ({
+  title,
+  colorFields: filterDebugFieldsByPrefixes(SMALL_PANEL_COLOR_FIELDS, prefixes),
+  textFields: filterDebugFieldsByPrefixes(SMALL_PANEL_TEXT_FIELDS, prefixes),
+});
+
+export const SMALL_PANEL_SECTION_DEFINITIONS: readonly SmallPanelSectionDefinition[] = [
+  {
+    id: "shortcutEdit",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionShortcutEdit",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "shortcutCapture",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionShortcutCapture",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "groupName",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionGroupName",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-manage-group-name-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "deleteConfirm",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionDeleteConfirm",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-manage-delete-confirm-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "adReviewStart",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionAdReviewStart",
+    groups: [
+      createSmallPanelSectionGroup("Main Toolbar", [
+        "--mpx-slot-fg-main-header-image-ad-review-start-panel-",
+      ]),
+      createSmallPanelSectionGroup("Metadata", [
+        "--mpx-slot-fg-meta-main-ad-review-start-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "convert",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionConvert",
+    groups: [
+      createSmallPanelSectionGroup(null, [
+        "--mpx-slot-fg-main-header-image-convert-panel-",
+      ]),
+    ],
+  },
+  {
+    id: "playlistNameDialog",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionPlaylistNameDialog",
+    groups: [
+      createSmallPanelSectionGroup("Panel Slot Override", [
+        "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-",
+      ]),
+      createSmallPanelSectionGroup("Shared Internals", [
+        "--mpx-metadata-playlist-name-dialog-",
+      ]),
+    ],
+  },
+  {
+    id: "renameSingle",
+    summaryKey: "ui.themeParameter.smallPanelLayer.sectionRenameSingle",
+    groups: [
+      createSmallPanelSectionGroup("Panel Slot Override", [
+        "--mpx-slot-fg-sidebar-shortcut-rename-single-panel-",
+      ]),
+      createSmallPanelSectionGroup("Shared Internals", [
+        "--mpx-sidebar-rename-dialog-",
+      ]),
+    ],
   },
 ];
