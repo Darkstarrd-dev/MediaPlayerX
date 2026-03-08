@@ -65,7 +65,11 @@
     -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)
       var(--mpx-pane-focus-metal-specular),
     1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)
-      color-mix(in srgb, var(--mpx-pane-focus-metal-topline) 92%, #fff 8%),
+      color-mix(
+        in srgb,
+        var(--mpx-pane-focus-metal-topline) 92%,
+        var(--mpx-bg-elevated) 8%
+      ),
     -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px)
       var(--mpx-pane-focus-metal-highlight),
     1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px)
@@ -73,7 +77,11 @@
     1px 2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px)
       var(--mpx-pane-focus-metal-shadow),
     -1px -2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px)
-      color-mix(in srgb, var(--mpx-pane-focus-metal-highlight) 84%, #fff 16%),
+      color-mix(
+        in srgb,
+        var(--mpx-pane-focus-metal-highlight) 84%,
+        var(--mpx-bg-elevated) 16%
+      ),
     0 0 0 calc(var(--mpx-pane-focus-ring-offset) + 4px)
       var(--mpx-pane-focus-metal-rim-shadow),
     0 0 12px 2px var(--mpx-pane-focus-metal-glow),
@@ -130,18 +138,19 @@
     --mpx-slot-fg-main-header-button-text,
     var(--mpx-btn-variant-default-text-idle)
   );
-  --mpx-btn-variant-default-border: var(--mpx-main-header-button-border-effective);
+  --mpx-btn-variant-default-border: var(
+    --mpx-main-header-button-border-effective
+  );
   --mpx-btn-variant-default-bg-idle: var(--mpx-main-header-button-bg-effective);
-  --mpx-btn-variant-default-text-idle: var(--mpx-main-header-button-text-effective);
+  --mpx-btn-variant-default-text-idle: var(
+    --mpx-main-header-button-text-effective
+  );
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: var(--mpx-pane-recessed-padding-px, 10px);
   height: auto;
-  min-height: var(
-    --mpx-pane-header-height-px,
-    var(--mpx-icon-button-size)
-  );
+  min-height: var(--mpx-pane-header-height-px, var(--mpx-icon-button-size));
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -227,13 +236,13 @@
     inset -6px -6px 14px
       color-mix(
         in srgb,
-        var(--mpx-skeuo-shadow-light, #ffffff) 72%,
+        var(--mpx-skeuo-shadow-light, var(--mpx-bg-elevated)) 72%,
         transparent
       ),
     inset 0 1px 0
       color-mix(
         in srgb,
-        var(--mpx-skeuo-shadow-light, #ffffff) 65%,
+        var(--mpx-skeuo-shadow-light, var(--mpx-bg-elevated)) 65%,
         transparent
       );
   padding: var(--mpx-pane-inner-padding-px, 8px);
@@ -457,11 +466,15 @@
 .main-footer {
   --mpx-panel-footer-height: var(
     --mpx-pane-footer-height-px,
-    calc(var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2)
+    calc(
+      var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2
+    )
   );
   --mpx-panel-footer-min-height: var(
     --mpx-pane-footer-height-px,
-    calc(var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2)
+    calc(
+      var(--mpx-icon-button-size) + var(--mpx-pane-recessed-padding-px, 0px) * 2
+    )
   );
   --mpx-panel-footer-padding-top: 0px;
   --mpx-panel-footer-padding-inline: 0;
@@ -538,9 +551,9 @@
   min-width: 0;
   min-height: 0;
   flex: 1;
-  border: 1px solid #c7d0d8;
+  border: 1px solid var(--mpx-main-image-name-list-border);
   border-radius: var(--mpx-radius-main-card, 16px);
-  background: #ecf0f3;
+  background: var(--mpx-main-image-name-list-bg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -549,11 +562,11 @@
 [data-slot="fg-main-content-image-name-list"] {
   border-color: var(
     --mpx-slot-fg-main-content-image-name-list-border,
-    var(--mpx-main-image-name-list-border, #c7d0d8)
+    var(--mpx-main-image-name-list-border)
   );
   background: var(
     --mpx-slot-fg-main-content-image-name-list-bg,
-    var(--mpx-main-image-name-list-bg, #ecf0f3)
+    var(--mpx-main-image-name-list-bg)
   );
   color: var(
     --mpx-slot-fg-main-content-image-name-list-text,

@@ -33,6 +33,76 @@ styles/<name>.css     → :root[data-mpx-style="x"]    → 布局效果 + 效果
 
 **style 后于 palette 加载**，因此 style 可通过 `color-mix()` 读取 palette 导出的原始色，派生出半透明、渐变等效果感知色（如毛玻璃面板背景）。
 
+### 1.2.1 `@layer` 级联架构（2026-03）
+
+Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
+
+```css
+@layer contract, palette, theme-style, app-base, app-layout, app-component, app-state;
+```
+
+各层职责：
+
+1. `contract`：`src/styles/themes/contract.css`，提供全部 token 默认值与语义 fallback。
+2. `palette`：`src/styles/themes/palettes/*.css`，只负责颜色覆写。
+3. `theme-style`：`src/styles/themes/styles/*.css`，负责风格层几何、阴影、渐变、模糊与效果派生。
+4. `app-base`：`base.css`，负责浏览器标准化、滚动条、基础控件统一样式。
+5. `app-layout`：`layout.css / sidebar.css / main.css / metadata.css`，负责四大容器与主布局结构。
+6. `app-component`：`settings.css / manage.css / vector.css / subtitles.css`，负责业务组件与面板内部件。
+7. `app-state`：`responsive.css / button-template.css`，负责状态机、响应式与最终态裁决。
+
+迁移目的：
+
+- 消除 import 顺序隐式竞争。
+- 用层优先级替代 `!important`。
+- 让 Theme / App / State 的职责边界稳定可读。
+
+强约束：
+
+- 新增 token 默认值必须定义在 `contract` 层。
+- Palette 只能覆写颜色；Style 只能覆写布局/效果与基于 palette 的派生值。
+- 状态覆盖优先通过 `app-state` 层处理，不允许恢复 `!important`。
+
+### 1.2.2 三级派生模型（2026-03）
+
+Theme token 统一按三层派生组织：
+
+```text
+Level 0 (L0)
+  全局壳层 / 基础语义
+
+Level 1 (L1)
+  面板级语义
+
+Level 2 (L2)
+  内部件级语义
+```
+
+示例：
+
+```text
+--mpx-large-panel-main-bg
+  -> --mpx-settings-main-bg
+  -> --mpx-settings-item-input-bg
+```
+
+当前已完成的主链路：
+
+1. Settings：`--mpx-settings-*`
+2. Metadata：`--mpx-metadata-*`
+3. Main：`--mpx-main-image-name-list-*`、`--mpx-music-vis-*`、`--mpx-music-ctrl-*`、`--mpx-video-screen-bg`、`--mpx-ad-review-overlay-*`、`--mpx-rating-heart-*`
+
+断开继承原则：任意层级都允许在 palette/style 中直接覆写，但命名必须保持层级语义，不能把 L2 再当新的全局基础层。
+
+### 1.2.3 `!important` 清零方法论（2026-03）
+
+项目 CSS 已完成 `!important = 0` 收口，替代策略固定为：
+
+1. 先通过 `@layer` 解决跨层覆盖顺序。
+2. 同层竞争优先调整选择器特异性，必要时用 `:where()` 降低低优先级规则权重。
+3. 业务局部状态优先回写 slot / semantic token，不直接硬压最终属性值。
+4. `button-template.css` 作为 `app-state` 最终裁决层，不允许下层文件再用 `!important` 反向抢占。
+
 ### 1.3 纯 CSS 驱动
 
 - 新增 style/palette 只需在对应目录下新增 CSS 文件，无需改 JS。
@@ -127,6 +197,21 @@ src/styles/themes/
 src/features/theme/
   themeRegistry.ts                # 预设发现、ID 解析、列表导出
 ```
+
+### 2.1 当前 CSS 入口加载顺序（2026-03）
+
+```text
+main.tsx
+  -> src/index.css
+     -> src/styles/themes/index.css
+        -> contract / palette / theme-style
+
+App.tsx
+  -> src/App.css
+     -> app-base / app-layout / app-component / app-state
+```
+
+排查样式命中时，优先看 layer，其次看 selector 特异性，最后才看源文件顺序。
 
 ### 开发最小素材
 

@@ -2,1445 +2,1567 @@
 
 @layer contract {
   :root {
-  /* Foundations */
-  --mpx-font-ui:
-    "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --mpx-font-mono: "Consolas", "Monaco", "Courier New", monospace;
+    /* Foundations */
+    --mpx-font-ui:
+      "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+      sans-serif;
+    --mpx-font-mono: "Consolas", "Monaco", "Courier New", monospace;
 
-  --mpx-radius-sm: 4px;
-  --mpx-radius-md: 8px;
-  --mpx-radius-lg: 10px;
-  --mpx-radius-xl: 14px;
-  --mpx-radius-pill: 9999px;
+    --mpx-radius-sm: 4px;
+    --mpx-radius-md: 8px;
+    --mpx-radius-lg: 10px;
+    --mpx-radius-xl: 14px;
+    --mpx-radius-pill: 9999px;
 
-  --mpx-panel-head-height: var(--mpx-panel-head-height-px, 54px);
-  --mpx-control-radius: 8px;
-  --mpx-control-border-width: 1px;
-  --mpx-control-height: 34px;
-  --mpx-control-padding-x: 9px;
-  --mpx-control-font-weight: 600;
+    --mpx-panel-head-height: var(--mpx-panel-head-height-px, 54px);
+    --mpx-control-radius: 8px;
+    --mpx-control-border-width: 1px;
+    --mpx-control-height: 34px;
+    --mpx-control-padding-x: 9px;
+    --mpx-control-font-weight: 600;
 
-  --mpx-icon-button-size: var(--mpx-icon-button-size-px, 34px);
-  --mpx-icon-size: 17px;
-  --mpx-header-btn-icon-display: none;
-  --mpx-header-btn-label-display: inline;
-  --mpx-header-btn-gap: 6px;
-  --mpx-header-btn-size: var(
-    --mpx-header-btn-size-px,
-    var(--mpx-control-height)
-  );
-  --mpx-header-btn-radius: var(--mpx-control-radius);
-  --mpx-header-btn-padding-x: calc(var(--mpx-control-padding-x) + 4px);
-  --mpx-header-icon-size: var(--mpx-icon-size);
-  --mpx-header-btn-shadow: none;
-  --mpx-header-btn-hover-shadow: none;
-  --mpx-header-btn-active-shadow: none;
-  --mpx-header-btn-active-border: var(--mpx-accent);
-  --mpx-header-status-btn-min-width: max(80px, var(--mpx-header-btn-size));
-  --mpx-header-group-gap: 20px;
-  --mpx-header-item-gap: 8px;
-  --mpx-header-group-modes-width: 280px;
-  --mpx-header-group-search-width: 190px;
-  --mpx-header-music-actions-reserve: calc(
-    var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px
-  );
-  --mpx-header-modes-wrap-width: calc(
-    var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 24px
-  );
+    --mpx-icon-button-size: var(--mpx-icon-button-size-px, 34px);
+    --mpx-icon-size: 17px;
+    --mpx-header-btn-icon-display: none;
+    --mpx-header-btn-label-display: inline;
+    --mpx-header-btn-gap: 6px;
+    --mpx-header-btn-size: var(
+      --mpx-header-btn-size-px,
+      var(--mpx-control-height)
+    );
+    --mpx-header-btn-radius: var(--mpx-control-radius);
+    --mpx-header-btn-padding-x: calc(var(--mpx-control-padding-x) + 4px);
+    --mpx-header-icon-size: var(--mpx-icon-size);
+    --mpx-header-btn-shadow: none;
+    --mpx-header-btn-hover-shadow: none;
+    --mpx-header-btn-active-shadow: none;
+    --mpx-header-btn-active-border: var(--mpx-accent);
+    --mpx-header-status-btn-min-width: max(80px, var(--mpx-header-btn-size));
+    --mpx-header-group-gap: 20px;
+    --mpx-header-item-gap: 8px;
+    --mpx-header-group-modes-width: 280px;
+    --mpx-header-group-search-width: 190px;
+    --mpx-header-music-actions-reserve: calc(
+      var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px
+    );
+    --mpx-header-modes-wrap-width: calc(
+      var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 24px
+    );
 
-  --mpx-scrollbar-size: 10px;
-  --mpx-scrollbar-radius: 999px;
-  --mpx-scrollbar-track-bg: #ece5d9;
-  --mpx-scrollbar-thumb-bg: #b7ab95;
-  --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
-  --mpx-scrollbar-thumb-active-bg: var(--mpx-scrollbar-thumb-hover-bg);
+    --mpx-scrollbar-size: 10px;
+    --mpx-scrollbar-radius: 999px;
+    --mpx-scrollbar-track-bg: #ece5d9;
+    --mpx-scrollbar-thumb-bg: #b7ab95;
+    --mpx-scrollbar-thumb-hover-bg: #2e6f7f;
+    --mpx-scrollbar-thumb-active-bg: var(--mpx-scrollbar-thumb-hover-bg);
 
-  --mpx-sidebar-tree-scrollbar-size: var(--mpx-scrollbar-size);
-  --mpx-sidebar-tree-scrollbar-radius: var(--mpx-scrollbar-radius);
-  --mpx-sidebar-tree-scrollbar-track-radius: var(
-    --mpx-sidebar-tree-scrollbar-radius
-  );
-  --mpx-sidebar-tree-scrollbar-thumb-radius: var(
-    --mpx-sidebar-tree-scrollbar-radius
-  );
-  --mpx-sidebar-tree-scrollbar-color-thumb: var(--mpx-scrollbar-thumb-bg);
-  --mpx-sidebar-tree-scrollbar-color-track: var(--mpx-scrollbar-track-bg);
-  --mpx-sidebar-tree-scrollbar-track-bg: var(--mpx-scrollbar-track-bg);
-  --mpx-sidebar-tree-scrollbar-track-border: none;
-  --mpx-sidebar-tree-scrollbar-track-shadow: none;
-  --mpx-sidebar-tree-scrollbar-end-gap: 0px;
-  --mpx-sidebar-tree-scrollbar-thumb-min-height: 24px;
-  --mpx-sidebar-tree-scrollbar-thumb-border-width: 0px;
-  --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
-  --mpx-sidebar-tree-scrollbar-thumb-bg: var(--mpx-scrollbar-thumb-bg);
-  --mpx-sidebar-tree-scrollbar-thumb-hover-bg: var(
-    --mpx-scrollbar-thumb-hover-bg
-  );
-  --mpx-sidebar-tree-scrollbar-thumb-active-bg: var(
-    --mpx-scrollbar-thumb-active-bg,
-    var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg)
-  );
-  --mpx-sidebar-tree-scrollbar-thumb-shadow: none;
-  --mpx-sidebar-tree-scrollbar-thumb-active-shadow: var(
-    --mpx-sidebar-tree-scrollbar-thumb-shadow
-  );
+    --mpx-sidebar-tree-scrollbar-size: var(--mpx-scrollbar-size);
+    --mpx-sidebar-tree-scrollbar-radius: var(--mpx-scrollbar-radius);
+    --mpx-sidebar-tree-scrollbar-track-radius: var(
+      --mpx-sidebar-tree-scrollbar-radius
+    );
+    --mpx-sidebar-tree-scrollbar-thumb-radius: var(
+      --mpx-sidebar-tree-scrollbar-radius
+    );
+    --mpx-sidebar-tree-scrollbar-color-thumb: var(--mpx-scrollbar-thumb-bg);
+    --mpx-sidebar-tree-scrollbar-color-track: var(--mpx-scrollbar-track-bg);
+    --mpx-sidebar-tree-scrollbar-track-bg: var(--mpx-scrollbar-track-bg);
+    --mpx-sidebar-tree-scrollbar-track-border: none;
+    --mpx-sidebar-tree-scrollbar-track-shadow: none;
+    --mpx-sidebar-tree-scrollbar-end-gap: 0px;
+    --mpx-sidebar-tree-scrollbar-thumb-min-height: 24px;
+    --mpx-sidebar-tree-scrollbar-thumb-border-width: 0px;
+    --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
+    --mpx-sidebar-tree-scrollbar-thumb-bg: var(--mpx-scrollbar-thumb-bg);
+    --mpx-sidebar-tree-scrollbar-thumb-hover-bg: var(
+      --mpx-scrollbar-thumb-hover-bg
+    );
+    --mpx-sidebar-tree-scrollbar-thumb-active-bg: var(
+      --mpx-scrollbar-thumb-active-bg,
+      var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg)
+    );
+    --mpx-sidebar-tree-scrollbar-thumb-shadow: none;
+    --mpx-sidebar-tree-scrollbar-thumb-active-shadow: var(
+      --mpx-sidebar-tree-scrollbar-thumb-shadow
+    );
 
-  --mpx-range-track-height: 6px;
-  --mpx-range-track-bg: #d6cfc1;
-  --mpx-range-thumb-size: 16px;
-  --mpx-range-thumb-bg: #2e6f7f;
-  --mpx-range-thumb-border: #ffffff;
-  --mpx-range-thumb-border-width: 1.5px;
-  --mpx-range-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
-  --mpx-range-thumb-hover-shadow:
-    0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 28%, transparent),
-    0 2px 4px rgba(0, 0, 0, 0.28);
-  --mpx-range-thumb-active-shadow:
-    0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 36%, transparent),
-    0 1px 2px rgba(0, 0, 0, 0.24);
-  --mpx-range-thumb-focus-ring: 0 0 0 2px
-    color-mix(in srgb, var(--mpx-border-focus) 45%, transparent);
-  --mpx-range-thumb-hover-scale: 1.06;
-  --mpx-range-thumb-active-scale: 1.12;
+    --mpx-range-track-height: 6px;
+    --mpx-range-track-bg: #d6cfc1;
+    --mpx-range-thumb-size: 16px;
+    --mpx-range-thumb-bg: #2e6f7f;
+    --mpx-range-thumb-border: #ffffff;
+    --mpx-range-thumb-border-width: 1.5px;
+    --mpx-range-thumb-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    --mpx-range-thumb-hover-shadow:
+      0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 28%, transparent),
+      0 2px 4px rgba(0, 0, 0, 0.28);
+    --mpx-range-thumb-active-shadow:
+      0 0 0 2px color-mix(in srgb, var(--mpx-range-thumb-bg) 36%, transparent),
+      0 1px 2px rgba(0, 0, 0, 0.24);
+    --mpx-range-thumb-focus-ring: 0 0 0 2px
+      color-mix(in srgb, var(--mpx-border-focus) 45%, transparent);
+    --mpx-range-thumb-hover-scale: 1.06;
+    --mpx-range-thumb-active-scale: 1.12;
 
-  --mpx-slider-settings-groove-bg: #e9ecf0;
-  --mpx-slider-settings-groove-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.12),
-    inset 0 1px 1px rgba(0, 0, 0, 0.12),
-    0 1px 0 rgba(255, 255, 255, 1);
+    --mpx-slider-settings-groove-bg: color-mix(
+      in srgb,
+      var(--mpx-overlay-soft-bg) 72%,
+      var(--mpx-bg-elevated)
+    );
+    --mpx-slider-settings-groove-shadow:
+      inset 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(0, 0, 0, 0.12),
+      0 1px 0 rgba(255, 255, 255, 1);
 
-  --mpx-checkbox-size: 16px;
-  --mpx-checkbox-radius: 4px;
-  --mpx-checkbox-bg: var(--mpx-input-bg);
-  --mpx-checkbox-border: var(--mpx-input-border);
-  --mpx-checkbox-check: var(--mpx-accent-contrast);
-  --mpx-checkbox-checked-bg: var(--mpx-accent);
-  --mpx-checkbox-checked-border: var(--mpx-accent);
+    --mpx-checkbox-size: 16px;
+    --mpx-checkbox-radius: 4px;
+    --mpx-checkbox-bg: var(--mpx-input-bg);
+    --mpx-checkbox-border: var(--mpx-input-border);
+    --mpx-checkbox-check: var(--mpx-accent-contrast);
+    --mpx-checkbox-checked-bg: var(--mpx-accent);
+    --mpx-checkbox-checked-border: var(--mpx-accent);
 
-  --mpx-state-focus-color: #f2d796;
-  --mpx-state-selected-color: #8a919a;
+    --mpx-state-focus-color: #f2d796;
+    --mpx-state-selected-color: #8a919a;
 
-  /* Default Semantic (Parchment-like base) */
-  --mpx-bg-app-fill: #f2eee7;
-  --mpx-bg-app-base: #f2eee7;
-  --mpx-bg-workspace: #f3f0ea;
-  --mpx-bg-panel: #fbf8f3;
-  --mpx-bg-elevated: #ffffff;
-  --mpx-bg-hover: rgba(46, 111, 127, 0.06);
-  --mpx-bg-selected: #e6f1f4;
-  --mpx-bg-muted: #f9f6ef;
-  --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
+    /* Default Semantic (Parchment-like base) */
+    --mpx-bg-app-fill: #f2eee7;
+    --mpx-bg-app-base: #f2eee7;
+    --mpx-bg-workspace: #f3f0ea;
+    --mpx-bg-panel: #fbf8f3;
+    --mpx-bg-elevated: #ffffff;
+    --mpx-bg-hover: rgba(46, 111, 127, 0.06);
+    --mpx-bg-selected: #e6f1f4;
+    --mpx-bg-muted: #f9f6ef;
+    --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
 
-  --mpx-text-1: #2e2a22;
-  --mpx-text-2: #6a6358;
-  --mpx-text-3: #9f937f;
-  --mpx-text-heading: #1a1814;
-  --mpx-text-inverse: #ffffff;
+    --mpx-text-1: #2e2a22;
+    --mpx-text-2: #6a6358;
+    --mpx-text-3: #9f937f;
+    --mpx-text-heading: #1a1814;
+    --mpx-text-inverse: #ffffff;
 
-  --mpx-border-1: #d6cfc1;
-  --mpx-border-2: #b7ab95;
-  --mpx-border-focus: #2e6f7f;
+    --mpx-border-1: #d6cfc1;
+    --mpx-border-2: #b7ab95;
+    --mpx-border-focus: #2e6f7f;
 
-  --mpx-accent: #2e6f7f;
-  --mpx-accent-contrast: #ffffff;
-  --mpx-accent-soft: #dcecf0;
+    --mpx-accent: #2e6f7f;
+    --mpx-accent-contrast: #ffffff;
+    --mpx-accent-soft: #dcecf0;
 
-  --mpx-input-bg: #ffffff;
-  --mpx-input-border: #d6cfc1;
-  --mpx-input-text: #2e2a22;
-  --mpx-input-focus-bg: #ffffff;
-  --mpx-input-focus-border: #2e6f7f;
-  --mpx-input-readonly-bg: #f8f5ef;
-  --mpx-input-readonly-text: #6b6356;
-  --mpx-input-readonly-border: #d6cfc1;
+    --mpx-input-bg: #ffffff;
+    --mpx-input-border: #d6cfc1;
+    --mpx-input-text: #2e2a22;
+    --mpx-input-focus-bg: #ffffff;
+    --mpx-input-focus-border: #2e6f7f;
+    --mpx-input-readonly-bg: #f8f5ef;
+    --mpx-input-readonly-text: #6b6356;
+    --mpx-input-readonly-border: #d6cfc1;
 
-  --mpx-btn-primary-bg: #2e6f7f;
-  --mpx-btn-primary-text: #ffffff;
-  --mpx-btn-secondary-bg: #ffffff;
-  --mpx-btn-secondary-border: #b7ab95;
-  --mpx-btn-secondary-text: #2e2a22;
-  --mpx-btn-core-border: #cbd5e1;
-  --mpx-btn-core-bg-idle: #ecf0f3;
-  --mpx-btn-core-bg-hover: #f8fafc;
-  --mpx-btn-core-bg-active: #dce2e8;
-  --mpx-btn-core-bg-pressed: #d6dee5;
-  --mpx-btn-core-text-idle: #4a4a4a;
-  --mpx-btn-core-text-active: #334155;
-  --mpx-btn-core-text-pressed: #555555;
-  --mpx-btn-core-text-merged: #0f172a;
-  --mpx-btn-core-text-disabled: rgba(213, 223, 236, 0.62);
-  --mpx-btn-core-shadow-idle:
-    0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9),
-    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-  --mpx-btn-core-shadow-hover:
-    0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
-    inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-  --mpx-btn-core-shadow-active:
-    0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
-  --mpx-btn-core-shadow-pressed:
-    0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25),
-    inset 0 -2px 2px rgba(255, 255, 255, 0.7);
-  --mpx-btn-core-transform-hover: translateY(-1px);
-  --mpx-btn-core-transform-active: translateY(2px);
-  --mpx-btn-core-transform-pressed: translateY(1px);
-  --mpx-btn-core-danger-hover-bg: #fee2e2;
-  --mpx-btn-core-danger-hover-border: #fca5a5;
-  --mpx-btn-core-danger-hover-text: #dc2626;
-  --mpx-btn-core-danger-hover-shadow:
-    0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
-    inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+    --mpx-btn-primary-bg: #2e6f7f;
+    --mpx-btn-primary-text: #ffffff;
+    --mpx-btn-secondary-bg: #ffffff;
+    --mpx-btn-secondary-border: #b7ab95;
+    --mpx-btn-secondary-text: #2e2a22;
+    --mpx-btn-core-border: #cbd5e1;
+    --mpx-btn-core-bg-idle: #ecf0f3;
+    --mpx-btn-core-bg-hover: #f8fafc;
+    --mpx-btn-core-bg-active: #dce2e8;
+    --mpx-btn-core-bg-pressed: #d6dee5;
+    --mpx-btn-core-text-idle: #4a4a4a;
+    --mpx-btn-core-text-active: #334155;
+    --mpx-btn-core-text-pressed: #555555;
+    --mpx-btn-core-text-merged: #0f172a;
+    --mpx-btn-core-text-disabled: rgba(213, 223, 236, 0.62);
+    --mpx-btn-core-shadow-idle:
+      0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9),
+      inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+    --mpx-btn-core-shadow-hover:
+      0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
+      inset 0 -2px 1px rgba(0, 0, 0, 0.08);
+    --mpx-btn-core-shadow-active:
+      0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+    --mpx-btn-core-shadow-pressed:
+      0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25),
+      inset 0 -2px 2px rgba(255, 255, 255, 0.7);
+    --mpx-btn-core-transform-hover: translateY(-1px);
+    --mpx-btn-core-transform-active: translateY(2px);
+    --mpx-btn-core-transform-pressed: translateY(1px);
+    --mpx-btn-core-danger-hover-bg: #fee2e2;
+    --mpx-btn-core-danger-hover-border: #fca5a5;
+    --mpx-btn-core-danger-hover-text: #dc2626;
+    --mpx-btn-core-danger-hover-shadow:
+      0 6px 10px rgba(220, 38, 38, 0.15),
+      inset 0 2px 1px rgba(255, 255, 255, 1),
+      inset 0 -2px 1px rgba(220, 38, 38, 0.15);
 
-  --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
-  --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);
-  --mpx-btn-variant-default-bg-hover: var(--mpx-btn-core-bg-hover);
-  --mpx-btn-variant-default-bg-active: var(--mpx-btn-core-bg-active);
-  --mpx-btn-variant-default-bg-pressed: var(--mpx-btn-core-bg-pressed);
-  --mpx-btn-variant-default-text-idle: var(--mpx-btn-core-text-idle);
-  --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
-  --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
-  --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
-  --mpx-btn-variant-default-text-disabled: var(--mpx-btn-core-text-disabled);
-  --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
-  --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
-  --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);
-  --mpx-btn-variant-default-shadow-pressed: var(--mpx-btn-core-shadow-pressed);
-  --mpx-btn-variant-default-transform-hover: var(
-    --mpx-btn-core-transform-hover
-  );
-  --mpx-btn-variant-default-transform-active: var(
-    --mpx-btn-core-transform-active
-  );
-  --mpx-btn-variant-default-transform-pressed: var(
-    --mpx-btn-core-transform-pressed
-  );
-  --mpx-btn-variant-default-danger-hover-bg: var(
-    --mpx-btn-core-danger-hover-bg
-  );
-  --mpx-btn-variant-default-danger-hover-border: var(
-    --mpx-btn-core-danger-hover-border
-  );
-  --mpx-btn-variant-default-danger-hover-text: var(
-    --mpx-btn-core-danger-hover-text
-  );
-  --mpx-btn-variant-default-danger-hover-shadow: var(
-    --mpx-btn-core-danger-hover-shadow
-  );
+    --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
+    --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);
+    --mpx-btn-variant-default-bg-hover: var(--mpx-btn-core-bg-hover);
+    --mpx-btn-variant-default-bg-active: var(--mpx-btn-core-bg-active);
+    --mpx-btn-variant-default-bg-pressed: var(--mpx-btn-core-bg-pressed);
+    --mpx-btn-variant-default-text-idle: var(--mpx-btn-core-text-idle);
+    --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
+    --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
+    --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
+    --mpx-btn-variant-default-text-disabled: var(--mpx-btn-core-text-disabled);
+    --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
+    --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
+    --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);
+    --mpx-btn-variant-default-shadow-pressed: var(
+      --mpx-btn-core-shadow-pressed
+    );
+    --mpx-btn-variant-default-transform-hover: var(
+      --mpx-btn-core-transform-hover
+    );
+    --mpx-btn-variant-default-transform-active: var(
+      --mpx-btn-core-transform-active
+    );
+    --mpx-btn-variant-default-transform-pressed: var(
+      --mpx-btn-core-transform-pressed
+    );
+    --mpx-btn-variant-default-danger-hover-bg: var(
+      --mpx-btn-core-danger-hover-bg
+    );
+    --mpx-btn-variant-default-danger-hover-border: var(
+      --mpx-btn-core-danger-hover-border
+    );
+    --mpx-btn-variant-default-danger-hover-text: var(
+      --mpx-btn-core-danger-hover-text
+    );
+    --mpx-btn-variant-default-danger-hover-shadow: var(
+      --mpx-btn-core-danger-hover-shadow
+    );
 
-  --mpx-btn-variant-player-border: rgba(117, 136, 162, 0.8);
-  --mpx-btn-variant-player-border-active: rgba(140, 165, 196, 0.92);
-  --mpx-btn-variant-player-bg-idle: rgba(30, 40, 52, 0.74);
-  --mpx-btn-variant-player-bg-hover: rgba(42, 56, 74, 0.9);
-  --mpx-btn-variant-player-bg-active: rgba(64, 86, 112, 0.95);
-  --mpx-btn-variant-player-text-idle: #f1f6ff;
-  --mpx-btn-variant-player-text-disabled: rgba(213, 223, 236, 0.62);
+    --mpx-btn-variant-player-border: rgba(117, 136, 162, 0.8);
+    --mpx-btn-variant-player-border-active: rgba(140, 165, 196, 0.92);
+    --mpx-btn-variant-player-bg-idle: rgba(30, 40, 52, 0.74);
+    --mpx-btn-variant-player-bg-hover: rgba(42, 56, 74, 0.9);
+    --mpx-btn-variant-player-bg-active: rgba(64, 86, 112, 0.95);
+    --mpx-btn-variant-player-text-idle: #f1f6ff;
+    --mpx-btn-variant-player-text-disabled: rgba(213, 223, 236, 0.62);
 
-  --mpx-btn-variant-overlay-cell-text-hover: color-mix(
-    in srgb,
-    var(--mpx-accent) 72%,
-    var(--mpx-text-1)
-  );
-  --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
-  --mpx-btn-variant-overlay-cell-text-active: inherit;
-  --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-overlay-soft-focus-bg);
-  --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
-  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
-  --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-overlay-soft-focus-bg);
-  --mpx-btn-variant-overlay-cell-focus-outline-width: 1px;
-  --mpx-btn-variant-overlay-cell-focus-outline-color: color-mix(
-    in srgb,
-    var(--mpx-accent) 52%,
-    var(--mpx-border-2)
-  );
+    --mpx-btn-variant-overlay-cell-text-hover: color-mix(
+      in srgb,
+      var(--mpx-accent) 72%,
+      var(--mpx-text-1)
+    );
+    --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
+    --mpx-btn-variant-overlay-cell-text-active: inherit;
+    --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-overlay-soft-focus-bg);
+    --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
+    --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
+    --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-overlay-soft-focus-bg);
+    --mpx-btn-variant-overlay-cell-focus-outline-width: 1px;
+    --mpx-btn-variant-overlay-cell-focus-outline-color: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      var(--mpx-border-2)
+    );
 
-  --mpx-btn-group-groove-bg: var(
-    --mpx-slot-fg-header-g2-mode-image-bg,
-    var(--mpx-btn-variant-default-bg-idle)
-  );
-  --mpx-btn-group-groove-border: var(
-    --mpx-slot-fg-header-g2-mode-image-border,
-    var(--mpx-btn-variant-default-border)
-  );
-  --mpx-btn-group-groove-radius: 10px;
-  --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
+    --mpx-btn-group-groove-bg: var(
+      --mpx-slot-fg-header-g2-mode-image-bg,
+      var(--mpx-btn-variant-default-bg-idle)
+    );
+    --mpx-btn-group-groove-border: var(
+      --mpx-slot-fg-header-g2-mode-image-border,
+      var(--mpx-btn-variant-default-border)
+    );
+    --mpx-btn-group-groove-radius: 10px;
+    --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
 
-  --mpx-status-danger-bg: #fdeee8;
-  --mpx-status-danger-border: #d7a596;
-  --mpx-status-danger-text: #5f2a1e;
+    --mpx-status-danger-bg: #fdeee8;
+    --mpx-status-danger-border: #d7a596;
+    --mpx-status-danger-text: #5f2a1e;
 
-  --mpx-status-warning-bg: #fff7e7;
-  --mpx-status-warning-border: #d8c69b;
-  --mpx-status-warning-text: #5a3b12;
+    --mpx-status-warning-bg: #fff7e7;
+    --mpx-status-warning-border: #d8c69b;
+    --mpx-status-warning-text: #5a3b12;
 
-  --mpx-status-info-bg: #edf6f9;
-  --mpx-status-info-border: #c5d6de;
-  --mpx-status-info-text: #173b47;
+    --mpx-status-info-bg: #edf6f9;
+    --mpx-status-info-border: #c5d6de;
+    --mpx-status-info-text: #173b47;
 
-  --mpx-status-success-bg: #ebf7ee;
-  --mpx-status-success-border: #97d4a9;
-  --mpx-status-success-text: #1e4620;
+    --mpx-status-success-bg: #ebf7ee;
+    --mpx-status-success-border: #97d4a9;
+    --mpx-status-success-text: #1e4620;
 
-  --mpx-status-busy-bg: #fff7e8;
-  --mpx-status-busy-border: #d79d2e;
-  --mpx-status-busy-text: #7d4e12;
+    --mpx-status-busy-bg: #fff7e8;
+    --mpx-status-busy-border: #d79d2e;
+    --mpx-status-busy-text: #7d4e12;
 
-  --mpx-status-idle-bg: #f5f9fa;
-  --mpx-status-idle-border: #9cb3bb;
-  --mpx-status-idle-text: #35525c;
+    --mpx-status-idle-bg: #f5f9fa;
+    --mpx-status-idle-border: #9cb3bb;
+    --mpx-status-idle-text: #35525c;
 
-  --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
-  --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --mpx-overlay-surface-border: var(--mpx-border-1);
-  --mpx-overlay-surface-bg: var(--mpx-bg-elevated);
-  --mpx-overlay-surface-shadow: var(--mpx-shadow-popover);
-  --mpx-overlay-soft-border: #c7d0d8;
-  --mpx-overlay-soft-bg: #ecf0f3;
-  --mpx-overlay-soft-hover-bg: #e3e9ef;
-  --mpx-overlay-soft-focus-bg: #dbe3eb;
-  --mpx-overlay-soft-head-bg: #d1d5db;
-  --mpx-overlay-soft-head-divider: #bcc7d1;
-  --mpx-overlay-soft-row-divider: #cfd7df;
-  --mpx-tooltip-radius: var(--mpx-radius-md);
-  --mpx-tooltip-padding-x: 10px;
-  --mpx-tooltip-padding-y: 6px;
-  --mpx-tooltip-font-size: 12px;
-  --mpx-tooltip-max-width: 320px;
-  --mpx-tooltip-offset: 10px;
-  --mpx-tooltip-viewport-padding: 8px;
-  --mpx-tooltip-shadow: var(--mpx-shadow-popover);
-  --mpx-help-overlay-mask-opacity: 18%;
-  --mpx-help-overlay-hint-top: 12px;
-  --mpx-help-overlay-top-reserved: 48px;
-  --mpx-help-overlay-tag-max-width: 240px;
-  --mpx-help-overlay-tag-gap: 8px;
+    --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
+    --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+    --mpx-overlay-surface-border: var(--mpx-border-1);
+    --mpx-overlay-surface-bg: var(--mpx-bg-elevated);
+    --mpx-overlay-surface-shadow: var(--mpx-shadow-popover);
+    --mpx-overlay-soft-border: #c7d0d8;
+    --mpx-overlay-soft-bg: #ecf0f3;
+    --mpx-overlay-soft-hover-bg: #e3e9ef;
+    --mpx-overlay-soft-focus-bg: #dbe3eb;
+    --mpx-overlay-soft-head-bg: #d1d5db;
+    --mpx-overlay-soft-head-divider: #bcc7d1;
+    --mpx-overlay-soft-row-divider: #cfd7df;
+    --mpx-tooltip-radius: var(--mpx-radius-md);
+    --mpx-tooltip-padding-x: 10px;
+    --mpx-tooltip-padding-y: 6px;
+    --mpx-tooltip-font-size: 12px;
+    --mpx-tooltip-max-width: 320px;
+    --mpx-tooltip-offset: 10px;
+    --mpx-tooltip-viewport-padding: 8px;
+    --mpx-tooltip-shadow: var(--mpx-shadow-popover);
+    --mpx-help-overlay-mask-opacity: 18%;
+    --mpx-help-overlay-hint-top: 12px;
+    --mpx-help-overlay-top-reserved: 48px;
+    --mpx-help-overlay-tag-max-width: 240px;
+    --mpx-help-overlay-tag-gap: 8px;
 
-  /* Component Aliases (Default mappings) */
-  --mpx-container-frame-fill-start: var(--mpx-bg-panel);
-  --mpx-container-frame-fill-end: var(--mpx-bg-panel);
-  --mpx-container-frame-fill-angle: 180deg;
-  --mpx-container-frame-fill: linear-gradient(
-    var(--mpx-container-frame-fill-angle),
-    var(--mpx-container-frame-fill-start) 0%,
-    var(--mpx-container-frame-fill-end) 100%
-  );
-  --mpx-container-frame-base-color: color-mix(
-    in srgb,
-    var(--mpx-container-frame-fill-start) 56%,
-    var(--mpx-container-frame-fill-end)
-  );
-  --mpx-container-frame-edge-color: var(--mpx-border-2);
-  --mpx-container-frame-border-color: var(--mpx-border-1);
-  --mpx-container-frame-shadow: var(--mpx-panel-shadow);
-  --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
-  --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
-  --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
-  --mpx-header-bg: linear-gradient(
-    var(--mpx-header-fill-angle),
-    var(--mpx-header-fill-start) 0%,
-    var(--mpx-header-fill-end) 100%
-  );
-  --mpx-header-border: var(--mpx-border-1);
-  --mpx-sidebar-bullet-pending: #94a3ad;
-  --mpx-sidebar-bullet-running: #2fb36e;
-  --mpx-splitter-track-bg: linear-gradient(
-    180deg,
-    rgba(181, 171, 149, 0.16),
-    rgba(181, 171, 149, 0.02)
-  );
-  --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
-  --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
-  --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
+    /* Component Aliases (Default mappings) */
+    --mpx-container-frame-fill-start: var(--mpx-bg-panel);
+    --mpx-container-frame-fill-end: var(--mpx-bg-panel);
+    --mpx-container-frame-fill-angle: 180deg;
+    --mpx-container-frame-fill: linear-gradient(
+      var(--mpx-container-frame-fill-angle),
+      var(--mpx-container-frame-fill-start) 0%,
+      var(--mpx-container-frame-fill-end) 100%
+    );
+    --mpx-container-frame-base-color: color-mix(
+      in srgb,
+      var(--mpx-container-frame-fill-start) 56%,
+      var(--mpx-container-frame-fill-end)
+    );
+    --mpx-container-frame-edge-color: var(--mpx-border-2);
+    --mpx-container-frame-border-color: var(--mpx-border-1);
+    --mpx-container-frame-shadow: var(--mpx-panel-shadow);
+    --mpx-header-fill-start: var(--mpx-container-frame-fill-start);
+    --mpx-header-fill-end: var(--mpx-container-frame-fill-end);
+    --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
+    --mpx-header-bg: linear-gradient(
+      var(--mpx-header-fill-angle),
+      var(--mpx-header-fill-start) 0%,
+      var(--mpx-header-fill-end) 100%
+    );
+    --mpx-header-border: var(--mpx-border-1);
+    --mpx-sidebar-bullet-pending: #94a3ad;
+    --mpx-sidebar-bullet-running: #2fb36e;
+    --mpx-splitter-track-bg: linear-gradient(
+      180deg,
+      rgba(181, 171, 149, 0.16),
+      rgba(181, 171, 149, 0.02)
+    );
+    --mpx-splitter-handle-bg: rgba(183, 171, 149, 0.72);
+    --mpx-splitter-handle-hover-bg: rgba(46, 111, 127, 0.9);
+    --mpx-card-focus-ring: rgba(47, 111, 127, 0.18);
 
-  /* Sidebar Main (fg-sidebar-main): semantic -> slot -> selector */
-  --mpx-sidebar-main-bg: var(--mpx-sidebar-main-tree-bg, var(--mpx-bg-elevated));
-  --mpx-sidebar-main-label-text: var(--mpx-text-1);
-  --mpx-sidebar-main-label-border: var(--mpx-border-2);
-  --mpx-sidebar-main-label-plain-border: var(--mpx-sidebar-main-label-border);
-  --mpx-sidebar-main-label-active-bg: var(--mpx-state-focus-color);
-  --mpx-sidebar-main-label-collapsed-active-bg: var(
-    --mpx-sidebar-main-label-active-bg
-  );
-  --mpx-sidebar-main-label-expanded-active-bg: var(
-    --mpx-sidebar-main-label-active-bg
-  );
-  --mpx-sidebar-main-label-plain-active-bg: var(
-    --mpx-sidebar-main-label-active-bg
-  );
-  --mpx-sidebar-main-active-ring: var(--mpx-state-focus-color);
-  --mpx-sidebar-main-active-underlay: var(
-    --mpx-container-frame-base-color,
-    var(--mpx-bg-panel)
-  );
-  --mpx-sidebar-main-label-marker-focus-bg: var(--mpx-state-focus-color);
-  --mpx-sidebar-main-label-collapsed-marker-focus-bg: var(
-    --mpx-sidebar-main-label-marker-focus-bg
-  );
-  --mpx-sidebar-main-label-expanded-marker-focus-bg: var(
-    --mpx-sidebar-main-label-marker-focus-bg
-  );
-  --mpx-sidebar-main-label-plain-marker-focus-bg: var(
-    --mpx-sidebar-main-label-marker-focus-bg
-  );
-  --mpx-sidebar-main-label-marker-selected-bg: var(--mpx-state-selected-color);
-  --mpx-sidebar-main-label-collapsed-marker-selected-bg: var(
-    --mpx-sidebar-main-label-marker-selected-bg
-  );
-  --mpx-sidebar-main-label-expanded-marker-selected-bg: var(
-    --mpx-sidebar-main-label-marker-selected-bg
-  );
-  --mpx-sidebar-main-label-plain-marker-selected-bg: var(
-    --mpx-sidebar-main-label-marker-selected-bg
-  );
-  --mpx-sidebar-main-label-manage-selected-bg: var(--mpx-state-selected-color);
-  --mpx-sidebar-main-label-collapsed-manage-selected-bg: var(
-    --mpx-sidebar-main-label-manage-selected-bg
-  );
-  --mpx-sidebar-main-label-expanded-manage-selected-bg: var(
-    --mpx-sidebar-main-label-manage-selected-bg
-  );
-  --mpx-sidebar-main-label-plain-manage-selected-bg: var(
-    --mpx-sidebar-main-label-manage-selected-bg
-  );
-  --mpx-sidebar-main-label-toggle-text: var(--mpx-text-2);
-  --mpx-sidebar-main-count-text: var(--mpx-text-1);
-  --mpx-sidebar-main-count-border: var(--mpx-border-2);
-  --mpx-sidebar-main-count-bg: transparent;
-  --mpx-sidebar-main-count-shadow: var(--mpx-runway-groove-shadow);
-  --mpx-sidebar-main-count-packages-text: var(
-    --mpx-sidebar-main-count-text,
-    var(--mpx-status-info-text)
-  );
-  --mpx-sidebar-main-count-packages-border: var(--mpx-status-info-border);
-  --mpx-sidebar-main-count-packages-bg: var(--mpx-sidebar-main-count-bg);
-  --mpx-sidebar-main-count-packages-shadow: var(--mpx-sidebar-main-count-shadow);
-  --mpx-sidebar-main-count-images-text: var(
-    --mpx-sidebar-main-count-text,
-    var(--mpx-status-success-text)
-  );
-  --mpx-sidebar-main-count-images-border: var(--mpx-status-success-border);
-  --mpx-sidebar-main-count-images-bg: var(--mpx-sidebar-main-count-bg);
-  --mpx-sidebar-main-bullet-pending-bg: var(--mpx-sidebar-bullet-pending);
-  --mpx-sidebar-main-bullet-running-bg: var(--mpx-sidebar-bullet-running);
-  --mpx-sidebar-main-bullet-running-ring: var(--mpx-accent-soft);
-  --mpx-sidebar-main-bullet-active-bg: var(--mpx-state-focus-color);
-  --mpx-sidebar-main-label-bg: var(--mpx-bg-elevated);
-  --mpx-sidebar-main-label-shadow: var(--mpx-card-shadow);
-  --mpx-sidebar-main-label-hover-filter: brightness(0.98);
-  --mpx-sidebar-main-label-collapsed-bg: var(--mpx-bg-muted);
-  --mpx-sidebar-main-label-expanded-bg: var(--mpx-bg-panel);
-  --mpx-sidebar-main-label-plain-bg: var(--mpx-bg-panel);
-  --mpx-sidebar-main-label-active-shadow: var(
-    --mpx-sidebar-control-active-shadow,
-    var(--mpx-control-active-shadow)
-  );
-  --mpx-sidebar-main-label-active-hover-shadow: var(
-    --mpx-sidebar-control-active-shadow,
-    var(--mpx-control-active-shadow)
-  );
-  --mpx-sidebar-main-label-manage-selected-shadow: var(
-    --mpx-sidebar-control-active-shadow,
-    var(--mpx-control-active-shadow)
-  );
+    /* Sidebar Main (fg-sidebar-main): semantic -> slot -> selector */
+    --mpx-sidebar-main-bg: var(
+      --mpx-sidebar-main-tree-bg,
+      var(--mpx-bg-elevated)
+    );
+    --mpx-sidebar-main-label-text: var(--mpx-text-1);
+    --mpx-sidebar-main-label-border: var(--mpx-border-2);
+    --mpx-sidebar-main-label-plain-border: var(--mpx-sidebar-main-label-border);
+    --mpx-sidebar-main-label-active-bg: var(--mpx-state-focus-color);
+    --mpx-sidebar-main-label-collapsed-active-bg: var(
+      --mpx-sidebar-main-label-active-bg
+    );
+    --mpx-sidebar-main-label-expanded-active-bg: var(
+      --mpx-sidebar-main-label-active-bg
+    );
+    --mpx-sidebar-main-label-plain-active-bg: var(
+      --mpx-sidebar-main-label-active-bg
+    );
+    --mpx-sidebar-main-active-ring: var(--mpx-state-focus-color);
+    --mpx-sidebar-main-active-underlay: var(
+      --mpx-container-frame-base-color,
+      var(--mpx-bg-panel)
+    );
+    --mpx-sidebar-main-label-marker-focus-bg: var(--mpx-state-focus-color);
+    --mpx-sidebar-main-label-collapsed-marker-focus-bg: var(
+      --mpx-sidebar-main-label-marker-focus-bg
+    );
+    --mpx-sidebar-main-label-expanded-marker-focus-bg: var(
+      --mpx-sidebar-main-label-marker-focus-bg
+    );
+    --mpx-sidebar-main-label-plain-marker-focus-bg: var(
+      --mpx-sidebar-main-label-marker-focus-bg
+    );
+    --mpx-sidebar-main-label-marker-selected-bg: var(
+      --mpx-state-selected-color
+    );
+    --mpx-sidebar-main-label-collapsed-marker-selected-bg: var(
+      --mpx-sidebar-main-label-marker-selected-bg
+    );
+    --mpx-sidebar-main-label-expanded-marker-selected-bg: var(
+      --mpx-sidebar-main-label-marker-selected-bg
+    );
+    --mpx-sidebar-main-label-plain-marker-selected-bg: var(
+      --mpx-sidebar-main-label-marker-selected-bg
+    );
+    --mpx-sidebar-main-label-manage-selected-bg: var(
+      --mpx-state-selected-color
+    );
+    --mpx-sidebar-main-label-collapsed-manage-selected-bg: var(
+      --mpx-sidebar-main-label-manage-selected-bg
+    );
+    --mpx-sidebar-main-label-expanded-manage-selected-bg: var(
+      --mpx-sidebar-main-label-manage-selected-bg
+    );
+    --mpx-sidebar-main-label-plain-manage-selected-bg: var(
+      --mpx-sidebar-main-label-manage-selected-bg
+    );
+    --mpx-sidebar-main-label-toggle-text: var(--mpx-text-2);
+    --mpx-sidebar-main-count-text: var(--mpx-text-1);
+    --mpx-sidebar-main-count-border: var(--mpx-border-2);
+    --mpx-sidebar-main-count-bg: transparent;
+    --mpx-sidebar-main-count-shadow: var(--mpx-runway-groove-shadow);
+    --mpx-sidebar-main-count-packages-text: var(
+      --mpx-sidebar-main-count-text,
+      var(--mpx-status-info-text)
+    );
+    --mpx-sidebar-main-count-packages-border: var(--mpx-status-info-border);
+    --mpx-sidebar-main-count-packages-bg: var(--mpx-sidebar-main-count-bg);
+    --mpx-sidebar-main-count-packages-shadow: var(
+      --mpx-sidebar-main-count-shadow
+    );
+    --mpx-sidebar-main-count-images-text: var(
+      --mpx-sidebar-main-count-text,
+      var(--mpx-status-success-text)
+    );
+    --mpx-sidebar-main-count-images-border: var(--mpx-status-success-border);
+    --mpx-sidebar-main-count-images-bg: var(--mpx-sidebar-main-count-bg);
+    --mpx-sidebar-main-bullet-pending-bg: var(--mpx-sidebar-bullet-pending);
+    --mpx-sidebar-main-bullet-running-bg: var(--mpx-sidebar-bullet-running);
+    --mpx-sidebar-main-bullet-running-ring: var(--mpx-accent-soft);
+    --mpx-sidebar-main-bullet-active-bg: var(--mpx-state-focus-color);
+    --mpx-sidebar-main-label-bg: var(--mpx-bg-elevated);
+    --mpx-sidebar-main-label-shadow: var(--mpx-card-shadow);
+    --mpx-sidebar-main-label-hover-filter: brightness(0.98);
+    --mpx-sidebar-main-label-collapsed-bg: var(--mpx-bg-muted);
+    --mpx-sidebar-main-label-expanded-bg: var(--mpx-bg-panel);
+    --mpx-sidebar-main-label-plain-bg: var(--mpx-bg-panel);
+    --mpx-sidebar-main-label-active-shadow: var(
+      --mpx-sidebar-control-active-shadow,
+      var(--mpx-control-active-shadow)
+    );
+    --mpx-sidebar-main-label-active-hover-shadow: var(
+      --mpx-sidebar-control-active-shadow,
+      var(--mpx-control-active-shadow)
+    );
+    --mpx-sidebar-main-label-manage-selected-shadow: var(
+      --mpx-sidebar-control-active-shadow,
+      var(--mpx-control-active-shadow)
+    );
 
-  /* Main image name-list (fg-main-content-image-name-list): semantic -> slot -> selector */
-  --mpx-main-image-name-list-border: var(--mpx-overlay-soft-border);
-  --mpx-main-image-name-list-bg: var(--mpx-overlay-soft-bg);
-  --mpx-main-image-name-list-text: var(--mpx-text-1);
-  --mpx-main-image-name-list-head-border: var(--mpx-overlay-soft-head-divider);
-  --mpx-main-image-name-list-head-bg: var(--mpx-overlay-soft-head-bg);
-  --mpx-main-image-name-list-head-text: var(--mpx-text-2);
-  --mpx-main-image-name-list-body-bg: var(--mpx-overlay-soft-bg);
-  --mpx-main-image-name-list-row-border: var(--mpx-overlay-soft-row-divider);
-  --mpx-main-image-name-list-row-bg: var(--mpx-overlay-soft-bg);
-  --mpx-main-image-name-list-row-text: var(--mpx-main-image-name-list-text);
-  --mpx-main-image-name-list-row-hover-bg: var(--mpx-overlay-soft-bg);
-  --mpx-main-image-name-list-row-focused-border-left: var(--mpx-state-focus-color);
-  --mpx-main-image-name-list-row-selected-border-left: var(
-    --mpx-state-selected-color
-  );
-  --mpx-main-image-name-list-row-selected-bg: var(--mpx-state-selected-color);
-  --mpx-main-image-name-list-row-main-text: var(--mpx-main-image-name-list-row-text);
-  --mpx-main-image-name-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-main-image-name-list-row-main-pressed-bg: var(
-    --mpx-overlay-soft-focus-bg
-  );
-  --mpx-main-image-name-list-row-main-hover-text: color-mix(
-    in srgb,
-    var(--mpx-accent) 72%,
-    var(--mpx-text-1)
-  );
-  --mpx-main-image-name-list-row-main-selected-text: var(--mpx-text-1);
-  --mpx-main-image-name-list-label-text: inherit;
+    /* Main image name-list (fg-main-content-image-name-list): semantic -> slot -> selector */
+    --mpx-main-image-name-list-border: var(--mpx-overlay-soft-border);
+    --mpx-main-image-name-list-bg: var(--mpx-overlay-soft-bg);
+    --mpx-main-image-name-list-text: var(--mpx-text-1);
+    --mpx-main-image-name-list-head-border: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-main-image-name-list-head-bg: var(--mpx-overlay-soft-head-bg);
+    --mpx-main-image-name-list-head-text: var(--mpx-text-2);
+    --mpx-main-image-name-list-body-bg: var(--mpx-overlay-soft-bg);
+    --mpx-main-image-name-list-row-border: var(--mpx-overlay-soft-row-divider);
+    --mpx-main-image-name-list-row-bg: var(--mpx-overlay-soft-bg);
+    --mpx-main-image-name-list-row-text: var(--mpx-main-image-name-list-text);
+    --mpx-main-image-name-list-row-hover-bg: var(--mpx-overlay-soft-bg);
+    --mpx-main-image-name-list-row-focused-border-left: var(
+      --mpx-state-focus-color
+    );
+    --mpx-main-image-name-list-row-selected-border-left: var(
+      --mpx-state-selected-color
+    );
+    --mpx-main-image-name-list-row-selected-bg: var(--mpx-state-selected-color);
+    --mpx-main-image-name-list-row-main-text: var(
+      --mpx-main-image-name-list-row-text
+    );
+    --mpx-main-image-name-list-row-main-hover-bg: var(
+      --mpx-overlay-soft-hover-bg
+    );
+    --mpx-main-image-name-list-row-main-pressed-bg: var(
+      --mpx-overlay-soft-focus-bg
+    );
+    --mpx-main-image-name-list-row-main-hover-text: color-mix(
+      in srgb,
+      var(--mpx-accent) 72%,
+      var(--mpx-text-1)
+    );
+    --mpx-main-image-name-list-row-main-selected-text: var(--mpx-text-1);
+    --mpx-main-image-name-list-label-text: inherit;
+    --mpx-music-vis-text: color-mix(
+      in srgb,
+      var(--mpx-player-hud-text) 92%,
+      var(--mpx-text-inverse)
+    );
+    --mpx-music-vis-hud-bg: color-mix(
+      in srgb,
+      var(--mpx-fullscreen-bg) 74%,
+      transparent
+    );
+    --mpx-music-vis-hud-text: var(--mpx-player-hud-text);
+    --mpx-music-vis-hud-border: color-mix(
+      in srgb,
+      var(--mpx-player-hud-border) 72%,
+      transparent
+    );
+    --mpx-music-vis-error-bg: color-mix(
+      in srgb,
+      var(--mpx-status-danger-bg) 22%,
+      var(--mpx-fullscreen-bg) 78%
+    );
+    --mpx-music-vis-error-border: color-mix(
+      in srgb,
+      var(--mpx-status-danger-border) 74%,
+      transparent
+    );
+    --mpx-music-ctrl-focus-color: var(--mpx-accent);
+    --mpx-music-ctrl-range-fill: color-mix(
+      in srgb,
+      var(--mpx-music-ctrl-focus-color) 68%,
+      var(--mpx-text-inverse) 32%
+    );
+    --mpx-music-ctrl-toggle-bg: color-mix(
+      in srgb,
+      var(--mpx-player-surface-bg) 86%,
+      var(--mpx-bg-elevated) 14%
+    );
 
-  /* Focus ring (pane-level): shared by sidebar + main.
+    /* Focus ring (pane-level): shared by sidebar + main.
    * If a palette wants to change it, override --mpx-pane-focus-* directly.
    */
-  --mpx-pane-focus-ring-width: 3px;
-  --mpx-pane-focus-ring-offset: 2px;
-  --mpx-pane-focus-day-gap: var(--mpx-bg-app-base);
-  --mpx-pane-focus-day-inner: color-mix(
-    in srgb,
-    var(--mpx-bg-panel) 76%,
-    #ffffff 24%
-  );
-  --mpx-pane-focus-day-mid: color-mix(
-    in srgb,
-    var(--mpx-status-info-border) 72%,
-    var(--mpx-accent) 28%
-  );
-  --mpx-pane-focus-day-outer: color-mix(
-    in srgb,
-    var(--mpx-status-info-text) 62%,
-    var(--mpx-status-info-border) 38%
-  );
-  --mpx-pane-focus-day-glow: color-mix(
-    in srgb,
-    var(--mpx-status-info-border) 40%,
-    transparent
-  );
-  --mpx-pane-focus-day-ambient: color-mix(
-    in srgb,
-    var(--mpx-status-info-text) 20%,
-    transparent
-  );
-  --mpx-pane-focus-metal-highlight: #f8edd1;
-  --mpx-pane-focus-metal-topline: #edd8a3;
-  --mpx-pane-focus-metal-mid: #c79a4d;
-  --mpx-pane-focus-metal-shadow: #7a5520;
-  --mpx-pane-focus-metal-specular: rgba(255, 248, 228, 0.92);
-  --mpx-pane-focus-metal-rim-shadow: rgba(110, 74, 24, 0.58);
-  --mpx-pane-focus-metal-glow: rgba(212, 164, 70, 0.34);
-  --mpx-pane-focus-metal-ambient: rgba(158, 110, 30, 0.2);
-  --mpx-fullscreen-bg: #060708;
-  --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
-  --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
-  --mpx-video-empty-bg: var(--mpx-video-screen-bg);
-  --mpx-video-empty-text: var(--mpx-text-inverse);
+    --mpx-pane-focus-ring-width: 3px;
+    --mpx-pane-focus-ring-offset: 2px;
+    --mpx-pane-focus-day-gap: var(--mpx-bg-app-base);
+    --mpx-pane-focus-day-inner: color-mix(
+      in srgb,
+      var(--mpx-bg-panel) 76%,
+      #ffffff 24%
+    );
+    --mpx-pane-focus-day-mid: color-mix(
+      in srgb,
+      var(--mpx-status-info-border) 72%,
+      var(--mpx-accent) 28%
+    );
+    --mpx-pane-focus-day-outer: color-mix(
+      in srgb,
+      var(--mpx-status-info-text) 62%,
+      var(--mpx-status-info-border) 38%
+    );
+    --mpx-pane-focus-day-glow: color-mix(
+      in srgb,
+      var(--mpx-status-info-border) 40%,
+      transparent
+    );
+    --mpx-pane-focus-day-ambient: color-mix(
+      in srgb,
+      var(--mpx-status-info-text) 20%,
+      transparent
+    );
+    --mpx-pane-focus-metal-highlight: #f8edd1;
+    --mpx-pane-focus-metal-topline: #edd8a3;
+    --mpx-pane-focus-metal-mid: #c79a4d;
+    --mpx-pane-focus-metal-shadow: #7a5520;
+    --mpx-pane-focus-metal-specular: rgba(255, 248, 228, 0.92);
+    --mpx-pane-focus-metal-rim-shadow: rgba(110, 74, 24, 0.58);
+    --mpx-pane-focus-metal-glow: rgba(212, 164, 70, 0.34);
+    --mpx-pane-focus-metal-ambient: rgba(158, 110, 30, 0.2);
+    --mpx-fullscreen-bg: #060708;
+    --mpx-fullscreen-footer-bg: rgba(10, 12, 14, 0.86);
+    --mpx-video-screen-bg: linear-gradient(135deg, #2d2f33, #212022);
+    --mpx-video-empty-bg: var(--mpx-video-screen-bg);
+    --mpx-video-empty-text: var(--mpx-text-inverse);
+    --mpx-ad-review-overlay-stage-bg: color-mix(
+      in srgb,
+      var(--mpx-bg-tooltip) 56%,
+      transparent
+    );
+    --mpx-ad-review-overlay-card-bg: rgba(255, 250, 243, 0.9);
+    --mpx-ad-review-overlay-card-border: rgba(170, 147, 120, 0.35);
+    --mpx-ad-review-overlay-card-shadow: 0 16px 36px rgba(72, 54, 33, 0.16);
+    --mpx-ad-review-overlay-text-main: #2c1d11;
+    --mpx-ad-review-overlay-text-sub: #6f5740;
+    --mpx-ad-review-overlay-text-hint: #73573d;
+    --mpx-ad-review-overlay-track-bg: rgba(171, 140, 108, 0.24);
+    --mpx-ad-review-overlay-track-start: #c9703a;
+    --mpx-ad-review-overlay-track-mid: #cc7e44;
+    --mpx-ad-review-overlay-track-end: #d4965f;
+    --mpx-ad-review-overlay-loading-duration: 1.4s;
+    --mpx-rating-heart-color: color-mix(
+      in srgb,
+      var(--mpx-status-danger-text) 72%,
+      var(--mpx-text-2)
+    );
+    --mpx-rating-heart-active-color: color-mix(
+      in srgb,
+      var(--mpx-status-danger-text) 88%,
+      var(--mpx-bg-tooltip)
+    );
 
-  /* Player controls (fixed dark translucent chrome) */
-  --mpx-player-surface-bg: rgba(8, 12, 16, 0.82);
-  --mpx-player-surface-border: rgba(103, 122, 148, 0.72);
-  --mpx-player-surface-text: #e7edf5;
-  --mpx-player-surface-text-muted: rgba(229, 238, 248, 0.9);
-  --mpx-player-hud-bg: rgba(10, 14, 20, 0.72);
-  --mpx-player-hud-border: rgba(129, 145, 163, 0.48);
-  --mpx-player-hud-text: #eef1f4;
-  --mpx-random-sheen-duration: 1.9s;
-  --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  --mpx-random-sheen-overlay: linear-gradient(
-    115deg,
-    transparent 45%,
-    rgba(255, 255, 255, 0.6) 48%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.6) 52%,
-    transparent 55%
-  );
-  --mpx-random-sheen-blend-mode: overlay;
-  --mpx-random-sheen-start-translate: -42%;
-  --mpx-random-sheen-end-translate: 42%;
-  --mpx-random-sheen-opacity-peak: 1;
+    /* Player controls (fixed dark translucent chrome) */
+    --mpx-player-surface-bg: rgba(8, 12, 16, 0.82);
+    --mpx-player-surface-border: rgba(103, 122, 148, 0.72);
+    --mpx-player-surface-text: #e7edf5;
+    --mpx-player-surface-text-muted: rgba(229, 238, 248, 0.9);
+    --mpx-player-hud-bg: rgba(10, 14, 20, 0.72);
+    --mpx-player-hud-border: rgba(129, 145, 163, 0.48);
+    --mpx-player-hud-text: #eef1f4;
+    --mpx-random-sheen-duration: 1.9s;
+    --mpx-random-sheen-easing: cubic-bezier(0.4, 0, 0.2, 1);
+    --mpx-random-sheen-overlay: linear-gradient(
+      115deg,
+      transparent 45%,
+      rgba(255, 255, 255, 0.6) 48%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.6) 52%,
+      transparent 55%
+    );
+    --mpx-random-sheen-blend-mode: overlay;
+    --mpx-random-sheen-start-translate: -42%;
+    --mpx-random-sheen-end-translate: 42%;
+    --mpx-random-sheen-opacity-peak: 1;
 
-  /* ========================================================
+    /* ========================================================
    * E. Layout Structure — Style 控制的布局效果 token
    * ======================================================== */
 
-  /* 全局布局 */
-  --mpx-layout-gap-scale: 1;
-  --mpx-pane-inner-gap-scale: 1;
-  --mpx-pane-stack-gap-scale: 1;
-  --mpx-sidebar-inner-gap-scale: 1;
-  --mpx-thumbnail-gap-scale: 1;
-  --mpx-button-group-inset-scale: 1;
-  --mpx-pane-header-height-scale: 1;
-  --mpx-pane-footer-height-scale: 1;
-  --mpx-layout-gap-px: 0px;
-  --mpx-pane-inner-padding-px: 10px;
-  --mpx-pane-stack-gap-px: 8px;
-  --mpx-pane-section-gap-px: 8px;
-  --mpx-pane-recessed-padding-px: 3px;
-  --mpx-sidebar-gap-px: 8px;
-  --mpx-thumbnail-gap-px: 8px;
-  --mpx-button-group-inset-px: 2px;
-  --mpx-control-group-gap-px: 8px;
-  --mpx-pane-header-height-px: 34px;
-  --mpx-pane-footer-height-px: 40px;
-  --mpx-metadata-edit-grid-label-gap-px: 4px;
-  --mpx-layout-padding: var(--mpx-layout-gap-px);
-  --mpx-splitter-width: var(--mpx-layout-gap-px);
-  --mpx-bg-body: radial-gradient(
-    circle at top right,
-    var(--mpx-bg-muted),
-    var(--mpx-bg-app-base) 70%
-  );
-
-  /* 面板共享基底 */
-  --mpx-container-frame-radius: var(--mpx-panel-radius);
-  --mpx-panel-radius: 0px;
-  --mpx-panel-border-width: 1px;
-  --mpx-panel-border-style: solid;
-  --mpx-panel-shadow: none;
-  --mpx-panel-backdrop-filter: none;
-  --mpx-panel-transform: none;
-  --mpx-panel-transition: none;
-  --mpx-panel-padding: 10px;
-  --mpx-pane-frame-padding: var(
-    --mpx-pane-inner-padding-px,
-    var(--mpx-panel-padding)
-  );
-  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, 8px);
-  --mpx-pane-section-gap: var(
-    --mpx-pane-section-gap-px,
-    var(--mpx-pane-stack-gap-px, 8px)
-  );
-  --mpx-control-group-gap: var(--mpx-control-group-gap-px, 8px);
-
-  /* Sidebar 覆写（默认继承 panel） */
-  --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);
-  --mpx-sidebar-radius: var(--mpx-container-frame-radius);
-  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
-  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
-  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
-  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-sidebar-frame-translate-x: 0px;
-  --mpx-sidebar-frame-translate-y: 0px;
-  --mpx-sidebar-frame-rotate-x: 0deg;
-  --mpx-sidebar-frame-rotate-y: 0deg;
-  --mpx-sidebar-frame-rotate-z: 0deg;
-  --mpx-sidebar-frame-scale-x: 1;
-  --mpx-sidebar-frame-scale-y: 1;
-  --mpx-sidebar-frame-origin-x: 50%;
-  --mpx-sidebar-frame-origin-y: 50%;
-  --mpx-sidebar-frame-perspective: none;
-  --mpx-sidebar-frame-transform-style: flat;
-  --mpx-sidebar-frame-backface-visibility: visible;
-  --mpx-sidebar-z-index: 2;
-  --mpx-sidebar-transform: translate(
-      var(--mpx-sidebar-frame-translate-x),
-      var(--mpx-sidebar-frame-translate-y)
-    ) rotateX(var(--mpx-sidebar-frame-rotate-x))
-    rotateY(var(--mpx-sidebar-frame-rotate-y))
-    rotateZ(var(--mpx-sidebar-frame-rotate-z))
-    scale(var(--mpx-sidebar-frame-scale-x), var(--mpx-sidebar-frame-scale-y));
-  --mpx-sidebar-transition: var(--mpx-panel-transition);
-  --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
-  --mpx-sidebar-fill-start: var(--mpx-container-frame-fill-start);
-  --mpx-sidebar-fill-end: var(--mpx-container-frame-fill-end);
-  --mpx-sidebar-fill-angle: var(--mpx-container-frame-fill-angle);
-  --mpx-sidebar-bg: linear-gradient(
-    var(--mpx-sidebar-fill-angle),
-    var(--mpx-sidebar-fill-start) 0%,
-    var(--mpx-sidebar-fill-end) 100%
-  );
-
-  /* Main 覆写 */
-  --mpx-main-border-color: var(--mpx-container-frame-border-color);
-  --mpx-main-radius: var(--mpx-container-frame-radius);
-  --mpx-main-border-width: var(--mpx-panel-border-width);
-  --mpx-main-border-style: var(--mpx-panel-border-style);
-  --mpx-main-shadow: var(--mpx-panel-shadow);
-  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-main-frame-translate-x: 0px;
-  --mpx-main-frame-translate-y: 0px;
-  --mpx-main-frame-rotate-x: 0deg;
-  --mpx-main-frame-rotate-y: 0deg;
-  --mpx-main-frame-rotate-z: 0deg;
-  --mpx-main-frame-scale-x: 1;
-  --mpx-main-frame-scale-y: 1;
-  --mpx-main-frame-origin-x: 50%;
-  --mpx-main-frame-origin-y: 50%;
-  --mpx-main-frame-perspective: none;
-  --mpx-main-frame-transform-style: flat;
-  --mpx-main-frame-backface-visibility: visible;
-  --mpx-main-z-index: 1;
-  --mpx-main-transform: translate(
-      var(--mpx-main-frame-translate-x),
-      var(--mpx-main-frame-translate-y)
-    ) rotateX(var(--mpx-main-frame-rotate-x))
-    rotateY(var(--mpx-main-frame-rotate-y))
-    rotateZ(var(--mpx-main-frame-rotate-z))
-    scale(var(--mpx-main-frame-scale-x), var(--mpx-main-frame-scale-y));
-  --mpx-main-transition: var(--mpx-panel-transition);
-  --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
-  --mpx-main-fill-start: var(--mpx-container-frame-fill-start);
-  --mpx-main-fill-end: var(--mpx-container-frame-fill-end);
-  --mpx-main-fill-angle: var(--mpx-container-frame-fill-angle);
-  --mpx-main-bg: linear-gradient(
-    var(--mpx-main-fill-angle),
-    var(--mpx-main-fill-start) 0%,
-    var(--mpx-main-fill-end) 100%
-  );
-  --mpx-main-header-fill-start: rgba(0, 0, 0, 0);
-  --mpx-main-header-fill-end: rgba(0, 0, 0, 0);
-  --mpx-main-header-fill-angle: 180deg;
-  --mpx-main-header-bg: linear-gradient(
-    var(--mpx-main-header-fill-angle),
-    var(--mpx-main-header-fill-start) 0%,
-    var(--mpx-main-header-fill-end) 100%
-  );
-  --mpx-main-header-border-color: rgba(0, 0, 0, 0);
-
-  /* Metadata 覆写 */
-  --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
-  --mpx-metadata-radius: var(--mpx-container-frame-radius);
-  --mpx-metadata-border-width: var(--mpx-panel-border-width);
-  --mpx-metadata-border-style: var(--mpx-panel-border-style);
-  --mpx-metadata-shadow: var(--mpx-panel-shadow);
-  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
-  --mpx-metadata-frame-translate-x: 0px;
-  --mpx-metadata-frame-translate-y: 0px;
-  --mpx-metadata-frame-rotate-x: 0deg;
-  --mpx-metadata-frame-rotate-y: 0deg;
-  --mpx-metadata-frame-rotate-z: 0deg;
-  --mpx-metadata-frame-scale-x: 1;
-  --mpx-metadata-frame-scale-y: 1;
-  --mpx-metadata-frame-origin-x: 50%;
-  --mpx-metadata-frame-origin-y: 50%;
-  --mpx-metadata-frame-perspective: none;
-  --mpx-metadata-frame-transform-style: flat;
-  --mpx-metadata-frame-backface-visibility: visible;
-  --mpx-metadata-z-index: 2;
-  --mpx-metadata-transform: translate(
-      var(--mpx-metadata-frame-translate-x),
-      var(--mpx-metadata-frame-translate-y)
-    ) rotateX(var(--mpx-metadata-frame-rotate-x))
-    rotateY(var(--mpx-metadata-frame-rotate-y))
-    rotateZ(var(--mpx-metadata-frame-rotate-z))
-    scale(
-      var(--mpx-metadata-frame-scale-x),
-      var(--mpx-metadata-frame-scale-y)
+    /* 全局布局 */
+    --mpx-layout-gap-scale: 1;
+    --mpx-pane-inner-gap-scale: 1;
+    --mpx-pane-stack-gap-scale: 1;
+    --mpx-sidebar-inner-gap-scale: 1;
+    --mpx-thumbnail-gap-scale: 1;
+    --mpx-button-group-inset-scale: 1;
+    --mpx-pane-header-height-scale: 1;
+    --mpx-pane-footer-height-scale: 1;
+    --mpx-layout-gap-px: 0px;
+    --mpx-pane-inner-padding-px: 10px;
+    --mpx-pane-stack-gap-px: 8px;
+    --mpx-pane-section-gap-px: 8px;
+    --mpx-pane-recessed-padding-px: 3px;
+    --mpx-sidebar-gap-px: 8px;
+    --mpx-thumbnail-gap-px: 8px;
+    --mpx-button-group-inset-px: 2px;
+    --mpx-control-group-gap-px: 8px;
+    --mpx-pane-header-height-px: 34px;
+    --mpx-pane-footer-height-px: 40px;
+    --mpx-metadata-edit-grid-label-gap-px: 4px;
+    --mpx-layout-padding: var(--mpx-layout-gap-px);
+    --mpx-splitter-width: var(--mpx-layout-gap-px);
+    --mpx-bg-body: radial-gradient(
+      circle at top right,
+      var(--mpx-bg-muted),
+      var(--mpx-bg-app-base) 70%
     );
-  --mpx-metadata-transition: var(--mpx-panel-transition);
-  --mpx-metadata-padding: var(
-    --mpx-pane-frame-padding,
-    var(--mpx-panel-padding)
-  );
-  --mpx-metadata-fill-start: var(--mpx-container-frame-fill-start);
-  --mpx-metadata-fill-end: var(--mpx-container-frame-fill-end);
-  --mpx-metadata-fill-angle: var(--mpx-container-frame-fill-angle);
-  --mpx-metadata-bg: linear-gradient(
-    var(--mpx-metadata-fill-angle),
-    var(--mpx-metadata-fill-start) 0%,
-    var(--mpx-metadata-fill-end) 100%
-  );
-  --mpx-metadata-header-fill-start: rgba(0, 0, 0, 0);
-  --mpx-metadata-header-fill-end: rgba(0, 0, 0, 0);
-  --mpx-metadata-header-fill-angle: 180deg;
-  --mpx-metadata-header-bg: linear-gradient(
-    var(--mpx-metadata-header-fill-angle),
-    var(--mpx-metadata-header-fill-start) 0%,
-    var(--mpx-metadata-header-fill-end) 100%
-  );
-  --mpx-metadata-header-border-color: rgba(0, 0, 0, 0);
 
-  /* Header 独立 */
-  --mpx-header-border-color: var(--mpx-container-frame-border-color);
-  --mpx-header-radius: var(--mpx-container-frame-radius);
-  --mpx-header-shadow: none;
-  --mpx-header-floating-gap: var(--mpx-layout-gap-px) var(--mpx-layout-gap-px)
-    0px;
-  --mpx-header-border-width: 1px;
-  --mpx-header-backdrop-filter: none;
-  --mpx-header-frame-translate-x: 0px;
-  --mpx-header-frame-translate-y: 0px;
-  --mpx-header-frame-rotate-x: 0deg;
-  --mpx-header-frame-rotate-y: 0deg;
-  --mpx-header-frame-rotate-z: 0deg;
-  --mpx-header-frame-scale-x: 1;
-  --mpx-header-frame-scale-y: 1;
-  --mpx-header-frame-origin-x: 50%;
-  --mpx-header-frame-origin-y: 0%;
-  --mpx-header-frame-perspective: none;
-  --mpx-header-frame-transform-style: flat;
-  --mpx-header-frame-backface-visibility: visible;
-  --mpx-header-z-index: 4;
-  --mpx-header-transform: translate(
-      var(--mpx-header-frame-translate-x),
-      var(--mpx-header-frame-translate-y)
-    ) rotateX(var(--mpx-header-frame-rotate-x))
-    rotateY(var(--mpx-header-frame-rotate-y))
-    rotateZ(var(--mpx-header-frame-rotate-z))
-    scale(var(--mpx-header-frame-scale-x), var(--mpx-header-frame-scale-y));
-  --mpx-header-transform-origin: var(--mpx-header-frame-origin-x)
-    var(--mpx-header-frame-origin-y);
-  --mpx-header-transition: none;
+    /* 面板共享基底 */
+    --mpx-container-frame-radius: var(--mpx-panel-radius);
+    --mpx-panel-radius: 0px;
+    --mpx-panel-border-width: 1px;
+    --mpx-panel-border-style: solid;
+    --mpx-panel-shadow: none;
+    --mpx-panel-backdrop-filter: none;
+    --mpx-panel-transform: none;
+    --mpx-panel-transition: none;
+    --mpx-panel-padding: 10px;
+    --mpx-pane-frame-padding: var(
+      --mpx-pane-inner-padding-px,
+      var(--mpx-panel-padding)
+    );
+    --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, 8px);
+    --mpx-pane-section-gap: var(
+      --mpx-pane-section-gap-px,
+      var(--mpx-pane-stack-gap-px, 8px)
+    );
+    --mpx-control-group-gap: var(--mpx-control-group-gap-px, 8px);
 
-  /* SysInfo 卡片容器 */
-  --mpx-sysinfo-root-margin: 0px;
-
-  /* 大面板层（3.0）：整体 / head / shell / side / main */
-  --mpx-large-panel-width: 80vw;
-  --mpx-large-panel-height: 80vh;
-  --mpx-large-panel-max-width: none;
-  --mpx-large-panel-max-height: none;
-  --mpx-large-panel-width-effective: var(
-    --mpx-large-panel-width-current,
-    var(--mpx-large-panel-width, 80vw)
-  );
-  --mpx-large-panel-height-effective: var(
-    --mpx-large-panel-height-current,
-    var(--mpx-large-panel-height, 80vh)
-  );
-  --mpx-large-panel-max-width-effective: var(
-    --mpx-large-panel-max-width-current,
-    var(--mpx-large-panel-max-width, none)
-  );
-  --mpx-large-panel-max-height-effective: var(
-    --mpx-large-panel-max-height-current,
-    var(--mpx-large-panel-max-height, none)
-  );
-  --mpx-large-panel-border-width: 1px;
-  --mpx-large-panel-border-color: var(
-    --mpx-large-panel-border-color-current,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
-  );
-  --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
-  --mpx-large-panel-radius-effective: var(
-    --mpx-large-panel-radius-current,
-    var(--mpx-large-panel-radius, var(--mpx-radius-overlay-pop, 14px))
-  );
-  --mpx-large-panel-fill-start: var(
-    --mpx-large-panel-fill-start-current,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
-  );
-  --mpx-large-panel-fill-end: var(
-    --mpx-large-panel-fill-end-current,
-    var(--mpx-large-panel-fill-start)
-  );
-  --mpx-large-panel-fill-angle: 180deg;
-  --mpx-large-panel-fill: linear-gradient(
-    var(--mpx-large-panel-fill-angle),
-    var(--mpx-large-panel-fill-start),
-    var(--mpx-large-panel-fill-end)
-  );
-  --mpx-large-panel-bg: var(--mpx-large-panel-fill);
-  --mpx-large-panel-shadow: var(
-    --mpx-large-panel-shadow-current,
-    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
-  );
-
-  --mpx-large-panel-head-border-width: var(
-    --mpx-large-panel-section-border-width,
-    1px
-  );
-  --mpx-large-panel-head-border-color: var(
-    --mpx-large-panel-head-border-color-current,
-    var(--mpx-large-panel-section-border-color, var(--mpx-border-1))
-  );
-  --mpx-large-panel-head-padding-y: 10px;
-  --mpx-large-panel-head-padding-x: 14px;
-  --mpx-large-panel-head-padding-y-effective: var(
-    --mpx-large-panel-head-padding-y-current,
-    var(--mpx-large-panel-head-padding-y, 10px)
-  );
-  --mpx-large-panel-head-padding-x-effective: var(
-    --mpx-large-panel-head-padding-x-current,
-    var(--mpx-large-panel-head-padding-x, 14px)
-  );
-  --mpx-large-panel-head-fill: linear-gradient(
-    var(
-      --mpx-large-panel-head-fill-angle,
-      var(--mpx-large-panel-section-fill-angle, 180deg)
-    ),
-    var(
-      --mpx-large-panel-head-fill-start-current,
-      var(
-        --mpx-large-panel-section-fill-start,
-        rgba(0, 0, 0, 0)
+    /* Sidebar 覆写（默认继承 panel） */
+    --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);
+    --mpx-sidebar-radius: var(--mpx-container-frame-radius);
+    --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+    --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+    --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+    --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+    --mpx-sidebar-frame-translate-x: 0px;
+    --mpx-sidebar-frame-translate-y: 0px;
+    --mpx-sidebar-frame-rotate-x: 0deg;
+    --mpx-sidebar-frame-rotate-y: 0deg;
+    --mpx-sidebar-frame-rotate-z: 0deg;
+    --mpx-sidebar-frame-scale-x: 1;
+    --mpx-sidebar-frame-scale-y: 1;
+    --mpx-sidebar-frame-origin-x: 50%;
+    --mpx-sidebar-frame-origin-y: 50%;
+    --mpx-sidebar-frame-perspective: none;
+    --mpx-sidebar-frame-transform-style: flat;
+    --mpx-sidebar-frame-backface-visibility: visible;
+    --mpx-sidebar-z-index: 2;
+    --mpx-sidebar-transform: translate(
+        var(--mpx-sidebar-frame-translate-x),
+        var(--mpx-sidebar-frame-translate-y)
       )
-    ),
-    var(
-      --mpx-large-panel-head-fill-end-current,
-      var(
-        --mpx-large-panel-section-fill-end,
-        rgba(0, 0, 0, 0)
+      rotateX(var(--mpx-sidebar-frame-rotate-x))
+      rotateY(var(--mpx-sidebar-frame-rotate-y))
+      rotateZ(var(--mpx-sidebar-frame-rotate-z))
+      scale(var(--mpx-sidebar-frame-scale-x), var(--mpx-sidebar-frame-scale-y));
+    --mpx-sidebar-transition: var(--mpx-panel-transition);
+    --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
+    --mpx-sidebar-fill-start: var(--mpx-container-frame-fill-start);
+    --mpx-sidebar-fill-end: var(--mpx-container-frame-fill-end);
+    --mpx-sidebar-fill-angle: var(--mpx-container-frame-fill-angle);
+    --mpx-sidebar-bg: linear-gradient(
+      var(--mpx-sidebar-fill-angle),
+      var(--mpx-sidebar-fill-start) 0%,
+      var(--mpx-sidebar-fill-end) 100%
+    );
+
+    /* Main 覆写 */
+    --mpx-main-border-color: var(--mpx-container-frame-border-color);
+    --mpx-main-radius: var(--mpx-container-frame-radius);
+    --mpx-main-border-width: var(--mpx-panel-border-width);
+    --mpx-main-border-style: var(--mpx-panel-border-style);
+    --mpx-main-shadow: var(--mpx-panel-shadow);
+    --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+    --mpx-main-frame-translate-x: 0px;
+    --mpx-main-frame-translate-y: 0px;
+    --mpx-main-frame-rotate-x: 0deg;
+    --mpx-main-frame-rotate-y: 0deg;
+    --mpx-main-frame-rotate-z: 0deg;
+    --mpx-main-frame-scale-x: 1;
+    --mpx-main-frame-scale-y: 1;
+    --mpx-main-frame-origin-x: 50%;
+    --mpx-main-frame-origin-y: 50%;
+    --mpx-main-frame-perspective: none;
+    --mpx-main-frame-transform-style: flat;
+    --mpx-main-frame-backface-visibility: visible;
+    --mpx-main-z-index: 1;
+    --mpx-main-transform: translate(
+        var(--mpx-main-frame-translate-x),
+        var(--mpx-main-frame-translate-y)
       )
-    )
-  );
-  --mpx-large-panel-head-bg: var(--mpx-large-panel-head-fill);
-  --mpx-large-panel-head-text: var(--mpx-large-panel-head-text-current, inherit);
+      rotateX(var(--mpx-main-frame-rotate-x))
+      rotateY(var(--mpx-main-frame-rotate-y))
+      rotateZ(var(--mpx-main-frame-rotate-z))
+      scale(var(--mpx-main-frame-scale-x), var(--mpx-main-frame-scale-y));
+    --mpx-main-transition: var(--mpx-panel-transition);
+    --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
+    --mpx-main-fill-start: var(--mpx-container-frame-fill-start);
+    --mpx-main-fill-end: var(--mpx-container-frame-fill-end);
+    --mpx-main-fill-angle: var(--mpx-container-frame-fill-angle);
+    --mpx-main-bg: linear-gradient(
+      var(--mpx-main-fill-angle),
+      var(--mpx-main-fill-start) 0%,
+      var(--mpx-main-fill-end) 100%
+    );
+    --mpx-main-header-fill-start: rgba(0, 0, 0, 0);
+    --mpx-main-header-fill-end: rgba(0, 0, 0, 0);
+    --mpx-main-header-fill-angle: 180deg;
+    --mpx-main-header-bg: linear-gradient(
+      var(--mpx-main-header-fill-angle),
+      var(--mpx-main-header-fill-start) 0%,
+      var(--mpx-main-header-fill-end) 100%
+    );
+    --mpx-main-header-border-color: rgba(0, 0, 0, 0);
 
-  --mpx-large-panel-shell-columns: minmax(180px, 20%) 1fr;
-  --mpx-large-panel-shell-no-side-columns: 1fr;
-  --mpx-large-panel-shell-gap: 10px;
-  --mpx-large-panel-shell-padding: 10px;
-  --mpx-large-panel-shell-padding-effective: var(
-    --mpx-large-panel-shell-padding-current,
-    var(--mpx-large-panel-shell-padding, 10px)
-  );
-
-  --mpx-large-panel-side-border-width: var(
-    --mpx-large-panel-section-border-width,
-    1px
-  );
-  --mpx-large-panel-side-border-color: var(
-    --mpx-large-panel-section-border-color,
-    var(--mpx-border-1)
-  );
-  --mpx-large-panel-side-radius: 10px;
-  --mpx-large-panel-side-fill: linear-gradient(
-    var(
-      --mpx-large-panel-side-fill-angle,
-      var(--mpx-large-panel-section-fill-angle, 180deg)
-    ),
-    var(
-      --mpx-large-panel-side-fill-start-current,
-      var(
-        --mpx-large-panel-section-fill-start,
-        var(--mpx-bg-elevated)
+    /* Metadata 覆写 */
+    --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
+    --mpx-metadata-radius: var(--mpx-container-frame-radius);
+    --mpx-metadata-border-width: var(--mpx-panel-border-width);
+    --mpx-metadata-border-style: var(--mpx-panel-border-style);
+    --mpx-metadata-shadow: var(--mpx-panel-shadow);
+    --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+    --mpx-metadata-frame-translate-x: 0px;
+    --mpx-metadata-frame-translate-y: 0px;
+    --mpx-metadata-frame-rotate-x: 0deg;
+    --mpx-metadata-frame-rotate-y: 0deg;
+    --mpx-metadata-frame-rotate-z: 0deg;
+    --mpx-metadata-frame-scale-x: 1;
+    --mpx-metadata-frame-scale-y: 1;
+    --mpx-metadata-frame-origin-x: 50%;
+    --mpx-metadata-frame-origin-y: 50%;
+    --mpx-metadata-frame-perspective: none;
+    --mpx-metadata-frame-transform-style: flat;
+    --mpx-metadata-frame-backface-visibility: visible;
+    --mpx-metadata-z-index: 2;
+    --mpx-metadata-transform: translate(
+        var(--mpx-metadata-frame-translate-x),
+        var(--mpx-metadata-frame-translate-y)
       )
-    ),
-    var(
-      --mpx-large-panel-side-fill-end-current,
-      var(
-        --mpx-large-panel-section-fill-end,
-        var(--mpx-bg-elevated)
+      rotateX(var(--mpx-metadata-frame-rotate-x))
+      rotateY(var(--mpx-metadata-frame-rotate-y))
+      rotateZ(var(--mpx-metadata-frame-rotate-z))
+      scale(
+        var(--mpx-metadata-frame-scale-x),
+        var(--mpx-metadata-frame-scale-y)
+      );
+    --mpx-metadata-transition: var(--mpx-panel-transition);
+    --mpx-metadata-padding: var(
+      --mpx-pane-frame-padding,
+      var(--mpx-panel-padding)
+    );
+    --mpx-metadata-fill-start: var(--mpx-container-frame-fill-start);
+    --mpx-metadata-fill-end: var(--mpx-container-frame-fill-end);
+    --mpx-metadata-fill-angle: var(--mpx-container-frame-fill-angle);
+    --mpx-metadata-bg: linear-gradient(
+      var(--mpx-metadata-fill-angle),
+      var(--mpx-metadata-fill-start) 0%,
+      var(--mpx-metadata-fill-end) 100%
+    );
+    --mpx-metadata-header-fill-start: rgba(0, 0, 0, 0);
+    --mpx-metadata-header-fill-end: rgba(0, 0, 0, 0);
+    --mpx-metadata-header-fill-angle: 180deg;
+    --mpx-metadata-header-bg: linear-gradient(
+      var(--mpx-metadata-header-fill-angle),
+      var(--mpx-metadata-header-fill-start) 0%,
+      var(--mpx-metadata-header-fill-end) 100%
+    );
+    --mpx-metadata-header-border-color: rgba(0, 0, 0, 0);
+
+    /* Header 独立 */
+    --mpx-header-border-color: var(--mpx-container-frame-border-color);
+    --mpx-header-radius: var(--mpx-container-frame-radius);
+    --mpx-header-shadow: none;
+    --mpx-header-floating-gap: var(--mpx-layout-gap-px) var(--mpx-layout-gap-px)
+      0px;
+    --mpx-header-border-width: 1px;
+    --mpx-header-backdrop-filter: none;
+    --mpx-header-frame-translate-x: 0px;
+    --mpx-header-frame-translate-y: 0px;
+    --mpx-header-frame-rotate-x: 0deg;
+    --mpx-header-frame-rotate-y: 0deg;
+    --mpx-header-frame-rotate-z: 0deg;
+    --mpx-header-frame-scale-x: 1;
+    --mpx-header-frame-scale-y: 1;
+    --mpx-header-frame-origin-x: 50%;
+    --mpx-header-frame-origin-y: 0%;
+    --mpx-header-frame-perspective: none;
+    --mpx-header-frame-transform-style: flat;
+    --mpx-header-frame-backface-visibility: visible;
+    --mpx-header-z-index: 4;
+    --mpx-header-transform: translate(
+        var(--mpx-header-frame-translate-x),
+        var(--mpx-header-frame-translate-y)
       )
-    )
-  );
-  --mpx-large-panel-side-bg: var(--mpx-large-panel-side-fill);
-  --mpx-large-panel-side-padding: 10px;
-  --mpx-large-panel-side-padding-effective: var(
-    --mpx-large-panel-side-padding-current,
-    var(--mpx-large-panel-side-padding, 10px)
-  );
-  --mpx-large-panel-side-gap: 8px;
+      rotateX(var(--mpx-header-frame-rotate-x))
+      rotateY(var(--mpx-header-frame-rotate-y))
+      rotateZ(var(--mpx-header-frame-rotate-z))
+      scale(var(--mpx-header-frame-scale-x), var(--mpx-header-frame-scale-y));
+    --mpx-header-transform-origin: var(--mpx-header-frame-origin-x)
+      var(--mpx-header-frame-origin-y);
+    --mpx-header-transition: none;
 
-  --mpx-large-panel-main-border-width: var(
-    --mpx-large-panel-section-border-width,
-    1px
-  );
-  --mpx-large-panel-main-border-color: var(
-    --mpx-large-panel-section-border-color,
-    var(--mpx-border-1)
-  );
-  --mpx-large-panel-main-radius: 10px;
-  --mpx-large-panel-main-fill: linear-gradient(
-    var(
-      --mpx-large-panel-main-fill-angle,
-      var(--mpx-large-panel-section-fill-angle, 180deg)
-    ),
-    var(
-      --mpx-large-panel-main-fill-start-current,
+    /* SysInfo 卡片容器 */
+    --mpx-sysinfo-root-margin: 0px;
+
+    /* 大面板层（3.0）：整体 / head / shell / side / main */
+    --mpx-large-panel-width: 80vw;
+    --mpx-large-panel-height: 80vh;
+    --mpx-large-panel-max-width: none;
+    --mpx-large-panel-max-height: none;
+    --mpx-large-panel-width-effective: var(
+      --mpx-large-panel-width-current,
+      var(--mpx-large-panel-width, 80vw)
+    );
+    --mpx-large-panel-height-effective: var(
+      --mpx-large-panel-height-current,
+      var(--mpx-large-panel-height, 80vh)
+    );
+    --mpx-large-panel-max-width-effective: var(
+      --mpx-large-panel-max-width-current,
+      var(--mpx-large-panel-max-width, none)
+    );
+    --mpx-large-panel-max-height-effective: var(
+      --mpx-large-panel-max-height-current,
+      var(--mpx-large-panel-max-height, none)
+    );
+    --mpx-large-panel-border-width: 1px;
+    --mpx-large-panel-border-color: var(
+      --mpx-large-panel-border-color-current,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
+    --mpx-large-panel-radius: var(--mpx-radius-overlay-pop, 14px);
+    --mpx-large-panel-radius-effective: var(
+      --mpx-large-panel-radius-current,
+      var(--mpx-large-panel-radius, var(--mpx-radius-overlay-pop, 14px))
+    );
+    --mpx-large-panel-fill-start: var(
+      --mpx-large-panel-fill-start-current,
+      var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+    );
+    --mpx-large-panel-fill-end: var(
+      --mpx-large-panel-fill-end-current,
+      var(--mpx-large-panel-fill-start)
+    );
+    --mpx-large-panel-fill-angle: 180deg;
+    --mpx-large-panel-fill: linear-gradient(
+      var(--mpx-large-panel-fill-angle),
+      var(--mpx-large-panel-fill-start),
+      var(--mpx-large-panel-fill-end)
+    );
+    --mpx-large-panel-bg: var(--mpx-large-panel-fill);
+    --mpx-large-panel-shadow: var(
+      --mpx-large-panel-shadow-current,
+      var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+    );
+
+    --mpx-large-panel-head-border-width: var(
+      --mpx-large-panel-section-border-width,
+      1px
+    );
+    --mpx-large-panel-head-border-color: var(
+      --mpx-large-panel-head-border-color-current,
+      var(--mpx-large-panel-section-border-color, var(--mpx-border-1))
+    );
+    --mpx-large-panel-head-padding-y: 10px;
+    --mpx-large-panel-head-padding-x: 14px;
+    --mpx-large-panel-head-padding-y-effective: var(
+      --mpx-large-panel-head-padding-y-current,
+      var(--mpx-large-panel-head-padding-y, 10px)
+    );
+    --mpx-large-panel-head-padding-x-effective: var(
+      --mpx-large-panel-head-padding-x-current,
+      var(--mpx-large-panel-head-padding-x, 14px)
+    );
+    --mpx-large-panel-head-fill: linear-gradient(
       var(
-        --mpx-large-panel-section-fill-start,
-        var(--mpx-bg-elevated)
-      )
-    ),
-    var(
-      --mpx-large-panel-main-fill-end-current,
+        --mpx-large-panel-head-fill-angle,
+        var(--mpx-large-panel-section-fill-angle, 180deg)
+      ),
       var(
-        --mpx-large-panel-section-fill-end,
-        var(--mpx-bg-elevated)
+        --mpx-large-panel-head-fill-start-current,
+        var(--mpx-large-panel-section-fill-start, rgba(0, 0, 0, 0))
+      ),
+      var(
+        --mpx-large-panel-head-fill-end-current,
+        var(--mpx-large-panel-section-fill-end, rgba(0, 0, 0, 0))
       )
-    )
-  );
-  --mpx-large-panel-main-bg: var(--mpx-large-panel-main-fill);
-  --mpx-large-panel-main-padding-y: 14px;
-  --mpx-large-panel-main-padding-x: 16px;
-  --mpx-large-panel-main-padding-y-effective: var(
-    --mpx-large-panel-main-padding-y-current,
-    var(--mpx-large-panel-main-padding-y, 14px)
-  );
-  --mpx-large-panel-main-padding-x-effective: var(
-    --mpx-large-panel-main-padding-x-current,
-    var(--mpx-large-panel-main-padding-x, 16px)
-  );
-  --mpx-large-panel-main-align-items: flex-start;
-  --mpx-large-panel-main-justify-content: flex-start;
+    );
+    --mpx-large-panel-head-bg: var(--mpx-large-panel-head-fill);
+    --mpx-large-panel-head-text: var(
+      --mpx-large-panel-head-text-current,
+      inherit
+    );
 
-  /* Settings 内部件语义（3.10.0） */
-  --mpx-settings-side-bg: var(--mpx-large-panel-side-bg);
-  --mpx-settings-side-text: var(--mpx-text-1);
-  --mpx-settings-side-item-bg: transparent;
-  --mpx-settings-side-item-hover-bg: var(--mpx-bg-hover);
-  --mpx-settings-side-item-active-bg: var(--mpx-bg-selected);
-  --mpx-settings-side-item-active-text: var(--mpx-accent);
-  --mpx-settings-side-border: var(--mpx-large-panel-side-border-color);
+    --mpx-large-panel-shell-columns: minmax(180px, 20%) 1fr;
+    --mpx-large-panel-shell-no-side-columns: 1fr;
+    --mpx-large-panel-shell-gap: 10px;
+    --mpx-large-panel-shell-padding: 10px;
+    --mpx-large-panel-shell-padding-effective: var(
+      --mpx-large-panel-shell-padding-current,
+      var(--mpx-large-panel-shell-padding, 10px)
+    );
 
-  --mpx-settings-main-bg: var(--mpx-large-panel-main-bg);
-  --mpx-settings-main-text: var(--mpx-text-1);
-  --mpx-settings-main-border: var(--mpx-large-panel-main-border-color);
+    --mpx-large-panel-side-border-width: var(
+      --mpx-large-panel-section-border-width,
+      1px
+    );
+    --mpx-large-panel-side-border-color: var(
+      --mpx-large-panel-section-border-color,
+      var(--mpx-border-1)
+    );
+    --mpx-large-panel-side-radius: 10px;
+    --mpx-large-panel-side-fill: linear-gradient(
+      var(
+        --mpx-large-panel-side-fill-angle,
+        var(--mpx-large-panel-section-fill-angle, 180deg)
+      ),
+      var(
+        --mpx-large-panel-side-fill-start-current,
+        var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+      ),
+      var(
+        --mpx-large-panel-side-fill-end-current,
+        var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+      )
+    );
+    --mpx-large-panel-side-bg: var(--mpx-large-panel-side-fill);
+    --mpx-large-panel-side-padding: 10px;
+    --mpx-large-panel-side-padding-effective: var(
+      --mpx-large-panel-side-padding-current,
+      var(--mpx-large-panel-side-padding, 10px)
+    );
+    --mpx-large-panel-side-gap: 8px;
 
-  --mpx-settings-group-border: var(--mpx-settings-main-border);
-  --mpx-settings-group-head-text: var(--mpx-text-heading);
-  --mpx-settings-group-head-bg: transparent;
-  --mpx-settings-item-label-text: var(--mpx-text-2);
-  --mpx-settings-item-value-text: var(--mpx-settings-main-text);
-  --mpx-settings-item-input-bg: var(--mpx-input-bg);
-  --mpx-settings-item-input-border: var(--mpx-input-border);
-  --mpx-settings-danger-btn-bg: var(--mpx-status-danger-bg);
-  --mpx-settings-danger-btn-border: var(--mpx-status-danger-border);
-  --mpx-settings-danger-btn-text: var(--mpx-status-danger-text);
+    --mpx-large-panel-main-border-width: var(
+      --mpx-large-panel-section-border-width,
+      1px
+    );
+    --mpx-large-panel-main-border-color: var(
+      --mpx-large-panel-section-border-color,
+      var(--mpx-border-1)
+    );
+    --mpx-large-panel-main-radius: 10px;
+    --mpx-large-panel-main-fill: linear-gradient(
+      var(
+        --mpx-large-panel-main-fill-angle,
+        var(--mpx-large-panel-section-fill-angle, 180deg)
+      ),
+      var(
+        --mpx-large-panel-main-fill-start-current,
+        var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+      ),
+      var(
+        --mpx-large-panel-main-fill-end-current,
+        var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+      )
+    );
+    --mpx-large-panel-main-bg: var(--mpx-large-panel-main-fill);
+    --mpx-large-panel-main-padding-y: 14px;
+    --mpx-large-panel-main-padding-x: 16px;
+    --mpx-large-panel-main-padding-y-effective: var(
+      --mpx-large-panel-main-padding-y-current,
+      var(--mpx-large-panel-main-padding-y, 14px)
+    );
+    --mpx-large-panel-main-padding-x-effective: var(
+      --mpx-large-panel-main-padding-x-current,
+      var(--mpx-large-panel-main-padding-x, 16px)
+    );
+    --mpx-large-panel-main-align-items: flex-start;
+    --mpx-large-panel-main-justify-content: flex-start;
 
-  /* Import Task 子块语义（3.10 内部件） */
-  --mpx-import-task-error-border: var(--mpx-status-danger-border);
-  --mpx-import-task-error-bg: var(--mpx-status-danger-bg);
-  --mpx-import-task-error-text: var(--mpx-status-danger-text);
-  --mpx-import-task-hint-border: var(--mpx-status-info-border);
-  --mpx-import-task-hint-bg: var(--mpx-status-info-bg);
-  --mpx-import-task-hint-text: var(--mpx-status-info-text);
-  --mpx-import-task-review-notice-border: var(--mpx-status-warning-border);
-  --mpx-import-task-review-notice-bg: var(--mpx-status-warning-bg);
-  --mpx-import-task-review-notice-text: var(--mpx-status-warning-text);
-  --mpx-import-task-hash-log-border: var(--mpx-status-info-border);
-  --mpx-import-task-hash-log-bg: var(--mpx-status-info-bg);
-  --mpx-import-task-hash-log-text: var(--mpx-status-info-text);
+    /* Settings 内部件语义（3.10.0） */
+    --mpx-settings-side-bg: var(--mpx-large-panel-side-bg);
+    --mpx-settings-side-text: var(--mpx-text-1);
+    --mpx-settings-side-item-bg: transparent;
+    --mpx-settings-side-item-hover-bg: var(--mpx-bg-hover);
+    --mpx-settings-side-item-active-bg: var(--mpx-bg-selected);
+    --mpx-settings-side-item-active-text: var(--mpx-accent);
+    --mpx-settings-side-border: var(--mpx-large-panel-side-border-color);
 
-  /* Metadata Fetch 子块语义（3.5 内部件） */
-  --mpx-metadata-fetch-control-border: var(--mpx-overlay-soft-border);
-  --mpx-metadata-fetch-control-bg: var(--mpx-overlay-soft-bg);
-  --mpx-metadata-fetch-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-metadata-fetch-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
-  --mpx-metadata-fetch-control-text: var(--mpx-text-1);
-  --mpx-metadata-fetch-control-placeholder: var(--mpx-text-2);
-  --mpx-metadata-fetch-control-font-size: 15px;
-  --mpx-metadata-fetch-results-border: var(--mpx-overlay-soft-border);
-  --mpx-metadata-fetch-results-bg: var(--mpx-bg-elevated);
-  --mpx-metadata-fetch-results-active-ring: color-mix(
-    in srgb,
-    var(--mpx-accent) 52%,
-    transparent
-  );
-  --mpx-metadata-fetch-head-border: var(--mpx-overlay-soft-head-divider);
-  --mpx-metadata-fetch-head-bg: var(--mpx-overlay-soft-head-bg);
-  --mpx-metadata-fetch-head-text: var(--mpx-text-2);
-  --mpx-metadata-fetch-head-font-size: 15px;
-  --mpx-metadata-fetch-head-font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
-  --mpx-metadata-fetch-body-bg: var(--mpx-overlay-soft-bg);
-  --mpx-metadata-fetch-result-meta-text: var(--mpx-text-2);
-  --mpx-metadata-fetch-result-hover-text: color-mix(
-    in srgb,
-    var(--mpx-accent) 72%,
-    var(--mpx-text-1)
-  );
-  --mpx-metadata-fetch-preview-divider: var(--mpx-overlay-soft-row-divider);
-  --mpx-metadata-fetch-preview-bg: var(--mpx-overlay-soft-bg);
-  --mpx-metadata-fetch-preview-toggle-border: var(--mpx-overlay-soft-head-divider);
-  --mpx-metadata-fetch-preview-toggle-bg: var(--mpx-overlay-soft-head-bg);
-  --mpx-metadata-fetch-preview-toggle-text: var(--mpx-text-2);
-  --mpx-metadata-fetch-preview-toggle-hover-bg: var(--mpx-overlay-soft-border);
-  --mpx-metadata-fetch-preview-toggle-active-bg: var(
-    --mpx-overlay-soft-head-divider
-  );
-  --mpx-metadata-fetch-preview-toggle-focus-outline: color-mix(
-    in srgb,
-    var(--mpx-accent) 52%,
-    var(--mpx-border-2)
-  );
+    --mpx-settings-main-bg: var(--mpx-large-panel-main-bg);
+    --mpx-settings-main-text: var(--mpx-text-1);
+    --mpx-settings-main-border: var(--mpx-large-panel-main-border-color);
 
-  --mpx-metadata-body-bg: transparent;
-  --mpx-metadata-body-text: var(--mpx-text-1);
-  --mpx-metadata-section-border: var(--mpx-border-1);
-  --mpx-metadata-section-label-text: var(--mpx-text-2);
+    --mpx-settings-group-border: var(--mpx-settings-main-border);
+    --mpx-settings-group-head-text: var(--mpx-text-heading);
+    --mpx-settings-group-head-bg: transparent;
+    --mpx-settings-item-label-text: var(--mpx-text-2);
+    --mpx-settings-item-value-text: var(--mpx-settings-main-text);
+    --mpx-settings-item-input-bg: var(--mpx-input-bg);
+    --mpx-settings-item-input-border: var(--mpx-input-border);
+    --mpx-settings-danger-btn-bg: var(--mpx-status-danger-bg);
+    --mpx-settings-danger-btn-border: var(--mpx-status-danger-border);
+    --mpx-settings-danger-btn-text: var(--mpx-status-danger-text);
 
-  --mpx-metadata-edit-label-text: var(--mpx-metadata-section-label-text);
-  --mpx-metadata-edit-value-text: var(--mpx-metadata-body-text);
-  --mpx-metadata-edit-value-bg: var(--mpx-input-bg);
-  --mpx-metadata-edit-value-border: var(--mpx-input-border);
+    /* Import Task 子块语义（3.10 内部件） */
+    --mpx-import-task-error-border: var(--mpx-status-danger-border);
+    --mpx-import-task-error-bg: var(--mpx-status-danger-bg);
+    --mpx-import-task-error-text: var(--mpx-status-danger-text);
+    --mpx-import-task-hint-border: var(--mpx-status-info-border);
+    --mpx-import-task-hint-bg: var(--mpx-status-info-bg);
+    --mpx-import-task-hint-text: var(--mpx-status-info-text);
+    --mpx-import-task-review-notice-border: var(--mpx-status-warning-border);
+    --mpx-import-task-review-notice-bg: var(--mpx-status-warning-bg);
+    --mpx-import-task-review-notice-text: var(--mpx-status-warning-text);
+    --mpx-import-task-hash-log-border: var(--mpx-status-info-border);
+    --mpx-import-task-hash-log-bg: var(--mpx-status-info-bg);
+    --mpx-import-task-hash-log-text: var(--mpx-status-info-text);
 
-  --mpx-metadata-pref-card-bg: var(--mpx-bg-muted);
-  --mpx-metadata-pref-card-border: var(--mpx-border-1);
-  --mpx-metadata-pref-card-text: var(--mpx-metadata-body-text);
+    /* Metadata Fetch 子块语义（3.5 内部件） */
+    --mpx-metadata-fetch-control-border: var(--mpx-overlay-soft-border);
+    --mpx-metadata-fetch-control-bg: var(--mpx-overlay-soft-bg);
+    --mpx-metadata-fetch-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+    --mpx-metadata-fetch-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+    --mpx-metadata-fetch-control-text: var(--mpx-text-1);
+    --mpx-metadata-fetch-control-placeholder: var(--mpx-text-2);
+    --mpx-metadata-fetch-control-font-size: 15px;
+    --mpx-metadata-fetch-results-border: var(--mpx-overlay-soft-border);
+    --mpx-metadata-fetch-results-bg: var(--mpx-bg-elevated);
+    --mpx-metadata-fetch-results-active-ring: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      transparent
+    );
+    --mpx-metadata-fetch-head-border: var(--mpx-overlay-soft-head-divider);
+    --mpx-metadata-fetch-head-bg: var(--mpx-overlay-soft-head-bg);
+    --mpx-metadata-fetch-head-text: var(--mpx-text-2);
+    --mpx-metadata-fetch-head-font-size: 15px;
+    --mpx-metadata-fetch-head-font-family:
+      "Microsoft YaHei", "微软雅黑", sans-serif;
+    --mpx-metadata-fetch-body-bg: var(--mpx-overlay-soft-bg);
+    --mpx-metadata-fetch-result-meta-text: var(--mpx-text-2);
+    --mpx-metadata-fetch-result-hover-text: color-mix(
+      in srgb,
+      var(--mpx-accent) 72%,
+      var(--mpx-text-1)
+    );
+    --mpx-metadata-fetch-preview-divider: var(--mpx-overlay-soft-row-divider);
+    --mpx-metadata-fetch-preview-bg: var(--mpx-overlay-soft-bg);
+    --mpx-metadata-fetch-preview-toggle-border: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-metadata-fetch-preview-toggle-bg: var(--mpx-overlay-soft-head-bg);
+    --mpx-metadata-fetch-preview-toggle-text: var(--mpx-text-2);
+    --mpx-metadata-fetch-preview-toggle-hover-bg: var(
+      --mpx-overlay-soft-border
+    );
+    --mpx-metadata-fetch-preview-toggle-active-bg: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-metadata-fetch-preview-toggle-focus-outline: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      var(--mpx-border-2)
+    );
 
-  --mpx-metadata-tag-editor-bg: var(--mpx-bg-elevated);
-  --mpx-metadata-tag-editor-border: var(--mpx-border-2);
-  --mpx-metadata-tag-item-bg: var(--mpx-accent-soft);
-  --mpx-metadata-tag-item-text: var(--mpx-accent);
+    --mpx-metadata-body-bg: transparent;
+    --mpx-metadata-body-text: var(--mpx-text-1);
+    --mpx-metadata-section-border: var(--mpx-border-1);
+    --mpx-metadata-section-label-text: var(--mpx-text-2);
 
-  --mpx-metadata-preference-record-border: var(--mpx-metadata-pref-card-border);
-  --mpx-metadata-preference-record-bg: var(--mpx-metadata-pref-card-bg);
-  --mpx-metadata-preference-record-text: var(--mpx-metadata-pref-card-text);
-  --mpx-metadata-preference-record-summary-text: var(--mpx-metadata-pref-card-text);
-  --mpx-metadata-preference-record-hint-text: var(--mpx-metadata-section-label-text);
-  --mpx-metadata-preference-record-field-border: var(
-    --mpx-input-readonly-border
-  );
-  --mpx-metadata-preference-record-field-bg: var(--mpx-input-readonly-bg);
-  --mpx-metadata-preference-record-field-text: var(--mpx-input-readonly-text);
+    --mpx-metadata-edit-label-text: var(--mpx-metadata-section-label-text);
+    --mpx-metadata-edit-value-text: var(--mpx-metadata-body-text);
+    --mpx-metadata-edit-value-bg: var(--mpx-input-bg);
+    --mpx-metadata-edit-value-border: var(--mpx-input-border);
 
-  --mpx-metadata-booklet-binding-border: var(--mpx-overlay-soft-border);
-  --mpx-metadata-booklet-binding-bg: var(--mpx-bg-elevated);
-  --mpx-metadata-booklet-binding-text: var(--mpx-text-1);
-  --mpx-metadata-booklet-binding-meta-text: var(--mpx-text-2);
-  --mpx-metadata-booklet-binding-control-border: var(--mpx-input-border);
-  --mpx-metadata-booklet-binding-control-bg: var(--mpx-input-bg);
-  --mpx-metadata-booklet-binding-control-text: var(--mpx-input-text);
+    --mpx-metadata-pref-card-bg: var(--mpx-bg-muted);
+    --mpx-metadata-pref-card-border: var(--mpx-border-1);
+    --mpx-metadata-pref-card-text: var(--mpx-metadata-body-text);
 
-  --mpx-metadata-feature-tag-picker-hint-text: var(
-    --mpx-metadata-section-label-text
-  );
-  --mpx-metadata-feature-tag-picker-group-key-text: var(
-    --mpx-metadata-section-label-text
-  );
-  --mpx-metadata-feature-tag-picker-popover-border: var(
-    --mpx-metadata-tag-editor-border
-  );
-  --mpx-metadata-feature-tag-picker-popover-bg: var(--mpx-metadata-tag-editor-bg);
-  --mpx-metadata-feature-tag-picker-tag-border: var(--mpx-metadata-tag-editor-border);
-  --mpx-metadata-feature-tag-picker-tag-bg: var(--mpx-metadata-tag-item-bg);
-  --mpx-metadata-feature-tag-picker-tag-text: var(--mpx-metadata-tag-item-text);
-  --mpx-metadata-feature-tag-picker-tag-active-border: var(--mpx-accent);
-  --mpx-metadata-feature-tag-picker-tag-active-bg: var(--mpx-accent-soft);
-  --mpx-metadata-feature-tag-picker-tag-active-text: var(--mpx-accent);
+    --mpx-metadata-tag-editor-bg: var(--mpx-bg-elevated);
+    --mpx-metadata-tag-editor-border: var(--mpx-border-2);
+    --mpx-metadata-tag-item-bg: var(--mpx-accent-soft);
+    --mpx-metadata-tag-item-text: var(--mpx-accent);
 
-  /* Subtitle Cleanup preview 子块语义（3.7 内部件） */
-  --mpx-subtitle-cleanup-raw-preview-border: var(--mpx-overlay-soft-row-divider);
-  --mpx-subtitle-cleanup-raw-preview-bg: var(--mpx-overlay-soft-bg);
-  --mpx-subtitle-cleanup-raw-preview-text: var(--mpx-text-1);
-  --mpx-subtitle-cleanup-raw-preview-toggle-border: var(
-    --mpx-overlay-soft-head-divider
-  );
-  --mpx-subtitle-cleanup-raw-preview-toggle-bg: var(--mpx-overlay-soft-head-bg);
-  --mpx-subtitle-cleanup-raw-preview-toggle-text: var(--mpx-text-2);
-  --mpx-subtitle-cleanup-raw-preview-toggle-hover-bg: var(
-    --mpx-overlay-soft-border
-  );
-  --mpx-subtitle-cleanup-raw-preview-toggle-active-bg: var(
-    --mpx-overlay-soft-head-divider
-  );
-  --mpx-subtitle-cleanup-raw-preview-toggle-focus-outline: color-mix(
-    in srgb,
-    var(--mpx-accent) 52%,
-    var(--mpx-border-2)
-  );
-  --mpx-subtitle-cleanup-clean-preview-border: var(--mpx-overlay-soft-row-divider);
-  --mpx-subtitle-cleanup-clean-preview-bg: var(--mpx-overlay-soft-bg);
-  --mpx-subtitle-cleanup-clean-preview-text: var(--mpx-text-1);
-  --mpx-subtitle-cleanup-clean-preview-toggle-border: var(
-    --mpx-overlay-soft-head-divider
-  );
-  --mpx-subtitle-cleanup-clean-preview-toggle-bg: var(
-    --mpx-overlay-soft-head-bg
-  );
-  --mpx-subtitle-cleanup-clean-preview-toggle-text: var(--mpx-text-2);
-  --mpx-subtitle-cleanup-clean-preview-toggle-hover-bg: var(
-    --mpx-overlay-soft-border
-  );
-  --mpx-subtitle-cleanup-clean-preview-toggle-active-bg: var(
-    --mpx-overlay-soft-head-divider
-  );
-  --mpx-subtitle-cleanup-clean-preview-toggle-focus-outline: color-mix(
-    in srgb,
-    var(--mpx-accent) 52%,
-    var(--mpx-border-2)
-  );
+    --mpx-metadata-preference-record-border: var(
+      --mpx-metadata-pref-card-border
+    );
+    --mpx-metadata-preference-record-bg: var(--mpx-metadata-pref-card-bg);
+    --mpx-metadata-preference-record-text: var(--mpx-metadata-pref-card-text);
+    --mpx-metadata-preference-record-summary-text: var(
+      --mpx-metadata-pref-card-text
+    );
+    --mpx-metadata-preference-record-hint-text: var(
+      --mpx-metadata-section-label-text
+    );
+    --mpx-metadata-preference-record-field-border: var(
+      --mpx-input-readonly-border
+    );
+    --mpx-metadata-preference-record-field-bg: var(--mpx-input-readonly-bg);
+    --mpx-metadata-preference-record-field-text: var(--mpx-input-readonly-text);
 
-  --mpx-transcode-dialog-control-border: var(--mpx-overlay-soft-border);
-  --mpx-transcode-dialog-control-bg: var(--mpx-overlay-soft-bg);
-  --mpx-transcode-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-transcode-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
-  --mpx-transcode-dialog-control-text: var(--mpx-text-1);
-  --mpx-transcode-dialog-control-placeholder: var(--mpx-text-2);
-  --mpx-transcode-dialog-action-btn-border: var(--mpx-border-2);
-  --mpx-transcode-dialog-action-btn-bg: var(--mpx-bg-elevated);
-  --mpx-transcode-dialog-action-btn-text: var(--mpx-text-1);
+    --mpx-metadata-booklet-binding-border: var(--mpx-overlay-soft-border);
+    --mpx-metadata-booklet-binding-bg: var(--mpx-bg-elevated);
+    --mpx-metadata-booklet-binding-text: var(--mpx-text-1);
+    --mpx-metadata-booklet-binding-meta-text: var(--mpx-text-2);
+    --mpx-metadata-booklet-binding-control-border: var(--mpx-input-border);
+    --mpx-metadata-booklet-binding-control-bg: var(--mpx-input-bg);
+    --mpx-metadata-booklet-binding-control-text: var(--mpx-input-text);
 
-  --mpx-sidebar-rename-dialog-text: var(--mpx-text-1);
-  --mpx-sidebar-rename-dialog-muted-text: var(--mpx-text-2);
-  --mpx-sidebar-rename-dialog-control-border: var(--mpx-overlay-soft-border);
-  --mpx-sidebar-rename-dialog-control-bg: var(--mpx-overlay-soft-bg);
-  --mpx-sidebar-rename-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
-  --mpx-sidebar-rename-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
-  --mpx-sidebar-rename-dialog-control-text: var(--mpx-text-1);
-  --mpx-sidebar-rename-dialog-control-placeholder: var(--mpx-text-2);
-  --mpx-sidebar-rename-dialog-action-btn-border: var(--mpx-border-2);
-  --mpx-sidebar-rename-dialog-action-btn-bg: var(--mpx-bg-elevated);
-  --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-text-1);
-  --mpx-sidebar-rename-preview-border: var(--mpx-overlay-soft-border);
-  --mpx-sidebar-rename-preview-bg: var(--mpx-bg-elevated);
-  --mpx-sidebar-rename-preview-head-border: var(--mpx-overlay-soft-head-divider);
-  --mpx-sidebar-rename-preview-head-bg: var(--mpx-overlay-soft-head-bg);
-  --mpx-sidebar-rename-preview-head-text: var(--mpx-text-2);
-  --mpx-sidebar-rename-preview-list-bg: var(--mpx-overlay-soft-bg);
-  --mpx-sidebar-rename-preview-row-border: var(--mpx-overlay-soft-row-divider);
-  --mpx-sidebar-rename-preview-row-text: var(--mpx-text-1);
-  --mpx-sidebar-rename-preview-arrow-text: color-mix(
-    in srgb,
-    var(--mpx-text-2) 70%,
-    transparent
-  );
-  --mpx-sidebar-rename-preview-row-source-hover-bg: var(
-    --mpx-overlay-soft-hover-bg
-  );
-  --mpx-sidebar-rename-preview-row-source-active-bg: var(
-    --mpx-overlay-soft-focus-bg
-  );
-  --mpx-sidebar-rename-preview-row-source-pressed-bg: var(
-    --mpx-overlay-soft-focus-bg
-  );
-  --mpx-sidebar-rename-preview-row-changed-accent: #9fb1c3;
-  --mpx-sidebar-rename-preview-row-failed-accent: #c7928a;
-  --mpx-sidebar-rename-preview-row-failed-text: var(--mpx-status-danger-text);
-  --mpx-sidebar-rename-preview-row-unchanged-text: var(--mpx-text-2);
+    --mpx-metadata-feature-tag-picker-hint-text: var(
+      --mpx-metadata-section-label-text
+    );
+    --mpx-metadata-feature-tag-picker-group-key-text: var(
+      --mpx-metadata-section-label-text
+    );
+    --mpx-metadata-feature-tag-picker-popover-border: var(
+      --mpx-metadata-tag-editor-border
+    );
+    --mpx-metadata-feature-tag-picker-popover-bg: var(
+      --mpx-metadata-tag-editor-bg
+    );
+    --mpx-metadata-feature-tag-picker-tag-border: var(
+      --mpx-metadata-tag-editor-border
+    );
+    --mpx-metadata-feature-tag-picker-tag-bg: var(--mpx-metadata-tag-item-bg);
+    --mpx-metadata-feature-tag-picker-tag-text: var(
+      --mpx-metadata-tag-item-text
+    );
+    --mpx-metadata-feature-tag-picker-tag-active-border: var(--mpx-accent);
+    --mpx-metadata-feature-tag-picker-tag-active-bg: var(--mpx-accent-soft);
+    --mpx-metadata-feature-tag-picker-tag-active-text: var(--mpx-accent);
 
-  /* 小面板层（5.0） */
-  --mpx-dialog-panel-width: min(520px, 92vw);
-  --mpx-dialog-panel-max-width: 92vw;
-  --mpx-dialog-panel-height: auto;
-  --mpx-dialog-panel-max-height: 80vh;
-  --mpx-dialog-panel-border-width: 1px;
-  --mpx-dialog-panel-root-border-color: var(
-    --mpx-overlay-surface-border,
-    var(--mpx-border-2)
-  );
-  --mpx-dialog-panel-border-color: var(--mpx-dialog-panel-root-border-color);
-  --mpx-dialog-panel-radius: 12px;
-  --mpx-dialog-panel-root-fill-start: var(
-    --mpx-overlay-surface-bg,
-    var(--mpx-bg-elevated)
-  );
-  --mpx-dialog-panel-root-fill-end: var(--mpx-dialog-panel-root-fill-start);
-  --mpx-dialog-panel-root-fill-angle: 180deg;
-  --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
-  --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
-  --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
-  --mpx-dialog-panel-shadow: var(
-    --mpx-overlay-surface-shadow,
-    var(--mpx-shadow-panel)
-  );
-  --mpx-dialog-panel-padding: 14px;
-  --mpx-dialog-panel-gap: 10px;
+    /* Subtitle Cleanup preview 子块语义（3.7 内部件） */
+    --mpx-subtitle-cleanup-raw-preview-border: var(
+      --mpx-overlay-soft-row-divider
+    );
+    --mpx-subtitle-cleanup-raw-preview-bg: var(--mpx-overlay-soft-bg);
+    --mpx-subtitle-cleanup-raw-preview-text: var(--mpx-text-1);
+    --mpx-subtitle-cleanup-raw-preview-toggle-border: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-subtitle-cleanup-raw-preview-toggle-bg: var(
+      --mpx-overlay-soft-head-bg
+    );
+    --mpx-subtitle-cleanup-raw-preview-toggle-text: var(--mpx-text-2);
+    --mpx-subtitle-cleanup-raw-preview-toggle-hover-bg: var(
+      --mpx-overlay-soft-border
+    );
+    --mpx-subtitle-cleanup-raw-preview-toggle-active-bg: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-subtitle-cleanup-raw-preview-toggle-focus-outline: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      var(--mpx-border-2)
+    );
+    --mpx-subtitle-cleanup-clean-preview-border: var(
+      --mpx-overlay-soft-row-divider
+    );
+    --mpx-subtitle-cleanup-clean-preview-bg: var(--mpx-overlay-soft-bg);
+    --mpx-subtitle-cleanup-clean-preview-text: var(--mpx-text-1);
+    --mpx-subtitle-cleanup-clean-preview-toggle-border: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-subtitle-cleanup-clean-preview-toggle-bg: var(
+      --mpx-overlay-soft-head-bg
+    );
+    --mpx-subtitle-cleanup-clean-preview-toggle-text: var(--mpx-text-2);
+    --mpx-subtitle-cleanup-clean-preview-toggle-hover-bg: var(
+      --mpx-overlay-soft-border
+    );
+    --mpx-subtitle-cleanup-clean-preview-toggle-active-bg: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-subtitle-cleanup-clean-preview-toggle-focus-outline: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      var(--mpx-border-2)
+    );
 
-  --mpx-metadata-playlist-name-dialog-text: var(--mpx-text-1);
-  --mpx-metadata-playlist-name-dialog-input-border: var(--mpx-input-border);
-  --mpx-metadata-playlist-name-dialog-input-bg: var(--mpx-input-bg);
-  --mpx-metadata-playlist-name-dialog-input-text: var(--mpx-input-text);
-  --mpx-metadata-playlist-name-dialog-input-placeholder: var(--mpx-text-2);
+    --mpx-transcode-dialog-control-border: var(--mpx-overlay-soft-border);
+    --mpx-transcode-dialog-control-bg: var(--mpx-overlay-soft-bg);
+    --mpx-transcode-dialog-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
+    --mpx-transcode-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
+    --mpx-transcode-dialog-control-text: var(--mpx-text-1);
+    --mpx-transcode-dialog-control-placeholder: var(--mpx-text-2);
+    --mpx-transcode-dialog-action-btn-border: var(--mpx-border-2);
+    --mpx-transcode-dialog-action-btn-bg: var(--mpx-bg-elevated);
+    --mpx-transcode-dialog-action-btn-text: var(--mpx-text-1);
 
-  /* 内卡统一 */
-  --mpx-card-radius: 10px;
-  --mpx-card-shadow: none;
-  --mpx-card-border-width: 1px;
+    --mpx-sidebar-rename-dialog-text: var(--mpx-text-1);
+    --mpx-sidebar-rename-dialog-muted-text: var(--mpx-text-2);
+    --mpx-sidebar-rename-dialog-control-border: var(--mpx-overlay-soft-border);
+    --mpx-sidebar-rename-dialog-control-bg: var(--mpx-overlay-soft-bg);
+    --mpx-sidebar-rename-dialog-control-hover-bg: var(
+      --mpx-overlay-soft-hover-bg
+    );
+    --mpx-sidebar-rename-dialog-control-focus-bg: var(
+      --mpx-overlay-soft-focus-bg
+    );
+    --mpx-sidebar-rename-dialog-control-text: var(--mpx-text-1);
+    --mpx-sidebar-rename-dialog-control-placeholder: var(--mpx-text-2);
+    --mpx-sidebar-rename-dialog-action-btn-border: var(--mpx-border-2);
+    --mpx-sidebar-rename-dialog-action-btn-bg: var(--mpx-bg-elevated);
+    --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-text-1);
+    --mpx-sidebar-rename-preview-border: var(--mpx-overlay-soft-border);
+    --mpx-sidebar-rename-preview-bg: var(--mpx-bg-elevated);
+    --mpx-sidebar-rename-preview-head-border: var(
+      --mpx-overlay-soft-head-divider
+    );
+    --mpx-sidebar-rename-preview-head-bg: var(--mpx-overlay-soft-head-bg);
+    --mpx-sidebar-rename-preview-head-text: var(--mpx-text-2);
+    --mpx-sidebar-rename-preview-list-bg: var(--mpx-overlay-soft-bg);
+    --mpx-sidebar-rename-preview-row-border: var(
+      --mpx-overlay-soft-row-divider
+    );
+    --mpx-sidebar-rename-preview-row-text: var(--mpx-text-1);
+    --mpx-sidebar-rename-preview-arrow-text: color-mix(
+      in srgb,
+      var(--mpx-text-2) 70%,
+      transparent
+    );
+    --mpx-sidebar-rename-preview-row-source-hover-bg: var(
+      --mpx-overlay-soft-hover-bg
+    );
+    --mpx-sidebar-rename-preview-row-source-active-bg: var(
+      --mpx-overlay-soft-focus-bg
+    );
+    --mpx-sidebar-rename-preview-row-source-pressed-bg: var(
+      --mpx-overlay-soft-focus-bg
+    );
+    --mpx-sidebar-rename-preview-row-changed-accent: color-mix(
+      in srgb,
+      var(--mpx-accent) 36%,
+      var(--mpx-border-1)
+    );
+    --mpx-sidebar-rename-preview-row-failed-accent: color-mix(
+      in srgb,
+      var(--mpx-status-danger-border) 68%,
+      var(--mpx-border-1)
+    );
+    --mpx-sidebar-rename-preview-row-failed-text: var(--mpx-status-danger-text);
+    --mpx-sidebar-rename-preview-row-unchanged-text: var(--mpx-text-2);
 
-  /* 级联圆角（选项1：按间距比例扣减） */
-  --mpx-radius-value-scale-coeff: 1;
-  --mpx-panel-radius-effective: max(
-    0px,
-    calc(var(--mpx-panel-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-sidebar-radius-effective: max(
-    0px,
-    calc(var(--mpx-sidebar-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-main-radius-effective: max(
-    0px,
-    calc(var(--mpx-main-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-metadata-radius-effective: max(
-    0px,
-    calc(var(--mpx-metadata-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-header-radius-effective: max(
-    0px,
-    calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-card-radius-effective: max(
-    0px,
-    calc(var(--mpx-card-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-control-radius-effective: max(
-    0px,
-    calc(var(--mpx-control-radius) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-header-btn-radius-effective: max(
-    0px,
-    calc(var(--mpx-header-btn-radius) * var(--mpx-radius-value-scale-coeff))
-  );
+    /* 小面板层（5.0） */
+    --mpx-dialog-panel-width: min(520px, 92vw);
+    --mpx-dialog-panel-max-width: 92vw;
+    --mpx-dialog-panel-height: auto;
+    --mpx-dialog-panel-max-height: 80vh;
+    --mpx-dialog-panel-border-width: 1px;
+    --mpx-dialog-panel-root-border-color: var(
+      --mpx-overlay-surface-border,
+      var(--mpx-border-2)
+    );
+    --mpx-dialog-panel-border-color: var(--mpx-dialog-panel-root-border-color);
+    --mpx-dialog-panel-radius: 12px;
+    --mpx-dialog-panel-root-fill-start: var(
+      --mpx-overlay-surface-bg,
+      var(--mpx-bg-elevated)
+    );
+    --mpx-dialog-panel-root-fill-end: var(--mpx-dialog-panel-root-fill-start);
+    --mpx-dialog-panel-root-fill-angle: 180deg;
+    --mpx-dialog-panel-fill-start: var(--mpx-dialog-panel-root-fill-start);
+    --mpx-dialog-panel-fill-end: var(--mpx-dialog-panel-root-fill-end);
+    --mpx-dialog-panel-fill-angle: var(--mpx-dialog-panel-root-fill-angle);
+    --mpx-dialog-panel-shadow: var(
+      --mpx-overlay-surface-shadow,
+      var(--mpx-shadow-panel)
+    );
+    --mpx-dialog-panel-padding: 14px;
+    --mpx-dialog-panel-gap: 10px;
 
-  --mpx-radius-cascade-factor-base: 0.35;
-  --mpx-radius-cascade-scale-coeff: 1;
-  --mpx-radius-cascade-factor: calc(
-    var(--mpx-radius-cascade-factor-base) *
-      var(--mpx-radius-cascade-scale-coeff)
-  );
-  --mpx-radius-cascade-cap: 8px;
-  --mpx-radius-inset-pane: clamp(
-    1px,
-    calc(var(--mpx-pane-inner-padding-px) * var(--mpx-radius-cascade-factor)),
-    var(--mpx-radius-cascade-cap)
-  );
-  --mpx-radius-inset-stack: clamp(
-    1px,
-    calc(var(--mpx-pane-stack-gap-px) * 0.5),
-    6px
-  );
-  --mpx-radius-inset-control: clamp(
-    1px,
-    calc(var(--mpx-control-border-width) + 1px),
-    3px
-  );
+    --mpx-metadata-playlist-name-dialog-text: var(--mpx-text-1);
+    --mpx-metadata-playlist-name-dialog-input-border: var(--mpx-input-border);
+    --mpx-metadata-playlist-name-dialog-input-bg: var(--mpx-input-bg);
+    --mpx-metadata-playlist-name-dialog-input-text: var(--mpx-input-text);
+    --mpx-metadata-playlist-name-dialog-input-placeholder: var(--mpx-text-2);
 
-  --mpx-radius-sidebar-inner-base: max(
-    0px,
-    calc(var(--mpx-sidebar-radius) - var(--mpx-radius-inset-pane))
-  );
-  --mpx-radius-main-inner-base: max(
-    0px,
-    calc(var(--mpx-main-radius) - var(--mpx-radius-inset-pane))
-  );
-  --mpx-radius-metadata-inner-base: max(
-    0px,
-    calc(var(--mpx-metadata-radius) - var(--mpx-radius-inset-pane))
-  );
-  --mpx-radius-header-inner-base: max(
-    0px,
-    calc(var(--mpx-header-radius) - var(--mpx-radius-inset-stack))
-  );
+    /* 内卡统一 */
+    --mpx-card-radius: 10px;
+    --mpx-card-shadow: none;
+    --mpx-card-border-width: 1px;
 
-  --mpx-radius-sidebar-header-btn-base: min(
-    var(--mpx-control-radius),
-    var(--mpx-radius-sidebar-inner-base)
-  );
-  --mpx-radius-sidebar-label-base: max(
-    0px,
-    calc(
-      var(--mpx-radius-sidebar-header-btn-base) -
-        var(--mpx-radius-inset-control)
-    )
-  );
-
-  --mpx-radius-main-card-base: min(
-    var(--mpx-card-radius),
-    max(
+    /* 级联圆角（选项1：按间距比例扣减） */
+    --mpx-radius-value-scale-coeff: 1;
+    --mpx-panel-radius-effective: max(
       0px,
-      calc(var(--mpx-radius-main-inner-base) - var(--mpx-radius-inset-stack))
-    )
-  );
-  --mpx-radius-thumb-media-base: max(
-    0px,
-    calc(var(--mpx-radius-main-card-base) - var(--mpx-radius-inset-control))
-  );
+      calc(var(--mpx-panel-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-sidebar-radius-effective: max(
+      0px,
+      calc(var(--mpx-sidebar-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-main-radius-effective: max(
+      0px,
+      calc(var(--mpx-main-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-metadata-radius-effective: max(
+      0px,
+      calc(var(--mpx-metadata-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-header-radius-effective: max(
+      0px,
+      calc(var(--mpx-header-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-card-radius-effective: max(
+      0px,
+      calc(var(--mpx-card-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-control-radius-effective: max(
+      0px,
+      calc(var(--mpx-control-radius) * var(--mpx-radius-value-scale-coeff))
+    );
+    --mpx-header-btn-radius-effective: max(
+      0px,
+      calc(var(--mpx-header-btn-radius) * var(--mpx-radius-value-scale-coeff))
+    );
 
-  --mpx-radius-metadata-control-base: min(
-    var(--mpx-control-radius),
-    var(--mpx-radius-metadata-inner-base)
-  );
-  --mpx-radius-metadata-card-base: min(
-    var(--mpx-card-radius),
-    max(
+    --mpx-radius-cascade-factor-base: 0.35;
+    --mpx-radius-cascade-scale-coeff: 1;
+    --mpx-radius-cascade-factor: calc(
+      var(--mpx-radius-cascade-factor-base) *
+        var(--mpx-radius-cascade-scale-coeff)
+    );
+    --mpx-radius-cascade-cap: 8px;
+    --mpx-radius-inset-pane: clamp(
+      1px,
+      calc(var(--mpx-pane-inner-padding-px) * var(--mpx-radius-cascade-factor)),
+      var(--mpx-radius-cascade-cap)
+    );
+    --mpx-radius-inset-stack: clamp(
+      1px,
+      calc(var(--mpx-pane-stack-gap-px) * 0.5),
+      6px
+    );
+    --mpx-radius-inset-control: clamp(
+      1px,
+      calc(var(--mpx-control-border-width) + 1px),
+      3px
+    );
+
+    --mpx-radius-sidebar-inner-base: max(
+      0px,
+      calc(var(--mpx-sidebar-radius) - var(--mpx-radius-inset-pane))
+    );
+    --mpx-radius-main-inner-base: max(
+      0px,
+      calc(var(--mpx-main-radius) - var(--mpx-radius-inset-pane))
+    );
+    --mpx-radius-metadata-inner-base: max(
+      0px,
+      calc(var(--mpx-metadata-radius) - var(--mpx-radius-inset-pane))
+    );
+    --mpx-radius-header-inner-base: max(
+      0px,
+      calc(var(--mpx-header-radius) - var(--mpx-radius-inset-stack))
+    );
+
+    --mpx-radius-sidebar-header-btn-base: min(
+      var(--mpx-control-radius),
+      var(--mpx-radius-sidebar-inner-base)
+    );
+    --mpx-radius-sidebar-label-base: max(
       0px,
       calc(
-        var(--mpx-radius-metadata-inner-base) - var(--mpx-radius-inset-stack)
+        var(--mpx-radius-sidebar-header-btn-base) -
+          var(--mpx-radius-inset-control)
       )
-    )
-  );
+    );
 
-  --mpx-radius-header-group-base: max(
-    0px,
-    calc(var(--mpx-radius-header-inner-base) - 1px)
-  );
-  --mpx-radius-header-btn-inner-base: max(
-    0px,
-    calc(var(--mpx-header-btn-radius) - 2px)
-  );
-  --mpx-radius-overlay-pop-base: min(
-    var(--mpx-card-radius),
-    max(
+    --mpx-radius-main-card-base: min(
+      var(--mpx-card-radius),
+      max(
+        0px,
+        calc(var(--mpx-radius-main-inner-base) - var(--mpx-radius-inset-stack))
+      )
+    );
+    --mpx-radius-thumb-media-base: max(
+      0px,
+      calc(var(--mpx-radius-main-card-base) - var(--mpx-radius-inset-control))
+    );
+
+    --mpx-radius-metadata-control-base: min(
+      var(--mpx-control-radius),
+      var(--mpx-radius-metadata-inner-base)
+    );
+    --mpx-radius-metadata-card-base: min(
+      var(--mpx-card-radius),
+      max(
+        0px,
+        calc(
+          var(--mpx-radius-metadata-inner-base) - var(--mpx-radius-inset-stack)
+        )
+      )
+    );
+
+    --mpx-radius-header-group-base: max(
+      0px,
+      calc(var(--mpx-radius-header-inner-base) - 1px)
+    );
+    --mpx-radius-header-btn-inner-base: max(
+      0px,
+      calc(var(--mpx-header-btn-radius) - 2px)
+    );
+    --mpx-radius-overlay-pop-base: min(
+      var(--mpx-card-radius),
+      max(
+        0px,
+        calc(
+          var(--mpx-radius-header-group-base) - var(--mpx-radius-inset-control)
+        )
+      )
+    );
+
+    --mpx-radius-sidebar-inner: max(
       0px,
       calc(
-        var(--mpx-radius-header-group-base) - var(--mpx-radius-inset-control)
+        var(--mpx-radius-sidebar-inner-base) *
+          var(--mpx-radius-value-scale-coeff)
       )
-    )
-  );
+    );
+    --mpx-radius-main-inner: max(
+      0px,
+      calc(
+        var(--mpx-radius-main-inner-base) * var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-metadata-inner: max(
+      0px,
+      calc(
+        var(--mpx-radius-metadata-inner-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-header-inner: max(
+      0px,
+      calc(
+        var(--mpx-radius-header-inner-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-sidebar-header-btn: max(
+      0px,
+      calc(
+        var(--mpx-radius-sidebar-header-btn-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-sidebar-label: max(
+      0px,
+      calc(
+        var(--mpx-radius-sidebar-label-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-main-card: max(
+      0px,
+      calc(
+        var(--mpx-radius-main-card-base) * var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-thumb-media: max(
+      0px,
+      calc(
+        var(--mpx-radius-thumb-media-base) * var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-metadata-control: max(
+      0px,
+      calc(
+        var(--mpx-radius-metadata-control-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-metadata-card: max(
+      0px,
+      calc(
+        var(--mpx-radius-metadata-card-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-header-group: max(
+      0px,
+      calc(
+        var(--mpx-radius-header-group-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-header-btn-inner: max(
+      0px,
+      calc(
+        var(--mpx-radius-header-btn-inner-base) *
+          var(--mpx-radius-value-scale-coeff)
+      )
+    );
+    --mpx-radius-overlay-pop: max(
+      0px,
+      calc(
+        var(--mpx-radius-overlay-pop-base) * var(--mpx-radius-value-scale-coeff)
+      )
+    );
 
-  --mpx-radius-sidebar-inner: max(
-    0px,
-    calc(
-      var(--mpx-radius-sidebar-inner-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-main-inner: max(
-    0px,
-    calc(
-      var(--mpx-radius-main-inner-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-metadata-inner: max(
-    0px,
-    calc(
-      var(--mpx-radius-metadata-inner-base) *
-        var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-header-inner: max(
-    0px,
-    calc(
-      var(--mpx-radius-header-inner-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-sidebar-header-btn: max(
-    0px,
-    calc(
-      var(--mpx-radius-sidebar-header-btn-base) *
-        var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-sidebar-label: max(
-    0px,
-    calc(
-      var(--mpx-radius-sidebar-label-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-main-card: max(
-    0px,
-    calc(var(--mpx-radius-main-card-base) * var(--mpx-radius-value-scale-coeff))
-  );
-  --mpx-radius-thumb-media: max(
-    0px,
-    calc(
-      var(--mpx-radius-thumb-media-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-metadata-control: max(
-    0px,
-    calc(
-      var(--mpx-radius-metadata-control-base) *
-        var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-metadata-card: max(
-    0px,
-    calc(
-      var(--mpx-radius-metadata-card-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-header-group: max(
-    0px,
-    calc(
-      var(--mpx-radius-header-group-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-header-btn-inner: max(
-    0px,
-    calc(
-      var(--mpx-radius-header-btn-inner-base) *
-        var(--mpx-radius-value-scale-coeff)
-    )
-  );
-  --mpx-radius-overlay-pop: max(
-    0px,
-    calc(
-      var(--mpx-radius-overlay-pop-base) * var(--mpx-radius-value-scale-coeff)
-    )
-  );
+    /* 控件视觉效果 */
+    --mpx-control-shadow: none;
+    --mpx-control-backdrop-filter: none;
+    --mpx-control-transition: 0.15s ease;
+    --mpx-control-hover-transform: none;
+    --mpx-control-hover-shadow: none;
+    --mpx-control-hover-backdrop-filter: none;
+    --mpx-control-active-transform: none;
+    --mpx-control-active-shadow: none;
 
-  /* 控件视觉效果 */
-  --mpx-control-shadow: none;
-  --mpx-control-backdrop-filter: none;
-  --mpx-control-transition: 0.15s ease;
-  --mpx-control-hover-transform: none;
-  --mpx-control-hover-shadow: none;
-  --mpx-control-hover-backdrop-filter: none;
-  --mpx-control-active-transform: none;
-  --mpx-control-active-shadow: none;
-
-  /* ========================================================
+    /* ========================================================
    * F. Palette 原始色导出（默认 parchment 配色）
    * ======================================================== */
-  --mpx-palette-surface: #fbf8f3;
-  --mpx-palette-base: #f2eee7;
-  --mpx-palette-accent-raw: #2e6f7f;
-  --mpx-palette-text-raw: #2e2a22;
-  --mpx-palette-shadow-color: rgba(60, 48, 30, 0.15);
+    --mpx-palette-surface: #fbf8f3;
+    --mpx-palette-base: #f2eee7;
+    --mpx-palette-accent-raw: #2e6f7f;
+    --mpx-palette-text-raw: #2e2a22;
+    --mpx-palette-shadow-color: rgba(60, 48, 30, 0.15);
   }
 }

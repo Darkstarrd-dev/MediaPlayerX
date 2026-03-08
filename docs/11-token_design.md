@@ -150,6 +150,38 @@ Metadata 主面板 body / edit-grid / preference-record / tag 编辑区语义统
 
 兼容说明：既有 `--mpx-metadata-preference-record-*` 与 `--mpx-metadata-feature-tag-picker-*` 当前默认回落到上述新语义 token。
 
+## Main 区域 / 覆盖层（2.3.2）补充
+
+Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music / overlay / rating 残留硬编码色。
+
+1. Music visualizer / shader 控件链路：
+   - `--mpx-music-vis-text`
+   - `--mpx-music-vis-hud-bg`
+   - `--mpx-music-vis-hud-text`
+   - `--mpx-music-vis-hud-border`
+   - `--mpx-music-vis-error-bg`
+   - `--mpx-music-vis-error-border`
+   - `--mpx-music-ctrl-focus-color`
+   - `--mpx-music-ctrl-range-fill`
+   - `--mpx-music-ctrl-toggle-bg`
+2. Video screen / fullscreen 背景链路：
+   - `--mpx-video-screen-bg`
+3. 广告审核删除 overlay 链路：
+   - `--mpx-ad-review-overlay-stage-bg`
+   - `--mpx-ad-review-overlay-card-bg`
+   - `--mpx-ad-review-overlay-card-border`
+   - `--mpx-ad-review-overlay-card-shadow`
+   - `--mpx-ad-review-overlay-text-main`
+   - `--mpx-ad-review-overlay-text-sub`
+   - `--mpx-ad-review-overlay-text-hint`
+   - `--mpx-ad-review-overlay-track-bg`
+   - `--mpx-ad-review-overlay-track-start`
+   - `--mpx-ad-review-overlay-track-mid`
+   - `--mpx-ad-review-overlay-track-end`
+4. Rating heart 链路：
+   - `--mpx-rating-heart-color`
+   - `--mpx-rating-heart-active-color`
+
 ## 容器 frame / spacing 补充
 
 ### 共享壳层与单容器 frame

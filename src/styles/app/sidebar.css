@@ -153,7 +153,11 @@
     -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)
       var(--mpx-pane-focus-metal-specular),
     1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 1px)
-      color-mix(in srgb, var(--mpx-pane-focus-metal-topline) 92%, #fff 8%),
+      color-mix(
+        in srgb,
+        var(--mpx-pane-focus-metal-topline) 92%,
+        var(--mpx-bg-elevated) 8%
+      ),
     -1px -1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px)
       var(--mpx-pane-focus-metal-highlight),
     1px 1px 0 calc(var(--mpx-pane-focus-ring-offset) + 2px)
@@ -161,7 +165,11 @@
     1px 2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px)
       var(--mpx-pane-focus-metal-shadow),
     -1px -2px 0 calc(var(--mpx-pane-focus-ring-offset) + 3px)
-      color-mix(in srgb, var(--mpx-pane-focus-metal-highlight) 84%, #fff 16%),
+      color-mix(
+        in srgb,
+        var(--mpx-pane-focus-metal-highlight) 84%,
+        var(--mpx-bg-elevated) 16%
+      ),
     0 0 0 calc(var(--mpx-pane-focus-ring-offset) + 4px)
       var(--mpx-pane-focus-metal-rim-shadow),
     0 0 12px 2px var(--mpx-pane-focus-metal-glow),
@@ -589,7 +597,7 @@
       color-mix(
         in srgb,
         var(--mpx-sidebar-node-bg, var(--mpx-btn-variant-player-bg-idle)) 78%,
-        #ffffff 22%
+        var(--mpx-bg-elevated) 22%
       );
 }
 
@@ -684,10 +692,7 @@
   .sidebar-label.is-collapsible.is-collapsed {
   background: var(
     --mpx-slot-fg-sidebar-main-label-collapsed-bg,
-    var(
-      --mpx-sidebar-main-label-collapsed-bg,
-      linear-gradient(135deg, #f3ead1, #e6d6b3)
-    )
+    var(--mpx-sidebar-main-label-collapsed-bg, var(--mpx-bg-panel))
   );
 }
 
@@ -696,10 +701,7 @@
   .sidebar-label.is-collapsible:not(.is-collapsed) {
   background: var(
     --mpx-slot-fg-sidebar-main-label-expanded-bg,
-    var(
-      --mpx-sidebar-main-label-expanded-bg,
-      linear-gradient(135deg, #fffbf2, #f3ead1)
-    )
+    var(--mpx-sidebar-main-label-expanded-bg, var(--mpx-bg-panel))
   );
 }
 
@@ -711,19 +713,13 @@
   .sidebar-label:not(.is-collapsible) {
   background: var(
     --mpx-slot-fg-sidebar-main-label-plain-bg,
-    var(
-      --mpx-sidebar-main-label-plain-bg,
-      linear-gradient(135deg, #f3f0ea, #e9e5de)
-    )
+    var(--mpx-sidebar-main-label-plain-bg, var(--mpx-bg-panel))
   );
   border-color: var(
     --mpx-slot-fg-sidebar-main-label-plain-border,
     var(
       --mpx-sidebar-main-label-plain-border,
-      var(
-        --mpx-slot-fg-sidebar-main-label-border,
-        var(--mpx-sidebar-main-label-border, #d5d0c8)
-      )
+      var(--mpx-sidebar-main-label-border)
     )
   );
 }

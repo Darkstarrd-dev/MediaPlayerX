@@ -67,7 +67,11 @@
 
 .music-ctrl-shader-input:focus-visible {
   outline: 2px solid
-    color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 70%, #fff 30%);
+    color-mix(
+      in srgb,
+      var(--mpx-music-ctrl-focus-color) 70%,
+      var(--mpx-text-inverse) 30%
+    );
   outline-offset: 1px;
 }
 
@@ -79,9 +83,8 @@
 .music-ctrl-shader-range::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 68%, #ffffff 32%) 0%,
-    color-mix(in srgb, var(--mpx-color-accent, #56b6ff) 68%, #ffffff 32%)
-      var(--mpx-skeuo-range-pct, 0%),
+    var(--mpx-music-ctrl-range-fill) 0%,
+    var(--mpx-music-ctrl-range-fill) var(--mpx-skeuo-range-pct, 0%),
     color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
       var(--mpx-skeuo-range-pct, 0%),
     color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
@@ -102,8 +105,8 @@
 .music-ctrl-shader-range::-moz-range-progress {
   background: color-mix(
     in srgb,
-    var(--mpx-color-accent, #56b6ff) 68%,
-    #ffffff 32%
+    var(--mpx-music-ctrl-focus-color) 68%,
+    var(--mpx-text-inverse) 32%
   );
   border-radius: var(--mpx-radius-pill);
 }
@@ -117,7 +120,7 @@
   border: var(--mpx-control-border-width) solid var(--mpx-player-hud-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   padding: 6px 8px;
-  background: color-mix(in srgb, var(--mpx-player-surface-bg) 86%, #fff 14%);
+  background: var(--mpx-music-ctrl-toggle-bg);
 }
 
 .music-ctrl-panel-option {
@@ -174,7 +177,7 @@
   justify-content: center;
   background: var(
     --mpx-slot-fg-main-content-video-preview-screen-bg,
-    var(--mpx-bg-elevated)
+    var(--mpx-video-screen-bg)
   );
   color: var(--mpx-text-inverse);
   font-size: 22px;

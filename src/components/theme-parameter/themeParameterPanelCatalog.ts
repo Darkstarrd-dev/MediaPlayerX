@@ -368,6 +368,142 @@ export const CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS: readonly ThemeDebugColorFiel
     },
   ];
 
+export const CONTAINER_MAIN_MEDIA_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-main-music-vis-text",
+      cssVar: "--mpx-music-vis-text",
+      fallback: "#eef1f4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-bg",
+      cssVar: "--mpx-music-vis-hud-bg",
+      fallback: "rgba(6, 8, 17, 0.74)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-text",
+      cssVar: "--mpx-music-vis-hud-text",
+      fallback: "#eef1f4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-border",
+      cssVar: "--mpx-music-vis-hud-border",
+      fallback: "rgba(129, 145, 163, 0.35)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-error-bg",
+      cssVar: "--mpx-music-vis-error-bg",
+      fallback: "#250b14",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-error-border",
+      cssVar: "--mpx-music-vis-error-border",
+      fallback: "#8f2f45",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-focus-color",
+      cssVar: "--mpx-music-ctrl-focus-color",
+      fallback: "#2e6f7f",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-range-fill",
+      cssVar: "--mpx-music-ctrl-range-fill",
+      fallback: "#71b4d2",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-toggle-bg",
+      cssVar: "--mpx-music-ctrl-toggle-bg",
+      fallback: "rgba(43, 47, 53, 0.86)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-video-screen-bg",
+      cssVar: "--mpx-video-screen-bg",
+      fallback: "linear-gradient(135deg, #2d2f33, #212022)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-stage-bg",
+      cssVar: "--mpx-ad-review-overlay-stage-bg",
+      fallback: "rgba(0, 0, 0, 0.48)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-card-bg",
+      cssVar: "--mpx-ad-review-overlay-card-bg",
+      fallback: "rgba(255, 250, 243, 0.9)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-card-border",
+      cssVar: "--mpx-ad-review-overlay-card-border",
+      fallback: "rgba(170, 147, 120, 0.35)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-text-main",
+      cssVar: "--mpx-ad-review-overlay-text-main",
+      fallback: "#2c1d11",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-text-sub",
+      cssVar: "--mpx-ad-review-overlay-text-sub",
+      fallback: "#6f5740",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-text-hint",
+      cssVar: "--mpx-ad-review-overlay-text-hint",
+      fallback: "#73573d",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-track-bg",
+      cssVar: "--mpx-ad-review-overlay-track-bg",
+      fallback: "rgba(171, 140, 108, 0.24)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-track-start",
+      cssVar: "--mpx-ad-review-overlay-track-start",
+      fallback: "#c9703a",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-track-mid",
+      cssVar: "--mpx-ad-review-overlay-track-mid",
+      fallback: "#cc7e44",
+      groupId: "main",
+    },
+    {
+      id: "container-main-ad-review-overlay-track-end",
+      cssVar: "--mpx-ad-review-overlay-track-end",
+      fallback: "#d4965f",
+      groupId: "main",
+    },
+    {
+      id: "container-main-rating-heart-color",
+      cssVar: "--mpx-rating-heart-color",
+      fallback: "#8f1d3e",
+      groupId: "main",
+    },
+    {
+      id: "container-main-rating-heart-active-color",
+      cssVar: "--mpx-rating-heart-active-color",
+      fallback: "#7a1836",
+      groupId: "main",
+    },
+  ];
+
 export const CONTAINER_MAIN_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "container-main-shadow",
@@ -1622,6 +1758,7 @@ export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_MAIN_HEADER_COLOR_FIELDS,
   ...CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
   ...CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
+  ...CONTAINER_MAIN_MEDIA_COLOR_FIELDS,
   ...CONTAINER_METADATA_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,

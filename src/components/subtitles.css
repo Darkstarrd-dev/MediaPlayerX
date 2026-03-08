@@ -7,7 +7,7 @@
   width: min(84%, 920px);
   padding: 2px 10px;
   box-sizing: border-box;
-  color: #fff;
+  color: var(--mpx-text-inverse);
   font-size: clamp(14px, 1.2vw, 20px);
   font-weight: 600;
   line-height: 1.4;

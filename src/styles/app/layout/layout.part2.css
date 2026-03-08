@@ -259,45 +259,72 @@
 [data-slot="fg-meta-header-g3-search"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-meta-header-g3-search-border,
-    var(--mpx-slot-fg-meta-header-g3-border, var(--mpx-metadata-header-button-border-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-border,
+      var(--mpx-metadata-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-meta-header-g3-search-bg,
-    var(--mpx-slot-fg-meta-header-g3-bg, var(--mpx-metadata-header-button-bg-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-bg,
+      var(--mpx-metadata-header-button-bg-effective)
+    )
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-meta-header-g3-search-text,
-    var(--mpx-slot-fg-meta-header-g3-text, var(--mpx-metadata-header-button-text-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-text,
+      var(--mpx-metadata-header-button-text-effective)
+    )
   );
 }
 
 [data-slot="fg-meta-header-g3-manage"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-meta-header-g3-manage-border,
-    var(--mpx-slot-fg-meta-header-g3-border, var(--mpx-metadata-header-button-border-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-border,
+      var(--mpx-metadata-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-meta-header-g3-manage-bg,
-    var(--mpx-slot-fg-meta-header-g3-bg, var(--mpx-metadata-header-button-bg-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-bg,
+      var(--mpx-metadata-header-button-bg-effective)
+    )
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-meta-header-g3-manage-text,
-    var(--mpx-slot-fg-meta-header-g3-text, var(--mpx-metadata-header-button-text-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-text,
+      var(--mpx-metadata-header-button-text-effective)
+    )
   );
 }
 
 [data-slot="fg-meta-header-g3-metadata"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-meta-header-g3-metadata-border,
-    var(--mpx-slot-fg-meta-header-g3-border, var(--mpx-metadata-header-button-border-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-border,
+      var(--mpx-metadata-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-meta-header-g3-metadata-bg,
-    var(--mpx-slot-fg-meta-header-g3-bg, var(--mpx-metadata-header-button-bg-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-bg,
+      var(--mpx-metadata-header-button-bg-effective)
+    )
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-meta-header-g3-metadata-text,
-    var(--mpx-slot-fg-meta-header-g3-text, var(--mpx-metadata-header-button-text-effective))
+    var(
+      --mpx-slot-fg-meta-header-g3-text,
+      var(--mpx-metadata-header-button-text-effective)
+    )
   );
 }
 
@@ -320,7 +347,10 @@
 [data-slot="fg-header-g-debug-native-chrome"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g-debug-native-chrome-border,
-    var(--mpx-slot-fg-header-g-debug-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g-debug-native-chrome-bg,
@@ -328,14 +358,20 @@
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-header-g-debug-native-chrome-text,
-    var(--mpx-slot-fg-header-g-debug-text, var(--mpx-header-button-text-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-text,
+      var(--mpx-header-button-text-effective)
+    )
   );
 }
 
 [data-slot="fg-header-g-debug-tooltips"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g-debug-tooltips-border,
-    var(--mpx-slot-fg-header-g-debug-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g-debug-tooltips-bg,
@@ -343,14 +379,20 @@
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-header-g-debug-tooltips-text,
-    var(--mpx-slot-fg-header-g-debug-text, var(--mpx-header-button-text-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-text,
+      var(--mpx-header-button-text-effective)
+    )
   );
 }
 
 [data-slot="fg-header-g-debug-theme-parameter"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g-debug-theme-parameter-border,
-    var(--mpx-slot-fg-header-g-debug-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g-debug-theme-parameter-bg,
@@ -358,7 +400,10 @@
   );
   --mpx-btn-variant-default-text-idle: var(
     --mpx-slot-fg-header-g-debug-theme-parameter-text,
-    var(--mpx-slot-fg-header-g-debug-text, var(--mpx-header-button-text-effective))
+    var(
+      --mpx-slot-fg-header-g-debug-text,
+      var(--mpx-header-button-text-effective)
+    )
   );
 }
 
@@ -380,7 +425,10 @@
 [data-slot="fg-header-g3-popover-debug-pin"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-popover-debug-pin-border,
-    var(--mpx-slot-fg-header-g3-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g3-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g3-popover-debug-pin-bg,
@@ -395,7 +443,10 @@
 [data-slot="fg-header-g3-help"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-help-border,
-    var(--mpx-slot-fg-header-g3-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g3-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g3-help-bg,
@@ -410,7 +461,10 @@
 [data-slot="fg-header-g3-window-min"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-window-min-border,
-    var(--mpx-slot-fg-header-g3-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g3-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g3-window-min-bg,
@@ -425,7 +479,10 @@
 [data-slot="fg-header-g3-window-maxrestore"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-window-maxrestore-border,
-    var(--mpx-slot-fg-header-g3-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g3-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g3-window-maxrestore-bg,
@@ -440,7 +497,10 @@
 [data-slot="fg-header-g3-window-close"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-window-close-border,
-    var(--mpx-slot-fg-header-g3-border, var(--mpx-header-button-border-effective))
+    var(
+      --mpx-slot-fg-header-g3-border,
+      var(--mpx-header-button-border-effective)
+    )
   );
   --mpx-btn-variant-default-bg-idle: var(
     --mpx-slot-fg-header-g3-window-close-bg,
@@ -698,7 +758,7 @@
 }
 
 .fullscreen-media-video {
-  background: #000;
+  background: var(--mpx-video-screen-bg);
 }
 
 .fullscreen-media small {
@@ -780,7 +840,7 @@
 }
 
 .fullscreen-media-video-element {
-  background: #000;
+  background: var(--mpx-video-screen-bg);
 }
 
 .fullscreen-media-video-cover {

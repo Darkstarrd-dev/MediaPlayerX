@@ -55,6 +55,7 @@ import {
   CONTAINER_LAYER_TEXT_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
+  CONTAINER_MAIN_MEDIA_COLOR_FIELDS,
   CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
   CONTAINER_SHARED_COLOR_FIELDS,
   CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS,
@@ -1568,6 +1569,17 @@ export function ThemeParameterPanelMain({
                   {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
                     renderColorFieldRow,
                   )}
+                </div>
+              </section>
+              <section className="settings-group theme-parameter-debug-group">
+                <header className="settings-group-head theme-parameter-subgroup-head">
+                  <span>工作区 视频 / 音乐 / 覆盖层</span>
+                  <span className="theme-parameter-subgroup-tag">
+                    fg-main-content-media
+                  </span>
+                </header>
+                <div className="theme-parameter-color-list">
+                  {CONTAINER_MAIN_MEDIA_COLOR_FIELDS.map(renderColorFieldRow)}
                 </div>
               </section>
             </div>

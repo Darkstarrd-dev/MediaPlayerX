@@ -33,7 +33,10 @@
       --mpx-slot-fg-sidebar-main-label-manage-selected-shadow,
       var(
         --mpx-sidebar-main-label-manage-selected-shadow,
-        var(--mpx-sidebar-control-active-shadow, var(--mpx-control-active-shadow))
+        var(
+          --mpx-sidebar-control-active-shadow,
+          var(--mpx-control-active-shadow)
+        )
       )
     ),
     inset 0 0 0 1px
@@ -160,7 +163,10 @@
   z-index: 2;
   background: var(
     --mpx-slot-fg-main-content-image-name-list-row-selected-bg,
-    var(--mpx-main-image-name-list-row-selected-bg, var(--mpx-state-selected-color))
+    var(
+      --mpx-main-image-name-list-row-selected-bg,
+      var(--mpx-state-selected-color)
+    )
   );
   box-shadow: none;
 }
@@ -419,22 +425,6 @@
 }
 
 .ad-review-delete-overlay {
-  --mpx-ad-review-overlay-stage-bg: color-mix(
-    in srgb,
-    var(--mpx-bg-tooltip) 56%,
-    transparent
-  );
-  --mpx-ad-review-overlay-card-bg: rgba(255, 250, 243, 0.9);
-  --mpx-ad-review-overlay-card-border: rgba(170, 147, 120, 0.35);
-  --mpx-ad-review-overlay-card-shadow: 0 16px 36px rgba(72, 54, 33, 0.16);
-  --mpx-ad-review-overlay-text-main: #2c1d11;
-  --mpx-ad-review-overlay-text-sub: #6f5740;
-  --mpx-ad-review-overlay-text-hint: #73573d;
-  --mpx-ad-review-overlay-track-bg: rgba(171, 140, 108, 0.24);
-  --mpx-ad-review-overlay-track-start: #c9703a;
-  --mpx-ad-review-overlay-track-mid: #cc7e44;
-  --mpx-ad-review-overlay-track-end: #d4965f;
-  --mpx-ad-review-overlay-loading-duration: 1.4s;
   position: fixed;
   inset: 0;
   z-index: 2601;
@@ -448,15 +438,15 @@
 [data-slot="fg-main-header-image-delete-progress-ovl"] {
   --mpx-ad-review-overlay-stage-bg: var(
     --mpx-slot-fg-main-header-image-delete-progress-ovl-bg,
-    color-mix(in srgb, var(--mpx-bg-tooltip) 56%, transparent)
+    var(--mpx-ad-review-overlay-stage-bg)
   );
   --mpx-ad-review-overlay-text-main: var(
     --mpx-slot-fg-main-header-image-delete-progress-ovl-text,
-    #2c1d11
+    var(--mpx-ad-review-overlay-text-main)
   );
   --mpx-ad-review-overlay-card-shadow: var(
     --mpx-slot-fg-main-header-image-delete-progress-ovl-shadow,
-    0 16px 36px rgba(72, 54, 33, 0.16)
+    var(--mpx-ad-review-overlay-card-shadow)
   );
 }
 
@@ -697,8 +687,12 @@
 .metadata-fetch-search-row {
   --metadata-fetch-soft-border: var(--mpx-metadata-fetch-control-border);
   --metadata-fetch-soft-input-bg: var(--mpx-metadata-fetch-control-bg);
-  --metadata-fetch-soft-input-hover-bg: var(--mpx-metadata-fetch-control-hover-bg);
-  --metadata-fetch-soft-input-focus-bg: var(--mpx-metadata-fetch-control-focus-bg);
+  --metadata-fetch-soft-input-hover-bg: var(
+    --mpx-metadata-fetch-control-hover-bg
+  );
+  --metadata-fetch-soft-input-focus-bg: var(
+    --mpx-metadata-fetch-control-focus-bg
+  );
   grid-template-columns:
     auto minmax(150px, 240px) minmax(220px, 1fr) minmax(150px, 190px)
     48px;
@@ -1048,7 +1042,9 @@
   background: var(--mpx-subtitle-cleanup-preview-bg-current);
 }
 
-.subtitle-cleanup-panel [data-slot$="-preview-panel"] .metadata-fetch-preview-toggle {
+.subtitle-cleanup-panel
+  [data-slot$="-preview-panel"]
+  .metadata-fetch-preview-toggle {
   border: 1px solid var(--mpx-subtitle-cleanup-preview-toggle-border-current);
   background: var(--mpx-subtitle-cleanup-preview-toggle-bg-current);
   color: var(--mpx-subtitle-cleanup-preview-toggle-text-current);
@@ -1070,7 +1066,8 @@
 .subtitle-cleanup-panel
   [data-slot$="-preview-panel"]
   .metadata-fetch-preview-toggle:focus-visible {
-  outline: 1px solid var(--mpx-subtitle-cleanup-preview-toggle-focus-outline-current);
+  outline: 1px solid
+    var(--mpx-subtitle-cleanup-preview-toggle-focus-outline-current);
 }
 
 .subtitle-cleanup-panel [data-slot$="-preview-panel"] textarea {

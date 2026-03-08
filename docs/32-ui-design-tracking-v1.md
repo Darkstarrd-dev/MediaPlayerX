@@ -1555,3 +1555,33 @@ css 的触发点
 1. 文档层已建立“层级 -> 语义 token -> slot token / data-slot -> 消费点 -> ThemeParameter 分页”的对照基线。
 2. Phase 2 起重点不再是继续铺大层，而是补齐上表列出的半成品链路与内部件收口。
 3. Phase 3 的 theme schema 只接收已经完成 Phase 1 / Phase 2 对照的字段，不再接收匿名 CSS 例外项。
+
+### 7.0.5 Phase 1-5 完成状态（2026-03-09）
+
+本轮 Theme System 优化已完成 `Phase 1 -> Phase 5`，当前状态如下：
+
+| Phase | 范围 | 结果 |
+|------|------|------|
+| 1 | Theme 层 `@layer` 架构 | 已完成：`contract / palette / theme-style` 全部进入显式 layer |
+| 2 | App 层 `@layer` + `!important` 清零 | 已完成：`src/styles/` 与 `src/components/subtitles.css` 中 `!important` 为 0 |
+| 3 | Settings 内部件三级派生 | 已完成：`--mpx-settings-*` 已接入 ThemeParameter |
+| 4 | Metadata 内部件三级派生 | 已完成：`--mpx-metadata-*` 已接入 ThemeParameter |
+| 5 | Main 内容区 + 硬编码清理 | 已完成：`--mpx-main-image-name-list-*`、`--mpx-music-vis-*`、`--mpx-music-ctrl-*`、`--mpx-video-screen-bg`、`--mpx-ad-review-overlay-*`、`--mpx-rating-heart-*` 已收口 |
+
+补充说明：
+
+1. `containerLayer` 当前已覆盖：`2.0` 共享壳层、`2.1` Header、`2.2` Sidebar、`2.2.2.1 fg-sidebar-main`、`2.3` Main、`2.3.2.1` 工作区缩略图模式、`2.3.2.2 fg-main-content-image-name-list`、`2.3.2.x` 视频 / 音乐 / overlay / rating 调参组、`2.4` Metadata、`2.4.2` Metadata 内部件。
+2. `largePanelLayer` 当前已覆盖的内部件：Settings、Import Task、Metadata Fetch、Metadata Preference Record、Metadata Booklet Binding、Metadata Feature Tag Picker、Subtitle Cleanup、Transcode Dialog、Sidebar Rename Preview。
+3. Main 区硬编码色清理结论：
+   - `music-visualizer HUD`、`video screen`、`ad-review overlay`、`rating heart`、`subtitle overlay` 已切回语义 token。
+   - `layout.part3.css` 中 `#000 / #fff / #111 / #777 / #f6f8fa` 保留为 color picker 功能性标定色，不纳入通用视觉 token。
+
+验收状态：
+
+| 项目 | 当前状态 |
+|------|----------|
+| `@layer` 迁移 | 已完成 |
+| `!important` 清零 | 已完成 |
+| Settings / Metadata / Main 内部件 token 化 | 已完成 |
+| ThemeParameter 分页接入 | 已完成 |
+| 快照导入 / 导出字段同步 | 已完成 |

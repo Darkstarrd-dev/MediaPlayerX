@@ -20,6 +20,8 @@
 - 不改 AppWorkspace 结构与 pane 布局逻辑。
 - 不做业务逻辑改动。
 - 优先改 token，其次才写局部 selector override。
+- 新增 token 默认值必须定义在 `contract` 层，并放入正确的 `@layer`；不要把默认值直接写进业务 CSS。
+- 禁止新增 `!important`；若有覆盖冲突，优先调整 layer 顺序、token 链路或选择器特异性（可用 `:where()` 降低低优先级侧）。
 - 大面板个例若需特化，优先走 `global large-panel token -> panel *-current override` 链路；不要在个例类上直接硬写 `--mpx-large-panel-width/height/radius/padding` 截断统一调节。
 - 小面板个例若需特化，优先走 `dialog-panel root fill -> slot fill current override` 链路；不要再新增 `panel-bg -> ovl-bg` 的回退耦合。
 - 若目标 style 为 `soft-skeuomorphic`，必须遵守拆分文件边界：
@@ -50,8 +52,12 @@
   - src/styles/app/main.css
   - src/styles/app/metadata.css
   - src/styles/app/settings.css
-  - docs/ui/theme-gallery-capture.md
-  - docs/ui/soft-skeuomorphic-detail-brainstorm.md
+- docs/ui/theme-gallery-capture.md
+- docs/ui/soft-skeuomorphic-detail-brainstorm.md
+
+补充执行约束（2026-03）：
+- Theme / Palette / App 文件必须遵守既有 `@layer contract, palette, theme-style, app-base, app-layout, app-component, app-state` 分层，不允许跨层混写。
+- 新增 Settings / Metadata / Main 内部件调参项时，优先接入既有三级派生语义链（L0 -> L1 -> L2），不要给单个 selector 临时造匿名变量。
 
 执行步骤：
 1) 先读取上述文件，不要读取其他业务代码。

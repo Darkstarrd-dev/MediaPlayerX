@@ -383,11 +383,7 @@
 
 .fullscreen-image-adjust-levels-histogram-bar {
   width: 100%;
-  background: color-mix(
-    in srgb,
-    var(--mpx-accent-500, #58a6ff) 65%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--mpx-accent) 65%, transparent);
   border-radius: 1px;
   min-height: 2px;
 }
@@ -442,7 +438,7 @@
 }
 
 .fullscreen-image-adjust-curve-histogram-bar {
-  fill: var(--mpx-accent-500, #58a6ff);
+  fill: var(--mpx-accent);
   opacity: 0.22;
 }
 
@@ -452,8 +448,8 @@
 }
 
 .fullscreen-image-adjust-curve-point {
-  fill: var(--mpx-accent-500, #58a6ff);
-  stroke: color-mix(in srgb, #000 38%, transparent);
+  fill: var(--mpx-accent);
+  stroke: color-mix(in srgb, var(--mpx-fullscreen-bg) 38%, transparent);
   stroke-width: 1;
   pointer-events: none;
 }

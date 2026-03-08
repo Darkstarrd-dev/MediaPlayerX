@@ -279,6 +279,116 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2e2a22",
   },
   {
+    id: "container-main-music-vis-text",
+    cssVar: "--mpx-music-vis-text",
+    fallback: "#eef1f4",
+  },
+  {
+    id: "container-main-music-vis-hud-bg",
+    cssVar: "--mpx-music-vis-hud-bg",
+    fallback: "rgba(6, 8, 17, 0.74)",
+  },
+  {
+    id: "container-main-music-vis-hud-text",
+    cssVar: "--mpx-music-vis-hud-text",
+    fallback: "#eef1f4",
+  },
+  {
+    id: "container-main-music-vis-hud-border",
+    cssVar: "--mpx-music-vis-hud-border",
+    fallback: "rgba(129, 145, 163, 0.35)",
+  },
+  {
+    id: "container-main-music-vis-error-bg",
+    cssVar: "--mpx-music-vis-error-bg",
+    fallback: "#250b14",
+  },
+  {
+    id: "container-main-music-vis-error-border",
+    cssVar: "--mpx-music-vis-error-border",
+    fallback: "#8f2f45",
+  },
+  {
+    id: "container-main-music-ctrl-focus-color",
+    cssVar: "--mpx-music-ctrl-focus-color",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "container-main-music-ctrl-range-fill",
+    cssVar: "--mpx-music-ctrl-range-fill",
+    fallback: "#71b4d2",
+  },
+  {
+    id: "container-main-music-ctrl-toggle-bg",
+    cssVar: "--mpx-music-ctrl-toggle-bg",
+    fallback: "rgba(43, 47, 53, 0.86)",
+  },
+  {
+    id: "container-main-video-screen-bg",
+    cssVar: "--mpx-video-screen-bg",
+    fallback: "linear-gradient(135deg, #2d2f33, #212022)",
+  },
+  {
+    id: "container-main-ad-review-overlay-stage-bg",
+    cssVar: "--mpx-ad-review-overlay-stage-bg",
+    fallback: "rgba(0, 0, 0, 0.48)",
+  },
+  {
+    id: "container-main-ad-review-overlay-card-bg",
+    cssVar: "--mpx-ad-review-overlay-card-bg",
+    fallback: "rgba(255, 250, 243, 0.9)",
+  },
+  {
+    id: "container-main-ad-review-overlay-card-border",
+    cssVar: "--mpx-ad-review-overlay-card-border",
+    fallback: "rgba(170, 147, 120, 0.35)",
+  },
+  {
+    id: "container-main-ad-review-overlay-text-main",
+    cssVar: "--mpx-ad-review-overlay-text-main",
+    fallback: "#2c1d11",
+  },
+  {
+    id: "container-main-ad-review-overlay-text-sub",
+    cssVar: "--mpx-ad-review-overlay-text-sub",
+    fallback: "#6f5740",
+  },
+  {
+    id: "container-main-ad-review-overlay-text-hint",
+    cssVar: "--mpx-ad-review-overlay-text-hint",
+    fallback: "#73573d",
+  },
+  {
+    id: "container-main-ad-review-overlay-track-bg",
+    cssVar: "--mpx-ad-review-overlay-track-bg",
+    fallback: "rgba(171, 140, 108, 0.24)",
+  },
+  {
+    id: "container-main-ad-review-overlay-track-start",
+    cssVar: "--mpx-ad-review-overlay-track-start",
+    fallback: "#c9703a",
+  },
+  {
+    id: "container-main-ad-review-overlay-track-mid",
+    cssVar: "--mpx-ad-review-overlay-track-mid",
+    fallback: "#cc7e44",
+  },
+  {
+    id: "container-main-ad-review-overlay-track-end",
+    cssVar: "--mpx-ad-review-overlay-track-end",
+    fallback: "#d4965f",
+  },
+  {
+    id: "container-main-rating-heart-color",
+    cssVar: "--mpx-rating-heart-color",
+    fallback: "#8f1d3e",
+  },
+  {
+    id: "container-main-rating-heart-active-color",
+    cssVar: "--mpx-rating-heart-active-color",
+    fallback: "#7a1836",
+  },
+  {
     id: "container-metadata-fill-start",
     cssVar: "--mpx-metadata-fill-start",
     fallback: "#f5f2ec",
@@ -1476,8 +1586,7 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "small-panel-delete-confirm-panel-fill-start",
-    cssVar:
-      "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-start",
+    cssVar: "--mpx-slot-fg-main-header-manage-delete-confirm-panel-fill-start",
     fallback: "#ffffff",
   },
   {
@@ -1542,7 +1651,8 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "small-panel-playlist-name-slot-border",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-border",
     fallback: "#d6cfc1",
   },
   {
@@ -1559,27 +1669,32 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "small-panel-playlist-name-slot-text",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-text",
     fallback: "#2e2a22",
   },
   {
     id: "small-panel-playlist-name-slot-input-border",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-border",
     fallback: "#d6cfc1",
   },
   {
     id: "small-panel-playlist-name-slot-input-bg",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-bg",
     fallback: "#ffffff",
   },
   {
     id: "small-panel-playlist-name-slot-input-text",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-text",
     fallback: "#2e2a22",
   },
   {
     id: "small-panel-playlist-name-slot-input-placeholder",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-input-placeholder",
     fallback: "#6a6358",
   },
   {
@@ -1972,7 +2087,8 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
   {
     id: "small-panel-playlist-name-slot-shadow",
-    cssVar: "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow",
+    cssVar:
+      "--mpx-slot-fg-meta-main-video-editor-playlist-name-dialog-panel-shadow",
   },
   {
     id: "small-panel-rename-single-slot-shadow",
@@ -2100,10 +2216,10 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
 ];
 
-export const CONTAINER_DEBUG_COLOR_FIELDS = SNAPSHOT_COLOR_FIELDS.filter((field) =>
-  field.id.startsWith("container-"),
+export const CONTAINER_DEBUG_COLOR_FIELDS = SNAPSHOT_COLOR_FIELDS.filter(
+  (field) => field.id.startsWith("container-"),
 );
 
-export const CONTAINER_DEBUG_TEXT_FIELDS = SNAPSHOT_TEXT_FIELDS.filter((field) =>
-  field.id.startsWith("container-"),
+export const CONTAINER_DEBUG_TEXT_FIELDS = SNAPSHOT_TEXT_FIELDS.filter(
+  (field) => field.id.startsWith("container-"),
 );
