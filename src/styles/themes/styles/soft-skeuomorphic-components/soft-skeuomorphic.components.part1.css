@@ -405,11 +405,17 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-image-node-grid"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-main-content-video-grid"],
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-music-preview"] {
   border: 1px solid var(--mpx-slot-fg-main-content-image-grid-border, transparent);
   background: var(
     --mpx-slot-fg-main-content-image-grid-bg,
-    var(--mpx-bg-workspace)
+    linear-gradient(
+      var(--mpx-workspace-fill-angle, var(--mpx-main-fill-angle)),
+      var(--mpx-workspace-fill-start, var(--mpx-main-fill-start)) 0%,
+      var(--mpx-workspace-fill-end, var(--mpx-main-fill-end)) 100%
+    )
   );
   box-shadow: none;
   padding: 0;

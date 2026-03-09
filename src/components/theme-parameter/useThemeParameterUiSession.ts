@@ -5,7 +5,8 @@ import type {
   LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-} from "./themeParameterPanelTypes";
+} from "./ThemeParameterPanelMain";
+import type { ThemeControlSectionId } from "./themeParameterPanelTypes";
 import {
   readThemeParameterUiSessionState,
   writeThemeParameterUiSessionState,
@@ -160,6 +161,19 @@ export function useThemeParameterUiSession() {
     [updateUiState],
   );
 
+  const setControlSectionExpanded = useCallback(
+    (sectionId: ThemeControlSectionId, action: SetStateAction<boolean>) => {
+      updateUiState((previous) => ({
+        ...previous,
+        controlSectionsExpanded: {
+          ...previous.controlSectionsExpanded,
+          [sectionId]: resolveNextState(action, previous.controlSectionsExpanded[sectionId]),
+        },
+      }));
+    },
+    [updateUiState],
+  );
+
   const booleanSetters = useMemo(
     () => ({
       setCommonExpanded: createBooleanSetter("commonExpanded"),
@@ -237,20 +251,8 @@ export function useThemeParameterUiSession() {
       setContainerMetadataHeaderButtonsExpanded: createBooleanSetter(
         "containerMetadataHeaderButtonsExpanded",
       ),
-      setContainerMetadataRatingExpanded: createBooleanSetter(
-        "containerMetadataRatingExpanded",
-      ),
-      setContainerMetadataInternalsExpanded: createBooleanSetter(
-        "containerMetadataInternalsExpanded",
-      ),
       setContainerMetadataFileListExpanded: createBooleanSetter(
         "containerMetadataFileListExpanded",
-      ),
-      setContainerMetadataPreferenceRecordExpanded: createBooleanSetter(
-        "containerMetadataPreferenceRecordExpanded",
-      ),
-      setContainerMetadataBookletBindingExpanded: createBooleanSetter(
-        "containerMetadataBookletBindingExpanded",
       ),
       setContainerSidebarMainExpanded: createBooleanSetter(
         "containerSidebarMainExpanded",
@@ -323,6 +325,7 @@ export function useThemeParameterUiSession() {
     setLargePanelInternalSectionExpanded,
     setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelSectionExpanded,
+    setControlSectionExpanded,
     ...booleanSetters,
   };
 }

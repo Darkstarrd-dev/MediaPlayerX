@@ -173,7 +173,7 @@ describe("VideoMainSection 节点浏览交互", () => {
       name: "Videos / b.mp4",
     });
     const grid = document.querySelector(
-      '[data-slot="fg-main-content-image-node-grid"]',
+      '[data-slot="fg-main-content-video-grid"]',
     ) as HTMLDivElement;
 
     fireEvent.click(firstCardButton);

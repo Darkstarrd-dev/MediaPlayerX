@@ -223,12 +223,22 @@
   min-width: 0;
   min-height: 0;
   flex: 1;
-  border: var(--mpx-card-border-width) solid
-    var(--mpx-slot-fg-main-content-image-grid-border, var(--mpx-border-1));
-  border-radius: var(--mpx-radius-main-card, var(--mpx-card-radius));
+  border: var(--mpx-workspace-border-width, var(--mpx-card-border-width)) solid
+    var(
+      --mpx-slot-fg-main-content-image-grid-border,
+      var(--mpx-workspace-border-color, var(--mpx-main-border-color))
+    );
+  border-radius: var(
+    --mpx-workspace-radius,
+    var(--mpx-radius-main-card, var(--mpx-card-radius))
+  );
   background: var(
     --mpx-slot-fg-main-content-image-grid-bg,
-    var(--mpx-bg-workspace)
+    linear-gradient(
+      var(--mpx-workspace-fill-angle, var(--mpx-main-fill-angle)),
+      var(--mpx-workspace-fill-start, var(--mpx-main-fill-start)) 0%,
+      var(--mpx-workspace-fill-end, var(--mpx-main-fill-end)) 100%
+    )
   );
   box-shadow:
     inset 6px 6px 14px
@@ -256,31 +266,47 @@
   overflow-y: auto;
 }
 
-[data-slot="fg-main-content-image-node-grid"] {
+[data-slot="fg-main-content-image-node-grid"],
+[data-slot="fg-main-content-video-grid"] {
   border-color: var(
     --mpx-slot-fg-main-content-image-node-grid-border,
     var(--mpx-slot-fg-main-content-image-grid-border, var(--mpx-border-1))
   );
   background: var(
     --mpx-slot-fg-main-content-image-node-grid-bg,
-    var(--mpx-slot-fg-main-content-image-grid-bg, var(--mpx-bg-workspace))
+    var(
+      --mpx-slot-fg-main-content-image-grid-bg,
+      linear-gradient(
+        var(--mpx-workspace-fill-angle, var(--mpx-main-fill-angle)),
+        var(--mpx-workspace-fill-start, var(--mpx-main-fill-start)) 0%,
+        var(--mpx-workspace-fill-end, var(--mpx-main-fill-end)) 100%
+      )
+    )
   );
   color: var(--mpx-slot-fg-main-content-image-node-grid-text, inherit);
 }
 
 .thumb-card {
   position: relative;
-  border: var(--mpx-card-border-width) solid var(--mpx-border-1);
-  border-radius: var(--mpx-radius-main-card, var(--mpx-card-radius));
-  padding: 0;
+  border: var(--mpx-thumbnail-card-border-width, var(--mpx-card-border-width))
+    solid var(--mpx-thumbnail-card-border-color, var(--mpx-border-1));
+  border-radius: var(
+    --mpx-thumbnail-card-radius,
+    var(--mpx-radius-main-card, var(--mpx-card-radius))
+  );
+  padding: var(
+    --mpx-thumb-card-padding-rest,
+    var(--mpx-thumbnail-card-padding, 0px)
+  );
   box-sizing: border-box;
-  background: transparent;
+  background: var(--mpx-thumbnail-card-bg, transparent);
   cursor: pointer;
   text-align: left;
   transition:
+    padding 0.15s ease,
     transform 0.15s ease,
     box-shadow 0.15s ease;
-  box-shadow: var(--mpx-card-shadow);
+  box-shadow: var(--mpx-thumbnail-card-shadow, var(--mpx-card-shadow));
   will-change: transform;
 
   --mpx-thumb-origin-x: 50%;
@@ -298,39 +324,121 @@
   -webkit-user-select: none;
 }
 
-[data-slot="fg-main-content-image-grid-card"] {
+[data-slot="fg-main-content-image-grid-card"],
+[data-slot="fg-main-content-image-node-grid-card"] {
   border-color: var(
-    --mpx-slot-fg-main-content-image-grid-card-border,
-    var(--mpx-border-1)
+    --mpx-image-grid-card-border-color,
+    var(--mpx-slot-fg-main-content-image-grid-card-border, var(--mpx-thumbnail-card-border-color, var(--mpx-border-1)))
   );
-  background: var(--mpx-slot-fg-main-content-image-grid-card-bg, transparent);
+  border-width: var(
+    --mpx-image-grid-card-border-width,
+    var(--mpx-thumbnail-card-border-width, var(--mpx-card-border-width))
+  );
+  border-radius: var(
+    --mpx-image-grid-card-radius,
+    var(--mpx-thumbnail-card-radius, var(--mpx-radius-main-card, var(--mpx-card-radius)))
+  );
+  --mpx-thumb-card-padding-rest: var(
+    --mpx-image-grid-card-padding,
+    var(--mpx-thumbnail-card-padding, 0px)
+  );
+  background: var(
+    --mpx-image-grid-card-bg,
+    var(--mpx-slot-fg-main-content-image-grid-card-bg, var(--mpx-thumbnail-card-bg, transparent))
+  );
   color: var(--mpx-slot-fg-main-content-image-grid-card-text, inherit);
+  --mpx-thumb-card-focus-bg: var(
+    --mpx-image-grid-card-focus-bg,
+    var(--mpx-thumbnail-card-focus-bg, var(--mpx-state-focus-color))
+  );
+  --mpx-thumb-card-selected-bg: var(
+    --mpx-image-grid-card-selected-bg,
+    var(--mpx-thumbnail-card-selected-bg, var(--mpx-state-selected-color))
+  );
   box-shadow: var(
-    --mpx-slot-fg-main-content-image-grid-card-shadow,
-    var(--mpx-card-shadow)
+    --mpx-image-grid-card-shadow,
+    var(
+      --mpx-slot-fg-main-content-image-grid-card-shadow,
+      var(--mpx-thumbnail-card-shadow, var(--mpx-card-shadow))
+    )
   );
 }
 
-[data-slot="fg-main-content-image-node-grid-card"] {
+[data-slot="fg-main-content-video-grid-card"] {
   border-color: var(
-    --mpx-slot-fg-main-content-image-node-grid-card-border,
-    var(--mpx-slot-fg-main-content-image-grid-card-border, var(--mpx-border-1))
+    --mpx-video-grid-card-border-color,
+    var(
+      --mpx-slot-fg-main-content-image-node-grid-card-border,
+      var(
+        --mpx-slot-fg-main-content-image-grid-card-border,
+        var(--mpx-thumbnail-card-border-color, var(--mpx-border-1))
+      )
+    )
+  );
+  border-width: var(
+    --mpx-video-grid-card-border-width,
+    var(--mpx-thumbnail-card-border-width, var(--mpx-card-border-width))
+  );
+  border-radius: var(
+    --mpx-video-grid-card-radius,
+    var(--mpx-thumbnail-card-radius, var(--mpx-radius-main-card, var(--mpx-card-radius)))
+  );
+  --mpx-thumb-card-padding-rest: var(
+    --mpx-video-grid-card-padding,
+    var(--mpx-thumbnail-card-padding, 0px)
   );
   background: var(
-    --mpx-slot-fg-main-content-image-node-grid-card-bg,
-    var(--mpx-slot-fg-main-content-image-grid-card-bg, transparent)
+    --mpx-video-grid-card-bg,
+    var(
+      --mpx-slot-fg-main-content-image-node-grid-card-bg,
+      var(
+        --mpx-slot-fg-main-content-image-grid-card-bg,
+        var(--mpx-thumbnail-card-bg, transparent)
+      )
+    )
   );
   color: var(
     --mpx-slot-fg-main-content-image-node-grid-card-text,
     var(--mpx-slot-fg-main-content-image-grid-card-text, inherit)
   );
+  --mpx-thumb-card-focus-bg: var(
+    --mpx-video-grid-card-focus-bg,
+    var(--mpx-thumbnail-card-focus-bg, var(--mpx-state-focus-color))
+  );
+  --mpx-thumb-card-selected-bg: var(
+    --mpx-video-grid-card-selected-bg,
+    var(--mpx-thumbnail-card-selected-bg, var(--mpx-state-selected-color))
+  );
   box-shadow: var(
-    --mpx-slot-fg-main-content-image-node-grid-card-shadow,
+    --mpx-video-grid-card-shadow,
     var(
-      --mpx-slot-fg-main-content-image-grid-card-shadow,
-      var(--mpx-card-shadow)
+      --mpx-slot-fg-main-content-image-node-grid-card-shadow,
+      var(
+        --mpx-slot-fg-main-content-image-grid-card-shadow,
+        var(--mpx-thumbnail-card-shadow, var(--mpx-card-shadow))
+      )
     )
   );
+}
+
+.thumb-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(
+    --mpx-thumb-card-focus-bg,
+    var(--mpx-thumbnail-card-focus-bg, var(--mpx-state-focus-color))
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 0;
+}
+
+.thumb-card-main {
+  position: relative;
+  z-index: 1;
 }
 
 .thumb-card-main {
@@ -366,7 +474,11 @@
 
 .image-grid.is-pending-swap .thumb-card:hover {
   transform: none;
-  box-shadow: var(--mpx-card-shadow);
+  box-shadow: var(--mpx-thumbnail-card-shadow, var(--mpx-card-shadow));
+  padding: var(
+    --mpx-thumb-card-padding-rest,
+    var(--mpx-thumbnail-card-padding, 0px)
+  );
 }
 
 .node-browse-grid .thumb-card-main {
@@ -391,6 +503,21 @@
     0 0 12px 3px var(--mpx-thumb-focus-glow),
     0 10px 22px rgba(0, 0, 0, 0.22),
     0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.thumb-card.is-focused::before {
+  opacity: 1;
+}
+
+.thumb-card.is-manage.is-selected {
+  background: var(
+    --mpx-thumb-card-selected-bg,
+    var(--mpx-thumbnail-card-selected-bg, var(--mpx-state-selected-color))
+  );
+}
+
+.thumb-card:hover:not(.is-focused) {
+  padding: 0;
 }
 
 .thumb-card:hover:not(.is-focused) {

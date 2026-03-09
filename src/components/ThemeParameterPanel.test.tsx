@@ -702,13 +702,6 @@ describe("ThemeParameterPanel", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "常用控件调试" }));
-    expect(screen.getByText("6.1 滚动条样式")).toBeInTheDocument();
-    expect(screen.getByText("6.2.0 Slider 基础层")).toBeInTheDocument();
-    expect(screen.getByText("6.2.1 Slider 变体：播放器面板")).toBeInTheDocument();
-    expect(
-      screen.getByText("6.2.2 Slider 变体：竖向（上/下同链路）"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("6.2.3 Slider 变体：设置面板")).toBeInTheDocument();
     expect(screen.getByText("6.3 文件列表样式")).toBeInTheDocument();
     expect(
       screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
@@ -731,6 +724,16 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.getByTestId("theme-control-preview-file-list-horizontal"),
     ).toBeInTheDocument();
+    expect(screen.getByText("1、bg 背景与外层链路")).toBeInTheDocument();
+    expect(screen.getByText("2、header 表头链路")).toBeInTheDocument();
+    expect(screen.getByText("3、table 表格主体链路")).toBeInTheDocument();
+
+    const fileListDetails = getDetailsBySummaryText("6.3 文件列表样式");
+    expect(fileListDetails.open).toBe(true);
+    fireEvent.click(screen.getByText("6.3 文件列表样式"));
+    expect(fileListDetails.open).toBe(false);
+    fireEvent.click(screen.getByText("6.3 文件列表样式"));
+    expect(fileListDetails.open).toBe(true);
 
     fireEvent.change(
       screen.getByRole("textbox", {
@@ -747,7 +750,9 @@ describe("ThemeParameterPanel", () => {
       },
     );
     fireEvent.change(
-      screen.getByRole("textbox", { name: "--mpx-file-list-row-selected-bg" }),
+      screen.getByRole("textbox", {
+        name: "--mpx-file-list-row-main-hover-bg",
+      }),
       {
         target: { value: "#667788" },
       },
@@ -763,7 +768,7 @@ describe("ThemeParameterPanel", () => {
     ).toBe("#556677");
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-file-list-row-selected-bg",
+        "--mpx-file-list-row-main-hover-bg",
       ),
     ).toBe("#667788");
 
@@ -780,8 +785,59 @@ describe("ThemeParameterPanel", () => {
       '"control-slider-base-track-bg": "#556677"',
     );
     expect(snapshotTextarea.value).toContain(
-      '"control-file-list-row-selected-bg": "#667788"',
+      '"control-file-list-row-main-hover-bg": "#667788"',
     );
+  });
+
+  it("文件列表源头与 main/metadata 派生变量可独立写入且互不覆盖", () => {
+    renderThemeParameterPanel();
+    fireEvent.click(screen.getByRole("button", { name: "常用控件调试" }));
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-file-list-row-main-hover-bg",
+      }),
+      {
+        target: { value: "#112233" },
+      },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    fireEvent.click(screen.getByText("2.3 Main"));
+    fireEvent.click(screen.getByText("2.3.2.2 fg-main-content-image-name-list"));
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-main-image-name-list-row-main-hover-bg",
+      }),
+      {
+        target: { value: "#223344" },
+      },
+    );
+    fireEvent.click(screen.getByText("2.4 Metadata"));
+    fireEvent.click(screen.getByText("2.4.2.4 文件列表"));
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-file-list-row-main-hover-bg",
+      }),
+      {
+        target: { value: "#334455" },
+      },
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-file-list-row-main-hover-bg",
+      ),
+    ).toBe("#112233");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-main-image-name-list-row-main-hover-bg",
+      ),
+    ).toBe("#223344");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-file-list-row-main-hover-bg",
+      ),
+    ).toBe("#334455");
+
   });
 
   it("默认导出不包含计算值，可手动切换包含", () => {
@@ -1909,15 +1965,12 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("2.4 Metadata")).toBeInTheDocument();
     const workspaceSummary = screen.getByText("2.3.2.1 工作区 缩略图模式");
     const sidebarSummary = screen.getByText("2.2.2.1 fg-sidebar-main");
-    const nameListSummary = screen.getByText("2.3.2.2 工作区 文件列表模式");
-    const previewSummary = screen.getByText("2.3.2.3 工作区 预览模式");
-    const metadataRatingSummary = screen.getByText("2.4.2.1 评价组件");
-    const metadataFileListSummary = screen.getByText("2.4.2.3 Metadata 文件列表");
-    expect(workspaceSummary).toBeInTheDocument();
+    const nameListSummary = screen.getByText(
+      "2.3.2.2 fg-main-content-image-name-list",
+    );
+    const metadataFileListSummary = screen.getByText("2.4.2.4 文件列表");
     expect(sidebarSummary).toBeInTheDocument();
     expect(nameListSummary).toBeInTheDocument();
-    expect(previewSummary).toBeInTheDocument();
-    expect(metadataRatingSummary).toBeInTheDocument();
     expect(metadataFileListSummary).toBeInTheDocument();
 
     fireEvent.click(sidebarSummary);
@@ -1998,101 +2051,17 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(sidebarSummary);
     fireEvent.click(workspaceSummary);
     fireEvent.click(nameListSummary);
-    fireEvent.click(previewSummary);
-    fireEvent.click(metadataRatingSummary);
-    fireEvent.click(metadataFileListSummary);
-    const workspaceDetails = getDetailsBySummaryText("2.3.2.1 工作区 缩略图模式");
-    const nameListDetails = getDetailsBySummaryText("2.3.2.2 工作区 文件列表模式");
-    const previewDetails = getDetailsBySummaryText("2.3.2.3 工作区 预览模式");
-    const metadataRatingDetails = getDetailsBySummaryText("2.4.2.1 评价组件");
-    const metadataFileListDetails = getDetailsBySummaryText(
-      "2.4.2.3 Metadata 文件列表",
-    );
-    const workspaceThumbnailContainerDetails = getDetailsBySummaryTextWithin(
-      workspaceDetails,
-      "缩略图容器",
-    );
-    const workspaceThumbnailStyleDetails = getDetailsBySummaryTextWithin(
-      workspaceDetails,
-      "缩略图样式",
-    );
-    const previewMusicDetails = getDetailsBySummaryTextWithin(
-      previewDetails,
-      "音乐区",
-    );
-    const previewVideoDetails = getDetailsBySummaryTextWithin(
-      previewDetails,
-      "视频区",
+    const nameListDetails = getDetailsBySummaryText(
+      "2.3.2.2 fg-main-content-image-name-list",
     );
     expect(
-      within(workspaceThumbnailContainerDetails).getByRole("textbox", {
-        name: "--mpx-bg-workspace",
-      }),
+      within(nameListDetails).getByText("1、bg 背景与外层链路"),
     ).toBeInTheDocument();
     expect(
-      within(workspaceThumbnailStyleDetails).getByRole("textbox", {
-        name: "--mpx-ad-review-overlay-stage-bg",
-      }),
+      within(nameListDetails).getByText("2、header 表头链路"),
     ).toBeInTheDocument();
     expect(
-      within(previewMusicDetails).getByRole("textbox", {
-        name: "--mpx-music-vis-text",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      within(previewVideoDetails).getByRole("textbox", {
-        name: "--mpx-video-screen-bg",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      within(metadataRatingDetails).getByRole("textbox", {
-        name: "--mpx-rating-heart-color",
-      }),
-    ).toBeInTheDocument();
-    const rootLayerDetails = getDetailsBySummaryTextWithin(
-      nameListDetails,
-      "1、root",
-    );
-    const headerLayerDetails = getDetailsBySummaryTextWithin(
-      nameListDetails,
-      "2、header",
-    );
-    const listLayerDetails = getDetailsBySummaryTextWithin(
-      nameListDetails,
-      "3、list",
-    );
-    expect(
-      within(rootLayerDetails).getByText("1、文字颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(rootLayerDetails).getByText("2、边框颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(rootLayerDetails).getByText("3、背景颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(headerLayerDetails).getByText("1、文字颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(headerLayerDetails).getByText("2、边框颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(headerLayerDetails).getByText("3、背景颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).getByText("1、文字颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).getByText("2、边框颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).getByText("3、背景颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).getByText("4、静态指示颜色"),
-    ).toBeInTheDocument();
-    expect(
-      within(listLayerDetails).getByText("5、动态指示颜色"),
+      within(nameListDetails).getByText("3、table 表格主体链路"),
     ).toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("textbox", {
@@ -2134,6 +2103,29 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toBe("#556677");
 
+    fireEvent.click(screen.getByText("2.4 Metadata"));
+    fireEvent.click(metadataFileListSummary);
+    const metadataFileListDetails = getDetailsBySummaryText("2.4.2.4 文件列表");
+    expect(
+      within(metadataFileListDetails).getByText("1、bg 背景与外层链路"),
+    ).toBeInTheDocument();
+    expect(
+      within(metadataFileListDetails).getByText("2、table 表格主体链路"),
+    ).toBeInTheDocument();
+    fireEvent.change(
+      within(metadataFileListDetails).getByRole("textbox", {
+        name: "--mpx-metadata-file-list-row-main-hover-bg",
+      }),
+      {
+        target: { value: "#556677" },
+      },
+    );
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-file-list-row-main-hover-bg",
+      ),
+    ).toBe("#556677");
+
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
     const snapshotTextarea = screen.getByLabelText(
@@ -2152,7 +2144,7 @@ describe("ThemeParameterPanel", () => {
       '"container-main-image-name-list-head-bg": "#445566"',
     );
     expect(snapshotTextarea.value).toContain(
-      '"container-metadata-file-list-row-selected-bg": "#556677"',
+      '"container-metadata-file-list-row-main-hover-bg": "#556677"',
     );
   }, 30000);
 

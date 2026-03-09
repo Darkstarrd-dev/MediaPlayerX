@@ -1013,38 +1013,51 @@
     var(--mpx-file-list-row-main-hover-text, var(--mpx-text-1))
   );
   --mpx-btn-variant-overlay-cell-bg-active: var(
-    --mpx-metadata-file-list-row-main-pressed-bg,
+    --mpx-metadata-file-list-row-main-active-bg,
     var(
-      --mpx-file-list-row-main-pressed-bg,
-      var(--mpx-state-selected-color)
+      --mpx-file-list-row-main-active-bg,
+      var(--mpx-overlay-soft-focus-bg)
     )
   );
   --mpx-btn-variant-overlay-cell-text-active: var(
-    --mpx-metadata-file-list-row-main-text,
-    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
+    --mpx-metadata-file-list-row-main-active-text,
+    var(--mpx-file-list-row-main-active-text, var(--mpx-text-1))
   );
   --mpx-btn-variant-overlay-cell-bg-pressed: var(
-    --mpx-metadata-file-list-row-selected-bg,
-    var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color))
+    --mpx-metadata-file-list-row-main-pressed-bg,
+    var(
+      --mpx-file-list-row-main-pressed-bg,
+      var(--mpx-overlay-soft-focus-bg)
+    )
   );
   --mpx-btn-variant-overlay-cell-text-pressed: var(
-    --mpx-metadata-file-list-row-main-selected-text,
-    var(--mpx-file-list-row-main-selected-text, var(--mpx-text-1))
+    --mpx-metadata-file-list-row-main-pressed-text,
+    var(--mpx-file-list-row-main-pressed-text, var(--mpx-text-1))
   );
-  --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: var(
+    --mpx-metadata-file-list-row-main-pressed-font-weight,
+    var(--mpx-file-list-row-main-pressed-font-weight, 600)
+  );
+  --mpx-btn-variant-overlay-cell-focus-outline-width: var(
+    --mpx-metadata-file-list-row-main-focus-outline-width,
+    var(--mpx-file-list-row-main-focus-outline-width, 1px)
+  );
   --mpx-btn-variant-overlay-cell-focus-outline-color: var(
-    --mpx-metadata-file-list-row-focused-border-left,
-    var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
+    --mpx-metadata-file-list-row-main-focus-outline-color,
+    var(
+      --mpx-file-list-row-main-focus-outline-color,
+      var(--mpx-state-focus-color)
+    )
   );
   appearance: none;
   width: 100%;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: var(
     --mpx-metadata-file-list-row-main-text,
     var(--mpx-file-list-row-main-text, var(--mpx-text-1))
-  );
+  ) !important;
   display: grid;
   grid-template-columns: 2.6ch minmax(0, 1fr) max-content;
   align-items: center;
@@ -1063,7 +1076,7 @@
   background: var(
     --mpx-metadata-file-list-row-selected-bg,
     var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color))
-  );
+  ) !important;
 }
 
 .metadata-music-playlist-item.is-focused {
@@ -1071,7 +1084,7 @@
     var(
       --mpx-metadata-file-list-row-focused-border-left,
       var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
-    );
+    ) !important;
 }
 
 .metadata-music-playlist-index {
@@ -1443,11 +1456,11 @@
     );
   background: var(
     --mpx-metadata-file-list-row-bg,
-    var(--mpx-file-list-row-bg, transparent)
+    var(--mpx-file-list-row-bg, var(--mpx-overlay-soft-bg))
   );
   color: var(
     --mpx-metadata-file-list-row-text,
-    var(--mpx-file-list-row-text, inherit)
+    var(--mpx-file-list-row-text, var(--mpx-text-1))
   );
 }
 
@@ -1466,6 +1479,16 @@
   border-left-color: var(
     --mpx-metadata-file-list-row-focused-border-left,
     var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
+  );
+}
+
+.metadata-playlist-row.is-selected.is-focused {
+  border-left-color: var(
+    --mpx-metadata-file-list-row-selected-focused-border-left,
+    var(
+      --mpx-file-list-row-selected-focused-border-left,
+      var(--mpx-state-focus-color)
+    )
   );
 }
 

@@ -1,31 +1,34 @@
-@layer theme-style {
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"],
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"] {
-  --mpx-slot-fg-main-content-image-grid-card-border: #b5bdc8;
-  --mpx-slot-fg-main-content-image-grid-card-bg: var(--mpx-runway-groove-bg);
-  --mpx-slot-fg-main-content-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
-  --mpx-slot-fg-main-content-image-grid-card-padding: 5px;
-  --mpx-slot-fg-main-content-image-node-grid-card-border: #b5bdc8;
-  --mpx-slot-fg-main-content-image-node-grid-card-bg: var(--mpx-runway-groove-bg);
-  --mpx-slot-fg-main-content-image-node-grid-card-shadow: var(--mpx-runway-groove-shadow);
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"],
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"],
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"] {
+  --mpx-thumbnail-card-border-color: #b5bdc8;
+  --mpx-thumbnail-card-bg: var(--mpx-runway-groove-bg);
+  --mpx-thumbnail-card-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-thumbnail-card-padding: 5px;
+  --mpx-thumbnail-card-border-width: var(--mpx-card-border-width);
+  --mpx-thumbnail-card-focus-bg: var(--mpx-state-focus-color);
+  --mpx-thumbnail-card-selected-bg: var(--mpx-state-selected-color);
+  --mpx-thumbnail-card-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  --mpx-image-grid-card-border-color: #b5bdc8;
+  --mpx-image-grid-card-bg: var(--mpx-runway-groove-bg);
+  --mpx-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-image-grid-card-padding: 5px;
+  --mpx-video-grid-card-border-color: #b5bdc8;
+  --mpx-video-grid-card-bg: var(--mpx-runway-groove-bg);
+  --mpx-video-grid-card-shadow: var(--mpx-runway-groove-shadow);
+  --mpx-video-grid-card-padding: 5px;
   --mpx-card-shadow: var(--mpx-runway-groove-shadow);
   --mpx-control-hover-shadow: var(--mpx-runway-groove-shadow);
   --mpx-control-hover-transform: none;
   border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
-  padding: var(--mpx-slot-fg-main-content-image-grid-card-padding, 5px);
+  padding: var(--mpx-thumbnail-card-padding, 5px);
   overflow: hidden;
   transition: padding 0.15s ease, box-shadow 0.25s ease;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .metadata-image-real {
-  --mpx-slot-fg-main-content-image-grid-card-border: #b5bdc8;
-  --mpx-slot-fg-main-content-image-grid-card-bg: var(--mpx-runway-groove-bg);
-  --mpx-slot-fg-main-content-image-grid-card-shadow: var(--mpx-runway-groove-shadow);
-  --mpx-slot-fg-main-content-image-grid-card-padding: 5px;
-}
-
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"]::before,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"]::before {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"]::before,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"]::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -38,19 +41,22 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"]:hover:not(.is-focused),
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"]:hover:not(.is-focused) {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"]:hover:not(.is-focused),
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"]:hover:not(.is-focused) {
   padding: 0;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"] .thumb-card-main,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"] .thumb-card-main {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"] .thumb-card-main,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"] .thumb-card-main {
   box-shadow: none;
   position: relative;
   z-index: 1;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"].is-focused,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-focused {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-focused,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"].is-focused {
   transform: none;
   box-shadow:
     inset 0 2px 6px var(--mpx-state-focus-color),
@@ -60,12 +66,14 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"].is-focused::before,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-focused::before {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-focused::before,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"].is-focused::before {
   opacity: 1;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"].is-manage.is-selected,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-manage.is-selected {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-manage.is-selected,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"].is-manage.is-selected {
   background: var(--mpx-state-selected-color);
   transform: none;
   box-shadow: var(--mpx-runway-groove-shadow);
@@ -73,7 +81,8 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-grid-card"].is-manage.is-selected::before,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-manage.is-selected::before {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-image-node-grid-card"].is-manage.is-selected::before,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-video-grid-card"].is-manage.is-selected::before {
   opacity: 0;
 }
 

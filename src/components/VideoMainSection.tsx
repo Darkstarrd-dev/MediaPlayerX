@@ -882,7 +882,7 @@ function VideoMainSection({
         <div
           ref={nodeBrowseGridRef}
           className="image-grid node-browse-grid mpx-scrollbar-hidden"
-          data-slot="fg-main-content-image-node-grid"
+          data-slot="fg-main-content-video-grid"
           onPointerDownCapture={onRequestMainFocus}
           onKeyDown={handleNodeBrowseGridKeyDown}
           style={{
@@ -894,7 +894,7 @@ function VideoMainSection({
             <div
               key={item.nodeId}
               className="thumb-card"
-              data-slot="fg-main-content-image-node-grid-card"
+              data-slot="fg-main-content-video-grid-card"
               style={{ width: `${actualCellWidth}px` }}
             >
               <button

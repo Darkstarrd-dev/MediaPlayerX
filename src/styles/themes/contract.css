@@ -175,16 +175,15 @@
     --mpx-state-focus-color: #f2d796;
     --mpx-state-selected-color: #8a919a;
 
-    /* Default Semantic (Parchment-like base) */
-    --mpx-bg-app-fill: #f2eee7;
-    --mpx-bg-app-base: #f2eee7;
-    --mpx-bg-workspace: #f3f0ea;
-    --mpx-bg-panel: #fbf8f3;
-    --mpx-bg-elevated: #ffffff;
-    --mpx-bg-hover: rgba(46, 111, 127, 0.06);
-    --mpx-bg-selected: #e6f1f4;
-    --mpx-bg-muted: #f9f6ef;
-    --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
+  /* Default Semantic (Parchment-like base) */
+  --mpx-bg-app-fill: #f2eee7;
+  --mpx-bg-app-base: #f2eee7;
+  --mpx-bg-panel: #fbf8f3;
+  --mpx-bg-elevated: #ffffff;
+  --mpx-bg-hover: rgba(46, 111, 127, 0.06);
+  --mpx-bg-selected: #e6f1f4;
+  --mpx-bg-muted: #f9f6ef;
+  --mpx-bg-tooltip: rgba(0, 0, 0, 0.85);
 
     --mpx-text-1: #2e2a22;
     --mpx-text-2: #6a6358;
@@ -510,31 +509,136 @@
       var(--mpx-control-active-shadow)
     );
 
-    /* File list shared baseline: common -> main/metadata -> slot -> selector */
-    --mpx-file-list-border: var(--mpx-overlay-soft-border);
-    --mpx-file-list-bg: var(--mpx-overlay-soft-bg);
-    --mpx-file-list-text: var(--mpx-text-1);
-    --mpx-file-list-head-border: var(--mpx-overlay-soft-head-divider);
-    --mpx-file-list-head-bg: var(--mpx-overlay-soft-head-bg);
-    --mpx-file-list-head-text: var(--mpx-text-2);
-    --mpx-file-list-body-bg: var(--mpx-overlay-soft-bg);
-    --mpx-file-list-row-border: var(--mpx-overlay-soft-row-divider);
-    --mpx-file-list-row-bg: var(--mpx-overlay-soft-bg);
-    --mpx-file-list-row-text: var(--mpx-file-list-text);
-    --mpx-file-list-row-hover-bg: var(--mpx-overlay-soft-bg);
-    --mpx-file-list-row-focused-border-left: var(--mpx-state-focus-color);
-    --mpx-file-list-row-selected-border-left: var(--mpx-state-selected-color);
-    --mpx-file-list-row-selected-bg: var(--mpx-state-selected-color);
-    --mpx-file-list-row-main-text: var(--mpx-file-list-row-text);
-    --mpx-file-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
-    --mpx-file-list-row-main-pressed-bg: var(--mpx-overlay-soft-focus-bg);
-    --mpx-file-list-row-main-hover-text: color-mix(
-      in srgb,
-      var(--mpx-accent) 72%,
-      var(--mpx-text-1)
-    );
-    --mpx-file-list-row-main-selected-text: var(--mpx-text-1);
-    --mpx-file-list-label-text: inherit;
+  /* File list: source -> derived(main/metadata) -> slot -> selector */
+  --mpx-file-list-border: var(--mpx-overlay-soft-border);
+  --mpx-file-list-bg: var(--mpx-overlay-soft-bg);
+  --mpx-file-list-text: var(--mpx-text-1);
+  --mpx-file-list-head-border: var(--mpx-overlay-soft-head-divider);
+  --mpx-file-list-head-bg: var(--mpx-overlay-soft-head-bg);
+  --mpx-file-list-head-text: var(--mpx-text-2);
+  --mpx-file-list-body-bg: var(--mpx-overlay-soft-bg);
+  --mpx-file-list-row-border: var(--mpx-overlay-soft-row-divider);
+  --mpx-file-list-row-bg: var(--mpx-overlay-soft-bg);
+  --mpx-file-list-row-text: var(--mpx-text-1);
+  --mpx-file-list-row-hover-bg: var(--mpx-overlay-soft-bg);
+  --mpx-file-list-row-focused-border-left: var(--mpx-state-focus-color);
+  --mpx-file-list-row-selected-border-left: var(--mpx-state-selected-color);
+  --mpx-file-list-row-selected-focused-border-left: var(--mpx-state-focus-color);
+  --mpx-file-list-row-selected-bg: var(--mpx-state-selected-color);
+  --mpx-file-list-row-main-text: var(--mpx-text-1);
+  --mpx-file-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
+  --mpx-file-list-row-main-active-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-file-list-row-main-pressed-bg: var(--mpx-overlay-soft-focus-bg);
+  --mpx-file-list-row-main-hover-text: color-mix(
+    in srgb,
+    var(--mpx-accent) 72%,
+    var(--mpx-text-1)
+  );
+  --mpx-file-list-row-main-active-text: var(--mpx-text-1);
+  --mpx-file-list-row-main-pressed-text: var(--mpx-text-1);
+  --mpx-file-list-row-main-focus-outline-width: 1px;
+  --mpx-file-list-row-main-focus-outline-color: var(--mpx-state-focus-color);
+  --mpx-file-list-row-main-pressed-font-weight: 600;
+  --mpx-file-list-label-text: inherit;
+
+  --mpx-main-image-name-list-border: var(--mpx-file-list-border);
+  --mpx-main-image-name-list-bg: var(--mpx-file-list-bg);
+  --mpx-main-image-name-list-text: var(--mpx-file-list-text);
+  --mpx-main-image-name-list-head-border: var(--mpx-file-list-head-border);
+  --mpx-main-image-name-list-head-bg: var(--mpx-file-list-head-bg);
+  --mpx-main-image-name-list-head-text: var(--mpx-file-list-head-text);
+  --mpx-main-image-name-list-body-bg: var(--mpx-file-list-body-bg);
+  --mpx-main-image-name-list-row-border: var(--mpx-file-list-row-border);
+  --mpx-main-image-name-list-row-bg: var(--mpx-file-list-row-bg);
+  --mpx-main-image-name-list-row-text: var(--mpx-file-list-row-text);
+  --mpx-main-image-name-list-row-hover-bg: var(--mpx-file-list-row-hover-bg);
+  --mpx-main-image-name-list-row-focused-border-left: var(
+    --mpx-file-list-row-focused-border-left
+  );
+  --mpx-main-image-name-list-row-selected-border-left: var(
+    --mpx-file-list-row-selected-border-left
+  );
+  --mpx-main-image-name-list-row-selected-focused-border-left: var(
+    --mpx-file-list-row-selected-focused-border-left
+  );
+  --mpx-main-image-name-list-row-manage-selected-bg: var(
+    --mpx-file-list-row-selected-bg
+  );
+  --mpx-main-image-name-list-row-main-text: var(--mpx-file-list-row-main-text);
+  --mpx-main-image-name-list-row-main-hover-bg: var(
+    --mpx-file-list-row-main-hover-bg
+  );
+  --mpx-main-image-name-list-row-main-active-bg: var(
+    --mpx-file-list-row-main-active-bg
+  );
+  --mpx-main-image-name-list-row-main-pressed-bg: var(
+    --mpx-file-list-row-main-pressed-bg
+  );
+  --mpx-main-image-name-list-row-main-hover-text: var(
+    --mpx-file-list-row-main-hover-text
+  );
+  --mpx-main-image-name-list-row-main-active-text: var(
+    --mpx-file-list-row-main-active-text
+  );
+  --mpx-main-image-name-list-row-main-pressed-text: var(
+    --mpx-file-list-row-main-pressed-text
+  );
+  --mpx-main-image-name-list-row-main-focus-outline-width: var(
+    --mpx-file-list-row-main-focus-outline-width
+  );
+  --mpx-main-image-name-list-row-main-focus-outline-color: var(
+    --mpx-file-list-row-main-focus-outline-color
+  );
+  --mpx-main-image-name-list-row-main-pressed-font-weight: var(
+    --mpx-file-list-row-main-pressed-font-weight
+  );
+  --mpx-main-image-name-list-label-text: var(--mpx-file-list-label-text);
+
+  --mpx-metadata-file-list-bg: var(--mpx-file-list-bg);
+  --mpx-metadata-file-list-text: var(--mpx-file-list-text);
+  --mpx-metadata-file-list-row-border: var(--mpx-file-list-row-border);
+  --mpx-metadata-file-list-row-bg: var(--mpx-file-list-row-bg);
+  --mpx-metadata-file-list-row-text: var(--mpx-file-list-row-text);
+  --mpx-metadata-file-list-index-text: var(--mpx-file-list-head-text);
+  --mpx-metadata-file-list-row-hover-bg: var(--mpx-file-list-row-hover-bg);
+  --mpx-metadata-file-list-row-focused-border-left: var(
+    --mpx-file-list-row-focused-border-left
+  );
+  --mpx-metadata-file-list-row-selected-border-left: var(
+    --mpx-file-list-row-selected-border-left
+  );
+  --mpx-metadata-file-list-row-selected-focused-border-left: var(
+    --mpx-file-list-row-selected-focused-border-left
+  );
+  --mpx-metadata-file-list-row-selected-bg: var(--mpx-file-list-row-selected-bg);
+  --mpx-metadata-file-list-row-main-text: var(--mpx-file-list-row-main-text);
+  --mpx-metadata-file-list-row-main-hover-bg: var(
+    --mpx-file-list-row-main-hover-bg
+  );
+  --mpx-metadata-file-list-row-main-active-bg: var(
+    --mpx-file-list-row-main-active-bg
+  );
+  --mpx-metadata-file-list-row-main-pressed-bg: var(
+    --mpx-file-list-row-main-pressed-bg
+  );
+  --mpx-metadata-file-list-row-main-hover-text: var(
+    --mpx-file-list-row-main-hover-text
+  );
+  --mpx-metadata-file-list-row-main-active-text: var(
+    --mpx-file-list-row-main-active-text
+  );
+  --mpx-metadata-file-list-row-main-pressed-text: var(
+    --mpx-file-list-row-main-pressed-text
+  );
+  --mpx-metadata-file-list-row-main-focus-outline-width: var(
+    --mpx-file-list-row-main-focus-outline-width
+  );
+  --mpx-metadata-file-list-row-main-focus-outline-color: var(
+    --mpx-file-list-row-main-focus-outline-color
+  );
+  --mpx-metadata-file-list-row-main-pressed-font-weight: var(
+    --mpx-file-list-row-main-pressed-font-weight
+  );
 
     --mpx-main-image-name-list-border: var(--mpx-file-list-border);
     --mpx-main-image-name-list-bg: var(--mpx-file-list-bg);
@@ -732,33 +836,203 @@
    * E. Layout Structure — Style 控制的布局效果 token
    * ======================================================== */
 
-    /* 全局布局 */
-    --mpx-layout-gap-scale: 1;
-    --mpx-pane-inner-gap-scale: 1;
-    --mpx-pane-stack-gap-scale: 1;
-    --mpx-sidebar-inner-gap-scale: 1;
-    --mpx-thumbnail-gap-scale: 1;
-    --mpx-button-group-inset-scale: 1;
-    --mpx-pane-header-height-scale: 1;
-    --mpx-pane-footer-height-scale: 1;
-    --mpx-layout-gap-px: 0px;
-    --mpx-pane-inner-padding-px: 10px;
-    --mpx-pane-stack-gap-px: 8px;
-    --mpx-pane-section-gap-px: 8px;
-    --mpx-pane-recessed-padding-px: 3px;
-    --mpx-sidebar-gap-px: 8px;
-    --mpx-thumbnail-gap-px: 8px;
-    --mpx-button-group-inset-px: 2px;
-    --mpx-control-group-gap-px: 8px;
-    --mpx-pane-header-height-px: 34px;
-    --mpx-pane-footer-height-px: 40px;
-    --mpx-metadata-edit-grid-label-gap-px: 4px;
-    --mpx-layout-padding: var(--mpx-layout-gap-px);
-    --mpx-splitter-width: var(--mpx-layout-gap-px);
-    --mpx-bg-body: radial-gradient(
-      circle at top right,
-      var(--mpx-bg-muted),
-      var(--mpx-bg-app-base) 70%
+  /* 全局布局 */
+  --mpx-layout-gap-scale: 1;
+  --mpx-pane-inner-gap-scale: 1;
+  --mpx-pane-stack-gap-scale: 1;
+  --mpx-sidebar-inner-gap-scale: 1;
+  --mpx-thumbnail-gap-scale: 1;
+  --mpx-button-group-inset-scale: 1;
+  --mpx-pane-header-height-scale: 1;
+  --mpx-pane-footer-height-scale: 1;
+  --mpx-layout-gap-px: 0px;
+  --mpx-pane-inner-padding-px: 10px;
+  --mpx-pane-stack-gap-px: 8px;
+  --mpx-pane-section-gap-px: 8px;
+  --mpx-pane-recessed-padding-px: 3px;
+  --mpx-sidebar-gap-px: 8px;
+  --mpx-thumbnail-gap-px: 8px;
+  --mpx-button-group-inset-px: 2px;
+  --mpx-control-group-gap-px: 8px;
+  --mpx-pane-header-height-px: 34px;
+  --mpx-pane-footer-height-px: 40px;
+  --mpx-metadata-edit-grid-label-gap-px: 4px;
+  --mpx-layout-padding: var(--mpx-layout-gap-px);
+  --mpx-splitter-width: var(--mpx-layout-gap-px);
+  --mpx-bg-body: radial-gradient(
+    circle at top right,
+    var(--mpx-bg-muted),
+    var(--mpx-bg-app-base) 70%
+  );
+
+  /* 面板共享基底 */
+  --mpx-container-frame-radius: var(--mpx-panel-radius);
+  --mpx-panel-radius: 0px;
+  --mpx-panel-border-width: 1px;
+  --mpx-panel-border-style: solid;
+  --mpx-panel-shadow: none;
+  --mpx-panel-backdrop-filter: none;
+  --mpx-panel-transform: none;
+  --mpx-panel-transition: none;
+  --mpx-panel-padding: 10px;
+  --mpx-pane-frame-padding: var(
+    --mpx-pane-inner-padding-px,
+    var(--mpx-panel-padding)
+  );
+  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, 8px);
+  --mpx-pane-section-gap: var(
+    --mpx-pane-section-gap-px,
+    var(--mpx-pane-stack-gap-px, 8px)
+  );
+  --mpx-control-group-gap: var(--mpx-control-group-gap-px, 8px);
+
+  /* Sidebar 覆写（默认继承 panel） */
+  --mpx-sidebar-border-color: var(--mpx-container-frame-border-color);
+  --mpx-sidebar-radius: var(--mpx-container-frame-radius);
+  --mpx-sidebar-border-width: var(--mpx-panel-border-width);
+  --mpx-sidebar-border-style: var(--mpx-panel-border-style);
+  --mpx-sidebar-shadow: var(--mpx-panel-shadow);
+  --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-sidebar-frame-translate-x: 0px;
+  --mpx-sidebar-frame-translate-y: 0px;
+  --mpx-sidebar-frame-rotate-x: 0deg;
+  --mpx-sidebar-frame-rotate-y: 0deg;
+  --mpx-sidebar-frame-rotate-z: 0deg;
+  --mpx-sidebar-frame-scale-x: 1;
+  --mpx-sidebar-frame-scale-y: 1;
+  --mpx-sidebar-frame-origin-x: 50%;
+  --mpx-sidebar-frame-origin-y: 50%;
+  --mpx-sidebar-frame-perspective: none;
+  --mpx-sidebar-frame-transform-style: flat;
+  --mpx-sidebar-frame-backface-visibility: visible;
+  --mpx-sidebar-z-index: 2;
+  --mpx-sidebar-transform: translate(
+      var(--mpx-sidebar-frame-translate-x),
+      var(--mpx-sidebar-frame-translate-y)
+    ) rotateX(var(--mpx-sidebar-frame-rotate-x))
+    rotateY(var(--mpx-sidebar-frame-rotate-y))
+    rotateZ(var(--mpx-sidebar-frame-rotate-z))
+    scale(var(--mpx-sidebar-frame-scale-x), var(--mpx-sidebar-frame-scale-y));
+  --mpx-sidebar-transition: var(--mpx-panel-transition);
+  --mpx-sidebar-padding: var(--mpx-pane-frame-padding, 0px);
+  --mpx-sidebar-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-sidebar-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-sidebar-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-sidebar-bg: linear-gradient(
+    var(--mpx-sidebar-fill-angle),
+    var(--mpx-sidebar-fill-start) 0%,
+    var(--mpx-sidebar-fill-end) 100%
+  );
+
+  /* Main 覆写 */
+  --mpx-main-border-color: var(--mpx-container-frame-border-color);
+  --mpx-main-radius: var(--mpx-container-frame-radius);
+  --mpx-main-border-width: var(--mpx-panel-border-width);
+  --mpx-main-border-style: var(--mpx-panel-border-style);
+  --mpx-main-shadow: var(--mpx-panel-shadow);
+  --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-main-frame-translate-x: 0px;
+  --mpx-main-frame-translate-y: 0px;
+  --mpx-main-frame-rotate-x: 0deg;
+  --mpx-main-frame-rotate-y: 0deg;
+  --mpx-main-frame-rotate-z: 0deg;
+  --mpx-main-frame-scale-x: 1;
+  --mpx-main-frame-scale-y: 1;
+  --mpx-main-frame-origin-x: 50%;
+  --mpx-main-frame-origin-y: 50%;
+  --mpx-main-frame-perspective: none;
+  --mpx-main-frame-transform-style: flat;
+  --mpx-main-frame-backface-visibility: visible;
+  --mpx-main-z-index: 1;
+  --mpx-main-transform: translate(
+      var(--mpx-main-frame-translate-x),
+      var(--mpx-main-frame-translate-y)
+    ) rotateX(var(--mpx-main-frame-rotate-x))
+    rotateY(var(--mpx-main-frame-rotate-y))
+    rotateZ(var(--mpx-main-frame-rotate-z))
+    scale(var(--mpx-main-frame-scale-x), var(--mpx-main-frame-scale-y));
+  --mpx-main-transition: var(--mpx-panel-transition);
+  --mpx-main-padding: var(--mpx-pane-frame-padding, var(--mpx-panel-padding));
+  --mpx-main-fill-start: var(--mpx-container-frame-fill-start);
+  --mpx-main-fill-end: var(--mpx-container-frame-fill-end);
+  --mpx-main-fill-angle: var(--mpx-container-frame-fill-angle);
+  --mpx-main-bg: linear-gradient(
+    var(--mpx-main-fill-angle),
+    var(--mpx-main-fill-start) 0%,
+    var(--mpx-main-fill-end) 100%
+  );
+  --mpx-workspace-fill-start: var(--mpx-main-fill-start);
+  --mpx-workspace-fill-end: var(--mpx-main-fill-end);
+  --mpx-workspace-fill-angle: var(--mpx-main-fill-angle);
+  --mpx-workspace-border-color: var(--mpx-main-border-color);
+  --mpx-workspace-border-width: var(--mpx-main-border-width);
+  --mpx-workspace-radius: var(--mpx-main-radius);
+
+  --mpx-thumbnail-card-border-color: var(--mpx-border-1);
+  --mpx-thumbnail-card-border-width: var(--mpx-card-border-width);
+  --mpx-thumbnail-card-shadow: var(--mpx-card-shadow);
+  --mpx-thumbnail-card-padding: 0px;
+  --mpx-thumbnail-card-bg: transparent;
+  --mpx-thumbnail-card-focus-bg: var(--mpx-state-focus-color);
+  --mpx-thumbnail-card-selected-bg: var(--mpx-state-selected-color);
+  --mpx-thumbnail-card-radius: var(--mpx-radius-main-card, var(--mpx-card-radius));
+
+  --mpx-image-grid-card-border-color: var(--mpx-thumbnail-card-border-color);
+  --mpx-image-grid-card-border-width: var(--mpx-thumbnail-card-border-width);
+  --mpx-image-grid-card-shadow: var(--mpx-thumbnail-card-shadow);
+  --mpx-image-grid-card-padding: var(--mpx-thumbnail-card-padding);
+  --mpx-image-grid-card-bg: var(--mpx-thumbnail-card-bg);
+  --mpx-image-grid-card-focus-bg: var(--mpx-thumbnail-card-focus-bg);
+  --mpx-image-grid-card-selected-bg: var(--mpx-thumbnail-card-selected-bg);
+  --mpx-image-grid-card-radius: var(--mpx-thumbnail-card-radius);
+
+  --mpx-video-grid-card-border-color: var(--mpx-thumbnail-card-border-color);
+  --mpx-video-grid-card-border-width: var(--mpx-thumbnail-card-border-width);
+  --mpx-video-grid-card-shadow: var(--mpx-thumbnail-card-shadow);
+  --mpx-video-grid-card-padding: var(--mpx-thumbnail-card-padding);
+  --mpx-video-grid-card-bg: var(--mpx-thumbnail-card-bg);
+  --mpx-video-grid-card-focus-bg: var(--mpx-thumbnail-card-focus-bg);
+  --mpx-video-grid-card-selected-bg: var(--mpx-thumbnail-card-selected-bg);
+  --mpx-video-grid-card-radius: var(--mpx-thumbnail-card-radius);
+  --mpx-main-header-fill-start: rgba(0, 0, 0, 0);
+  --mpx-main-header-fill-end: rgba(0, 0, 0, 0);
+  --mpx-main-header-fill-angle: 180deg;
+  --mpx-main-header-bg: linear-gradient(
+    var(--mpx-main-header-fill-angle),
+    var(--mpx-main-header-fill-start) 0%,
+    var(--mpx-main-header-fill-end) 100%
+  );
+  --mpx-main-header-border-color: rgba(0, 0, 0, 0);
+
+  /* Metadata 覆写 */
+  --mpx-metadata-border-color: var(--mpx-container-frame-border-color);
+  --mpx-metadata-radius: var(--mpx-container-frame-radius);
+  --mpx-metadata-border-width: var(--mpx-panel-border-width);
+  --mpx-metadata-border-style: var(--mpx-panel-border-style);
+  --mpx-metadata-shadow: var(--mpx-panel-shadow);
+  --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
+  --mpx-metadata-frame-translate-x: 0px;
+  --mpx-metadata-frame-translate-y: 0px;
+  --mpx-metadata-frame-rotate-x: 0deg;
+  --mpx-metadata-frame-rotate-y: 0deg;
+  --mpx-metadata-frame-rotate-z: 0deg;
+  --mpx-metadata-frame-scale-x: 1;
+  --mpx-metadata-frame-scale-y: 1;
+  --mpx-metadata-frame-origin-x: 50%;
+  --mpx-metadata-frame-origin-y: 50%;
+  --mpx-metadata-frame-perspective: none;
+  --mpx-metadata-frame-transform-style: flat;
+  --mpx-metadata-frame-backface-visibility: visible;
+  --mpx-metadata-z-index: 2;
+  --mpx-metadata-transform: translate(
+      var(--mpx-metadata-frame-translate-x),
+      var(--mpx-metadata-frame-translate-y)
+    ) rotateX(var(--mpx-metadata-frame-rotate-x))
+    rotateY(var(--mpx-metadata-frame-rotate-y))
+    rotateZ(var(--mpx-metadata-frame-rotate-z))
+    scale(
+      var(--mpx-metadata-frame-scale-x),
+      var(--mpx-metadata-frame-scale-y)
     );
 
     /* 面板共享基底 */

@@ -3359,7 +3359,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   border-bottom: 1px solid
     var(--mpx-file-list-row-border, var(--mpx-overlay-soft-row-divider));
   background: var(--mpx-file-list-row-bg, var(--mpx-overlay-soft-bg));
-  color: var(--mpx-file-list-row-text, var(--mpx-file-list-text, var(--mpx-text-1)));
+  color: var(--mpx-file-list-row-text, var(--mpx-text-1));
 }
 
 .theme-parameter-file-list-preview-row:last-child {
@@ -3380,25 +3380,27 @@ button.mpx-overlay-chip-btn:focus-visible {
   );
 }
 
+.theme-parameter-file-list-preview-row.is-selected.is-focused {
+  border-left-color: var(
+    --mpx-file-list-row-selected-focused-border-left,
+    var(--mpx-state-focus-color)
+  );
+}
+
 .theme-parameter-file-list-preview-row-main {
   width: 100%;
   border: 0;
   background: transparent;
-  color: var(--mpx-file-list-row-main-text, var(--mpx-file-list-row-text, var(--mpx-text-1)));
+  color: var(--mpx-file-list-row-main-text, var(--mpx-text-1));
   padding: 10px 16px;
   text-align: left;
   font: inherit;
 }
 
 .theme-parameter-file-list-preview-row-main.is-selected {
-  background: var(
-    --mpx-file-list-row-selected-bg,
-    var(--mpx-state-selected-color)
-  );
-  color: var(
-    --mpx-file-list-row-main-selected-text,
-    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
-  );
+  background: var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color));
+  color: var(--mpx-file-list-row-main-pressed-text, var(--mpx-text-1));
+  font-weight: var(--mpx-file-list-row-main-pressed-font-weight, 600);
 }
 
 .theme-parameter-file-list-preview-label {

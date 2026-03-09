@@ -243,11 +243,7 @@ function ThemeParameterPanel({
     setContainerMetadataAppearanceExpanded,
     setContainerMetadataHeaderExpanded,
     setContainerMetadataHeaderButtonsExpanded,
-    setContainerMetadataRatingExpanded,
-    setContainerMetadataInternalsExpanded,
     setContainerMetadataFileListExpanded,
-    setContainerMetadataPreferenceRecordExpanded,
-    setContainerMetadataBookletBindingExpanded,
     setContainerSidebarMainExpanded,
     setContainerMainImageNameListExpanded,
     setLargePanelRootExpanded,
@@ -261,20 +257,7 @@ function ThemeParameterPanel({
     setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelRootExpanded,
     setSmallPanelSectionExpanded,
-    setButtonVariantDefaultExpanded,
-    setButtonVariantPlayerExpanded,
-    setButtonVariantOverlayCellExpanded,
-    setButtonSlotExpanded,
-    setButtonSlotHeaderExpanded,
-    setButtonSlotSidebarHeaderExpanded,
-    setButtonSlotMainHeaderExpanded,
-    setButtonSlotMetadataHeaderExpanded,
-    setControlScrollbarExpanded,
-    setControlSliderBaseExpanded,
-    setControlSliderPlayerExpanded,
-    setControlSliderVerticalExpanded,
-    setControlSliderSettingsExpanded,
-    setControlFileListExpanded,
+    setControlSectionExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const parameterSyncStateRef = useRef(createThemeParameterSyncState());
@@ -314,11 +297,7 @@ function ThemeParameterPanel({
     containerMetadataAppearanceExpanded,
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
-    containerMetadataRatingExpanded,
-    containerMetadataInternalsExpanded,
     containerMetadataFileListExpanded,
-    containerMetadataPreferenceRecordExpanded,
-    containerMetadataBookletBindingExpanded,
     containerSidebarMainExpanded,
     containerMainImageNameListExpanded,
     largePanelRootExpanded,
@@ -332,20 +311,7 @@ function ThemeParameterPanel({
     largePanelInternalSettingsGroupsExpanded,
     smallPanelRootExpanded,
     smallPanelSectionsExpanded,
-    buttonVariantDefaultExpanded,
-    buttonVariantPlayerExpanded,
-    buttonVariantOverlayCellExpanded,
-    buttonSlotExpanded,
-    buttonSlotHeaderExpanded,
-    buttonSlotSidebarHeaderExpanded,
-    buttonSlotMainHeaderExpanded,
-    buttonSlotMetadataHeaderExpanded,
-    controlScrollbarExpanded,
-    controlSliderBaseExpanded,
-    controlSliderPlayerExpanded,
-    controlSliderVerticalExpanded,
-    controlSliderSettingsExpanded,
-    controlFileListExpanded,
+    controlSectionsExpanded,
   } = uiState;
 
   const containerLayerParameters = useMemo(
@@ -608,67 +574,6 @@ function ThemeParameterPanel({
     captureContainerDebugSessionState(document.documentElement);
   };
 
-  const smallPanelPreviewCards = [
-    {
-      key: "shortcut-edit",
-      title: "5.1 Shortcut Edit",
-      slot: "fg-header-g1-settings-shortcut-edit-panel",
-      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "shortcut-capture",
-      title: "5.2 Shortcut Capture",
-      slot: "fg-header-g1-settings-shortcut-capture-panel",
-      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "group-name",
-      title: "5.3 Group Name",
-      slot: "fg-main-header-manage-group-name-panel",
-      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "delete-confirm",
-      title: "5.4 Delete Confirm",
-      slot: "fg-main-header-manage-delete-confirm-panel",
-      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "ad-review-start-main",
-      title: "5.5 Ad Review Start / Main",
-      slot: "fg-main-header-image-ad-review-start-panel",
-      className:
-        "mpx-dialog-panel theme-debug-small-panel-preview-card manage-ad-review-start-dialog",
-    },
-    {
-      key: "ad-review-start-metadata",
-      title: "5.5 Ad Review Start / Metadata",
-      slot: "fg-meta-main-ad-review-start-panel",
-      className:
-        "mpx-dialog-panel theme-debug-small-panel-preview-card manage-ad-review-start-dialog",
-    },
-    {
-      key: "convert",
-      title: "5.6 Convert",
-      slot: "fg-main-header-image-convert-panel",
-      className: "mpx-dialog-panel theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "playlist-name",
-      title: "5.7 Playlist Name Dialog",
-      slot: "fg-meta-main-video-editor-playlist-name-dialog-panel",
-      className:
-        "mpx-dialog-panel mpx-dialog-panel--inline metadata-playlist-save-dialog theme-debug-small-panel-preview-card",
-    },
-    {
-      key: "rename-single",
-      title: "5.8 Rename Single",
-      slot: "fg-sidebar-shortcut-rename-single-panel",
-      className:
-        "mpx-dialog-panel sidebar-rename-single-dialog theme-debug-small-panel-preview-card",
-    },
-  ] as const;
-
   return (
     <div
       {...panelA11y}
@@ -902,29 +807,9 @@ function ThemeParameterPanel({
           setContainerMetadataHeaderButtonsExpanded={
             setContainerMetadataHeaderButtonsExpanded
           }
-          containerMetadataRatingExpanded={containerMetadataRatingExpanded}
-          setContainerMetadataRatingExpanded={setContainerMetadataRatingExpanded}
-          containerMetadataInternalsExpanded={
-            containerMetadataInternalsExpanded
-          }
-          setContainerMetadataInternalsExpanded={
-            setContainerMetadataInternalsExpanded
-          }
           containerMetadataFileListExpanded={containerMetadataFileListExpanded}
           setContainerMetadataFileListExpanded={
             setContainerMetadataFileListExpanded
-          }
-          containerMetadataPreferenceRecordExpanded={
-            containerMetadataPreferenceRecordExpanded
-          }
-          setContainerMetadataPreferenceRecordExpanded={
-            setContainerMetadataPreferenceRecordExpanded
-          }
-          containerMetadataBookletBindingExpanded={
-            containerMetadataBookletBindingExpanded
-          }
-          setContainerMetadataBookletBindingExpanded={
-            setContainerMetadataBookletBindingExpanded
           }
           containerSidebarMainExpanded={containerSidebarMainExpanded}
           setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}
@@ -966,36 +851,8 @@ function ThemeParameterPanel({
           setSmallPanelRootExpanded={setSmallPanelRootExpanded}
           smallPanelSectionsExpanded={smallPanelSectionsExpanded}
           setSmallPanelSectionExpanded={setSmallPanelSectionExpanded}
-          buttonVariantDefaultExpanded={buttonVariantDefaultExpanded}
-          setButtonVariantDefaultExpanded={setButtonVariantDefaultExpanded}
-          buttonVariantPlayerExpanded={buttonVariantPlayerExpanded}
-          setButtonVariantPlayerExpanded={setButtonVariantPlayerExpanded}
-          buttonVariantOverlayCellExpanded={buttonVariantOverlayCellExpanded}
-          setButtonVariantOverlayCellExpanded={setButtonVariantOverlayCellExpanded}
-          buttonSlotExpanded={buttonSlotExpanded}
-          setButtonSlotExpanded={setButtonSlotExpanded}
-          buttonSlotHeaderExpanded={buttonSlotHeaderExpanded}
-          setButtonSlotHeaderExpanded={setButtonSlotHeaderExpanded}
-          buttonSlotSidebarHeaderExpanded={buttonSlotSidebarHeaderExpanded}
-          setButtonSlotSidebarHeaderExpanded={setButtonSlotSidebarHeaderExpanded}
-          buttonSlotMainHeaderExpanded={buttonSlotMainHeaderExpanded}
-          setButtonSlotMainHeaderExpanded={setButtonSlotMainHeaderExpanded}
-          buttonSlotMetadataHeaderExpanded={buttonSlotMetadataHeaderExpanded}
-          setButtonSlotMetadataHeaderExpanded={
-            setButtonSlotMetadataHeaderExpanded
-          }
-          controlScrollbarExpanded={controlScrollbarExpanded}
-          setControlScrollbarExpanded={setControlScrollbarExpanded}
-          controlSliderBaseExpanded={controlSliderBaseExpanded}
-          setControlSliderBaseExpanded={setControlSliderBaseExpanded}
-          controlSliderPlayerExpanded={controlSliderPlayerExpanded}
-          setControlSliderPlayerExpanded={setControlSliderPlayerExpanded}
-          controlSliderVerticalExpanded={controlSliderVerticalExpanded}
-          setControlSliderVerticalExpanded={setControlSliderVerticalExpanded}
-          controlSliderSettingsExpanded={controlSliderSettingsExpanded}
-          setControlSliderSettingsExpanded={setControlSliderSettingsExpanded}
-          controlFileListExpanded={controlFileListExpanded}
-          setControlFileListExpanded={setControlFileListExpanded}
+          controlSectionsExpanded={controlSectionsExpanded}
+          setControlSectionExpanded={setControlSectionExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

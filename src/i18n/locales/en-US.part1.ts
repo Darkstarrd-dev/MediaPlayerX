@@ -426,16 +426,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.4.1.0 Metadata header control",
   "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
     "2.4.1.1 Metadata header buttons",
-  "ui.themeParameter.containerLayer.sectionMetadataInternals":
-    "2.4.2.2 Metadata internals",
   "ui.themeParameter.containerLayer.sectionMetadataFileList":
-    "2.4.2.3 Metadata file list",
-  "ui.themeParameter.containerLayer.sectionMetadataRating":
-    "2.4.2.1 Rating component",
-  "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
-    "2.4.2.5 Metadata preference record",
-  "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
-    "2.4.2.6 Music Metadata Booklet binding",
+    "2.4.2.4 File list",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
@@ -503,6 +495,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.section.sliderSettings":
     "6.2.3 Slider variant: settings panel",
   "ui.themeParameter.controls.section.fileList": "6.3 File list style",
+  "ui.themeParameter.controls.section.thumbnailCard":
+    "6.4 Thumbnail card style (shared)",
   "ui.themeParameter.controls.note.scrollbar":
     "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
   "ui.themeParameter.controls.note.sliderBase":
@@ -514,7 +508,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.note.sliderSettings":
     "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
   "ui.themeParameter.controls.note.fileList":
-    "6.3 now acts as the shared baseline for file lists: image/music in Main share one list chain, and video/music in Metadata share another chain built on top of the same common baseline. Sections 2.3.2.2 and 2.4.2.3 extend it with local overrides.",
+    "6.3 is the source for file-list styling. Main image/music and Metadata video/music should all fall back here first, then apply local derived overrides.",
+  "ui.themeParameter.controls.note.thumbnailCard":
+    "6.4 is the shared thumbnail-card baseline. 2.3.2.1 image/video card groups can still override it locally.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

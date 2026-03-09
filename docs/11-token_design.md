@@ -44,6 +44,19 @@
 `-> --mpx-main-image-name-list-row-main-hover-bg`
 `-> --mpx-file-list-row-main-hover-bg`
 
+## 文件列表 6.3 命名索引
+
+| 层级 | 命名模式 | 说明 |
+| --- | --- | --- |
+| Source | `--mpx-file-list-<semantic>` | 文件列表通用源头；`6.3` 负责调试这层 |
+| Main derived | `--mpx-main-image-name-list-<semantic>` | Main 文件列表派生层（image/music） |
+| Metadata derived | `--mpx-metadata-file-list-<semantic>` | Metadata 文件列表派生层（video/music） |
+| Slot override | `--mpx-slot-fg-main-content-image-name-list-<semantic>` | Main 文件列表旧 slot 覆写；最终仍压到派生层之上 |
+
+示例（Main / Metadata 都回落到 6.3）
+`--mpx-main-image-name-list-row-main-hover-bg -> --mpx-file-list-row-main-hover-bg`
+`--mpx-metadata-file-list-row-main-hover-bg -> --mpx-file-list-row-main-hover-bg`
+
 ## Import Task（3.10）补充
 
 `fg.header.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。

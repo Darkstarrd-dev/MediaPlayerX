@@ -38,7 +38,6 @@
   /* ---------- Semantic surfaces/text/borders/accent (C layer) ---------- */
   --mpx-bg-app-fill: #f2eee7;
   --mpx-bg-app-base: #f2eee7;
-  --mpx-bg-workspace: #f3f0ea;
   --mpx-bg-panel: #fbf8f3;
   --mpx-bg-elevated: #ffffff;
   --mpx-bg-hover: rgba(46, 111, 127, 0.06);
@@ -132,7 +131,7 @@
   /* --mpx-sidebar-main-count-border: #bcc4cf; */
   /* --mpx-sidebar-main-count-packages-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 1); */
 
-  /* File List shared baseline (6.3) */
+  /* File List Source (6.3) */
   /* --mpx-file-list-border: #c7d0d8; */
   /* --mpx-file-list-bg: #ecf0f3; */
 
