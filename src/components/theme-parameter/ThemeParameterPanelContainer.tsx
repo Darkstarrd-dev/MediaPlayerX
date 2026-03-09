@@ -243,6 +243,8 @@ function ThemeParameterPanel({
     setContainerMetadataHeaderExpanded,
     setContainerMetadataHeaderButtonsExpanded,
     setContainerMetadataInternalsExpanded,
+    setContainerMetadataPreferenceRecordExpanded,
+    setContainerMetadataBookletBindingExpanded,
     setContainerSidebarMainExpanded,
     setContainerMainImageNameListExpanded,
     setLargePanelRootExpanded,
@@ -294,6 +296,8 @@ function ThemeParameterPanel({
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
     containerMetadataInternalsExpanded,
+    containerMetadataPreferenceRecordExpanded,
+    containerMetadataBookletBindingExpanded,
     containerSidebarMainExpanded,
     containerMainImageNameListExpanded,
     largePanelRootExpanded,
@@ -865,6 +869,18 @@ function ThemeParameterPanel({
           }
           setContainerMetadataInternalsExpanded={
             setContainerMetadataInternalsExpanded
+          }
+          containerMetadataPreferenceRecordExpanded={
+            containerMetadataPreferenceRecordExpanded
+          }
+          setContainerMetadataPreferenceRecordExpanded={
+            setContainerMetadataPreferenceRecordExpanded
+          }
+          containerMetadataBookletBindingExpanded={
+            containerMetadataBookletBindingExpanded
+          }
+          setContainerMetadataBookletBindingExpanded={
+            setContainerMetadataBookletBindingExpanded
           }
           containerSidebarMainExpanded={containerSidebarMainExpanded}
           setContainerSidebarMainExpanded={setContainerSidebarMainExpanded}

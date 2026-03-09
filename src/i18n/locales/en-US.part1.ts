@@ -406,6 +406,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.4.1.1 Metadata header buttons",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
     "2.4.2 Metadata internals",
+  "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
+    "2.4.2.5 Metadata preference record",
+  "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
+    "2.4.2.6 Music Metadata Booklet binding",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
@@ -420,17 +424,13 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
   "ui.themeParameter.largePanelLayer.sectionInternalSettings":
-    "3.10.0 Settings internals",
+    "3.10.0 Settings / Help / Theme Parameter",
   "ui.themeParameter.largePanelLayer.sectionInternalSettingsSide": "Side",
   "ui.themeParameter.largePanelLayer.sectionInternalSettingsMain": "Main",
   "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
     "3.10.1 Import task",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":
     "3.10.2 Metadata fetch",
-  "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord":
-    "3.10.3 Metadata preference record",
-  "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding":
-    "3.10.4 Booklet binding",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker":
     "3.10.5 Tag search",
   "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup":

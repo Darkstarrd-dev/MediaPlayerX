@@ -1101,8 +1101,6 @@ describe("ThemeParameterPanel", () => {
     ensureDetailsOpen("3.10 内部件");
     expect(screen.getByText("3.10.1 导入任务")).toBeInTheDocument();
     expect(screen.getByText("3.10.2 元数据抓取")).toBeInTheDocument();
-    expect(screen.getByText("3.10.3 Metadata 偏好记录")).toBeInTheDocument();
-    expect(screen.getByText("3.10.4 Booklet 绑定")).toBeInTheDocument();
     expect(screen.getByText("3.10.5 标签检索")).toBeInTheDocument();
     expect(screen.getByText("3.10.6 字幕清理")).toBeInTheDocument();
     expect(screen.getByText("3.10.7 转码")).toBeInTheDocument();
@@ -1163,8 +1161,10 @@ describe("ThemeParameterPanel", () => {
       within(importTaskDetails).getByText("哈希日志事件文字颜色"),
     ).toBeInTheDocument();
 
-    ensureDetailsOpen("3.10.0 Settings 内部件");
-    const settingsDetails = getDetailsBySummaryText("3.10.0 Settings 内部件");
+    ensureDetailsOpen("3.10.0 设置/帮助/主题参数");
+    const settingsDetails = getDetailsBySummaryText(
+      "3.10.0 设置/帮助/主题参数",
+    );
     ensureDetailsOpenWithin(settingsDetails, "Side");
     ensureDetailsOpenWithin(settingsDetails, "Main");
     const sideDetails = getDetailsBySummaryTextWithin(settingsDetails, "Side");
@@ -1957,6 +1957,29 @@ describe("ThemeParameterPanel", () => {
     expect(
       mainContent?.contains(screen.getByText("2.3.2.2 工作区 文件列表模式")),
     ).toBe(true);
+
+    const metadataRootDetails = getDetailsBySummaryText("2.4 Metadata");
+    const metadataContent = metadataRootDetails.querySelector(
+      ".settings-collapsible-content",
+    );
+    expect(
+      metadataContent?.contains(screen.getByText("2.4.2 Metadata 内部件")),
+    ).toBe(true);
+    expect(
+      metadataContent?.contains(
+        screen.getByText("2.4.2.5 Metadata 偏好记录"),
+      ),
+    ).toBe(true);
+    expect(
+      metadataContent?.contains(
+        screen.getByText("2.4.2.6 Music Metadata Booklet 绑定"),
+      ),
+    ).toBe(true);
+    expectFieldOrderWithin(metadataRootDetails, [
+      "2.4.2 Metadata 内部件",
+      "2.4.2.5 Metadata 偏好记录",
+      "2.4.2.6 Music Metadata Booklet 绑定",
+    ]);
   });
 
   it("大容器层支持单容器 frame 参数与文本快照导出", () => {

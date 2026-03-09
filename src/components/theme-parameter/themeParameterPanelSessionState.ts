@@ -14,8 +14,6 @@ interface LargePanelInternalSectionsExpandedState {
   settings: boolean;
   importTask: boolean;
   metadataFetch: boolean;
-  metadataPreferenceRecord: boolean;
-  metadataBookletBinding: boolean;
   metadataFeatureTagPicker: boolean;
   subtitleCleanup: boolean;
   transcodeDialog: boolean;
@@ -66,6 +64,8 @@ export interface ThemeParameterUISessionState {
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
   containerMetadataInternalsExpanded: boolean;
+  containerMetadataPreferenceRecordExpanded: boolean;
+  containerMetadataBookletBindingExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
   largePanelRootExpanded: boolean;
@@ -94,8 +94,6 @@ const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSections
   settings: false,
   importTask: false,
   metadataFetch: false,
-  metadataPreferenceRecord: false,
-  metadataBookletBinding: false,
   metadataFeatureTagPicker: false,
   subtitleCleanup: false,
   transcodeDialog: false,
@@ -146,6 +144,8 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
   containerMetadataInternalsExpanded: false,
+  containerMetadataPreferenceRecordExpanded: false,
+  containerMetadataBookletBindingExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
   largePanelRootExpanded: true,

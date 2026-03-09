@@ -194,6 +194,12 @@ interface ThemeParameterPanelMainProps {
   setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataInternalsExpanded: boolean;
   setContainerMetadataInternalsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataPreferenceRecordExpanded: boolean;
+  setContainerMetadataPreferenceRecordExpanded: Dispatch<
+    SetStateAction<boolean>
+  >;
+  containerMetadataBookletBindingExpanded: boolean;
+  setContainerMetadataBookletBindingExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
@@ -325,6 +331,10 @@ export function ThemeParameterPanelMain({
   setContainerMetadataHeaderButtonsExpanded,
   containerMetadataInternalsExpanded,
   setContainerMetadataInternalsExpanded,
+  containerMetadataPreferenceRecordExpanded,
+  setContainerMetadataPreferenceRecordExpanded,
+  containerMetadataBookletBindingExpanded,
+  setContainerMetadataBookletBindingExpanded,
   containerSidebarMainExpanded,
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
@@ -1726,6 +1736,24 @@ export function ThemeParameterPanelMain({
             setOpen={setContainerMetadataInternalsExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_INTERNAL_DEBUG_SUBSECTIONS[0],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[1]}
+            open={containerMetadataPreferenceRecordExpanded}
+            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[1],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[2]}
+            open={containerMetadataBookletBindingExpanded}
+            setOpen={setContainerMetadataBookletBindingExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[2],
             )}
           />
         </>

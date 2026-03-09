@@ -1732,15 +1732,6 @@ export const METADATA_HEADER_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsectio
     },
   ];
 
-export const METADATA_INTERNAL_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] =
-  [
-    {
-      id: "metadata-internals",
-      summaryKey: "ui.themeParameter.containerLayer.sectionMetadataInternals",
-      colorFields: CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
-    },
-  ];
-
 export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_SHARED_COLOR_FIELDS,
   ...CONTAINER_HEADER_COLOR_FIELDS,
@@ -3965,18 +3956,6 @@ const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
     prefixes: ["--mpx-metadata-fetch-"],
   },
   {
-    id: "metadataPreferenceRecord",
-    summaryKey:
-      "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord",
-    prefixes: ["--mpx-metadata-preference-record-"],
-  },
-  {
-    id: "metadataBookletBinding",
-    summaryKey:
-      "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding",
-    prefixes: ["--mpx-metadata-booklet-binding-"],
-  },
-  {
     id: "metadataFeatureTagPicker",
     summaryKey:
       "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker",
@@ -4013,6 +3992,37 @@ const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
     fieldIds: readonly string[];
   }[];
 }[];
+
+const CONTAINER_METADATA_PREFERENCE_RECORD_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  LARGE_PANEL_INTERNAL_COLOR_FIELDS.filter((field) =>
+    field.cssVar.startsWith("--mpx-metadata-preference-record-"),
+  );
+
+const CONTAINER_METADATA_BOOKLET_BINDING_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  LARGE_PANEL_INTERNAL_COLOR_FIELDS.filter((field) =>
+    field.cssVar.startsWith("--mpx-metadata-booklet-binding-"),
+  );
+
+export const METADATA_INTERNAL_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] =
+  [
+    {
+      id: "metadata-internals",
+      summaryKey: "ui.themeParameter.containerLayer.sectionMetadataInternals",
+      colorFields: CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
+    },
+    {
+      id: "metadata-preference-record",
+      summaryKey:
+        "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord",
+      colorFields: CONTAINER_METADATA_PREFERENCE_RECORD_COLOR_FIELDS,
+    },
+    {
+      id: "metadata-booklet-binding",
+      summaryKey:
+        "ui.themeParameter.containerLayer.sectionMetadataBookletBinding",
+      colorFields: CONTAINER_METADATA_BOOKLET_BINDING_COLOR_FIELDS,
+    },
+  ];
 
 export const LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS: readonly LargePanelInternalSectionDefinition[] =
   LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS.map((section) => ({

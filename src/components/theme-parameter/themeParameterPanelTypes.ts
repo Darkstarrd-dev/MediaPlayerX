@@ -20,8 +20,6 @@ export type LargePanelInternalSectionId =
   | "settings"
   | "importTask"
   | "metadataFetch"
-  | "metadataPreferenceRecord"
-  | "metadataBookletBinding"
   | "metadataFeatureTagPicker"
   | "subtitleCleanup"
   | "transcodeDialog"

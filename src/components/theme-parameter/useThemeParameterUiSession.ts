@@ -237,6 +237,12 @@ export function useThemeParameterUiSession() {
       setContainerMetadataInternalsExpanded: createBooleanSetter(
         "containerMetadataInternalsExpanded",
       ),
+      setContainerMetadataPreferenceRecordExpanded: createBooleanSetter(
+        "containerMetadataPreferenceRecordExpanded",
+      ),
+      setContainerMetadataBookletBindingExpanded: createBooleanSetter(
+        "containerMetadataBookletBindingExpanded",
+      ),
       setContainerSidebarMainExpanded: createBooleanSetter(
         "containerSidebarMainExpanded",
       ),

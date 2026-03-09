@@ -381,6 +381,10 @@ export const zhCnCatalogPart1 = {
     "2.4.1.1 Metadata header 按钮",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
     "2.4.2 Metadata 内部件",
+  "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
+    "2.4.2.5 Metadata 偏好记录",
+  "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
+    "2.4.2.6 Music Metadata Booklet 绑定",
   "ui.themeParameter.containerLayer.sectionSidebarMain":
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
@@ -395,17 +399,13 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 内部件",
   "ui.themeParameter.largePanelLayer.sectionInternalSettings":
-    "3.10.0 Settings 内部件",
+    "3.10.0 设置/帮助/主题参数",
   "ui.themeParameter.largePanelLayer.sectionInternalSettingsSide": "Side",
   "ui.themeParameter.largePanelLayer.sectionInternalSettingsMain": "Main",
   "ui.themeParameter.largePanelLayer.sectionInternalImportTask":
     "3.10.1 导入任务",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFetch":
     "3.10.2 元数据抓取",
-  "ui.themeParameter.largePanelLayer.sectionInternalMetadataPreferenceRecord":
-    "3.10.3 Metadata 偏好记录",
-  "ui.themeParameter.largePanelLayer.sectionInternalMetadataBookletBinding":
-    "3.10.4 Booklet 绑定",
   "ui.themeParameter.largePanelLayer.sectionInternalMetadataFeatureTagPicker":
     "3.10.5 标签检索",
   "ui.themeParameter.largePanelLayer.sectionInternalSubtitleCleanup":
