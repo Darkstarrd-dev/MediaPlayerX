@@ -425,6 +425,7 @@ function AppHeader(props: AppHeaderProps) {
   const dualCollapsed = sidebarCollapsed && metadataCollapsed;
   const tooltipLabel = t("ui.settings.debugTooltips");
   const nativeChromeLabel = t("ui.settings.debugNativeChrome");
+  const musicQuickActionsVisible = showMusicQuickActions && mode !== "music";
   const collapseSidebarLabel = t("a11y.common.collapseSidebar");
   const collapseMetadataPanelLabel = t("a11y.common.collapseMetadataPanel");
 
@@ -580,108 +581,98 @@ function AppHeader(props: AppHeaderProps) {
         </div>
 
         <div
-          className="header-group header-group-modes"
+          className={`header-group header-group-modes mpx-btn-group is-groove ${musicQuickActionsVisible ? "has-music-quick-actions" : ""}`}
           data-slot="fg-header-g2"
         >
-          <div className="mode-switch-wrap">
-            <div
-              className="mode-switch mpx-btn-group is-groove"
-              role="group"
-              aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}
+          <div
+            className="mode-switch"
+            role="group"
+            aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}
+          >
+            <button
+              {...buildA11yPropsByRegistry({ key: "headerModeImage", t })}
+              aria-pressed={mode === "image"}
+              className={mode === "image" ? "is-active" : ""}
+              data-slot="fg-header-g2-mode-image"
+              type="button"
+              disabled={interactionLocked}
+              onClick={() => onModeChange("image")}
             >
-              <button
-                {...buildA11yPropsByRegistry({ key: "headerModeImage", t })}
-                aria-pressed={mode === "image"}
-                className={mode === "image" ? "is-active" : ""}
-                data-slot="fg-header-g2-mode-image"
-                type="button"
-                disabled={interactionLocked}
-                onClick={() => onModeChange("image")}
-              >
-                <span className="header-btn-content">
-                  <span className="header-btn-icon">
-                    <HeaderActionIcon name="image" />
-                  </span>
-                  <span className="header-btn-label">
-                    {t("ui.header.imageMode")}
-                  </span>
+              <span className="header-btn-content">
+                <span className="header-btn-icon">
+                  <HeaderActionIcon name="image" />
                 </span>
-              </button>
-              <button
-                {...buildA11yPropsByRegistry({ key: "headerModeVideo", t })}
-                aria-pressed={mode === "video"}
-                className={mode === "video" ? "is-active" : ""}
-                data-slot="fg-header-g2-mode-video"
-                type="button"
-                disabled={interactionLocked}
-                onClick={() => onModeChange("video")}
-              >
-                <span className="header-btn-content">
-                  <span className="header-btn-icon">
-                    <HeaderActionIcon name="video" />
-                  </span>
-                  <span className="header-btn-label">
-                    {t("ui.header.videoMode")}
-                  </span>
+                <span className="header-btn-label">{t("ui.header.imageMode")}</span>
+              </span>
+            </button>
+            <button
+              {...buildA11yPropsByRegistry({ key: "headerModeVideo", t })}
+              aria-pressed={mode === "video"}
+              className={mode === "video" ? "is-active" : ""}
+              data-slot="fg-header-g2-mode-video"
+              type="button"
+              disabled={interactionLocked}
+              onClick={() => onModeChange("video")}
+            >
+              <span className="header-btn-content">
+                <span className="header-btn-icon">
+                  <HeaderActionIcon name="video" />
                 </span>
-              </button>
-              <button
-                {...buildA11yPropsByRegistry({ key: "headerModeMusic", t })}
-                aria-pressed={mode === "music"}
-                className={mode === "music" ? "is-active" : ""}
-                data-slot="fg-header-g2-mode-music"
-                type="button"
-                disabled={interactionLocked}
-                onClick={() => onModeChange("music")}
-              >
-                <span className="header-btn-content">
-                  <span className="header-btn-icon">
-                    <HeaderActionIcon name="music" />
-                  </span>
-                  <span className="header-btn-label">
-                    {t("ui.header.musicMode")}
-                  </span>
+                <span className="header-btn-label">{t("ui.header.videoMode")}</span>
+              </span>
+            </button>
+            <button
+              {...buildA11yPropsByRegistry({ key: "headerModeMusic", t })}
+              aria-pressed={mode === "music"}
+              className={mode === "music" ? "is-active" : ""}
+              data-slot="fg-header-g2-mode-music"
+              type="button"
+              disabled={interactionLocked}
+              onClick={() => onModeChange("music")}
+            >
+              <span className="header-btn-content">
+                <span className="header-btn-icon">
+                  <HeaderActionIcon name="music" />
                 </span>
-              </button>
-              <div
-                className={`music-quick-actions ${showMusicQuickActions && mode !== "music" ? "is-visible" : ""}`}
-                data-slot="fg-header-g2-music-quick"
-              >
-                <button
-                  aria-label={
-                    musicQuickPlaying
-                      ? t("a11y.header.musicPause")
-                      : t("a11y.header.musicPlay")
-                  }
-                  className="mode-action-btn"
-                  data-tooltip-label={
-                    musicQuickPlaying
-                      ? t("a11y.header.musicPause")
-                      : t("a11y.header.musicPlay")
-                  }
-                  type="button"
-                  onClick={() => {
-                    dispatchMusicPlaybackControl("toggle-playback");
-                  }}
-                >
-                  <HeaderActionIcon
-                    name={musicQuickPlaying ? "pause" : "play"}
-                  />
-                </button>
-                <button
-                  {...buildA11yPropsByRegistry({ key: "headerMusicStop", t })}
-                  className="mode-action-btn"
-                  type="button"
-                  onClick={() => {
-                    setShowMusicQuickActions(false);
-                    musicQuickSessionArmedRef.current = false;
-                    dispatchMusicPlaybackControl("stop");
-                  }}
-                >
-                  <HeaderActionIcon name="stop" />
-                </button>
-              </div>
-            </div>
+                <span className="header-btn-label">{t("ui.header.musicMode")}</span>
+              </span>
+            </button>
+          </div>
+          <div
+            className={`music-quick-actions ${musicQuickActionsVisible ? "is-visible" : ""}`}
+            data-slot="fg-header-g2-music-quick"
+          >
+            <button
+              aria-label={
+                musicQuickPlaying
+                  ? t("a11y.header.musicPause")
+                  : t("a11y.header.musicPlay")
+              }
+              className="mode-action-btn"
+              data-tooltip-label={
+                musicQuickPlaying
+                  ? t("a11y.header.musicPause")
+                  : t("a11y.header.musicPlay")
+              }
+              type="button"
+              onClick={() => {
+                dispatchMusicPlaybackControl("toggle-playback");
+              }}
+            >
+              <HeaderActionIcon name={musicQuickPlaying ? "pause" : "play"} />
+            </button>
+            <button
+              {...buildA11yPropsByRegistry({ key: "headerMusicStop", t })}
+              className="mode-action-btn"
+              type="button"
+              onClick={() => {
+                setShowMusicQuickActions(false);
+                musicQuickSessionArmedRef.current = false;
+                dispatchMusicPlaybackControl("stop");
+              }}
+            >
+              <HeaderActionIcon name="stop" />
+            </button>
           </div>
         </div>
         </div>

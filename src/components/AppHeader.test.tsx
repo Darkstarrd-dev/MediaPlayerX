@@ -76,14 +76,29 @@ describe("AppHeader music quick actions", () => {
       <AppHeader {...baseProps} mode="music" />,
     );
 
+    const modeSwitchGroup = container.querySelector(
+      '[data-slot="fg-header-g2"]',
+    ) as HTMLElement;
+    const modeSwitch = container.querySelector(".mode-switch") as HTMLElement;
     emitPlaybackState(true);
     const quickActions = container.querySelector(
       ".music-quick-actions",
     ) as HTMLElement;
+    expect(modeSwitchGroup.classList.contains("mpx-btn-group")).toBe(true);
+    expect(modeSwitch.classList.contains("mpx-btn-group")).toBe(false);
+    expect(modeSwitch.querySelectorAll(":scope > button")).toHaveLength(3);
+    expect(modeSwitchGroup.contains(quickActions)).toBe(true);
+    expect(quickActions.classList.contains("mpx-btn-group")).toBe(false);
     expect(quickActions.classList.contains("is-visible")).toBe(false);
+    expect(modeSwitchGroup.classList.contains("has-music-quick-actions")).toBe(
+      false,
+    );
 
     rerender(<AppHeader {...baseProps} mode="image" />);
     expect(quickActions.classList.contains("is-visible")).toBe(true);
+    expect(modeSwitchGroup.classList.contains("has-music-quick-actions")).toBe(
+      true,
+    );
   });
 
   it("非音乐模式快捷控制可切换播放并在 stop 后等待下一次音乐播放", () => {
@@ -116,6 +131,11 @@ describe("AppHeader music quick actions", () => {
     fireEvent.click(screen.getByRole("button", { name: "停止音乐" }));
     expect(actions.at(-1)).toBe("stop");
     expect(quickActions.classList.contains("is-visible")).toBe(false);
+    expect(
+      (
+        container.querySelector('[data-slot="fg-header-g2"]') as HTMLElement
+      ).classList.contains("has-music-quick-actions"),
+    ).toBe(false);
 
     rerender(<AppHeader {...baseProps} mode="image" />);
     expect(quickActions.classList.contains("is-visible")).toBe(false);

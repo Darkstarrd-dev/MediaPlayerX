@@ -40,13 +40,18 @@
     --mpx-header-status-btn-min-width: max(80px, var(--mpx-header-btn-size));
     --mpx-header-group-gap: 20px;
     --mpx-header-item-gap: 8px;
-    --mpx-header-group-modes-width: 280px;
-    --mpx-header-group-search-width: 190px;
-    --mpx-header-music-actions-reserve: calc(
-      var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px
+    --mpx-header-modes-base-width: calc(
+      var(--mpx-header-btn-size) * 3 + var(--mpx-header-item-gap) * 2 +
+        var(--mpx-button-group-inset-px, 2px) * 2 +
+        var(--mpx-control-border-width) * 2
     );
-    --mpx-header-modes-wrap-width: calc(
-      var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 24px
+    --mpx-header-group-modes-width: var(--mpx-header-modes-base-width);
+    --mpx-header-group-search-width: 190px;
+    --mpx-header-music-actions-width: calc(
+      var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap)
+    );
+    --mpx-header-music-actions-reserve: calc(
+      var(--mpx-header-music-actions-width) + var(--mpx-header-item-gap)
     );
 
     --mpx-scrollbar-size: 10px;

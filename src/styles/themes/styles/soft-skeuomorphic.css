@@ -115,10 +115,11 @@
   --mpx-header-status-btn-min-width: var(--mpx-header-btn-size);
   --mpx-header-group-gap: calc(var(--mpx-control-group-gap-px, 8px) * 2 + 6px);
   --mpx-header-item-gap: var(--mpx-control-group-gap-px, 8px);
-  --mpx-header-group-modes-width: var(--mpx-header-modes-wrap-width);
+  --mpx-header-modes-base-width: calc(var(--mpx-header-btn-size) * 3 + var(--mpx-header-item-gap) * 2 + var(--mpx-button-group-inset-px, 2px) * 2 + 2px);
+  --mpx-header-group-modes-width: var(--mpx-header-modes-base-width);
   --mpx-header-group-search-width: 180px;
-  --mpx-header-music-actions-reserve: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap) + 8px);
-  --mpx-header-modes-wrap-width: calc(var(--mpx-header-btn-size) * 5 + var(--mpx-header-item-gap) * 4 + 6px);
+  --mpx-header-music-actions-width: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap));
+  --mpx-header-music-actions-reserve: calc(var(--mpx-header-music-actions-width) + var(--mpx-header-item-gap));
 
   --mpx-splitter-track-bg: linear-gradient(180deg,
       color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
