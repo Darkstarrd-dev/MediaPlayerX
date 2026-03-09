@@ -1,6 +1,10 @@
-import type { ChangeEvent, Dispatch, MutableRefObject, SetStateAction } from "react";
+import type {
+  ChangeEvent,
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+} from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SkeuoRunway } from "../primitives/SkeuoRunway";
 import {
   ThemeParameterButtonStatesPage,
   ThemeParameterCommonControlsPage,
@@ -36,7 +40,6 @@ import {
   ThemeParameterParameterRowsWithVarLabel,
   ThemeParameterTextFieldRow,
 } from "./ThemeParameterFieldRows";
-import { buildSkeuoRangeStyle } from "./themeParameterRangeStyle";
 import type {
   ThemeParameterDefinition,
   ThemeParameterValues,
@@ -51,16 +54,12 @@ import {
   CONTAINER_FRAME_SECTION_DEFINITIONS,
   CONTAINER_LAYER_COLOR_FIELDS,
   CONTAINER_LAYER_TEXT_FIELDS,
-  CONTAINER_METADATA_FILE_LIST_COLOR_FIELDS,
-  CONTAINER_METADATA_FILE_LIST_TEXT_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_CONTAINER_COLOR_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_CONTAINER_TEXT_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS,
+  CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS,
+  CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS,
   CONTAINER_SHARED_COLOR_FIELDS,
   CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS,
   CONTAINER_SHARED_SHELL_INLINE_PARAMETER_IDS,
@@ -70,12 +69,6 @@ import {
   CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS,
   CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS,
-  CONTROL_FILE_LIST_COLOR_FIELDS,
-  CONTROL_FILE_LIST_TEXT_FIELDS,
-  CONTROL_THUMBNAIL_CARD_COLOR_FIELDS,
-  CONTROL_THUMBNAIL_CARD_TEXT_FIELDS,
-  CONTROL_SECTION_DEFINITIONS,
-  FILE_LIST_DEBUG_SECTIONS,
   HEADER_DEBUG_SUBSECTIONS,
   LARGE_PANEL_COLOR_FIELDS,
   LARGE_PANEL_BUTTON_COLOR_FIELDS,
@@ -91,8 +84,8 @@ import {
   LARGE_PANEL_SHARED_PARAMETER_IDS,
   LARGE_PANEL_TEXT_FIELDS,
   MAIN_HEADER_DEBUG_SUBSECTIONS,
-  MAIN_IMAGE_NAME_LIST_DEBUG_SECTIONS,
-  METADATA_FILE_LIST_DEBUG_SECTIONS,
+  MAIN_IMAGE_NAME_LIST_DEBUG_LAYERS,
+  METADATA_INTERNAL_DEBUG_SUBSECTIONS,
   METADATA_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_HEADER_DEBUG_SUBSECTIONS,
   SIDEBAR_MAIN_DEBUG_LAYERS,
@@ -205,8 +198,18 @@ interface ThemeParameterPanelMainProps {
   setContainerMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataHeaderButtonsExpanded: boolean;
   setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataRatingExpanded: boolean;
+  setContainerMetadataRatingExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataInternalsExpanded: boolean;
+  setContainerMetadataInternalsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataFileListExpanded: boolean;
   setContainerMetadataFileListExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataPreferenceRecordExpanded: boolean;
+  setContainerMetadataPreferenceRecordExpanded: Dispatch<
+    SetStateAction<boolean>
+  >;
+  containerMetadataBookletBindingExpanded: boolean;
+  setContainerMetadataBookletBindingExpanded: Dispatch<SetStateAction<boolean>>;
   containerSidebarMainExpanded: boolean;
   setContainerSidebarMainExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainImageNameListExpanded: boolean;
@@ -248,11 +251,34 @@ interface ThemeParameterPanelMainProps {
     sectionId: SmallPanelSectionId,
     action: SetStateAction<boolean>,
   ) => void;
-  controlSectionsExpanded: Record<ThemeControlSectionId, boolean>;
-  setControlSectionExpanded: (
-    sectionId: ThemeControlSectionId,
-    action: SetStateAction<boolean>,
-  ) => void;
+  buttonVariantDefaultExpanded: boolean;
+  setButtonVariantDefaultExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonVariantPlayerExpanded: boolean;
+  setButtonVariantPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonVariantOverlayCellExpanded: boolean;
+  setButtonVariantOverlayCellExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotExpanded: boolean;
+  setButtonSlotExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotHeaderExpanded: boolean;
+  setButtonSlotHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotSidebarHeaderExpanded: boolean;
+  setButtonSlotSidebarHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotMainHeaderExpanded: boolean;
+  setButtonSlotMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotMetadataHeaderExpanded: boolean;
+  setButtonSlotMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  controlScrollbarExpanded: boolean;
+  setControlScrollbarExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderBaseExpanded: boolean;
+  setControlSliderBaseExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderPlayerExpanded: boolean;
+  setControlSliderPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderVerticalExpanded: boolean;
+  setControlSliderVerticalExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderSettingsExpanded: boolean;
+  setControlSliderSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  controlFileListExpanded: boolean;
+  setControlFileListExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -345,8 +371,16 @@ export function ThemeParameterPanelMain({
   setContainerMetadataHeaderExpanded,
   containerMetadataHeaderButtonsExpanded,
   setContainerMetadataHeaderButtonsExpanded,
+  containerMetadataRatingExpanded,
+  setContainerMetadataRatingExpanded,
+  containerMetadataInternalsExpanded,
+  setContainerMetadataInternalsExpanded,
   containerMetadataFileListExpanded,
   setContainerMetadataFileListExpanded,
+  containerMetadataPreferenceRecordExpanded,
+  setContainerMetadataPreferenceRecordExpanded,
+  containerMetadataBookletBindingExpanded,
+  setContainerMetadataBookletBindingExpanded,
   containerSidebarMainExpanded,
   setContainerSidebarMainExpanded,
   containerMainImageNameListExpanded,
@@ -373,8 +407,34 @@ export function ThemeParameterPanelMain({
   setSmallPanelRootExpanded,
   smallPanelSectionsExpanded,
   setSmallPanelSectionExpanded,
-  controlSectionsExpanded,
-  setControlSectionExpanded,
+  buttonVariantDefaultExpanded,
+  setButtonVariantDefaultExpanded,
+  buttonVariantPlayerExpanded,
+  setButtonVariantPlayerExpanded,
+  buttonVariantOverlayCellExpanded,
+  setButtonVariantOverlayCellExpanded,
+  buttonSlotExpanded,
+  setButtonSlotExpanded,
+  buttonSlotHeaderExpanded,
+  setButtonSlotHeaderExpanded,
+  buttonSlotSidebarHeaderExpanded,
+  setButtonSlotSidebarHeaderExpanded,
+  buttonSlotMainHeaderExpanded,
+  setButtonSlotMainHeaderExpanded,
+  buttonSlotMetadataHeaderExpanded,
+  setButtonSlotMetadataHeaderExpanded,
+  controlScrollbarExpanded,
+  setControlScrollbarExpanded,
+  controlSliderBaseExpanded,
+  setControlSliderBaseExpanded,
+  controlSliderPlayerExpanded,
+  setControlSliderPlayerExpanded,
+  controlSliderVerticalExpanded,
+  setControlSliderVerticalExpanded,
+  controlSliderSettingsExpanded,
+  setControlSliderSettingsExpanded,
+  controlFileListExpanded,
+  setControlFileListExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -443,9 +503,15 @@ export function ThemeParameterPanelMain({
       sliderVerticalDown: 28,
       sliderSettingsHorizontal: 52,
     });
-  const [workspaceImageCardExpanded, setWorkspaceImageCardExpanded] =
+  const [
+    workspaceThumbnailContainerExpanded,
+    setWorkspaceThumbnailContainerExpanded,
+  ] = useState(true);
+  const [workspaceThumbnailStyleExpanded, setWorkspaceThumbnailStyleExpanded] =
     useState(true);
-  const [workspaceVideoCardExpanded, setWorkspaceVideoCardExpanded] =
+  const [workspacePreviewMusicExpanded, setWorkspacePreviewMusicExpanded] =
+    useState(true);
+  const [workspacePreviewVideoExpanded, setWorkspacePreviewVideoExpanded] =
     useState(true);
 
   const containerDebugColorVarSet = useMemo(
@@ -518,6 +584,14 @@ export function ThemeParameterPanelMain({
     [largePanelLayerParameters],
   );
 
+  const smallPanelParameterMap = useMemo(
+    () =>
+      new Map(
+        smallPanelLayerParameters.map((parameter) => [parameter.id, parameter]),
+      ),
+    [smallPanelLayerParameters],
+  );
+
   const pickLargePanelParameters = useCallback(
     (parameterIds: readonly string[]) => {
       return parameterIds
@@ -545,6 +619,92 @@ export function ThemeParameterPanelMain({
   const largePanelSharedInlineParameters = useMemo(() => {
     return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
   }, [pickLargePanelParameters]);
+
+  const largePanelRootOrderedEntries = useMemo(
+    () =>
+      [
+        { kind: "color", id: "large-panel-border-color" },
+        { kind: "parameter", id: "large-panel-border-width" },
+        { kind: "color", id: "large-panel-fill-start" },
+        { kind: "color", id: "large-panel-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-fill-angle" },
+        {
+          kind: "textSection",
+          summary: t("ui.themeParameter.largePanelLayer.rootShadowSettings"),
+          fieldIds: ["large-panel-shadow"],
+        },
+        { kind: "parameter", id: "large-panel-width" },
+        { kind: "parameter", id: "large-panel-height" },
+        { kind: "parameter", id: "large-panel-radius" },
+        { kind: "parameter", id: "large-panel-shell-padding" },
+        { kind: "parameter", id: "large-panel-shell-gap" },
+      ] as const,
+    [t],
+  );
+
+  const largePanelSharedOrderedEntries = useMemo(
+    () =>
+      [
+        { kind: "color", id: "large-panel-section-border-color" },
+        { kind: "parameter", id: "large-panel-section-border-width" },
+        { kind: "color", id: "large-panel-section-fill-start" },
+        { kind: "color", id: "large-panel-section-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-section-fill-angle" },
+      ] as const,
+    [],
+  );
+
+  const largePanelSectionOrderedEntries = useMemo(
+    () => ({
+      head: [
+        { kind: "color", id: "large-panel-head-border-color" },
+        { kind: "parameter", id: "large-panel-head-border-width" },
+        { kind: "color", id: "large-panel-head-fill-start" },
+        { kind: "color", id: "large-panel-head-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-head-fill-angle" },
+        { kind: "color", id: "large-panel-head-text" },
+        { kind: "parameter", id: "large-panel-head-padding-y" },
+        { kind: "parameter", id: "large-panel-head-padding-x" },
+      ] as const,
+      side: [
+        { kind: "color", id: "large-panel-side-border-color" },
+        { kind: "parameter", id: "large-panel-side-border-width" },
+        { kind: "color", id: "large-panel-side-fill-start" },
+        { kind: "color", id: "large-panel-side-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-side-fill-angle" },
+        { kind: "parameter", id: "large-panel-side-radius" },
+        { kind: "parameter", id: "large-panel-side-padding" },
+        { kind: "parameter", id: "large-panel-side-gap" },
+      ] as const,
+      main: [
+        { kind: "color", id: "large-panel-main-border-color" },
+        { kind: "parameter", id: "large-panel-main-border-width" },
+        { kind: "color", id: "large-panel-main-fill-start" },
+        { kind: "color", id: "large-panel-main-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-main-fill-angle" },
+        { kind: "parameter", id: "large-panel-main-radius" },
+        { kind: "parameter", id: "large-panel-main-padding-y" },
+        { kind: "parameter", id: "large-panel-main-padding-x" },
+      ] as const,
+    }),
+    [],
+  );
+
+  const pickSmallPanelParameters = useCallback(
+    (parameterIds: readonly string[]) => {
+      return parameterIds
+        .map((id) => smallPanelParameterMap.get(id))
+        .filter(
+          (parameter): parameter is ThemeParameterDefinition =>
+            parameter !== undefined,
+        );
+    },
+    [smallPanelParameterMap],
+  );
+
+  const smallPanelRootInlineParameters = useMemo(() => {
+    return pickSmallPanelParameters(SMALL_PANEL_ROOT_INLINE_PARAMETER_IDS);
+  }, [pickSmallPanelParameters]);
 
   const smallPanelRootParameters = useMemo(() => {
     return pickSmallPanelParameters(SMALL_PANEL_ROOT_PARAMETER_IDS);
@@ -1226,43 +1386,6 @@ export function ThemeParameterPanelMain({
     );
   };
 
-  const renderMetadataFileListDebugSections = () => {
-    return (
-      <ThemeParameterDebugSectionList
-        sections={METADATA_FILE_LIST_DEBUG_SECTIONS}
-        colorFields={CONTAINER_METADATA_FILE_LIST_COLOR_FIELDS}
-        textFields={CONTAINER_METADATA_FILE_LIST_TEXT_FIELDS}
-        renderColorFieldRow={renderColorFieldRow}
-        renderTextFieldRow={renderTextFieldRow}
-      />
-    );
-  };
-
-  const renderSourceFileListDebugSections = () => {
-    return (
-      <ThemeParameterDebugSectionList
-        sections={FILE_LIST_DEBUG_SECTIONS}
-        colorFields={CONTROL_FILE_LIST_COLOR_FIELDS}
-        textFields={CONTROL_FILE_LIST_TEXT_FIELDS}
-        renderColorFieldRow={renderColorFieldRow}
-        renderTextFieldRow={renderCommonControlTextFieldRow}
-      />
-    );
-  };
-
-  const renderSourceThumbnailCardControlRows = () => {
-    return (
-      <>
-        <div className="theme-parameter-color-list">
-          {CONTROL_THUMBNAIL_CARD_COLOR_FIELDS.map(renderColorFieldRow)}
-        </div>
-        <div className="theme-parameter-text-list">
-          {CONTROL_THUMBNAIL_CARD_TEXT_FIELDS.map(renderCommonControlTextFieldRow)}
-        </div>
-      </>
-    );
-  };
-
   const resolveContainerFillSyncTargets = (fieldId: string) => {
     return (
       CONTAINER_FILL_SYNC_COLOR_FIELD_IDS[
@@ -1310,488 +1433,6 @@ export function ThemeParameterPanelMain({
           : null}
       </>
     );
-  };
-
-  const renderContainerDebugSubsection = (
-    section: ContainerDebugSubsection,
-    open: boolean,
-    setOpen: Dispatch<SetStateAction<boolean>>,
-  ) => {
-    return (
-      <details
-        key={section.id}
-        className="settings-collapsible"
-        open={open}
-        onToggle={(event) =>
-          setOpen((event.currentTarget as HTMLDetailsElement).open)
-        }
-      >
-        <summary>{t(section.summaryKey)}</summary>
-        <div className="settings-collapsible-content">
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>变量</span>
-            </header>
-            {renderContainerDebugSubsectionRows(section)}
-          </section>
-        </div>
-      </details>
-    );
-  };
-
-  const renderLargePanelSectionRows = (options: {
-    colorFields: readonly ThemeDebugColorField[];
-    inlineParameters?: ThemeParameterDefinition[];
-    textFields?: readonly ThemeDebugTextField[];
-    parameters?: ThemeParameterDefinition[];
-  }) => {
-    const {
-      colorFields,
-      inlineParameters = [],
-      textFields = [],
-      parameters = [],
-    } = options;
-    return (
-      <>
-        {colorFields.length > 0 ? (
-          <section className="settings-group theme-parameter-debug-group">
-            <header className="settings-group-head">
-              <span>基础外观</span>
-            </header>
-            <div className="theme-parameter-color-list">
-              {colorFields.map(renderColorFieldRow)}
-            </div>
-            {inlineParameters.length > 0
-              ? renderParameterRowsWithVarLabel(inlineParameters)
-              : null}
-            {textFields.length > 0 ? (
-              <div className="theme-parameter-text-list">
-                {textFields.map(renderTextFieldRow)}
-              </div>
-            ) : null}
-            {parameters.length > 0
-              ? renderParameterRowsWithVarLabel(parameters)
-              : null}
-          </section>
-        ) : null}
-      </>
-    );
-  };
-
-  const renderLargePanelInternalSections = () => {
-    return (
-      <>
-        {LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS.map((section) => (
-          <details
-            key={section.id}
-            className="settings-collapsible"
-            open={largePanelInternalSectionsExpanded[section.id]}
-            onToggle={(event) =>
-              setLargePanelInternalSectionExpanded(
-                section.id,
-                (event.currentTarget as HTMLDetailsElement).open,
-              )
-            }
-          >
-            <summary>{t(section.summaryKey)}</summary>
-            <div className="settings-collapsible-content">
-              {renderLargePanelSectionRows({
-                colorFields: section.colorFields,
-                textFields: section.textFields,
-              })}
-            </div>
-          </details>
-        ))}
-      </>
-    );
-  };
-
-  const renderSmallPanelSectionGroups = (
-    groups: readonly SmallPanelSectionGroupDefinition[],
-  ) => {
-    return groups.map((group, index) => {
-      if (group.colorFields.length === 0 && group.textFields.length === 0) {
-        return null;
-      }
-      return (
-        <section
-          key={`${group.title ?? "root"}-${index}`}
-          className="settings-group theme-parameter-debug-group"
-        >
-          {group.title ? (
-            <header className="settings-group-head">
-              <span>{group.title}</span>
-            </header>
-          ) : null}
-          {group.colorFields.length > 0 ? (
-            <div className="theme-parameter-color-list">
-              {group.colorFields.map(renderColorFieldRow)}
-            </div>
-          ) : null}
-          {group.textFields.length > 0 ? (
-            <div className="theme-parameter-text-list">
-              {group.textFields.map(renderTextFieldRow)}
-            </div>
-          ) : null}
-        </section>
-      );
-    });
-  };
-
-  const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
-    const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
-    return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
-      field.id.startsWith(`button-side-${prefix}-`),
-    );
-  };
-
-  const renderCommonControlTextFieldRow = (field: ThemeDebugTextField) => {
-    return (
-      <ThemeParameterCommonControlTextFieldRow
-        key={field.id}
-        field={field}
-        raw={debugTextValues[field.id] ?? field.fallback}
-        isChanged={isTextFieldChanged(field)}
-        onChange={setDebugTextFieldValue}
-        onReset={resetTextField}
-        resetLabel={resetFieldLabel}
-      />
-    );
-  };
-
-  const renderCommonControlHorizontalPreview = (
-    sectionId: ThemeControlSectionId,
-  ) => {
-    switch (sectionId) {
-      case "control-scrollbar": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-scrollbar-horizontal"
-          >
-            <div
-              className="theme-parameter-scroll-preview mpx-scroll-area"
-              aria-label="滚动条横向预览"
-              tabIndex={0}
-            >
-              <div className="theme-parameter-scroll-preview-content">
-                {Array.from({ length: 18 }).map((_, index) => (
-                  <span
-                    key={`scroll-preview-chip-${index}`}
-                    className="theme-parameter-scroll-preview-chip"
-                  >
-                    {`Scroll-${index + 1}`}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      }
-      case "control-slider-base": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-slider-base-horizontal"
-          >
-            <label className="theme-parameter-control-range-row">
-              <span>基础 slider（横向）</span>
-              <input
-                aria-label="slider-base-horizontal-preview"
-                className="theme-parameter-control-range"
-                max={100}
-                min={0}
-                step={1}
-                type="range"
-                value={controlPreviewValues.sliderBaseHorizontal}
-                onChange={(event) => {
-                  setControlPreviewValues((current) => ({
-                    ...current,
-                    sliderBaseHorizontal: Number(event.target.value),
-                  }));
-                }}
-              />
-            </label>
-          </div>
-        );
-      }
-      case "control-slider-player": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-slider-player-horizontal"
-          >
-            <div className="video-controls-progress theme-parameter-player-progress-preview">
-              <span className="video-progress-time">01:24 / 03:40</span>
-              <SkeuoRunway
-                ariaLabel="slider-player-progress-preview"
-                fillTone="gold"
-                max={100}
-                min={0}
-                preset="progress"
-                rangePercent={controlPreviewValues.sliderPlayerProgress}
-                step={1}
-                value={controlPreviewValues.sliderPlayerProgress}
-                onChange={(event) => {
-                  setControlPreviewValues((current) => ({
-                    ...current,
-                    sliderPlayerProgress: Number(event.target.value),
-                  }));
-                }}
-              />
-            </div>
-          </div>
-        );
-      }
-      case "control-slider-vertical": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-slider-vertical-horizontal"
-          >
-            <label className="theme-parameter-control-range-row">
-              <span>竖向链路横向参考</span>
-              <input
-                aria-label="slider-vertical-reference-preview"
-                className="music-ctrl-shader-range theme-parameter-control-range"
-                max={100}
-                min={0}
-                step={1}
-                style={buildSkeuoRangeStyle(
-                  controlPreviewValues.sliderVerticalReference,
-                )}
-                type="range"
-                value={controlPreviewValues.sliderVerticalReference}
-                onChange={(event) => {
-                  setControlPreviewValues((current) => ({
-                    ...current,
-                    sliderVerticalReference: Number(event.target.value),
-                  }));
-                }}
-              />
-            </label>
-          </div>
-        );
-      }
-      case "control-slider-settings": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-slider-settings-horizontal"
-          >
-            <label className="theme-parameter-control-range-row">
-              <span>设置面板 slider（横向）</span>
-              <input
-                aria-label="slider-settings-horizontal-preview"
-                className="theme-parameter-control-range"
-                max={100}
-                min={0}
-                step={1}
-                type="range"
-                value={controlPreviewValues.sliderSettingsHorizontal}
-                onChange={(event) => {
-                  setControlPreviewValues((current) => ({
-                    ...current,
-                    sliderSettingsHorizontal: Number(event.target.value),
-                  }));
-                }}
-              />
-            </label>
-          </div>
-        );
-      }
-      case "control-file-list": {
-        return (
-          <div
-            className="theme-parameter-control-preview-row is-horizontal"
-            data-testid="theme-control-preview-file-list-horizontal"
-          >
-            <section className="theme-parameter-file-list-preview">
-              <header className="theme-parameter-file-list-preview-head">
-                <span>文件名</span>
-                <span>时长</span>
-                <span>大小</span>
-              </header>
-              <div className="theme-parameter-file-list-preview-body">
-                <div className="theme-parameter-file-list-preview-row is-focused">
-                  <button
-                    type="button"
-                    className="theme-parameter-file-list-preview-row-main"
-                  >
-                    <span className="theme-parameter-file-list-preview-label">
-                      Main-image.png
-                    </span>
-                    <span>--</span>
-                    <span>824KB</span>
-                  </button>
-                </div>
-                <div className="theme-parameter-file-list-preview-row is-selected is-focused">
-                  <button
-                    type="button"
-                    className="theme-parameter-file-list-preview-row-main is-selected"
-                  >
-                    <span className="theme-parameter-file-list-preview-label">
-                      Music-track.flac
-                    </span>
-                    <span>03:42</span>
-                    <span>31MB</span>
-                  </button>
-                </div>
-              </div>
-            </section>
-          </div>
-        );
-      }
-      case "control-thumbnail-card": {
-        return null;
-      }
-      default:
-        return null;
-    }
-  };
-
-  const renderCommonControlVerticalPreview = (
-    sectionId: ThemeControlSectionId,
-  ) => {
-    switch (sectionId) {
-      case "control-slider-player": {
-        return null;
-      }
-      case "control-slider-vertical": {
-        return (
-          <div
-            className="theme-parameter-control-vertical-stack is-volume-variants"
-            data-testid="theme-control-preview-slider-vertical-stack"
-          >
-            <label className="theme-parameter-control-vertical-item">
-              <span className="theme-parameter-control-preview-caption">
-                朝上
-              </span>
-              <div className="theme-parameter-control-vertical-track-box">
-                <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis">
-                  <SkeuoRunway
-                    ariaLabel="slider-vertical-up-preview"
-                    inputClassName="video-ctrl-volume-range"
-                    max={100}
-                    min={0}
-                    orientation="vertical"
-                    preset="control"
-                    rangePercent={controlPreviewValues.sliderVerticalUp}
-                    step={1}
-                    value={controlPreviewValues.sliderVerticalUp}
-                    onChange={(event) => {
-                      setControlPreviewValues((current) => ({
-                        ...current,
-                        sliderVerticalUp: Number(event.target.value),
-                      }));
-                    }}
-                  />
-                </div>
-              </div>
-            </label>
-            <label className="theme-parameter-control-vertical-item">
-              <span className="theme-parameter-control-preview-caption">
-                朝下
-              </span>
-              <div className="theme-parameter-control-vertical-track-box">
-                <div className="mpx-runway-axis is-vertical theme-parameter-control-vertical-runway theme-parameter-control-vertical-axis is-down">
-                  <SkeuoRunway
-                    ariaLabel="slider-vertical-down-preview"
-                    inputClassName="video-ctrl-volume-range"
-                    max={100}
-                    min={0}
-                    orientation="vertical"
-                    preset="control"
-                    rangePercent={controlPreviewValues.sliderVerticalDown}
-                    step={1}
-                    value={controlPreviewValues.sliderVerticalDown}
-                    onChange={(event) => {
-                      setControlPreviewValues((current) => ({
-                        ...current,
-                        sliderVerticalDown: Number(event.target.value),
-                      }));
-                    }}
-                  />
-                </div>
-              </div>
-            </label>
-          </div>
-        );
-      }
-      default:
-        return null;
-    }
-  };
-
-  const renderCommonControlSections = () => {
-    return CONTROL_SECTION_DEFINITIONS.map((section) => {
-      const colorFields = COMMON_CONTROL_COLOR_FIELDS.filter(
-        (field) => field.sectionId === section.id,
-      );
-      const textFields = COMMON_CONTROL_TEXT_FIELDS.filter(
-        (field) => field.sectionId === section.id,
-      );
-      if (colorFields.length === 0 && textFields.length === 0) {
-        return null;
-      }
-      const horizontalPreview = renderCommonControlHorizontalPreview(
-        section.id,
-      );
-      const verticalPreview = renderCommonControlVerticalPreview(section.id);
-      return (
-        <details
-          key={section.id}
-          className="settings-collapsible"
-          data-testid={`theme-control-section-${section.id}`}
-          open={controlSectionsExpanded[section.id] ?? true}
-          onToggle={(event) =>
-            setControlSectionExpanded(
-              section.id,
-              (event.currentTarget as HTMLDetailsElement).open,
-            )
-          }
-        >
-          <summary>{t(section.titleKey)}</summary>
-          <div className="settings-collapsible-content">
-            <p className="theme-parameter-note-intro">{t(section.noteKey)}</p>
-            {horizontalPreview}
-            <div
-              className={
-                verticalPreview
-                  ? "theme-parameter-control-content has-right-vertical"
-                  : "theme-parameter-control-content"
-              }
-            >
-              <div className="theme-parameter-control-fields">
-                {section.id === "control-file-list" ? (
-                  renderSourceFileListDebugSections()
-                ) : section.id === "control-thumbnail-card" ? (
-                  renderSourceThumbnailCardControlRows()
-                ) : (
-                  <>
-                    {colorFields.length > 0 ? (
-                      <div className="theme-parameter-color-list">
-                        {colorFields.map(renderColorFieldRow)}
-                      </div>
-                    ) : null}
-                    {textFields.length > 0 ? (
-                      <div className="theme-parameter-text-list">
-                        {textFields.map(renderCommonControlTextFieldRow)}
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </div>
-              {verticalPreview ? (
-                <aside className="theme-parameter-control-vertical-side">
-                  {verticalPreview}
-                </aside>
-              ) : null}
-            </div>
-          </div>
-        </details>
-      );
-    });
   };
 
   const renderParameterRows = (parameters: ThemeParameterDefinition[]) => {
@@ -2098,44 +1739,27 @@ export function ThemeParameterPanelMain({
               {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
             </summary>
             <div className="settings-collapsible-content">
-              <section className="settings-group theme-parameter-debug-group">
-                <header className="settings-group-head theme-parameter-subgroup-head">
-                  <span>缩略图容器</span>
-                  <span className="theme-parameter-subgroup-tag">
-                    fg-main-content-image-grid
-                  </span>
-                </header>
-                <div className="theme-parameter-color-list">
-                  {CONTAINER_MAIN_WORKSPACE_CONTAINER_COLOR_FIELDS.map(
-                    renderColorFieldRow,
-                  )}
-                </div>
-                <div className="theme-parameter-text-list">
-                  {CONTAINER_MAIN_WORKSPACE_CONTAINER_TEXT_FIELDS.map(
-                    renderTextFieldRow,
-                  )}
-                </div>
-              </section>
               <details
                 className="settings-collapsible"
-                open={workspaceImageCardExpanded}
+                open={workspaceThumbnailContainerExpanded}
                 onToggle={(event) =>
-                  setWorkspaceImageCardExpanded(
+                  setWorkspaceThumbnailContainerExpanded(
                     (event.currentTarget as HTMLDetailsElement).open,
                   )
                 }
               >
-                <summary>图片缩略图卡片（覆写 6.4 总控）</summary>
+                <summary>缩略图容器</summary>
                 <div className="settings-collapsible-content">
                   <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>缩略图容器</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-image-grid
+                      </span>
+                    </header>
                     <div className="theme-parameter-color-list">
-                      {CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS.map(
+                      {CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS.map(
                         renderColorFieldRow,
-                      )}
-                    </div>
-                    <div className="theme-parameter-text-list">
-                      {CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS.map(
-                        renderTextFieldRow,
                       )}
                     </div>
                   </section>
@@ -2143,24 +1767,92 @@ export function ThemeParameterPanelMain({
               </details>
               <details
                 className="settings-collapsible"
-                open={workspaceVideoCardExpanded}
+                open={workspaceThumbnailStyleExpanded}
                 onToggle={(event) =>
-                  setWorkspaceVideoCardExpanded(
+                  setWorkspaceThumbnailStyleExpanded(
                     (event.currentTarget as HTMLDetailsElement).open,
                   )
                 }
               >
-                <summary>视频缩略图卡片（覆写 6.4 总控）</summary>
+                <summary>缩略图样式</summary>
                 <div className="settings-collapsible-content">
                   <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>缩略图样式</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-image-grid-style
+                      </span>
+                    </header>
                     <div className="theme-parameter-color-list">
-                      {CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS.map(
+                      {CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS.map(
                         renderColorFieldRow,
                       )}
                     </div>
-                    <div className="theme-parameter-text-list">
-                      {CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS.map(
-                        renderTextFieldRow,
+                  </section>
+                </div>
+              </details>
+            </div>
+          </details>
+          <details
+            className="settings-collapsible"
+            open={containerMainPreviewExpanded}
+            onToggle={(event) =>
+              setContainerMainPreviewExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>
+              {t("ui.themeParameter.containerLayer.sectionMainPreview")}
+            </summary>
+            <div className="settings-collapsible-content">
+              <details
+                className="settings-collapsible"
+                open={workspacePreviewMusicExpanded}
+                onToggle={(event) =>
+                  setWorkspacePreviewMusicExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>音乐区</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>音乐区</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-media-music
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </details>
+              <details
+                className="settings-collapsible"
+                open={workspacePreviewVideoExpanded}
+                onToggle={(event) =>
+                  setWorkspacePreviewVideoExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>视频区</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>视频区</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-media-video
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS.map(
+                        renderColorFieldRow,
                       )}
                     </div>
                   </section>
@@ -2190,35 +1882,84 @@ export function ThemeParameterPanelMain({
       setContainerMetadataExpanded={setContainerMetadataExpanded}
       containerMetadataContent={
         <>
-          {renderContainerFrameSection(
-            CONTAINER_FRAME_SECTION_DEFINITIONS[3],
-            containerMetadataAppearanceExpanded,
-            setContainerMetadataAppearanceExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            METADATA_HEADER_DEBUG_SUBSECTIONS[0],
-            containerMetadataHeaderExpanded,
-            setContainerMetadataHeaderExpanded,
-          )}
-          {renderContainerDebugSubsection(
-            METADATA_HEADER_DEBUG_SUBSECTIONS[1],
-            containerMetadataHeaderButtonsExpanded,
-            setContainerMetadataHeaderButtonsExpanded,
-          )}
-          <details
-            className="settings-collapsible"
+          <ThemeParameterContainerFrameSection
+            section={CONTAINER_FRAME_SECTION_DEFINITIONS[3]}
+            appearanceOpen={containerMetadataAppearanceExpanded}
+            setAppearanceOpen={setContainerMetadataAppearanceExpanded}
+            appearanceParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[3].appearanceParameterIds,
+            )}
+            transformParameters={pickContainerParameters(
+              CONTAINER_FRAME_SECTION_DEFINITIONS[3].transformParameterIds,
+            )}
+            renderColorFieldRow={renderColorFieldRow}
+            renderTextFieldRow={renderTextFieldRow}
+            renderParameterRows={renderParameterRows}
+            renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_HEADER_DEBUG_SUBSECTIONS[0]}
+            open={containerMetadataHeaderExpanded}
+            setOpen={setContainerMetadataHeaderExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_HEADER_DEBUG_SUBSECTIONS[0],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_HEADER_DEBUG_SUBSECTIONS[1]}
+            open={containerMetadataHeaderButtonsExpanded}
+            setOpen={setContainerMetadataHeaderButtonsExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_HEADER_DEBUG_SUBSECTIONS[1],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[0]}
+            open={containerMetadataRatingExpanded}
+            setOpen={setContainerMetadataRatingExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[0],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[1]}
+            open={containerMetadataInternalsExpanded}
+            setOpen={setContainerMetadataInternalsExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[1],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[2]}
             open={containerMetadataFileListExpanded}
-            onToggle={(event) =>
-              setContainerMetadataFileListExpanded(
-                (event.currentTarget as HTMLDetailsElement).open,
-              )
-            }
-          >
-            <summary>{t("ui.themeParameter.containerLayer.sectionMetadataFileList")}</summary>
-            <div className="settings-collapsible-content">
-              {renderMetadataFileListDebugSections()}
-            </div>
-          </details>
+            setOpen={setContainerMetadataFileListExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[2],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[3]}
+            open={containerMetadataPreferenceRecordExpanded}
+            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[3],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[4]}
+            open={containerMetadataBookletBindingExpanded}
+            setOpen={setContainerMetadataBookletBindingExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[4],
+            )}
+          />
         </>
       }
     />
@@ -2308,13 +2049,17 @@ export function ThemeParameterPanelMain({
               )
             }
           >
-            <summary>{t("ui.themeParameter.largePanelLayer.sectionButton")}</summary>
+            <summary>
+              {t("ui.themeParameter.largePanelLayer.sectionButton")}
+            </summary>
             <div className="settings-collapsible-content">
               <ThemeParameterLargePanelSectionRows
                 colorFields={LARGE_PANEL_BUTTON_COLOR_FIELDS}
                 renderColorFieldRow={renderColorFieldRow}
                 renderTextFieldRow={renderTextFieldRow}
-                renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
+                renderParameterRowsWithVarLabel={
+                  renderParameterRowsWithVarLabel
+                }
               />
             </div>
           </details>

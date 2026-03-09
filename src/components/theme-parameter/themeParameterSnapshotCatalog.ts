@@ -19,19 +19,9 @@ export interface SnapshotTextField {
 
 export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   {
-    id: "container-workspace-fill-start",
-    cssVar: "--mpx-workspace-fill-start",
-    fallback: "#f5f2ec",
-  },
-  {
-    id: "container-workspace-fill-end",
-    cssVar: "--mpx-workspace-fill-end",
-    fallback: "#e6e2da",
-  },
-  {
-    id: "container-workspace-border-color",
-    cssVar: "--mpx-workspace-border-color",
-    fallback: "#e5e4e0",
+    id: "container-bg-workspace",
+    cssVar: "--mpx-bg-workspace",
+    fallback: "#f3f0ea",
   },
   {
     id: "container-bg-panel",
@@ -649,186 +639,6 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2d6e7d",
   },
   {
-    id: "container-main-image-grid-card-border-color",
-    cssVar: "--mpx-image-grid-card-border-color",
-    fallback: "#b5bdc8",
-  },
-  {
-    id: "container-main-image-grid-card-bg",
-    cssVar: "--mpx-image-grid-card-bg",
-    fallback: "rgba(0, 0, 0, 0)",
-  },
-  {
-    id: "container-main-image-grid-card-focus-bg",
-    cssVar: "--mpx-image-grid-card-focus-bg",
-    fallback: "#f2d796",
-  },
-  {
-    id: "container-main-image-grid-card-selected-bg",
-    cssVar: "--mpx-image-grid-card-selected-bg",
-    fallback: "#8a919a",
-  },
-  {
-    id: "container-main-video-grid-card-border-color",
-    cssVar: "--mpx-video-grid-card-border-color",
-    fallback: "#b5bdc8",
-  },
-  {
-    id: "container-main-video-grid-card-bg",
-    cssVar: "--mpx-video-grid-card-bg",
-    fallback: "rgba(0, 0, 0, 0)",
-  },
-  {
-    id: "container-main-video-grid-card-focus-bg",
-    cssVar: "--mpx-video-grid-card-focus-bg",
-    fallback: "#f2d796",
-  },
-  {
-    id: "container-main-video-grid-card-selected-bg",
-    cssVar: "--mpx-video-grid-card-selected-bg",
-    fallback: "#8a919a",
-  },
-  {
-    id: "control-thumbnail-card-border-color",
-    cssVar: "--mpx-thumbnail-card-border-color",
-    fallback: "#b5bdc8",
-  },
-  {
-    id: "control-thumbnail-card-bg",
-    cssVar: "--mpx-thumbnail-card-bg",
-    fallback: "rgba(0, 0, 0, 0)",
-  },
-  {
-    id: "control-thumbnail-card-focus-bg",
-    cssVar: "--mpx-thumbnail-card-focus-bg",
-    fallback: "#f2d796",
-  },
-  {
-    id: "control-thumbnail-card-selected-bg",
-    cssVar: "--mpx-thumbnail-card-selected-bg",
-    fallback: "#8a919a",
-  },
-  {
-    id: "control-file-list-border",
-    cssVar: "--mpx-file-list-border",
-    fallback: "#c7d0d8",
-  },
-  {
-    id: "control-file-list-bg",
-    cssVar: "--mpx-file-list-bg",
-    fallback: "#ecf0f3",
-  },
-  {
-    id: "control-file-list-text",
-    cssVar: "--mpx-file-list-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-head-border",
-    cssVar: "--mpx-file-list-head-border",
-    fallback: "#b5bdc8",
-  },
-  {
-    id: "control-file-list-head-bg",
-    cssVar: "--mpx-file-list-head-bg",
-    fallback: "#d6dbe1",
-  },
-  {
-    id: "control-file-list-head-text",
-    cssVar: "--mpx-file-list-head-text",
-    fallback: "#544634",
-  },
-  {
-    id: "control-file-list-body-bg",
-    cssVar: "--mpx-file-list-body-bg",
-    fallback: "#e9ecf0",
-  },
-  {
-    id: "control-file-list-row-border",
-    cssVar: "--mpx-file-list-row-border",
-    fallback: "#dce1e7",
-  },
-  {
-    id: "control-file-list-row-bg",
-    cssVar: "--mpx-file-list-row-bg",
-    fallback: "#e9ecf0",
-  },
-  {
-    id: "control-file-list-row-text",
-    cssVar: "--mpx-file-list-row-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-label-text",
-    cssVar: "--mpx-file-list-label-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-row-hover-bg",
-    cssVar: "--mpx-file-list-row-hover-bg",
-    fallback: "#e9ecf0",
-  },
-  {
-    id: "control-file-list-row-focused-border-left",
-    cssVar: "--mpx-file-list-row-focused-border-left",
-    fallback: "#2d6e7d",
-  },
-  {
-    id: "control-file-list-row-selected-border-left",
-    cssVar: "--mpx-file-list-row-selected-border-left",
-    fallback: "#9a885f",
-  },
-  {
-    id: "control-file-list-row-selected-focused-border-left",
-    cssVar: "--mpx-file-list-row-selected-focused-border-left",
-    fallback: "#2d6e7d",
-  },
-  {
-    id: "control-file-list-row-selected-bg",
-    cssVar: "--mpx-file-list-row-selected-bg",
-    fallback: "#9a885f",
-  },
-  {
-    id: "control-file-list-row-main-text",
-    cssVar: "--mpx-file-list-row-main-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-row-main-hover-bg",
-    cssVar: "--mpx-file-list-row-main-hover-bg",
-    fallback: "#f3f6f8",
-  },
-  {
-    id: "control-file-list-row-main-active-bg",
-    cssVar: "--mpx-file-list-row-main-active-bg",
-    fallback: "#d7dde4",
-  },
-  {
-    id: "control-file-list-row-main-pressed-bg",
-    cssVar: "--mpx-file-list-row-main-pressed-bg",
-    fallback: "#d7dde4",
-  },
-  {
-    id: "control-file-list-row-main-hover-text",
-    cssVar: "--mpx-file-list-row-main-hover-text",
-    fallback: "#2f5f6d",
-  },
-  {
-    id: "control-file-list-row-main-active-text",
-    cssVar: "--mpx-file-list-row-main-active-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-row-main-pressed-text",
-    cssVar: "--mpx-file-list-row-main-pressed-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "control-file-list-row-main-focus-outline-color",
-    cssVar: "--mpx-file-list-row-main-focus-outline-color",
-    fallback: "#2d6e7d",
-  },
-  {
     id: "container-main-image-name-list-border",
     cssVar: "--mpx-main-image-name-list-border",
     fallback: "#c7d0d8",
@@ -969,54 +779,9 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2d6e7d",
   },
   {
-    id: "container-metadata-file-list-bg",
-    cssVar: "--mpx-metadata-file-list-bg",
-    fallback: "#ecf0f3",
-  },
-  {
-    id: "container-metadata-file-list-text",
-    cssVar: "--mpx-metadata-file-list-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "container-metadata-file-list-row-border",
-    cssVar: "--mpx-metadata-file-list-row-border",
-    fallback: "#dce1e7",
-  },
-  {
-    id: "container-metadata-file-list-row-bg",
-    cssVar: "--mpx-metadata-file-list-row-bg",
-    fallback: "#e9ecf0",
-  },
-  {
-    id: "container-metadata-file-list-row-text",
-    cssVar: "--mpx-metadata-file-list-row-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "container-metadata-file-list-index-text",
-    cssVar: "--mpx-metadata-file-list-index-text",
-    fallback: "#544634",
-  },
-  {
-    id: "container-metadata-file-list-row-hover-bg",
-    cssVar: "--mpx-metadata-file-list-row-hover-bg",
-    fallback: "#e9ecf0",
-  },
-  {
-    id: "container-metadata-file-list-row-focused-border-left",
-    cssVar: "--mpx-metadata-file-list-row-focused-border-left",
-    fallback: "#2d6e7d",
-  },
-  {
     id: "container-metadata-file-list-row-selected-border-left",
     cssVar: "--mpx-metadata-file-list-row-selected-border-left",
     fallback: "#9a885f",
-  },
-  {
-    id: "container-metadata-file-list-row-selected-focused-border-left",
-    cssVar: "--mpx-metadata-file-list-row-selected-focused-border-left",
-    fallback: "#2d6e7d",
   },
   {
     id: "container-metadata-file-list-row-selected-bg",
@@ -1034,11 +799,6 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#f3f6f8",
   },
   {
-    id: "container-metadata-file-list-row-main-active-bg",
-    cssVar: "--mpx-metadata-file-list-row-main-active-bg",
-    fallback: "#d7dde4",
-  },
-  {
     id: "container-metadata-file-list-row-main-pressed-bg",
     cssVar: "--mpx-metadata-file-list-row-main-pressed-bg",
     fallback: "#d7dde4",
@@ -1049,19 +809,9 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2f5f6d",
   },
   {
-    id: "container-metadata-file-list-row-main-active-text",
-    cssVar: "--mpx-metadata-file-list-row-main-active-text",
+    id: "container-metadata-file-list-row-main-selected-text",
+    cssVar: "--mpx-metadata-file-list-row-main-selected-text",
     fallback: "#30271d",
-  },
-  {
-    id: "container-metadata-file-list-row-main-pressed-text",
-    cssVar: "--mpx-metadata-file-list-row-main-pressed-text",
-    fallback: "#30271d",
-  },
-  {
-    id: "container-metadata-file-list-row-main-focus-outline-color",
-    cssVar: "--mpx-metadata-file-list-row-main-focus-outline-color",
-    fallback: "#2d6e7d",
   },
   {
     id: "large-panel-border-color",
@@ -2598,22 +2348,6 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-sidebar-main-count-packages-shadow",
   },
   {
-    id: "container-main-image-name-list-row-main-focus-outline-width",
-    cssVar: "--mpx-main-image-name-list-row-main-focus-outline-width",
-  },
-  {
-    id: "container-main-image-name-list-row-main-pressed-font-weight",
-    cssVar: "--mpx-main-image-name-list-row-main-pressed-font-weight",
-  },
-  {
-    id: "container-metadata-file-list-row-main-focus-outline-width",
-    cssVar: "--mpx-metadata-file-list-row-main-focus-outline-width",
-  },
-  {
-    id: "container-metadata-file-list-row-main-pressed-font-weight",
-    cssVar: "--mpx-metadata-file-list-row-main-pressed-font-weight",
-  },
-  {
     id: "large-panel-shadow",
     cssVar: "--mpx-large-panel-shadow",
   },
@@ -2751,66 +2485,6 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-shadow",
   },
   {
-    id: "container-workspace-fill-angle",
-    cssVar: "--mpx-workspace-fill-angle",
-  },
-  {
-    id: "container-workspace-border-width",
-    cssVar: "--mpx-workspace-border-width",
-  },
-  {
-    id: "container-workspace-radius",
-    cssVar: "--mpx-workspace-radius",
-  },
-  {
-    id: "container-main-image-grid-card-border-width",
-    cssVar: "--mpx-image-grid-card-border-width",
-  },
-  {
-    id: "container-main-image-grid-card-shadow",
-    cssVar: "--mpx-image-grid-card-shadow",
-  },
-  {
-    id: "container-main-image-grid-card-padding",
-    cssVar: "--mpx-image-grid-card-padding",
-  },
-  {
-    id: "container-main-image-grid-card-radius",
-    cssVar: "--mpx-image-grid-card-radius",
-  },
-  {
-    id: "container-main-video-grid-card-border-width",
-    cssVar: "--mpx-video-grid-card-border-width",
-  },
-  {
-    id: "container-main-video-grid-card-shadow",
-    cssVar: "--mpx-video-grid-card-shadow",
-  },
-  {
-    id: "container-main-video-grid-card-padding",
-    cssVar: "--mpx-video-grid-card-padding",
-  },
-  {
-    id: "container-main-video-grid-card-radius",
-    cssVar: "--mpx-video-grid-card-radius",
-  },
-  {
-    id: "control-thumbnail-card-border-width",
-    cssVar: "--mpx-thumbnail-card-border-width",
-  },
-  {
-    id: "control-thumbnail-card-shadow",
-    cssVar: "--mpx-thumbnail-card-shadow",
-  },
-  {
-    id: "control-thumbnail-card-padding",
-    cssVar: "--mpx-thumbnail-card-padding",
-  },
-  {
-    id: "control-thumbnail-card-radius",
-    cssVar: "--mpx-thumbnail-card-radius",
-  },
-  {
     id: "control-slider-base-track-height",
     cssVar: "--mpx-range-track-height",
   },
@@ -2889,14 +2563,6 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "control-slider-settings-groove-shadow",
     cssVar: "--mpx-slider-settings-groove-shadow",
-  },
-  {
-    id: "control-file-list-row-main-focus-outline-width",
-    cssVar: "--mpx-file-list-row-main-focus-outline-width",
-  },
-  {
-    id: "control-file-list-row-main-pressed-font-weight",
-    cssVar: "--mpx-file-list-row-main-pressed-font-weight",
   },
 ];
 

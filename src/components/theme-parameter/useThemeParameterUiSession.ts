@@ -5,7 +5,6 @@ import type {
   LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-  ThemeControlSectionId,
 } from "./themeParameterPanelTypes";
 import {
   readThemeParameterUiSessionState,
@@ -161,22 +160,6 @@ export function useThemeParameterUiSession() {
     [updateUiState],
   );
 
-  const setControlSectionExpanded = useCallback(
-    (sectionId: ThemeControlSectionId, action: SetStateAction<boolean>) => {
-      updateUiState((previous) => ({
-        ...previous,
-        controlSectionsExpanded: {
-          ...previous.controlSectionsExpanded,
-          [sectionId]: resolveNextState(
-            action,
-            previous.controlSectionsExpanded[sectionId],
-          ),
-        },
-      }));
-    },
-    [updateUiState],
-  );
-
   const booleanSetters = useMemo(
     () => ({
       setCommonExpanded: createBooleanSetter("commonExpanded"),
@@ -254,8 +237,20 @@ export function useThemeParameterUiSession() {
       setContainerMetadataHeaderButtonsExpanded: createBooleanSetter(
         "containerMetadataHeaderButtonsExpanded",
       ),
+      setContainerMetadataRatingExpanded: createBooleanSetter(
+        "containerMetadataRatingExpanded",
+      ),
+      setContainerMetadataInternalsExpanded: createBooleanSetter(
+        "containerMetadataInternalsExpanded",
+      ),
       setContainerMetadataFileListExpanded: createBooleanSetter(
         "containerMetadataFileListExpanded",
+      ),
+      setContainerMetadataPreferenceRecordExpanded: createBooleanSetter(
+        "containerMetadataPreferenceRecordExpanded",
+      ),
+      setContainerMetadataBookletBindingExpanded: createBooleanSetter(
+        "containerMetadataBookletBindingExpanded",
       ),
       setContainerSidebarMainExpanded: createBooleanSetter(
         "containerSidebarMainExpanded",
@@ -270,7 +265,9 @@ export function useThemeParameterUiSession() {
       setLargePanelHeadExpanded: createBooleanSetter("largePanelHeadExpanded"),
       setLargePanelSideExpanded: createBooleanSetter("largePanelSideExpanded"),
       setLargePanelMainExpanded: createBooleanSetter("largePanelMainExpanded"),
-      setLargePanelButtonExpanded: createBooleanSetter("largePanelButtonExpanded"),
+      setLargePanelButtonExpanded: createBooleanSetter(
+        "largePanelButtonExpanded",
+      ),
       setLargePanelInternalExpanded: createBooleanSetter(
         "largePanelInternalExpanded",
       ),
@@ -328,7 +325,6 @@ export function useThemeParameterUiSession() {
     setLargePanelInternalSectionExpanded,
     setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelSectionExpanded,
-    setControlSectionExpanded,
     ...booleanSetters,
   };
 }

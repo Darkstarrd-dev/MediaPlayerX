@@ -3,7 +3,6 @@ import type {
   LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-  ControlSectionExpandedState,
 } from "./themeParameterPanelTypes";
 
 export interface ContainerDebugSessionState {
@@ -37,16 +36,6 @@ interface SmallPanelSectionsExpandedState {
   renameSingle: boolean;
 }
 
-interface ControlSectionsExpandedState extends ControlSectionExpandedState {
-  "control-scrollbar": boolean;
-  "control-slider-base": boolean;
-  "control-slider-player": boolean;
-  "control-slider-vertical": boolean;
-  "control-slider-settings": boolean;
-  "control-file-list": boolean;
-  "control-thumbnail-card": boolean;
-}
-
 export interface ThemeParameterUISessionState {
   activePage: ThemeParameterPageId;
   pageScrollTops: Partial<Record<ThemeParameterPageId, number>>;
@@ -75,7 +64,11 @@ export interface ThemeParameterUISessionState {
   containerMetadataAppearanceExpanded: boolean;
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
+  containerMetadataRatingExpanded: boolean;
+  containerMetadataInternalsExpanded: boolean;
   containerMetadataFileListExpanded: boolean;
+  containerMetadataPreferenceRecordExpanded: boolean;
+  containerMetadataBookletBindingExpanded: boolean;
   containerSidebarMainExpanded: boolean;
   containerMainImageNameListExpanded: boolean;
   largePanelRootExpanded: boolean;
@@ -89,9 +82,26 @@ export interface ThemeParameterUISessionState {
     LargePanelInternalSectionId,
     boolean
   >;
+  largePanelInternalSettingsGroupsExpanded: Record<
+    LargePanelInternalSettingsGroupId,
+    boolean
+  >;
   smallPanelRootExpanded: boolean;
   smallPanelSectionsExpanded: Record<SmallPanelSectionId, boolean>;
-  controlSectionsExpanded: ControlSectionExpandedState;
+  buttonVariantDefaultExpanded: boolean;
+  buttonVariantPlayerExpanded: boolean;
+  buttonVariantOverlayCellExpanded: boolean;
+  buttonSlotExpanded: boolean;
+  buttonSlotHeaderExpanded: boolean;
+  buttonSlotSidebarHeaderExpanded: boolean;
+  buttonSlotMainHeaderExpanded: boolean;
+  buttonSlotMetadataHeaderExpanded: boolean;
+  controlScrollbarExpanded: boolean;
+  controlSliderBaseExpanded: boolean;
+  controlSliderPlayerExpanded: boolean;
+  controlSliderVerticalExpanded: boolean;
+  controlSliderSettingsExpanded: boolean;
+  controlFileListExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -103,20 +113,20 @@ const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
 
 const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSectionsExpandedState =
   {
+    settings: false,
     importTask: false,
     metadataFetch: false,
-    metadataPreferenceRecord: false,
-    metadataBookletBinding: false,
     metadataFeatureTagPicker: false,
     subtitleCleanup: false,
     transcodeDialog: false,
     sidebarRenamePreview: false,
   };
 
-const DEFAULT_LARGE_PANEL_INTERNAL_SETTINGS_GROUPS_EXPANDED: LargePanelInternalSettingsGroupsExpandedState = {
-  side: false,
-  main: false,
-};
+const DEFAULT_LARGE_PANEL_INTERNAL_SETTINGS_GROUPS_EXPANDED: LargePanelInternalSettingsGroupsExpandedState =
+  {
+    side: false,
+    main: false,
+  };
 
 const DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED: SmallPanelSectionsExpandedState = {
   shortcutEdit: false,
@@ -127,16 +137,6 @@ const DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED: SmallPanelSectionsExpandedState = {
   convert: false,
   playlistNameDialog: false,
   renameSingle: false,
-};
-
-const DEFAULT_CONTROL_SECTIONS_EXPANDED: ControlSectionsExpandedState = {
-  "control-scrollbar": true,
-  "control-slider-base": true,
-  "control-slider-player": true,
-  "control-slider-vertical": true,
-  "control-slider-settings": true,
-  "control-file-list": true,
-  "control-thumbnail-card": true,
 };
 
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
@@ -167,7 +167,11 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataAppearanceExpanded: true,
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
+  containerMetadataRatingExpanded: false,
+  containerMetadataInternalsExpanded: false,
   containerMetadataFileListExpanded: false,
+  containerMetadataPreferenceRecordExpanded: false,
+  containerMetadataBookletBindingExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
   largePanelRootExpanded: true,
@@ -187,9 +191,20 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   smallPanelSectionsExpanded: {
     ...DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED,
   },
-  controlSectionsExpanded: {
-    ...DEFAULT_CONTROL_SECTIONS_EXPANDED,
-  },
+  buttonVariantDefaultExpanded: true,
+  buttonVariantPlayerExpanded: false,
+  buttonVariantOverlayCellExpanded: false,
+  buttonSlotExpanded: false,
+  buttonSlotHeaderExpanded: false,
+  buttonSlotSidebarHeaderExpanded: false,
+  buttonSlotMainHeaderExpanded: false,
+  buttonSlotMetadataHeaderExpanded: false,
+  controlScrollbarExpanded: true,
+  controlSliderBaseExpanded: true,
+  controlSliderPlayerExpanded: true,
+  controlSliderVerticalExpanded: true,
+  controlSliderSettingsExpanded: true,
+  controlFileListExpanded: true,
   commonExpanded: true,
   styleExpanded: true,
 };
@@ -242,9 +257,6 @@ export function readThemeParameterUiSessionState(): ThemeParameterUISessionState
     smallPanelSectionsExpanded: {
       ...uiSessionState.smallPanelSectionsExpanded,
     },
-    controlSectionsExpanded: {
-      ...uiSessionState.controlSectionsExpanded,
-    },
   };
 }
 
@@ -261,9 +273,6 @@ export function writeThemeParameterUiSessionState(
     },
     smallPanelSectionsExpanded: {
       ...nextState.smallPanelSectionsExpanded,
-    },
-    controlSectionsExpanded: {
-      ...nextState.controlSectionsExpanded,
     },
   };
 }
@@ -286,10 +295,6 @@ export function updateThemeParameterUiSessionState(
       ...(patch.smallPanelSectionsExpanded ??
         uiSessionState.smallPanelSectionsExpanded),
     },
-    controlSectionsExpanded: {
-      ...(patch.controlSectionsExpanded ??
-        uiSessionState.controlSectionsExpanded),
-    },
   };
 }
 
@@ -305,9 +310,6 @@ export function resetThemeParameterPanelSessionStateForTest(): void {
     },
     smallPanelSectionsExpanded: {
       ...DEFAULT_UI_SESSION_STATE.smallPanelSectionsExpanded,
-    },
-    controlSectionsExpanded: {
-      ...DEFAULT_UI_SESSION_STATE.controlSectionsExpanded,
     },
   };
 }
