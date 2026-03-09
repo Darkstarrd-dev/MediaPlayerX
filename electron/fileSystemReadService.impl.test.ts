@@ -1097,6 +1097,9 @@ describe("FileSystemMediaReadService", () => {
       serviceInternal.runExternalSourceRefreshFromWatcher();
       await vi.advanceTimersByTimeAsync(0);
       expect(refreshSpy).toHaveBeenCalledTimes(1);
+      expect(refreshSpy).toHaveBeenNthCalledWith(1, {
+        reason: "watcher-external-source-change",
+      });
 
       serviceInternal.runExternalSourceRefreshFromWatcher();
       await Promise.resolve();
@@ -1120,6 +1123,9 @@ describe("FileSystemMediaReadService", () => {
 
       await vi.advanceTimersByTimeAsync(1);
       expect(refreshSpy).toHaveBeenCalledTimes(2);
+      expect(refreshSpy).toHaveBeenNthCalledWith(2, {
+        reason: "watcher-external-source-change",
+      });
     } finally {
       vi.useRealTimers();
     }

@@ -867,7 +867,9 @@ export class FileSystemMediaReadService {
       : null;
 
     try {
-      const nextSnapshot = await this.refreshSnapshotFromFilesystem();
+      const nextSnapshot = await this.refreshSnapshotFromFilesystem({
+        reason: "watcher-external-source-change",
+      });
       if (this.disposed) {
         return;
       }

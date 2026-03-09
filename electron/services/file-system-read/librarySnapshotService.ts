@@ -83,6 +83,11 @@ const COLLECTING_PREVIEW_CONTAINER_LIMIT = 120;
 const COLLECTING_PREVIEW_CONTAINER_UPDATE_DELTA = 8;
 const COLLECTING_PREVIEW_PERSIST_INTERVAL_MS = 1_500;
 
+function resolveSnapshotRefreshReason(options?: SnapshotRefreshOptions): string {
+  const reason = options?.reason?.trim();
+  return reason && reason.length > 0 ? reason : "unspecified";
+}
+
 function normalizeTreeSegment(value: string, fallback: string): string {
   const normalized = value
     .replace(/[\\/]+/g, " ")
@@ -180,7 +185,9 @@ export class LibrarySnapshotService {
 
     if (!this.warmupRefreshTriggered && hasImport && isEmpty) {
       this.warmupRefreshTriggered = true;
-      void this.refreshSnapshot(ensureStateLoaded).catch((error) => {
+      void this.refreshSnapshot(ensureStateLoaded, {
+        reason: "warmup-empty-snapshot",
+      }).catch((error) => {
         console.warn("snapshot warmup refresh failed", {
           reason:
             error instanceof Error && error.message
@@ -1128,7 +1135,11 @@ export class LibrarySnapshotService {
       lastPreviewPersistedContainerCount = discoveredContainerCount;
     };
 
-    console.info("library snapshot refresh started");
+    const refreshReason = resolveSnapshotRefreshReason(options);
+    console.info("library snapshot refresh started", {
+      reason: refreshReason,
+      force: options?.force === true,
+    });
     this.emitRefreshProgress(options, {
       stage: "collecting",
       scanned_file_count: scannedFileCount,
@@ -1495,6 +1506,8 @@ export class LibrarySnapshotService {
     }
 
     console.info("library snapshot refresh finished", {
+      reason: refreshReason,
+      force: options?.force === true,
       scannedFileCount,
       imagePackageCount: snapshot.image_packages.length,
       imageDirectoryCount: snapshot.image_directories.length,

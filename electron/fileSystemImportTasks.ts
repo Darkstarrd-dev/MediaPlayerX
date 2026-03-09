@@ -301,6 +301,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
     let runningContainerTotal = Math.max(totalCount, 1)
     const refreshStartedAtMs = Date.now()
     await params.refreshSnapshot({
+      reason: 'import-task-refresh',
       onProgress: (progress) => {
         const discoveredContainerCount = Math.max(0, progress.discovered_container_count ?? 0)
         if (progress.stage !== 'collecting') {

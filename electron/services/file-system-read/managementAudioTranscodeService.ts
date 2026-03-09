@@ -62,6 +62,7 @@ interface ManagementAudioTranscodeServiceDependencies {
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
     force?: boolean;
+    reason?: string;
   }) => Promise<LibrarySnapshotDto>;
   syncSnapshotFromDatabase: () => LibrarySnapshotDto;
   buildMediaAccessContext: () => MediaAccessGuardContext;
@@ -928,7 +929,10 @@ export class ManagementAudioTranscodeService {
         await this.addOutputDirectoriesToMusicImportSources(outputFiles);
       }
       if (this.dependencies.refreshSnapshotFromFilesystem) {
-        await this.dependencies.refreshSnapshotFromFilesystem({ force: true });
+        await this.dependencies.refreshSnapshotFromFilesystem({
+          force: true,
+          reason: "manage-audio-transcode",
+        });
       } else {
         this.dependencies.syncSnapshotFromDatabase();
       }

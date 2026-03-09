@@ -173,6 +173,7 @@ interface ManagementImageConvertServiceDependencies {
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
     force?: boolean;
+    reason?: string;
   }) => Promise<LibrarySnapshotDto>;
   syncSnapshotFromDatabase: () => LibrarySnapshotDto;
   refreshArchiveIndexesForPaths: (
@@ -765,7 +766,10 @@ export class ManagementImageConvertService {
           .catch(() => undefined);
       }
       if (this.dependencies.refreshSnapshotFromFilesystem) {
-        await this.dependencies.refreshSnapshotFromFilesystem({ force: true });
+        await this.dependencies.refreshSnapshotFromFilesystem({
+          force: true,
+          reason: "manage-image-convert",
+        });
       } else {
         this.dependencies.syncSnapshotFromDatabase();
       }

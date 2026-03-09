@@ -135,7 +135,41 @@ describe("ExternalSourceWatcherManager", () => {
     manager.stop();
   });
 
-  it("媒体文件事件会触发刷新", () => {
+  it("目录 watcher 遇到媒体文件事件会触发刷新", () => {
+    const registrations: Array<{ callback: WatchCallback; watcher: FSWatcher }> = [];
+    const watchImpl: typeof import("node:fs").watch =
+      ((...args: unknown[]) => {
+        const callback = args[2] as WatchCallback;
+        const watcher = {
+          close: vi.fn(),
+          on: vi.fn().mockReturnThis(),
+        } as unknown as FSWatcher;
+        registrations.push({ callback, watcher });
+        return watcher;
+      }) as typeof import("node:fs").watch;
+
+    const onDebouncedChange = vi.fn();
+    const manager = new ExternalSourceWatcherManager({
+      debounceMs: 600,
+      mediaExtensions: MEDIA_EXTENSIONS,
+      onDebouncedChange,
+      watchImpl,
+    });
+
+    manager.refresh({
+      importDirectoryRoots: ["Z:/Playground"],
+      importFilePaths: [],
+    });
+
+    expect(registrations).toHaveLength(1);
+    registrations[0].callback("rename", "newvideo.mp4");
+    vi.advanceTimersByTime(650);
+
+    expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    manager.stop();
+  });
+
+  it("单文件父目录 watcher 遇到无关媒体文件时不会触发刷新", () => {
     const registrations: Array<{ callback: WatchCallback; watcher: FSWatcher }> = [];
     const watchImpl: typeof import("node:fs").watch =
       ((...args: unknown[]) => {
@@ -165,7 +199,7 @@ describe("ExternalSourceWatcherManager", () => {
     registrations[0].callback("rename", "newvideo.mp4");
     vi.advanceTimersByTime(650);
 
-    expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    expect(onDebouncedChange).not.toHaveBeenCalled();
     manager.stop();
   });
 

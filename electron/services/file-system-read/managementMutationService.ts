@@ -114,6 +114,7 @@ interface ManagementMutationServiceOptions {
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
     force?: boolean;
+    reason?: string;
   }) => Promise<LibrarySnapshotDto>;
   syncSnapshotFromDatabase: () => LibrarySnapshotDto;
   ffmpegBin: string;
@@ -341,7 +342,10 @@ export class ManagementMutationService {
       this.syncTranscodeOutputDirectoriesToImportSources(result.output_files)
     ) {
       if (this.options.refreshSnapshotFromFilesystem) {
-        await this.options.refreshSnapshotFromFilesystem({ force: true });
+        await this.options.refreshSnapshotFromFilesystem({
+          force: true,
+          reason: "manage-audio-transcode-import-sources",
+        });
       } else {
         this.options.syncSnapshotFromDatabase();
       }
@@ -373,7 +377,10 @@ export class ManagementMutationService {
       this.syncTranscodeOutputDirectoriesToImportSources(result.output_files)
     ) {
       if (this.options.refreshSnapshotFromFilesystem) {
-        await this.options.refreshSnapshotFromFilesystem({ force: true });
+        await this.options.refreshSnapshotFromFilesystem({
+          force: true,
+          reason: "manage-video-transcode-import-sources",
+        });
       } else {
         this.options.syncSnapshotFromDatabase();
       }

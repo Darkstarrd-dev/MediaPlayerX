@@ -214,13 +214,20 @@ export class ExternalSourceWatcherManager {
       return watchedPathState.hasImportedDirectory;
     }
 
+    const normalizedBaseName = path.basename(normalized).toLowerCase();
+    if (watchedPathState.importedFileBaseNames.has(normalizedBaseName)) {
+      return true;
+    }
+
+    if (!watchedPathState.hasImportedDirectory) {
+      return false;
+    }
+
     const extension = path.extname(normalized).toLowerCase();
     if (extension && this.mediaExtensions.has(extension)) {
       return true;
     }
 
-    return watchedPathState.importedFileBaseNames.has(
-      path.basename(normalized).toLowerCase(),
-    );
+    return false;
   }
 }

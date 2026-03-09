@@ -96,4 +96,5 @@ export interface SnapshotRefreshProgress {
 export interface SnapshotRefreshOptions {
   onProgress?: (payload: SnapshotRefreshProgress) => void;
   force?: boolean;
+  reason?: string;
 }
