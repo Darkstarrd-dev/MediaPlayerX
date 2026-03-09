@@ -395,7 +395,7 @@ css 的触发点
 `--mpx-metadata-preference-record-field-text`
 
 说明
-Image / Video 两处 preference record 已改为同一语义家族，`ThemeParameterPanel` 统一在 `largePanelLayer` 验收，不再依赖散落的 `.metadata-preference-record` 类规则直写。
+Image / Video 两处 preference record 已改为同一语义家族，`ThemeParameterPanel` 统一在 `containerLayer > 2.4 Metadata > 2.4.2 Metadata 内部件 / 2.4.2.5 Metadata 偏好记录` 验收，不再依赖散落的 `.metadata-preference-record` 类规则直写。
 
 ### 2.4.2 音乐 Booklet 绑定卡片
 
@@ -430,7 +430,7 @@ css 的触发点
 `--mpx-metadata-booklet-binding-control-text`
 
 说明
-Booklet 绑定区现已不再借壳通用 `input/select` 默认值；slot 可局部覆写，语义层可直接进入 `largePanelLayer` 调试。
+Booklet 绑定区现已不再借壳通用 `input/select` 默认值；slot 可局部覆写，语义层统一在 `containerLayer > 2.4 Metadata > 2.4.2.6 Music Metadata Booklet 绑定` 调试。
 
 ## 2.5 Import Task Panel 容器（已迁移）
 
@@ -1571,7 +1571,7 @@ css 的触发点
 补充说明：
 
 1. `containerLayer` 当前已覆盖：`2.0` 共享壳层、`2.1` Header、`2.2` Sidebar、`2.2.2.1 fg-sidebar-main`、`2.3` Main、`2.3.2.1` 工作区缩略图模式、`2.3.2.2 fg-main-content-image-name-list`、`2.3.2.x` 视频 / 音乐 / overlay / rating 调参组、`2.4` Metadata、`2.4.2` Metadata 内部件。
-2. `largePanelLayer` 当前已覆盖的内部件：Settings、Import Task、Metadata Fetch、Metadata Preference Record、Metadata Booklet Binding、Metadata Feature Tag Picker、Subtitle Cleanup、Transcode Dialog、Sidebar Rename Preview。
+2. `largePanelLayer` 当前已覆盖的内部件：Settings、Import Task、Metadata Fetch、Metadata Feature Tag Picker、Subtitle Cleanup、Transcode Dialog、Sidebar Rename Preview；`Metadata Preference Record` 与 `Metadata Booklet Binding` 已回归 `containerLayer > Metadata`。
 3. Main 区硬编码色清理结论：
    - `music-visualizer HUD`、`video screen`、`ad-review overlay`、`rating heart`、`subtitle overlay` 已切回语义 token。
    - `layout.part3.css` 中 `#000 / #fff / #111 / #777 / #f6f8fa` 保留为 color picker 功能性标定色，不纳入通用视觉 token。

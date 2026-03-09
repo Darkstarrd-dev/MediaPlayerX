@@ -446,8 +446,8 @@ Main / Metadata header 语义 token 补充（2026-03）：
 
 ## Phase 2 补充（2026-03-06）
 
-- `fg.meta.main.imageEditor.preferenceMetrics.panel` 与 `fg.meta.main.videoEditor.preferenceMetrics.panel` 额外承载 `border / bg / text / summary-text / hint-text / field-border / field-bg / field-text` 后缀，消费 `--mpx-metadata-preference-record-*`。
-- `fg.meta.main.musicEditor.bookletBinding.panel` 额外承载 `border / bg / text / meta-text / control-border / control-bg / control-text` 后缀，消费 `--mpx-metadata-booklet-binding-*`。
+- `fg.meta.main.imageEditor.preferenceMetrics.panel` 与 `fg.meta.main.videoEditor.preferenceMetrics.panel` 额外承载 `border / bg / text / summary-text / hint-text / field-border / field-bg / field-text` 后缀，消费 `--mpx-metadata-preference-record-*`；ThemeParameter 归属 `containerLayer > Metadata`。
+- `fg.meta.main.musicEditor.bookletBinding.panel` 额外承载 `border / bg / text / meta-text / control-border / control-bg / control-text` 后缀，消费 `--mpx-metadata-booklet-binding-*`；ThemeParameter 归属 `containerLayer > Metadata`。
 - `fg.meta.main.search.featureTagPicker.panel` 额外承载 `hint-text / group-key-text / popover-* / tag-*` 后缀，消费 `--mpx-metadata-feature-tag-picker-*`。
 - `fg.meta.main.videoEditor.playlistNameDialog.panel` 额外承载 `input-border / input-bg / input-text / input-placeholder / text` 后缀，消费 `--mpx-metadata-playlist-name-dialog-*`。
 - `fg.main.toolbar.manage.musicTranscode.panel` 与 `fg.main.toolbar.manage.videoTranscode.panel` 额外承载 `control-* / action-btn-*` 后缀，消费 `--mpx-transcode-dialog-*`。

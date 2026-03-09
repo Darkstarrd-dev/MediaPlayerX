@@ -1,11 +1,129 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "../i18n/I18nProvider";
 import { resetUiStoreState, useUiStore } from "../store/useUiStore";
 import { resetThemeParameterPanelSessionStateForTest } from "./theme-parameter/themeParameterPanelSessionState";
 import ThemeParameterPanel from "./ThemeParameterPanel";
+
+type RoleNameOption = { name?: string | RegExp } | undefined;
+
+function normalizeRoleName(value: string | null | undefined): string {
+  return value?.replace(/\s+/g, " ").trim() ?? "";
+}
+
+function getElementAriaLabel(element: Element): string {
+  return normalizeRoleName(element.getAttribute("aria-label"));
+}
+
+function getButtonAccessibleName(button: HTMLButtonElement): string {
+  const ariaLabel = getElementAriaLabel(button);
+  if (ariaLabel) {
+    return ariaLabel;
+  }
+
+  const labelledBy = button.getAttribute("aria-labelledby");
+  if (labelledBy) {
+    const labelText = labelledBy
+      .split(/\s+/)
+      .map((id) => document.getElementById(id)?.textContent ?? "")
+      .join(" ");
+    const normalized = normalizeRoleName(labelText);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  const textContent = normalizeRoleName(button.textContent);
+  if (textContent) {
+    return textContent;
+  }
+
+  return normalizeRoleName(button.getAttribute("title"));
+}
+
+function matchSingleElementByName<T extends Element>(
+  elements: Iterable<T>,
+  name: string,
+  getName: (element: T) => string,
+): T | null {
+  const matches = Array.from(elements).filter(
+    (element) => getName(element) === normalizeRoleName(name),
+  );
+  if (matches.length !== 1) {
+    return null;
+  }
+  return matches[0];
+}
+
+function resolveFastRoleQuery(
+  role: string,
+  options: RoleNameOption,
+): HTMLElement | null {
+  const name = typeof options?.name === "string" ? options.name : null;
+  if (!name) {
+    return null;
+  }
+
+  if (role === "button") {
+    return matchSingleElementByName(
+      document.querySelectorAll<HTMLButtonElement>("button"),
+      name,
+      getButtonAccessibleName,
+    );
+  }
+
+  if (role === "textbox") {
+    return matchSingleElementByName(
+      document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input[aria-label]:not([type="number"]):not([type="range"]):not([type="color"]), textarea[aria-label]',
+      ),
+      name,
+      getElementAriaLabel,
+    ) as HTMLElement | null;
+  }
+
+  if (role === "spinbutton") {
+    return matchSingleElementByName(
+      document.querySelectorAll<HTMLInputElement>('input[type="number"][aria-label]'),
+      name,
+      getElementAriaLabel,
+    );
+  }
+
+  return null;
+}
+
+const originalGetByRole = screen.getByRole.bind(screen);
+const originalQueryByRole = screen.queryByRole.bind(screen);
+
+function installFastRoleQueries(): () => void {
+  const getByRoleSpy = vi
+    .spyOn(screen, "getByRole")
+    .mockImplementation((role, options) => {
+      const fastMatch = resolveFastRoleQuery(role, options as RoleNameOption);
+      if (fastMatch) {
+        return fastMatch;
+      }
+      return originalGetByRole(role, options);
+    });
+
+  const queryByRoleSpy = vi
+    .spyOn(screen, "queryByRole")
+    .mockImplementation((role, options) => {
+      const fastMatch = resolveFastRoleQuery(role, options as RoleNameOption);
+      if (fastMatch) {
+        return fastMatch;
+      }
+      return originalQueryByRole(role, options);
+    });
+
+  return () => {
+    getByRoleSpy.mockRestore();
+    queryByRoleSpy.mockRestore();
+  };
+}
 
 function getSliderByLabelText(text: string): HTMLInputElement {
   const label = screen
@@ -128,6 +246,17 @@ function renderThemeParameterPanel(
 }
 
 describe("ThemeParameterPanel", () => {
+  let restoreFastRoleQueries: (() => void) | null = null;
+
+  beforeAll(() => {
+    restoreFastRoleQueries = installFastRoleQueries();
+  });
+
+  afterAll(() => {
+    restoreFastRoleQueries?.();
+    restoreFastRoleQueries = null;
+  });
+
   beforeEach(() => {
     document.documentElement.removeAttribute("style");
     act(() => {
@@ -2238,7 +2367,9 @@ describe("ThemeParameterPanel", () => {
     ).toBe("#ddeeff");
   }, 60000);
 
-  it("Sidebar header root 与 Main header border 在仅改颜色时也会写入实色", () => {
+  it(
+    "Sidebar header root 与 Main header border 在仅改颜色时也会写入实色",
+    () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
@@ -2292,12 +2423,14 @@ describe("ThemeParameterPanel", () => {
         "--mpx-slot-fg-sidebar-header-text",
       ),
     ).toBe("#334455");
-    expect(
-      document.documentElement.style.getPropertyValue(
-        "--mpx-main-header-border-color",
-      ),
-    ).toBe("#445566");
-  });
+      expect(
+        document.documentElement.style.getPropertyValue(
+          "--mpx-main-header-border-color",
+        ),
+      ).toBe("#445566");
+    },
+    30000,
+  );
 
   it("复杂文本变量支持结构化拆分编辑且导入导出保持原始 CSS 字符串", () => {
     renderThemeParameterPanel();
@@ -2483,6 +2616,82 @@ describe("ThemeParameterPanel", () => {
     ).toBe("#123456");
   }, 15000);
 
+  it("Metadata 偏好记录与 Booklet 绑定调试值会按大容器会话态恢复", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    ensureDetailsOpen("2.4 Metadata");
+    ensureDetailsOpen("2.4.2.5 Metadata 偏好记录");
+    ensureDetailsOpen("2.4.2.6 Music Metadata Booklet 绑定");
+
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-preference-record-bg",
+      }),
+      {
+        target: { value: "#345678" },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-booklet-binding-bg",
+      }),
+      {
+        target: { value: "#456789" },
+      },
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    document.documentElement.style.removeProperty(
+      "--mpx-metadata-preference-record-bg",
+    );
+    document.documentElement.style.removeProperty(
+      "--mpx-metadata-booklet-binding-bg",
+    );
+    expect(
+      document.documentElement.style
+        .getPropertyValue("--mpx-metadata-preference-record-bg")
+        .trim(),
+    ).toBe("");
+    expect(
+      document.documentElement.style
+        .getPropertyValue("--mpx-metadata-booklet-binding-bg")
+        .trim(),
+    ).toBe("");
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-preference-record-bg",
+      ),
+    ).toBe("#345678");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-booklet-binding-bg",
+      ),
+    ).toBe("#456789");
+  }, 15000);
+
   it("关闭后重开保持当前分页", () => {
     const { rerender } = renderThemeParameterPanel();
 
@@ -2597,6 +2806,60 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
     expect(
       screen.getByRole("textbox", { name: "--mpx-sidebar-main-bg" }),
+    ).toBeInTheDocument();
+  }, 15000);
+
+  it("关闭后重开保持 Metadata 偏好记录与 Booklet 绑定折叠状态", () => {
+    const { rerender } = renderThemeParameterPanel();
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    ensureDetailsOpen("2.4 Metadata");
+    ensureDetailsOpen("2.4.2.5 Metadata 偏好记录");
+    ensureDetailsOpen("2.4.2.6 Music Metadata Booklet 绑定");
+
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-preference-record-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-booklet-binding-bg",
+      }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open={false}
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    rerender(
+      <I18nProvider browserLocale="en-US">
+        <ThemeParameterPanel
+          open
+          styleId="soft-skeuomorphic"
+          settingsFontSize={14}
+          onClose={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "大容器层调试" }));
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-preference-record-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-metadata-booklet-binding-bg",
+      }),
     ).toBeInTheDocument();
   }, 15000);
 

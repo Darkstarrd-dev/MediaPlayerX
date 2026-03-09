@@ -76,7 +76,7 @@
 ### 状态
 
 - 状态：进行中
-- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片（`FeatureTagPickerModal` / `preference-record` / `booklet-binding`）、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`、ThemeParameter 会话态补充“分页内滚动位置保留”、页内复位入口收口为 header 全局“恢复到打开时状态”按钮
+- 当前已完成子项：Import Task 子块链路、`MetadataFetchPanel` 内层搜索行 / 结果列 / 预览卡、`SubtitleCleanupPanel` 两个 preview panel 接入 `largePanelLayer`、metadata 内部卡片已分流为 `FeatureTagPickerModal -> largePanelLayer`、`preference-record / booklet-binding -> containerLayer > Metadata`、`playlist-name-dialog`、`MusicAudioTranscodePanel` / `VideoTranscodePanel` / `SidebarRenameDialog` 内部控件借壳 token 收口、`commonControls` 页 scrollbar detail 字段补齐、设置 slider groove 拆分到 `--mpx-slider-settings-groove-*`、ThemeParameter 会话态补充“分页内滚动位置保留”、页内复位入口收口为 header 全局“恢复到打开时状态”按钮
 - 当前下一项：按 `docs/36-theme-container-frame-migration-plan-v1.md` 执行 `containerLayer` 基础层重构，先完成共享壳层新语义、root/frame 分层与单容器 visual transform 方案，再继续 `snapshot` 与 `largePanelLayer`
 
 ### 目标
