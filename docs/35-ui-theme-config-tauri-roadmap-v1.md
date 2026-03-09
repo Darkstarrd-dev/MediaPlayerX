@@ -126,7 +126,7 @@
 
 - `containerLayer` 已确认不是“链路不通”，而是进入“字段说明不足 + 预览命中错位 + 当前主题统一壳层覆盖导致部分项不宜前置验收”的整理阶段。
 - `2.0 共享壳层` 中更适合前置验收的稳定项为：`--mpx-bg-app`、`--mpx-container-frame-fill-start`、`--mpx-container-frame-fill-end`、`--mpx-container-frame-edge-color`、`--mpx-container-frame-border-color`、`--mpx-container-frame-shadow`、`layout-padding`、`splitter-width`、`container-frame-fill-angle`、`panel-radius`、`header-radius`、`card-radius`。
-- 当前建议后置或降级的项包括：`--mpx-bg-workspace`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-border-2`，以及在 `soft-skeuomorphic × skeuomorphic-luxury-white` 下被统一壳层覆盖的大部分 pane 级边框/阴影细分项。
+- 当前建议后置或降级的项包括：`--mpx-workspace-fill-start/end`（需在缩略图模式下联动观察）、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-border-2`，以及在 `soft-skeuomorphic × skeuomorphic-luxury-white` 下被统一壳层覆盖的大部分 pane 级边框/阴影细分项。
 - `fg-sidebar-main` 与 `fg-main-content-image-name-list` 已验证主体链路可调，但存在“状态拆分过细、需特定模式才可见、人工验收成本偏高”的问题；后续应优先收敛为主路径验收顺序，而不是继续平均铺开所有状态变量。
 - `containerLayer` 的后续实施与最终变量更名，以 `docs/36-theme-container-frame-migration-plan-v1.md` 为执行清单；迁移完成标准明确要求旧变量与 alias 兼容链路归零。
 

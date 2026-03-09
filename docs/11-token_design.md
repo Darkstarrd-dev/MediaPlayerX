@@ -384,8 +384,10 @@ Main / Metadata header 语义 token 补充（2026-03）：
   | `fg.main.content.video.preview.media` | `--mpx-slot-fg-main-content-video-preview-media-*` |
   | `fg.main.content.video.preview.cover` | `--mpx-slot-fg-main-content-video-preview-cover-*` |
   | `fg.main.content.video.preview.empty` | `--mpx-slot-fg-main-content-video-preview-empty-*` |
-  | `fg.main.content.video.preview.subtitle.ovl` | `--mpx-slot-fg-main-content-video-preview-subtitle-ovl-*` |
-  | `fg.main.content.video.controls` | `--mpx-slot-fg-main-content-video-controls-*` |
+| `fg.main.content.video.preview.subtitle.ovl` | `--mpx-slot-fg-main-content-video-preview-subtitle-ovl-*` |
+| `fg.main.content.video.grid` | `--mpx-slot-fg-main-content-video-grid-*` |
+| `fg.main.content.video.grid.card` | `--mpx-slot-fg-main-content-video-grid-card-*` |
+| `fg.main.content.video.controls` | `--mpx-slot-fg-main-content-video-controls-*` |
   | `fg.main.content.video.controls.progress` | `--mpx-slot-fg-main-content-video-controls-progress-*` |
   | `fg.main.content.video.controls.left` | `--mpx-slot-fg-main-content-video-controls-left-*` |
   | `fg.main.content.video.controls.center` | `--mpx-slot-fg-main-content-video-controls-center-*` |

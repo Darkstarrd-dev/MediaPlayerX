@@ -63,7 +63,7 @@
 - 复选框：`--mpx-checkbox-size`、`--mpx-checkbox-radius`、`--mpx-checkbox-bg`、`--mpx-checkbox-border`、`--mpx-checkbox-check`、`--mpx-checkbox-checked-bg`、`--mpx-checkbox-checked-border`
 
 ### C. Semantic Colors（语义颜色）
-- Surfaces：`--mpx-bg-app`、`--mpx-bg-workspace`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-bg-hover`、`--mpx-bg-selected`、`--mpx-bg-muted`、`--mpx-bg-tooltip`
+- Surfaces：`--mpx-bg-app`、`--mpx-workspace-fill-start`、`--mpx-workspace-fill-end`、`--mpx-workspace-border-color`、`--mpx-bg-panel`、`--mpx-bg-elevated`、`--mpx-bg-hover`、`--mpx-bg-selected`、`--mpx-bg-muted`、`--mpx-bg-tooltip`
 - Text：`--mpx-text-1`、`--mpx-text-2`、`--mpx-text-3`、`--mpx-text-heading`、`--mpx-text-inverse`
 - Borders：`--mpx-border-1`、`--mpx-border-2`、`--mpx-border-focus`
 - Accent：`--mpx-accent`、`--mpx-accent-contrast`、`--mpx-accent-soft`

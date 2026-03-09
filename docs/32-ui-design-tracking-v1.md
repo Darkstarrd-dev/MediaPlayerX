@@ -1499,7 +1499,7 @@ css 的触发点
 
 `1. 预览错位 / 当前页难以验证`
 
-- `--mpx-bg-workspace`：文档预期应影响图片网格背景，但当前 `containerLayer` 预览未稳定复现
+- `--mpx-workspace-fill-start/end`：工作区梯度与容器链路叠加后，人工验收需要固定在缩略图模式观察
 - `--mpx-bg-panel`：在当前主题下更多是 fallback 或次级消费点，不适合作为首批容器验收样本
 - `--mpx-bg-elevated`：更容易先命中 ThemeParameter / overlay 内页，不适合作为当前页前置样本
 
