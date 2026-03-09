@@ -929,23 +929,23 @@
   );
   --mpx-large-panel-border-color-current: var(
     --mpx-slot-fg-import-task-root-border,
-    var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    var(--mpx-large-panel-border-color, var(--mpx-overlay-surface-border, var(--mpx-border-2)))
   );
-  --mpx-large-panel-fill-start: var(
+  --mpx-large-panel-fill-start-current: var(
     --mpx-slot-fg-import-task-root-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+    var(--mpx-large-panel-fill-start, var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated))))
   );
-  --mpx-large-panel-fill-end: var(
+  --mpx-large-panel-fill-end-current: var(
     --mpx-slot-fg-import-task-root-bg,
-    var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated)))
+    var(--mpx-large-panel-fill-end, var(--mpx-overlay-surface-bg, var(--mpx-bg-panel, var(--mpx-bg-elevated))))
   );
   --mpx-large-panel-shadow-current: var(
     --mpx-slot-fg-import-task-root-shadow,
-    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+    var(--mpx-large-panel-shadow, var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel)))
   );
-  --mpx-large-panel-head-border-color: var(
+  --mpx-large-panel-head-border-color-current: var(
     --mpx-slot-fg-import-task-root-head-border,
-    var(--mpx-border-1)
+    var(--mpx-large-panel-head-border-color, var(--mpx-border-1))
   );
   --mpx-large-panel-head-fill-start-current: var(
     --mpx-slot-fg-import-task-root-head-bg,
@@ -955,9 +955,9 @@
     --mpx-slot-fg-import-task-root-head-bg,
     var(--mpx-large-panel-head-fill-end, rgba(0, 0, 0, 0))
   );
-  --mpx-large-panel-head-text: var(
+  --mpx-large-panel-head-text-current: var(
     --mpx-slot-fg-import-task-root-head-text,
-    inherit
+    var(--mpx-large-panel-head-text, inherit)
   );
   --mpx-large-panel-main-fill-start-current: var(
     --mpx-slot-fg-import-task-root-main-bg,

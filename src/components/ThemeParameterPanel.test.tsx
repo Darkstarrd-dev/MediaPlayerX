@@ -1110,6 +1110,59 @@ describe("ThemeParameterPanel", () => {
       screen.getByText("3.10.8 侧栏重命名（共享内部件 + 预览）"),
     ).toBeInTheDocument();
 
+    ensureDetailsOpen("3.10.1 导入任务");
+    const importTaskDetails = getDetailsBySummaryText("3.10.1 导入任务");
+    expectFieldOrderWithin(importTaskDetails, [
+      "--mpx-import-task-error-border",
+      "--mpx-import-task-error-bg",
+      "--mpx-import-task-error-text",
+      "--mpx-import-task-hint-border",
+      "--mpx-import-task-hint-bg",
+      "--mpx-import-task-hint-text",
+      "--mpx-import-task-review-notice-border",
+      "--mpx-import-task-review-notice-bg",
+      "--mpx-import-task-review-notice-text",
+      "--mpx-import-task-hash-log-border",
+      "--mpx-import-task-hash-log-bg",
+      "--mpx-import-task-hash-log-text",
+    ]);
+    expect(
+      within(importTaskDetails).getByText("错误事件边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("错误事件背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("错误事件文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("提示事件边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("提示事件背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("提示事件文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("审核提醒事件边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("审核提醒事件背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("审核提醒事件文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("哈希日志事件边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("哈希日志事件背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(importTaskDetails).getByText("哈希日志事件文字颜色"),
+    ).toBeInTheDocument();
+
     ensureDetailsOpen("3.10.0 Settings 内部件");
     const settingsDetails = getDetailsBySummaryText("3.10.0 Settings 内部件");
     ensureDetailsOpenWithin(settingsDetails, "Side");

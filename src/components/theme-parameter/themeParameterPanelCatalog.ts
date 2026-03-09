@@ -2212,6 +2212,42 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-settings-danger-btn-text") {
     return "大面板main容器内高危按钮文字颜色";
   }
+  if (cssVar === "--mpx-import-task-error-border") {
+    return "错误事件边框颜色";
+  }
+  if (cssVar === "--mpx-import-task-error-bg") {
+    return "错误事件背景颜色";
+  }
+  if (cssVar === "--mpx-import-task-error-text") {
+    return "错误事件文字颜色";
+  }
+  if (cssVar === "--mpx-import-task-hint-border") {
+    return "提示事件边框颜色";
+  }
+  if (cssVar === "--mpx-import-task-hint-bg") {
+    return "提示事件背景颜色";
+  }
+  if (cssVar === "--mpx-import-task-hint-text") {
+    return "提示事件文字颜色";
+  }
+  if (cssVar === "--mpx-import-task-review-notice-border") {
+    return "审核提醒事件边框颜色";
+  }
+  if (cssVar === "--mpx-import-task-review-notice-bg") {
+    return "审核提醒事件背景颜色";
+  }
+  if (cssVar === "--mpx-import-task-review-notice-text") {
+    return "审核提醒事件文字颜色";
+  }
+  if (cssVar === "--mpx-import-task-hash-log-border") {
+    return "哈希日志事件边框颜色";
+  }
+  if (cssVar === "--mpx-import-task-hash-log-bg") {
+    return "哈希日志事件背景颜色";
+  }
+  if (cssVar === "--mpx-import-task-hash-log-text") {
+    return "哈希日志事件文字颜色";
+  }
   if (cssVar.startsWith("--mpx-large-panel-section-")) {
     return "用于大面板 Head / Side / Main 共享默认值";
   }
