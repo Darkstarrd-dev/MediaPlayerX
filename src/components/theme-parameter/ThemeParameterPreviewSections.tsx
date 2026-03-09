@@ -37,6 +37,8 @@ interface ThemeParameterCommonControlSectionsProps {
   setSliderSettingsExpanded: Dispatch<SetStateAction<boolean>>;
   fileListExpanded: boolean;
   setFileListExpanded: Dispatch<SetStateAction<boolean>>;
+  thumbnailCardExpanded: boolean;
+  setThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
   debugTextValues: Record<string, string>;
   isTextFieldChanged: (field: ThemeDebugTextField) => boolean;
   setDebugTextFieldValue: (field: ThemeDebugTextField, raw: string) => void;
@@ -338,8 +340,12 @@ function renderButtonFieldRows(options: {
   renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
   renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
 }) {
-  const { colorFields, textFields = [], renderColorFieldRow, renderTextFieldRow } =
-    options;
+  const {
+    colorFields,
+    textFields = [],
+    renderColorFieldRow,
+    renderTextFieldRow,
+  } = options;
   return (
     <section className="settings-group theme-parameter-debug-group">
       {colorFields.length > 0 ? (
@@ -372,6 +378,8 @@ export function ThemeParameterCommonControlSections({
   setSliderSettingsExpanded,
   fileListExpanded,
   setFileListExpanded,
+  thumbnailCardExpanded,
+  setThumbnailCardExpanded,
   debugTextValues,
   isTextFieldChanged,
   setDebugTextFieldValue,
@@ -400,6 +408,7 @@ export function ThemeParameterCommonControlSections({
     "control-slider-vertical": sliderVerticalExpanded,
     "control-slider-settings": sliderSettingsExpanded,
     "control-file-list": fileListExpanded,
+    "control-thumbnail-card": thumbnailCardExpanded,
   };
 
   const expandedSetterMap: Record<
@@ -412,6 +421,7 @@ export function ThemeParameterCommonControlSections({
     "control-slider-vertical": setSliderVerticalExpanded,
     "control-slider-settings": setSliderSettingsExpanded,
     "control-file-list": setFileListExpanded,
+    "control-thumbnail-card": setThumbnailCardExpanded,
   };
 
   return (
@@ -451,7 +461,9 @@ export function ThemeParameterCommonControlSections({
             <summary>{t(section.titleKey)}</summary>
             <div className="settings-collapsible-content">
               <section className="settings-group theme-parameter-debug-group">
-                <p className="theme-parameter-note-intro">{t(section.noteKey)}</p>
+                <p className="theme-parameter-note-intro">
+                  {t(section.noteKey)}
+                </p>
                 {horizontalPreview}
                 <div
                   className={
@@ -574,7 +586,9 @@ export function ThemeParameterButtonStateDebug({
           )
         }
       >
-        <summary>{t("ui.themeParameter.buttonLayer.sectionOverlayCell")}</summary>
+        <summary>
+          {t("ui.themeParameter.buttonLayer.sectionOverlayCell")}
+        </summary>
         <div className="settings-collapsible-content">
           <p className="theme-parameter-note-intro">
             {t("ui.themeParameter.buttonLayer.noteOverlayCell")}

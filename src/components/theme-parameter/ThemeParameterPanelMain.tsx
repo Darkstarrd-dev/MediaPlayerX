@@ -59,6 +59,11 @@ import {
   CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS,
   CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS,
   CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_TEXT_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS,
   CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS,
   CONTAINER_SHARED_COLOR_FIELDS,
   CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS,
@@ -279,6 +284,8 @@ interface ThemeParameterPanelMainProps {
   setControlSliderSettingsExpanded: Dispatch<SetStateAction<boolean>>;
   controlFileListExpanded: boolean;
   setControlFileListExpanded: Dispatch<SetStateAction<boolean>>;
+  controlThumbnailCardExpanded: boolean;
+  setControlThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -435,6 +442,8 @@ export function ThemeParameterPanelMain({
   setControlSliderSettingsExpanded,
   controlFileListExpanded,
   setControlFileListExpanded,
+  controlThumbnailCardExpanded,
+  setControlThumbnailCardExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -508,6 +517,10 @@ export function ThemeParameterPanelMain({
     setWorkspaceThumbnailContainerExpanded,
   ] = useState(true);
   const [workspaceThumbnailStyleExpanded, setWorkspaceThumbnailStyleExpanded] =
+    useState(true);
+  const [workspaceImageCardExpanded, setWorkspaceImageCardExpanded] =
+    useState(true);
+  const [workspaceVideoCardExpanded, setWorkspaceVideoCardExpanded] =
     useState(true);
   const [workspacePreviewMusicExpanded, setWorkspacePreviewMusicExpanded] =
     useState(true);
@@ -1762,6 +1775,73 @@ export function ThemeParameterPanelMain({
                         renderColorFieldRow,
                       )}
                     </div>
+                    <div className="theme-parameter-text-list">
+                      {CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_TEXT_FIELDS.map(
+                        renderTextFieldRow,
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </details>
+              <details
+                className="settings-collapsible"
+                open={workspaceImageCardExpanded}
+                onToggle={(event) =>
+                  setWorkspaceImageCardExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>图片缩略图卡片（覆写 6.4 总控）</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>图片缩略图卡片</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-image-grid-card
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                    <div className="theme-parameter-text-list">
+                      {CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS.map(
+                        renderTextFieldRow,
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </details>
+              <details
+                className="settings-collapsible"
+                open={workspaceVideoCardExpanded}
+                onToggle={(event) =>
+                  setWorkspaceVideoCardExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>视频缩略图卡片（覆写 6.4 总控）</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>视频缩略图卡片</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-video-grid-card
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                    <div className="theme-parameter-text-list">
+                      {CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS.map(
+                        renderTextFieldRow,
+                      )}
+                    </div>
                   </section>
                 </div>
               </details>
@@ -2174,6 +2254,8 @@ export function ThemeParameterPanelMain({
           setSliderSettingsExpanded={setControlSliderSettingsExpanded}
           fileListExpanded={controlFileListExpanded}
           setFileListExpanded={setControlFileListExpanded}
+          thumbnailCardExpanded={controlThumbnailCardExpanded}
+          setThumbnailCardExpanded={setControlThumbnailCardExpanded}
           debugTextValues={debugTextValues}
           isTextFieldChanged={isTextFieldChanged}
           setDebugTextFieldValue={setDebugTextFieldValue}

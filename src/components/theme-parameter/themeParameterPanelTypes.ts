@@ -53,7 +53,8 @@ export type ThemeControlSectionId =
   | "control-slider-player"
   | "control-slider-vertical"
   | "control-slider-settings"
-  | "control-file-list";
+  | "control-file-list"
+  | "control-thumbnail-card";
 
 export interface ThemeDebugColorField {
   id: string;

@@ -312,6 +312,9 @@ export function useThemeParameterUiSession() {
       setControlFileListExpanded: createBooleanSetter(
         "controlFileListExpanded",
       ),
+      setControlThumbnailCardExpanded: createBooleanSetter(
+        "controlThumbnailCardExpanded",
+      ),
     }),
     [createBooleanSetter],
   );

@@ -366,9 +366,155 @@ export const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 export const CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] =
   [
     {
-      id: "container-bg-workspace",
-      cssVar: "--mpx-bg-workspace",
-      fallback: "#f3f0ea",
+      id: "container-workspace-fill-start",
+      cssVar: "--mpx-workspace-fill-start",
+      fallback: "#f5f2ec",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-fill-end",
+      cssVar: "--mpx-workspace-fill-end",
+      fallback: "#e6e2da",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-border-color",
+      cssVar: "--mpx-workspace-border-color",
+      fallback: "#e5e4e0",
+      groupId: "border",
+    },
+  ];
+
+export const CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  [
+    {
+      id: "container-workspace-fill-angle",
+      cssVar: "--mpx-workspace-fill-angle",
+      fallback: "180deg",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-border-width",
+      cssVar: "--mpx-workspace-border-width",
+      fallback: "1px",
+      groupId: "border",
+    },
+    {
+      id: "container-workspace-radius",
+      cssVar: "--mpx-workspace-radius",
+      fallback: "12px",
+      groupId: "box",
+    },
+  ];
+
+export const CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-workspace-image-card-border-color",
+      cssVar: "--mpx-image-grid-card-border-color",
+      fallback: "#b5bdc8",
+      groupId: "border",
+    },
+    {
+      id: "container-workspace-image-card-bg",
+      cssVar: "--mpx-image-grid-card-bg",
+      fallback: "transparent",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-image-card-focus-bg",
+      cssVar: "--mpx-image-grid-card-focus-bg",
+      fallback: "#2e6f7f",
+      groupId: "main",
+    },
+    {
+      id: "container-workspace-image-card-selected-bg",
+      cssVar: "--mpx-image-grid-card-selected-bg",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+  ];
+
+export const CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  [
+    {
+      id: "container-workspace-image-card-border-width",
+      cssVar: "--mpx-image-grid-card-border-width",
+      fallback: "1px",
+      groupId: "border",
+    },
+    {
+      id: "container-workspace-image-card-shadow",
+      cssVar: "--mpx-image-grid-card-shadow",
+      fallback: "var(--mpx-card-shadow)",
+      groupId: "shadow",
+    },
+    {
+      id: "container-workspace-image-card-padding",
+      cssVar: "--mpx-image-grid-card-padding",
+      fallback: "0px",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-image-card-radius",
+      cssVar: "--mpx-image-grid-card-radius",
+      fallback: "12px",
+      groupId: "box",
+    },
+  ];
+
+export const CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-workspace-video-card-border-color",
+      cssVar: "--mpx-video-grid-card-border-color",
+      fallback: "#b5bdc8",
+      groupId: "border",
+    },
+    {
+      id: "container-workspace-video-card-bg",
+      cssVar: "--mpx-video-grid-card-bg",
+      fallback: "transparent",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-video-card-focus-bg",
+      cssVar: "--mpx-video-grid-card-focus-bg",
+      fallback: "#2e6f7f",
+      groupId: "main",
+    },
+    {
+      id: "container-workspace-video-card-selected-bg",
+      cssVar: "--mpx-video-grid-card-selected-bg",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+  ];
+
+export const CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  [
+    {
+      id: "container-workspace-video-card-border-width",
+      cssVar: "--mpx-video-grid-card-border-width",
+      fallback: "1px",
+      groupId: "border",
+    },
+    {
+      id: "container-workspace-video-card-shadow",
+      cssVar: "--mpx-video-grid-card-shadow",
+      fallback: "var(--mpx-card-shadow)",
+      groupId: "shadow",
+    },
+    {
+      id: "container-workspace-video-card-padding",
+      cssVar: "--mpx-video-grid-card-padding",
+      fallback: "0px",
+      groupId: "box",
+    },
+    {
+      id: "container-workspace-video-card-radius",
+      cssVar: "--mpx-video-grid-card-radius",
+      fallback: "12px",
       groupId: "box",
     },
   ];
@@ -1860,6 +2006,8 @@ export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_MAIN_HEADER_COLOR_FIELDS,
   ...CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
   ...CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_COLOR_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_COLOR_FIELDS,
   ...CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS,
   ...CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS,
   ...CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS,
@@ -1879,6 +2027,9 @@ export const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   ...CONTAINER_HEADER_TEXT_FIELDS,
   ...CONTAINER_SIDEBAR_TEXT_FIELDS,
   ...CONTAINER_MAIN_TEXT_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_TEXT_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_IMAGE_CARD_TEXT_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_VIDEO_CARD_TEXT_FIELDS,
   ...CONTAINER_METADATA_TEXT_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_TEXT_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
@@ -1925,8 +2076,17 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-bg-app-fill") {
     return "用于应用背景 fill（App background fill，支持渐变等高级效果）";
   }
-  if (cssVar === "--mpx-bg-workspace") {
-    return "用于主区图片网格背景（image grid background）";
+  if (cssVar.startsWith("--mpx-workspace-")) {
+    return "用于工作区缩略图容器（workspace thumbnail container）";
+  }
+  if (cssVar.startsWith("--mpx-thumbnail-card-")) {
+    return "用于缩略图卡片总控（thumbnail card shared control）";
+  }
+  if (cssVar.startsWith("--mpx-image-grid-card-")) {
+    return "用于图片缩略图卡片局部覆写（image card local override）";
+  }
+  if (cssVar.startsWith("--mpx-video-grid-card-")) {
+    return "用于视频缩略图卡片局部覆写（video card local override）";
   }
   if (cssVar === "--mpx-container-frame-fill-start") {
     return "用于共享壳层 fill 起始色";
@@ -2993,6 +3153,11 @@ export const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
     titleKey: "ui.themeParameter.controls.section.fileList",
     noteKey: "ui.themeParameter.controls.note.fileList",
   },
+  {
+    id: "control-thumbnail-card",
+    titleKey: "ui.themeParameter.controls.section.thumbnailCard",
+    noteKey: "ui.themeParameter.controls.note.thumbnailCard",
+  },
 ];
 
 export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
@@ -3255,6 +3420,34 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "box",
     sectionId: "control-file-list",
   },
+  {
+    id: "control-thumbnail-card-border-color",
+    cssVar: "--mpx-thumbnail-card-border-color",
+    fallback: "#b5bdc8",
+    groupId: "border",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-bg",
+    cssVar: "--mpx-thumbnail-card-bg",
+    fallback: "transparent",
+    groupId: "box",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-focus-bg",
+    cssVar: "--mpx-thumbnail-card-focus-bg",
+    fallback: "#2e6f7f",
+    groupId: "main",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-selected-bg",
+    cssVar: "--mpx-thumbnail-card-selected-bg",
+    fallback: "#9a885f",
+    groupId: "main",
+    sectionId: "control-thumbnail-card",
+  },
 ];
 
 export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
@@ -3478,6 +3671,34 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
       "inset 0 2px 4px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), inset 0 1px 1px color-mix(in srgb, var(--mpx-palette-shadow-color) 32%, transparent), 0 1px 0 rgba(255, 255, 255, 1)",
     groupId: "box",
     sectionId: "control-slider-settings",
+  },
+  {
+    id: "control-thumbnail-card-border-width",
+    cssVar: "--mpx-thumbnail-card-border-width",
+    fallback: "1px",
+    groupId: "border",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-shadow",
+    cssVar: "--mpx-thumbnail-card-shadow",
+    fallback: "var(--mpx-card-shadow)",
+    groupId: "shadow",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-padding",
+    cssVar: "--mpx-thumbnail-card-padding",
+    fallback: "0px",
+    groupId: "box",
+    sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-thumbnail-card-radius",
+    cssVar: "--mpx-thumbnail-card-radius",
+    fallback: "12px",
+    groupId: "box",
+    sectionId: "control-thumbnail-card",
   },
 ];
 

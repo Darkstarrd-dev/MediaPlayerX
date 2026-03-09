@@ -19,9 +19,79 @@ export interface SnapshotTextField {
 
 export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   {
-    id: "container-bg-workspace",
-    cssVar: "--mpx-bg-workspace",
-    fallback: "#f3f0ea",
+    id: "container-workspace-fill-start",
+    cssVar: "--mpx-workspace-fill-start",
+    fallback: "#f5f2ec",
+  },
+  {
+    id: "container-workspace-fill-end",
+    cssVar: "--mpx-workspace-fill-end",
+    fallback: "#e6e2da",
+  },
+  {
+    id: "container-workspace-border-color",
+    cssVar: "--mpx-workspace-border-color",
+    fallback: "#e5e4e0",
+  },
+  {
+    id: "container-workspace-image-card-border-color",
+    cssVar: "--mpx-image-grid-card-border-color",
+    fallback: "#b5bdc8",
+  },
+  {
+    id: "container-workspace-image-card-bg",
+    cssVar: "--mpx-image-grid-card-bg",
+    fallback: "transparent",
+  },
+  {
+    id: "container-workspace-image-card-focus-bg",
+    cssVar: "--mpx-image-grid-card-focus-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "container-workspace-image-card-selected-bg",
+    cssVar: "--mpx-image-grid-card-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-workspace-video-card-border-color",
+    cssVar: "--mpx-video-grid-card-border-color",
+    fallback: "#b5bdc8",
+  },
+  {
+    id: "container-workspace-video-card-bg",
+    cssVar: "--mpx-video-grid-card-bg",
+    fallback: "transparent",
+  },
+  {
+    id: "container-workspace-video-card-focus-bg",
+    cssVar: "--mpx-video-grid-card-focus-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "container-workspace-video-card-selected-bg",
+    cssVar: "--mpx-video-grid-card-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "control-thumbnail-card-border-color",
+    cssVar: "--mpx-thumbnail-card-border-color",
+    fallback: "#b5bdc8",
+  },
+  {
+    id: "control-thumbnail-card-bg",
+    cssVar: "--mpx-thumbnail-card-bg",
+    fallback: "transparent",
+  },
+  {
+    id: "control-thumbnail-card-focus-bg",
+    cssVar: "--mpx-thumbnail-card-focus-bg",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-thumbnail-card-selected-bg",
+    cssVar: "--mpx-thumbnail-card-selected-bg",
+    fallback: "#9a885f",
   },
   {
     id: "container-bg-panel",
@@ -2298,6 +2368,66 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "container-main-shadow",
     cssVar: "--mpx-main-shadow",
+  },
+  {
+    id: "container-workspace-fill-angle",
+    cssVar: "--mpx-workspace-fill-angle",
+  },
+  {
+    id: "container-workspace-border-width",
+    cssVar: "--mpx-workspace-border-width",
+  },
+  {
+    id: "container-workspace-radius",
+    cssVar: "--mpx-workspace-radius",
+  },
+  {
+    id: "container-workspace-image-card-border-width",
+    cssVar: "--mpx-image-grid-card-border-width",
+  },
+  {
+    id: "container-workspace-image-card-shadow",
+    cssVar: "--mpx-image-grid-card-shadow",
+  },
+  {
+    id: "container-workspace-image-card-padding",
+    cssVar: "--mpx-image-grid-card-padding",
+  },
+  {
+    id: "container-workspace-image-card-radius",
+    cssVar: "--mpx-image-grid-card-radius",
+  },
+  {
+    id: "container-workspace-video-card-border-width",
+    cssVar: "--mpx-video-grid-card-border-width",
+  },
+  {
+    id: "container-workspace-video-card-shadow",
+    cssVar: "--mpx-video-grid-card-shadow",
+  },
+  {
+    id: "container-workspace-video-card-padding",
+    cssVar: "--mpx-video-grid-card-padding",
+  },
+  {
+    id: "container-workspace-video-card-radius",
+    cssVar: "--mpx-video-grid-card-radius",
+  },
+  {
+    id: "control-thumbnail-card-border-width",
+    cssVar: "--mpx-thumbnail-card-border-width",
+  },
+  {
+    id: "control-thumbnail-card-shadow",
+    cssVar: "--mpx-thumbnail-card-shadow",
+  },
+  {
+    id: "control-thumbnail-card-padding",
+    cssVar: "--mpx-thumbnail-card-padding",
+  },
+  {
+    id: "control-thumbnail-card-radius",
+    cssVar: "--mpx-thumbnail-card-radius",
   },
   {
     id: "container-metadata-shadow",

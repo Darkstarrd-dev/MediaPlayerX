@@ -29,7 +29,9 @@
 
   /* Surfaces */
   --mpx-bg-app: #...;
-  --mpx-bg-workspace: #...;
+  --mpx-workspace-fill-start: #...;
+  --mpx-workspace-fill-end: #...;
+  --mpx-workspace-border-color: #...;
   --mpx-bg-panel: #...;
   --mpx-bg-elevated: #...;
   --mpx-bg-hover: ...;

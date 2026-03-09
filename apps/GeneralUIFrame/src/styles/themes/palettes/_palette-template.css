@@ -37,7 +37,9 @@
 
   /* ---------- Semantic surfaces/text/borders/accent (C layer) ---------- */
   --mpx-bg-app: #f2eee7;
-  --mpx-bg-workspace: #f3f0ea;
+  --mpx-workspace-fill-start: #f5f2ec;
+  --mpx-workspace-fill-end: #e6e2da;
+  --mpx-workspace-border-color: #d6cfc1;
   --mpx-bg-panel: #fbf8f3;
   --mpx-bg-elevated: #ffffff;
   --mpx-bg-hover: rgba(46, 111, 127, 0.06);

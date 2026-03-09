@@ -29,7 +29,9 @@
   --mpx-checkbox-checked-border: var(--mpx-accent);
 
   --mpx-bg-app: #e0dfde;
-  --mpx-bg-workspace: #e7e0d4;
+  --mpx-workspace-fill-start: #f5f2ec;
+  --mpx-workspace-fill-end: #e6e2da;
+  --mpx-workspace-border-color: rgba(179, 154, 118, 0.82);
   --mpx-bg-panel: #fbf7f1;
   --mpx-bg-elevated: #fffcf8;
   --mpx-bg-hover: rgba(56, 43, 28, 0.07);

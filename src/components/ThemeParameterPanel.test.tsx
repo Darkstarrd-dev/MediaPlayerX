@@ -728,6 +728,7 @@ describe("ThemeParameterPanel", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("6.2.3 Slider 变体：设置面板")).toBeInTheDocument();
     expect(screen.getByText("6.3 文件列表样式")).toBeInTheDocument();
+    expect(screen.getByText("6.4 缩略图卡片样式（总控）")).toBeInTheDocument();
     expect(
       screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
     ).toBeInTheDocument();
@@ -770,6 +771,14 @@ describe("ThemeParameterPanel", () => {
         target: { value: "#667788" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-thumbnail-card-selected-bg",
+      }),
+      {
+        target: { value: "#778899" },
+      },
+    );
 
     expect(
       document.documentElement.style.getPropertyValue(
@@ -784,6 +793,11 @@ describe("ThemeParameterPanel", () => {
         "--mpx-file-list-row-selected-bg",
       ),
     ).toBe("#667788");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-thumbnail-card-selected-bg",
+      ),
+    ).toBe("#778899");
 
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -799,6 +813,9 @@ describe("ThemeParameterPanel", () => {
     );
     expect(snapshotTextarea.value).toContain(
       '"control-file-list-row-selected-bg": "#667788"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"control-thumbnail-card-selected-bg": "#778899"',
     );
   });
 
@@ -2011,6 +2028,14 @@ describe("ThemeParameterPanel", () => {
       workspaceDetails,
       "缩略图样式",
     );
+    const workspaceImageCardOverrideDetails = getDetailsBySummaryTextWithin(
+      workspaceDetails,
+      "图片缩略图卡片（覆写 6.4 总控）",
+    );
+    const workspaceVideoCardOverrideDetails = getDetailsBySummaryTextWithin(
+      workspaceDetails,
+      "视频缩略图卡片（覆写 6.4 总控）",
+    );
     const previewMusicDetails = getDetailsBySummaryTextWithin(
       previewDetails,
       "音乐区",
@@ -2021,7 +2046,22 @@ describe("ThemeParameterPanel", () => {
     );
     expect(
       within(workspaceThumbnailContainerDetails).getByRole("textbox", {
-        name: "--mpx-bg-workspace",
+        name: "--mpx-workspace-fill-start",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(workspaceThumbnailContainerDetails).getByRole("textbox", {
+        name: "--mpx-workspace-border-width",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(workspaceImageCardOverrideDetails).getByRole("textbox", {
+        name: "--mpx-image-grid-card-selected-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(workspaceVideoCardOverrideDetails).getByRole("textbox", {
+        name: "--mpx-video-grid-card-selected-bg",
       }),
     ).toBeInTheDocument();
     expect(
