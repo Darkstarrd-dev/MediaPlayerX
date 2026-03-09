@@ -238,10 +238,12 @@ function ThemeParameterPanel({
     setContainerMainHeaderExpanded,
     setContainerMainHeaderButtonsExpanded,
     setContainerMainWorkspaceExpanded,
+    setContainerMainPreviewExpanded,
     setContainerMetadataExpanded,
     setContainerMetadataAppearanceExpanded,
     setContainerMetadataHeaderExpanded,
     setContainerMetadataHeaderButtonsExpanded,
+    setContainerMetadataRatingExpanded,
     setContainerMetadataInternalsExpanded,
     setContainerMetadataFileListExpanded,
     setContainerMetadataPreferenceRecordExpanded,
@@ -307,10 +309,12 @@ function ThemeParameterPanel({
     containerMainHeaderExpanded,
     containerMainHeaderButtonsExpanded,
     containerMainWorkspaceExpanded,
+    containerMainPreviewExpanded,
     containerMetadataExpanded,
     containerMetadataAppearanceExpanded,
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
+    containerMetadataRatingExpanded,
     containerMetadataInternalsExpanded,
     containerMetadataFileListExpanded,
     containerMetadataPreferenceRecordExpanded,
@@ -878,6 +882,8 @@ function ThemeParameterPanel({
           }
           containerMainWorkspaceExpanded={containerMainWorkspaceExpanded}
           setContainerMainWorkspaceExpanded={setContainerMainWorkspaceExpanded}
+          containerMainPreviewExpanded={containerMainPreviewExpanded}
+          setContainerMainPreviewExpanded={setContainerMainPreviewExpanded}
           containerMetadataExpanded={containerMetadataExpanded}
           setContainerMetadataExpanded={setContainerMetadataExpanded}
           containerMetadataAppearanceExpanded={
@@ -896,6 +902,8 @@ function ThemeParameterPanel({
           setContainerMetadataHeaderButtonsExpanded={
             setContainerMetadataHeaderButtonsExpanded
           }
+          containerMetadataRatingExpanded={containerMetadataRatingExpanded}
+          setContainerMetadataRatingExpanded={setContainerMetadataRatingExpanded}
           containerMetadataInternalsExpanded={
             containerMetadataInternalsExpanded
           }

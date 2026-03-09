@@ -168,7 +168,7 @@ Metadata 主面板 body / edit-grid / preference-record / tag 编辑区语义统
 
 ## Main 区域 / 覆盖层（2.3.2）补充
 
-Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music / overlay / rating 残留硬编码色。
+Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music / overlay / rating 残留硬编码色。ThemeParameter 当前分组归属为：`--mpx-bg-workspace` 与 `--mpx-ad-review-overlay-*` 暂落在 `2.3.2.1 工作区 缩略图模式`，`--mpx-music-vis-*` / `--mpx-music-ctrl-*` / `--mpx-video-screen-bg` 落在 `2.3.2.3 工作区 预览模式`，`--mpx-rating-heart-*` 落在 `2.4.2.1 评价组件`。
 
 1. Music visualizer / shader 控件链路：
    - `--mpx-music-vis-text`

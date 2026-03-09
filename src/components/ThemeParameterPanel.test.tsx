@@ -163,7 +163,8 @@ function ensureDetailsOpenWithin(container: HTMLElement, summaryText: string): v
 
 function getDetailsBySummaryText(summaryText: string): HTMLDetailsElement {
   const summary = screen.getAllByText(summaryText)[0];
-  const details = summary.closest("details") as HTMLDetailsElement | null;
+  const ensuredSummary = summary as HTMLElement;
+  const details = ensuredSummary.closest("details") as HTMLDetailsElement | null;
   expect(details).not.toBeNull();
   return details as HTMLDetailsElement;
 }
@@ -209,7 +210,12 @@ function getDetailsBySummaryTextWithin(
   container: HTMLElement,
   summaryText: string,
 ): HTMLDetailsElement {
-  const summary = within(container).getByText(summaryText);
+  const summary = within(container)
+    .getAllByText(summaryText)
+    .find((element) => element.tagName === "SUMMARY");
+  if (!summary) {
+    throw new Error(`Summary not found: ${summaryText}`);
+  }
   const details = summary.closest("details") as HTMLDetailsElement | null;
   expect(details).not.toBeNull();
   return details as HTMLDetailsElement;
@@ -1901,11 +1907,17 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("2.2 Sidebar")).toBeInTheDocument();
     expect(screen.getByText("2.3 Main")).toBeInTheDocument();
     expect(screen.getByText("2.4 Metadata")).toBeInTheDocument();
+    const workspaceSummary = screen.getByText("2.3.2.1 工作区 缩略图模式");
     const sidebarSummary = screen.getByText("2.2.2.1 fg-sidebar-main");
     const nameListSummary = screen.getByText("2.3.2.2 工作区 文件列表模式");
-    const metadataFileListSummary = screen.getByText("2.4.2.4 文件列表");
+    const previewSummary = screen.getByText("2.3.2.3 工作区 预览模式");
+    const metadataRatingSummary = screen.getByText("2.4.2.1 评价组件");
+    const metadataFileListSummary = screen.getByText("2.4.2.3 Metadata 文件列表");
+    expect(workspaceSummary).toBeInTheDocument();
     expect(sidebarSummary).toBeInTheDocument();
     expect(nameListSummary).toBeInTheDocument();
+    expect(previewSummary).toBeInTheDocument();
+    expect(metadataRatingSummary).toBeInTheDocument();
     expect(metadataFileListSummary).toBeInTheDocument();
 
     fireEvent.click(sidebarSummary);
@@ -1984,10 +1996,59 @@ describe("ThemeParameterPanel", () => {
     ).toBe("#223344");
 
     fireEvent.click(sidebarSummary);
+    fireEvent.click(workspaceSummary);
     fireEvent.click(nameListSummary);
+    fireEvent.click(previewSummary);
+    fireEvent.click(metadataRatingSummary);
     fireEvent.click(metadataFileListSummary);
+    const workspaceDetails = getDetailsBySummaryText("2.3.2.1 工作区 缩略图模式");
     const nameListDetails = getDetailsBySummaryText("2.3.2.2 工作区 文件列表模式");
-    const metadataFileListDetails = getDetailsBySummaryText("2.4.2.4 文件列表");
+    const previewDetails = getDetailsBySummaryText("2.3.2.3 工作区 预览模式");
+    const metadataRatingDetails = getDetailsBySummaryText("2.4.2.1 评价组件");
+    const metadataFileListDetails = getDetailsBySummaryText(
+      "2.4.2.3 Metadata 文件列表",
+    );
+    const workspaceThumbnailContainerDetails = getDetailsBySummaryTextWithin(
+      workspaceDetails,
+      "缩略图容器",
+    );
+    const workspaceThumbnailStyleDetails = getDetailsBySummaryTextWithin(
+      workspaceDetails,
+      "缩略图样式",
+    );
+    const previewMusicDetails = getDetailsBySummaryTextWithin(
+      previewDetails,
+      "音乐区",
+    );
+    const previewVideoDetails = getDetailsBySummaryTextWithin(
+      previewDetails,
+      "视频区",
+    );
+    expect(
+      within(workspaceThumbnailContainerDetails).getByRole("textbox", {
+        name: "--mpx-bg-workspace",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(workspaceThumbnailStyleDetails).getByRole("textbox", {
+        name: "--mpx-ad-review-overlay-stage-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(previewMusicDetails).getByRole("textbox", {
+        name: "--mpx-music-vis-text",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(previewVideoDetails).getByRole("textbox", {
+        name: "--mpx-video-screen-bg",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(metadataRatingDetails).getByRole("textbox", {
+        name: "--mpx-rating-heart-color",
+      }),
+    ).toBeInTheDocument();
     const rootLayerDetails = getDetailsBySummaryTextWithin(
       nameListDetails,
       "1、root",
@@ -2139,13 +2200,19 @@ describe("ThemeParameterPanel", () => {
     expect(
       mainContent?.contains(screen.getByText("2.3.2.2 工作区 文件列表模式")),
     ).toBe(true);
+    expect(
+      mainContent?.contains(screen.getByText("2.3.2.3 工作区 预览模式")),
+    ).toBe(true);
 
     const metadataRootDetails = getDetailsBySummaryText("2.4 Metadata");
     const metadataContent = metadataRootDetails.querySelector(
       ".settings-collapsible-content",
     );
     expect(
-      metadataContent?.contains(screen.getByText("2.4.2 Metadata 内部件")),
+      metadataContent?.contains(screen.getByText("2.4.2.2 Metadata 内部件")),
+    ).toBe(true);
+    expect(
+      metadataContent?.contains(screen.getByText("2.4.2.1 评价组件")),
     ).toBe(true);
     expect(
       metadataContent?.contains(
@@ -2158,7 +2225,9 @@ describe("ThemeParameterPanel", () => {
       ),
     ).toBe(true);
     expectFieldOrderWithin(metadataRootDetails, [
-      "2.4.2 Metadata 内部件",
+      "2.4.2.1 评价组件",
+      "2.4.2.2 Metadata 内部件",
+      "2.4.2.3 Metadata 文件列表",
       "2.4.2.5 Metadata 偏好记录",
       "2.4.2.6 Music Metadata Booklet 绑定",
     ]);

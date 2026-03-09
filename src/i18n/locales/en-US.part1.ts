@@ -419,15 +419,19 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.3.1.1 Main header buttons",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
     "2.3.2.1 Workspace / Thumbnail Mode",
+  "ui.themeParameter.containerLayer.sectionMainPreview":
+    "2.3.2.3 Workspace / Preview Mode",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionMetadataHeader":
     "2.4.1.0 Metadata header control",
   "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
     "2.4.1.1 Metadata header buttons",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
-    "2.4.2 Metadata internals",
+    "2.4.2.2 Metadata internals",
   "ui.themeParameter.containerLayer.sectionMetadataFileList":
-    "2.4.2.4 File list",
+    "2.4.2.3 Metadata file list",
+  "ui.themeParameter.containerLayer.sectionMetadataRating":
+    "2.4.2.1 Rating component",
   "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
     "2.4.2.5 Metadata preference record",
   "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
@@ -510,7 +514,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.note.sliderSettings":
     "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
   "ui.themeParameter.controls.note.fileList":
-    "6.3 now acts as the shared baseline for file lists: image/music in Main share one list chain, and video/music in Metadata share another chain built on top of the same common baseline. Sections 2.3.2.2 and 2.4.2.4 extend it with local overrides.",
+    "6.3 now acts as the shared baseline for file lists: image/music in Main share one list chain, and video/music in Metadata share another chain built on top of the same common baseline. Sections 2.3.2.2 and 2.4.2.3 extend it with local overrides.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

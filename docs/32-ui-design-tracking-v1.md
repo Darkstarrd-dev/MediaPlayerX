@@ -395,7 +395,7 @@ css 的触发点
 `--mpx-metadata-preference-record-field-text`
 
 说明
-Image / Video 两处 preference record 已改为同一语义家族，`ThemeParameterPanel` 统一在 `containerLayer > 2.4 Metadata > 2.4.2 Metadata 内部件 / 2.4.2.5 Metadata 偏好记录` 验收，不再依赖散落的 `.metadata-preference-record` 类规则直写。
+Image / Video 两处 preference record 已改为同一语义家族，`ThemeParameterPanel` 统一在 `containerLayer > 2.4 Metadata > 2.4.2.2 Metadata 内部件 / 2.4.2.5 Metadata 偏好记录` 验收，不再依赖散落的 `.metadata-preference-record` 类规则直写。
 
 ### 2.4.2 音乐 Booklet 绑定卡片
 
@@ -1404,7 +1404,7 @@ css 的触发点
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------- |
 | `parameters`      | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数                                                                                   | 不承载特例白名单，只负责通用参数滑条                  | 无独立预览；直接写入实际变量                | 该页是参数入口，不作为层级归属页                          |
 | `snapshot`        | 当前所有分页已暴露字段的导出 / 导入 / 复位                                                                                                  | 不负责新增字段定义                                    | 无独立预览；作用于当前 inline 覆写集合      | Phase 3 会把该结构继续收敛到正式 theme schema             |
-| `containerLayer`  | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list`、`metadata file list` | 播放器子系统、全屏图像调整、广告审核 overlay          | `bg-only`、`bg-plus-container`              | 已按共享壳层 + 单容器 frame 结构重排；Main/Metadata 文件列表分别接在 `2.3.2.2` / `2.4.2.4` |
+| `containerLayer`  | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list`、`metadata file list`、`rating heart` | 播放器子系统、全屏图像调整                            | `bg-only`、`bg-plus-container`              | 已按共享壳层 + 单容器 frame 结构重排；Main/Metadata 文件列表分别接在 `2.3.2.2` / `2.4.2.3`，`rating heart` 接在 `2.4.2.1` |
 | `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：ThemeParameter side button、Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等 | 播放器独立 panel / HUD、未登记的舞台化 overlay        | `bg-plus-large-panel`                       | 主验收对象是 `root/head/side/main/button` 骨架与受控内部语义 |
 | `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等                                                                      | 不承接大面板内部件与播放器 popover                    | `bg-plus-small-panel`                       | 以 dialog panel 本体与其局部控件为主                      |
 | `commonControls`  | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove、`6.3` file list baseline | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider / file-list preview） | 当前已补齐 scrollbar detail、settings groove 与文件列表通用基线 |
@@ -1570,10 +1570,10 @@ css 的触发点
 
 补充说明：
 
-1. `containerLayer` 当前已覆盖：`2.0` 共享壳层、`2.1` Header、`2.2` Sidebar、`2.2.2.1 fg-sidebar-main`、`2.3` Main、`2.3.2.1` 工作区缩略图模式、`2.3.2.2 fg-main-content-image-name-list`、`2.3.2.x` 视频 / 音乐 / overlay / rating 调参组、`2.4` Metadata、`2.4.2` Metadata 内部件。
+1. `containerLayer` 当前已覆盖：`2.0` 共享壳层、`2.1` Header、`2.2` Sidebar、`2.2.2.1 fg-sidebar-main`、`2.3` Main、`2.3.2.1` 工作区缩略图模式（缩略图容器 / 缩略图样式）、`2.3.2.2 fg-main-content-image-name-list`、`2.3.2.3` 工作区预览模式（视频 / 音乐）、`2.4` Metadata、`2.4.2.1` 评价组件、`2.4.2.2` Metadata 内部件。
 2. `largePanelLayer` 当前已覆盖的内部件：Settings、Import Task、Metadata Fetch、Metadata Feature Tag Picker、Subtitle Cleanup、Transcode Dialog、Sidebar Rename Preview；`Metadata Preference Record` 与 `Metadata Booklet Binding` 已回归 `containerLayer > Metadata`。
 3. Main 区硬编码色清理结论：
-   - `music-visualizer HUD`、`video screen`、`ad-review overlay`、`rating heart`、`subtitle overlay` 已切回语义 token。
+   - `music-visualizer HUD`、`video screen`、`ad-review overlay`、`rating heart`、`subtitle overlay` 已切回语义 token；当前 ThemeParameter 位置分配为 `preview / thumbnail style / metadata rating` 三处。
    - `layout.part3.css` 中 `#000 / #fff / #111 / #777 / #f6f8fa` 保留为 color picker 功能性标定色，不纳入通用视觉 token。
 
 验收状态：

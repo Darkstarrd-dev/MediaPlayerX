@@ -363,7 +363,7 @@ export const CONTAINER_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   },
 ];
 
-export const CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+export const CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS: readonly ThemeDebugColorField[] =
   [
     {
       id: "container-bg-workspace",
@@ -373,68 +373,8 @@ export const CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS: readonly ThemeDebugColorFiel
     },
   ];
 
-export const CONTAINER_MAIN_MEDIA_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+export const CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS: readonly ThemeDebugColorField[] =
   [
-    {
-      id: "container-main-music-vis-text",
-      cssVar: "--mpx-music-vis-text",
-      fallback: "#eef1f4",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-vis-hud-bg",
-      cssVar: "--mpx-music-vis-hud-bg",
-      fallback: "rgba(6, 8, 17, 0.74)",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-vis-hud-text",
-      cssVar: "--mpx-music-vis-hud-text",
-      fallback: "#eef1f4",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-vis-hud-border",
-      cssVar: "--mpx-music-vis-hud-border",
-      fallback: "rgba(129, 145, 163, 0.35)",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-vis-error-bg",
-      cssVar: "--mpx-music-vis-error-bg",
-      fallback: "#250b14",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-vis-error-border",
-      cssVar: "--mpx-music-vis-error-border",
-      fallback: "#8f2f45",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-ctrl-focus-color",
-      cssVar: "--mpx-music-ctrl-focus-color",
-      fallback: "#2e6f7f",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-ctrl-range-fill",
-      cssVar: "--mpx-music-ctrl-range-fill",
-      fallback: "#71b4d2",
-      groupId: "main",
-    },
-    {
-      id: "container-main-music-ctrl-toggle-bg",
-      cssVar: "--mpx-music-ctrl-toggle-bg",
-      fallback: "rgba(43, 47, 53, 0.86)",
-      groupId: "main",
-    },
-    {
-      id: "container-main-video-screen-bg",
-      cssVar: "--mpx-video-screen-bg",
-      fallback: "linear-gradient(135deg, #2d2f33, #212022)",
-      groupId: "main",
-    },
     {
       id: "container-main-ad-review-overlay-stage-bg",
       cssVar: "--mpx-ad-review-overlay-stage-bg",
@@ -495,6 +435,78 @@ export const CONTAINER_MAIN_MEDIA_COLOR_FIELDS: readonly ThemeDebugColorField[] 
       fallback: "#d4965f",
       groupId: "main",
     },
+  ];
+
+export const CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-main-music-vis-text",
+      cssVar: "--mpx-music-vis-text",
+      fallback: "#eef1f4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-bg",
+      cssVar: "--mpx-music-vis-hud-bg",
+      fallback: "rgba(6, 8, 17, 0.74)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-text",
+      cssVar: "--mpx-music-vis-hud-text",
+      fallback: "#eef1f4",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-hud-border",
+      cssVar: "--mpx-music-vis-hud-border",
+      fallback: "rgba(129, 145, 163, 0.35)",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-error-bg",
+      cssVar: "--mpx-music-vis-error-bg",
+      fallback: "#250b14",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-vis-error-border",
+      cssVar: "--mpx-music-vis-error-border",
+      fallback: "#8f2f45",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-focus-color",
+      cssVar: "--mpx-music-ctrl-focus-color",
+      fallback: "#2e6f7f",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-range-fill",
+      cssVar: "--mpx-music-ctrl-range-fill",
+      fallback: "#71b4d2",
+      groupId: "main",
+    },
+    {
+      id: "container-main-music-ctrl-toggle-bg",
+      cssVar: "--mpx-music-ctrl-toggle-bg",
+      fallback: "rgba(43, 47, 53, 0.86)",
+      groupId: "main",
+    },
+  ];
+
+export const CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-main-video-screen-bg",
+      cssVar: "--mpx-video-screen-bg",
+      fallback: "linear-gradient(135deg, #2d2f33, #212022)",
+      groupId: "main",
+    },
+  ];
+
+export const CONTAINER_METADATA_RATING_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
     {
       id: "container-main-rating-heart-color",
       cssVar: "--mpx-rating-heart-color",
@@ -1847,11 +1859,14 @@ export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_HEADER_COLOR_FIELDS,
   ...CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
-  ...CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
-  ...CONTAINER_MAIN_MEDIA_COLOR_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS,
+  ...CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS,
+  ...CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS,
+  ...CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS,
   ...CONTAINER_METADATA_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_COLOR_FIELDS,
   ...CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,
+  ...CONTAINER_METADATA_RATING_COLOR_FIELDS,
   ...CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
@@ -4547,6 +4562,11 @@ const CONTAINER_METADATA_BOOKLET_BINDING_COLOR_FIELDS: readonly ThemeDebugColorF
 
 export const METADATA_INTERNAL_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsection[] =
   [
+    {
+      id: "metadata-rating",
+      summaryKey: "ui.themeParameter.containerLayer.sectionMetadataRating",
+      colorFields: CONTAINER_METADATA_RATING_COLOR_FIELDS,
+    },
     {
       id: "metadata-internals",
       summaryKey: "ui.themeParameter.containerLayer.sectionMetadataInternals",

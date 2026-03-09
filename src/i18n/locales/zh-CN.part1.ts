@@ -394,15 +394,19 @@ export const zhCnCatalogPart1 = {
     "2.3.1.1 Main header 按钮",
   "ui.themeParameter.containerLayer.sectionMainWorkspace":
     "2.3.2.1 工作区 缩略图模式",
+  "ui.themeParameter.containerLayer.sectionMainPreview":
+    "2.3.2.3 工作区 预览模式",
   "ui.themeParameter.containerLayer.sectionMetadata": "2.4 Metadata",
   "ui.themeParameter.containerLayer.sectionMetadataHeader":
     "2.4.1.0 Metadata header 总控",
   "ui.themeParameter.containerLayer.sectionMetadataHeaderButtons":
     "2.4.1.1 Metadata header 按钮",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
-    "2.4.2 Metadata 内部件",
+    "2.4.2.2 Metadata 内部件",
   "ui.themeParameter.containerLayer.sectionMetadataFileList":
-    "2.4.2.4 文件列表",
+    "2.4.2.3 Metadata 文件列表",
+  "ui.themeParameter.containerLayer.sectionMetadataRating":
+    "2.4.2.1 评价组件",
   "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
     "2.4.2.5 Metadata 偏好记录",
   "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
@@ -485,7 +489,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.controls.note.sliderSettings":
     "设置面板 slider 轨道已独立到 --mpx-slider-settings-groove-*，便于与播放器 runway 分开调试。",
   "ui.themeParameter.controls.note.fileList":
-    "6.3 作为文件列表通用基线：当前 Main 的 image/music 共用一套列表语义，Metadata 的 video/music 也共用一套列表语义；2.3.2.2 与 2.4.2.4 会在此基础上继续局部特化。",
+    "6.3 作为文件列表通用基线：当前 Main 的 image/music 共用一套列表语义，Metadata 的 video/music 也共用一套列表语义；2.3.2.2 与 2.4.2.3 会在此基础上继续局部特化。",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",

@@ -56,8 +56,10 @@ import {
   CONTAINER_LAYER_TEXT_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
   CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS,
-  CONTAINER_MAIN_MEDIA_COLOR_FIELDS,
-  CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS,
+  CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS,
+  CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS,
+  CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS,
   CONTAINER_SHARED_COLOR_FIELDS,
   CONTAINER_SHARED_SHELL_COLOR_FIELD_IDS,
   CONTAINER_SHARED_SHELL_INLINE_PARAMETER_IDS,
@@ -186,6 +188,8 @@ interface ThemeParameterPanelMainProps {
   setContainerMainHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMainWorkspaceExpanded: boolean;
   setContainerMainWorkspaceExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMainPreviewExpanded: boolean;
+  setContainerMainPreviewExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataExpanded: boolean;
   setContainerMetadataExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataAppearanceExpanded: boolean;
@@ -194,6 +198,8 @@ interface ThemeParameterPanelMainProps {
   setContainerMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataHeaderButtonsExpanded: boolean;
   setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataRatingExpanded: boolean;
+  setContainerMetadataRatingExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataInternalsExpanded: boolean;
   setContainerMetadataInternalsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataFileListExpanded: boolean;
@@ -355,6 +361,8 @@ export function ThemeParameterPanelMain({
   setContainerMainHeaderButtonsExpanded,
   containerMainWorkspaceExpanded,
   setContainerMainWorkspaceExpanded,
+  containerMainPreviewExpanded,
+  setContainerMainPreviewExpanded,
   containerMetadataExpanded,
   setContainerMetadataExpanded,
   containerMetadataAppearanceExpanded,
@@ -363,6 +371,8 @@ export function ThemeParameterPanelMain({
   setContainerMetadataHeaderExpanded,
   containerMetadataHeaderButtonsExpanded,
   setContainerMetadataHeaderButtonsExpanded,
+  containerMetadataRatingExpanded,
+  setContainerMetadataRatingExpanded,
   containerMetadataInternalsExpanded,
   setContainerMetadataInternalsExpanded,
   containerMetadataFileListExpanded,
@@ -493,6 +503,14 @@ export function ThemeParameterPanelMain({
       sliderVerticalDown: 28,
       sliderSettingsHorizontal: 52,
     });
+  const [workspaceThumbnailContainerExpanded, setWorkspaceThumbnailContainerExpanded] =
+    useState(true);
+  const [workspaceThumbnailStyleExpanded, setWorkspaceThumbnailStyleExpanded] =
+    useState(true);
+  const [workspacePreviewMusicExpanded, setWorkspacePreviewMusicExpanded] =
+    useState(true);
+  const [workspacePreviewVideoExpanded, setWorkspacePreviewVideoExpanded] =
+    useState(true);
 
   const containerDebugColorVarSet = useMemo(
     () => new Set(CONTAINER_LAYER_COLOR_FIELDS.map((field) => field.cssVar)),
@@ -1717,30 +1735,123 @@ export function ThemeParameterPanelMain({
               {t("ui.themeParameter.containerLayer.sectionMainWorkspace")}
             </summary>
             <div className="settings-collapsible-content">
-              <section className="settings-group theme-parameter-debug-group">
-                <header className="settings-group-head theme-parameter-subgroup-head">
-                  <span>工作区 缩略图模式</span>
-                  <span className="theme-parameter-subgroup-tag">
-                    fg-main-content-image-grid
-                  </span>
-                </header>
-                <div className="theme-parameter-color-list">
-                  {CONTAINER_MAIN_WORKSPACE_COLOR_FIELDS.map(
-                    renderColorFieldRow,
-                  )}
+              <details
+                className="settings-collapsible"
+                open={workspaceThumbnailContainerExpanded}
+                onToggle={(event) =>
+                  setWorkspaceThumbnailContainerExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>缩略图容器</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>缩略图容器</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-image-grid
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_WORKSPACE_THUMBNAIL_CONTAINER_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                  </section>
                 </div>
-              </section>
-              <section className="settings-group theme-parameter-debug-group">
-                <header className="settings-group-head theme-parameter-subgroup-head">
-                  <span>工作区 视频 / 音乐 / 覆盖层</span>
-                  <span className="theme-parameter-subgroup-tag">
-                    fg-main-content-media
-                  </span>
-                </header>
-                <div className="theme-parameter-color-list">
-                  {CONTAINER_MAIN_MEDIA_COLOR_FIELDS.map(renderColorFieldRow)}
+              </details>
+              <details
+                className="settings-collapsible"
+                open={workspaceThumbnailStyleExpanded}
+                onToggle={(event) =>
+                  setWorkspaceThumbnailStyleExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>缩略图样式</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>缩略图样式</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-image-grid-style
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_WORKSPACE_THUMBNAIL_STYLE_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                  </section>
                 </div>
-              </section>
+              </details>
+            </div>
+          </details>
+          <details
+            className="settings-collapsible"
+            open={containerMainPreviewExpanded}
+            onToggle={(event) =>
+              setContainerMainPreviewExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
+          >
+            <summary>{t("ui.themeParameter.containerLayer.sectionMainPreview")}</summary>
+            <div className="settings-collapsible-content">
+              <details
+                className="settings-collapsible"
+                open={workspacePreviewMusicExpanded}
+                onToggle={(event) =>
+                  setWorkspacePreviewMusicExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>音乐区</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>音乐区</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-media-music
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_PREVIEW_MUSIC_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </details>
+              <details
+                className="settings-collapsible"
+                open={workspacePreviewVideoExpanded}
+                onToggle={(event) =>
+                  setWorkspacePreviewVideoExpanded(
+                    (event.currentTarget as HTMLDetailsElement).open,
+                  )
+                }
+              >
+                <summary>视频区</summary>
+                <div className="settings-collapsible-content">
+                  <section className="settings-group theme-parameter-debug-group">
+                    <header className="settings-group-head theme-parameter-subgroup-head">
+                      <span>视频区</span>
+                      <span className="theme-parameter-subgroup-tag">
+                        fg-main-content-media-video
+                      </span>
+                    </header>
+                    <div className="theme-parameter-color-list">
+                      {CONTAINER_MAIN_PREVIEW_VIDEO_COLOR_FIELDS.map(
+                        renderColorFieldRow,
+                      )}
+                    </div>
+                  </section>
+                </div>
+              </details>
             </div>
           </details>
           <details
@@ -1801,8 +1912,8 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[0]}
-            open={containerMetadataInternalsExpanded}
-            setOpen={setContainerMetadataInternalsExpanded}
+            open={containerMetadataRatingExpanded}
+            setOpen={setContainerMetadataRatingExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_INTERNAL_DEBUG_SUBSECTIONS[0],
             )}
@@ -1810,8 +1921,8 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[1]}
-            open={containerMetadataFileListExpanded}
-            setOpen={setContainerMetadataFileListExpanded}
+            open={containerMetadataInternalsExpanded}
+            setOpen={setContainerMetadataInternalsExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_INTERNAL_DEBUG_SUBSECTIONS[1],
             )}
@@ -1819,8 +1930,8 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[2]}
-            open={containerMetadataPreferenceRecordExpanded}
-            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            open={containerMetadataFileListExpanded}
+            setOpen={setContainerMetadataFileListExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_INTERNAL_DEBUG_SUBSECTIONS[2],
             )}
@@ -1828,10 +1939,19 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[3]}
+            open={containerMetadataPreferenceRecordExpanded}
+            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[3],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[4]}
             open={containerMetadataBookletBindingExpanded}
             setOpen={setContainerMetadataBookletBindingExpanded}
             content={renderContainerDebugSubsectionRows(
-              METADATA_INTERNAL_DEBUG_SUBSECTIONS[3],
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[4],
             )}
           />
         </>

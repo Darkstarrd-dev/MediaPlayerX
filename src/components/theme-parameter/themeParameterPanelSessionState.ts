@@ -59,10 +59,12 @@ export interface ThemeParameterUISessionState {
   containerMainHeaderExpanded: boolean;
   containerMainHeaderButtonsExpanded: boolean;
   containerMainWorkspaceExpanded: boolean;
+  containerMainPreviewExpanded: boolean;
   containerMetadataExpanded: boolean;
   containerMetadataAppearanceExpanded: boolean;
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
+  containerMetadataRatingExpanded: boolean;
   containerMetadataInternalsExpanded: boolean;
   containerMetadataFileListExpanded: boolean;
   containerMetadataPreferenceRecordExpanded: boolean;
@@ -155,10 +157,12 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMainHeaderExpanded: false,
   containerMainHeaderButtonsExpanded: false,
   containerMainWorkspaceExpanded: false,
+  containerMainPreviewExpanded: false,
   containerMetadataExpanded: false,
   containerMetadataAppearanceExpanded: true,
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
+  containerMetadataRatingExpanded: false,
   containerMetadataInternalsExpanded: false,
   containerMetadataFileListExpanded: false,
   containerMetadataPreferenceRecordExpanded: false,

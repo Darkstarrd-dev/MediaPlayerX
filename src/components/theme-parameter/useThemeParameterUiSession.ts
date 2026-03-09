@@ -222,6 +222,9 @@ export function useThemeParameterUiSession() {
       setContainerMainWorkspaceExpanded: createBooleanSetter(
         "containerMainWorkspaceExpanded",
       ),
+      setContainerMainPreviewExpanded: createBooleanSetter(
+        "containerMainPreviewExpanded",
+      ),
       setContainerMetadataExpanded: createBooleanSetter(
         "containerMetadataExpanded",
       ),
@@ -233,6 +236,9 @@ export function useThemeParameterUiSession() {
       ),
       setContainerMetadataHeaderButtonsExpanded: createBooleanSetter(
         "containerMetadataHeaderButtonsExpanded",
+      ),
+      setContainerMetadataRatingExpanded: createBooleanSetter(
+        "containerMetadataRatingExpanded",
       ),
       setContainerMetadataInternalsExpanded: createBooleanSetter(
         "containerMetadataInternalsExpanded",
