@@ -739,6 +739,81 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#30271d",
   },
   {
+    id: "container-metadata-file-list-bg",
+    cssVar: "--mpx-metadata-file-list-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "container-metadata-file-list-text",
+    cssVar: "--mpx-metadata-file-list-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-metadata-file-list-row-border",
+    cssVar: "--mpx-metadata-file-list-row-border",
+    fallback: "#dce1e7",
+  },
+  {
+    id: "container-metadata-file-list-row-bg",
+    cssVar: "--mpx-metadata-file-list-row-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "container-metadata-file-list-row-text",
+    cssVar: "--mpx-metadata-file-list-row-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-metadata-file-list-index-text",
+    cssVar: "--mpx-metadata-file-list-index-text",
+    fallback: "#544634",
+  },
+  {
+    id: "container-metadata-file-list-row-hover-bg",
+    cssVar: "--mpx-metadata-file-list-row-hover-bg",
+    fallback: "#f3f6f8",
+  },
+  {
+    id: "container-metadata-file-list-row-focused-border-left",
+    cssVar: "--mpx-metadata-file-list-row-focused-border-left",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "container-metadata-file-list-row-selected-border-left",
+    cssVar: "--mpx-metadata-file-list-row-selected-border-left",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-metadata-file-list-row-selected-bg",
+    cssVar: "--mpx-metadata-file-list-row-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "container-metadata-file-list-row-main-text",
+    cssVar: "--mpx-metadata-file-list-row-main-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "container-metadata-file-list-row-main-hover-bg",
+    cssVar: "--mpx-metadata-file-list-row-main-hover-bg",
+    fallback: "#f3f6f8",
+  },
+  {
+    id: "container-metadata-file-list-row-main-pressed-bg",
+    cssVar: "--mpx-metadata-file-list-row-main-pressed-bg",
+    fallback: "#d7dde4",
+  },
+  {
+    id: "container-metadata-file-list-row-main-hover-text",
+    cssVar: "--mpx-metadata-file-list-row-main-hover-text",
+    fallback: "#2f5f6d",
+  },
+  {
+    id: "container-metadata-file-list-row-main-selected-text",
+    cssVar: "--mpx-metadata-file-list-row-main-selected-text",
+    fallback: "#30271d",
+  },
+  {
     id: "large-panel-border-color",
     cssVar: "--mpx-large-panel-border-color",
     fallback: "#d6cfc1",
@@ -2100,6 +2175,106 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     id: "control-slider-settings-groove-bg",
     cssVar: "--mpx-slider-settings-groove-bg",
     fallback: "#e9ecf0",
+  },
+  {
+    id: "control-file-list-border",
+    cssVar: "--mpx-file-list-border",
+    fallback: "#c7d0d8",
+  },
+  {
+    id: "control-file-list-bg",
+    cssVar: "--mpx-file-list-bg",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "control-file-list-text",
+    cssVar: "--mpx-file-list-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "control-file-list-head-border",
+    cssVar: "--mpx-file-list-head-border",
+    fallback: "#b5bdc8",
+  },
+  {
+    id: "control-file-list-head-bg",
+    cssVar: "--mpx-file-list-head-bg",
+    fallback: "#d6dbe1",
+  },
+  {
+    id: "control-file-list-head-text",
+    cssVar: "--mpx-file-list-head-text",
+    fallback: "#544634",
+  },
+  {
+    id: "control-file-list-body-bg",
+    cssVar: "--mpx-file-list-body-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "control-file-list-row-border",
+    cssVar: "--mpx-file-list-row-border",
+    fallback: "#dce1e7",
+  },
+  {
+    id: "control-file-list-row-bg",
+    cssVar: "--mpx-file-list-row-bg",
+    fallback: "#e9ecf0",
+  },
+  {
+    id: "control-file-list-row-text",
+    cssVar: "--mpx-file-list-row-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "control-file-list-label-text",
+    cssVar: "--mpx-file-list-label-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "control-file-list-row-hover-bg",
+    cssVar: "--mpx-file-list-row-hover-bg",
+    fallback: "#f3f6f8",
+  },
+  {
+    id: "control-file-list-row-focused-border-left",
+    cssVar: "--mpx-file-list-row-focused-border-left",
+    fallback: "#2d6e7d",
+  },
+  {
+    id: "control-file-list-row-selected-border-left",
+    cssVar: "--mpx-file-list-row-selected-border-left",
+    fallback: "#9a885f",
+  },
+  {
+    id: "control-file-list-row-selected-bg",
+    cssVar: "--mpx-file-list-row-selected-bg",
+    fallback: "#9a885f",
+  },
+  {
+    id: "control-file-list-row-main-text",
+    cssVar: "--mpx-file-list-row-main-text",
+    fallback: "#30271d",
+  },
+  {
+    id: "control-file-list-row-main-hover-bg",
+    cssVar: "--mpx-file-list-row-main-hover-bg",
+    fallback: "#f3f6f8",
+  },
+  {
+    id: "control-file-list-row-main-pressed-bg",
+    cssVar: "--mpx-file-list-row-main-pressed-bg",
+    fallback: "#d7dde4",
+  },
+  {
+    id: "control-file-list-row-main-hover-text",
+    cssVar: "--mpx-file-list-row-main-hover-text",
+    fallback: "#2f5f6d",
+  },
+  {
+    id: "control-file-list-row-main-selected-text",
+    cssVar: "--mpx-file-list-row-main-selected-text",
+    fallback: "#30271d",
   },
 ];
 

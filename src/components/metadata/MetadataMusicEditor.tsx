@@ -292,7 +292,7 @@ export function MetadataMusicEditor({
             return (
               <div
                 key={audioId}
-                className={`metadata-playlist-row name-list-row ${selectedAudioId === audioId ? 'is-focused' : ''}`}
+                className={`metadata-playlist-row name-list-row ${selectedAudioId === audioId ? 'is-selected is-focused' : ''}`}
               >
                 <MetadataPlaylistItem
                   mediaId={audioId}

@@ -510,43 +510,92 @@
       var(--mpx-control-active-shadow)
     );
 
-    /* Main image name-list (fg-main-content-image-name-list): semantic -> slot -> selector */
-    --mpx-main-image-name-list-border: var(--mpx-overlay-soft-border);
-    --mpx-main-image-name-list-bg: var(--mpx-overlay-soft-bg);
-    --mpx-main-image-name-list-text: var(--mpx-text-1);
-    --mpx-main-image-name-list-head-border: var(
-      --mpx-overlay-soft-head-divider
-    );
-    --mpx-main-image-name-list-head-bg: var(--mpx-overlay-soft-head-bg);
-    --mpx-main-image-name-list-head-text: var(--mpx-text-2);
-    --mpx-main-image-name-list-body-bg: var(--mpx-overlay-soft-bg);
-    --mpx-main-image-name-list-row-border: var(--mpx-overlay-soft-row-divider);
-    --mpx-main-image-name-list-row-bg: var(--mpx-overlay-soft-bg);
-    --mpx-main-image-name-list-row-text: var(--mpx-main-image-name-list-text);
-    --mpx-main-image-name-list-row-hover-bg: var(--mpx-overlay-soft-bg);
-    --mpx-main-image-name-list-row-focused-border-left: var(
-      --mpx-state-focus-color
-    );
-    --mpx-main-image-name-list-row-selected-border-left: var(
-      --mpx-state-selected-color
-    );
-    --mpx-main-image-name-list-row-selected-bg: var(--mpx-state-selected-color);
-    --mpx-main-image-name-list-row-main-text: var(
-      --mpx-main-image-name-list-row-text
-    );
-    --mpx-main-image-name-list-row-main-hover-bg: var(
-      --mpx-overlay-soft-hover-bg
-    );
-    --mpx-main-image-name-list-row-main-pressed-bg: var(
-      --mpx-overlay-soft-focus-bg
-    );
-    --mpx-main-image-name-list-row-main-hover-text: color-mix(
+    /* File list shared baseline: common -> main/metadata -> slot -> selector */
+    --mpx-file-list-border: var(--mpx-overlay-soft-border);
+    --mpx-file-list-bg: var(--mpx-overlay-soft-bg);
+    --mpx-file-list-text: var(--mpx-text-1);
+    --mpx-file-list-head-border: var(--mpx-overlay-soft-head-divider);
+    --mpx-file-list-head-bg: var(--mpx-overlay-soft-head-bg);
+    --mpx-file-list-head-text: var(--mpx-text-2);
+    --mpx-file-list-body-bg: var(--mpx-overlay-soft-bg);
+    --mpx-file-list-row-border: var(--mpx-overlay-soft-row-divider);
+    --mpx-file-list-row-bg: var(--mpx-overlay-soft-bg);
+    --mpx-file-list-row-text: var(--mpx-file-list-text);
+    --mpx-file-list-row-hover-bg: var(--mpx-overlay-soft-bg);
+    --mpx-file-list-row-focused-border-left: var(--mpx-state-focus-color);
+    --mpx-file-list-row-selected-border-left: var(--mpx-state-selected-color);
+    --mpx-file-list-row-selected-bg: var(--mpx-state-selected-color);
+    --mpx-file-list-row-main-text: var(--mpx-file-list-row-text);
+    --mpx-file-list-row-main-hover-bg: var(--mpx-overlay-soft-hover-bg);
+    --mpx-file-list-row-main-pressed-bg: var(--mpx-overlay-soft-focus-bg);
+    --mpx-file-list-row-main-hover-text: color-mix(
       in srgb,
       var(--mpx-accent) 72%,
       var(--mpx-text-1)
     );
-    --mpx-main-image-name-list-row-main-selected-text: var(--mpx-text-1);
-    --mpx-main-image-name-list-label-text: inherit;
+    --mpx-file-list-row-main-selected-text: var(--mpx-text-1);
+    --mpx-file-list-label-text: inherit;
+
+    --mpx-main-image-name-list-border: var(--mpx-file-list-border);
+    --mpx-main-image-name-list-bg: var(--mpx-file-list-bg);
+    --mpx-main-image-name-list-text: var(--mpx-file-list-text);
+    --mpx-main-image-name-list-head-border: var(--mpx-file-list-head-border);
+    --mpx-main-image-name-list-head-bg: var(--mpx-file-list-head-bg);
+    --mpx-main-image-name-list-head-text: var(--mpx-file-list-head-text);
+    --mpx-main-image-name-list-body-bg: var(--mpx-file-list-body-bg);
+    --mpx-main-image-name-list-row-border: var(--mpx-file-list-row-border);
+    --mpx-main-image-name-list-row-bg: var(--mpx-file-list-row-bg);
+    --mpx-main-image-name-list-row-text: var(--mpx-file-list-row-text);
+    --mpx-main-image-name-list-row-hover-bg: var(--mpx-file-list-row-hover-bg);
+    --mpx-main-image-name-list-row-focused-border-left: var(
+      --mpx-file-list-row-focused-border-left
+    );
+    --mpx-main-image-name-list-row-selected-border-left: var(
+      --mpx-file-list-row-selected-border-left
+    );
+    --mpx-main-image-name-list-row-selected-bg: var(--mpx-file-list-row-selected-bg);
+    --mpx-main-image-name-list-row-main-text: var(--mpx-file-list-row-main-text);
+    --mpx-main-image-name-list-row-main-hover-bg: var(
+      --mpx-file-list-row-main-hover-bg
+    );
+    --mpx-main-image-name-list-row-main-pressed-bg: var(
+      --mpx-file-list-row-main-pressed-bg
+    );
+    --mpx-main-image-name-list-row-main-hover-text: var(
+      --mpx-file-list-row-main-hover-text
+    );
+    --mpx-main-image-name-list-row-main-selected-text: var(
+      --mpx-file-list-row-main-selected-text
+    );
+    --mpx-main-image-name-list-label-text: var(--mpx-file-list-label-text);
+
+    --mpx-metadata-file-list-bg: var(--mpx-file-list-bg);
+    --mpx-metadata-file-list-text: var(--mpx-file-list-text);
+    --mpx-metadata-file-list-row-border: var(--mpx-file-list-row-border);
+    --mpx-metadata-file-list-row-bg: var(--mpx-file-list-row-bg);
+    --mpx-metadata-file-list-row-text: var(--mpx-file-list-row-text);
+    --mpx-metadata-file-list-index-text: var(--mpx-file-list-head-text);
+    --mpx-metadata-file-list-row-hover-bg: var(--mpx-file-list-row-hover-bg);
+    --mpx-metadata-file-list-row-focused-border-left: var(
+      --mpx-file-list-row-focused-border-left
+    );
+    --mpx-metadata-file-list-row-selected-border-left: var(
+      --mpx-file-list-row-selected-border-left
+    );
+    --mpx-metadata-file-list-row-selected-bg: var(--mpx-file-list-row-selected-bg);
+    --mpx-metadata-file-list-row-main-text: var(--mpx-file-list-row-main-text);
+    --mpx-metadata-file-list-row-main-hover-bg: var(
+      --mpx-file-list-row-main-hover-bg
+    );
+    --mpx-metadata-file-list-row-main-pressed-bg: var(
+      --mpx-file-list-row-main-pressed-bg
+    );
+    --mpx-metadata-file-list-row-main-hover-text: var(
+      --mpx-file-list-row-main-hover-text
+    );
+    --mpx-metadata-file-list-row-main-selected-text: var(
+      --mpx-file-list-row-main-selected-text
+    );
     --mpx-music-vis-text: color-mix(
       in srgb,
       var(--mpx-player-hud-text) 92%,

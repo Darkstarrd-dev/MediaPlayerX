@@ -426,6 +426,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.4.1.1 Metadata header buttons",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
     "2.4.2 Metadata internals",
+  "ui.themeParameter.containerLayer.sectionMetadataFileList":
+    "2.4.2.4 File list",
   "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
     "2.4.2.5 Metadata preference record",
   "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
@@ -496,6 +498,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "6.2.2 Slider variant: vertical (up/down shared)",
   "ui.themeParameter.controls.section.sliderSettings":
     "6.2.3 Slider variant: settings panel",
+  "ui.themeParameter.controls.section.fileList": "6.3 File list style",
   "ui.themeParameter.controls.note.scrollbar":
     "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
   "ui.themeParameter.controls.note.sliderBase":
@@ -506,6 +509,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Vertical sliders (up/down) share one variable chain.",
   "ui.themeParameter.controls.note.sliderSettings":
     "Settings slider grooves now use --mpx-slider-settings-groove-* so they can be debugged separately from the player runway.",
+  "ui.themeParameter.controls.note.fileList":
+    "6.3 now acts as the shared baseline for file lists: image/music in Main share one list chain, and video/music in Metadata share another chain built on top of the same common baseline. Sections 2.3.2.2 and 2.4.2.4 extend it with local overrides.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

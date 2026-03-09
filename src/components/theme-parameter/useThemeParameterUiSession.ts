@@ -237,6 +237,9 @@ export function useThemeParameterUiSession() {
       setContainerMetadataInternalsExpanded: createBooleanSetter(
         "containerMetadataInternalsExpanded",
       ),
+      setContainerMetadataFileListExpanded: createBooleanSetter(
+        "containerMetadataFileListExpanded",
+      ),
       setContainerMetadataPreferenceRecordExpanded: createBooleanSetter(
         "containerMetadataPreferenceRecordExpanded",
       ),
@@ -282,6 +285,24 @@ export function useThemeParameterUiSession() {
       ),
       setButtonSlotMetadataHeaderExpanded: createBooleanSetter(
         "buttonSlotMetadataHeaderExpanded",
+      ),
+      setControlScrollbarExpanded: createBooleanSetter(
+        "controlScrollbarExpanded",
+      ),
+      setControlSliderBaseExpanded: createBooleanSetter(
+        "controlSliderBaseExpanded",
+      ),
+      setControlSliderPlayerExpanded: createBooleanSetter(
+        "controlSliderPlayerExpanded",
+      ),
+      setControlSliderVerticalExpanded: createBooleanSetter(
+        "controlSliderVerticalExpanded",
+      ),
+      setControlSliderSettingsExpanded: createBooleanSetter(
+        "controlSliderSettingsExpanded",
+      ),
+      setControlFileListExpanded: createBooleanSetter(
+        "controlFileListExpanded",
       ),
     }),
     [createBooleanSetter],

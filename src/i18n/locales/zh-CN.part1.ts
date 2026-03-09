@@ -401,6 +401,8 @@ export const zhCnCatalogPart1 = {
     "2.4.1.1 Metadata header 按钮",
   "ui.themeParameter.containerLayer.sectionMetadataInternals":
     "2.4.2 Metadata 内部件",
+  "ui.themeParameter.containerLayer.sectionMetadataFileList":
+    "2.4.2.4 文件列表",
   "ui.themeParameter.containerLayer.sectionMetadataPreferenceRecord":
     "2.4.2.5 Metadata 偏好记录",
   "ui.themeParameter.containerLayer.sectionMetadataBookletBinding":
@@ -471,6 +473,7 @@ export const zhCnCatalogPart1 = {
     "6.2.2 Slider 变体：竖向（上/下同链路）",
   "ui.themeParameter.controls.section.sliderSettings":
     "6.2.3 Slider 变体：设置面板",
+  "ui.themeParameter.controls.section.fileList": "6.3 文件列表样式",
   "ui.themeParameter.controls.note.scrollbar":
     "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
   "ui.themeParameter.controls.note.sliderBase":
@@ -481,6 +484,8 @@ export const zhCnCatalogPart1 = {
     "竖向 slider（朝上/朝下）共享同一套变量。",
   "ui.themeParameter.controls.note.sliderSettings":
     "设置面板 slider 轨道已独立到 --mpx-slider-settings-groove-*，便于与播放器 runway 分开调试。",
+  "ui.themeParameter.controls.note.fileList":
+    "6.3 作为文件列表通用基线：当前 Main 的 image/music 共用一套列表语义，Metadata 的 video/music 也共用一套列表语义；2.3.2.2 与 2.4.2.4 会在此基础上继续局部特化。",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",

@@ -64,6 +64,7 @@ export interface ThemeParameterUISessionState {
   containerMetadataHeaderExpanded: boolean;
   containerMetadataHeaderButtonsExpanded: boolean;
   containerMetadataInternalsExpanded: boolean;
+  containerMetadataFileListExpanded: boolean;
   containerMetadataPreferenceRecordExpanded: boolean;
   containerMetadataBookletBindingExpanded: boolean;
   containerSidebarMainExpanded: boolean;
@@ -90,6 +91,12 @@ export interface ThemeParameterUISessionState {
   buttonSlotSidebarHeaderExpanded: boolean;
   buttonSlotMainHeaderExpanded: boolean;
   buttonSlotMetadataHeaderExpanded: boolean;
+  controlScrollbarExpanded: boolean;
+  controlSliderBaseExpanded: boolean;
+  controlSliderPlayerExpanded: boolean;
+  controlSliderVerticalExpanded: boolean;
+  controlSliderSettingsExpanded: boolean;
+  controlFileListExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -153,6 +160,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
   containerMetadataInternalsExpanded: false,
+  containerMetadataFileListExpanded: false,
   containerMetadataPreferenceRecordExpanded: false,
   containerMetadataBookletBindingExpanded: false,
   containerSidebarMainExpanded: false,
@@ -182,6 +190,12 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   buttonSlotSidebarHeaderExpanded: false,
   buttonSlotMainHeaderExpanded: false,
   buttonSlotMetadataHeaderExpanded: false,
+  controlScrollbarExpanded: true,
+  controlSliderBaseExpanded: true,
+  controlSliderPlayerExpanded: true,
+  controlSliderVerticalExpanded: true,
+  controlSliderSettingsExpanded: true,
+  controlFileListExpanded: true,
   commonExpanded: true,
   styleExpanded: true,
 };

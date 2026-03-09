@@ -971,7 +971,14 @@
   flex: 1;
   border: 0;
   border-radius: 0;
-  background: var(--mpx-overlay-soft-bg);
+  background: var(
+    --mpx-metadata-file-list-bg,
+    var(--mpx-file-list-bg, var(--mpx-overlay-soft-bg))
+  );
+  color: var(
+    --mpx-metadata-file-list-text,
+    var(--mpx-file-list-text, var(--mpx-text-1))
+  );
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -997,22 +1004,47 @@
 }
 
 .metadata-music-playlist-item {
-  --mpx-btn-variant-overlay-cell-bg-hover: var(--mpx-overlay-soft-hover-bg);
-  --mpx-btn-variant-overlay-cell-text-hover: var(--mpx-text-1);
-  --mpx-btn-variant-overlay-cell-bg-active: var(--mpx-state-selected-color);
-  --mpx-btn-variant-overlay-cell-text-active: var(--mpx-text-1);
-  --mpx-btn-variant-overlay-cell-bg-pressed: var(--mpx-state-selected-color);
-  --mpx-btn-variant-overlay-cell-text-pressed: var(--mpx-text-1);
+  --mpx-btn-variant-overlay-cell-bg-hover: var(
+    --mpx-metadata-file-list-row-main-hover-bg,
+    var(--mpx-file-list-row-main-hover-bg, var(--mpx-overlay-soft-hover-bg))
+  );
+  --mpx-btn-variant-overlay-cell-text-hover: var(
+    --mpx-metadata-file-list-row-main-hover-text,
+    var(--mpx-file-list-row-main-hover-text, var(--mpx-text-1))
+  );
+  --mpx-btn-variant-overlay-cell-bg-active: var(
+    --mpx-metadata-file-list-row-main-pressed-bg,
+    var(
+      --mpx-file-list-row-main-pressed-bg,
+      var(--mpx-state-selected-color)
+    )
+  );
+  --mpx-btn-variant-overlay-cell-text-active: var(
+    --mpx-metadata-file-list-row-main-text,
+    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
+  );
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(
+    --mpx-metadata-file-list-row-selected-bg,
+    var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color))
+  );
+  --mpx-btn-variant-overlay-cell-text-pressed: var(
+    --mpx-metadata-file-list-row-main-selected-text,
+    var(--mpx-file-list-row-main-selected-text, var(--mpx-text-1))
+  );
   --mpx-btn-variant-overlay-cell-font-weight-pressed: 600;
   --mpx-btn-variant-overlay-cell-focus-outline-color: var(
-    --mpx-state-focus-color
+    --mpx-metadata-file-list-row-focused-border-left,
+    var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
   );
   appearance: none;
   width: 100%;
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--mpx-text-1);
+  color: var(
+    --mpx-metadata-file-list-row-main-text,
+    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
+  );
   display: grid;
   grid-template-columns: 2.6ch minmax(0, 1fr) max-content;
   align-items: center;
@@ -1028,18 +1060,28 @@
 }
 
 .metadata-music-playlist-item.is-active {
-  background: var(--mpx-state-selected-color);
+  background: var(
+    --mpx-metadata-file-list-row-selected-bg,
+    var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color))
+  );
 }
 
 .metadata-music-playlist-item.is-focused {
-  box-shadow: inset 4px 0 0 var(--mpx-state-focus-color);
+  box-shadow: inset 4px 0 0
+    var(
+      --mpx-metadata-file-list-row-focused-border-left,
+      var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
+    );
 }
 
 .metadata-music-playlist-index {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--mpx-text-2);
+  color: var(
+    --mpx-metadata-file-list-index-text,
+    var(--mpx-file-list-head-text, var(--mpx-text-2))
+  );
   font-variant-numeric: tabular-nums;
 }
 
@@ -1393,11 +1435,38 @@
 
 .metadata-playlist-row {
   width: 100%;
-  border-bottom: 1px solid var(--mpx-overlay-soft-row-divider);
+  border-left: 12px solid transparent;
+  border-bottom: 1px solid
+    var(
+      --mpx-metadata-file-list-row-border,
+      var(--mpx-file-list-row-border, var(--mpx-overlay-soft-row-divider))
+    );
+  background: var(
+    --mpx-metadata-file-list-row-bg,
+    var(--mpx-file-list-row-bg, transparent)
+  );
+  color: var(
+    --mpx-metadata-file-list-row-text,
+    var(--mpx-file-list-row-text, inherit)
+  );
 }
 
 .metadata-playlist-row:last-child {
   border-bottom: 0;
+}
+
+.metadata-playlist-row.is-selected {
+  border-left-color: var(
+    --mpx-metadata-file-list-row-selected-border-left,
+    var(--mpx-file-list-row-selected-border-left, var(--mpx-state-selected-color))
+  );
+}
+
+.metadata-playlist-row.is-focused {
+  border-left-color: var(
+    --mpx-metadata-file-list-row-focused-border-left,
+    var(--mpx-file-list-row-focused-border-left, var(--mpx-state-focus-color))
+  );
 }
 
 .meta-restore {

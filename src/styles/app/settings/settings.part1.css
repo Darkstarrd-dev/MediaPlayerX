@@ -3322,6 +3322,89 @@ button.mpx-overlay-chip-btn:focus-visible {
   font-size: 11px;
 }
 
+.theme-parameter-file-list-preview {
+  min-width: 0;
+  border: 1px solid var(--mpx-file-list-border, var(--mpx-overlay-soft-border));
+  border-radius: 14px;
+  background: var(--mpx-file-list-bg, var(--mpx-overlay-soft-bg));
+  color: var(--mpx-file-list-text, var(--mpx-text-1));
+  overflow: hidden;
+}
+
+.theme-parameter-file-list-preview-head,
+.theme-parameter-file-list-preview-row-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 92px;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-parameter-file-list-preview-head {
+  padding: 10px 16px;
+  border-bottom: 1px solid
+    var(--mpx-file-list-head-border, var(--mpx-overlay-soft-head-divider));
+  background: var(--mpx-file-list-head-bg, var(--mpx-overlay-soft-head-bg));
+  color: var(--mpx-file-list-head-text, var(--mpx-text-2));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.theme-parameter-file-list-preview-body {
+  display: grid;
+  background: var(--mpx-file-list-body-bg, var(--mpx-overlay-soft-bg));
+}
+
+.theme-parameter-file-list-preview-row {
+  border-left: 12px solid transparent;
+  border-bottom: 1px solid
+    var(--mpx-file-list-row-border, var(--mpx-overlay-soft-row-divider));
+  background: var(--mpx-file-list-row-bg, var(--mpx-overlay-soft-bg));
+  color: var(--mpx-file-list-row-text, var(--mpx-file-list-text, var(--mpx-text-1)));
+}
+
+.theme-parameter-file-list-preview-row:last-child {
+  border-bottom: 0;
+}
+
+.theme-parameter-file-list-preview-row.is-focused {
+  border-left-color: var(
+    --mpx-file-list-row-focused-border-left,
+    var(--mpx-state-focus-color)
+  );
+}
+
+.theme-parameter-file-list-preview-row.is-selected {
+  border-left-color: var(
+    --mpx-file-list-row-selected-border-left,
+    var(--mpx-state-selected-color)
+  );
+}
+
+.theme-parameter-file-list-preview-row-main {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--mpx-file-list-row-main-text, var(--mpx-file-list-row-text, var(--mpx-text-1)));
+  padding: 10px 16px;
+  text-align: left;
+  font: inherit;
+}
+
+.theme-parameter-file-list-preview-row-main.is-selected {
+  background: var(
+    --mpx-file-list-row-selected-bg,
+    var(--mpx-state-selected-color)
+  );
+  color: var(
+    --mpx-file-list-row-main-selected-text,
+    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
+  );
+}
+
+.theme-parameter-file-list-preview-label {
+  color: var(--mpx-file-list-label-text, inherit);
+}
+
 @media (max-width: 1120px) {
   .theme-parameter-control-content.has-right-vertical {
     grid-template-columns: 1fr;

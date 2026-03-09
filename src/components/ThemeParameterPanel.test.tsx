@@ -696,6 +696,14 @@ describe("ThemeParameterPanel", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "常用控件调试" }));
+    expect(screen.getByText("6.1 滚动条样式")).toBeInTheDocument();
+    expect(screen.getByText("6.2.0 Slider 基础层")).toBeInTheDocument();
+    expect(screen.getByText("6.2.1 Slider 变体：播放器面板")).toBeInTheDocument();
+    expect(
+      screen.getByText("6.2.2 Slider 变体：竖向（上/下同链路）"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("6.2.3 Slider 变体：设置面板")).toBeInTheDocument();
+    expect(screen.getByText("6.3 文件列表样式")).toBeInTheDocument();
     expect(
       screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
     ).toBeInTheDocument();
@@ -714,6 +722,9 @@ describe("ThemeParameterPanel", () => {
     expect(
       screen.getByLabelText("slider-vertical-down-preview"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("theme-control-preview-file-list-horizontal"),
+    ).toBeInTheDocument();
 
     fireEvent.change(
       screen.getByRole("textbox", {
@@ -729,6 +740,12 @@ describe("ThemeParameterPanel", () => {
         target: { value: "#556677" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "--mpx-file-list-row-selected-bg" }),
+      {
+        target: { value: "#667788" },
+      },
+    );
 
     expect(
       document.documentElement.style.getPropertyValue(
@@ -738,6 +755,11 @@ describe("ThemeParameterPanel", () => {
     expect(
       document.documentElement.style.getPropertyValue("--mpx-range-track-bg"),
     ).toBe("#556677");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-file-list-row-selected-bg",
+      ),
+    ).toBe("#667788");
 
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -750,6 +772,9 @@ describe("ThemeParameterPanel", () => {
     );
     expect(snapshotTextarea.value).toContain(
       '"control-slider-base-track-bg": "#556677"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"control-file-list-row-selected-bg": "#667788"',
     );
   });
 
@@ -1878,8 +1903,10 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("2.4 Metadata")).toBeInTheDocument();
     const sidebarSummary = screen.getByText("2.2.2.1 fg-sidebar-main");
     const nameListSummary = screen.getByText("2.3.2.2 工作区 文件列表模式");
+    const metadataFileListSummary = screen.getByText("2.4.2.4 文件列表");
     expect(sidebarSummary).toBeInTheDocument();
     expect(nameListSummary).toBeInTheDocument();
+    expect(metadataFileListSummary).toBeInTheDocument();
 
     fireEvent.click(sidebarSummary);
     const sidebarDetails = getDetailsBySummaryText("2.2.2.1 fg-sidebar-main");
@@ -1958,7 +1985,9 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(sidebarSummary);
     fireEvent.click(nameListSummary);
+    fireEvent.click(metadataFileListSummary);
     const nameListDetails = getDetailsBySummaryText("2.3.2.2 工作区 文件列表模式");
+    const metadataFileListDetails = getDetailsBySummaryText("2.4.2.4 文件列表");
     const rootLayerDetails = getDetailsBySummaryTextWithin(
       nameListDetails,
       "1、root",
@@ -2030,6 +2059,19 @@ describe("ThemeParameterPanel", () => {
         "--mpx-main-image-name-list-head-bg",
       ),
     ).toBe("#445566");
+    fireEvent.change(
+      within(metadataFileListDetails).getByRole("textbox", {
+        name: "--mpx-metadata-file-list-row-selected-bg",
+      }),
+      {
+        target: { value: "#556677" },
+      },
+    );
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-metadata-file-list-row-selected-bg",
+      ),
+    ).toBe("#556677");
 
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -2047,6 +2089,9 @@ describe("ThemeParameterPanel", () => {
     );
     expect(snapshotTextarea.value).toContain(
       '"container-main-image-name-list-head-bg": "#445566"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"container-metadata-file-list-row-selected-bg": "#556677"',
     );
   }, 30000);
 

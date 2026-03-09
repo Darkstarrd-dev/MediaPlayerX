@@ -243,6 +243,7 @@ function ThemeParameterPanel({
     setContainerMetadataHeaderExpanded,
     setContainerMetadataHeaderButtonsExpanded,
     setContainerMetadataInternalsExpanded,
+    setContainerMetadataFileListExpanded,
     setContainerMetadataPreferenceRecordExpanded,
     setContainerMetadataBookletBindingExpanded,
     setContainerSidebarMainExpanded,
@@ -266,6 +267,12 @@ function ThemeParameterPanel({
     setButtonSlotSidebarHeaderExpanded,
     setButtonSlotMainHeaderExpanded,
     setButtonSlotMetadataHeaderExpanded,
+    setControlScrollbarExpanded,
+    setControlSliderBaseExpanded,
+    setControlSliderPlayerExpanded,
+    setControlSliderVerticalExpanded,
+    setControlSliderSettingsExpanded,
+    setControlFileListExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const parameterSyncStateRef = useRef(createThemeParameterSyncState());
@@ -305,6 +312,7 @@ function ThemeParameterPanel({
     containerMetadataHeaderExpanded,
     containerMetadataHeaderButtonsExpanded,
     containerMetadataInternalsExpanded,
+    containerMetadataFileListExpanded,
     containerMetadataPreferenceRecordExpanded,
     containerMetadataBookletBindingExpanded,
     containerSidebarMainExpanded,
@@ -328,6 +336,12 @@ function ThemeParameterPanel({
     buttonSlotSidebarHeaderExpanded,
     buttonSlotMainHeaderExpanded,
     buttonSlotMetadataHeaderExpanded,
+    controlScrollbarExpanded,
+    controlSliderBaseExpanded,
+    controlSliderPlayerExpanded,
+    controlSliderVerticalExpanded,
+    controlSliderSettingsExpanded,
+    controlFileListExpanded,
   } = uiState;
 
   const containerLayerParameters = useMemo(
@@ -888,6 +902,10 @@ function ThemeParameterPanel({
           setContainerMetadataInternalsExpanded={
             setContainerMetadataInternalsExpanded
           }
+          containerMetadataFileListExpanded={containerMetadataFileListExpanded}
+          setContainerMetadataFileListExpanded={
+            setContainerMetadataFileListExpanded
+          }
           containerMetadataPreferenceRecordExpanded={
             containerMetadataPreferenceRecordExpanded
           }
@@ -958,6 +976,18 @@ function ThemeParameterPanel({
           setButtonSlotMetadataHeaderExpanded={
             setButtonSlotMetadataHeaderExpanded
           }
+          controlScrollbarExpanded={controlScrollbarExpanded}
+          setControlScrollbarExpanded={setControlScrollbarExpanded}
+          controlSliderBaseExpanded={controlSliderBaseExpanded}
+          setControlSliderBaseExpanded={setControlSliderBaseExpanded}
+          controlSliderPlayerExpanded={controlSliderPlayerExpanded}
+          setControlSliderPlayerExpanded={setControlSliderPlayerExpanded}
+          controlSliderVerticalExpanded={controlSliderVerticalExpanded}
+          setControlSliderVerticalExpanded={setControlSliderVerticalExpanded}
+          controlSliderSettingsExpanded={controlSliderSettingsExpanded}
+          setControlSliderSettingsExpanded={setControlSliderSettingsExpanded}
+          controlFileListExpanded={controlFileListExpanded}
+          setControlFileListExpanded={setControlFileListExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

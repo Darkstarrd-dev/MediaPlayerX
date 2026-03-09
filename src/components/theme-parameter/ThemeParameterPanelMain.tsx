@@ -196,6 +196,8 @@ interface ThemeParameterPanelMainProps {
   setContainerMetadataHeaderButtonsExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataInternalsExpanded: boolean;
   setContainerMetadataInternalsExpanded: Dispatch<SetStateAction<boolean>>;
+  containerMetadataFileListExpanded: boolean;
+  setContainerMetadataFileListExpanded: Dispatch<SetStateAction<boolean>>;
   containerMetadataPreferenceRecordExpanded: boolean;
   setContainerMetadataPreferenceRecordExpanded: Dispatch<
     SetStateAction<boolean>
@@ -259,6 +261,18 @@ interface ThemeParameterPanelMainProps {
   setButtonSlotMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   buttonSlotMetadataHeaderExpanded: boolean;
   setButtonSlotMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  controlScrollbarExpanded: boolean;
+  setControlScrollbarExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderBaseExpanded: boolean;
+  setControlSliderBaseExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderPlayerExpanded: boolean;
+  setControlSliderPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderVerticalExpanded: boolean;
+  setControlSliderVerticalExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSliderSettingsExpanded: boolean;
+  setControlSliderSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  controlFileListExpanded: boolean;
+  setControlFileListExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -351,6 +365,8 @@ export function ThemeParameterPanelMain({
   setContainerMetadataHeaderButtonsExpanded,
   containerMetadataInternalsExpanded,
   setContainerMetadataInternalsExpanded,
+  containerMetadataFileListExpanded,
+  setContainerMetadataFileListExpanded,
   containerMetadataPreferenceRecordExpanded,
   setContainerMetadataPreferenceRecordExpanded,
   containerMetadataBookletBindingExpanded,
@@ -397,6 +413,18 @@ export function ThemeParameterPanelMain({
   setButtonSlotMainHeaderExpanded,
   buttonSlotMetadataHeaderExpanded,
   setButtonSlotMetadataHeaderExpanded,
+  controlScrollbarExpanded,
+  setControlScrollbarExpanded,
+  controlSliderBaseExpanded,
+  setControlSliderBaseExpanded,
+  controlSliderPlayerExpanded,
+  setControlSliderPlayerExpanded,
+  controlSliderVerticalExpanded,
+  setControlSliderVerticalExpanded,
+  controlSliderSettingsExpanded,
+  setControlSliderSettingsExpanded,
+  controlFileListExpanded,
+  setControlFileListExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -1782,8 +1810,8 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[1]}
-            open={containerMetadataPreferenceRecordExpanded}
-            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            open={containerMetadataFileListExpanded}
+            setOpen={setContainerMetadataFileListExpanded}
             content={renderContainerDebugSubsectionRows(
               METADATA_INTERNAL_DEBUG_SUBSECTIONS[1],
             )}
@@ -1791,10 +1819,19 @@ export function ThemeParameterPanelMain({
           <ThemeParameterDebugSubsection
             t={t}
             section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[2]}
+            open={containerMetadataPreferenceRecordExpanded}
+            setOpen={setContainerMetadataPreferenceRecordExpanded}
+            content={renderContainerDebugSubsectionRows(
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[2],
+            )}
+          />
+          <ThemeParameterDebugSubsection
+            t={t}
+            section={METADATA_INTERNAL_DEBUG_SUBSECTIONS[3]}
             open={containerMetadataBookletBindingExpanded}
             setOpen={setContainerMetadataBookletBindingExpanded}
             content={renderContainerDebugSubsectionRows(
-              METADATA_INTERNAL_DEBUG_SUBSECTIONS[2],
+              METADATA_INTERNAL_DEBUG_SUBSECTIONS[3],
             )}
           />
         </>
@@ -1995,6 +2032,18 @@ export function ThemeParameterPanelMain({
           t={t}
           controlPreviewValues={controlPreviewValues}
           setControlPreviewValues={setControlPreviewValues}
+          scrollbarExpanded={controlScrollbarExpanded}
+          setScrollbarExpanded={setControlScrollbarExpanded}
+          sliderBaseExpanded={controlSliderBaseExpanded}
+          setSliderBaseExpanded={setControlSliderBaseExpanded}
+          sliderPlayerExpanded={controlSliderPlayerExpanded}
+          setSliderPlayerExpanded={setControlSliderPlayerExpanded}
+          sliderVerticalExpanded={controlSliderVerticalExpanded}
+          setSliderVerticalExpanded={setControlSliderVerticalExpanded}
+          sliderSettingsExpanded={controlSliderSettingsExpanded}
+          setSliderSettingsExpanded={setControlSliderSettingsExpanded}
+          fileListExpanded={controlFileListExpanded}
+          setFileListExpanded={setControlFileListExpanded}
           debugTextValues={debugTextValues}
           isTextFieldChanged={isTextFieldChanged}
           setDebugTextFieldValue={setDebugTextFieldValue}

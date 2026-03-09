@@ -1539,6 +1539,100 @@ export const CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS: readonly ThemeDebugCol
 export const CONTAINER_MAIN_IMAGE_NAME_LIST_TEXT_FIELDS: readonly ThemeDebugTextField[] =
   [];
 
+export const CONTAINER_METADATA_FILE_LIST_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  [
+    {
+      id: "container-metadata-file-list-bg",
+      cssVar: "--mpx-metadata-file-list-bg",
+      fallback: "#ecf0f3",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-text",
+      cssVar: "--mpx-metadata-file-list-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-border",
+      cssVar: "--mpx-metadata-file-list-row-border",
+      fallback: "#dce1e7",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-bg",
+      cssVar: "--mpx-metadata-file-list-row-bg",
+      fallback: "#e9ecf0",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-text",
+      cssVar: "--mpx-metadata-file-list-row-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-index-text",
+      cssVar: "--mpx-metadata-file-list-index-text",
+      fallback: "#544634",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-hover-bg",
+      cssVar: "--mpx-metadata-file-list-row-hover-bg",
+      fallback: "#f3f6f8",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-focused-border-left",
+      cssVar: "--mpx-metadata-file-list-row-focused-border-left",
+      fallback: "#2d6e7d",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-selected-border-left",
+      cssVar: "--mpx-metadata-file-list-row-selected-border-left",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-selected-bg",
+      cssVar: "--mpx-metadata-file-list-row-selected-bg",
+      fallback: "#9a885f",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-main-text",
+      cssVar: "--mpx-metadata-file-list-row-main-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-main-hover-bg",
+      cssVar: "--mpx-metadata-file-list-row-main-hover-bg",
+      fallback: "#f3f6f8",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-main-pressed-bg",
+      cssVar: "--mpx-metadata-file-list-row-main-pressed-bg",
+      fallback: "#d7dde4",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-main-hover-text",
+      cssVar: "--mpx-metadata-file-list-row-main-hover-text",
+      fallback: "#2f5f6d",
+      groupId: "main",
+    },
+    {
+      id: "container-metadata-file-list-row-main-selected-text",
+      cssVar: "--mpx-metadata-file-list-row-main-selected-text",
+      fallback: "#30271d",
+      groupId: "main",
+    },
+  ];
+
 const MAIN_IMAGE_NAME_LIST_ROOT_DEBUG_SECTIONS: readonly MainImageNameListDebugSection[] =
   [
     {
@@ -1761,6 +1855,7 @@ export const CONTAINER_LAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   ...CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
   ...CONTAINER_SIDEBAR_MAIN_COLOR_FIELDS,
   ...CONTAINER_MAIN_IMAGE_NAME_LIST_COLOR_FIELDS,
+  ...CONTAINER_METADATA_FILE_LIST_COLOR_FIELDS,
 ];
 
 export const CONTAINER_LAYER_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
@@ -2055,8 +2150,14 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-sidebar-main-")) {
     return "用于侧栏主列表（fg-sidebar-main）样式链路";
   }
+  if (cssVar.startsWith("--mpx-file-list-")) {
+    return "用于文件列表通用样式基线";
+  }
   if (cssVar.startsWith("--mpx-main-image-name-list-")) {
-    return "用于图片文件名列表（fg-main-content-image-name-list）样式链路";
+    return "用于 Main 文件列表（image/music）样式链路";
+  }
+  if (cssVar.startsWith("--mpx-metadata-file-list-")) {
+    return "用于 Metadata 文件列表（video/music）样式链路";
   }
   if (cssVar === "--mpx-large-panel-border-color") {
     return "大面板边框颜色";
@@ -2864,6 +2965,11 @@ export const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
     titleKey: "ui.themeParameter.controls.section.sliderSettings",
     noteKey: "ui.themeParameter.controls.note.sliderSettings",
   },
+  {
+    id: "control-file-list",
+    titleKey: "ui.themeParameter.controls.section.fileList",
+    noteKey: "ui.themeParameter.controls.note.fileList",
+  },
 ];
 
 export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
@@ -2985,6 +3091,146 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#e9ecf0",
     groupId: "box",
     sectionId: "control-slider-settings",
+  },
+  {
+    id: "control-file-list-border",
+    cssVar: "--mpx-file-list-border",
+    fallback: "#c7d0d8",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-bg",
+    cssVar: "--mpx-file-list-bg",
+    fallback: "#ecf0f3",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-text",
+    cssVar: "--mpx-file-list-text",
+    fallback: "#30271d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-head-border",
+    cssVar: "--mpx-file-list-head-border",
+    fallback: "#b5bdc8",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-head-bg",
+    cssVar: "--mpx-file-list-head-bg",
+    fallback: "#d6dbe1",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-head-text",
+    cssVar: "--mpx-file-list-head-text",
+    fallback: "#544634",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-body-bg",
+    cssVar: "--mpx-file-list-body-bg",
+    fallback: "#e9ecf0",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-border",
+    cssVar: "--mpx-file-list-row-border",
+    fallback: "#dce1e7",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-bg",
+    cssVar: "--mpx-file-list-row-bg",
+    fallback: "#e9ecf0",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-text",
+    cssVar: "--mpx-file-list-row-text",
+    fallback: "#30271d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-label-text",
+    cssVar: "--mpx-file-list-label-text",
+    fallback: "#30271d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-hover-bg",
+    cssVar: "--mpx-file-list-row-hover-bg",
+    fallback: "#f3f6f8",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-focused-border-left",
+    cssVar: "--mpx-file-list-row-focused-border-left",
+    fallback: "#2d6e7d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-selected-border-left",
+    cssVar: "--mpx-file-list-row-selected-border-left",
+    fallback: "#9a885f",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-selected-bg",
+    cssVar: "--mpx-file-list-row-selected-bg",
+    fallback: "#9a885f",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-main-text",
+    cssVar: "--mpx-file-list-row-main-text",
+    fallback: "#30271d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-main-hover-bg",
+    cssVar: "--mpx-file-list-row-main-hover-bg",
+    fallback: "#f3f6f8",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-main-pressed-bg",
+    cssVar: "--mpx-file-list-row-main-pressed-bg",
+    fallback: "#d7dde4",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-main-hover-text",
+    cssVar: "--mpx-file-list-row-main-hover-text",
+    fallback: "#2f5f6d",
+    groupId: "box",
+    sectionId: "control-file-list",
+  },
+  {
+    id: "control-file-list-row-main-selected-text",
+    cssVar: "--mpx-file-list-row-main-selected-text",
+    fallback: "#30271d",
+    groupId: "box",
+    sectionId: "control-file-list",
   },
 ];
 
@@ -4305,6 +4551,11 @@ export const METADATA_INTERNAL_DEBUG_SUBSECTIONS: readonly ContainerDebugSubsect
       id: "metadata-internals",
       summaryKey: "ui.themeParameter.containerLayer.sectionMetadataInternals",
       colorFields: CONTAINER_METADATA_INTERNAL_COLOR_FIELDS,
+    },
+    {
+      id: "metadata-file-list",
+      summaryKey: "ui.themeParameter.containerLayer.sectionMetadataFileList",
+      colorFields: CONTAINER_METADATA_FILE_LIST_COLOR_FIELDS,
     },
     {
       id: "metadata-preference-record",

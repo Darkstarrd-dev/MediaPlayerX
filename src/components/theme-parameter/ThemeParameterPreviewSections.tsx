@@ -25,6 +25,18 @@ interface ThemeParameterCommonControlSectionsProps {
   t: (key: string, values?: Record<string, string | number>) => string;
   controlPreviewValues: ControlPreviewValues;
   setControlPreviewValues: Dispatch<SetStateAction<ControlPreviewValues>>;
+  scrollbarExpanded: boolean;
+  setScrollbarExpanded: Dispatch<SetStateAction<boolean>>;
+  sliderBaseExpanded: boolean;
+  setSliderBaseExpanded: Dispatch<SetStateAction<boolean>>;
+  sliderPlayerExpanded: boolean;
+  setSliderPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  sliderVerticalExpanded: boolean;
+  setSliderVerticalExpanded: Dispatch<SetStateAction<boolean>>;
+  sliderSettingsExpanded: boolean;
+  setSliderSettingsExpanded: Dispatch<SetStateAction<boolean>>;
+  fileListExpanded: boolean;
+  setFileListExpanded: Dispatch<SetStateAction<boolean>>;
   debugTextValues: Record<string, string>;
   isTextFieldChanged: (field: ThemeDebugTextField) => boolean;
   setDebugTextFieldValue: (field: ThemeDebugTextField, raw: string) => void;
@@ -198,6 +210,48 @@ const renderCommonControlHorizontalPreview = (
         </div>
       );
     }
+    case "control-file-list": {
+      return (
+        <div
+          className="theme-parameter-control-preview-row is-horizontal"
+          data-testid="theme-control-preview-file-list-horizontal"
+        >
+          <section className="theme-parameter-file-list-preview">
+            <header className="theme-parameter-file-list-preview-head">
+              <span>文件名</span>
+              <span>时长</span>
+              <span>大小</span>
+            </header>
+            <div className="theme-parameter-file-list-preview-body">
+              <div className="theme-parameter-file-list-preview-row is-focused">
+                <button
+                  type="button"
+                  className="theme-parameter-file-list-preview-row-main"
+                >
+                  <span className="theme-parameter-file-list-preview-label">
+                    Main-image.png
+                  </span>
+                  <span>--</span>
+                  <span>824KB</span>
+                </button>
+              </div>
+              <div className="theme-parameter-file-list-preview-row is-selected">
+                <button
+                  type="button"
+                  className="theme-parameter-file-list-preview-row-main is-selected"
+                >
+                  <span className="theme-parameter-file-list-preview-label">
+                    Music-track.flac
+                  </span>
+                  <span>03:42</span>
+                  <span>31MB</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      );
+    }
     default:
       return null;
   }
@@ -306,6 +360,18 @@ export function ThemeParameterCommonControlSections({
   t,
   controlPreviewValues,
   setControlPreviewValues,
+  scrollbarExpanded,
+  setScrollbarExpanded,
+  sliderBaseExpanded,
+  setSliderBaseExpanded,
+  sliderPlayerExpanded,
+  setSliderPlayerExpanded,
+  sliderVerticalExpanded,
+  setSliderVerticalExpanded,
+  sliderSettingsExpanded,
+  setSliderSettingsExpanded,
+  fileListExpanded,
+  setFileListExpanded,
   debugTextValues,
   isTextFieldChanged,
   setDebugTextFieldValue,
@@ -325,6 +391,27 @@ export function ThemeParameterCommonControlSections({
         resetLabel={resetLabel}
       />
     );
+  };
+
+  const expandedStateMap: Record<ThemeControlSectionId, boolean> = {
+    "control-scrollbar": scrollbarExpanded,
+    "control-slider-base": sliderBaseExpanded,
+    "control-slider-player": sliderPlayerExpanded,
+    "control-slider-vertical": sliderVerticalExpanded,
+    "control-slider-settings": sliderSettingsExpanded,
+    "control-file-list": fileListExpanded,
+  };
+
+  const expandedSetterMap: Record<
+    ThemeControlSectionId,
+    Dispatch<SetStateAction<boolean>>
+  > = {
+    "control-scrollbar": setScrollbarExpanded,
+    "control-slider-base": setSliderBaseExpanded,
+    "control-slider-player": setSliderPlayerExpanded,
+    "control-slider-vertical": setSliderVerticalExpanded,
+    "control-slider-settings": setSliderSettingsExpanded,
+    "control-file-list": setFileListExpanded,
   };
 
   return (
@@ -350,42 +437,50 @@ export function ThemeParameterCommonControlSections({
           setControlPreviewValues,
         );
         return (
-          <section
+          <details
             key={section.id}
-            className="settings-group theme-parameter-debug-group"
+            className="settings-collapsible"
+            open={expandedStateMap[section.id]}
+            onToggle={(event) =>
+              expandedSetterMap[section.id](
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
+            }
             data-testid={`theme-control-section-${section.id}`}
           >
-            <header className="settings-group-head">
-              <span>{t(section.titleKey)}</span>
-            </header>
-            <p className="theme-parameter-note-intro">{t(section.noteKey)}</p>
-            {horizontalPreview}
-            <div
-              className={
-                verticalPreview
-                  ? "theme-parameter-control-content has-right-vertical"
-                  : "theme-parameter-control-content"
-              }
-            >
-              <div className="theme-parameter-control-fields">
-                {colorFields.length > 0 ? (
-                  <div className="theme-parameter-color-list">
-                    {colorFields.map(renderColorFieldRow)}
+            <summary>{t(section.titleKey)}</summary>
+            <div className="settings-collapsible-content">
+              <section className="settings-group theme-parameter-debug-group">
+                <p className="theme-parameter-note-intro">{t(section.noteKey)}</p>
+                {horizontalPreview}
+                <div
+                  className={
+                    verticalPreview
+                      ? "theme-parameter-control-content has-right-vertical"
+                      : "theme-parameter-control-content"
+                  }
+                >
+                  <div className="theme-parameter-control-fields">
+                    {colorFields.length > 0 ? (
+                      <div className="theme-parameter-color-list">
+                        {colorFields.map(renderColorFieldRow)}
+                      </div>
+                    ) : null}
+                    {textFields.length > 0 ? (
+                      <div className="theme-parameter-text-list">
+                        {textFields.map(renderTextFieldRow)}
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-                {textFields.length > 0 ? (
-                  <div className="theme-parameter-text-list">
-                    {textFields.map(renderTextFieldRow)}
-                  </div>
-                ) : null}
-              </div>
-              {verticalPreview ? (
-                <aside className="theme-parameter-control-vertical-side">
-                  {verticalPreview}
-                </aside>
-              ) : null}
+                  {verticalPreview ? (
+                    <aside className="theme-parameter-control-vertical-side">
+                      {verticalPreview}
+                    </aside>
+                  ) : null}
+                </div>
+              </section>
             </div>
-          </section>
+          </details>
         );
       })}
     </>

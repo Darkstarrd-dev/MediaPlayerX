@@ -30,6 +30,20 @@
 2. ThemeParameter side 的 slot 特化不再占用 `buttonStates` 主页面，而是在 `largePanelLayer > 3.5 Button 按钮总控` 验收。
 3. 按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
 
+## 文件列表层 6.3 命名索引
+
+| 层级            | 命名模式                               | 说明                                                       |
+| --------------- | -------------------------------------- | ---------------------------------------------------------- |
+| Common baseline | `--mpx-file-list-<semantic>`           | 文件列表通用基线，供 Main 与 Metadata 两条列表链路共同回退 |
+| Main override   | `--mpx-main-image-name-list-<semantic>` | Main 文件列表本地特化，覆盖 image/music 共用列表            |
+| Metadata override | `--mpx-metadata-file-list-<semantic>` | Metadata 文件列表本地特化，覆盖 video/music 共用列表        |
+| Slot override   | `--mpx-slot-fg-main-content-image-name-list-<semantic>` | Main image 名单模式旧链路 slot 覆写，仍可压过 Main override |
+
+示例（Main 文件列表）
+`--mpx-slot-fg-main-content-image-name-list-row-main-hover-bg`
+`-> --mpx-main-image-name-list-row-main-hover-bg`
+`-> --mpx-file-list-row-main-hover-bg`
+
 ## Import Task（3.10）补充
 
 `fg.header.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。
