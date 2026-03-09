@@ -590,9 +590,8 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row {
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  [data-slot="fg-sidebar-main"] {
+  --mpx-slot-fg-sidebar-main-row-columns: minmax(0, 1fr) auto auto;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]

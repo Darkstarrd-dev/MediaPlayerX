@@ -414,6 +414,7 @@
       --mpx-sidebar-main-tree-bg,
       var(--mpx-bg-elevated)
     );
+    --mpx-sidebar-main-row-columns: 10px minmax(0, 1fr) auto;
     --mpx-sidebar-main-label-text: var(--mpx-text-1);
     --mpx-sidebar-main-label-border: var(--mpx-border-2);
     --mpx-sidebar-main-label-plain-border: var(--mpx-sidebar-main-label-border);

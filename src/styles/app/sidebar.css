@@ -485,7 +485,10 @@
 
 .sidebar-row {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto;
+  grid-template-columns: var(
+    --mpx-slot-fg-sidebar-main-row-columns,
+    var(--mpx-sidebar-main-row-columns, 10px minmax(0, 1fr) auto)
+  );
   align-items: center;
   padding-right: 0;
 }
@@ -659,6 +662,9 @@
   background: transparent;
   display: flex;
   align-items: center;
+  justify-self: stretch;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   text-align: left;
   padding: 4px 2px;
