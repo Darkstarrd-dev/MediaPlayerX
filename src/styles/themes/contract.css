@@ -986,11 +986,17 @@
       ),
       var(
         --mpx-large-panel-head-fill-start-current,
-        var(--mpx-large-panel-section-fill-start, rgba(0, 0, 0, 0))
+        var(
+          --mpx-large-panel-head-fill-start,
+          var(--mpx-large-panel-section-fill-start, rgba(0, 0, 0, 0))
+        )
       ),
       var(
         --mpx-large-panel-head-fill-end-current,
-        var(--mpx-large-panel-section-fill-end, rgba(0, 0, 0, 0))
+        var(
+          --mpx-large-panel-head-fill-end,
+          var(--mpx-large-panel-section-fill-end, rgba(0, 0, 0, 0))
+        )
       )
     );
     --mpx-large-panel-head-bg: var(--mpx-large-panel-head-fill);
@@ -1024,11 +1030,17 @@
       ),
       var(
         --mpx-large-panel-side-fill-start-current,
-        var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+        var(
+          --mpx-large-panel-side-fill-start,
+          var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+        )
       ),
       var(
         --mpx-large-panel-side-fill-end-current,
-        var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+        var(
+          --mpx-large-panel-side-fill-end,
+          var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+        )
       )
     );
     --mpx-large-panel-side-bg: var(--mpx-large-panel-side-fill);
@@ -1055,11 +1067,17 @@
       ),
       var(
         --mpx-large-panel-main-fill-start-current,
-        var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+        var(
+          --mpx-large-panel-main-fill-start,
+          var(--mpx-large-panel-section-fill-start, var(--mpx-bg-elevated))
+        )
       ),
       var(
         --mpx-large-panel-main-fill-end-current,
-        var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+        var(
+          --mpx-large-panel-main-fill-end,
+          var(--mpx-large-panel-section-fill-end, var(--mpx-bg-elevated))
+        )
       )
     );
     --mpx-large-panel-main-bg: var(--mpx-large-panel-main-fill);
