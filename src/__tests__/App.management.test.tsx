@@ -1,15 +1,17 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
 import { MockMediaRepository } from "../features/backend/repository/mockRepository";
-import { resetUiStoreState, useUiStore } from "../store/useUiStore";
+import { useUiStore } from "../store/useUiStore";
+import {
+  click,
+  keyDown,
+  mouseDown,
+  pointerDown,
+  pointerUp,
+  resetAppTestEnvironment,
+} from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI - management", () => {
   const uiLongTestTimeoutMs = 25_000;
@@ -24,46 +26,8 @@ describe("MediaPlayer 虚拟 UI - management", () => {
       ".sidebar-row.is-manage .sidebar-label",
     ) as HTMLButtonElement | null;
 
-  const flushUiUpdates = async () => {
-    await act(async () => {
-      await Promise.resolve();
-    });
-  };
-
-  const click = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.click(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
-    fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.mouseDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const pointerDown = async (
-    target: Element | Window,
-    init?: PointerEventInit,
-  ) => {
-    fireEvent.pointerDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const pointerUp = async (target: Element | Window, init?: PointerEventInit) => {
-    fireEvent.pointerUp(target as Element, init);
-    await flushUiUpdates();
-  };
-
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(
@@ -127,24 +91,25 @@ describe("MediaPlayer 虚拟 UI - management", () => {
     async () => {
       render(<App />);
 
-      const packageNameInput = screen.getByLabelText("图包名") as HTMLInputElement;
+      const packageNameInput = screen.getByLabelText(
+        "图包名",
+      ) as HTMLInputElement;
       const initialPackageName = packageNameInput.value;
 
       await click(screen.getByRole("button", { name: "文件管理" }));
       expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
 
-      const focusTarget =
-        initialPackageName.includes("海岸")
-          ? {
-              nodeLabel: "画廊A",
-              packageName: "[DIR] 画廊A",
-              thumbLabel: "画廊A（目录直读） #1",
-            }
-          : {
-              nodeLabel: "海岸",
-              packageName: "[DIR] 海岸",
-              thumbLabel: "海岸（目录直读） #1",
-            };
+      const focusTarget = initialPackageName.includes("海岸")
+        ? {
+            nodeLabel: "画廊A",
+            packageName: "[DIR] 画廊A",
+            thumbLabel: "画廊A（目录直读） #1",
+          }
+        : {
+            nodeLabel: "海岸",
+            packageName: "[DIR] 海岸",
+            thumbLabel: "海岸（目录直读） #1",
+          };
 
       const targetSidebarButton = screen.getByRole("button", {
         name: focusTarget.nodeLabel,
@@ -164,9 +129,9 @@ describe("MediaPlayer 虚拟 UI - management", () => {
       });
 
       await waitFor(() => {
-        expect((screen.getByLabelText("图包名") as HTMLInputElement).value).toBe(
-          focusTarget.packageName,
-        );
+        expect(
+          (screen.getByLabelText("图包名") as HTMLInputElement).value,
+        ).toBe(focusTarget.packageName);
         expect(screen.getByText(focusTarget.thumbLabel)).toBeInTheDocument();
       });
     },

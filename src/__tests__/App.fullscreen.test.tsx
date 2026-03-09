@@ -11,36 +11,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import { resolveFullscreenControlsWidth } from "../components/fullscreen/controlsWidth";
 import { toAbsolutePx } from "../components/settings/settingsScale";
-import { resetUiStoreState } from "../store/useUiStore";
+import {
+  click,
+  flushUiUpdates,
+  keyDown,
+  mouseDown,
+  resetAppTestEnvironment,
+  wheel,
+} from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI - fullscreen", () => {
   const uiLongTestTimeoutMs = 25_000;
-
-  const flushUiUpdates = async () => {
-    await act(async () => {
-      await Promise.resolve();
-    });
-  };
-
-  const click = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.click(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
-    fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.mouseDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const wheel = async (target: Element | Window, init?: WheelEventInit) => {
-    fireEvent.wheel(target as Element, init);
-    await flushUiUpdates();
-  };
 
   const readDualImagePaneRatio = () => {
     const imagePane = document.querySelector(
@@ -67,11 +48,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
   };
 
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(
@@ -944,7 +921,9 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       await act(async () => {
         vi.advanceTimersByTime(250);
       });
-      expect(document.querySelector(".fullscreen-rating-feedback")).not.toBeNull();
+      expect(
+        document.querySelector(".fullscreen-rating-feedback"),
+      ).not.toBeNull();
 
       await act(async () => {
         vi.advanceTimersByTime(400);

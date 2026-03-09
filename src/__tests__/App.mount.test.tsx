@@ -1,22 +1,12 @@
-import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
-import { resetUiStoreState } from "../store/useUiStore";
-
-async function flushUiUpdates() {
-  await act(async () => {
-    await Promise.resolve();
-  });
-}
+import { flushUiUpdates, resetAppTestEnvironment } from "../test/appTestUtils";
 
 describe("App.mount", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it("应用启动阶段不会触发 Maximum update depth exceeded", async () => {

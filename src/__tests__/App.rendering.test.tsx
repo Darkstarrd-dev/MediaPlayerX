@@ -1,24 +1,14 @@
-import { act, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "../App";
-import { resetUiStoreState } from "../store/useUiStore";
-
-async function flushUiUpdates() {
-  await act(async () => {
-    await Promise.resolve();
-  });
-}
+import { flushUiUpdates, resetAppTestEnvironment } from "../test/appTestUtils";
 
 describe("App.rendering", () => {
   const uiLongTestTimeoutMs = 25_000;
 
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(

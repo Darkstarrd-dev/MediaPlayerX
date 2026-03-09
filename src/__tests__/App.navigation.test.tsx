@@ -1,29 +1,14 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "../App";
-import { resetUiStoreState } from "../store/useUiStore";
-
-async function flushUiUpdates() {
-  await act(async () => {
-    await Promise.resolve();
-  });
-}
-
-async function click(target: Element | Window, init?: MouseEventInit) {
-  fireEvent.click(target as Element, init);
-  await flushUiUpdates();
-}
+import { click, resetAppTestEnvironment } from "../test/appTestUtils";
 
 describe("App.navigation", () => {
   const uiLongTestTimeoutMs = 25_000;
 
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(

@@ -275,6 +275,74 @@ export function useThemeParameterSnapshotControls({
               ),
             ),
           ),
+        ),
+      );
+      nextValues[parameter.id] = normalized;
+      importedParameterIds.add(parameter.id);
+      parameter.apply(root, normalized, nextValues);
+      if (
+        !applyImportedThemeParameterSyncTargets({
+          state: parameterSyncStateRef.current,
+          parameterId: parameter.id,
+          importedValues,
+          importedParameterIds,
+          parameterMap,
+          root,
+          nextValue: normalized,
+          nextValues,
+        })
+      ) {
+        pruneThemeParameterSyncTarget(
+          parameterSyncStateRef.current,
+          parameter.id,
+        );
+      }
+    }
+    if (payload.debugColors && typeof payload.debugColors === "object") {
+      const debugColors = payload.debugColors as Record<string, unknown>;
+      for (const field of SNAPSHOT_COLOR_FIELDS) {
+        const rawColor = debugColors[field.id];
+        if (typeof rawColor !== "string") {
+          continue;
+        }
+        const normalizedColor = rawColor.trim();
+        if (!normalizedColor) {
+          root.style.removeProperty(field.cssVar);
+          continue;
+        }
+        root.style.setProperty(field.cssVar, normalizedColor);
+      }
+    }
+    if (payload.debugTexts && typeof payload.debugTexts === "object") {
+      const debugTexts = payload.debugTexts as Record<string, unknown>;
+      for (const field of SNAPSHOT_TEXT_FIELDS) {
+        const rawText = debugTexts[field.id];
+        if (typeof rawText !== "string") {
+          continue;
+        }
+        if (!rawText.trim()) {
+          root.style.removeProperty(field.cssVar);
+          continue;
+        }
+        root.style.setProperty(field.cssVar, rawText);
+      }
+    }
+    setValues(nextValues);
+    if (importedParameterIds.size > 0) {
+      setSnapshotExplicitParameterIds((previous) => {
+        const next = new Set(previous);
+        for (const parameterId of importedParameterIds) {
+          next.add(parameterId);
+        }
+        return next;
+      });
+    }
+    if (payload.styleId && payload.styleId !== styleId) {
+      if (options?.reportStyleMismatch !== false) {
+        setSnapshotMessage(
+          t("ui.themeParameter.snapshotImportedStyleMismatch", {
+            styleId: payload.styleId,
+          }),
         );
         nextValues[parameter.id] = normalized;
         importedParameterIds.add(parameter.id);

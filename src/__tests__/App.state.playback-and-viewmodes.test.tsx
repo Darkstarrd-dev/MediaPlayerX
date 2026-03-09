@@ -6,41 +6,22 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "../App";
-import { resetUiStoreState } from "../store/useUiStore";
+import {
+  click,
+  flushUiUpdates,
+  keyDown,
+  mouseDown,
+  resetAppTestEnvironment,
+} from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI", () => {
   const uiLongTestTimeoutMs = 25_000;
 
-  const flushUiUpdates = async () => {
-    await act(async () => {
-      await Promise.resolve();
-    });
-  };
-
-  const click = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.click(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
-    fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const mouseDown = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.mouseDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(
@@ -119,7 +100,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "非全屏场景即使自动播放已启用也不会继续自动翻页",
     async () => {
@@ -187,7 +167,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "视频播放后暂停保留当前画面，切换视频后回到封面态，Save as cover 走后端写链路并保持封面态",
     async () => {
@@ -225,7 +204,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "视频节点浏览中单击/方向键仅预览并更新焦点信息，双击才进入播放",
     async () => {
@@ -236,7 +214,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
       await waitFor(() => {
         expect(
-          document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+          document.querySelector('[data-slot="fg-main-content-video-grid"]'),
         ).not.toBeNull();
       });
 
@@ -246,17 +224,18 @@ describe("MediaPlayer 虚拟 UI", () => {
       await click(forestButton);
 
       expect(
-        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+        document.querySelector('[data-slot="fg-main-content-video-grid"]'),
       ).not.toBeNull();
       expect(
         document.querySelector('[data-slot="fg-main-content-video-preview"]'),
       ).toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-main-footer-meta"]')?.textContent,
+        document.querySelector('[data-slot="fg-main-footer-meta"]')
+          ?.textContent,
       ).toContain("teaser_forest.mp4");
 
       const nodeBrowseGrid = document.querySelector(
-        '[data-slot="fg-main-content-image-node-grid"]',
+        '[data-slot="fg-main-content-video-grid"]',
       ) as HTMLElement | null;
       expect(nodeBrowseGrid).not.toBeNull();
       fireEvent.keyDown(nodeBrowseGrid as HTMLElement, {
@@ -265,7 +244,8 @@ describe("MediaPlayer 虚拟 UI", () => {
       });
       await flushUiUpdates();
       expect(
-        document.querySelector('[data-slot="fg-main-footer-meta"]')?.textContent,
+        document.querySelector('[data-slot="fg-main-footer-meta"]')
+          ?.textContent,
       ).toContain("teaser_city.mp4");
 
       fireEvent.doubleClick(forestButton);
@@ -275,7 +255,7 @@ describe("MediaPlayer 虚拟 UI", () => {
         document.querySelector('[data-slot="fg-main-content-video-preview"]'),
       ).not.toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+        document.querySelector('[data-slot="fg-main-content-video-grid"]'),
       ).toBeNull();
     },
     uiLongTestTimeoutMs,
@@ -300,7 +280,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
       await keyDown(window, { key: "Escape", code: "Escape" });
       expect(
-        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+        document.querySelector('[data-slot="fg-main-content-video-grid"]'),
       ).not.toBeNull();
       expect(
         document.querySelector('[data-slot="fg-main-content-video-preview"]'),
@@ -329,7 +309,7 @@ describe("MediaPlayer 虚拟 UI", () => {
 
       await keyDown(window, { key: "Escape", code: "Escape" });
       expect(
-        document.querySelector('[data-slot="fg-main-content-image-node-grid"]'),
+        document.querySelector('[data-slot="fg-main-content-video-grid"]'),
       ).not.toBeNull();
       expect(
         document.querySelector('[data-slot="fg-main-content-video-preview"]'),
@@ -337,7 +317,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 
   it(
     "视频模式全屏使用 video-controls-shell，单视频隐藏 footer，双显示保留悬浮控件自适应",
@@ -459,7 +438,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "视频全屏单显示下，单视频循环在播放结束后不会跳到下一条",
     async () => {
@@ -549,7 +527,6 @@ describe("MediaPlayer 虚拟 UI", () => {
     uiLongTestTimeoutMs,
   );
 
-
   it(
     "视频全屏双显示下，文件列表循环在播放结束后会切到下一条",
     async () => {
@@ -607,5 +584,4 @@ describe("MediaPlayer 虚拟 UI", () => {
     },
     uiLongTestTimeoutMs,
   );
-
 });

@@ -1,5 +1,4 @@
 import {
-  act,
   fireEvent,
   render,
   screen,
@@ -11,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import type { LibrarySnapshotDto } from "../contracts/backend";
 import { MockMediaRepository } from "../features/backend/repository/mockRepository";
-import { resetUiStoreState } from "../store/useUiStore";
+import { click, keyDown, resetAppTestEnvironment } from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI - metadata", () => {
   const uiLongTestTimeoutMs = 25_000;
@@ -30,28 +29,8 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     }
   };
 
-  const flushUiUpdates = async () => {
-    await act(async () => {
-      await Promise.resolve();
-    });
-  };
-
-  const click = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.click(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
-    fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(
@@ -495,9 +474,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     async () => {
       render(<App />);
 
-      await click(
-        screen.getByRole("button", { name: /forest_pack\.zip/ }),
-      );
+      await click(screen.getByRole("button", { name: /forest_pack\.zip/ }));
 
       await waitFor(() => {
         expect(
@@ -695,7 +672,9 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       render(<App />);
 
       const jumpToAnimation = screen.getByRole("button", { name: "动画版" });
-      const imageToolbarActions = jumpToAnimation.closest(".main-header-actions");
+      const imageToolbarActions = jumpToAnimation.closest(
+        ".main-header-actions",
+      );
       expect(imageToolbarActions?.firstElementChild).toBe(jumpToAnimation);
       expect(jumpToAnimation).toBeEnabled();
       await click(jumpToAnimation);

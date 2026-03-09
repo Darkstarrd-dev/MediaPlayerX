@@ -1,15 +1,9 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "../App";
 import { MockMediaRepository } from "../features/backend/repository/mockRepository";
-import { resetUiStoreState } from "../store/useUiStore";
+import { click, keyDown, resetAppTestEnvironment } from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI - metadata", () => {
   const uiLongTestTimeoutMs = 25_000;
@@ -19,28 +13,8 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       name: /进入元数据管理模式|退出元数据管理模式|元数据管理/,
     });
 
-  const flushUiUpdates = async () => {
-    await act(async () => {
-      await Promise.resolve();
-    });
-  };
-
-  const click = async (target: Element | Window, init?: MouseEventInit) => {
-    fireEvent.click(target as Element, init);
-    await flushUiUpdates();
-  };
-
-  const keyDown = async (target: Element | Window, init: KeyboardEventInit) => {
-    fireEvent.keyDown(target as Element, init);
-    await flushUiUpdates();
-  };
-
   beforeEach(() => {
-    vi.restoreAllMocks();
-    resetUiStoreState();
-    window.mediaPlayerBackend = undefined;
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    resetAppTestEnvironment();
   });
 
   it(
@@ -76,16 +50,14 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
       ) as HTMLElement;
       await click(circleFieldName);
 
-      await waitFor(() => {
-        expect(writeText).toHaveBeenNthCalledWith(
-          1,
-          authorValue.textContent?.trim() ?? "",
-        );
-        expect(writeText).toHaveBeenNthCalledWith(
-          2,
-          circleValue.textContent?.trim() ?? "",
-        );
-      });
+      expect(writeText).toHaveBeenNthCalledWith(
+        1,
+        authorValue.textContent?.trim() ?? "",
+      );
+      expect(writeText).toHaveBeenNthCalledWith(
+        2,
+        circleValue.textContent?.trim() ?? "",
+      );
     },
     uiLongTestTimeoutMs,
   );

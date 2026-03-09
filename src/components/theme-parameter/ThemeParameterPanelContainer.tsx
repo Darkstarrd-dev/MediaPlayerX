@@ -12,6 +12,7 @@ import { useDraggablePanel } from "../useDraggablePanel";
 import { buildA11yProps } from "../../i18n/a11y";
 import { useI18n } from "../../i18n/useI18n";
 import { ThemeParameterPanelMain } from "./ThemeParameterPanelMain";
+import type { ThemeParameterPreviewMode } from "./themeParameterPanelTypes";
 import {
   applyThemeParameterSyncTargets,
   collectThemeParameterSyncIds,
@@ -837,9 +838,6 @@ function ThemeParameterPanel({
           setLargePanelInternalExpanded={setLargePanelInternalExpanded}
           largePanelInternalSectionsExpanded={
             largePanelInternalSectionsExpanded
-          }
-          largePanelInternalSettingsGroupsExpanded={
-            largePanelInternalSettingsGroupsExpanded
           }
           setLargePanelInternalSectionExpanded={
             setLargePanelInternalSectionExpanded

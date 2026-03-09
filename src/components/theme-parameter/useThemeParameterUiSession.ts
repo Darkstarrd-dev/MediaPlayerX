@@ -5,8 +5,8 @@ import type {
   LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-} from "./ThemeParameterPanelMain";
-import type { ThemeControlSectionId } from "./themeParameterPanelTypes";
+  ThemeControlSectionId,
+} from "./themeParameterPanelTypes";
 import {
   readThemeParameterUiSessionState,
   writeThemeParameterUiSessionState,
@@ -167,7 +167,10 @@ export function useThemeParameterUiSession() {
         ...previous,
         controlSectionsExpanded: {
           ...previous.controlSectionsExpanded,
-          [sectionId]: resolveNextState(action, previous.controlSectionsExpanded[sectionId]),
+          [sectionId]: resolveNextState(
+            action,
+            previous.controlSectionsExpanded[sectionId],
+          ),
         },
       }));
     },

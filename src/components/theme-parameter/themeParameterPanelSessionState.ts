@@ -3,8 +3,8 @@ import type {
   LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
-} from "./ThemeParameterPanelMain";
-import type { ControlSectionExpandedState } from "./themeParameterPanelTypes";
+  ControlSectionExpandedState,
+} from "./themeParameterPanelTypes";
 
 export interface ContainerDebugSessionState {
   colors: Record<string, string>;
@@ -85,9 +85,8 @@ export interface ThemeParameterUISessionState {
   largePanelMainExpanded: boolean;
   largePanelButtonExpanded: boolean;
   largePanelInternalExpanded: boolean;
-  largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
-  largePanelInternalSettingsGroupsExpanded: Record<
-    LargePanelInternalSettingsGroupId,
+  largePanelInternalSectionsExpanded: Record<
+    LargePanelInternalSectionId,
     boolean
   >;
   smallPanelRootExpanded: boolean;
@@ -102,15 +101,17 @@ const DEFAULT_CONTAINER_DEBUG_SESSION_STATE: ContainerDebugSessionState = {
   texts: {},
 };
 
-const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSectionsExpandedState = {
-  settings: false,
-  importTask: false,
-  metadataFetch: false,
-  metadataFeatureTagPicker: false,
-  subtitleCleanup: false,
-  transcodeDialog: false,
-  sidebarRenamePreview: false,
-};
+const DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED: LargePanelInternalSectionsExpandedState =
+  {
+    importTask: false,
+    metadataFetch: false,
+    metadataPreferenceRecord: false,
+    metadataBookletBinding: false,
+    metadataFeatureTagPicker: false,
+    subtitleCleanup: false,
+    transcodeDialog: false,
+    sidebarRenamePreview: false,
+  };
 
 const DEFAULT_LARGE_PANEL_INTERNAL_SETTINGS_GROUPS_EXPANDED: LargePanelInternalSettingsGroupsExpandedState = {
   side: false,
@@ -282,10 +283,12 @@ export function updateThemeParameterUiSessionState(
         uiSessionState.largePanelInternalSettingsGroupsExpanded),
     },
     smallPanelSectionsExpanded: {
-      ...(patch.smallPanelSectionsExpanded ?? uiSessionState.smallPanelSectionsExpanded),
+      ...(patch.smallPanelSectionsExpanded ??
+        uiSessionState.smallPanelSectionsExpanded),
     },
     controlSectionsExpanded: {
-      ...(patch.controlSectionsExpanded ?? uiSessionState.controlSectionsExpanded),
+      ...(patch.controlSectionsExpanded ??
+        uiSessionState.controlSectionsExpanded),
     },
   };
 }
