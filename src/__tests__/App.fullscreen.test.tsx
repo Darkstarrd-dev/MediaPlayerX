@@ -55,6 +55,17 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
     return Number.isFinite(ratio) ? ratio : null;
   };
 
+  const readPaneFlexRatio = (selector: string) => {
+    const pane = document.querySelector(selector) as HTMLElement | null;
+    if (!pane) {
+      return null;
+    }
+
+    const ratioText = pane.style.flex.trim().split(" ")[0] ?? "";
+    const ratio = Number(ratioText);
+    return Number.isFinite(ratio) ? ratio : null;
+  };
+
   beforeEach(() => {
     vi.restoreAllMocks();
     resetUiStoreState();
@@ -75,6 +86,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       expect(
         screen.queryByLabelText("调整全屏分屏比例"),
       ).not.toBeInTheDocument();
+      expect(readPaneFlexRatio(".fullscreen-image")).toBe(1);
 
       const fullscreenLayer = document.querySelector(
         ".fullscreen-layer",
@@ -95,6 +107,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       ).not.toBeInTheDocument();
       expect(screen.getByAltText("图片 #2")).toBeInTheDocument();
       expect(document.querySelector(".video-screen-cover-image")).toBeNull();
+      expect(readPaneFlexRatio(".fullscreen-image")).toBe(1);
 
       await keyDown(window, { key: "f", code: "KeyF" });
       expect(screen.queryByAltText("图片 #2")).not.toBeInTheDocument();
@@ -572,6 +585,7 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
       });
       expect(document.querySelector(".fullscreen-image")).not.toBeNull();
       expect(document.querySelector(".fullscreen-video")).toBeNull();
+      expect(readPaneFlexRatio(".fullscreen-image")).toBe(1);
 
       const fullscreenLayer = document.querySelector(
         ".fullscreen-layer",

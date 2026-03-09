@@ -1181,8 +1181,8 @@ function FullscreenLayer({
   const imageRatio =
     effectiveFullscreenDisplay === "dual"
       ? dualImageRatio
-      : clamp(fullscreenSplit, MIN_SPLIT, MAX_SPLIT);
-  const videoRatio = 1 - imageRatio;
+      : 1;
+  const videoRatio = effectiveFullscreenDisplay === "dual" ? 1 - imageRatio : 1;
   const paneOrder: PaneKey[] = fullscreenSwapped
     ? ["video", "image"]
     : ["image", "video"];
