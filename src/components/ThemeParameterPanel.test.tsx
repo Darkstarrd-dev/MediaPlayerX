@@ -668,7 +668,7 @@ describe("ThemeParameterPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "按钮样式调试" }));
     fireEvent.change(
       screen.getByRole("textbox", {
-        name: "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+        name: "--mpx-btn-variant-default-bg-hover",
       }),
       {
         target: { value: "#112233" },
@@ -677,7 +677,7 @@ describe("ThemeParameterPanel", () => {
 
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+        "--mpx-btn-variant-default-bg-hover",
       ),
     ).toBe("#112233");
 
@@ -688,7 +688,7 @@ describe("ThemeParameterPanel", () => {
       "参数快照 JSON",
     ) as HTMLTextAreaElement;
     expect(snapshotTextarea.value).toContain(
-      '"button-side-hover-bg": "#112233"',
+      '"button-default-bg-hover": "#112233"',
     );
   });
 
@@ -1103,6 +1103,7 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("3.2 Head")).toBeInTheDocument();
     expect(screen.getByText("3.3 Side")).toBeInTheDocument();
     expect(screen.getByText("3.4 Main")).toBeInTheDocument();
+    expect(screen.getByText("3.5 Button 按钮总控")).toBeInTheDocument();
     expect(screen.getByText("3.10 内部件")).toBeInTheDocument();
 
     ensureDetailsOpen("3.0 Root/Shell 共用层");
@@ -1226,6 +1227,13 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("大面板Main背景渐变颜色A")).toBeInTheDocument();
     expect(screen.getByText("大面板Main背景渐变颜色B")).toBeInTheDocument();
     expect(screen.getByText("大面板Main背景渐变角度")).toBeInTheDocument();
+
+    ensureDetailsOpen("3.5 Button 按钮总控");
+    expect(
+      screen.getByRole("textbox", {
+        name: "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-hover-bg",
+      }),
+    ).toBeInTheDocument();
 
     ensureDetailsOpen("3.10 内部件");
     expect(screen.getByText("3.10.1 导入任务")).toBeInTheDocument();

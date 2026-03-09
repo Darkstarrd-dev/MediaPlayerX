@@ -345,6 +345,26 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.page.commonControls": "常用控件调试",
   "ui.themeParameter.resetField": "复位",
   "ui.themeParameter.page.buttonStates": "按钮样式调试",
+  "ui.themeParameter.buttonLayer.sectionDefault": "4.1 Default 通用变体",
+  "ui.themeParameter.buttonLayer.noteDefault":
+    "通用按钮主链路，承接 core 基础语义，供绝大多数按钮直接消费或继续派生。",
+  "ui.themeParameter.buttonLayer.sectionPlayer": "4.2 Player 播放器变体",
+  "ui.themeParameter.buttonLayer.notePlayer":
+    "播放器按钮专用变体，保持独立视觉语义，但仍属于 4.0 按钮层。",
+  "ui.themeParameter.buttonLayer.sectionOverlayCell":
+    "4.3 Overlay Cell 覆盖层变体",
+  "ui.themeParameter.buttonLayer.noteOverlayCell":
+    "Overlay cell 按钮变体，覆盖 hover/active/pressed 与 focus outline 等局部行为。",
+  "ui.themeParameter.buttonLayer.sectionSlot": "4.4 Slot 局部覆写",
+  "ui.themeParameter.buttonLayer.noteSlot":
+    "代表性业务 slot 覆写组；这些字段应回落到 variant/default，而不是直接替代按钮层结构。",
+  "ui.themeParameter.buttonLayer.sectionSlotHeader": "Header 按钮总控 slot",
+  "ui.themeParameter.buttonLayer.sectionSlotSidebarHeader":
+    "Sidebar Header 按钮总控 slot",
+  "ui.themeParameter.buttonLayer.sectionSlotMainHeader":
+    "Main Header 按钮总控 slot",
+  "ui.themeParameter.buttonLayer.sectionSlotMetadataHeader":
+    "Metadata Header 按钮总控 slot",
   "ui.themeParameter.preview.bgOnly": "仅背景层预览",
   "ui.themeParameter.preview.bgPlusContainer": "背景层 + 大容器层预览",
   "ui.themeParameter.preview.bgPlusLargePanel": "背景层 + 大面板层预览",
@@ -397,6 +417,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
+  "ui.themeParameter.largePanelLayer.sectionButton": "3.5 Button 按钮总控",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 内部件",
   "ui.themeParameter.largePanelLayer.sectionInternalSettings":
     "3.10.0 设置/帮助/主题参数",

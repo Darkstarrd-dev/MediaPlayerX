@@ -256,10 +256,33 @@ export function useThemeParameterUiSession() {
       setLargePanelHeadExpanded: createBooleanSetter("largePanelHeadExpanded"),
       setLargePanelSideExpanded: createBooleanSetter("largePanelSideExpanded"),
       setLargePanelMainExpanded: createBooleanSetter("largePanelMainExpanded"),
+      setLargePanelButtonExpanded: createBooleanSetter("largePanelButtonExpanded"),
       setLargePanelInternalExpanded: createBooleanSetter(
         "largePanelInternalExpanded",
       ),
       setSmallPanelRootExpanded: createBooleanSetter("smallPanelRootExpanded"),
+      setButtonVariantDefaultExpanded: createBooleanSetter(
+        "buttonVariantDefaultExpanded",
+      ),
+      setButtonVariantPlayerExpanded: createBooleanSetter(
+        "buttonVariantPlayerExpanded",
+      ),
+      setButtonVariantOverlayCellExpanded: createBooleanSetter(
+        "buttonVariantOverlayCellExpanded",
+      ),
+      setButtonSlotExpanded: createBooleanSetter("buttonSlotExpanded"),
+      setButtonSlotHeaderExpanded: createBooleanSetter(
+        "buttonSlotHeaderExpanded",
+      ),
+      setButtonSlotSidebarHeaderExpanded: createBooleanSetter(
+        "buttonSlotSidebarHeaderExpanded",
+      ),
+      setButtonSlotMainHeaderExpanded: createBooleanSetter(
+        "buttonSlotMainHeaderExpanded",
+      ),
+      setButtonSlotMetadataHeaderExpanded: createBooleanSetter(
+        "buttonSlotMetadataHeaderExpanded",
+      ),
     }),
     [createBooleanSetter],
   );

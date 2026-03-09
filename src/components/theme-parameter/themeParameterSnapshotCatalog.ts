@@ -1738,6 +1738,141 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#ffffff",
   },
   {
+    id: "button-default-border",
+    cssVar: "--mpx-btn-variant-default-border",
+    fallback: "#cbd5e1",
+  },
+  {
+    id: "button-default-bg-idle",
+    cssVar: "--mpx-btn-variant-default-bg-idle",
+    fallback: "#ecf0f3",
+  },
+  {
+    id: "button-default-bg-hover",
+    cssVar: "--mpx-btn-variant-default-bg-hover",
+    fallback: "#f8fafc",
+  },
+  {
+    id: "button-default-bg-active",
+    cssVar: "--mpx-btn-variant-default-bg-active",
+    fallback: "#dce2e8",
+  },
+  {
+    id: "button-default-bg-pressed",
+    cssVar: "--mpx-btn-variant-default-bg-pressed",
+    fallback: "#d6dee5",
+  },
+  {
+    id: "button-default-text-idle",
+    cssVar: "--mpx-btn-variant-default-text-idle",
+    fallback: "#4a4a4a",
+  },
+  {
+    id: "button-default-text-active",
+    cssVar: "--mpx-btn-variant-default-text-active",
+    fallback: "#334155",
+  },
+  {
+    id: "button-default-text-pressed",
+    cssVar: "--mpx-btn-variant-default-text-pressed",
+    fallback: "#555555",
+  },
+  {
+    id: "button-default-text-merged",
+    cssVar: "--mpx-btn-variant-default-text-merged",
+    fallback: "#0f172a",
+  },
+  {
+    id: "button-default-text-disabled",
+    cssVar: "--mpx-btn-variant-default-text-disabled",
+    fallback: "rgba(213, 223, 236, 0.62)",
+  },
+  {
+    id: "button-default-danger-hover-bg",
+    cssVar: "--mpx-btn-variant-default-danger-hover-bg",
+    fallback: "#fee2e2",
+  },
+  {
+    id: "button-default-danger-hover-border",
+    cssVar: "--mpx-btn-variant-default-danger-hover-border",
+    fallback: "#fca5a5",
+  },
+  {
+    id: "button-default-danger-hover-text",
+    cssVar: "--mpx-btn-variant-default-danger-hover-text",
+    fallback: "#dc2626",
+  },
+  {
+    id: "button-player-border",
+    cssVar: "--mpx-btn-variant-player-border",
+    fallback: "rgba(117, 136, 162, 0.8)",
+  },
+  {
+    id: "button-player-border-active",
+    cssVar: "--mpx-btn-variant-player-border-active",
+    fallback: "rgba(140, 165, 196, 0.92)",
+  },
+  {
+    id: "button-player-bg-idle",
+    cssVar: "--mpx-btn-variant-player-bg-idle",
+    fallback: "rgba(30, 40, 52, 0.74)",
+  },
+  {
+    id: "button-player-bg-hover",
+    cssVar: "--mpx-btn-variant-player-bg-hover",
+    fallback: "rgba(42, 56, 74, 0.9)",
+  },
+  {
+    id: "button-player-bg-active",
+    cssVar: "--mpx-btn-variant-player-bg-active",
+    fallback: "rgba(64, 86, 112, 0.95)",
+  },
+  {
+    id: "button-player-text-idle",
+    cssVar: "--mpx-btn-variant-player-text-idle",
+    fallback: "#f1f6ff",
+  },
+  {
+    id: "button-player-text-disabled",
+    cssVar: "--mpx-btn-variant-player-text-disabled",
+    fallback: "rgba(213, 223, 236, 0.62)",
+  },
+  {
+    id: "button-overlay-cell-text-hover",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-hover",
+    fallback: "color-mix(in srgb, var(--mpx-accent) 72%, var(--mpx-text-1))",
+  },
+  {
+    id: "button-overlay-cell-bg-hover",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-hover",
+    fallback: "var(--mpx-overlay-soft-hover-bg)",
+  },
+  {
+    id: "button-overlay-cell-text-active",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-active",
+    fallback: "inherit",
+  },
+  {
+    id: "button-overlay-cell-bg-active",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-active",
+    fallback: "var(--mpx-overlay-soft-focus-bg)",
+  },
+  {
+    id: "button-overlay-cell-text-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-pressed",
+    fallback: "var(--mpx-text-1)",
+  },
+  {
+    id: "button-overlay-cell-bg-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-pressed",
+    fallback: "var(--mpx-overlay-soft-focus-bg)",
+  },
+  {
+    id: "button-overlay-cell-focus-outline-color",
+    cssVar: "--mpx-btn-variant-overlay-cell-focus-outline-color",
+    fallback: "color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2))",
+  },
+  {
     id: "button-side-idle-border",
     cssVar:
       "--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-border",
@@ -2084,6 +2219,46 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "small-panel-ad-review-start-metadata-shadow",
     cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-shadow",
+  },
+  {
+    id: "button-default-shadow-idle",
+    cssVar: "--mpx-btn-variant-default-shadow-idle",
+  },
+  {
+    id: "button-default-shadow-hover",
+    cssVar: "--mpx-btn-variant-default-shadow-hover",
+  },
+  {
+    id: "button-default-shadow-active",
+    cssVar: "--mpx-btn-variant-default-shadow-active",
+  },
+  {
+    id: "button-default-shadow-pressed",
+    cssVar: "--mpx-btn-variant-default-shadow-pressed",
+  },
+  {
+    id: "button-default-transform-hover",
+    cssVar: "--mpx-btn-variant-default-transform-hover",
+  },
+  {
+    id: "button-default-transform-active",
+    cssVar: "--mpx-btn-variant-default-transform-active",
+  },
+  {
+    id: "button-default-transform-pressed",
+    cssVar: "--mpx-btn-variant-default-transform-pressed",
+  },
+  {
+    id: "button-default-danger-hover-shadow",
+    cssVar: "--mpx-btn-variant-default-danger-hover-shadow",
+  },
+  {
+    id: "button-overlay-cell-font-weight-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-font-weight-pressed",
+  },
+  {
+    id: "button-overlay-cell-focus-outline-width",
+    cssVar: "--mpx-btn-variant-overlay-cell-focus-outline-width",
   },
   {
     id: "small-panel-playlist-name-slot-shadow",

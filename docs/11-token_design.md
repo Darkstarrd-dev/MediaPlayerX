@@ -20,13 +20,15 @@
 | Variant       | `--mpx-btn-variant-<variant>-<semantic>` | 按钮变体层（如 `default` / `player` / `overlay-cell`） |
 | Slot override | `--mpx-slot-<path>-<semantic>`           | 业务路径局部覆写，最终映射到 variant/core              |
 
-示例（ThemeParameter side 按钮）
+示例（ThemeParameter side 按钮，现归 `largePanelLayer > 3.5`）
 `--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-idle-bg`
 `-> --mpx-btn-variant-theme-parameter-side-bg-idle`
 `-> --mpx-btn-variant-default-bg-idle`
 
 说明
-按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
+1. `buttonStates` 页主验收 `--mpx-btn-variant-default-*`、`--mpx-btn-variant-player-*`、`--mpx-btn-variant-overlay-cell-*` 与代表性 `slot override`。
+2. ThemeParameter side 的 slot 特化不再占用 `buttonStates` 主页面，而是在 `largePanelLayer > 3.5 Button 按钮总控` 验收。
+3. 按钮层 4.0 的具体变量和值，请同步查看 `docs/32-ui-design-tracking-v1.md` 的 `4.0 按钮层（基架）`。
 
 ## Import Task（3.10）补充
 

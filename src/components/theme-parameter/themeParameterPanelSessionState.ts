@@ -73,6 +73,7 @@ export interface ThemeParameterUISessionState {
   largePanelHeadExpanded: boolean;
   largePanelSideExpanded: boolean;
   largePanelMainExpanded: boolean;
+  largePanelButtonExpanded: boolean;
   largePanelInternalExpanded: boolean;
   largePanelInternalSectionsExpanded: Record<LargePanelInternalSectionId, boolean>;
   largePanelInternalSettingsGroupsExpanded: Record<
@@ -81,6 +82,14 @@ export interface ThemeParameterUISessionState {
   >;
   smallPanelRootExpanded: boolean;
   smallPanelSectionsExpanded: Record<SmallPanelSectionId, boolean>;
+  buttonVariantDefaultExpanded: boolean;
+  buttonVariantPlayerExpanded: boolean;
+  buttonVariantOverlayCellExpanded: boolean;
+  buttonSlotExpanded: boolean;
+  buttonSlotHeaderExpanded: boolean;
+  buttonSlotSidebarHeaderExpanded: boolean;
+  buttonSlotMainHeaderExpanded: boolean;
+  buttonSlotMetadataHeaderExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -153,6 +162,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   largePanelHeadExpanded: false,
   largePanelSideExpanded: false,
   largePanelMainExpanded: false,
+  largePanelButtonExpanded: false,
   largePanelInternalExpanded: false,
   largePanelInternalSectionsExpanded: {
     ...DEFAULT_LARGE_PANEL_INTERNAL_SECTIONS_EXPANDED,
@@ -164,6 +174,14 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   smallPanelSectionsExpanded: {
     ...DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED,
   },
+  buttonVariantDefaultExpanded: true,
+  buttonVariantPlayerExpanded: false,
+  buttonVariantOverlayCellExpanded: false,
+  buttonSlotExpanded: false,
+  buttonSlotHeaderExpanded: false,
+  buttonSlotSidebarHeaderExpanded: false,
+  buttonSlotMainHeaderExpanded: false,
+  buttonSlotMetadataHeaderExpanded: false,
   commonExpanded: true,
   styleExpanded: true,
 };

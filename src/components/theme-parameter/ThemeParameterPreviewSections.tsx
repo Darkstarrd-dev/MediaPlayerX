@@ -3,15 +3,18 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
 import { ThemeParameterCommonControlTextFieldRow } from "./ThemeParameterFieldRows";
 import {
-  BUTTON_STATE_COLOR_FIELDS,
-  BUTTON_STATE_FIELD_PREFIX,
+  BUTTON_SLOT_SECTION_DEFINITIONS,
+  BUTTON_VARIANT_DEFAULT_COLOR_FIELDS,
+  BUTTON_VARIANT_DEFAULT_TEXT_FIELDS,
+  BUTTON_VARIANT_OVERLAY_CELL_COLOR_FIELDS,
+  BUTTON_VARIANT_OVERLAY_CELL_TEXT_FIELDS,
+  BUTTON_VARIANT_PLAYER_COLOR_FIELDS,
   COMMON_CONTROL_COLOR_FIELDS,
   COMMON_CONTROL_TEXT_FIELDS,
   CONTROL_SECTION_DEFINITIONS,
 } from "./themeParameterPanelCatalog";
 import { buildSkeuoRangeStyle } from "./themeParameterRangeStyle";
 import type {
-  ButtonStateKey,
   ControlPreviewValues,
   ThemeDebugColorField,
   ThemeDebugTextField,
@@ -31,85 +34,26 @@ interface ThemeParameterCommonControlSectionsProps {
 }
 
 interface ThemeParameterButtonStateDebugProps {
+  t: (key: string, values?: Record<string, string | number>) => string;
+  defaultExpanded: boolean;
+  setDefaultExpanded: Dispatch<SetStateAction<boolean>>;
+  playerExpanded: boolean;
+  setPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  overlayCellExpanded: boolean;
+  setOverlayCellExpanded: Dispatch<SetStateAction<boolean>>;
+  slotExpanded: boolean;
+  setSlotExpanded: Dispatch<SetStateAction<boolean>>;
+  slotHeaderExpanded: boolean;
+  setSlotHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  slotSidebarHeaderExpanded: boolean;
+  setSlotSidebarHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  slotMainHeaderExpanded: boolean;
+  setSlotMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  slotMetadataHeaderExpanded: boolean;
+  setSlotMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
+  renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
 }
-
-const BUTTON_TEMPLATE_STATES: ReadonlyArray<{
-  key: ButtonStateKey;
-  state: string;
-  styleSource: string;
-  interaction: string;
-  usage: string;
-  demoLabel: string;
-}> = [
-  {
-    key: "idle",
-    state: "默认态 (idle)",
-    styleSource: ".theme-parameter-side-btn（default variant）",
-    interaction: "初始渲染，未悬停/未按下/未选中",
-    usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
-    demoLabel: "默认",
-  },
-  {
-    key: "hover",
-    state: "悬停态 (hover)",
-    styleSource:
-      ".theme-parameter-side-btn:hover / .force-hover（side-btn-hover-*）",
-    interaction: "pointerenter / mouseenter",
-    usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
-    demoLabel: "悬停测试",
-  },
-  {
-    key: "active",
-    state: "按下态 (active)",
-    styleSource:
-      ".theme-parameter-side-btn:active / .force-active（side-btn-active-*）",
-    interaction: "pointerdown / mousedown",
-    usage: "ThemeParameterPanelMain.tsx -> side 分页按钮",
-    demoLabel: "按下测试",
-  },
-  {
-    key: "selected",
-    state: "选中态 (is-active)",
-    styleSource: ".theme-parameter-side-btn.is-active（side-btn-selected-*）",
-    interaction: "click 后由业务状态切换 class",
-    usage: "ThemeParameterPanelMain.tsx -> activePage 对应按钮",
-    demoLabel: "已选中",
-  },
-  {
-    key: "pressed",
-    state: "开关按压态 (aria-pressed='true')",
-    styleSource:
-      ".theme-parameter-side-btn[aria-pressed='true']（side-btn-pressed-*）",
-    interaction: "click 切换布尔开关状态",
-    usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
-    demoLabel: "开关已按下",
-  },
-  {
-    key: "disabled",
-    state: "禁用态 (disabled)",
-    styleSource: ".theme-parameter-side-btn:disabled（side-btn-disabled-*）",
-    interaction: "组件设置 disabled，阻断点击",
-    usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
-    demoLabel: "禁用",
-  },
-  {
-    key: "pending",
-    state: "待处理态 (is-pending)",
-    styleSource: ".theme-parameter-side-btn.is-pending（side-btn-pending-*）",
-    interaction: "异步任务期间由业务状态添加 class",
-    usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
-    demoLabel: "处理中",
-  },
-  {
-    key: "close-hover",
-    state: "危险悬停态 (close:hover)",
-    styleSource: ".theme-parameter-side-btn.danger:hover / .danger.force-hover",
-    interaction: "关闭按钮 hover",
-    usage: "ThemeParameterPanelMain.tsx -> side 按钮样式调试",
-    demoLabel: "关闭悬停测试",
-  },
-] as const;
 
 const renderCommonControlHorizontalPreview = (
   sectionId: ThemeControlSectionId,
@@ -334,12 +278,29 @@ const renderCommonControlVerticalPreview = (
   }
 };
 
-const resolveButtonStateFields = (stateKey: ButtonStateKey) => {
-  const prefix = BUTTON_STATE_FIELD_PREFIX[stateKey];
-  return BUTTON_STATE_COLOR_FIELDS.filter((field) =>
-    field.id.startsWith(`button-side-${prefix}-`),
+function renderButtonFieldRows(options: {
+  colorFields: readonly ThemeDebugColorField[];
+  textFields?: readonly ThemeDebugTextField[];
+  renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
+  renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
+}) {
+  const { colorFields, textFields = [], renderColorFieldRow, renderTextFieldRow } =
+    options;
+  return (
+    <section className="settings-group theme-parameter-debug-group">
+      {colorFields.length > 0 ? (
+        <div className="theme-parameter-color-list">
+          {colorFields.map(renderColorFieldRow)}
+        </div>
+      ) : null}
+      {textFields.length > 0 ? (
+        <div className="theme-parameter-text-list">
+          {textFields.map(renderTextFieldRow)}
+        </div>
+      ) : null}
+    </section>
   );
-};
+}
 
 export function ThemeParameterCommonControlSections({
   t,
@@ -432,52 +393,141 @@ export function ThemeParameterCommonControlSections({
 }
 
 export function ThemeParameterButtonStateDebug({
+  t,
+  defaultExpanded,
+  setDefaultExpanded,
+  playerExpanded,
+  setPlayerExpanded,
+  overlayCellExpanded,
+  setOverlayCellExpanded,
+  slotExpanded,
+  setSlotExpanded,
+  slotHeaderExpanded,
+  setSlotHeaderExpanded,
+  slotSidebarHeaderExpanded,
+  setSlotSidebarHeaderExpanded,
+  slotMainHeaderExpanded,
+  setSlotMainHeaderExpanded,
+  slotMetadataHeaderExpanded,
+  setSlotMetadataHeaderExpanded,
   renderColorFieldRow,
+  renderTextFieldRow,
 }: ThemeParameterButtonStateDebugProps) {
+  const slotExpandedStateMap = {
+    header: slotHeaderExpanded,
+    sidebarHeader: slotSidebarHeaderExpanded,
+    mainHeader: slotMainHeaderExpanded,
+    metadataHeader: slotMetadataHeaderExpanded,
+  } as const;
+
+  const slotSetterMap = {
+    header: setSlotHeaderExpanded,
+    sidebarHeader: setSlotSidebarHeaderExpanded,
+    mainHeader: setSlotMainHeaderExpanded,
+    metadataHeader: setSlotMetadataHeaderExpanded,
+  } as const;
+
   return (
-    <section className="settings-group">
-      <p className="theme-parameter-note-intro">
-        当前页基于 4.0 按钮层（core/variant/slot）展示 side 分页按钮。
-        每个状态都对应独立的调节项和展示项（border/bg/text）。颜色字段直接映射
-        <code>
-          --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-*
-        </code>
-        ，修改后立即作用到分页按钮样式。
-      </p>
-      <ul className="theme-parameter-note-list">
-        {BUTTON_TEMPLATE_STATES.map((item) => (
-          <li key={item.state}>
-            <div className="theme-parameter-note-title-row">
-              <strong>{item.state}</strong>
-              <div className="theme-parameter-state-demo">
-                <button
-                  aria-pressed={item.key === "pressed"}
-                  className={[
-                    "theme-parameter-side-btn",
-                    item.key === "selected" ? "is-active" : "",
-                    item.key === "hover" ? "force-hover" : "",
-                    item.key === "active" ? "force-active" : "",
-                    item.key === "pending" ? "is-pending" : "",
-                    item.key === "close-hover" ? "danger force-hover" : "",
-                  ]
-                    .join(" ")
-                    .trim()}
-                  type="button"
-                  disabled={item.key === "disabled"}
-                >
-                  {item.demoLabel}
-                </button>
+    <>
+      <details
+        className="settings-collapsible"
+        open={defaultExpanded}
+        onToggle={(event) =>
+          setDefaultExpanded((event.currentTarget as HTMLDetailsElement).open)
+        }
+      >
+        <summary>{t("ui.themeParameter.buttonLayer.sectionDefault")}</summary>
+        <div className="settings-collapsible-content">
+          <p className="theme-parameter-note-intro">
+            {t("ui.themeParameter.buttonLayer.noteDefault")}
+          </p>
+          {renderButtonFieldRows({
+            colorFields: BUTTON_VARIANT_DEFAULT_COLOR_FIELDS,
+            textFields: BUTTON_VARIANT_DEFAULT_TEXT_FIELDS,
+            renderColorFieldRow,
+            renderTextFieldRow,
+          })}
+        </div>
+      </details>
+
+      <details
+        className="settings-collapsible"
+        open={playerExpanded}
+        onToggle={(event) =>
+          setPlayerExpanded((event.currentTarget as HTMLDetailsElement).open)
+        }
+      >
+        <summary>{t("ui.themeParameter.buttonLayer.sectionPlayer")}</summary>
+        <div className="settings-collapsible-content">
+          <p className="theme-parameter-note-intro">
+            {t("ui.themeParameter.buttonLayer.notePlayer")}
+          </p>
+          {renderButtonFieldRows({
+            colorFields: BUTTON_VARIANT_PLAYER_COLOR_FIELDS,
+            renderColorFieldRow,
+            renderTextFieldRow,
+          })}
+        </div>
+      </details>
+
+      <details
+        className="settings-collapsible"
+        open={overlayCellExpanded}
+        onToggle={(event) =>
+          setOverlayCellExpanded(
+            (event.currentTarget as HTMLDetailsElement).open,
+          )
+        }
+      >
+        <summary>{t("ui.themeParameter.buttonLayer.sectionOverlayCell")}</summary>
+        <div className="settings-collapsible-content">
+          <p className="theme-parameter-note-intro">
+            {t("ui.themeParameter.buttonLayer.noteOverlayCell")}
+          </p>
+          {renderButtonFieldRows({
+            colorFields: BUTTON_VARIANT_OVERLAY_CELL_COLOR_FIELDS,
+            textFields: BUTTON_VARIANT_OVERLAY_CELL_TEXT_FIELDS,
+            renderColorFieldRow,
+            renderTextFieldRow,
+          })}
+        </div>
+      </details>
+
+      <details
+        className="settings-collapsible"
+        open={slotExpanded}
+        onToggle={(event) =>
+          setSlotExpanded((event.currentTarget as HTMLDetailsElement).open)
+        }
+      >
+        <summary>{t("ui.themeParameter.buttonLayer.sectionSlot")}</summary>
+        <div className="settings-collapsible-content">
+          <p className="theme-parameter-note-intro">
+            {t("ui.themeParameter.buttonLayer.noteSlot")}
+          </p>
+          {BUTTON_SLOT_SECTION_DEFINITIONS.map((section) => (
+            <details
+              key={section.id}
+              className="settings-collapsible"
+              open={slotExpandedStateMap[section.id]}
+              onToggle={(event) =>
+                slotSetterMap[section.id](
+                  (event.currentTarget as HTMLDetailsElement).open,
+                )
+              }
+            >
+              <summary>{t(section.summaryKey)}</summary>
+              <div className="settings-collapsible-content">
+                {renderButtonFieldRows({
+                  colorFields: section.colorFields,
+                  renderColorFieldRow,
+                  renderTextFieldRow,
+                })}
               </div>
-            </div>
-            <div className="theme-parameter-state-field-list">
-              {resolveButtonStateFields(item.key).map(renderColorFieldRow)}
-            </div>
-            <span>样式来源：{item.styleSource}</span>
-            <span>交互事件：{item.interaction}</span>
-            <span>示例位置：{item.usage}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
+            </details>
+          ))}
+        </div>
+      </details>
+    </>
   );
 }

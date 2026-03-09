@@ -46,6 +46,7 @@ import type {
 } from "./themeParameterDefinitions";
 import {
   BUTTON_STATE_COLOR_FIELDS,
+  BUTTON_STATE_TEXT_FIELDS,
   COMMON_CONTROL_COLOR_FIELDS,
   COMMON_CONTROL_TEXT_FIELDS,
   CONTAINER_BACKGROUND_TEXT_FIELDS,
@@ -68,6 +69,7 @@ import {
   CONTAINER_SHADOW_SYNC_TEXT_FIELD_IDS,
   HEADER_DEBUG_SUBSECTIONS,
   LARGE_PANEL_COLOR_FIELDS,
+  LARGE_PANEL_BUTTON_COLOR_FIELDS,
   LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS,
   LARGE_PANEL_ROOT_COLOR_FIELDS,
   LARGE_PANEL_ROOT_INLINE_PARAMETER_IDS,
@@ -214,6 +216,8 @@ interface ThemeParameterPanelMainProps {
   setLargePanelSideExpanded: Dispatch<SetStateAction<boolean>>;
   largePanelMainExpanded: boolean;
   setLargePanelMainExpanded: Dispatch<SetStateAction<boolean>>;
+  largePanelButtonExpanded: boolean;
+  setLargePanelButtonExpanded: Dispatch<SetStateAction<boolean>>;
   largePanelInternalExpanded: boolean;
   setLargePanelInternalExpanded: Dispatch<SetStateAction<boolean>>;
   largePanelInternalSectionsExpanded: Record<
@@ -239,6 +243,22 @@ interface ThemeParameterPanelMainProps {
     sectionId: SmallPanelSectionId,
     action: SetStateAction<boolean>,
   ) => void;
+  buttonVariantDefaultExpanded: boolean;
+  setButtonVariantDefaultExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonVariantPlayerExpanded: boolean;
+  setButtonVariantPlayerExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonVariantOverlayCellExpanded: boolean;
+  setButtonVariantOverlayCellExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotExpanded: boolean;
+  setButtonSlotExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotHeaderExpanded: boolean;
+  setButtonSlotHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotSidebarHeaderExpanded: boolean;
+  setButtonSlotSidebarHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotMainHeaderExpanded: boolean;
+  setButtonSlotMainHeaderExpanded: Dispatch<SetStateAction<boolean>>;
+  buttonSlotMetadataHeaderExpanded: boolean;
+  setButtonSlotMetadataHeaderExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -349,6 +369,8 @@ export function ThemeParameterPanelMain({
   setLargePanelSideExpanded,
   largePanelMainExpanded,
   setLargePanelMainExpanded,
+  largePanelButtonExpanded,
+  setLargePanelButtonExpanded,
   largePanelInternalExpanded,
   setLargePanelInternalExpanded,
   largePanelInternalSectionsExpanded,
@@ -359,6 +381,22 @@ export function ThemeParameterPanelMain({
   setSmallPanelRootExpanded,
   smallPanelSectionsExpanded,
   setSmallPanelSectionExpanded,
+  buttonVariantDefaultExpanded,
+  setButtonVariantDefaultExpanded,
+  buttonVariantPlayerExpanded,
+  setButtonVariantPlayerExpanded,
+  buttonVariantOverlayCellExpanded,
+  setButtonVariantOverlayCellExpanded,
+  buttonSlotExpanded,
+  setButtonSlotExpanded,
+  buttonSlotHeaderExpanded,
+  setButtonSlotHeaderExpanded,
+  buttonSlotSidebarHeaderExpanded,
+  setButtonSlotSidebarHeaderExpanded,
+  buttonSlotMainHeaderExpanded,
+  setButtonSlotMainHeaderExpanded,
+  buttonSlotMetadataHeaderExpanded,
+  setButtonSlotMetadataHeaderExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -657,7 +695,8 @@ export function ThemeParameterPanelMain({
       activePage === "containerLayer" ||
       activePage === "largePanelLayer" ||
       activePage === "smallPanelLayer" ||
-      activePage === "commonControls"
+      activePage === "commonControls" ||
+      activePage === "buttonStates"
     ) {
       const nextTextValues: Record<string, string> = {};
       const sourceTextFields =
@@ -667,7 +706,9 @@ export function ThemeParameterPanelMain({
             ? LARGE_PANEL_TEXT_FIELDS
             : activePage === "commonControls"
               ? COMMON_CONTROL_TEXT_FIELDS
-              : SMALL_PANEL_TEXT_FIELDS;
+              : activePage === "buttonStates"
+                ? BUTTON_STATE_TEXT_FIELDS
+                : SMALL_PANEL_TEXT_FIELDS;
       for (const field of sourceTextFields) {
         nextTextValues[field.id] =
           computed.getPropertyValue(field.cssVar).trim() || field.fallback;
@@ -1793,47 +1834,70 @@ export function ThemeParameterPanelMain({
           renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
         />
       }
-      bodySections={LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
-        const expanded =
-          section.id === "head"
-            ? largePanelHeadExpanded
-            : section.id === "side"
-              ? largePanelSideExpanded
-              : largePanelMainExpanded;
-        const setExpanded =
-          section.id === "head"
-            ? setLargePanelHeadExpanded
-            : section.id === "side"
-              ? setLargePanelSideExpanded
-              : setLargePanelMainExpanded;
-        return (
+      bodySections={
+        <>
+          {LARGE_PANEL_SECTION_DEFINITIONS.map((section) => {
+            const expanded =
+              section.id === "head"
+                ? largePanelHeadExpanded
+                : section.id === "side"
+                  ? largePanelSideExpanded
+                  : largePanelMainExpanded;
+            const setExpanded =
+              section.id === "head"
+                ? setLargePanelHeadExpanded
+                : section.id === "side"
+                  ? setLargePanelSideExpanded
+                  : setLargePanelMainExpanded;
+            return (
+              <details
+                key={section.id}
+                className="settings-collapsible"
+                open={expanded}
+                onToggle={(event) =>
+                  setExpanded((event.currentTarget as HTMLDetailsElement).open)
+                }
+              >
+                <summary>{t(section.summaryKey)}</summary>
+                <div className="settings-collapsible-content">
+                  <ThemeParameterLargePanelSectionRows
+                    colorFields={section.colorFields}
+                    orderedEntries={largePanelSectionOrderedEntries[section.id]}
+                    inlineParameters={pickLargePanelParameters(
+                      section.inlineParameterIds,
+                    )}
+                    parameters={pickLargePanelParameters(section.parameterIds)}
+                    renderColorFieldRow={renderColorFieldRow}
+                    renderTextFieldRow={renderTextFieldRow}
+                    renderParameterRowsWithVarLabel={
+                      renderParameterRowsWithVarLabel
+                    }
+                  />
+                </div>
+              </details>
+            );
+          })}
           <details
-            key={section.id}
             className="settings-collapsible"
-            open={expanded}
+            open={largePanelButtonExpanded}
             onToggle={(event) =>
-              setExpanded((event.currentTarget as HTMLDetailsElement).open)
+              setLargePanelButtonExpanded(
+                (event.currentTarget as HTMLDetailsElement).open,
+              )
             }
           >
-            <summary>{t(section.summaryKey)}</summary>
+            <summary>{t("ui.themeParameter.largePanelLayer.sectionButton")}</summary>
             <div className="settings-collapsible-content">
               <ThemeParameterLargePanelSectionRows
-                colorFields={section.colorFields}
-                orderedEntries={largePanelSectionOrderedEntries[section.id]}
-                inlineParameters={pickLargePanelParameters(
-                  section.inlineParameterIds,
-                )}
-                parameters={pickLargePanelParameters(section.parameterIds)}
+                colorFields={LARGE_PANEL_BUTTON_COLOR_FIELDS}
                 renderColorFieldRow={renderColorFieldRow}
                 renderTextFieldRow={renderTextFieldRow}
-                renderParameterRowsWithVarLabel={
-                  renderParameterRowsWithVarLabel
-                }
+                renderParameterRowsWithVarLabel={renderParameterRowsWithVarLabel}
               />
             </div>
           </details>
-        );
-      })}
+        </>
+      }
       internalSection={
         <details
           className="settings-collapsible"
@@ -1947,7 +2011,25 @@ export function ThemeParameterPanelMain({
       t={t}
       content={
         <ThemeParameterButtonStateDebug
+          t={t}
+          defaultExpanded={buttonVariantDefaultExpanded}
+          setDefaultExpanded={setButtonVariantDefaultExpanded}
+          playerExpanded={buttonVariantPlayerExpanded}
+          setPlayerExpanded={setButtonVariantPlayerExpanded}
+          overlayCellExpanded={buttonVariantOverlayCellExpanded}
+          setOverlayCellExpanded={setButtonVariantOverlayCellExpanded}
+          slotExpanded={buttonSlotExpanded}
+          setSlotExpanded={setButtonSlotExpanded}
+          slotHeaderExpanded={buttonSlotHeaderExpanded}
+          setSlotHeaderExpanded={setButtonSlotHeaderExpanded}
+          slotSidebarHeaderExpanded={buttonSlotSidebarHeaderExpanded}
+          setSlotSidebarHeaderExpanded={setButtonSlotSidebarHeaderExpanded}
+          slotMainHeaderExpanded={buttonSlotMainHeaderExpanded}
+          setSlotMainHeaderExpanded={setButtonSlotMainHeaderExpanded}
+          slotMetadataHeaderExpanded={buttonSlotMetadataHeaderExpanded}
+          setSlotMetadataHeaderExpanded={setButtonSlotMetadataHeaderExpanded}
           renderColorFieldRow={renderColorFieldRow}
+          renderTextFieldRow={renderTextFieldRow}
         />
       }
     />

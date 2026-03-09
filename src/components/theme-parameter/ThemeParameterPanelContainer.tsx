@@ -252,11 +252,20 @@ function ThemeParameterPanel({
     setLargePanelHeadExpanded,
     setLargePanelSideExpanded,
     setLargePanelMainExpanded,
+    setLargePanelButtonExpanded,
     setLargePanelInternalExpanded,
     setLargePanelInternalSectionExpanded,
     setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelRootExpanded,
     setSmallPanelSectionExpanded,
+    setButtonVariantDefaultExpanded,
+    setButtonVariantPlayerExpanded,
+    setButtonVariantOverlayCellExpanded,
+    setButtonSlotExpanded,
+    setButtonSlotHeaderExpanded,
+    setButtonSlotSidebarHeaderExpanded,
+    setButtonSlotMainHeaderExpanded,
+    setButtonSlotMetadataHeaderExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const parameterSyncStateRef = useRef(createThemeParameterSyncState());
@@ -305,11 +314,20 @@ function ThemeParameterPanel({
     largePanelHeadExpanded,
     largePanelSideExpanded,
     largePanelMainExpanded,
+    largePanelButtonExpanded,
     largePanelInternalExpanded,
     largePanelInternalSectionsExpanded,
     largePanelInternalSettingsGroupsExpanded,
     smallPanelRootExpanded,
     smallPanelSectionsExpanded,
+    buttonVariantDefaultExpanded,
+    buttonVariantPlayerExpanded,
+    buttonVariantOverlayCellExpanded,
+    buttonSlotExpanded,
+    buttonSlotHeaderExpanded,
+    buttonSlotSidebarHeaderExpanded,
+    buttonSlotMainHeaderExpanded,
+    buttonSlotMetadataHeaderExpanded,
   } = uiState;
 
   const containerLayerParameters = useMemo(
@@ -902,6 +920,8 @@ function ThemeParameterPanel({
           setLargePanelSideExpanded={setLargePanelSideExpanded}
           largePanelMainExpanded={largePanelMainExpanded}
           setLargePanelMainExpanded={setLargePanelMainExpanded}
+          largePanelButtonExpanded={largePanelButtonExpanded}
+          setLargePanelButtonExpanded={setLargePanelButtonExpanded}
           largePanelInternalExpanded={largePanelInternalExpanded}
           setLargePanelInternalExpanded={setLargePanelInternalExpanded}
           largePanelInternalSectionsExpanded={
@@ -920,6 +940,24 @@ function ThemeParameterPanel({
           setSmallPanelRootExpanded={setSmallPanelRootExpanded}
           smallPanelSectionsExpanded={smallPanelSectionsExpanded}
           setSmallPanelSectionExpanded={setSmallPanelSectionExpanded}
+          buttonVariantDefaultExpanded={buttonVariantDefaultExpanded}
+          setButtonVariantDefaultExpanded={setButtonVariantDefaultExpanded}
+          buttonVariantPlayerExpanded={buttonVariantPlayerExpanded}
+          setButtonVariantPlayerExpanded={setButtonVariantPlayerExpanded}
+          buttonVariantOverlayCellExpanded={buttonVariantOverlayCellExpanded}
+          setButtonVariantOverlayCellExpanded={setButtonVariantOverlayCellExpanded}
+          buttonSlotExpanded={buttonSlotExpanded}
+          setButtonSlotExpanded={setButtonSlotExpanded}
+          buttonSlotHeaderExpanded={buttonSlotHeaderExpanded}
+          setButtonSlotHeaderExpanded={setButtonSlotHeaderExpanded}
+          buttonSlotSidebarHeaderExpanded={buttonSlotSidebarHeaderExpanded}
+          setButtonSlotSidebarHeaderExpanded={setButtonSlotSidebarHeaderExpanded}
+          buttonSlotMainHeaderExpanded={buttonSlotMainHeaderExpanded}
+          setButtonSlotMainHeaderExpanded={setButtonSlotMainHeaderExpanded}
+          buttonSlotMetadataHeaderExpanded={buttonSlotMetadataHeaderExpanded}
+          setButtonSlotMetadataHeaderExpanded={
+            setButtonSlotMetadataHeaderExpanded
+          }
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

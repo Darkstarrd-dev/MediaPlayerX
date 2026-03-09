@@ -293,6 +293,11 @@ export const CONTAINER_SIDEBAR_HEADER_COLOR_FIELDS: readonly ThemeDebugColorFiel
     },
   ];
 
+export const CONTAINER_SIDEBAR_HEADER_BUTTONS_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  CONTAINER_SIDEBAR_HEADER_COLOR_FIELDS.filter((field) =>
+    field.id.includes("sidebar-header-button"),
+  );
+
 export const CONTAINER_SIDEBAR_HEADER_TITLE_COLOR_FIELDS: readonly ThemeDebugColorField[] =
   [
     {
@@ -2333,8 +2338,17 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-dialog-panel-")) {
     return "仅用于小面板 root 本体";
   }
+  if (cssVar.startsWith("--mpx-btn-core-")) {
+    return "用于按钮基础语义层（core）";
+  }
+  if (cssVar.startsWith("--mpx-btn-variant-default-")) {
+    return "用于通用按钮 default 变体";
+  }
+  if (cssVar.startsWith("--mpx-btn-variant-player-")) {
+    return "用于播放器按钮 player 变体";
+  }
   if (cssVar.startsWith("--mpx-btn-variant-theme-parameter-side-")) {
-    return "用于 Theme Parameter 侧栏按钮状态";
+    return "用于 Theme Parameter 大面板侧栏按钮变体";
   }
   if (cssVar.startsWith("--mpx-sidebar-tree-scrollbar-")) {
     return "用于侧栏滚动条样式";
@@ -2355,6 +2369,175 @@ export function resolveDebugVarUsage(cssVar: string): string {
 }
 
 export const BUTTON_STATE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "button-default-border",
+    cssVar: "--mpx-btn-variant-default-border",
+    fallback: "#cbd5e1",
+    groupId: "root",
+  },
+  {
+    id: "button-default-bg-idle",
+    cssVar: "--mpx-btn-variant-default-bg-idle",
+    fallback: "#ecf0f3",
+    groupId: "root",
+  },
+  {
+    id: "button-default-bg-hover",
+    cssVar: "--mpx-btn-variant-default-bg-hover",
+    fallback: "#f8fafc",
+    groupId: "root",
+  },
+  {
+    id: "button-default-bg-active",
+    cssVar: "--mpx-btn-variant-default-bg-active",
+    fallback: "#dce2e8",
+    groupId: "root",
+  },
+  {
+    id: "button-default-bg-pressed",
+    cssVar: "--mpx-btn-variant-default-bg-pressed",
+    fallback: "#d6dee5",
+    groupId: "root",
+  },
+  {
+    id: "button-default-text-idle",
+    cssVar: "--mpx-btn-variant-default-text-idle",
+    fallback: "#4a4a4a",
+    groupId: "root",
+  },
+  {
+    id: "button-default-text-active",
+    cssVar: "--mpx-btn-variant-default-text-active",
+    fallback: "#334155",
+    groupId: "root",
+  },
+  {
+    id: "button-default-text-pressed",
+    cssVar: "--mpx-btn-variant-default-text-pressed",
+    fallback: "#555555",
+    groupId: "root",
+  },
+  {
+    id: "button-default-text-merged",
+    cssVar: "--mpx-btn-variant-default-text-merged",
+    fallback: "#0f172a",
+    groupId: "root",
+  },
+  {
+    id: "button-default-text-disabled",
+    cssVar: "--mpx-btn-variant-default-text-disabled",
+    fallback: "#d5dfec",
+    fallbackAlpha: 0.62,
+    groupId: "root",
+  },
+  {
+    id: "button-default-danger-hover-bg",
+    cssVar: "--mpx-btn-variant-default-danger-hover-bg",
+    fallback: "#fee2e2",
+    groupId: "root",
+  },
+  {
+    id: "button-default-danger-hover-border",
+    cssVar: "--mpx-btn-variant-default-danger-hover-border",
+    fallback: "#fca5a5",
+    groupId: "root",
+  },
+  {
+    id: "button-default-danger-hover-text",
+    cssVar: "--mpx-btn-variant-default-danger-hover-text",
+    fallback: "#dc2626",
+    groupId: "root",
+  },
+  {
+    id: "button-player-border",
+    cssVar: "--mpx-btn-variant-player-border",
+    fallback: "#7588a2",
+    fallbackAlpha: 0.8,
+    groupId: "main",
+  },
+  {
+    id: "button-player-border-active",
+    cssVar: "--mpx-btn-variant-player-border-active",
+    fallback: "#8ca5c4",
+    fallbackAlpha: 0.92,
+    groupId: "main",
+  },
+  {
+    id: "button-player-bg-idle",
+    cssVar: "--mpx-btn-variant-player-bg-idle",
+    fallback: "#1e2834",
+    fallbackAlpha: 0.74,
+    groupId: "main",
+  },
+  {
+    id: "button-player-bg-hover",
+    cssVar: "--mpx-btn-variant-player-bg-hover",
+    fallback: "#2a384a",
+    fallbackAlpha: 0.9,
+    groupId: "main",
+  },
+  {
+    id: "button-player-bg-active",
+    cssVar: "--mpx-btn-variant-player-bg-active",
+    fallback: "#405670",
+    fallbackAlpha: 0.95,
+    groupId: "main",
+  },
+  {
+    id: "button-player-text-idle",
+    cssVar: "--mpx-btn-variant-player-text-idle",
+    fallback: "#f1f6ff",
+    groupId: "main",
+  },
+  {
+    id: "button-player-text-disabled",
+    cssVar: "--mpx-btn-variant-player-text-disabled",
+    fallback: "#d5dfec",
+    fallbackAlpha: 0.62,
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-text-hover",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-hover",
+    fallback: "#678390",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-bg-hover",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-hover",
+    fallback: "#e3e9ef",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-text-active",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-active",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-bg-active",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-active",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-text-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-text-pressed",
+    fallback: "#2e2a22",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-bg-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-bg-pressed",
+    fallback: "#dbe3eb",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-focus-outline-color",
+    cssVar: "--mpx-btn-variant-overlay-cell-focus-outline-color",
+    fallback: "#8ea0ad",
+    groupId: "main",
+  },
   {
     id: "button-side-idle-border",
     cssVar:
@@ -2524,6 +2707,119 @@ export const BUTTON_STATE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "side",
   },
 ];
+
+export const BUTTON_STATE_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
+  {
+    id: "button-default-shadow-idle",
+    cssVar: "--mpx-btn-variant-default-shadow-idle",
+    fallback:
+      "0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9), inset 0 -2px 1px rgba(0, 0, 0, 0.08)",
+    groupId: "shadow",
+  },
+  {
+    id: "button-default-shadow-hover",
+    cssVar: "--mpx-btn-variant-default-shadow-hover",
+    fallback:
+      "0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1), inset 0 -2px 1px rgba(0, 0, 0, 0.08)",
+    groupId: "shadow",
+  },
+  {
+    id: "button-default-shadow-active",
+    cssVar: "--mpx-btn-variant-default-shadow-active",
+    fallback:
+      "0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 -1px 1px rgba(255, 255, 255, 0.5)",
+    groupId: "shadow",
+  },
+  {
+    id: "button-default-shadow-pressed",
+    cssVar: "--mpx-btn-variant-default-shadow-pressed",
+    fallback:
+      "0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 -2px 2px rgba(255, 255, 255, 0.7)",
+    groupId: "shadow",
+  },
+  {
+    id: "button-default-transform-hover",
+    cssVar: "--mpx-btn-variant-default-transform-hover",
+    fallback: "translateY(-1px)",
+    groupId: "root",
+  },
+  {
+    id: "button-default-transform-active",
+    cssVar: "--mpx-btn-variant-default-transform-active",
+    fallback: "translateY(2px)",
+    groupId: "root",
+  },
+  {
+    id: "button-default-transform-pressed",
+    cssVar: "--mpx-btn-variant-default-transform-pressed",
+    fallback: "translateY(1px)",
+    groupId: "root",
+  },
+  {
+    id: "button-default-danger-hover-shadow",
+    cssVar: "--mpx-btn-variant-default-danger-hover-shadow",
+    fallback:
+      "0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1), inset 0 -2px 1px rgba(220, 38, 38, 0.15)",
+    groupId: "shadow",
+  },
+  {
+    id: "button-overlay-cell-font-weight-pressed",
+    cssVar: "--mpx-btn-variant-overlay-cell-font-weight-pressed",
+    fallback: "600",
+    groupId: "main",
+  },
+  {
+    id: "button-overlay-cell-focus-outline-width",
+    cssVar: "--mpx-btn-variant-overlay-cell-focus-outline-width",
+    fallback: "1px",
+    groupId: "main",
+  },
+];
+
+export const BUTTON_VARIANT_DEFAULT_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  BUTTON_STATE_COLOR_FIELDS.filter((field) => field.id.startsWith("button-default-"));
+
+export const BUTTON_VARIANT_DEFAULT_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  BUTTON_STATE_TEXT_FIELDS.filter((field) => field.id.startsWith("button-default-"));
+
+export const BUTTON_VARIANT_PLAYER_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  BUTTON_STATE_COLOR_FIELDS.filter((field) => field.id.startsWith("button-player-"));
+
+export const BUTTON_VARIANT_OVERLAY_CELL_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  BUTTON_STATE_COLOR_FIELDS.filter((field) =>
+    field.id.startsWith("button-overlay-cell-"),
+  );
+
+export const BUTTON_VARIANT_OVERLAY_CELL_TEXT_FIELDS: readonly ThemeDebugTextField[] =
+  BUTTON_STATE_TEXT_FIELDS.filter((field) =>
+    field.id.startsWith("button-overlay-cell-"),
+  );
+
+export const LARGE_PANEL_BUTTON_COLOR_FIELDS: readonly ThemeDebugColorField[] =
+  BUTTON_STATE_COLOR_FIELDS.filter((field) => field.id.startsWith("button-side-"));
+
+export const BUTTON_SLOT_SECTION_DEFINITIONS = [
+  {
+    id: "header",
+    summaryKey: "ui.themeParameter.buttonLayer.sectionSlotHeader",
+    colorFields: CONTAINER_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+  {
+    id: "sidebarHeader",
+    summaryKey: "ui.themeParameter.buttonLayer.sectionSlotSidebarHeader",
+    colorFields: CONTAINER_SIDEBAR_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+  {
+    id: "mainHeader",
+    summaryKey: "ui.themeParameter.buttonLayer.sectionSlotMainHeader",
+    colorFields: CONTAINER_MAIN_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+  {
+    id: "metadataHeader",
+    summaryKey: "ui.themeParameter.buttonLayer.sectionSlotMetadataHeader",
+    colorFields: CONTAINER_METADATA_HEADER_BUTTONS_COLOR_FIELDS,
+  },
+] as const;
 
 export const BUTTON_STATE_FIELD_PREFIX: Readonly<
   Record<ButtonStateKey, string>

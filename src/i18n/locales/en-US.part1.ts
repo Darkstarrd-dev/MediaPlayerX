@@ -367,6 +367,26 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.page.commonControls": "Common controls debug",
   "ui.themeParameter.resetField": "Reset",
   "ui.themeParameter.page.buttonStates": "Button style debug",
+  "ui.themeParameter.buttonLayer.sectionDefault": "4.1 Default variant",
+  "ui.themeParameter.buttonLayer.noteDefault":
+    "Primary shared button chain. It receives core semantics and acts as the main fallback for general buttons.",
+  "ui.themeParameter.buttonLayer.sectionPlayer": "4.2 Player variant",
+  "ui.themeParameter.buttonLayer.notePlayer":
+    "Dedicated player button variant that keeps its own visual semantics inside the 4.0 button layer.",
+  "ui.themeParameter.buttonLayer.sectionOverlayCell":
+    "4.3 Overlay Cell variant",
+  "ui.themeParameter.buttonLayer.noteOverlayCell":
+    "Overlay-cell button variant for hover, active, pressed, and focus-outline tuning.",
+  "ui.themeParameter.buttonLayer.sectionSlot": "4.4 Slot overrides",
+  "ui.themeParameter.buttonLayer.noteSlot":
+    "Representative business slot override groups. These should fall back to variant/default instead of replacing the button-layer structure.",
+  "ui.themeParameter.buttonLayer.sectionSlotHeader": "Header button slot",
+  "ui.themeParameter.buttonLayer.sectionSlotSidebarHeader":
+    "Sidebar header button slot",
+  "ui.themeParameter.buttonLayer.sectionSlotMainHeader":
+    "Main header button slot",
+  "ui.themeParameter.buttonLayer.sectionSlotMetadataHeader":
+    "Metadata header button slot",
   "ui.themeParameter.preview.bgOnly": "Preview background only",
   "ui.themeParameter.preview.bgPlusContainer":
     "Preview background + container layer",
@@ -422,6 +442,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
+  "ui.themeParameter.largePanelLayer.sectionButton": "3.5 Button master control",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
   "ui.themeParameter.largePanelLayer.sectionInternalSettings":
     "3.10.0 Settings / Help / Theme Parameter",

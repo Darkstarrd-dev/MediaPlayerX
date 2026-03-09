@@ -1095,7 +1095,7 @@ css 的触发点
 `--mpx-btn-variant-overlay-cell-focus-outline-width = 1px`（`src/styles/themes/contract.css`）
 `--mpx-btn-variant-overlay-cell-focus-outline-color = var(--mpx-state-focus-color)`（`src/styles/themes/palettes/skeuomorphic-luxury-white.css`）
 
-`E. ThemeParameter Side 局部变体（slot 微调）`
+`E. ThemeParameter Side 局部变体（slot 微调，现归 largePanelLayer > 3.5）`
 挂载前缀：`--mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-<state>-<prop>`
 接入状态：`idle/hover/active/selected/pressed/disabled/pending/danger-hover`
 
@@ -1113,7 +1113,7 @@ css 的触发点
 
 1. 全局按钮主链路统一到 `core/default/player/overlay-cell`。
 2. 旧命名（`btn-template/player-btn/overlay-cell-btn`）已完成迁移并移除。
-3. ThemeParameter side 分页按钮保留独立状态级调参能力，同时保持与 default 变体同链路。
+3. `buttonStates` 页现在主验收 `default/player/overlay-cell/slot` 四层；ThemeParameter side 分页按钮迁移到 `largePanelLayer > 3.5 Button 按钮总控`。
 4. 命名索引已同步到 `docs/10-ui_definition.md` 与 `docs/11-token_design.md`。
 
 ## 5.0 小面板（基架）
@@ -1405,10 +1405,10 @@ css 的触发点
 | `parameters`      | `COMMON_PARAMETERS` + 当前 style 参数 + 大/小面板数值参数                                                                                   | 不承载特例白名单，只负责通用参数滑条                  | 无独立预览；直接写入实际变量                | 该页是参数入口，不作为层级归属页                          |
 | `snapshot`        | 当前所有分页已暴露字段的导出 / 导入 / 复位                                                                                                  | 不负责新增字段定义                                    | 无独立预览；作用于当前 inline 覆写集合      | Phase 3 会把该结构继续收敛到正式 theme schema             |
 | `containerLayer`  | `1.0` 背景层、`2.0 共享壳层`、`2.1 Header`、`2.2 Sidebar`、`2.3 Main`、`2.4 Metadata`、`fg-sidebar-main`、`fg-main-content-image-name-list` | 播放器子系统、全屏图像调整、广告审核 overlay          | `bg-only`、`bg-plus-container`              | 已按共享壳层 + 单容器 frame 结构重排                      |
-| `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等   | 播放器独立 panel / HUD、未登记的舞台化 overlay        | `bg-plus-large-panel`                       | 主验收对象是 `root/head/side/main` 骨架与受控内部语义     |
+| `largePanelLayer` | `3.0~3.10` 大面板骨架与已收口内部件：ThemeParameter side button、Import Task、Metadata Fetch、FeatureTagPicker、Subtitle Cleanup、Transcode、SidebarRename 批量预览等 | 播放器独立 panel / HUD、未登记的舞台化 overlay        | `bg-plus-large-panel`                       | 主验收对象是 `root/head/side/main/button` 骨架与受控内部语义 |
 | `smallPanelLayer` | `5.0` 小面板骨架与已收口内部件：playlist-name-dialog、rename.single 等                                                                      | 不承接大面板内部件与播放器 popover                    | `bg-plus-small-panel`                       | 以 dialog panel 本体与其局部控件为主                      |
 | `commonControls`  | `6.1` 滚动条基础层 + sidebar-tree 细节覆写、`6.2.0` range 基础层、`6.2.1` runway、`6.2.2` 竖向 slider、`6.2.3` settings slider groove       | 全屏图像调整曲线控件、播放器 HUD 内非 slider 特化控件 | 页内控件样例（scrollbar / slider sections） | 当前已补齐 scrollbar detail 与 settings groove 独立 token |
-| `buttonStates`    | `4.0` 按钮层里 ThemeParameter side 按钮的 state 样例与 slot 覆写链路                                                                        | 业务按钮全集并不在本页逐个复刻                        | 页内 state demo 按钮                        | 用于验收 `core/variant/slot` 到 side button 的命中情况    |
+| `buttonStates`    | `4.0` 按钮层的 `default/player/overlay-cell/slot` 四层链路                                                                                  | 业务按钮全集并不在本页逐个复刻                        | 页内分组折叠区                              | 用于验收 `core -> variant -> slot` 的总体收口情况         |
 
 ### 7.0.1.2 ThemeParameter 逐页手工验收清单（待执行）
 
