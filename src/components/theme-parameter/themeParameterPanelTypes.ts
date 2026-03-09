@@ -27,6 +27,8 @@ export type LargePanelInternalSectionId =
   | "transcodeDialog"
   | "sidebarRenamePreview";
 
+export type LargePanelInternalSettingsGroupId = "side" | "main";
+
 export type SmallPanelSectionId =
   | "shortcutEdit"
   | "shortcutCapture"
@@ -133,6 +135,11 @@ export interface LargePanelInternalSectionDefinition {
   prefixes: readonly string[];
   colorFields: readonly ThemeDebugColorField[];
   textFields: readonly ThemeDebugTextField[];
+  groups?: readonly {
+    id: LargePanelInternalSettingsGroupId;
+    summaryKey: string;
+    fieldIds: readonly string[];
+  }[];
 }
 
 export interface SmallPanelSectionGroupDefinition {

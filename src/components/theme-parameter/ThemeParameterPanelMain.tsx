@@ -99,6 +99,7 @@ import type {
   ContainerDebugSubsection,
   ControlPreviewValues,
   LargePanelInternalSectionId,
+  LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeDebugColorField,
   ThemeDebugTextField,
@@ -108,6 +109,7 @@ import type {
 
 export type {
   LargePanelInternalSectionId,
+  LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
   ThemeParameterPreviewMode,
@@ -212,8 +214,16 @@ interface ThemeParameterPanelMainProps {
     LargePanelInternalSectionId,
     boolean
   >;
+  largePanelInternalSettingsGroupsExpanded: Record<
+    LargePanelInternalSettingsGroupId,
+    boolean
+  >;
   setLargePanelInternalSectionExpanded: (
     sectionId: LargePanelInternalSectionId,
+    action: SetStateAction<boolean>,
+  ) => void;
+  setLargePanelInternalSettingsGroupExpanded: (
+    groupId: LargePanelInternalSettingsGroupId,
     action: SetStateAction<boolean>,
   ) => void;
   smallPanelRootExpanded: boolean;
@@ -332,7 +342,9 @@ export function ThemeParameterPanelMain({
   largePanelInternalExpanded,
   setLargePanelInternalExpanded,
   largePanelInternalSectionsExpanded,
+  largePanelInternalSettingsGroupsExpanded,
   setLargePanelInternalSectionExpanded,
+  setLargePanelInternalSettingsGroupExpanded,
   smallPanelRootExpanded,
   setSmallPanelRootExpanded,
   smallPanelSectionsExpanded,
@@ -1812,10 +1824,15 @@ export function ThemeParameterPanelMain({
               t={t}
               sections={LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS}
               expanded={largePanelInternalSectionsExpanded}
+              settingsGroupsExpanded={largePanelInternalSettingsGroupsExpanded}
               setExpanded={setLargePanelInternalSectionExpanded}
+              setSettingsGroupExpanded={
+                setLargePanelInternalSettingsGroupExpanded
+              }
               renderSectionRows={(options) => (
                 <ThemeParameterLargePanelSectionRows
                   colorFields={options.colorFields}
+                  orderedEntries={options.orderedEntries}
                   inlineParameters={options.inlineParameters}
                   textFields={options.textFields}
                   parameters={options.parameters}

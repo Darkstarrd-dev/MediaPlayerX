@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, type SetStateAction } from "react";
 
 import type {
   LargePanelInternalSectionId,
+  LargePanelInternalSettingsGroupId,
   SmallPanelSectionId,
   ThemeParameterPageId,
 } from "./themeParameterPanelTypes";
@@ -117,6 +118,25 @@ export function useThemeParameterUiSession() {
           [sectionId]: resolveNextState(
             action,
             previous.largePanelInternalSectionsExpanded[sectionId],
+          ),
+        },
+      }));
+    },
+    [updateUiState],
+  );
+
+  const setLargePanelInternalSettingsGroupExpanded = useCallback(
+    (
+      groupId: LargePanelInternalSettingsGroupId,
+      action: SetStateAction<boolean>,
+    ) => {
+      updateUiState((previous) => ({
+        ...previous,
+        largePanelInternalSettingsGroupsExpanded: {
+          ...previous.largePanelInternalSettingsGroupsExpanded,
+          [groupId]: resolveNextState(
+            action,
+            previous.largePanelInternalSettingsGroupsExpanded[groupId],
           ),
         },
       }));
@@ -245,6 +265,7 @@ export function useThemeParameterUiSession() {
     setActivePage,
     setPageScrollTop,
     setLargePanelInternalSectionExpanded,
+    setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelSectionExpanded,
     ...booleanSetters,
   };

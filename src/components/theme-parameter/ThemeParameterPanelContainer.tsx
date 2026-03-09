@@ -252,6 +252,7 @@ function ThemeParameterPanel({
     setLargePanelMainExpanded,
     setLargePanelInternalExpanded,
     setLargePanelInternalSectionExpanded,
+    setLargePanelInternalSettingsGroupExpanded,
     setSmallPanelRootExpanded,
     setSmallPanelSectionExpanded,
   } = useThemeParameterUiSession();
@@ -302,6 +303,7 @@ function ThemeParameterPanel({
     largePanelMainExpanded,
     largePanelInternalExpanded,
     largePanelInternalSectionsExpanded,
+    largePanelInternalSettingsGroupsExpanded,
     smallPanelRootExpanded,
     smallPanelSectionsExpanded,
   } = uiState;
@@ -889,8 +891,14 @@ function ThemeParameterPanel({
           largePanelInternalSectionsExpanded={
             largePanelInternalSectionsExpanded
           }
+          largePanelInternalSettingsGroupsExpanded={
+            largePanelInternalSettingsGroupsExpanded
+          }
           setLargePanelInternalSectionExpanded={
             setLargePanelInternalSectionExpanded
+          }
+          setLargePanelInternalSettingsGroupExpanded={
+            setLargePanelInternalSettingsGroupExpanded
           }
           smallPanelRootExpanded={smallPanelRootExpanded}
           setSmallPanelRootExpanded={setSmallPanelRootExpanded}

@@ -2155,6 +2155,63 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar === "--mpx-large-panel-main-fill-angle") {
     return "大面板Main背景渐变角度";
   }
+  if (cssVar === "--mpx-settings-side-border") {
+    return "大面板side容器边框颜色";
+  }
+  if (cssVar === "--mpx-settings-side-bg") {
+    return "大面板side容器背景颜色";
+  }
+  if (cssVar === "--mpx-settings-side-text") {
+    return "大面板side容器文字颜色";
+  }
+  if (cssVar === "--mpx-settings-side-item-bg") {
+    return "大面板side容器标签背景颜色";
+  }
+  if (cssVar === "--mpx-settings-side-item-hover-bg") {
+    return "大面板side容器标签hover状态背景颜色";
+  }
+  if (cssVar === "--mpx-settings-side-item-active-bg") {
+    return "大面板side容器标签focused状态背景颜色";
+  }
+  if (cssVar === "--mpx-settings-side-item-active-text") {
+    return "大面板side容器标签focused状态文字颜色";
+  }
+  if (cssVar === "--mpx-settings-main-border") {
+    return "大面板main容器边框颜色";
+  }
+  if (cssVar === "--mpx-settings-main-bg") {
+    return "大面板main容器背景颜色";
+  }
+  if (cssVar === "--mpx-settings-main-text") {
+    return "大面板main容器文字A颜色";
+  }
+  if (cssVar === "--mpx-settings-group-border") {
+    return "大面板main容器内分组边框颜色";
+  }
+  if (cssVar === "--mpx-settings-group-head-text") {
+    return "大面板main容器内分组大标题文字颜色";
+  }
+  if (cssVar === "--mpx-settings-item-label-text") {
+    return "大面板main容器内分组小标题文字颜色";
+  }
+  if (cssVar === "--mpx-settings-item-value-text") {
+    return "大面板main容器内分组输入框文字颜色";
+  }
+  if (cssVar === "--mpx-settings-item-input-bg") {
+    return "大面板main容器内分组输入框背景颜色";
+  }
+  if (cssVar === "--mpx-settings-item-input-border") {
+    return "大面板main容器内分组输入框边框颜色";
+  }
+  if (cssVar === "--mpx-settings-danger-btn-border") {
+    return "大面板main容器内高危按钮边框颜色";
+  }
+  if (cssVar === "--mpx-settings-danger-btn-bg") {
+    return "大面板main容器内高危按钮背景颜色";
+  }
+  if (cssVar === "--mpx-settings-danger-btn-text") {
+    return "大面板main容器内高危按钮文字颜色";
+  }
   if (cssVar.startsWith("--mpx-large-panel-section-")) {
     return "用于大面板 Head / Side / Main 共享默认值";
   }
@@ -3826,6 +3883,39 @@ const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
     id: "settings",
     summaryKey: "ui.themeParameter.largePanelLayer.sectionInternalSettings",
     prefixes: ["--mpx-settings-"],
+    groups: [
+      {
+        id: "side",
+        summaryKey: "ui.themeParameter.largePanelLayer.sectionInternalSettingsSide",
+        fieldIds: [
+          "large-panel-settings-side-border",
+          "large-panel-settings-side-bg",
+          "large-panel-settings-side-text",
+          "large-panel-settings-side-item-bg",
+          "large-panel-settings-side-item-hover-bg",
+          "large-panel-settings-side-item-active-bg",
+          "large-panel-settings-side-item-active-text",
+        ],
+      },
+      {
+        id: "main",
+        summaryKey: "ui.themeParameter.largePanelLayer.sectionInternalSettingsMain",
+        fieldIds: [
+          "large-panel-settings-main-border",
+          "large-panel-settings-main-bg",
+          "large-panel-settings-main-text",
+          "large-panel-settings-group-border",
+          "large-panel-settings-group-head-text",
+          "large-panel-settings-item-label-text",
+          "large-panel-settings-item-value-text",
+          "large-panel-settings-item-input-bg",
+          "large-panel-settings-item-input-border",
+          "large-panel-settings-danger-btn-border",
+          "large-panel-settings-danger-btn-bg",
+          "large-panel-settings-danger-btn-text",
+        ],
+      },
+    ],
   },
   {
     id: "importTask",
@@ -3881,6 +3971,11 @@ const LARGE_PANEL_INTERNAL_SECTION_PREFIX_DEFINITIONS = [
   id: LargePanelInternalSectionId;
   summaryKey: string;
   prefixes: readonly string[];
+  groups?: readonly {
+    id: "side" | "main";
+    summaryKey: string;
+    fieldIds: readonly string[];
+  }[];
 }[];
 
 export const LARGE_PANEL_INTERNAL_SECTION_DEFINITIONS: readonly LargePanelInternalSectionDefinition[] =

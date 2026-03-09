@@ -35,6 +35,14 @@ function ensureDetailsOpen(summaryText: string): void {
   }
 }
 
+function ensureDetailsOpenWithin(container: HTMLElement, summaryText: string): void {
+  const details = getDetailsBySummaryTextWithin(container, summaryText);
+  expect(details).not.toBeNull();
+  if (!details?.open) {
+    fireEvent.click(within(container).getAllByText(summaryText)[0]);
+  }
+}
+
 function getDetailsBySummaryText(summaryText: string): HTMLDetailsElement {
   const summary = screen.getAllByText(summaryText)[0];
   const details = summary.closest("details") as HTMLDetailsElement | null;
@@ -49,10 +57,30 @@ function getOrderedFieldContainer(text: string): HTMLElement {
   return container as HTMLElement;
 }
 
+function getOrderedFieldContainerWithin(
+  container: HTMLElement,
+  text: string,
+): HTMLElement {
+  const node = within(container).getAllByText(text)[0];
+  const fieldContainer = node.closest("label, details") as HTMLElement | null;
+  expect(fieldContainer).not.toBeNull();
+  return fieldContainer as HTMLElement;
+}
+
 function expectFieldOrder(texts: string[]): void {
   for (let index = 0; index < texts.length - 1; index += 1) {
     const current = getOrderedFieldContainer(texts[index]);
     const next = getOrderedFieldContainer(texts[index + 1]);
+    expect(
+      current.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+  }
+}
+
+function expectFieldOrderWithin(container: HTMLElement, texts: string[]): void {
+  for (let index = 0; index < texts.length - 1; index += 1) {
+    const current = getOrderedFieldContainerWithin(container, texts[index]);
+    const next = getOrderedFieldContainerWithin(container, texts[index + 1]);
     expect(
       current.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).not.toBe(0);
@@ -1080,6 +1108,94 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("3.10.7 转码")).toBeInTheDocument();
     expect(
       screen.getByText("3.10.8 侧栏重命名（共享内部件 + 预览）"),
+    ).toBeInTheDocument();
+
+    ensureDetailsOpen("3.10.0 Settings 内部件");
+    const settingsDetails = getDetailsBySummaryText("3.10.0 Settings 内部件");
+    ensureDetailsOpenWithin(settingsDetails, "Side");
+    ensureDetailsOpenWithin(settingsDetails, "Main");
+    const sideDetails = getDetailsBySummaryTextWithin(settingsDetails, "Side");
+    const mainDetails = getDetailsBySummaryTextWithin(settingsDetails, "Main");
+    expectFieldOrderWithin(sideDetails, [
+      "--mpx-settings-side-border",
+      "--mpx-settings-side-bg",
+      "--mpx-settings-side-text",
+      "--mpx-settings-side-item-bg",
+      "--mpx-settings-side-item-hover-bg",
+      "--mpx-settings-side-item-active-bg",
+      "--mpx-settings-side-item-active-text",
+    ]);
+    expect(
+      within(sideDetails).getByText("大面板side容器边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器标签背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器标签hover状态背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器标签focused状态背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(sideDetails).getByText("大面板side容器标签focused状态文字颜色"),
+    ).toBeInTheDocument();
+
+    expectFieldOrderWithin(mainDetails, [
+      "--mpx-settings-main-border",
+      "--mpx-settings-main-bg",
+      "--mpx-settings-main-text",
+      "--mpx-settings-group-border",
+      "--mpx-settings-group-head-text",
+      "--mpx-settings-item-label-text",
+      "--mpx-settings-item-value-text",
+      "--mpx-settings-item-input-bg",
+      "--mpx-settings-item-input-border",
+      "--mpx-settings-danger-btn-border",
+      "--mpx-settings-danger-btn-bg",
+      "--mpx-settings-danger-btn-text",
+    ]);
+    expect(
+      within(mainDetails).getByText("大面板main容器边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器文字A颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组大标题文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组小标题文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组输入框文字颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组输入框背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内分组输入框边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内高危按钮边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内高危按钮背景颜色"),
+    ).toBeInTheDocument();
+    expect(
+      within(mainDetails).getByText("大面板main容器内高危按钮文字颜色"),
     ).toBeInTheDocument();
 
     ensureDetailsOpen("3.10.2 元数据抓取");

@@ -4,6 +4,7 @@ import type { ThemeParameterDefinition } from "./themeParameterDefinitions";
 import type {
   ContainerDebugSubsection,
   LargePanelInternalSectionDefinition,
+  LargePanelInternalSettingsGroupId,
   SmallPanelSectionGroupDefinition,
   ThemeDebugColorField,
   ThemeDebugTextField,
@@ -53,12 +54,18 @@ interface ThemeParameterLargePanelInternalSectionsProps {
   t: (key: string, values?: Record<string, string | number>) => string;
   sections: readonly LargePanelInternalSectionDefinition[];
   expanded: Record<LargePanelInternalSectionDefinition["id"], boolean>;
+  settingsGroupsExpanded: Record<LargePanelInternalSettingsGroupId, boolean>;
   setExpanded: (
     sectionId: LargePanelInternalSectionDefinition["id"],
     action: SetStateAction<boolean>,
   ) => void;
+  setSettingsGroupExpanded: (
+    groupId: LargePanelInternalSettingsGroupId,
+    action: SetStateAction<boolean>,
+  ) => void;
   renderSectionRows: (options: {
     colorFields: readonly ThemeDebugColorField[];
+    orderedEntries?: readonly ThemeParameterLargePanelOrderedEntry[];
     inlineParameters?: ThemeParameterDefinition[];
     textFields?: readonly ThemeDebugTextField[];
     parameters?: ThemeParameterDefinition[];
@@ -312,7 +319,9 @@ export function ThemeParameterLargePanelInternalSections({
   t,
   sections,
   expanded,
+  settingsGroupsExpanded,
   setExpanded,
+  setSettingsGroupExpanded,
   renderSectionRows,
 }: ThemeParameterLargePanelInternalSectionsProps) {
   return (
@@ -328,10 +337,46 @@ export function ThemeParameterLargePanelInternalSections({
         >
           <summary>{t(section.summaryKey)}</summary>
           <div className="settings-collapsible-content">
-            {renderSectionRows({
-              colorFields: section.colorFields,
-              textFields: section.textFields,
-            })}
+            {section.groups?.length ? (
+              section.groups.map((group) => {
+                const colorFields = section.colorFields.filter((field) =>
+                  group.fieldIds.includes(field.id),
+                );
+                const textFields = section.textFields.filter((field) =>
+                  group.fieldIds.includes(field.id),
+                );
+                return (
+                  <details
+                    key={group.id}
+                    className="settings-collapsible"
+                    open={settingsGroupsExpanded[group.id]}
+                    onToggle={(event) =>
+                      setSettingsGroupExpanded(
+                        group.id,
+                        (event.currentTarget as HTMLDetailsElement).open,
+                      )
+                    }
+                  >
+                    <summary>{t(group.summaryKey)}</summary>
+                    <div className="settings-collapsible-content">
+                      {renderSectionRows({
+                        colorFields,
+                        orderedEntries: group.fieldIds.map((fieldId) => ({
+                          kind: "color",
+                          id: fieldId,
+                        })),
+                        textFields,
+                      })}
+                    </div>
+                  </details>
+                );
+              })
+            ) : (
+              renderSectionRows({
+                colorFields: section.colorFields,
+                textFields: section.textFields,
+              })
+            )}
           </div>
         </details>
       ))}
