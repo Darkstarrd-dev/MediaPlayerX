@@ -1063,6 +1063,68 @@ describe("FileSystemMediaReadService", () => {
     ).toBe(false);
   });
 
+  it("watcher 刷新进行中会合并后续请求并应用最小间隔节流", async () => {
+    vi.useFakeTimers();
+    try {
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), "mpx-watcher-refresh-coalesce-"),
+      );
+      createdRoots.push(root);
+
+      const service = new FileSystemMediaReadService(root);
+      createdServices.push(service);
+
+      const serviceInternal = service as unknown as {
+        runExternalSourceRefreshFromWatcher: () => void;
+        refreshSnapshotFromFilesystem: () => Promise<unknown>;
+      };
+      const emptySnapshot = {
+        image_packages: [],
+        image_directories: [],
+        videos: [],
+        audios: [],
+      };
+
+      let resolveFirstRefresh: ((value: unknown) => void) | null = null;
+      const firstRefreshPromise = new Promise<unknown>((resolve) => {
+        resolveFirstRefresh = resolve;
+      });
+      const refreshSpy = vi
+        .spyOn(serviceInternal, "refreshSnapshotFromFilesystem")
+        .mockImplementationOnce(async () => await firstRefreshPromise)
+        .mockResolvedValue(emptySnapshot);
+
+      serviceInternal.runExternalSourceRefreshFromWatcher();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+
+      serviceInternal.runExternalSourceRefreshFromWatcher();
+      await Promise.resolve();
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+
+      const completeFirstRefresh = resolveFirstRefresh as
+        | ((value: unknown) => void)
+        | null;
+      expect(completeFirstRefresh).not.toBeNull();
+      if (!completeFirstRefresh) {
+        throw new Error("first refresh resolver missing");
+      }
+      completeFirstRefresh(emptySnapshot);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(4_999);
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(refreshSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("导入任务以纯引用登记库外文件并完成刷新", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-import-root-"));
     const outsideRoot = await fs.mkdtemp(

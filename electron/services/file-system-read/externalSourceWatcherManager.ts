@@ -3,25 +3,39 @@ import path from "node:path";
 
 import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
 
+interface WatchedPathState {
+  watchPath: string;
+  hasImportedDirectory: boolean;
+  importedFileBaseNames: Set<string>;
+}
+
 export class ExternalSourceWatcherManager {
   private static readonly AUTO_SUBTITLE_SIDE_CAR_PATTERN =
     /\.auto-live(?:\.[a-z0-9-]+)?\.srt(?:\.tmp)?$/i;
   private static readonly UNKNOWN_EVENT_IGNORE_WINDOW_MS = 1_200;
 
   private readonly debounceMs: number;
+  private readonly mediaExtensions: Set<string>;
   private readonly onDebouncedChange: () => void;
   private readonly watchImpl: typeof watch;
 
   private readonly watcherByPathKey = new Map<string, FSWatcher>();
+  private readonly watchedPathStateByKey = new Map<string, WatchedPathState>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private lastIgnoredSubtitleEventAtMs = 0;
 
   constructor(options: {
     debounceMs: number;
+    mediaExtensions?: Iterable<string>;
     onDebouncedChange: () => void;
     watchImpl?: typeof watch;
   }) {
     this.debounceMs = options.debounceMs;
+    this.mediaExtensions = new Set(
+      Array.from(options.mediaExtensions ?? []).map((value) =>
+        value.toLowerCase(),
+      ),
+    );
     this.onDebouncedChange = options.onDebouncedChange;
     this.watchImpl = options.watchImpl ?? watch;
   }
@@ -30,36 +44,55 @@ export class ExternalSourceWatcherManager {
     importDirectoryRoots: Iterable<string>;
     importFilePaths: Iterable<string>;
   }): void {
-    const desiredWatchPathByKey = new Map<string, string>();
+    const desiredWatchStateByKey = new Map<string, WatchedPathState>();
+
+    const ensureWatchedPathState = (watchPath: string): WatchedPathState => {
+      const pathKey = normalizeAllowlistKey(watchPath);
+      const existing = desiredWatchStateByKey.get(pathKey);
+      if (existing) {
+        return existing;
+      }
+      const created: WatchedPathState = {
+        watchPath,
+        hasImportedDirectory: false,
+        importedFileBaseNames: new Set<string>(),
+      };
+      desiredWatchStateByKey.set(pathKey, created);
+      return created;
+    };
+
     for (const rootPath of options.importDirectoryRoots) {
       const resolvedPath = path.resolve(rootPath);
-      desiredWatchPathByKey.set(
-        normalizeAllowlistKey(resolvedPath),
-        resolvedPath,
-      );
+      ensureWatchedPathState(resolvedPath).hasImportedDirectory = true;
     }
     for (const filePath of options.importFilePaths) {
-      const parentPath = path.dirname(path.resolve(filePath));
-      desiredWatchPathByKey.set(normalizeAllowlistKey(parentPath), parentPath);
+      const resolvedFilePath = path.resolve(filePath);
+      const parentPath = path.dirname(resolvedFilePath);
+      const watchedPathState = ensureWatchedPathState(parentPath);
+      watchedPathState.importedFileBaseNames.add(
+        path.basename(resolvedFilePath).toLowerCase(),
+      );
     }
 
     for (const [pathKey, watcher] of this.watcherByPathKey) {
-      if (desiredWatchPathByKey.has(pathKey)) {
+      if (desiredWatchStateByKey.has(pathKey)) {
         continue;
       }
       watcher.close();
       this.watcherByPathKey.delete(pathKey);
+      this.watchedPathStateByKey.delete(pathKey);
     }
 
     const recursiveWatchSupported =
       process.platform === "win32" || process.platform === "darwin";
-    for (const [pathKey, watchPath] of desiredWatchPathByKey) {
+    for (const [pathKey, watchedPathState] of desiredWatchStateByKey) {
+      this.watchedPathStateByKey.set(pathKey, watchedPathState);
       if (this.watcherByPathKey.has(pathKey)) {
         continue;
       }
       try {
         const watcher = this.watchImpl(
-          watchPath,
+          watchedPathState.watchPath,
           { recursive: recursiveWatchSupported },
           (_eventType, filename) => {
             if (this.shouldIgnoreWatchFilename(filename)) {
@@ -69,6 +102,13 @@ export class ExternalSourceWatcherManager {
             if (this.shouldIgnoreUnknownFollowUpEvent(filename)) {
               return;
             }
+            const currentPathState = this.watchedPathStateByKey.get(pathKey);
+            if (
+              !currentPathState ||
+              !this.shouldRefreshForWatchFilename(filename, currentPathState)
+            ) {
+              return;
+            }
             this.scheduleDebouncedRefresh();
           },
         );
@@ -76,6 +116,7 @@ export class ExternalSourceWatcherManager {
           const existingWatcher = this.watcherByPathKey.get(pathKey);
           if (existingWatcher === watcher) {
             this.watcherByPathKey.delete(pathKey);
+            this.watchedPathStateByKey.delete(pathKey);
           }
           watcher.close();
           this.scheduleDebouncedRefresh();
@@ -96,6 +137,7 @@ export class ExternalSourceWatcherManager {
       watcher.close();
     }
     this.watcherByPathKey.clear();
+    this.watchedPathStateByKey.clear();
   }
 
   private scheduleDebouncedRefresh(): void {
@@ -153,6 +195,32 @@ export class ExternalSourceWatcherManager {
     return (
       Date.now() - this.lastIgnoredSubtitleEventAtMs <=
       ExternalSourceWatcherManager.UNKNOWN_EVENT_IGNORE_WINDOW_MS
+    );
+  }
+
+  private shouldRefreshForWatchFilename(
+    filename: string | Buffer | null,
+    watchedPathState: WatchedPathState,
+  ): boolean {
+    if (filename === null) {
+      return watchedPathState.hasImportedDirectory;
+    }
+
+    const normalized =
+      typeof filename === "string"
+        ? filename.trim()
+        : filename.toString("utf8").trim();
+    if (!normalized) {
+      return watchedPathState.hasImportedDirectory;
+    }
+
+    const extension = path.extname(normalized).toLowerCase();
+    if (extension && this.mediaExtensions.has(extension)) {
+      return true;
+    }
+
+    return watchedPathState.importedFileBaseNames.has(
+      path.basename(normalized).toLowerCase(),
     );
   }
 }

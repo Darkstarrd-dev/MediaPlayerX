@@ -12,7 +12,7 @@ import {
 import { runTaskInProcess } from '../task-orchestrator/processTaskOrchestrator'
 
 export interface ArchiveNormalizationTaskState {
-  status: 'pending' | 'running' | 'completed' | 'failed'
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'permanently-failed'
   error: string | null
   updatedAtMs: number
 }
@@ -40,6 +40,10 @@ export class ArchiveNormalizationService {
   private static readonly ARCHIVE_NORMALIZE_RETRY_BASE_MS = 1_000
 
   private static readonly ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MS = 30_000
+
+  private static readonly ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MAX_MS = 10 * 60_000
+
+  private static readonly ARCHIVE_NORMALIZE_MAX_TOTAL_FAILURES = 6
 
   // 低优先级队列用于后台归一化（空闲窗口执行），高优先级用于“用户刚打开目标包”时抢占执行。
   private archiveNormalizationPendingLow = new Set<string>()
@@ -166,6 +170,17 @@ export class ArchiveNormalizationService {
     }
 
     const now = Date.now()
+    if (this.hasPermanentFailure(resolvedPath)) {
+      const totalFailureCount = this.archiveNormalizationRetryCountBySourcePath.get(resolvedPath) ?? 0
+      this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+        status: 'permanently-failed',
+        error: `permanent-failure-${totalFailureCount}`,
+        updatedAtMs: now,
+      })
+      this.emitStatusChanged()
+      return
+    }
+
     const circuitOpenUntil = this.archiveNormalizationCircuitOpenUntilBySourcePath.get(resolvedPath) ?? 0
     if (circuitOpenUntil > now) {
       this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
@@ -365,6 +380,21 @@ export class ArchiveNormalizationService {
       return true
     }
     return false
+  }
+
+  private hasPermanentFailure(sourceArchivePath: string): boolean {
+    return (
+      (this.archiveNormalizationRetryCountBySourcePath.get(sourceArchivePath) ?? 0) >
+      ArchiveNormalizationService.ARCHIVE_NORMALIZE_MAX_TOTAL_FAILURES
+    )
+  }
+
+  private computeCircuitBreakerDelayMs(totalFailureCount: number): number {
+    const multiplier = Math.max(0, totalFailureCount - (ArchiveNormalizationService.ARCHIVE_NORMALIZE_MAX_RETRY + 1))
+    return Math.min(
+      ArchiveNormalizationService.ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MS * 2 ** multiplier,
+      ArchiveNormalizationService.ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MAX_MS,
+    )
   }
 
   private async cleanupNormalizationArtifactsForSource(sourceArchivePath: string): Promise<void> {
@@ -601,25 +631,47 @@ export class ArchiveNormalizationService {
         })
       } else {
         this.archiveNormalizationRetryCountBySourcePath.set(resolvedPath, retryCount)
-        const circuitOpenUntil = Date.now() + ArchiveNormalizationService.ARCHIVE_NORMALIZE_CIRCUIT_BREAKER_MS
-        this.archiveNormalizationCircuitOpenUntilBySourcePath.set(resolvedPath, circuitOpenUntil)
-        this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
-          status: 'failed',
-          error: `circuit-open-until-${circuitOpenUntil}:${reason}`,
-          updatedAtMs: Date.now(),
-        })
-        this.emitStatusChanged()
-        console.warn('archive normalization failed (rar/7z)', {
-          archivePath: resolvedPath,
-          reason,
-          retryCount,
-          circuitOpenUntil,
-        })
-        this.options.emitLibraryChanged({
-          reason: 'archive-normalize-failed',
-          updated_at_ms: Date.now(),
-        })
-        this.persistPendingQueueState()
+        if (retryCount > ArchiveNormalizationService.ARCHIVE_NORMALIZE_MAX_TOTAL_FAILURES) {
+          this.archiveNormalizationCircuitOpenUntilBySourcePath.delete(resolvedPath)
+          this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+            status: 'permanently-failed',
+            error: `permanent-failure-${retryCount}:${reason}`,
+            updatedAtMs: Date.now(),
+          })
+          this.emitStatusChanged()
+          console.warn('archive normalization permanently failed (rar/7z)', {
+            archivePath: resolvedPath,
+            reason,
+            retryCount,
+          })
+          this.options.emitLibraryChanged({
+            reason: 'archive-normalize-failed',
+            updated_at_ms: Date.now(),
+          })
+          this.persistPendingQueueState()
+        } else {
+          const circuitDelayMs = this.computeCircuitBreakerDelayMs(retryCount)
+          const circuitOpenUntil = Date.now() + circuitDelayMs
+          this.archiveNormalizationCircuitOpenUntilBySourcePath.set(resolvedPath, circuitOpenUntil)
+          this.archiveNormalizationStateBySourcePath.set(resolvedPath, {
+            status: 'failed',
+            error: `circuit-open-until-${circuitOpenUntil}:${reason}`,
+            updatedAtMs: Date.now(),
+          })
+          this.emitStatusChanged()
+          console.warn('archive normalization failed (rar/7z)', {
+            archivePath: resolvedPath,
+            reason,
+            retryCount,
+            circuitOpenUntil,
+            circuitDelayMs,
+          })
+          this.options.emitLibraryChanged({
+            reason: 'archive-normalize-failed',
+            updated_at_ms: Date.now(),
+          })
+          this.persistPendingQueueState()
+        }
       }
     } finally {
       this.archiveNormalizationRunningPath = null

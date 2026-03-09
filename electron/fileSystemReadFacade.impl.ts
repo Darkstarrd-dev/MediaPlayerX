@@ -213,6 +213,8 @@ export class FileSystemMediaReadService {
 
   private static readonly EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS = 600;
 
+  private static readonly WATCHER_REFRESH_MIN_INTERVAL_MS = 5_000;
+
   private static readonly INTERACTIVE_READ_HOT_WINDOW_MS = 2_500;
 
   private static readonly ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY =
@@ -253,6 +255,11 @@ export class FileSystemMediaReadService {
   private managementMutationInFlightCount = 0;
   private startupCleanupPromise: Promise<void> | null = null;
   private lastInteractiveReadAtMs = 0;
+  private watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private watcherRefreshScheduledAtMs: number | null = null;
+  private watcherRefreshInFlight = false;
+  private pendingWatcherRefresh = false;
+  private lastWatcherRefreshAtMs = 0;
   private readLibrarySnapshotInFlight: Promise<LibrarySnapshotDto> | null =
     null;
   private readLibrarySnapshotLiteInFlight: Promise<LibrarySnapshotLiteDto> | null =
@@ -267,6 +274,13 @@ export class FileSystemMediaReadService {
   private readonly externalSourceWatcherManager =
     new ExternalSourceWatcherManager({
       debounceMs: FileSystemMediaReadService.EXTERNAL_SOURCE_PRUNE_DEBOUNCE_MS,
+      mediaExtensions: new Set([
+        ...IMAGE_EXTENSIONS,
+        ...VIDEO_EXTENSIONS,
+        ...AUDIO_EXTENSIONS,
+        ...ARCHIVE_EXTENSIONS,
+        ...CUE_EXTENSIONS,
+      ]),
       onDebouncedChange: () => this.runExternalSourceRefreshFromWatcher(),
     });
   private disposed = false;
@@ -675,6 +689,7 @@ export class FileSystemMediaReadService {
 
   dispose(): void {
     this.disposed = true;
+    this.clearWatcherRefreshTimer();
     this.stopExternalSourceWatchers();
     this.readLibrarySnapshotInFlight = null;
     this.readLibrarySnapshotLiteInFlight = null;
@@ -787,41 +802,103 @@ export class FileSystemMediaReadService {
       return;
     }
 
+    this.pendingWatcherRefresh = true;
+    this.schedulePendingWatcherRefresh(0);
+  }
+
+  private clearWatcherRefreshTimer(): void {
+    if (this.watcherRefreshTimer !== null) {
+      clearTimeout(this.watcherRefreshTimer);
+      this.watcherRefreshTimer = null;
+    }
+    this.watcherRefreshScheduledAtMs = null;
+  }
+
+  private schedulePendingWatcherRefresh(delayMs: number): void {
+    if (this.disposed || this.watcherRefreshInFlight || !this.pendingWatcherRefresh) {
+      return;
+    }
+
+    const now = Date.now();
+    const throttleDelay = Math.max(
+      0,
+      this.lastWatcherRefreshAtMs +
+        FileSystemMediaReadService.WATCHER_REFRESH_MIN_INTERVAL_MS -
+        now,
+    );
+    const effectiveDelay = Math.max(delayMs, throttleDelay);
+    const scheduledAtMs = now + effectiveDelay;
+
+    if (
+      this.watcherRefreshTimer !== null &&
+      this.watcherRefreshScheduledAtMs !== null &&
+      this.watcherRefreshScheduledAtMs <= scheduledAtMs
+    ) {
+      return;
+    }
+
+    this.clearWatcherRefreshTimer();
+    this.watcherRefreshScheduledAtMs = scheduledAtMs;
+    this.watcherRefreshTimer = setTimeout(() => {
+      this.watcherRefreshTimer = null;
+      this.watcherRefreshScheduledAtMs = null;
+      void this.flushPendingWatcherRefresh();
+    }, effectiveDelay);
+  }
+
+  private async flushPendingWatcherRefresh(): Promise<void> {
+    if (
+      this.disposed ||
+      this.watcherRefreshInFlight ||
+      !this.pendingWatcherRefresh ||
+      this.importTaskService.hasRunningImportTasks() ||
+      this.hasManagementMutationInFlight()
+    ) {
+      return;
+    }
+
+    this.pendingWatcherRefresh = false;
+    this.watcherRefreshInFlight = true;
+    this.lastWatcherRefreshAtMs = Date.now();
+
     const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
     const previousSnapshotKey = previousSnapshot
       ? this.buildExternalWatcherSnapshotKey(previousSnapshot)
       : null;
 
-    void this.refreshSnapshotFromFilesystem()
-      .then((nextSnapshot) => {
-        if (this.disposed) {
+    try {
+      const nextSnapshot = await this.refreshSnapshotFromFilesystem();
+      if (this.disposed) {
+        return;
+      }
+
+      if (previousSnapshotKey !== null) {
+        const nextSnapshotKey = this.buildExternalWatcherSnapshotKey(nextSnapshot);
+        if (nextSnapshotKey === previousSnapshotKey) {
           return;
         }
+      }
 
-        if (previousSnapshotKey !== null) {
-          const nextSnapshotKey =
-            this.buildExternalWatcherSnapshotKey(nextSnapshot);
-          if (nextSnapshotKey === previousSnapshotKey) {
-            return;
-          }
-        }
-
-        this.emitLibraryChanged({
-          reason: "auto-prune-missing-sources",
-          updated_at_ms: Date.now(),
-        });
-      })
-      .catch((error) => {
-        if (this.disposed) {
-          return;
-        }
-        console.warn("external source watcher refresh failed", {
-          reason:
-            error instanceof Error && error.message
-              ? error.message
-              : String(error),
-        });
+      this.emitLibraryChanged({
+        reason: "auto-prune-missing-sources",
+        updated_at_ms: Date.now(),
       });
+    } catch (error) {
+      if (this.disposed) {
+        return;
+      }
+      console.warn("external source watcher refresh failed", {
+        reason:
+          error instanceof Error && error.message
+            ? error.message
+            : String(error),
+      });
+    } finally {
+      this.watcherRefreshInFlight = false;
+      if (this.pendingWatcherRefresh) {
+        this.schedulePendingWatcherRefresh(0);
+      }
+    }
   }
 
   private refreshExternalSourceWatchers(): void {

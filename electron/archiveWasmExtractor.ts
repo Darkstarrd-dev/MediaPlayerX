@@ -301,7 +301,10 @@ class ZipStoreWriter {
   }
 
   static async create(outputZipPath: string): Promise<ZipStoreWriter> {
-    await fs.mkdir(path.dirname(outputZipPath), { recursive: true })
+    const parentDir = path.dirname(outputZipPath)
+    if (parentDir !== path.parse(parentDir).root) {
+      await fs.mkdir(parentDir, { recursive: true })
+    }
     const handle = await fs.open(outputZipPath, 'w')
     return new ZipStoreWriter(outputZipPath, handle)
   }
