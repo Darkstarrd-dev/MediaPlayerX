@@ -410,7 +410,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 Workspace / File List Mode",
-  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root / Shell",
+  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root/Shell Shared Layer",
+  "ui.themeParameter.largePanelLayer.rootShadowSettings":
+    "Large Panel Background Shadow",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main shared control",
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",

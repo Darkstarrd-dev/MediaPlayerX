@@ -2062,6 +2062,99 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-main-image-name-list-")) {
     return "用于图片文件名列表（fg-main-content-image-name-list）样式链路";
   }
+  if (cssVar === "--mpx-large-panel-border-color") {
+    return "大面板边框颜色";
+  }
+  if (cssVar === "--mpx-large-panel-border-width") {
+    return "大面板边框宽度";
+  }
+  if (cssVar === "--mpx-large-panel-fill-start") {
+    return "大面板背景渐变颜色A";
+  }
+  if (cssVar === "--mpx-large-panel-fill-end") {
+    return "大面板背景渐变颜色B";
+  }
+  if (cssVar === "--mpx-large-panel-fill-angle") {
+    return "大面板背景渐变角度";
+  }
+  if (cssVar === "--mpx-large-panel-shadow") {
+    return "大面板背景阴影设置";
+  }
+  if (cssVar === "--mpx-large-panel-width") {
+    return "大面板宽度";
+  }
+  if (cssVar === "--mpx-large-panel-height") {
+    return "大面板高度";
+  }
+  if (cssVar === "--mpx-large-panel-radius") {
+    return "大面板圆角值";
+  }
+  if (cssVar === "--mpx-large-panel-shell-padding") {
+    return "大面板Main内容边距";
+  }
+  if (cssVar === "--mpx-large-panel-shell-gap") {
+    return "大面板Main内容间距";
+  }
+  if (cssVar === "--mpx-large-panel-section-border-color") {
+    return "大面板内共用边框颜色";
+  }
+  if (cssVar === "--mpx-large-panel-section-border-width") {
+    return "大面板内共用边框宽度";
+  }
+  if (cssVar === "--mpx-large-panel-section-fill-start") {
+    return "大面板内共用背景渐变颜色A";
+  }
+  if (cssVar === "--mpx-large-panel-section-fill-end") {
+    return "大面板内共用背景渐变颜色B";
+  }
+  if (cssVar === "--mpx-large-panel-section-fill-angle") {
+    return "大面板内共用背景渐变角度";
+  }
+  if (cssVar === "--mpx-large-panel-head-border-color") {
+    return "大面板Head边框颜色";
+  }
+  if (cssVar === "--mpx-large-panel-head-border-width") {
+    return "大面板Head边框宽度";
+  }
+  if (cssVar === "--mpx-large-panel-head-fill-start") {
+    return "大面板Head背景渐变颜色A";
+  }
+  if (cssVar === "--mpx-large-panel-head-fill-end") {
+    return "大面板Head背景渐变颜色B";
+  }
+  if (cssVar === "--mpx-large-panel-head-fill-angle") {
+    return "大面板Head背景渐变角度";
+  }
+  if (cssVar === "--mpx-large-panel-side-border-color") {
+    return "大面板Side边框颜色";
+  }
+  if (cssVar === "--mpx-large-panel-side-border-width") {
+    return "大面板Side边框宽度";
+  }
+  if (cssVar === "--mpx-large-panel-side-fill-start") {
+    return "大面板Side背景渐变颜色A";
+  }
+  if (cssVar === "--mpx-large-panel-side-fill-end") {
+    return "大面板Side背景渐变颜色B";
+  }
+  if (cssVar === "--mpx-large-panel-side-fill-angle") {
+    return "大面板Side背景渐变角度";
+  }
+  if (cssVar === "--mpx-large-panel-main-border-color") {
+    return "大面板Main边框颜色";
+  }
+  if (cssVar === "--mpx-large-panel-main-border-width") {
+    return "大面板Main边框宽度";
+  }
+  if (cssVar === "--mpx-large-panel-main-fill-start") {
+    return "大面板Main背景渐变颜色A";
+  }
+  if (cssVar === "--mpx-large-panel-main-fill-end") {
+    return "大面板Main背景渐变颜色B";
+  }
+  if (cssVar === "--mpx-large-panel-main-fill-angle") {
+    return "大面板Main背景渐变角度";
+  }
   if (cssVar.startsWith("--mpx-large-panel-section-")) {
     return "用于大面板 Head / Side / Main 共享默认值";
   }
@@ -2741,6 +2834,12 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
 
 export const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
+    id: "large-panel-border-color",
+    cssVar: "--mpx-large-panel-border-color",
+    fallback: "#d6cfc1",
+    groupId: "root",
+  },
+  {
     id: "large-panel-fill-start",
     cssVar: "--mpx-large-panel-fill-start",
     fallback: "#ffffff",
@@ -2752,16 +2851,16 @@ export const LARGE_PANEL_ROOT_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#ffffff",
     groupId: "root",
   },
-  {
-    id: "large-panel-border-color",
-    cssVar: "--mpx-large-panel-border-color",
-    fallback: "#d6cfc1",
-    groupId: "root",
-  },
 ];
 
 export const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] =
   [
+    {
+      id: "large-panel-section-border-color",
+      cssVar: "--mpx-large-panel-section-border-color",
+      fallback: "#d6cfc1",
+      groupId: "root",
+    },
     {
       id: "large-panel-section-fill-start",
       cssVar: "--mpx-large-panel-section-fill-start",
@@ -2776,22 +2875,15 @@ export const LARGE_PANEL_SHARED_COLOR_FIELDS: readonly ThemeDebugColorField[] =
       fallbackAlpha: 0,
       groupId: "root",
     },
-    {
-      id: "large-panel-head-fill-start",
-      cssVar: "--mpx-large-panel-head-fill-start",
-      fallback: "#000000",
-      fallbackAlpha: 0,
-      groupId: "head",
-    },
-    {
-      id: "large-panel-section-border-color",
-      cssVar: "--mpx-large-panel-section-border-color",
-      fallback: "#d6cfc1",
-      groupId: "root",
-    },
   ];
 
 const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-head-border-color",
+    cssVar: "--mpx-large-panel-head-border-color",
+    fallback: "#d6cfc1",
+    groupId: "head",
+  },
   {
     id: "large-panel-head-fill-start",
     cssVar: "--mpx-large-panel-head-fill-start",
@@ -2807,12 +2899,6 @@ const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "head",
   },
   {
-    id: "large-panel-head-border-color",
-    cssVar: "--mpx-large-panel-head-border-color",
-    fallback: "#d6cfc1",
-    groupId: "head",
-  },
-  {
     id: "large-panel-head-text",
     cssVar: "--mpx-large-panel-head-text",
     fallback: "#2e2a22",
@@ -2821,6 +2907,12 @@ const LARGE_PANEL_HEAD_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 ];
 
 const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-side-border-color",
+    cssVar: "--mpx-large-panel-side-border-color",
+    fallback: "#d6cfc1",
+    groupId: "side",
+  },
   {
     id: "large-panel-side-fill-start",
     cssVar: "--mpx-large-panel-side-fill-start",
@@ -2833,15 +2925,15 @@ const LARGE_PANEL_SIDE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     fallback: "#ffffff",
     groupId: "side",
   },
-  {
-    id: "large-panel-side-border-color",
-    cssVar: "--mpx-large-panel-side-border-color",
-    fallback: "#d6cfc1",
-    groupId: "side",
-  },
 ];
 
 const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
+  {
+    id: "large-panel-main-border-color",
+    cssVar: "--mpx-large-panel-main-border-color",
+    fallback: "#d6cfc1",
+    groupId: "main",
+  },
   {
     id: "large-panel-main-fill-start",
     cssVar: "--mpx-large-panel-main-fill-start",
@@ -2852,12 +2944,6 @@ const LARGE_PANEL_MAIN_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     id: "large-panel-main-fill-end",
     cssVar: "--mpx-large-panel-main-fill-end",
     fallback: "#ffffff",
-    groupId: "main",
-  },
-  {
-    id: "large-panel-main-border-color",
-    cssVar: "--mpx-large-panel-main-border-color",
-    fallback: "#d6cfc1",
     groupId: "main",
   },
 ];

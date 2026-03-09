@@ -31,15 +31,32 @@ function ensureDetailsOpen(summaryText: string): void {
   const details = getDetailsBySummaryText(summaryText);
   expect(details).not.toBeNull();
   if (!details?.open) {
-    fireEvent.click(screen.getByText(summaryText));
+    fireEvent.click(screen.getAllByText(summaryText)[0]);
   }
 }
 
 function getDetailsBySummaryText(summaryText: string): HTMLDetailsElement {
-  const summary = screen.getByText(summaryText);
+  const summary = screen.getAllByText(summaryText)[0];
   const details = summary.closest("details") as HTMLDetailsElement | null;
   expect(details).not.toBeNull();
   return details as HTMLDetailsElement;
+}
+
+function getOrderedFieldContainer(text: string): HTMLElement {
+  const node = screen.getAllByText(text)[0];
+  const container = node.closest("label, details") as HTMLElement | null;
+  expect(container).not.toBeNull();
+  return container as HTMLElement;
+}
+
+function expectFieldOrder(texts: string[]): void {
+  for (let index = 0; index < texts.length - 1; index += 1) {
+    const current = getOrderedFieldContainer(texts[index]);
+    const next = getOrderedFieldContainer(texts[index + 1]);
+    expect(
+      current.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+  }
 }
 
 function getDetailsBySummaryTextWithin(
@@ -922,7 +939,7 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
 
-    expect(screen.getByText("3.0 Root / Shell")).toBeInTheDocument();
+    expect(screen.getByText("3.0 Root/Shell 共用层")).toBeInTheDocument();
     expect(
       screen.getByText("3.1 Head / Side / Main 共享总控"),
     ).toBeInTheDocument();
@@ -931,7 +948,7 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("3.4 Main")).toBeInTheDocument();
     expect(screen.getByText("3.10 内部件")).toBeInTheDocument();
 
-    ensureDetailsOpen("3.0 Root / Shell");
+    ensureDetailsOpen("3.0 Root/Shell 共用层");
     expect(
       screen.getByRole("textbox", { name: "--mpx-large-panel-fill-start" }),
     ).toBeInTheDocument();
@@ -953,11 +970,105 @@ describe("ThemeParameterPanel", () => {
       screen.queryByRole("textbox", { name: "--mpx-large-panel-bg" }),
     ).toBeNull();
     expect(
-      screen.getAllByText("仅用于大面板 root 本体").length,
-    ).toBeGreaterThan(0);
+      screen.getByText("大面板边框颜色"),
+    ).toBeInTheDocument();
     expect(
-      screen.getAllByText("仅用于大面板 shell 分栏容器").length,
-    ).toBeGreaterThan(0);
+      screen.getByText("大面板边框宽度"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板背景渐变颜色A"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板背景渐变颜色B"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板背景渐变角度"),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("大面板背景阴影设置").length).toBeGreaterThan(0);
+    expect(screen.getByText("大面板宽度")).toBeInTheDocument();
+    expect(screen.getByText("大面板高度")).toBeInTheDocument();
+    expect(screen.getByText("大面板圆角值")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main内容边距")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main内容间距")).toBeInTheDocument();
+    expectFieldOrder([
+      "--mpx-large-panel-border-color",
+      "--mpx-large-panel-border-width",
+      "--mpx-large-panel-fill-start",
+      "--mpx-large-panel-fill-end",
+      "--mpx-large-panel-fill-angle",
+      "大面板背景阴影设置",
+      "--mpx-large-panel-width",
+      "--mpx-large-panel-height",
+      "--mpx-large-panel-radius",
+      "--mpx-large-panel-shell-padding",
+      "--mpx-large-panel-shell-gap",
+    ]);
+
+    const sharedDetails = getDetailsBySummaryText("3.1 Head / Side / Main 共享总控");
+    expect(
+      within(sharedDetails).queryByText("--mpx-large-panel-head-fill-start"),
+    ).toBeNull();
+    expect(
+      screen.getByText("大面板内共用边框颜色"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板内共用边框宽度"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板内共用背景渐变颜色A"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板内共用背景渐变颜色B"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("大面板内共用背景渐变角度"),
+    ).toBeInTheDocument();
+    expectFieldOrder([
+      "--mpx-large-panel-section-border-color",
+      "--mpx-large-panel-section-border-width",
+      "--mpx-large-panel-section-fill-start",
+      "--mpx-large-panel-section-fill-end",
+      "--mpx-large-panel-section-fill-angle",
+    ]);
+
+    expectFieldOrder([
+      "--mpx-large-panel-head-border-color",
+      "--mpx-large-panel-head-border-width",
+      "--mpx-large-panel-head-fill-start",
+      "--mpx-large-panel-head-fill-end",
+      "--mpx-large-panel-head-fill-angle",
+    ]);
+    expect(screen.getByText("大面板Head边框颜色")).toBeInTheDocument();
+    expect(screen.getByText("大面板Head边框宽度")).toBeInTheDocument();
+    expect(screen.getByText("大面板Head背景渐变颜色A")).toBeInTheDocument();
+    expect(screen.getByText("大面板Head背景渐变颜色B")).toBeInTheDocument();
+    expect(screen.getByText("大面板Head背景渐变角度")).toBeInTheDocument();
+
+    expectFieldOrder([
+      "--mpx-large-panel-side-border-color",
+      "--mpx-large-panel-side-border-width",
+      "--mpx-large-panel-side-fill-start",
+      "--mpx-large-panel-side-fill-end",
+      "--mpx-large-panel-side-fill-angle",
+    ]);
+    expect(screen.getByText("大面板Side边框颜色")).toBeInTheDocument();
+    expect(screen.getByText("大面板Side边框宽度")).toBeInTheDocument();
+    expect(screen.getByText("大面板Side背景渐变颜色A")).toBeInTheDocument();
+    expect(screen.getByText("大面板Side背景渐变颜色B")).toBeInTheDocument();
+    expect(screen.getByText("大面板Side背景渐变角度")).toBeInTheDocument();
+
+    expectFieldOrder([
+      "--mpx-large-panel-main-border-color",
+      "--mpx-large-panel-main-border-width",
+      "--mpx-large-panel-main-fill-start",
+      "--mpx-large-panel-main-fill-end",
+      "--mpx-large-panel-main-fill-angle",
+    ]);
+    expect(screen.getByText("大面板Main边框颜色")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main边框宽度")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main背景渐变颜色A")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main背景渐变颜色B")).toBeInTheDocument();
+    expect(screen.getByText("大面板Main背景渐变角度")).toBeInTheDocument();
 
     ensureDetailsOpen("3.10 内部件");
     expect(screen.getByText("3.10.1 导入任务")).toBeInTheDocument();
@@ -1086,7 +1197,8 @@ describe("ThemeParameterPanel", () => {
     renderThemeParameterPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
-    ensureDetailsOpen("3.0 Root / Shell");
+    ensureDetailsOpen("3.0 Root/Shell 共用层");
+    ensureDetailsOpen("大面板背景阴影设置");
 
     const panel = document.querySelector(
       ".theme-parameter-panel",

@@ -39,6 +39,7 @@ interface ThemeParameterDebugSubsectionProps {
 interface ThemeParameterLargePanelSectionRowsProps {
   colorFields: readonly ThemeDebugColorField[];
   inlineParameters?: ThemeParameterDefinition[];
+  orderedEntries?: readonly ThemeParameterLargePanelOrderedEntry[];
   textFields?: readonly ThemeDebugTextField[];
   parameters?: ThemeParameterDefinition[];
   renderColorFieldRow: (field: ThemeDebugColorField) => ReactNode;
@@ -63,6 +64,25 @@ interface ThemeParameterLargePanelInternalSectionsProps {
     parameters?: ThemeParameterDefinition[];
   }) => ReactNode;
 }
+
+type ThemeParameterLargePanelOrderedEntry =
+  | {
+      kind: "color";
+      id: string;
+    }
+  | {
+      kind: "inlineParameter";
+      id: string;
+    }
+  | {
+      kind: "parameter";
+      id: string;
+    }
+  | {
+      fieldIds?: readonly string[];
+      kind: "textSection";
+      summary: string;
+    };
 
 interface ThemeParameterSmallPanelSectionGroupsProps {
   groups: readonly SmallPanelSectionGroupDefinition[];
@@ -186,6 +206,7 @@ export function ThemeParameterDebugSubsection({
 export function ThemeParameterLargePanelSectionRows({
   colorFields,
   inlineParameters = [],
+  orderedEntries,
   textFields = [],
   parameters = [],
   renderColorFieldRow,
@@ -196,23 +217,93 @@ export function ThemeParameterLargePanelSectionRows({
     return null;
   }
 
+  const colorFieldMap = new Map(colorFields.map((field) => [field.id, field]));
+  const inlineParameterMap = new Map(
+    inlineParameters.map((parameter) => [parameter.id, parameter]),
+  );
+  const parameterMap = new Map(parameters.map((parameter) => [parameter.id, parameter]));
+  const textFieldMap = new Map(textFields.map((field) => [field.id, field]));
+
+  const orderedContent = orderedEntries?.map((entry, index) => {
+    if (entry.kind === "color") {
+      const field = colorFieldMap.get(entry.id);
+      if (!field) {
+        return null;
+      }
+      return (
+        <div
+          key={`${entry.kind}-${entry.id}-${index}`}
+          className="theme-parameter-color-list"
+        >
+          {renderColorFieldRow(field)}
+        </div>
+      );
+    }
+    if (entry.kind === "inlineParameter") {
+      const parameter = inlineParameterMap.get(entry.id);
+      if (!parameter) {
+        return null;
+      }
+      return (
+        <div key={`${entry.kind}-${entry.id}-${index}`}>
+          {renderParameterRowsWithVarLabel([parameter])}
+        </div>
+      );
+    }
+    if (entry.kind === "parameter") {
+      const parameter = parameterMap.get(entry.id);
+      if (!parameter) {
+        return null;
+      }
+      return (
+        <div key={`${entry.kind}-${entry.id}-${index}`}>
+          {renderParameterRowsWithVarLabel([parameter])}
+        </div>
+      );
+    }
+    const fields = (entry.fieldIds ?? textFields.map((field) => field.id))
+      .map((fieldId) => textFieldMap.get(fieldId))
+      .filter((field): field is ThemeDebugTextField => field !== undefined);
+    if (fields.length === 0) {
+      return null;
+    }
+    return (
+      <details key={`${entry.kind}-${index}`} className="settings-collapsible">
+        <summary>{entry.summary}</summary>
+        <div className="settings-collapsible-content">
+          <div className="theme-parameter-text-list">
+            {fields.map(renderTextFieldRow)}
+          </div>
+        </div>
+      </details>
+    );
+  });
+
   return (
     <section className="settings-group theme-parameter-debug-group">
       <header className="settings-group-head">
         <span>基础外观</span>
       </header>
-      <div className="theme-parameter-color-list">
-        {colorFields.map(renderColorFieldRow)}
-      </div>
-      {inlineParameters.length > 0
-        ? renderParameterRowsWithVarLabel(inlineParameters)
-        : null}
-      {textFields.length > 0 ? (
-        <div className="theme-parameter-text-list">
-          {textFields.map(renderTextFieldRow)}
-        </div>
-      ) : null}
-      {parameters.length > 0 ? renderParameterRowsWithVarLabel(parameters) : null}
+      {orderedEntries ? (
+        orderedContent
+      ) : (
+        <>
+          <div className="theme-parameter-color-list">
+            {colorFields.map(renderColorFieldRow)}
+          </div>
+          {inlineParameters.length > 0
+            ? renderParameterRowsWithVarLabel(inlineParameters)
+            : null}
+          {textFields.length > 0 ? (
+            <div className="theme-parameter-text-list">
+              {textFields.map(renderTextFieldRow)}
+            </div>
+          ) : null}
+          {parameters.length > 0
+            ? renderParameterRowsWithVarLabel(parameters)
+            : null}
+        </>
+      )}
     </section>
   );
 }

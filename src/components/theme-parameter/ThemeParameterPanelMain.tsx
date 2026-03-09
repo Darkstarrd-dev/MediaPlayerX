@@ -512,6 +512,74 @@ export function ThemeParameterPanelMain({
     return pickLargePanelParameters(LARGE_PANEL_SHARED_INLINE_PARAMETER_IDS);
   }, [pickLargePanelParameters]);
 
+  const largePanelRootOrderedEntries = useMemo(
+    () => [
+      { kind: "color", id: "large-panel-border-color" },
+      { kind: "parameter", id: "large-panel-border-width" },
+      { kind: "color", id: "large-panel-fill-start" },
+      { kind: "color", id: "large-panel-fill-end" },
+      { kind: "inlineParameter", id: "large-panel-fill-angle" },
+      {
+        kind: "textSection",
+        summary: t("ui.themeParameter.largePanelLayer.rootShadowSettings"),
+        fieldIds: ["large-panel-shadow"],
+      },
+      { kind: "parameter", id: "large-panel-width" },
+      { kind: "parameter", id: "large-panel-height" },
+      { kind: "parameter", id: "large-panel-radius" },
+      { kind: "parameter", id: "large-panel-shell-padding" },
+      { kind: "parameter", id: "large-panel-shell-gap" },
+    ] as const,
+    [t],
+  );
+
+  const largePanelSharedOrderedEntries = useMemo(
+    () => [
+      { kind: "color", id: "large-panel-section-border-color" },
+      { kind: "parameter", id: "large-panel-section-border-width" },
+      { kind: "color", id: "large-panel-section-fill-start" },
+      { kind: "color", id: "large-panel-section-fill-end" },
+      { kind: "inlineParameter", id: "large-panel-section-fill-angle" },
+    ] as const,
+    [],
+  );
+
+  const largePanelSectionOrderedEntries = useMemo(
+    () => ({
+      head: [
+        { kind: "color", id: "large-panel-head-border-color" },
+        { kind: "parameter", id: "large-panel-head-border-width" },
+        { kind: "color", id: "large-panel-head-fill-start" },
+        { kind: "color", id: "large-panel-head-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-head-fill-angle" },
+        { kind: "color", id: "large-panel-head-text" },
+        { kind: "parameter", id: "large-panel-head-padding-y" },
+        { kind: "parameter", id: "large-panel-head-padding-x" },
+      ] as const,
+      side: [
+        { kind: "color", id: "large-panel-side-border-color" },
+        { kind: "parameter", id: "large-panel-side-border-width" },
+        { kind: "color", id: "large-panel-side-fill-start" },
+        { kind: "color", id: "large-panel-side-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-side-fill-angle" },
+        { kind: "parameter", id: "large-panel-side-radius" },
+        { kind: "parameter", id: "large-panel-side-padding" },
+        { kind: "parameter", id: "large-panel-side-gap" },
+      ] as const,
+      main: [
+        { kind: "color", id: "large-panel-main-border-color" },
+        { kind: "parameter", id: "large-panel-main-border-width" },
+        { kind: "color", id: "large-panel-main-fill-start" },
+        { kind: "color", id: "large-panel-main-fill-end" },
+        { kind: "inlineParameter", id: "large-panel-main-fill-angle" },
+        { kind: "parameter", id: "large-panel-main-radius" },
+        { kind: "parameter", id: "large-panel-main-padding-y" },
+        { kind: "parameter", id: "large-panel-main-padding-x" },
+      ] as const,
+    }),
+    [],
+  );
+
   const pickSmallPanelParameters = useCallback(
     (parameterIds: readonly string[]) => {
       return parameterIds
@@ -1663,6 +1731,7 @@ export function ThemeParameterPanelMain({
       rootSection={
         <ThemeParameterLargePanelSectionRows
           colorFields={LARGE_PANEL_ROOT_COLOR_FIELDS}
+          orderedEntries={largePanelRootOrderedEntries}
           inlineParameters={largePanelRootInlineParameters}
           textFields={LARGE_PANEL_ROOT_TEXT_FIELDS}
           parameters={largePanelRootParameters}
@@ -1676,6 +1745,7 @@ export function ThemeParameterPanelMain({
       sharedSection={
         <ThemeParameterLargePanelSectionRows
           colorFields={LARGE_PANEL_SHARED_COLOR_FIELDS}
+          orderedEntries={largePanelSharedOrderedEntries}
           inlineParameters={largePanelSharedInlineParameters}
           parameters={largePanelSharedParameters}
           renderColorFieldRow={renderColorFieldRow}
@@ -1709,6 +1779,7 @@ export function ThemeParameterPanelMain({
             <div className="settings-collapsible-content">
               <ThemeParameterLargePanelSectionRows
                 colorFields={section.colorFields}
+                orderedEntries={largePanelSectionOrderedEntries[section.id]}
                 inlineParameters={pickLargePanelParameters(
                   section.inlineParameterIds,
                 )}
