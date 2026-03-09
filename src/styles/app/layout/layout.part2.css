@@ -58,21 +58,6 @@
   height: 120px;
 }
 
-.header-vertical-range {
-  display: block;
-  width: 120px;
-  height: var(--mpx-range-thumb-size);
-  margin: 0;
-  padding: 0;
-  transform: rotate(90deg);
-  transform-origin: center;
-  direction: ltr;
-}
-
-.header-vertical-range--ascending-up {
-  transform: rotate(-90deg);
-}
-
 .window-controls {
   display: inline-flex;
   align-items: center;

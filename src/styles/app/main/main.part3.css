@@ -338,12 +338,6 @@
   width: 100%;
 }
 
-.mpx-runway-groove,
-.mpx-runway-fill,
-.mpx-runway-thumb {
-  display: none;
-}
-
 .video-controls-group {
   display: inline-flex;
   align-items: center;

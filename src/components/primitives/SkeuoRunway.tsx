@@ -26,6 +26,7 @@ interface SkeuoRunwayProps {
   preset?: SkeuoRunwayPreset
   orientation?: SkeuoRunwayOrientation
   style?: CSSProperties
+  disabled?: boolean
   onChange: ChangeEventHandler<HTMLInputElement>
   onMouseUp?: MouseEventHandler<HTMLInputElement>
   onTouchEnd?: TouchEventHandler<HTMLInputElement>
@@ -51,6 +52,7 @@ export function SkeuoRunway({
   preset,
   orientation = 'horizontal',
   style,
+  disabled = false,
   onChange,
   onMouseUp,
   onTouchEnd,
@@ -70,6 +72,7 @@ export function SkeuoRunway({
         orientation === 'vertical' ? 'is-vertical' : 'is-horizontal',
         preset === 'progress' ? 'is-preset-progress' : undefined,
         preset === 'control' ? 'is-preset-control' : undefined,
+        disabled ? 'is-disabled' : undefined,
         fillTone === 'graphite'
           ? 'is-fill-graphite'
           : fillTone === 'none'
@@ -84,6 +87,7 @@ export function SkeuoRunway({
       <input
         aria-label={ariaLabel}
         className={joinClassNames('mpx-runway-input', inputClassName)}
+        disabled={disabled}
         max={max}
         min={min}
         step={step}

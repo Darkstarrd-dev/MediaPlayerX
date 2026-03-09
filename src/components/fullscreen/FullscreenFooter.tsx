@@ -376,6 +376,14 @@ export function FullscreenFooter({
   const showPreviewScalePopover = popoverDebugPinned || openPreviewScalePopover
   const showPreviewFormatPopover = popoverDebugPinned || openPreviewFormatPopover
   const showPreviewQualityPopover = popoverDebugPinned || openPreviewQualityPopover
+  const previewScaleRangePercent = Math.max(
+    0,
+    Math.min(100, ((previewScaleDraftValue - 0.1) / 0.9) * 100),
+  )
+  const previewQualityRangePercent = Math.max(
+    0,
+    Math.min(100, ((previewQualityDraftValue - 10) / 90) * 100),
+  )
   const autoplayRangePercent = Math.max(0, Math.min(100, ((autoPlayDraftValue - 1) / 8) * 100))
   const zoomRangePercent = Math.max(0, Math.min(100, ((zoomDraftValue - 10) / 190) * 100))
 
@@ -505,25 +513,30 @@ export function FullscreenFooter({
                   <div className="header-vertical-slider" role="group" aria-label="Scale levels">
                     <div className="header-vertical-slider-value">{previewScaleDraftValue.toFixed(1)}</div>
                     <div className="header-vertical-slider-body">
-                      <input
-                        className="header-vertical-range header-vertical-range--ascending-up"
-                        max={1}
-                        min={0.1}
-                        step={0.1}
-                        type="range"
-                        value={previewScaleDraftValue}
-                        disabled={imageConvertPreviewLongestEdgePx != null}
-                        onChange={(event) => {
-                          setPreviewScaleDraftValue(Number(event.target.value))
-                        }}
-                        onMouseUp={commitPreviewScaleDraft}
-                        onTouchEnd={commitPreviewScaleDraft}
-                        onKeyUp={(event) => {
-                          if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-                            commitPreviewScaleDraft()
-                          }
-                        }}
-                      />
+                      <div className="mpx-runway-axis is-vertical">
+                        <SkeuoRunway
+                          ariaLabel="Scale"
+                          disabled={imageConvertPreviewLongestEdgePx != null}
+                          inputClassName="video-ctrl-volume-range"
+                          orientation="vertical"
+                          preset="control"
+                          max={1}
+                          min={0.1}
+                          rangePercent={previewScaleRangePercent}
+                          step={0.1}
+                          value={previewScaleDraftValue}
+                          onChange={(event) => {
+                            setPreviewScaleDraftValue(Number(event.target.value))
+                          }}
+                          onMouseUp={commitPreviewScaleDraft}
+                          onTouchEnd={commitPreviewScaleDraft}
+                          onKeyUp={(event) => {
+                            if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                              commitPreviewScaleDraft()
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -584,24 +597,29 @@ export function FullscreenFooter({
                   <div className="header-vertical-slider" role="group" aria-label="Quality levels">
                     <div className="header-vertical-slider-value">{Math.round(previewQualityDraftValue)}</div>
                     <div className="header-vertical-slider-body">
-                      <input
-                        className="header-vertical-range header-vertical-range--ascending-up"
-                        max={100}
-                        min={10}
-                        step={1}
-                        type="range"
-                        value={previewQualityDraftValue}
-                        onChange={(event) => {
-                          setPreviewQualityDraftValue(Number(event.target.value))
-                        }}
-                        onMouseUp={commitPreviewQualityDraft}
-                        onTouchEnd={commitPreviewQualityDraft}
-                        onKeyUp={(event) => {
-                          if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-                            commitPreviewQualityDraft()
-                          }
-                        }}
-                      />
+                      <div className="mpx-runway-axis is-vertical">
+                        <SkeuoRunway
+                          ariaLabel="Quality"
+                          inputClassName="video-ctrl-volume-range"
+                          orientation="vertical"
+                          preset="control"
+                          max={100}
+                          min={10}
+                          rangePercent={previewQualityRangePercent}
+                          step={1}
+                          value={previewQualityDraftValue}
+                          onChange={(event) => {
+                            setPreviewQualityDraftValue(Number(event.target.value))
+                          }}
+                          onMouseUp={commitPreviewQualityDraft}
+                          onTouchEnd={commitPreviewQualityDraft}
+                          onKeyUp={(event) => {
+                            if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                              commitPreviewQualityDraft()
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

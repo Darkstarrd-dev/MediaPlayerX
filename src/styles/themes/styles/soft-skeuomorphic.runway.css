@@ -33,6 +33,12 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway {
+  --mpx-runway-height: 24px;
+  --mpx-runway-groove-height: 10px;
+  --mpx-runway-fill-height: 6px;
+  --mpx-runway-fill-inset-inline: 2px;
+  --mpx-runway-thumb-size: 16px;
+  --mpx-runway-thumb-padding: 2px;
   --mpx-runway-fill-bg: var(--mpx-runway-fill-gold);
   --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-gold);
   --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-pearl);
@@ -74,6 +80,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-thumb-graphite {
+  --mpx-runway-thumb-padding: 3px;
   --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-graphite);
   --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-graphite);
   --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-graphite);
@@ -208,8 +215,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-runnable-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-runnable-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-runnable-track,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-runnable-track,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-webkit-slider-runnable-track {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-runnable-track {
   border-radius: 2px;
   box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
   background: linear-gradient(
@@ -225,8 +231,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-thumb {
   width: var(--mpx-range-thumb-size);
   height: var(--mpx-range-thumb-size);
   border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
@@ -240,8 +245,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:hover::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:hover::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:hover::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:hover::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:hover::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:hover::-webkit-slider-thumb {
   transform: scale(var(--mpx-range-thumb-hover-scale, 1.06));
   box-shadow: var(--mpx-range-thumb-hover-shadow);
 }
@@ -250,8 +254,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:active::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:active::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:active::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:active::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:active::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:active::-webkit-slider-thumb {
   transform: scale(var(--mpx-range-thumb-active-scale, 1.12));
   box-shadow: var(--mpx-range-thumb-active-shadow);
 }
@@ -260,8 +263,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:focus-visible::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:focus-visible::-webkit-slider-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:focus-visible::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:focus-visible::-webkit-slider-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:focus-visible::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:focus-visible::-webkit-slider-thumb {
   box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
 
@@ -269,8 +271,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-track,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-track,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-moz-range-track {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-track {
   border-radius: 2px;
   box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
   background: var(--mpx-skeuo-inset-bg);
@@ -280,8 +281,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-progress,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-progress,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-progress,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-progress,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-moz-range-progress {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-progress {
   border-radius: 2px;
   background: var(--mpx-skeuo-accent-fill);
 }
@@ -290,8 +290,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-thumb {
   width: var(--mpx-range-thumb-size);
   height: var(--mpx-range-thumb-size);
   border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
@@ -305,8 +304,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:hover::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:hover::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:hover::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:hover::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:hover::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:hover::-moz-range-thumb {
   transform: scale(var(--mpx-range-thumb-hover-scale, 1.06));
   box-shadow: var(--mpx-range-thumb-hover-shadow);
 }
@@ -315,8 +313,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:active::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:active::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:active::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:active::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:active::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:active::-moz-range-thumb {
   transform: scale(var(--mpx-range-thumb-active-scale, 1.12));
   box-shadow: var(--mpx-range-thumb-active-shadow);
 }
@@ -325,12 +322,11 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-range:focus-visible::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-progress input[type='range']:focus-visible::-moz-range-thumb,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-volume-range:focus-visible::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:focus-visible::-moz-range-thumb,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range:focus-visible::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range:focus-visible::-moz-range-thumb {
   box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range) {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input) {
   appearance: none;
   -webkit-appearance: none;
   height: 24px;
@@ -338,7 +334,7 @@
   background: transparent;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-webkit-slider-runnable-track {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input)::-webkit-slider-runnable-track {
   height: 10px;
   border: 0;
   border-radius: 999px;
@@ -346,7 +342,7 @@
   box-shadow: var(--mpx-slider-settings-groove-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input)::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 16px;
@@ -361,19 +357,19 @@
   transition: transform 0.12s ease, box-shadow 0.16s ease;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):hover::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):hover::-webkit-slider-thumb {
   transform: scale(1.08);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):active::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):active::-webkit-slider-thumb {
   transform: scale(1.04);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):focus-visible::-webkit-slider-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 2px rgba(181, 133, 59, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-track {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input)::-moz-range-track {
   height: 10px;
   border: 0;
   border-radius: 999px;
@@ -381,14 +377,14 @@
   box-shadow: var(--mpx-slider-settings-groove-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-progress {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input)::-moz-range-progress {
   height: 10px;
   border-radius: 999px;
   background: var(--mpx-runway-fill-gold);
   box-shadow: var(--mpx-runway-fill-shadow-gold);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range)::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input)::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
@@ -400,15 +396,15 @@
   transition: transform 0.12s ease, box-shadow 0.16s ease;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):hover::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):hover::-moz-range-thumb {
   transform: scale(1.08);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):active::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):active::-moz-range-thumb {
   transform: scale(1.04);
 }
 
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):not(.header-vertical-range):focus-visible::-moz-range-thumb {
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 2px rgba(181, 133, 59, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2), inset 1px 1px 2px rgba(255, 255, 255, 0.95), inset -1px -1px 2px rgba(0, 0, 0, 0.18);
-  }
+}
 }
