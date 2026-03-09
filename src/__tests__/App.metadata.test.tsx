@@ -10,7 +10,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../App";
 import type { LibrarySnapshotDto } from "../contracts/backend";
 import { MockMediaRepository } from "../features/backend/repository/mockRepository";
-import { click, keyDown, resetAppTestEnvironment } from "../test/appTestUtils";
+import {
+  click,
+  flushUiUpdates,
+  keyDown,
+  resetAppTestEnvironment,
+} from "../test/appTestUtils";
 
 describe("MediaPlayer 虚拟 UI - metadata", () => {
   const uiLongTestTimeoutMs = 25_000;
@@ -360,6 +365,7 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
     "元数据面板头部展示 g3 操作组并移除标题折叠按钮",
     async () => {
       render(<App />);
+      await flushUiUpdates();
 
       expect(screen.queryByRole("button", { name: "元数据面板" })).toBeNull();
       expect(
