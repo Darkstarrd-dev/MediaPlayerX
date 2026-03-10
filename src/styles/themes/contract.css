@@ -114,17 +114,13 @@
     --mpx-runway-fill-inset-inline: 1px;
     --mpx-runway-thumb-size: var(--mpx-range-thumb-size);
     --mpx-runway-thumb-padding: 2px;
-    --mpx-runway-groove-bg: var(--mpx-range-track-bg);
+    --mpx-runway-groove-bg: transparent;
     --mpx-runway-groove-shadow: none;
-    --mpx-runway-fill-gold: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--mpx-accent) 82%, var(--mpx-bg-elevated)) 0%,
-      var(--mpx-accent) 100%
-    );
-    --mpx-runway-fill-graphite: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--mpx-text-2) 72%, var(--mpx-bg-elevated)) 0%,
-      color-mix(in srgb, var(--mpx-text-1) 84%, var(--mpx-bg-elevated)) 100%
+    --mpx-runway-fill-gold: var(--mpx-accent);
+    --mpx-runway-fill-graphite: color-mix(
+      in srgb,
+      var(--mpx-text-2) 78%,
+      var(--mpx-bg-elevated)
     );
     --mpx-runway-fill-shadow-gold: none;
     --mpx-runway-fill-shadow-graphite: none;
@@ -138,18 +134,16 @@
     --mpx-runway-thumb-shell-shadow-graphite: var(--mpx-range-thumb-shadow);
     --mpx-runway-thumb-core-pearl: color-mix(
       in srgb,
-      #ffffff 86%,
+      #ffffff 68%,
       var(--mpx-range-thumb-bg)
     );
     --mpx-runway-thumb-core-graphite: color-mix(
       in srgb,
-      var(--mpx-text-1) 78%,
+      var(--mpx-text-1) 72%,
       var(--mpx-bg-elevated)
     );
-    --mpx-runway-thumb-core-shadow-pearl: inset 0 1px 1px
-      color-mix(in srgb, #ffffff 72%, transparent);
-    --mpx-runway-thumb-core-shadow-graphite: inset 0 1px 1px
-      color-mix(in srgb, #ffffff 28%, transparent);
+    --mpx-runway-thumb-core-shadow-pearl: none;
+    --mpx-runway-thumb-core-shadow-graphite: none;
 
     --mpx-slider-settings-groove-bg: var(--mpx-range-track-bg);
     --mpx-slider-settings-groove-shadow: none;

@@ -18,6 +18,12 @@
   --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-pearl);
   --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-pearl);
   --mpx-runway-thumb-core-shadow: var(--mpx-runway-thumb-core-shadow-pearl);
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: var(--mpx-runway-height);
+  display: flex;
+  align-items: center;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-preset-progress {
@@ -67,6 +73,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-webkit-slider-runnable-track {
+  height: var(--mpx-runway-height);
   border: 0;
   background: transparent;
 }
@@ -74,17 +81,23 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+  width: var(--mpx-runway-thumb-size);
+  height: var(--mpx-runway-thumb-size);
   border: 0;
   background: transparent;
+  margin-top: calc((var(--mpx-runway-height) - var(--mpx-runway-thumb-size)) / 2);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-track,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-progress {
+  height: var(--mpx-runway-height);
   border: 0;
   background: transparent;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-thumb {
+  width: var(--mpx-runway-thumb-size);
+  height: var(--mpx-runway-thumb-size);
   border: 0;
   background: transparent;
 }
@@ -92,7 +105,10 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-groove {
   display: block;
   position: absolute;
+  left: var(--mpx-runway-groove-inset-inline);
+  right: var(--mpx-runway-groove-inset-inline);
   top: 50%;
+  height: var(--mpx-runway-groove-height);
   border-radius: 999px;
   transform: translateY(-50%);
   background: var(--mpx-runway-groove-bg);
@@ -103,8 +119,11 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-fill {
   display: block;
   position: absolute;
+  left: var(--mpx-runway-fill-inset-inline);
   top: 50%;
-  width: var(--mpx-skeuo-range-pct, 0%);
+  height: var(--mpx-runway-fill-height);
+  width: var(--mpx-range-fill-progress, 0%);
+  max-width: calc(100% - (var(--mpx-runway-fill-inset-inline) * 2));
   border-radius: 999px;
   transform: translateY(-50%);
   background: var(--mpx-runway-fill-bg);
@@ -115,8 +134,11 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-thumb {
   display: flex;
   position: absolute;
-  left: var(--mpx-skeuo-range-pct, 0%);
+  left: var(--mpx-range-fill-progress, 0%);
   top: 50%;
+  width: var(--mpx-runway-thumb-size);
+  height: var(--mpx-runway-thumb-size);
+  padding: var(--mpx-runway-thumb-padding);
   border-radius: 999px;
   transform: translate(-50%, -50%);
   background: var(--mpx-runway-thumb-shell-bg);

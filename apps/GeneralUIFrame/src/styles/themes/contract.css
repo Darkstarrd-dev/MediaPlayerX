@@ -97,6 +97,43 @@
     color-mix(in srgb, var(--mpx-border-focus) 45%, transparent);
   --mpx-range-thumb-hover-scale: 1;
   --mpx-range-thumb-active-scale: 1;
+  --mpx-runway-height: max(var(--mpx-range-thumb-size), 24px);
+  --mpx-runway-groove-height: var(--mpx-range-track-height);
+  --mpx-runway-fill-height: max(2px, calc(var(--mpx-runway-groove-height) - 2px));
+  --mpx-runway-groove-inset-inline: 0px;
+  --mpx-runway-fill-inset-inline: 1px;
+  --mpx-runway-thumb-size: var(--mpx-range-thumb-size);
+  --mpx-runway-thumb-padding: 2px;
+  --mpx-runway-groove-bg: transparent;
+  --mpx-runway-groove-shadow: none;
+  --mpx-runway-fill-gold: var(--mpx-accent);
+  --mpx-runway-fill-graphite: color-mix(
+    in srgb,
+    var(--mpx-text-2) 78%,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-runway-fill-shadow-gold: none;
+  --mpx-runway-fill-shadow-graphite: none;
+  --mpx-runway-thumb-shell-pearl: var(--mpx-range-thumb-bg);
+  --mpx-runway-thumb-shell-graphite: color-mix(
+    in srgb,
+    var(--mpx-text-2) 72%,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-runway-thumb-shell-shadow-pearl: var(--mpx-range-thumb-shadow);
+  --mpx-runway-thumb-shell-shadow-graphite: var(--mpx-range-thumb-shadow);
+  --mpx-runway-thumb-core-pearl: color-mix(
+    in srgb,
+    #ffffff 68%,
+    var(--mpx-range-thumb-bg)
+  );
+  --mpx-runway-thumb-core-graphite: color-mix(
+    in srgb,
+    var(--mpx-text-1) 72%,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-runway-thumb-core-shadow-pearl: none;
+  --mpx-runway-thumb-core-shadow-graphite: none;
 
   --mpx-checkbox-size: 16px;
   --mpx-checkbox-radius: 3px;
