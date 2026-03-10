@@ -1,19 +1,18 @@
 .music-ctrl-shader-toolbar-btn {
   width: 32px;
   height: 28px;
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
+  border: var(--mpx-control-border-width) solid var(--mpx-border-1);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-btn-variant-player-bg-idle);
-  color: var(--mpx-btn-variant-player-text-idle);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .music-ctrl-shader-toolbar-btn.is-on {
-  border-color: var(--mpx-btn-variant-player-border-active);
-  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-accent);
+  background: var(--mpx-accent-soft);
 }
 
 .music-ctrl-panel.is-shader-settings {
@@ -34,17 +33,16 @@
 .music-ctrl-shader-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--mpx-player-surface-text);
+  color: var(--mpx-text-1);
 }
 
 .music-ctrl-shader-input {
   width: 100%;
   min-height: 30px;
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
+  border: var(--mpx-control-border-width) solid var(--mpx-border-1);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  background: var(--mpx-btn-variant-player-bg-idle);
-  color: var(--mpx-btn-variant-player-text-idle);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
   padding: 0 8px;
   font-size: 12px;
 }
@@ -61,8 +59,8 @@
 }
 
 .music-ctrl-shader-input option {
-  background: var(--mpx-player-hud-bg);
-  color: var(--mpx-player-hud-text);
+  background: var(--mpx-bg-elevated);
+  color: var(--mpx-text-1);
 }
 
 .music-ctrl-shader-input:focus-visible {
@@ -80,47 +78,16 @@
   --mpx-range-fill-progress: 0%;
 }
 
-.music-ctrl-shader-range::-webkit-slider-runnable-track {
-  background: linear-gradient(
-    to right,
-    var(--mpx-music-ctrl-range-fill) 0%,
-    var(--mpx-music-ctrl-range-fill) var(--mpx-range-fill-progress, 0%),
-    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
-      var(--mpx-range-fill-progress, 0%),
-    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
-      100%
-  );
-  border-radius: var(--mpx-radius-pill);
-}
-
-.music-ctrl-shader-range::-moz-range-track {
-  background: color-mix(
-    in srgb,
-    var(--mpx-btn-variant-player-border) 36%,
-    transparent
-  );
-  border-radius: var(--mpx-radius-pill);
-}
-
-.music-ctrl-shader-range::-moz-range-progress {
-  background: color-mix(
-    in srgb,
-    var(--mpx-music-ctrl-focus-color) 68%,
-    var(--mpx-text-inverse) 32%
-  );
-  border-radius: var(--mpx-radius-pill);
-}
-
 .music-ctrl-shader-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   min-height: 28px;
-  border: var(--mpx-control-border-width) solid var(--mpx-player-hud-border);
+  border: var(--mpx-control-border-width) solid var(--mpx-border-1);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   padding: 6px 8px;
-  background: var(--mpx-music-ctrl-toggle-bg);
+  background: var(--mpx-bg-elevated);
 }
 
 .music-ctrl-panel-option {

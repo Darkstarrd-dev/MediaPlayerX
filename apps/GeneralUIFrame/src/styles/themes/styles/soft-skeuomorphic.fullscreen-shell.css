@@ -1,3 +1,18 @@
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-footer-video-controls,
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-controls-shell {
+  border-color: var(--mpx-player-surface-border);
+  background: var(--mpx-player-surface-bg);
+  color: var(--mpx-player-surface-text);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--mpx-shadow-panel);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-meta-line {
+  color: var(--mpx-player-surface-text);
+  border-color: var(--mpx-player-surface-border);
+  background: var(--mpx-player-surface-bg);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer .fullscreen-group.is-left .fullscreen-action-btn,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer .fullscreen-group.is-right .fullscreen-action-btn,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .fullscreen-footer .fullscreen-group.is-left .header-popover-trigger,

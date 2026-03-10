@@ -884,21 +884,21 @@
   border: 1px solid
     var(
       --mpx-slot-fs-image-controls-shell-border,
-      var(--mpx-player-surface-border)
+      var(--mpx-border-1)
     );
   border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
   background: var(
     --mpx-slot-fs-image-controls-shell-bg,
-    var(--mpx-player-surface-bg)
+    var(--mpx-bg-elevated)
   );
   color: var(
     --mpx-slot-fs-image-controls-shell-text,
-    var(--mpx-player-surface-text)
+    var(--mpx-text-1)
   );
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
   box-shadow: var(
     --mpx-slot-fs-image-controls-shell-shadow,
-    var(--mpx-shadow-panel)
+    none
   );
   display: flex;
   flex-direction: column;

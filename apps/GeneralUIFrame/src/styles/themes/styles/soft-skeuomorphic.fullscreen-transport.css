@@ -6,6 +6,16 @@
   --mpx-fs-center-gap: 16px;
 }
 
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating {
+  color: var(--mpx-player-surface-text);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-autoplay-control .header-popover-trigger {
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  border-color: var(--mpx-btn-variant-default-border);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-left,
 :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-controls-group.is-right,
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell.is-fullscreen-floating .music-controls-group.is-left,

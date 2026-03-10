@@ -1,3 +1,85 @@
+:root[data-mpx-style^="soft-skeuomorphic"] .video-controls-shell:not(.fullscreen-video-controls-shell),
+:root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell:not(.is-fullscreen-floating) {
+  border-color: var(--mpx-player-surface-border);
+  background: var(--mpx-player-surface-bg);
+  color: var(--mpx-player-surface-text);
+  box-shadow: var(--mpx-shadow-panel);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-panel,
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-panel {
+  border-color: var(--mpx-overlay-surface-border, var(--mpx-player-hud-border));
+  background: var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg));
+  color: var(--mpx-player-hud-text);
+  box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-label {
+  color: var(--mpx-player-surface-text);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-panel-note {
+  color: var(--mpx-player-surface-text-muted);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-toolbar-btn {
+  border-color: var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-toolbar-btn.is-on {
+  border-color: var(--mpx-btn-variant-player-border-active);
+  background: var(--mpx-btn-variant-player-bg-active);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-input {
+  border-color: var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-input option {
+  background: var(--mpx-player-hud-bg);
+  color: var(--mpx-player-hud-text);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-toggle {
+  border-color: var(--mpx-player-hud-border);
+  background: var(--mpx-music-ctrl-toggle-bg);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    var(--mpx-music-ctrl-range-fill) 0%,
+    var(--mpx-music-ctrl-range-fill) var(--mpx-range-fill-progress, 0%),
+    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
+      var(--mpx-range-fill-progress, 0%),
+    color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
+      100%
+  );
+  border-radius: var(--mpx-radius-pill);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-track {
+  background: color-mix(
+    in srgb,
+    var(--mpx-btn-variant-player-border) 36%,
+    transparent
+  );
+  border-radius: var(--mpx-radius-pill);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-progress {
+  background: color-mix(
+    in srgb,
+    var(--mpx-music-ctrl-focus-color) 68%,
+    var(--mpx-text-inverse) 32%
+  );
+  border-radius: var(--mpx-radius-pill);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-controls-shell:not(.fullscreen-video-controls-shell) .video-controls-group.is-center,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-controls-shell:not(.is-fullscreen-floating) .music-controls-group.is-center {
   gap: 16px;
