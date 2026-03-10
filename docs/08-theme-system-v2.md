@@ -120,6 +120,7 @@ Level 2 (L2)
 - 隐藏 `_skeleton.css` 与 `_palette-base.css` 只作为层级骨架，不属于用户可选 style/palette。
 - 当前首批 family：`soft-skeuomorphic -> skeuomorphic-luxury-white`，`TestStyle -> test-skeleton`。
 - `TestStyle.css` 必须保持空壳 selector；其调试链路只允许通过 `test-skeleton` 与隐藏 skeleton 层提供最小视觉。
+- `_skeleton.css` 当前已接管主布局/Header 基础几何：`layout-padding`、`splitter-width`、`panel-padding`、`pane-frame-padding`、`pane-stack-gap`、`sidebar/main/metadata padding`、`header-floating-gap`、`header-btn-size`、`header-group-*`、`header-music-actions-*`。
 
 ### 1.4 Token 隔离
 
@@ -605,6 +606,8 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-header-floating-gap` | `0px` | Header 浮动间距；属于布局层视觉间隙，不属于单容器 frame transform |
 | `--mpx-header-border-width` | `1px` | Header 底部边框宽 |
 | `--mpx-header-backdrop-filter` | `none` | Header 背景滤镜 |
+
+补充边界：`_skeleton.css` 负责 Header 组宽、按钮尺寸、浮动间距等几何骨架；`soft-skeuomorphic.css` 仅保留圆角、阴影、渐变与按钮皮肤。
 
 #### 内卡统一
 

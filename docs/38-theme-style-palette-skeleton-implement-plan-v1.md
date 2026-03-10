@@ -357,12 +357,12 @@ npm run build
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 人工验证结论：
-- 回填文件：
-- 提交 hash：
+- [x] 已完成
+- 验证命令：`npx vitest run src/__tests__/App.settings.test.tsx`；`npm run build`
+- 验证结果：通过
+- 人工验证结论：未单独执行 Electron 人工检查；自动验证确认 settings 主链路正常，构建通过，默认 soft 视觉未出现构建级回归
+- 回填文件：`docs/08-theme-system-v2.md`
+- 提交 hash：待提交
 - 阻塞记录：
 
 ---

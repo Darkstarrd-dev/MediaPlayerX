@@ -1,8 +1,5 @@
 @layer theme-style {
   :root[data-mpx-style^="soft-skeuomorphic"] {
-  --mpx-layout-gap-unit: 1vw;
-  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
-  --mpx-splitter-width: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
   --mpx-bg-body: linear-gradient(160deg,
       color-mix(in srgb, var(--mpx-palette-surface) 72%, var(--mpx-palette-base)),
       var(--mpx-palette-base));
@@ -44,9 +41,6 @@
   --mpx-panel-backdrop-filter: none;
   --mpx-panel-transform: none;
   --mpx-panel-transition: box-shadow 0.22s ease, transform 0.22s ease;
-  --mpx-panel-padding: 12px;
-  --mpx-pane-frame-padding: var(--mpx-pane-inner-padding-px, var(--mpx-panel-padding));
-  --mpx-pane-stack-gap: var(--mpx-pane-stack-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-pane-inner-gap-scale, 1) * 0.75 * var(--mpx-pane-stack-gap-scale, 1)));
 
   --mpx-sidebar-radius: var(--mpx-container-frame-radius);
   --mpx-sidebar-border-width: var(--mpx-panel-border-width);
@@ -54,7 +48,6 @@
   --mpx-sidebar-shadow: var(--mpx-panel-shadow);
   --mpx-sidebar-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-sidebar-transition: var(--mpx-panel-transition);
-  --mpx-sidebar-padding: var(--mpx-pane-frame-padding);
 
   --mpx-main-radius: var(--mpx-container-frame-radius);
   --mpx-main-border-width: var(--mpx-panel-border-width);
@@ -62,7 +55,6 @@
   --mpx-main-shadow: var(--mpx-panel-shadow);
   --mpx-main-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-main-transition: var(--mpx-panel-transition);
-  --mpx-main-padding: var(--mpx-pane-frame-padding);
 
   --mpx-metadata-radius: var(--mpx-container-frame-radius);
   --mpx-metadata-border-width: var(--mpx-panel-border-width);
@@ -70,12 +62,10 @@
   --mpx-metadata-shadow: var(--mpx-panel-shadow);
   --mpx-metadata-backdrop-filter: var(--mpx-panel-backdrop-filter);
   --mpx-metadata-transition: var(--mpx-panel-transition);
-  --mpx-metadata-padding: var(--mpx-pane-frame-padding);
 
   --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-header-shadow: 6px 6px 16px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
     -6px -6px 16px color-mix(in srgb, var(--mpx-palette-surface) 90%, var(--mpx-bg-elevated));
-  --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
   --mpx-header-border-width: 1px;
   --mpx-header-backdrop-filter: none;
 
@@ -104,7 +94,6 @@
   --mpx-header-btn-icon-display: inline-flex;
   --mpx-header-btn-label-display: none;
   --mpx-header-btn-gap: 0px;
-  --mpx-header-btn-size: var(--mpx-header-btn-size-px, 40px);
   --mpx-header-btn-radius: 12px;
   --mpx-header-btn-padding-x: 0px;
   --mpx-header-icon-size: 18px;
@@ -113,13 +102,6 @@
   --mpx-header-btn-active-shadow: inset 3px 3px 6px var(--mpx-skeuo-shadow-dark), inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
   --mpx-header-btn-active-border: var(--mpx-skeuo-accent-fill);
   --mpx-header-status-btn-min-width: var(--mpx-header-btn-size);
-  --mpx-header-group-gap: calc(var(--mpx-control-group-gap-px, 8px) * 2 + 6px);
-  --mpx-header-item-gap: var(--mpx-control-group-gap-px, 8px);
-  --mpx-header-modes-base-width: calc(var(--mpx-header-btn-size) * 3 + var(--mpx-header-item-gap) * 2 + var(--mpx-button-group-inset-px, 2px) * 2 + 2px);
-  --mpx-header-group-modes-width: var(--mpx-header-modes-base-width);
-  --mpx-header-group-search-width: 180px;
-  --mpx-header-music-actions-width: calc(var(--mpx-header-btn-size) * 2 + var(--mpx-header-item-gap));
-  --mpx-header-music-actions-reserve: calc(var(--mpx-header-music-actions-width) + var(--mpx-header-item-gap));
 
   --mpx-splitter-track-bg: linear-gradient(180deg,
       color-mix(in srgb, var(--mpx-palette-text-raw) 12%, transparent),
@@ -178,10 +160,7 @@
   --mpx-header-fill-angle: var(--mpx-container-frame-fill-angle);
 }
 
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
-  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
-  --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
-  --mpx-panel-padding: 14px;
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-light-white"] {
   --mpx-panel-radius: 18px;
   --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-card-radius: 13px;
@@ -255,9 +234,6 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] {
-  --mpx-layout-padding: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1)));
-  --mpx-header-floating-gap: var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) var(--mpx-layout-gap-px, calc(var(--mpx-layout-gap-unit) * var(--mpx-layout-gap-scale, 1))) 0;
-  --mpx-panel-padding: 14px;
   --mpx-panel-radius: 18px;
   --mpx-header-radius: var(--mpx-container-frame-radius);
   --mpx-card-radius: 13px;
