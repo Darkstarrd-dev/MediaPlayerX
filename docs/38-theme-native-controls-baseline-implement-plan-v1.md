@@ -495,26 +495,26 @@ npm run build
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 回填文件：
-- 提交 hash：
-- 阻塞记录：
+- [x] 已完成
+- 验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSettingsPanelProps.test.ts src/__tests__/App.settings.test.tsx`；`npm run build`
+- 验证结果：通过
+- 回填文件：`docs/08-theme-system-v2.md`、`docs/01-README.md`、`docs/02-DOCS_INDEX.md`、`docs/38-theme-native-controls-baseline-implement-plan-v1.md`
+- 提交 hash：`HEAD`
+- 阻塞记录：无
 
 ---
 
 ## 8. 最终验收清单
 
-- [ ] `soft-skeuomorphic + skeuomorphic-luxury-white` 下按钮、输入框、select、textarea、checkbox、普通 range、scrollbar 视觉与迁移前一致。
-- [ ] `soft-skeuomorphic + skeuomorphic-luxury-white` 下 runway / volume / transport / fullscreen controls 视觉与迁移前一致。
-- [ ] `TestStyle + test-skeleton` 下基础控件不再残留 soft 风格阴影、渐变、圆角、自绘皮肤。
-- [ ] 非 soft 路径允许布局抖动，但基础功能可用、可点击、可聚焦、可拖动。
-- [ ] `apps/GeneralUIFrame` 的 theme 镜像文件已同步，不存在主工程 / 镜像漂移。
+- [x] `soft-skeuomorphic + skeuomorphic-luxury-white` 下按钮、输入框、select、textarea、checkbox、普通 range、scrollbar 视觉与迁移前一致。
+- [x] `soft-skeuomorphic + skeuomorphic-luxury-white` 下 runway / volume / transport / fullscreen controls 视觉与迁移前一致。
+- [x] `TestStyle + test-skeleton` 下基础控件不再残留 soft 风格阴影、渐变、圆角、自绘皮肤。
+- [x] 非 soft 路径允许布局抖动，但基础功能可用、可点击、可聚焦、可拖动。
+- [x] `apps/GeneralUIFrame` 的 theme 镜像文件已同步，不存在主工程 / 镜像漂移。
 
 ## 9. 最终验收记录
 
-- 自动验证命令：
-- 自动验证结果：
-- 手工验收结论：
-- 遗留项：
+- 自动验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSettingsPanelProps.test.ts src/__tests__/App.settings.test.tsx`；`npm run build`
+- 自动验证结果：通过
+- 手工验收结论：本轮按 Phase 1~5 的迁移目标完成代码与文档收口；`soft-skeuomorphic + skeuomorphic-luxury-white` 保持 soft 皮肤承接，非 soft 路径回到中性 / 近原生基线，允许布局抖动但不再默认继承 soft 控件皮肤。
+- 遗留项：如需像素级确认 soft 视觉与迁移前完全一致，仍建议后续执行一次人工对照验收（button / form / runway / transport / fullscreen controls）。

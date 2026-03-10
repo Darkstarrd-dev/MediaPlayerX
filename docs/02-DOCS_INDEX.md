@@ -44,6 +44,7 @@
 | `35-ui-theme-config-tauri-roadmap-v1.md` | 当前计划 | UI theme 配置收口与 Tauri 迁移实施路线图（含 phase/todo/check） |
 | `36-theme-container-frame-migration-plan-v1.md` | 当前计划 | ThemeParameter 大容器层共享壳层 / frame / visual transform 全量迁移实施计划 |
 | `38-theme-style-palette-skeleton-implement-plan-v1.md` | 当前计划 | Theme Style × Palette Skeleton 分阶段实施计划（已完成，含 TestStyle 空壳链路） |
+| `38-theme-native-controls-baseline-implement-plan-v1.md` | 当前计划 | Theme Native Controls Baseline 分阶段实施计划（已完成；作为基础控件 native baseline 与 soft 独占皮肤的维护入口） |
 | `01-README.md` | 入口 | docs 子目录导航 |
 | `02-DOCS_INDEX.md` | 说明 | 本文档，维护规则与目录说明 |
 

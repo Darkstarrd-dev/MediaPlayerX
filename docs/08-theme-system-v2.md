@@ -65,6 +65,7 @@ Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
 - Palette 只能覆写颜色；Style 只能覆写布局/效果与基于 palette 的派生值。
 - 状态覆盖优先通过 `app-state` 层处理，不允许恢复 `!important`。
 - 基础控件默认链路必须保持中性 / 近原生；scrollbar、button、checkbox、普通 range 等自绘皮肤只能放在 style 作用域。
+- `mpx-runway` / transport / fullscreen shell 的默认业务层链路也必须保持中性；soft 的轨道、thumb、播放器壳层与中心按钮皮肤只能放在 `soft-skeuomorphic.*.css` 拆分文件中维护。
 
 ### 1.2.2 三级派生模型（2026-03）
 
@@ -170,6 +171,7 @@ npm run theme:verify:slots
 2. 全屏 transport（尤其 `16/40/20` 与 image/video/music 对齐规则）只允许在 `soft-skeuomorphic.fullscreen-transport.css` 维护。
 3. 非全屏 transport 只允许在 `soft-skeuomorphic.main-transport.css` 维护。
 4. 调整 `fg-main-content-*` 三模式容器（image/video/music）时，优先修改 `soft-skeuomorphic.components.css` 的 slot 规则，避免各模式分叉。
+5. `main.part2.css`、`main.part3.css`、`layout.part2.css`、`layout.part3.css` 中播放器 / fullscreen 相关规则默认只保留中性结构；soft 壳层、popover、shader 控件、center transport 按钮皮肤必须回灌到 `soft-skeuomorphic.main-transport.css`、`soft-skeuomorphic.fullscreen-transport.css`、`soft-skeuomorphic.fullscreen-shell.css`。
 
 ### 1.7 小面板渐变总控约束（2026-03-08）
 
@@ -615,7 +617,7 @@ gapped/liquid 风格下，面板有间距和圆角：
 
 补充边界：`_skeleton.css` 负责 Header 组宽、按钮尺寸、浮动间距等几何骨架；`soft-skeuomorphic.css` 仅保留圆角、阴影、渐变与按钮皮肤。
 
-补充边界：transport / runway 的尺寸骨架已由 `_skeleton.css` 承担；`soft-skeuomorphic.main-transport.css`、`soft-skeuomorphic.fullscreen-transport.css`、`soft-skeuomorphic.runway.css` 只保留视觉皮肤与状态效果。
+补充边界：transport / runway 的尺寸骨架已由 `_skeleton.css` 承担；`soft-skeuomorphic.main-transport.css`、`soft-skeuomorphic.fullscreen-transport.css`、`soft-skeuomorphic.fullscreen-shell.css`、`soft-skeuomorphic.runway.css` 只保留视觉皮肤与状态效果。
 
 #### 内卡统一
 
