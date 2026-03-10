@@ -241,12 +241,12 @@ npm run build
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 回填文件：
-- 提交 hash：
-- 阻塞记录：
+- [x] 已完成
+- 验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSettingsPanelProps.test.ts src/__tests__/App.settings.test.tsx`；`npm run build`
+- 验证结果：通过
+- 回填文件：`docs/08-theme-system-v2.md`、`docs/38-theme-native-controls-baseline-implement-plan-v1.md`
+- 提交 hash：`HEAD`
+- 阻塞记录：无
 
 ---
 

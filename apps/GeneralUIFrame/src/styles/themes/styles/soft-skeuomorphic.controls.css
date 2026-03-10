@@ -1,2 +1,264 @@
 :root[data-mpx-style^="soft-skeuomorphic"] {
 }
+
+:root[data-mpx-style^="soft-skeuomorphic"] * {
+  scrollbar-width: thin;
+  scrollbar-color: var(
+      --mpx-sidebar-tree-scrollbar-color-thumb,
+      var(--mpx-scrollbar-thumb-bg)
+    )
+    var(
+      --mpx-sidebar-tree-scrollbar-color-track,
+      var(--mpx-scrollbar-track-bg)
+    );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar {
+  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
+  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar-track {
+  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
+  border-radius: var(
+    --mpx-sidebar-tree-scrollbar-track-radius,
+    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius))
+  );
+  background: var(
+    --mpx-sidebar-tree-scrollbar-track-bg,
+    var(--mpx-scrollbar-track-bg)
+  );
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar-thumb {
+  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
+  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
+    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
+  border-radius: var(
+    --mpx-sidebar-tree-scrollbar-thumb-radius,
+    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius))
+  );
+  background: var(
+    --mpx-sidebar-tree-scrollbar-thumb-bg,
+    var(--mpx-scrollbar-thumb-bg)
+  );
+  background-clip: padding-box;
+  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar-thumb:hover {
+  background: var(
+    --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
+    var(--mpx-scrollbar-thumb-hover-bg)
+  );
+  background-clip: padding-box;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar-thumb:active {
+  background: var(
+    --mpx-sidebar-tree-scrollbar-thumb-active-bg,
+    var(
+      --mpx-scrollbar-thumb-active-bg,
+      var(
+        --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
+        var(--mpx-scrollbar-thumb-hover-bg)
+      )
+    )
+  );
+  background-clip: padding-box;
+  box-shadow: var(
+    --mpx-sidebar-tree-scrollbar-thumb-active-shadow,
+    var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none)
+  );
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] *::-webkit-scrollbar-button,
+:root[data-mpx-style^="soft-skeuomorphic"]
+  *::-webkit-scrollbar-button:single-button,
+:root[data-mpx-style^="soft-skeuomorphic"]
+  *::-webkit-scrollbar-button:vertical:decrement,
+:root[data-mpx-style^="soft-skeuomorphic"]
+  *::-webkit-scrollbar-button:vertical:increment,
+:root[data-mpx-style^="soft-skeuomorphic"]
+  *::-webkit-scrollbar-button:horizontal:decrement,
+:root[data-mpx-style^="soft-skeuomorphic"]
+  *::-webkit-scrollbar-button:horizontal:increment {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: 0;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] button {
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  font-weight: var(--mpx-control-font-weight);
+  box-shadow: var(--mpx-control-shadow);
+  backdrop-filter: var(--mpx-control-backdrop-filter);
+  transition: var(--mpx-control-transition);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] button:hover {
+  transform: var(--mpx-control-hover-transform);
+  box-shadow: var(--mpx-control-hover-shadow);
+  backdrop-filter: var(--mpx-control-hover-backdrop-filter);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] button:active {
+  transform: var(--mpx-control-active-transform);
+  box-shadow: var(--mpx-control-active-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] select {
+  background: var(--mpx-input-bg);
+  color: var(--mpx-input-text);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] select option {
+  background: var(--mpx-input-bg);
+  color: var(--mpx-input-text);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input) {
+  -webkit-appearance: none;
+  appearance: none;
+  height: var(--mpx-range-thumb-size);
+  background: transparent;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input)::-webkit-slider-runnable-track {
+  height: var(--mpx-range-track-height);
+  border-radius: var(--mpx-radius-pill);
+  background: var(--mpx-range-track-bg);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input)::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--mpx-range-thumb-size);
+  height: var(--mpx-range-thumb-size);
+  border-radius: 50%;
+  border: var(--mpx-range-thumb-border-width, 1px) solid
+    var(--mpx-range-thumb-border);
+  background: var(--mpx-range-thumb-bg);
+  box-shadow: var(--mpx-range-thumb-shadow);
+  margin-top: calc(
+    (var(--mpx-range-track-height) - var(--mpx-range-thumb-size)) / 2
+  );
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):hover::-webkit-slider-thumb {
+  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
+  box-shadow: var(--mpx-range-thumb-hover-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):active::-webkit-slider-thumb {
+  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
+  box-shadow: var(--mpx-range-thumb-active-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--mpx-range-thumb-focus-ring),
+    var(--mpx-range-thumb-hover-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input)::-moz-range-track {
+  height: var(--mpx-range-track-height);
+  border: 0;
+  border-radius: var(--mpx-radius-pill);
+  background: var(--mpx-range-track-bg);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input)::-moz-range-thumb {
+  width: var(--mpx-range-thumb-size);
+  height: var(--mpx-range-thumb-size);
+  border-radius: 50%;
+  border: var(--mpx-range-thumb-border-width, 1px) solid
+    var(--mpx-range-thumb-border);
+  background: var(--mpx-range-thumb-bg);
+  box-shadow: var(--mpx-range-thumb-shadow);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):hover::-moz-range-thumb {
+  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
+  box-shadow: var(--mpx-range-thumb-hover-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):active::-moz-range-thumb {
+  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
+  box-shadow: var(--mpx-range-thumb-active-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"]
+  input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
+  box-shadow: var(--mpx-range-thumb-focus-ring),
+    var(--mpx-range-thumb-hover-shadow);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--mpx-checkbox-size);
+  height: var(--mpx-checkbox-size);
+  margin: 0;
+  border: var(--mpx-control-border-width) solid var(--mpx-checkbox-border);
+  border-radius: var(--mpx-checkbox-radius);
+  background: var(--mpx-checkbox-bg);
+  display: inline-grid;
+  place-content: center;
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox']::before {
+  content: '';
+  width: 62%;
+  height: 62%;
+  background: var(--mpx-checkbox-check);
+  clip-path: polygon(14% 44%, 0 59%, 42% 100%, 100% 25%, 84% 10%, 40% 65%);
+  transform: scale(0);
+  transform-origin: center;
+  transition: transform 0.12s ease;
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox']:checked {
+  border-color: var(--mpx-checkbox-checked-border);
+  background: var(--mpx-checkbox-checked-bg);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox']:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"] input[type='checkbox']:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}

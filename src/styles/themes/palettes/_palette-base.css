@@ -41,6 +41,21 @@
     --mpx-btn-secondary-border: var(--mpx-border-1);
     --mpx-btn-secondary-text: var(--mpx-text-1);
 
+    --mpx-scrollbar-track-bg: #eef2f6;
+    --mpx-scrollbar-thumb-bg: #c3ccd6;
+    --mpx-scrollbar-thumb-hover-bg: #a8b4c0;
+    --mpx-scrollbar-thumb-active-bg: var(--mpx-scrollbar-thumb-hover-bg);
+
+    --mpx-range-track-bg: #d7dfe7;
+    --mpx-range-thumb-bg: #8f9ba7;
+    --mpx-range-thumb-border: #ffffff;
+
+    --mpx-checkbox-bg: #ffffff;
+    --mpx-checkbox-border: var(--mpx-border-2);
+    --mpx-checkbox-check: #ffffff;
+    --mpx-checkbox-checked-bg: var(--mpx-accent);
+    --mpx-checkbox-checked-border: var(--mpx-accent);
+
     --mpx-overlay-soft-border: #d7dfe7;
     --mpx-overlay-soft-bg: #eef3f7;
     --mpx-overlay-soft-hover-bg: #e5ebf1;

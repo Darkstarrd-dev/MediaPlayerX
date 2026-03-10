@@ -11,9 +11,6 @@
 
 * {
   box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
-    var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
 }
 
 html,
@@ -31,81 +28,11 @@ body {
   background: var(--mpx-bg-body);
 }
 
-*::-webkit-scrollbar {
-  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
-  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
-}
-
-*::-webkit-scrollbar-track {
-  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
-  border-radius: var(--mpx-sidebar-tree-scrollbar-track-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
-  background: var(--mpx-sidebar-tree-scrollbar-track-bg, var(--mpx-scrollbar-track-bg));
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
-}
-
-*::-webkit-scrollbar-thumb {
-  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
-  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
-    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
-  border-radius: var(--mpx-sidebar-tree-scrollbar-thumb-radius, var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius)));
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg));
-  background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg));
-  background-clip: padding-box;
-}
-
-*::-webkit-scrollbar-thumb:active {
-  background: var(
-    --mpx-sidebar-tree-scrollbar-thumb-active-bg,
-    var(
-      --mpx-scrollbar-thumb-active-bg,
-      var(
-        --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
-        var(--mpx-scrollbar-thumb-hover-bg)
-      )
-    )
-  );
-  background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-active-shadow, var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none));
-}
-
-*::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: 0;
-}
-
-*::-webkit-scrollbar-button:single-button,
-*::-webkit-scrollbar-button:vertical:decrement,
-*::-webkit-scrollbar-button:vertical:increment,
-*::-webkit-scrollbar-button:horizontal:decrement,
-*::-webkit-scrollbar-button:horizontal:increment {
-  display: none;
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: 0;
-}
-
 .mpx-scroll-area {
   scrollbar-gutter: stable;
   scrollbar-width: auto;
   scrollbar-color: auto;
   -ms-overflow-style: auto;
-}
-
-@supports not selector(::-webkit-scrollbar) {
-  .mpx-scroll-area {
-    scrollbar-width: thin;
-    scrollbar-color: var(--mpx-sidebar-tree-scrollbar-color-thumb, var(--mpx-scrollbar-thumb-bg))
-      var(--mpx-sidebar-tree-scrollbar-color-track, var(--mpx-scrollbar-track-bg));
-  }
 }
 
 .mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:decrement,
@@ -138,16 +65,12 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
 button {
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  font-weight: var(--mpx-control-font-weight);
-  box-shadow: var(--mpx-control-shadow);
-  backdrop-filter: var(--mpx-control-backdrop-filter);
-  transition: var(--mpx-control-transition);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -160,91 +83,9 @@ select,
   -webkit-user-select: text;
 }
 
-button:hover {
-  transform: var(--mpx-control-hover-transform);
-  box-shadow: var(--mpx-control-hover-shadow);
-  backdrop-filter: var(--mpx-control-hover-backdrop-filter);
-}
-
-button:active {
-  transform: var(--mpx-control-active-transform);
-  box-shadow: var(--mpx-control-active-shadow);
-}
-
 input:not([type='checkbox']):not([type='radio']):not([type='range']),
 select {
   min-height: var(--mpx-control-height);
-}
-
-input[type='range']:not(.mpx-runway-input) {
-  -webkit-appearance: none;
-  appearance: none;
-  height: var(--mpx-range-thumb-size);
-  background: transparent;
-}
-
-input[type='range']:not(.mpx-runway-input)::-webkit-slider-runnable-track {
-  height: var(--mpx-range-track-height);
-  border-radius: var(--mpx-radius-pill);
-  background: var(--mpx-range-track-bg);
-}
-
-input[type='range']:not(.mpx-runway-input)::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: var(--mpx-range-thumb-size);
-  height: var(--mpx-range-thumb-size);
-  border-radius: 50%;
-  border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
-  background: var(--mpx-range-thumb-bg);
-  box-shadow: var(--mpx-range-thumb-shadow);
-  margin-top: calc((var(--mpx-range-track-height) - var(--mpx-range-thumb-size)) / 2);
-  transition: transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-}
-
-input[type='range']:not(.mpx-runway-input):hover::-webkit-slider-thumb {
-  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
-  box-shadow: var(--mpx-range-thumb-hover-shadow);
-}
-
-input[type='range']:not(.mpx-runway-input):active::-webkit-slider-thumb {
-  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
-  box-shadow: var(--mpx-range-thumb-active-shadow);
-}
-
-input[type='range']:not(.mpx-runway-input):focus-visible::-webkit-slider-thumb {
-  box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
-}
-
-input[type='range']:not(.mpx-runway-input)::-moz-range-track {
-  height: var(--mpx-range-track-height);
-  border: 0;
-  border-radius: var(--mpx-radius-pill);
-  background: var(--mpx-range-track-bg);
-}
-
-input[type='range']:not(.mpx-runway-input)::-moz-range-thumb {
-  width: var(--mpx-range-thumb-size);
-  height: var(--mpx-range-thumb-size);
-  border-radius: 50%;
-  border: var(--mpx-range-thumb-border-width, 1px) solid var(--mpx-range-thumb-border);
-  background: var(--mpx-range-thumb-bg);
-  box-shadow: var(--mpx-range-thumb-shadow);
-  transition: transform 0.12s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-}
-
-input[type='range']:not(.mpx-runway-input):hover::-moz-range-thumb {
-  transform: scale(var(--mpx-range-thumb-hover-scale, 1.04));
-  box-shadow: var(--mpx-range-thumb-hover-shadow);
-}
-
-input[type='range']:not(.mpx-runway-input):active::-moz-range-thumb {
-  transform: scale(var(--mpx-range-thumb-active-scale, 1.1));
-  box-shadow: var(--mpx-range-thumb-active-shadow);
-}
-
-input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
-  box-shadow: var(--mpx-range-thumb-focus-ring), var(--mpx-range-thumb-hover-shadow);
 }
 
 .mpx-runway {
@@ -404,61 +245,6 @@ input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
     var(--mpx-runway-thumb-shell-shadow);
 }
 
-input[type='checkbox'] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: var(--mpx-checkbox-size);
-  height: var(--mpx-checkbox-size);
-  margin: 0;
-  border: var(--mpx-control-border-width) solid var(--mpx-checkbox-border);
-  border-radius: var(--mpx-checkbox-radius);
-  background: var(--mpx-checkbox-bg);
-  display: inline-grid;
-  place-content: center;
-  vertical-align: middle;
-  cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
-}
-
-input[type='checkbox']::before {
-  content: '';
-  width: 62%;
-  height: 62%;
-  background: var(--mpx-checkbox-check);
-  clip-path: polygon(14% 44%, 0 59%, 42% 100%, 100% 25%, 84% 10%, 40% 65%);
-  transform: scale(0);
-  transform-origin: center;
-  transition: transform 0.12s ease;
-}
-
-input[type='checkbox']:checked {
-  border-color: var(--mpx-checkbox-checked-border);
-  background: var(--mpx-checkbox-checked-bg);
-}
-
-input[type='checkbox']:checked::before {
-  transform: scale(1);
-}
-
-input[type='checkbox']:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
-}
-
-input[type='checkbox']:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
-}
-
-select {
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
-}
-
-select option {
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
-}
 
 .fg-sysinfo {
   display: flex;

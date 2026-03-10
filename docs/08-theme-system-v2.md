@@ -43,12 +43,12 @@ Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
 
 各层职责：
 
-1. `contract`：`src/styles/themes/contract.css`，提供全部 token 默认值与语义 fallback。
+1. `contract`：`src/styles/themes/contract.css`，提供全部 token 默认值、语义 fallback 与基础控件中性尺寸/颜色；不得默认承载 soft 控件皮肤。
 2. `palette-base`：隐藏最小 palette 骨架层，仅提供内部中性色 fallback，不对 settings 暴露。
 3. `palette`：公开 palette 层；palette 必须绑定到某个 style family，不再视为全局共享池。
 4. `theme-skeleton`：隐藏最小 style 骨架层，只负责零装饰骨架 token，不对 settings 暴露。
-5. `theme-style`：公开 style 视觉层，负责几何、阴影、渐变、模糊与效果派生；基础控件皮肤逐步收口到 style family 内部入口文件维护。
-6. `app-base`：`base.css`，负责浏览器标准化与最小基础排版；不再作为基础控件统一视觉皮肤的长期承载层。
+5. `theme-style`：公开 style 视觉层，负责几何、阴影、渐变、模糊与效果派生；基础控件皮肤应由 style family 内部入口文件承接。
+6. `app-base`：`base.css`，负责浏览器标准化与最小基础排版，只保留 `font: inherit`、最小高度、布局安全值与功能稳定规则。
 7. `app-layout`：`layout.css / sidebar.css / main.css / metadata.css`，负责四大容器与主布局结构。
 8. `app-component`：`settings.css / manage.css / vector.css / subtitles.css`，负责业务组件与面板内部件。
 9. `app-state`：`responsive.css / button-template.css`，负责状态机、响应式与最终态裁决。
@@ -64,6 +64,7 @@ Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
 - 新增 token 默认值必须定义在 `contract` 层。
 - Palette 只能覆写颜色；Style 只能覆写布局/效果与基于 palette 的派生值。
 - 状态覆盖优先通过 `app-state` 层处理，不允许恢复 `!important`。
+- 基础控件默认链路必须保持中性 / 近原生；scrollbar、button、checkbox、普通 range 等自绘皮肤只能放在 style 作用域。
 
 ### 1.2.2 三级派生模型（2026-03）
 
