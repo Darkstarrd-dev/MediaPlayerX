@@ -12,6 +12,7 @@
 /* Style presets (layout/effect layer) */
 @import './styles/_skeleton.css';
 @import './styles/soft-skeuomorphic.css';
+@import './styles/soft-skeuomorphic.controls.css';
 @import './styles/soft-skeuomorphic.components.css';
 @import './styles/soft-skeuomorphic.main-transport.css';
 @import './styles/soft-skeuomorphic.fullscreen-transport.css';

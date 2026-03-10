@@ -47,8 +47,8 @@ Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
 2. `palette-base`：隐藏最小 palette 骨架层，仅提供内部中性色 fallback，不对 settings 暴露。
 3. `palette`：公开 palette 层；palette 必须绑定到某个 style family，不再视为全局共享池。
 4. `theme-skeleton`：隐藏最小 style 骨架层，只负责零装饰骨架 token，不对 settings 暴露。
-5. `theme-style`：公开 style 视觉层，负责几何、阴影、渐变、模糊与效果派生。
-6. `app-base`：`base.css`，负责浏览器标准化、滚动条、基础控件统一样式。
+5. `theme-style`：公开 style 视觉层，负责几何、阴影、渐变、模糊与效果派生；基础控件皮肤逐步收口到 style family 内部入口文件维护。
+6. `app-base`：`base.css`，负责浏览器标准化与最小基础排版；不再作为基础控件统一视觉皮肤的长期承载层。
 7. `app-layout`：`layout.css / sidebar.css / main.css / metadata.css`，负责四大容器与主布局结构。
 8. `app-component`：`settings.css / manage.css / vector.css / subtitles.css`，负责业务组件与面板内部件。
 9. `app-state`：`responsive.css / button-template.css`，负责状态机、响应式与最终态裁决。
@@ -155,6 +155,7 @@ npm run theme:verify:slots
 `soft-skeuomorphic` 已按职责拆分，禁止把规则回灌到单一大文件。新增/修改样式时必须落到对应文件：
 
 - `src/styles/themes/styles/soft-skeuomorphic.css`：基础 token 与少量全局骨架（不放具体组件大段 override）
+- `src/styles/themes/styles/soft-skeuomorphic.controls.css`：soft 专属基础控件皮肤入口（button/form/checkbox/scrollbar/range 的承接位）
 - `src/styles/themes/styles/soft-skeuomorphic.components.css`：通用组件视觉（sidebar/main/metadata 等）
 - `src/styles/themes/styles/soft-skeuomorphic.main-transport.css`：非全屏播放器中间组
 - `src/styles/themes/styles/soft-skeuomorphic.fullscreen-transport.css`：全屏 transport（video/music/image）
@@ -164,9 +165,10 @@ npm run theme:verify:slots
 
 强约束：
 
-1. 全屏 transport（尤其 `16/40/20` 与 image/video/music 对齐规则）只允许在 `soft-skeuomorphic.fullscreen-transport.css` 维护。
-2. 非全屏 transport 只允许在 `soft-skeuomorphic.main-transport.css` 维护。
-3. 调整 `fg-main-content-*` 三模式容器（image/video/music）时，优先修改 `soft-skeuomorphic.components.css` 的 slot 规则，避免各模式分叉。
+1. 基础控件皮肤拆分优先落在 `soft-skeuomorphic.controls.css`，不要继续回灌到 `soft-skeuomorphic.css` 大文件。
+2. 全屏 transport（尤其 `16/40/20` 与 image/video/music 对齐规则）只允许在 `soft-skeuomorphic.fullscreen-transport.css` 维护。
+3. 非全屏 transport 只允许在 `soft-skeuomorphic.main-transport.css` 维护。
+4. 调整 `fg-main-content-*` 三模式容器（image/video/music）时，优先修改 `soft-skeuomorphic.components.css` 的 slot 规则，避免各模式分叉。
 
 ### 1.7 小面板渐变总控约束（2026-03-08）
 
@@ -190,6 +192,7 @@ src/styles/themes/
     liquid-glass.css              # 示例：毛玻璃
     neobrutalism.css              # 示例：新野蛮主义
     soft-skeuomorphic.css         # soft-skeuomorphic 基础 token/骨架
+    soft-skeuomorphic.controls.css           # soft-skeuomorphic 基础控件皮肤入口
     soft-skeuomorphic.components.css         # soft-skeuomorphic 通用组件样式
     soft-skeuomorphic.main-transport.css     # 非全屏 transport
     soft-skeuomorphic.fullscreen-transport.css # 全屏 transport
