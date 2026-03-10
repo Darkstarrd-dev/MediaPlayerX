@@ -47,5 +47,163 @@
     --mpx-header-music-actions-reserve: calc(
       var(--mpx-header-music-actions-width) + var(--mpx-header-item-gap)
     );
+
+    --mpx-runway-height: 24px;
+    --mpx-runway-groove-height: 10px;
+    --mpx-runway-fill-height: 6px;
+    --mpx-runway-fill-inset-inline: 2px;
+    --mpx-runway-thumb-size: 16px;
+    --mpx-runway-thumb-padding: 2px;
+  }
+
+  .video-controls-shell:not(.fullscreen-video-controls-shell)
+    .video-controls-group.is-center,
+  .music-controls-shell:not(.is-fullscreen-floating)
+    .music-controls-group.is-center {
+    gap: 16px;
+  }
+
+  .video-controls-shell:not(.fullscreen-video-controls-shell)
+    .video-controls-group.is-center
+    .video-action-btn,
+  .music-controls-shell:not(.is-fullscreen-floating)
+    .music-controls-group.is-center
+    .video-action-btn {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .video-controls-shell:not(.fullscreen-video-controls-shell)
+    .video-controls-group.is-center
+    .video-action-icon,
+  .music-controls-shell:not(.is-fullscreen-floating)
+    .music-controls-group.is-center
+    .music-action-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .fullscreen-video-controls-shell .video-controls-group.is-left,
+  .fullscreen-video-controls-shell .video-controls-group.is-right,
+  .music-controls-shell.is-fullscreen-floating .music-controls-group.is-left,
+  .music-controls-shell.is-fullscreen-floating .music-controls-group.is-right,
+  .fullscreen-pane .fullscreen-footer .fullscreen-group.is-left,
+  .fullscreen-pane .fullscreen-footer .fullscreen-group.is-right {
+    gap: 10px;
+    padding: 5px 10px;
+  }
+
+  .fullscreen-video-controls-shell .video-controls-group.is-center,
+  .music-controls-shell.is-fullscreen-floating .music-controls-group.is-center,
+  .fullscreen-pane .fullscreen-footer .fullscreen-group.is-center {
+    gap: 16px;
+  }
+
+  .fullscreen-video-controls-shell .video-action-btn,
+  .music-controls-shell.is-fullscreen-floating .music-controls-group .video-action-btn,
+  .fullscreen-pane .fullscreen-footer .fullscreen-action-btn,
+  .fullscreen-pane .fullscreen-footer .header-popover-trigger {
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    min-height: 26px;
+  }
+
+  .fullscreen-video-controls-shell .video-controls-group.is-left .video-action-icon,
+  .fullscreen-video-controls-shell .video-controls-group.is-right .video-action-icon,
+  .fullscreen-video-controls-shell .video-controls-group.is-left .music-action-icon,
+  .fullscreen-video-controls-shell .video-controls-group.is-right .music-action-icon,
+  [data-slot="fs-video-controls-shell"] .video-controls-group.is-left .video-action-icon,
+  [data-slot="fs-video-controls-shell"] .video-controls-group.is-right .video-action-icon,
+  [data-slot="fs-video-controls-shell"] .video-controls-group.is-left .music-action-icon,
+  [data-slot="fs-video-controls-shell"] .video-controls-group.is-right .music-action-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .fullscreen-video-controls-shell .video-action-prev,
+  .fullscreen-video-controls-shell .video-action-next,
+  .fullscreen-video-controls-shell .video-action-stop {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+  }
+
+  .fullscreen-video-controls-shell .video-action-play,
+  .fullscreen-pane .fullscreen-footer.is-image-mode .fullscreen-group.is-center .fullscreen-action-page {
+    width: 45px;
+    min-width: 45px;
+    height: 45px;
+    min-height: 45px;
+  }
+
+  .music-controls-shell.is-fullscreen-floating
+    .music-controls-group.is-center
+    .video-action-btn,
+  [data-slot="fs-video-controls-shell"]
+    .video-controls-group.is-center
+    .video-action-btn,
+  [data-slot="fg-main-content-music-controls"].is-fullscreen-floating
+    .music-controls-group.is-center
+    .video-action-btn,
+  [data-slot="fs-image-controls-shell"].is-image-mode
+    .fullscreen-group.is-center
+    .fullscreen-action-btn,
+  [data-slot="fs-image-controls-shell"].is-image-mode
+    .fullscreen-group.is-center
+    .fullscreen-action-page {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  [data-slot="fs-video-controls-shell"]
+    .video-controls-group.is-center
+    .video-action-icon,
+  [data-slot="fg-main-content-music-controls"].is-fullscreen-floating
+    .music-controls-group.is-center
+    .music-action-icon,
+  [data-slot="fs-image-controls-shell"].is-image-mode
+    .fullscreen-group.is-center
+    .video-action-icon,
+  [data-slot="fs-image-controls-shell"].is-image-mode
+    .fullscreen-group.is-center
+    .header-action-icon,
+  .fullscreen-pane .fullscreen-footer .header-action-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .video-ctrl-panel.is-volume,
+  .music-ctrl-panel.is-volume {
+    min-width: 34px;
+    width: 34px;
+    min-height: 160px;
+    padding: 10px 0;
+    overflow: visible;
+  }
+
+  .mpx-runway-axis.is-vertical,
+  .video-ctrl-volume-axis,
+  .music-ctrl-volume-axis {
+    width: 132px;
+    height: 24px;
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
+
+  .mpx-runway-axis.is-vertical .mpx-runway,
+  .video-ctrl-volume-axis .mpx-runway,
+  .music-ctrl-volume-axis .mpx-runway {
+    width: 132px;
+    min-width: 132px;
+  }
+
+  .mpx-runway.is-thumb-graphite {
+    --mpx-runway-thumb-padding: 3px;
   }
 }

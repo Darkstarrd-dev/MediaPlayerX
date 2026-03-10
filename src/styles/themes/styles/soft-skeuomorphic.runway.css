@@ -5,50 +5,19 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-panel.is-volume,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-panel.is-volume {
-  min-width: 34px;
-  width: 34px;
-  min-height: 160px;
-  padding: 10px 0;
-  overflow: visible;
   border: 1px solid var(--mpx-overlay-surface-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   background: var(--mpx-overlay-surface-bg);
   box-shadow: var(--mpx-overlay-surface-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-axis.is-vertical,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-volume-axis,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-volume-axis {
-  width: 132px;
-  height: 24px;
-  transform: rotate(-90deg);
-  transform-origin: center;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-axis.is-vertical .mpx-runway,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .video-ctrl-volume-axis .mpx-runway,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .music-ctrl-volume-axis .mpx-runway {
-  width: 132px;
-  min-width: 132px;
-}
-
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway {
-  --mpx-runway-height: 24px;
-  --mpx-runway-groove-height: 10px;
-  --mpx-runway-fill-height: 6px;
-  --mpx-runway-fill-inset-inline: 2px;
-  --mpx-runway-thumb-size: 16px;
-  --mpx-runway-thumb-padding: 2px;
   --mpx-runway-fill-bg: var(--mpx-runway-fill-gold);
   --mpx-runway-fill-shadow: var(--mpx-runway-fill-shadow-gold);
   --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-pearl);
   --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-pearl);
   --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-pearl);
   --mpx-runway-thumb-core-shadow: var(--mpx-runway-thumb-core-shadow-pearl);
-  position: relative;
-  height: 24px;
-  display: flex;
-  align-items: center;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-preset-progress {
@@ -80,7 +49,6 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-thumb-graphite {
-  --mpx-runway-thumb-padding: 3px;
   --mpx-runway-thumb-shell-bg: var(--mpx-runway-thumb-shell-graphite);
   --mpx-runway-thumb-shell-shadow: var(--mpx-runway-thumb-shell-shadow-graphite);
   --mpx-runway-thumb-core-bg: var(--mpx-runway-thumb-core-graphite);
@@ -99,7 +67,6 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-webkit-slider-runnable-track {
-  height: 24px;
   border: 0;
   background: transparent;
 }
@@ -107,23 +74,17 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
   border: 0;
   background: transparent;
-  margin-top: 4px;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-track,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-progress {
-  height: 24px;
   border: 0;
   background: transparent;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
   border: 0;
   background: transparent;
 }
@@ -131,10 +92,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-groove {
   display: block;
   position: absolute;
-  left: 0;
-  right: 0;
   top: 50%;
-  height: 10px;
   border-radius: 999px;
   transform: translateY(-50%);
   background: var(--mpx-runway-groove-bg);
@@ -145,11 +103,8 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-fill {
   display: block;
   position: absolute;
-  left: 2px;
   top: 50%;
-  height: 6px;
   width: var(--mpx-skeuo-range-pct, 0%);
-  max-width: calc(100% - 4px);
   border-radius: 999px;
   transform: translateY(-50%);
   background: var(--mpx-runway-fill-bg);
@@ -162,18 +117,11 @@
   position: absolute;
   left: var(--mpx-skeuo-range-pct, 0%);
   top: 50%;
-  width: 16px;
-  height: 16px;
-  padding: 2px;
   border-radius: 999px;
   transform: translate(-50%, -50%);
   background: var(--mpx-runway-thumb-shell-bg);
   box-shadow: var(--mpx-runway-thumb-shell-shadow);
   z-index: 3;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway.is-thumb-graphite .mpx-runway-thumb {
-  padding: 3px;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-thumb-core {
@@ -198,17 +146,6 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-input:focus-visible ~ .mpx-runway-thumb {
   box-shadow: 0 0 0 2px rgba(181, 133, 59, 0.3), var(--mpx-runway-thumb-shell-shadow);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-panel.is-volume,
-:root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-panel.is-volume {
-  width: 32px;
-  min-width: 32px;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"] .video-ctrl-volume-axis {
-  width: 120px;
-  height: 24px;
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-controls-progress input[type='range']::-webkit-slider-runnable-track,
