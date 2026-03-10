@@ -1,0 +1,134 @@
+@layer theme-style {
+  :root[data-mpx-style="TestStyle"] {
+    color-scheme: light;
+
+    /* 顶层颜色种子 */
+    --mpx-palette-surface: #f4f6f8;
+    --mpx-palette-base: #e9edf2;
+    --mpx-palette-accent-raw: #2f6f78;
+    --mpx-palette-text-raw: #1f2933;
+    --mpx-palette-shadow-color: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 24%,
+      transparent
+    );
+
+    /* 全局语义色派生 */
+    --mpx-bg-app-fill: var(--mpx-palette-base);
+    --mpx-bg-app-base: var(--mpx-palette-base);
+    --mpx-bg-panel: color-mix(
+      in srgb,
+      var(--mpx-palette-surface) 88%,
+      var(--mpx-palette-base)
+    );
+    --mpx-bg-elevated: color-mix(
+      in srgb,
+      var(--mpx-palette-surface) 95%,
+      var(--mpx-palette-base)
+    );
+    --mpx-bg-hover: color-mix(
+      in srgb,
+      var(--mpx-palette-accent-raw) 10%,
+      transparent
+    );
+    --mpx-bg-selected: color-mix(
+      in srgb,
+      var(--mpx-palette-accent-raw) 20%,
+      var(--mpx-palette-surface)
+    );
+    --mpx-bg-muted: color-mix(
+      in srgb,
+      var(--mpx-palette-surface) 70%,
+      var(--mpx-palette-base)
+    );
+
+    --mpx-text-1: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 92%,
+      var(--mpx-palette-base)
+    );
+    --mpx-text-2: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 66%,
+      var(--mpx-palette-base)
+    );
+    --mpx-text-3: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 46%,
+      var(--mpx-palette-base)
+    );
+    --mpx-text-heading: var(--mpx-text-1);
+
+    --mpx-border-1: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 18%,
+      transparent
+    );
+    --mpx-border-2: color-mix(
+      in srgb,
+      var(--mpx-palette-text-raw) 30%,
+      transparent
+    );
+    --mpx-border-focus: color-mix(
+      in srgb,
+      var(--mpx-palette-accent-raw) 75%,
+      var(--mpx-palette-surface)
+    );
+
+    --mpx-accent: var(--mpx-palette-accent-raw);
+    --mpx-accent-soft: color-mix(
+      in srgb,
+      var(--mpx-palette-accent-raw) 22%,
+      transparent
+    );
+    --mpx-accent-contrast: color-mix(
+      in srgb,
+      var(--mpx-palette-surface) 96%,
+      white
+    );
+
+    --mpx-input-bg: var(--mpx-bg-elevated);
+    --mpx-input-border: var(--mpx-border-1);
+    --mpx-input-text: var(--mpx-text-1);
+    --mpx-input-focus-bg: var(--mpx-bg-elevated);
+    --mpx-input-focus-border: var(--mpx-border-focus);
+
+    --mpx-btn-primary-bg: var(--mpx-accent);
+    --mpx-btn-primary-text: var(--mpx-accent-contrast);
+    --mpx-btn-secondary-bg: var(--mpx-bg-elevated);
+    --mpx-btn-secondary-border: var(--mpx-border-1);
+    --mpx-btn-secondary-text: var(--mpx-text-1);
+
+    --mpx-overlay-soft-bg: color-mix(
+      in srgb,
+      var(--mpx-bg-elevated) 82%,
+      var(--mpx-bg-panel)
+    );
+    --mpx-overlay-soft-border: color-mix(
+      in srgb,
+      var(--mpx-border-1) 88%,
+      var(--mpx-accent) 12%
+    );
+    --mpx-overlay-soft-hover-bg: color-mix(
+      in srgb,
+      var(--mpx-accent) 12%,
+      var(--mpx-bg-elevated)
+    );
+    --mpx-overlay-soft-focus-bg: color-mix(
+      in srgb,
+      var(--mpx-accent) 16%,
+      var(--mpx-bg-elevated)
+    );
+
+    --mpx-state-focus-color: color-mix(
+      in srgb,
+      var(--mpx-accent) 42%,
+      var(--mpx-bg-elevated)
+    );
+    --mpx-state-selected-color: color-mix(
+      in srgb,
+      var(--mpx-accent) 52%,
+      var(--mpx-bg-panel)
+    );
+  }
+}

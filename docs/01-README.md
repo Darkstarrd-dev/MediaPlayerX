@@ -21,6 +21,7 @@
 - Ad Review Performance 分阶段重实施计划：`31-ad-review-performance-mode-reimplementation-phased-plan-v1.md`
 - Theme 规范（SSOT）：`08-theme-system-v2.md`
 - Theme 迭代入口：`09-theme-brainstorm-entry.md`
+- TestStyle 最小验证方案：`38-theme-teststyle-min-validation-plan-v1.md`
 - 疑难点记录：`27-Tips.md`
 - UI 稳定路径表：`10-ui_definition.md`
 - UI 槽位 Token 前缀表：`11-token_design.md`
