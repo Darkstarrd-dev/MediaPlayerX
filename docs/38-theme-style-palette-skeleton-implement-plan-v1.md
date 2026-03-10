@@ -210,7 +210,7 @@ npm run build
 - 验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts`；`npm run build`
 - 验证结果：通过
 - 回填文件：`docs/08-theme-system-v2.md`
-- 提交 hash：待提交
+- 提交 hash：`9c88a67`
 - 阻塞记录：
 
 ---
@@ -281,7 +281,7 @@ npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSe
 - 验证结果：通过
 - 人工验证结论：未单独执行 Electron 人工检查；已通过 settings 集成测试验证 `TestStyle` 切换后 palette 列表仅剩 `test-skeleton`，且 `document.documentElement.dataset.mpxStyle === "TestStyle"`
 - 回填文件：`docs/08-theme-system-v2.md`
-- 提交 hash：待提交
+- 提交 hash：`af9ca3b`
 - 阻塞记录：
 
 ---
@@ -362,7 +362,7 @@ npm run build
 - 验证结果：通过
 - 人工验证结论：未单独执行 Electron 人工检查；自动验证确认 settings 主链路正常，构建通过，默认 soft 视觉未出现构建级回归
 - 回填文件：`docs/08-theme-system-v2.md`
-- 提交 hash：待提交
+- 提交 hash：`4b1a166`
 - 阻塞记录：
 
 ---
@@ -425,7 +425,7 @@ npm run build
 - 验证结果：通过
 - 人工验证结论：未单独执行 Electron 人工检查；已完成构建级验证，transport / runway 几何 token 已转入 skeleton 层，默认 soft 皮肤构建正常
 - 回填文件：`docs/38-theme-style-palette-skeleton-implement-plan-v1.md`
-- 提交 hash：待提交
+- 提交 hash：`a0e1008`
 - 阻塞记录：
 
 ---
@@ -491,7 +491,7 @@ npm run build
 - 验证结果：通过
 - 人工验证结论：未单独执行 Electron 人工检查；已通过构建级验证，app 层已移除对 `soft-skeuomorphic` selector 与 `--mpx-skeuo-*` 的直接依赖，默认 soft 皮肤仍由 style / palette token 提供
 - 回填文件：`docs/38-theme-style-palette-skeleton-implement-plan-v1.md`、`docs/11-token_design.md`
-- 提交 hash：待提交
+- 提交 hash：`e76425a`
 - 阻塞记录：
 
 ---
@@ -554,12 +554,12 @@ npm run build
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 人工验证结论：
-- 回填文件：
-- 提交 hash：
+- [x] 已完成
+- 验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSettingsPanelProps.test.ts src/__tests__/App.settings.test.tsx`；`npm run build`
+- 验证结果：通过
+- 人工验证结论：未单独执行 Electron 人工检查；自动验证确认 style/palette family 过滤、`TestStyle` settings 切换链路与默认 soft 构建链路正常。人工验收清单中的“视觉等价 / 可读性 / 稳定性”仍建议后续在 Electron 中补最终目视验收。
+- 回填文件：`docs/08-theme-system-v2.md`、`docs/01-README.md`、`docs/02-DOCS_INDEX.md`、`docs/38-theme-style-palette-skeleton-implement-plan-v1.md`
+- 提交 hash：待提交
 - 阻塞记录：
 
 ---

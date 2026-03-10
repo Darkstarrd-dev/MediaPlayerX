@@ -121,6 +121,8 @@ Level 2 (L2)
 - 当前首批 family：`soft-skeuomorphic -> skeuomorphic-luxury-white`，`TestStyle -> test-skeleton`。
 - `TestStyle.css` 必须保持空壳 selector；其调试链路只允许通过 `test-skeleton` 与隐藏 skeleton 层提供最小视觉。
 - `_skeleton.css` 当前已接管主布局/Header 基础几何：`layout-padding`、`splitter-width`、`panel-padding`、`pane-frame-padding`、`pane-stack-gap`、`sidebar/main/metadata padding`、`header-floating-gap`、`header-btn-size`、`header-group-*`、`header-music-actions-*`。
+- `_skeleton.css` 当前也已接管 transport / runway 基础几何：非全屏/全屏中心组 gap、按钮尺寸、图标尺寸、音量面板宽高、竖向 slider 轴宽高、runway / thumb 尺寸。
+- app 层主链路已完成去 soft 直连；业务样式仅消费中性 token，如 `--mpx-range-fill-progress`、`--mpx-workspace-surface-shadow`，不再直接依赖 `soft-skeuomorphic` selector 或 `--mpx-skeuo-*`。
 
 ### 1.4 Token 隔离
 
@@ -608,6 +610,8 @@ gapped/liquid 风格下，面板有间距和圆角：
 | `--mpx-header-backdrop-filter` | `none` | Header 背景滤镜 |
 
 补充边界：`_skeleton.css` 负责 Header 组宽、按钮尺寸、浮动间距等几何骨架；`soft-skeuomorphic.css` 仅保留圆角、阴影、渐变与按钮皮肤。
+
+补充边界：transport / runway 的尺寸骨架已由 `_skeleton.css` 承担；`soft-skeuomorphic.main-transport.css`、`soft-skeuomorphic.fullscreen-transport.css`、`soft-skeuomorphic.runway.css` 只保留视觉皮肤与状态效果。
 
 #### 内卡统一
 
