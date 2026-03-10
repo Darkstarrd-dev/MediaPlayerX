@@ -276,12 +276,12 @@ npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSe
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 人工验证结论：
-- 回填文件：
-- 提交 hash：
+- [x] 已完成
+- 验证命令：`npx vitest run src/features/theme/themeRegistry.test.ts src/features/app/buildSettingsPanelProps.test.ts src/__tests__/App.settings.test.tsx`
+- 验证结果：通过
+- 人工验证结论：未单独执行 Electron 人工检查；已通过 settings 集成测试验证 `TestStyle` 切换后 palette 列表仅剩 `test-skeleton`，且 `document.documentElement.dataset.mpxStyle === "TestStyle"`
+- 回填文件：`docs/08-theme-system-v2.md`
+- 提交 hash：待提交
 - 阻塞记录：
 
 ---

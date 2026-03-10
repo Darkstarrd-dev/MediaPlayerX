@@ -118,6 +118,8 @@ Level 2 (L2)
 - 兼容期允许旧 palette 暂留在 `palettes/` 根目录，但必须在 registry 中显式映射其 `styleId`。
 - `listPalettesByStyle(styleId)` 只返回该 style family 自己的 palette；隐藏 `_palette-base.css` 不参与公开列表。
 - 隐藏 `_skeleton.css` 与 `_palette-base.css` 只作为层级骨架，不属于用户可选 style/palette。
+- 当前首批 family：`soft-skeuomorphic -> skeuomorphic-luxury-white`，`TestStyle -> test-skeleton`。
+- `TestStyle.css` 必须保持空壳 selector；其调试链路只允许通过 `test-skeleton` 与隐藏 skeleton 层提供最小视觉。
 
 ### 1.4 Token 隔离
 
@@ -224,6 +226,8 @@ App.tsx
 ```
 
 排查样式命中时，优先看 layer，其次看 selector 特异性，最后才看源文件顺序。
+
+补充约束：settings 中 palette 下拉必须随 style 过滤，不允许出现跨 family palette。
 
 ### 开发最小素材
 

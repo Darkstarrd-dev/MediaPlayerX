@@ -6,7 +6,8 @@
 @import './palettes/_palette-base.css';
 
 /* Palette presets (color layer) */
-@import './palettes/skeuomorphic-luxury-white.css';
+@import './palettes/soft-skeuomorphic/skeuomorphic-luxury-white.css';
+@import './palettes/test-style/test-skeleton.css';
 
 /* Style presets (layout/effect layer) */
 @import './styles/_skeleton.css';

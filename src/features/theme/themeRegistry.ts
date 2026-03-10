@@ -22,16 +22,26 @@ export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
 const PALETTE_STYLE_ID_OVERRIDES: Record<string, string> = {
   'skeuomorphic-luxury-white': 'soft-skeuomorphic',
+  'test-skeleton': 'TestStyle',
+}
+
+const STYLE_ID_ALIASES: Record<string, string> = {
+  'test-style': 'TestStyle',
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
   'soft-skeuomorphic': 'skeuomorphic-luxury-white',
+  TestStyle: 'test-skeleton',
 }
 
 const STYLE_DEFAULT_PALETTE_PAIR: Record<string, { day: string; night: string }> = {
   'soft-skeuomorphic': {
     day: 'skeuomorphic-luxury-white',
     night: 'skeuomorphic-luxury-white',
+  },
+  TestStyle: {
+    day: 'test-skeleton',
+    night: 'test-skeleton',
   },
 }
 
@@ -40,6 +50,8 @@ const DAY_KEYWORDS = ['light', 'day', 'paper', 'parchment', 'solarized']
 const LABEL_OVERRIDES: Record<string, string> = {
   'skeuomorphic-light-white': 'Light White',
   'skeuomorphic-luxury-white': 'Luxury White',
+  TestStyle: 'TestStyle',
+  'test-skeleton': 'Test Skeleton',
 }
 
 // Styles and palettes are loaded via styles/themes/index.css; here we only need file metadata for lists/resolution.
@@ -95,7 +107,9 @@ function collectPaletteInfos(files: Record<string, unknown>): PaletteInfo[] {
     const palettesIndex = segments.lastIndexOf('palettes')
     const familySegment = palettesIndex >= 0 ? segments[palettesIndex + 1] : undefined
     const styleId =
-      familySegment && familySegment !== fileName ? familySegment : PALETTE_STYLE_ID_OVERRIDES[id] ?? DEFAULT_STYLE_ID
+      familySegment && familySegment !== fileName
+        ? STYLE_ID_ALIASES[familySegment] ?? familySegment
+        : PALETTE_STYLE_ID_OVERRIDES[id] ?? DEFAULT_STYLE_ID
 
     byId.set(id, {
       id,

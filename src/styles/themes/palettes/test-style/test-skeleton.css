@@ -1,0 +1,5 @@
+@layer palette {
+  :root[data-mpx-palette="test-skeleton"] {
+    color-scheme: light;
+  }
+}

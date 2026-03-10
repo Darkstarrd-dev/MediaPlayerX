@@ -87,6 +87,15 @@ describe("MediaPlayer 虚拟 UI - settings", () => {
         ),
       ).toBe(true);
 
+      fireEvent.change(styleSelect, { target: { value: "TestStyle" } });
+      await waitFor(() => {
+        expect(document.documentElement.dataset.mpxStyle).toBe("TestStyle");
+      });
+      expect(
+        Array.from(paletteSelect.options).map((option) => option.value),
+      ).toEqual(["test-skeleton"]);
+      expect(paletteSelect.value).toBe("test-skeleton");
+
       expect(screen.getByLabelText(/缩略图间距系数/)).toBeInTheDocument();
       expect(screen.queryByLabelText("缩略图质量")).toBeNull();
       expect(screen.queryByLabelText("缩略图宽度")).toBeNull();

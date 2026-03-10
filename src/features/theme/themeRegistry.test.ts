@@ -86,6 +86,16 @@ describe('listPalettesByStyle', () => {
     expect(ids).toEqual([DEFAULT_PALETTE_ID])
   })
 
+  it('limits TestStyle to test-skeleton palette', () => {
+    expect(listPalettesByStyle('TestStyle')).toEqual([
+      {
+        id: 'test-skeleton',
+        label: 'Test Skeleton',
+        styleId: 'TestStyle',
+      },
+    ])
+  })
+
   it('keeps hidden palette-base out of public palette list', () => {
     const ids = listPalettesByStyle().map((item) => item.id)
     expect(ids).not.toContain('_palette-base')
@@ -96,6 +106,10 @@ describe('resolvePaletteIdForStyle', () => {
   it('falls back to style default palette when current palette is out of allowlist', () => {
     expect(resolvePaletteIdForStyle('parchment', 'soft-skeuomorphic')).toBe('skeuomorphic-luxury-white')
   })
+
+  it('pins TestStyle to test-skeleton palette', () => {
+    expect(resolvePaletteIdForStyle('skeuomorphic-luxury-white', 'TestStyle')).toBe('test-skeleton')
+  })
 })
 
 describe('resolvePalettePairForStyle', () => {
@@ -103,6 +117,13 @@ describe('resolvePalettePairForStyle', () => {
     expect(resolvePalettePairForStyle('soft-skeuomorphic', 'skeuomorphic-light', 'skeuomorphic-dark')).toEqual({
       day: 'skeuomorphic-luxury-white',
       night: 'skeuomorphic-luxury-white',
+    })
+  })
+
+  it('locks TestStyle day/night palette pair to test-skeleton', () => {
+    expect(resolvePalettePairForStyle('TestStyle', 'skeuomorphic-luxury-white', 'skeuomorphic-luxury-white')).toEqual({
+      day: 'test-skeleton',
+      night: 'test-skeleton',
     })
   })
 })

@@ -1,2 +1,52 @@
 @layer palette-base {
+  :root {
+    color-scheme: light;
+
+    --mpx-palette-surface: #f4f6f8;
+    --mpx-palette-base: #e8edf2;
+    --mpx-palette-accent-raw: #5f7286;
+    --mpx-palette-text-raw: #1f2933;
+    --mpx-palette-shadow-color: rgba(31, 41, 51, 0.16);
+
+    --mpx-bg-app-fill: var(--mpx-palette-base);
+    --mpx-bg-app-base: var(--mpx-palette-base);
+    --mpx-bg-panel: #f7f9fb;
+    --mpx-bg-elevated: #ffffff;
+    --mpx-bg-hover: rgba(95, 114, 134, 0.08);
+    --mpx-bg-selected: rgba(95, 114, 134, 0.16);
+    --mpx-bg-muted: #eef2f6;
+
+    --mpx-text-1: #1f2933;
+    --mpx-text-2: #526171;
+    --mpx-text-3: #7a8794;
+    --mpx-text-heading: #16202a;
+
+    --mpx-border-1: #cdd7e1;
+    --mpx-border-2: #afbcc8;
+    --mpx-border-focus: #5f7286;
+
+    --mpx-accent: #5f7286;
+    --mpx-accent-soft: rgba(95, 114, 134, 0.16);
+    --mpx-accent-contrast: #ffffff;
+
+    --mpx-input-bg: #ffffff;
+    --mpx-input-border: var(--mpx-border-1);
+    --mpx-input-text: var(--mpx-text-1);
+    --mpx-input-focus-bg: #ffffff;
+    --mpx-input-focus-border: var(--mpx-border-focus);
+
+    --mpx-btn-primary-bg: var(--mpx-accent);
+    --mpx-btn-primary-text: var(--mpx-accent-contrast);
+    --mpx-btn-secondary-bg: var(--mpx-bg-elevated);
+    --mpx-btn-secondary-border: var(--mpx-border-1);
+    --mpx-btn-secondary-text: var(--mpx-text-1);
+
+    --mpx-overlay-soft-border: #d7dfe7;
+    --mpx-overlay-soft-bg: #eef3f7;
+    --mpx-overlay-soft-hover-bg: #e5ebf1;
+    --mpx-overlay-soft-focus-bg: #dce4ec;
+
+    --mpx-state-focus-color: #d5dfe9;
+    --mpx-state-selected-color: #c2ccd7;
+  }
 }

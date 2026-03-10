@@ -281,7 +281,6 @@
   --mpx-shadow-panel: 0 16px 34px rgba(116, 88, 50, 0.24);
   --mpx-shadow-popover: 0 14px 30px rgba(116, 88, 50, 0.22);
 
-  /* A3: overlay-soft 暖中性覆写（覆盖 contract.css 冷蓝灰默认值） */
   --mpx-overlay-soft-border: #c0c4ca;
   --mpx-overlay-soft-bg: #e9ecf0;
   --mpx-overlay-soft-hover-bg: #dde2e9;
@@ -290,7 +289,6 @@
   --mpx-overlay-soft-head-divider: #b5bdc8;
   --mpx-overlay-soft-row-divider: #dce1e7;
 
-  /* sidebar scrollbar 暖中性覆写（覆盖 style 层冷蓝灰值） */
   --mpx-sidebar-tree-scrollbar-track-bg: #edebe7;
   --mpx-sidebar-tree-scrollbar-color-track: #edebe7;
   --mpx-sidebar-tree-scrollbar-color-thumb: #d5d2cc;
