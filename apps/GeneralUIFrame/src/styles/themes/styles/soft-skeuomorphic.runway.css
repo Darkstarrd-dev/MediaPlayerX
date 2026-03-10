@@ -129,7 +129,7 @@
   right: var(--mpx-runway-groove-inset-inline);
   top: 50%;
   height: var(--mpx-runway-groove-height);
-  border-radius: 999px;
+  border-radius: 0;
   transform: translateY(-50%);
   background: var(--mpx-runway-groove-bg);
   box-shadow: var(--mpx-runway-groove-shadow);
@@ -144,7 +144,7 @@
   height: var(--mpx-runway-fill-height);
   width: var(--mpx-range-fill-progress, 0%);
   max-width: calc(100% - (var(--mpx-runway-fill-inset-inline) * 2));
-  border-radius: 999px;
+  border-radius: 0;
   transform: translateY(-50%);
   background: var(--mpx-runway-fill-bg);
   box-shadow: var(--mpx-runway-fill-shadow);
@@ -159,7 +159,7 @@
   width: var(--mpx-runway-thumb-size);
   height: var(--mpx-runway-thumb-size);
   padding: var(--mpx-runway-thumb-padding);
-  border-radius: 999px;
+  border-radius: 0;
   transform: translate(-50%, -50%);
   background: var(--mpx-runway-thumb-shell-bg);
   box-shadow: var(--mpx-runway-thumb-shell-shadow);
@@ -173,7 +173,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] .mpx-runway-thumb-core {
   width: 100%;
   height: 100%;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--mpx-runway-thumb-core-bg);
   box-shadow: var(--mpx-runway-thumb-core-shadow);
 }

@@ -231,7 +231,7 @@
   padding-bottom: 2px;
 }
 
-.manage-ad-review-icon-btn {
+.manage-ad-review-icon-btn:not(.header-popover-trigger) {
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);
   min-width: var(--mpx-icon-button-size);
@@ -245,6 +245,10 @@
   padding: 0;
   line-height: 1;
   font-size: var(--mpx-icon-size);
+}
+
+.manage-ad-review-icon-btn.header-popover-trigger {
+  border-radius: 0;
 }
 
 .manage-ad-review-exec-btn.is-running {
@@ -696,6 +700,7 @@
   grid-template-columns:
     auto minmax(150px, 240px) minmax(220px, 1fr) minmax(150px, 190px)
     48px;
+  border-radius: 0;
 }
 
 .metadata-fetch-source-group {
@@ -704,6 +709,7 @@
   align-items: center;
   height: 44px;
   border-right: 1px solid var(--metadata-fetch-soft-border);
+  border-radius: 0;
   background: var(--metadata-fetch-soft-input-bg);
 }
 
@@ -818,6 +824,7 @@
   height: 44px;
   min-width: 48px;
   min-height: 44px;
+  border-radius: 0;
   color: var(--mpx-metadata-fetch-control-text);
   padding: 0;
   display: inline-flex;

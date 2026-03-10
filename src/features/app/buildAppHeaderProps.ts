@@ -57,8 +57,9 @@ interface BuildAppHeaderPropsParams {
 }
 
 export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeaderProps {
-  const activePaletteId = params.paletteMode === 'night' ? params.paletteNightId : params.paletteDayId
-  const luxuryWhiteActive = params.styleId.startsWith('soft-skeuomorphic') && activePaletteId === 'skeuomorphic-luxury-white'
+  const panelToggleControlsAvailable = Boolean(
+    params.onToggleSidebarPanel || params.onToggleMetadataPanel,
+  )
   return {
     headerHeight: params.headerHeight,
     mode: params.mode,
@@ -163,7 +164,7 @@ export function buildAppHeaderProps(params: BuildAppHeaderPropsParams): AppHeade
       }),
     sidebarCollapsed: params.sidebarCollapsed ?? false,
     metadataCollapsed: params.metadataCollapsed ?? false,
-    showPanelToggleControls: luxuryWhiteActive,
+    showPanelToggleControls: panelToggleControlsAvailable,
     onToggleSidebarPanel: params.onToggleSidebarPanel,
     onToggleMetadataPanel: params.onToggleMetadataPanel,
     layoutConvergedInsetPx: params.layoutConvergedInsetPx ?? 0,

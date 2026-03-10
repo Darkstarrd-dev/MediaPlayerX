@@ -242,4 +242,19 @@ describe("AppHeader music quick actions", () => {
     expect(header?.style.marginInline).toBe("auto");
   });
 
+  it("显式开启面板切换按钮时会渲染 L/R 占位按钮", () => {
+    render(
+      <AppHeader
+        {...createHeaderProps({
+          showPanelToggleControls: true,
+          onToggleSidebarPanel: vi.fn(),
+          onToggleMetadataPanel: vi.fn(),
+        })}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "关闭目录" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "关闭元数据面板" })).toBeTruthy();
+  });
+
 });

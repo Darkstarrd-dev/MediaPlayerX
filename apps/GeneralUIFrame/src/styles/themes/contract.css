@@ -28,7 +28,7 @@
     --mpx-header-btn-size-px,
     var(--mpx-control-height)
   );
-  --mpx-header-btn-radius: var(--mpx-control-radius);
+  --mpx-header-btn-radius: 0px;
   --mpx-header-btn-padding-x: calc(var(--mpx-control-padding-x) + 4px);
   --mpx-header-icon-size: var(--mpx-icon-size);
   --mpx-header-btn-shadow: none;

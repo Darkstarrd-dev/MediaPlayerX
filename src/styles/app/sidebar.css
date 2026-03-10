@@ -791,7 +791,7 @@
   width: 4.4ch;
   height: 1.9em;
   padding: 0 0.45em;
-  border-radius: var(--mpx-sidebar-node-count-radius, 999px);
+  border-radius: 0;
   font-family: var(--mpx-font-mono);
   font-size: 1em;
   line-height: 1;

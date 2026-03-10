@@ -5,7 +5,7 @@
 .settings-block select,
 .settings-block textarea {
   border: 1px solid var(--mpx-settings-item-input-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--mpx-settings-item-input-bg);
   color: var(--mpx-settings-item-value-text);
   padding: 6px 8px;
@@ -34,7 +34,6 @@
 :root[data-mpx-style^='soft-skeuomorphic'] .main-header-actions button,
 :root[data-mpx-style^='soft-skeuomorphic'] .metadata-header button,
 :root[data-mpx-style^='soft-skeuomorphic'] .settings-head button,
-:root[data-mpx-style^='soft-skeuomorphic'] .settings-side button,
 :root[data-mpx-style^='soft-skeuomorphic'] .settings-shortcuts-head button,
 :root[data-mpx-style^='soft-skeuomorphic'] .main-footer-pagination button,
 :root[data-mpx-style^='soft-skeuomorphic'] .video-controls button:not(.video-action-btn),
@@ -44,7 +43,7 @@
 :root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   font-weight: var(--mpx-control-font-weight);
@@ -701,6 +700,38 @@
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-danger-hover-shadow,
     var(--mpx-btn-variant-default-danger-hover-shadow)
   );
+}
+
+:is(
+    [data-slot="fg-header-g1-settings-root-panel"],
+    [data-slot="fg-header-g3-help-root-panel"],
+    [data-slot="fg-header-g3-theme-parameter-root-panel"]
+  ) {
+  --mpx-panel-side-nav-border-idle: var(--mpx-btn-variant-default-border);
+  --mpx-panel-side-nav-bg-idle: var(--mpx-btn-variant-default-bg-idle);
+  --mpx-panel-side-nav-text-idle: var(--mpx-btn-variant-default-text-idle);
+  --mpx-panel-side-nav-border-hover: var(--mpx-panel-side-nav-border-idle);
+  --mpx-panel-side-nav-bg-hover: var(--mpx-btn-variant-default-bg-hover);
+  --mpx-panel-side-nav-text-hover: var(--mpx-panel-side-nav-text-idle);
+  --mpx-panel-side-nav-border-active: var(--mpx-panel-side-nav-border-idle);
+  --mpx-panel-side-nav-bg-active: var(--mpx-btn-variant-default-bg-active);
+  --mpx-panel-side-nav-text-active: var(--mpx-btn-variant-default-text-active);
+  --mpx-panel-side-nav-border-selected: var(--mpx-border-1);
+  --mpx-panel-side-nav-bg-selected: var(--mpx-bg-elevated);
+  --mpx-panel-side-nav-text-selected: var(--mpx-text-1);
+  --mpx-panel-side-nav-border-pressed: var(--mpx-panel-side-nav-border-idle);
+  --mpx-panel-side-nav-bg-pressed: var(--mpx-btn-variant-default-bg-pressed);
+  --mpx-panel-side-nav-text-pressed: var(--mpx-btn-variant-default-text-pressed);
+  --mpx-panel-side-nav-border-disabled: var(--mpx-panel-side-nav-border-idle);
+  --mpx-panel-side-nav-bg-disabled: var(--mpx-panel-side-nav-bg-idle);
+  --mpx-panel-side-nav-text-disabled: var(--mpx-btn-variant-default-text-disabled);
+  --mpx-panel-side-nav-pending-border: var(--mpx-status-warning-border);
+  --mpx-panel-side-nav-pending-bg: var(--mpx-status-warning-bg);
+  --mpx-panel-side-nav-pending-text: var(--mpx-status-warning-text);
+  --mpx-panel-side-nav-danger-hover-border: var(--mpx-btn-variant-default-danger-hover-border);
+  --mpx-panel-side-nav-danger-hover-bg: var(--mpx-btn-variant-default-danger-hover-bg);
+  --mpx-panel-side-nav-danger-hover-text: var(--mpx-btn-variant-default-danger-hover-text);
+  --mpx-panel-side-nav-danger-hover-shadow: var(--mpx-btn-variant-default-danger-hover-shadow);
 }
 
 [data-slot="fg-sidebar-shortcut-rename-panel"] {
@@ -1770,7 +1801,7 @@
       --mpx-large-panel-border-color,
       var(--mpx-overlay-surface-border, var(--mpx-border-2))
     );
-  border-radius: var(--mpx-large-panel-radius-effective, var(--mpx-large-panel-radius, 14px));
+  border-radius: 0;
   background: var(
     --mpx-large-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-app-fill))
@@ -1865,7 +1896,7 @@
   min-width: 0;
   border: var(--mpx-large-panel-side-border-width, 1px) solid
     var(--mpx-settings-side-border);
-  border-radius: var(--mpx-large-panel-side-radius, 10px);
+  border-radius: 0;
   background: var(--mpx-settings-side-bg);
   color: var(--mpx-settings-side-text);
   padding: var(--mpx-large-panel-side-padding-effective, var(--mpx-large-panel-side-padding, 10px));
@@ -1880,28 +1911,13 @@
   text-align: left;
 }
 
-.settings-side button:not(.theme-parameter-side-btn) {
-  --mpx-btn-variant-default-border: var(--mpx-settings-side-border);
-  --mpx-btn-variant-default-bg-idle: var(--mpx-settings-side-item-bg);
-  --mpx-btn-variant-default-bg-hover: var(--mpx-settings-side-item-hover-bg);
-  --mpx-btn-variant-default-bg-active: var(--mpx-settings-side-item-active-bg);
-  --mpx-btn-variant-default-bg-pressed: var(--mpx-settings-side-item-active-bg);
-  --mpx-btn-variant-default-text-idle: var(--mpx-settings-side-text);
-  --mpx-btn-variant-default-text-active: var(--mpx-settings-side-item-active-text);
-  --mpx-btn-variant-default-text-pressed: var(
-    --mpx-settings-side-item-active-text
-  );
-  --mpx-btn-variant-default-text-merged: var(
-    --mpx-settings-side-item-active-text
-  );
-  border-color: var(--mpx-settings-side-border);
-  background: var(--mpx-settings-side-item-bg);
-  color: var(--mpx-settings-side-text);
-}
-
-.settings-side button:not(.theme-parameter-side-btn).is-active {
-  background: var(--mpx-settings-side-item-active-bg);
-  color: var(--mpx-settings-side-item-active-text);
+.theme-parameter-side-btn {
+  border: 1px solid var(--mpx-panel-side-nav-border-idle);
+  border-radius: 0;
+  background: var(--mpx-panel-side-nav-bg-idle);
+  color: var(--mpx-panel-side-nav-text-idle);
+  min-height: 34px;
+  box-shadow: none;
 }
 
 .mpx-large-panel-main,
@@ -1913,7 +1929,7 @@
   justify-content: var(--mpx-large-panel-main-justify-content, flex-start);
   border: var(--mpx-large-panel-main-border-width, 1px) solid
     var(--mpx-settings-main-border);
-  border-radius: var(--mpx-large-panel-main-radius, 10px);
+  border-radius: 0;
   background: var(--mpx-settings-main-bg);
   color: var(--mpx-settings-main-text);
   padding: var(--mpx-large-panel-main-padding-y-effective, var(--mpx-large-panel-main-padding-y, 14px))
@@ -1935,7 +1951,7 @@
 }
 
 .mpx-overlay-merged-stack {
-  --mpx-overlay-merge-radius: 12px;
+  --mpx-overlay-merge-radius: 0px;
   min-height: 0;
   flex: 1;
   display: flex;
@@ -1961,7 +1977,7 @@
   align-items: center;
   min-height: 44px;
   border: 1px solid var(--mpx-overlay-soft-border);
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
   background: var(--mpx-overlay-soft-bg);
 }
@@ -2204,7 +2220,7 @@ button.mpx-overlay-cell-btn.mpx-overlay-cell-btn.mpx-overlay-cell-btn:focus-visi
   padding: 8px 10px;
   list-style: none;
   border: 1px solid var(--mpx-overlay-soft-border);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--mpx-overlay-soft-bg);
 }
 
@@ -2391,7 +2407,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .mpx-overlay-input {
   border: 1px solid var(--mpx-overlay-soft-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--mpx-overlay-soft-bg);
   color: var(--mpx-text-1);
 }
@@ -2406,6 +2422,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   height: var(--mpx-icon-button-size);
   min-height: var(--mpx-icon-button-size);
   padding: 0 8px;
+  border-radius: 0;
 }
 
 .mpx-overlay-input:hover {
@@ -2458,7 +2475,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 .settings-subsection {
   margin: 0;
   border: 1px solid var(--mpx-settings-group-border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px;
   display: grid;
   gap: 10px;
@@ -2506,7 +2523,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   position: relative;
   width: 100%;
   height: 220px;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--mpx-border-1);
   overflow: hidden;
   background: linear-gradient(
@@ -2566,7 +2583,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   display: grid;
   gap: 8px;
   border: 1px solid var(--mpx-border-1);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 8px;
 }
 
@@ -2609,6 +2626,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   gap: 8px;
   color: var(--mpx-text-2);
   line-height: 1.5;
+  border-radius: 0;
 }
 
 .help-shortcut-row {
@@ -2621,7 +2639,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 .help-shortcut-chip {
   display: inline-block;
   border: 1px solid var(--mpx-border-1);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 2px 8px;
   color: var(--mpx-text-1);
   background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
@@ -2692,7 +2710,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .settings-collapsible {
   border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 8px 10px;
   background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
 }
@@ -2829,80 +2847,61 @@ button.mpx-overlay-chip-btn:focus-visible {
     --mpx-btn-variant-theme-parameter-side-danger-hover-shadow
   );
   border: 1px solid var(--mpx-btn-variant-theme-parameter-side-border-idle);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   background: var(--mpx-btn-variant-theme-parameter-side-bg-idle);
   color: var(--mpx-btn-variant-theme-parameter-side-text-idle);
   min-height: 34px;
 }
 
-.settings-side .theme-parameter-side-btn.is-active {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-border-selected
-  );
-  background: var(
-    --mpx-btn-variant-theme-parameter-side-bg-selected
-  );
-  color: var(--mpx-btn-variant-theme-parameter-side-text-selected);
+.theme-parameter-side-btn.is-active {
+  border-color: var(--mpx-panel-side-nav-border-selected);
+  background: var(--mpx-panel-side-nav-bg-selected);
+  color: var(--mpx-panel-side-nav-text-selected);
 }
 
-.settings-side .theme-parameter-side-btn:not(:disabled):hover,
-.settings-side .theme-parameter-side-btn.force-hover {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-border-hover
-  );
-  background: var(--mpx-btn-variant-theme-parameter-side-bg-hover);
-  color: var(--mpx-btn-variant-theme-parameter-side-text-hover);
+.theme-parameter-side-btn:not(:disabled):hover,
+.theme-parameter-side-btn.force-hover {
+  border-color: var(--mpx-panel-side-nav-border-hover);
+  background: var(--mpx-panel-side-nav-bg-hover);
+  color: var(--mpx-panel-side-nav-text-hover);
 }
 
-.settings-side .theme-parameter-side-btn:not(:disabled):active,
-.settings-side .theme-parameter-side-btn.force-active {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-border-active
-  );
-  background: var(--mpx-btn-variant-theme-parameter-side-bg-active);
-  color: var(--mpx-btn-variant-theme-parameter-side-text-active);
+.theme-parameter-side-btn:not(:disabled):active,
+.theme-parameter-side-btn.force-active {
+  border-color: var(--mpx-panel-side-nav-border-active);
+  background: var(--mpx-panel-side-nav-bg-active);
+  color: var(--mpx-panel-side-nav-text-active);
 }
 
-.settings-side .theme-parameter-side-btn[aria-pressed="true"] {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-border-pressed
-  );
-  background: var(--mpx-btn-variant-theme-parameter-side-bg-pressed);
-  color: var(--mpx-btn-variant-theme-parameter-side-text-pressed);
+.theme-parameter-side-btn[aria-pressed="true"] {
+  border-color: var(--mpx-panel-side-nav-border-pressed);
+  background: var(--mpx-panel-side-nav-bg-pressed);
+  color: var(--mpx-panel-side-nav-text-pressed);
 }
 
-.settings-side .theme-parameter-side-btn:disabled {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-border-disabled
-  );
-  background: var(
-    --mpx-btn-variant-theme-parameter-side-bg-disabled
-  );
-  color: var(--mpx-btn-variant-theme-parameter-side-text-disabled);
+.theme-parameter-side-btn:disabled {
+  border-color: var(--mpx-panel-side-nav-border-disabled);
+  background: var(--mpx-panel-side-nav-bg-disabled);
+  color: var(--mpx-panel-side-nav-text-disabled);
 }
 
-.settings-side .theme-parameter-side-btn.is-pending {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-pending-border
-  );
-  background: var(--mpx-btn-variant-theme-parameter-side-pending-bg);
-  color: var(--mpx-btn-variant-theme-parameter-side-pending-text);
+.theme-parameter-side-btn.is-pending {
+  border-color: var(--mpx-panel-side-nav-pending-border);
+  background: var(--mpx-panel-side-nav-pending-bg);
+  color: var(--mpx-panel-side-nav-pending-text);
 }
 
-.settings-side .theme-parameter-side-btn.danger:not(:disabled):hover,
-.settings-side .theme-parameter-side-btn.danger.force-hover {
-  border-color: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-border
-  );
-  background: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-bg
-  );
-  color: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-text
-  );
-  box-shadow: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-shadow
-  );
+.theme-parameter-side-btn.danger:not(:disabled):hover,
+.theme-parameter-side-btn.danger.force-hover {
+  border-color: var(--mpx-panel-side-nav-danger-hover-border);
+  background: var(--mpx-panel-side-nav-danger-hover-bg);
+  color: var(--mpx-panel-side-nav-danger-hover-text);
+  box-shadow: var(--mpx-panel-side-nav-danger-hover-shadow);
+}
+
+.mpx-large-panel-side button,
+.settings-side button {
+  box-shadow: none;
 }
 
 .theme-parameter-debug-preview-actions {
@@ -2910,11 +2909,12 @@ button.mpx-overlay-chip-btn:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  border-radius: 0;
 }
 
 .theme-parameter-debug-preview-btn {
   border: 1px solid var(--mpx-border-2);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   background: var(--mpx-input-bg);
   color: var(--mpx-input-text);
   min-height: 34px;
@@ -2930,6 +2930,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 .theme-parameter-search,
 .theme-parameter-json-field {
   margin: 0;
+  border-radius: 0;
 }
 
 .theme-parameter-file-input {
@@ -2941,7 +2942,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   min-height: 160px;
   resize: vertical;
   border: 1px solid var(--mpx-input-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--mpx-input-bg);
   color: var(--mpx-input-text);
   padding: 8px 10px;
@@ -3036,7 +3037,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   gap: 10px;
   padding: 10px;
   border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--mpx-bg-elevated);
 }
 
@@ -3081,6 +3082,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 
 .theme-parameter-shadow-layer {
   gap: 12px;
+  border-radius: 0;
 }
 
 .theme-parameter-shadow-layer-head {
@@ -3096,6 +3098,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  border-radius: 0;
 }
 
 .theme-parameter-inline-toggle {
@@ -3295,9 +3298,13 @@ button.mpx-overlay-chip-btn:focus-visible {
   overflow-x: auto;
   overflow-y: hidden;
   border: 1px solid var(--mpx-border-1);
-  border-radius: 10px;
+  border-radius: 0;
   background: color-mix(in srgb, var(--mpx-bg-elevated) 92%, transparent);
   padding: 8px;
+}
+
+.theme-parameter-scroll-preview.mpx-scroll-area {
+  border-radius: 0;
 }
 
 .theme-parameter-scroll-preview-content {
@@ -3315,7 +3322,7 @@ button.mpx-overlay-chip-btn:focus-visible {
   align-items: center;
   height: 22px;
   padding: 0 8px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid var(--mpx-border-1);
   background: color-mix(in srgb, var(--mpx-bg-elevated) 80%, transparent);
   color: var(--mpx-text-2);
@@ -3325,7 +3332,7 @@ button.mpx-overlay-chip-btn:focus-visible {
 .theme-parameter-file-list-preview {
   min-width: 0;
   border: 1px solid var(--mpx-file-list-border, var(--mpx-overlay-soft-border));
-  border-radius: 14px;
+  border-radius: 0;
   background: var(--mpx-file-list-bg, var(--mpx-overlay-soft-bg));
   color: var(--mpx-file-list-text, var(--mpx-text-1));
   overflow: hidden;

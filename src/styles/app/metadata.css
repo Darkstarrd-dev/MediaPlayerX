@@ -203,6 +203,29 @@
   height: var(--mpx-icon-button-size);
   min-height: var(--mpx-icon-button-size);
   padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.metadata-header-g3 .main-icon-square-btn {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
+    .search-trigger-btn,
+    .main-icon-square-btn
+  ),
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
+    .search-trigger-btn,
+    .main-icon-square-btn
+  ):not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
+    .search-trigger-btn,
+    .main-icon-square-btn
+  ):not(:disabled):active {
+  box-shadow: none;
+  transform: none;
 }
 
 .metadata-header-g3 .header-btn-label {
@@ -308,16 +331,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: var(--mpx-metadata-body-bg);
+  background: transparent;
   color: var(--mpx-metadata-body-text);
 }
 
 .metadata-editor-shell > .metadata-rating-group,
 .metadata-editor-shell > .metadata-edit-grid {
-  box-shadow: var(
-    --mpx-slot-fg-main-content-video-controls-shadow,
-    var(--mpx-shadow-panel)
-  );
+  box-shadow: none;
 }
 
 .metadata-rating-group {
@@ -463,14 +483,14 @@
 
 .metadata-edit-grid input[readonly] {
   color: var(--mpx-input-readonly-text);
-  background: var(--mpx-input-readonly-bg);
+  background: var(--mpx-metadata-edit-value-bg);
   border-color: var(--mpx-input-readonly-border);
 }
 
 .metadata-edit-grid select:disabled,
 .metadata-edit-grid textarea:disabled {
   color: var(--mpx-input-readonly-text);
-  background: var(--mpx-input-readonly-bg);
+  background: var(--mpx-metadata-edit-value-bg);
   border-color: var(--mpx-input-readonly-border);
 }
 
@@ -485,7 +505,7 @@
 
 .metadata-edit-grid button:disabled {
   color: var(--mpx-input-readonly-text);
-  background: var(--mpx-input-readonly-bg);
+  background: var(--mpx-metadata-edit-value-bg);
   border-color: var(--mpx-input-readonly-border);
 }
 
@@ -696,7 +716,7 @@
 }
 
 .metadata-playlist-save-dialog {
-  --mpx-dialog-panel-radius: var(--mpx-radius-metadata-card, 10px);
+  --mpx-dialog-panel-radius: 0;
   --mpx-dialog-panel-width: auto;
   --mpx-dialog-panel-max-width: none;
   --mpx-dialog-panel-max-height: none;
@@ -754,7 +774,7 @@
       --mpx-metadata-playlist-name-dialog-input-border-current,
       var(--mpx-metadata-playlist-name-dialog-input-border)
     );
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   background: var(
     --mpx-metadata-playlist-name-dialog-input-bg-current,
     var(--mpx-metadata-playlist-name-dialog-input-bg)
@@ -989,6 +1009,29 @@
 .metadata-video-playlist-shell > .metadata-music-playlist {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.metadata-panel :is(
+    .metadata-rating-group,
+    .metadata-rating-clear-zone,
+    .metadata-edit-grid,
+    .metadata-localized-value,
+    .metadata-edit-grid input,
+    .metadata-edit-grid select,
+    .metadata-edit-grid textarea,
+    .metadata-edit-grid button,
+    .metadata-tag-chip-list,
+    .metadata-empty-tip,
+    .metadata-image-media,
+    .metadata-image-real,
+    .metadata-image-placeholder,
+    .metadata-video-playlist-shell,
+    .metadata-preference-record,
+    .metadata-music-booklet-bindings,
+    .metadata-music-booklet-bindings select,
+    .feature-tag-picker-panel
+  ) {
+  border-radius: 0;
 }
 
 .metadata-video-playlist-shell
@@ -1547,7 +1590,44 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
+  background: transparent;
   color: var(--mpx-slot-fg-meta-main-text, inherit);
+}
+
+[data-slot="fg-meta-main"] :is(
+    .metadata-rating-group,
+    .metadata-edit-grid,
+    .metadata-video-playlist-shell,
+    .metadata-music-booklet-bindings,
+    .feature-tag-picker-panel,
+    .metadata-preference-record
+  ) {
+  box-shadow: none;
+  background: transparent;
+}
+
+[data-slot="fg-meta-main"] :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ) {
+  box-shadow: none;
+}
+
+[data-slot="fg-meta-main"] :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ):hover,
+[data-slot="fg-meta-main"] :where(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea
+  ):active {
+  box-shadow: none;
 }
 
 [data-slot="fg-meta-main-search"],

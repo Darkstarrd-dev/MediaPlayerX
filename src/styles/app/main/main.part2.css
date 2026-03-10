@@ -189,7 +189,7 @@
   min-height: 220px;
   border: 1px solid
     var(--mpx-slot-fg-main-content-music-preview-border, var(--mpx-border-1));
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fg-main-content-music-preview-bg,
     var(--mpx-bg-panel)
@@ -256,7 +256,7 @@
   gap: 2px;
   padding: 8px 10px;
   border: 1px solid var(--mpx-music-vis-hud-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--mpx-music-vis-hud-bg);
   color: var(--mpx-music-vis-hud-text);
   font-size: 12px;
@@ -282,7 +282,7 @@
   padding: 10px 14px;
   border: 1px solid
     var(--mpx-slot-fg-main-content-music-controls-border, var(--mpx-border-1));
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(--mpx-slot-fg-main-content-music-controls-bg, var(--mpx-bg-elevated));
   color: var(--mpx-slot-fg-main-content-music-controls-text, var(--mpx-text-1));
   box-shadow: var(--mpx-slot-fg-main-content-music-controls-shadow, none);
@@ -297,6 +297,7 @@
   z-index: 12;
   opacity: 0;
   pointer-events: none;
+  border-radius: 0;
   transition: opacity 0.3s ease;
 }
 
@@ -365,6 +366,10 @@
 
 .music-controls-group.is-left {
   justify-self: start;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .music-controls-group.is-center {
@@ -373,6 +378,10 @@
 
 .music-controls-group.is-right {
   justify-self: end;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 [data-slot="fg-main-content-music-controls-left"] {
@@ -433,7 +442,7 @@
       --mpx-slot-fg-main-content-music-controls-shader-pop-border,
       var(--mpx-overlay-surface-border, var(--mpx-border-1))
     );
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))

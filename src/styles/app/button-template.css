@@ -156,7 +156,7 @@
     button.settings-icon-btn,
     .mode-switch > button
   ).danger:not(:disabled):hover,
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -218,7 +218,6 @@
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
@@ -234,7 +233,7 @@
   .fullscreen-convert-format-btn,
   .main-header-ad-review-review-pill,
   .main-header-ad-review-running-pill,
-  .manage-ad-review-icon-btn
+  .manage-ad-review-icon-btn:not(.header-popover-trigger)
 ) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
@@ -244,12 +243,11 @@
   transform: translateY(0);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     .sidebar-header button,
     .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
@@ -266,19 +264,18 @@
     .fullscreen-convert-format-btn,
     .main-header-ad-review-review-pill,
     .main-header-ad-review-running-pill,
-    .manage-ad-review-icon-btn
+    .manage-ad-review-icon-btn:not(.header-popover-trigger)
   ):not(:disabled):hover {
   background: var(--mpx-btn-variant-default-bg-hover);
   box-shadow: var(--mpx-btn-variant-default-shadow-hover);
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     .sidebar-header button,
     .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
@@ -295,19 +292,18 @@
     .fullscreen-convert-format-btn,
     .main-header-ad-review-review-pill,
     .main-header-ad-review-running-pill,
-    .manage-ad-review-icon-btn
+    .manage-ad-review-icon-btn:not(.header-popover-trigger)
   ):not(:disabled):active {
   background: var(--mpx-btn-variant-default-bg-active);
   box-shadow: var(--mpx-btn-variant-default-shadow-active);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   .sidebar-header button,
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
@@ -323,7 +319,7 @@
   .fullscreen-convert-format-btn,
   .main-header-ad-review-review-pill,
   .main-header-ad-review-running-pill,
-  .manage-ad-review-icon-btn
+  .manage-ad-review-icon-btn:not(.header-popover-trigger)
 ).is-active,
 :root[data-mpx-style^='soft-skeuomorphic'] .toolbar-icon-btn.is-grid-mode,
 :root[data-mpx-style^='soft-skeuomorphic'] .toolbar-icon-btn.is-names-mode {
@@ -335,7 +331,6 @@
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
@@ -351,7 +346,7 @@
   .fullscreen-convert-format-btn,
   .main-header-ad-review-review-pill,
   .main-header-ad-review-running-pill,
-  .manage-ad-review-icon-btn
+  .manage-ad-review-icon-btn:not(.header-popover-trigger)
 )[aria-pressed="true"] {
   background: var(--mpx-btn-variant-default-bg-pressed);
   border-color: var(--mpx-btn-variant-default-border);
@@ -365,7 +360,6 @@
     .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
     .settings-head button,
-    .settings-side button:not(.theme-parameter-side-btn),
     .settings-shortcuts-head button,
     .main-footer-pagination button,
     .video-controls button:not(.video-action-btn),
@@ -382,7 +376,7 @@
     .fullscreen-convert-format-btn,
     .main-header-ad-review-review-pill,
     .main-header-ad-review-running-pill,
-    .manage-ad-review-icon-btn
+    .manage-ad-review-icon-btn:not(.header-popover-trigger)
   ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-variant-default-text-merged);
 }
@@ -392,7 +386,6 @@
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
   .settings-head button,
-  .settings-side button:not(.theme-parameter-side-btn),
   .settings-shortcuts-head button,
   .main-footer-pagination button,
   .video-controls button:not(.video-action-btn),
@@ -408,7 +401,7 @@
   .fullscreen-convert-format-btn,
   .main-header-ad-review-review-pill,
   .main-header-ad-review-running-pill,
-  .manage-ad-review-icon-btn
+  .manage-ad-review-icon-btn:not(.header-popover-trigger)
 ):disabled {
   opacity: 0.56;
   color: var(--mpx-btn-variant-default-text-disabled);
@@ -416,7 +409,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-  button.main-icon-square-btn,
+  button.main-icon-square-btn:not(.header-popover-trigger),
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
@@ -432,7 +425,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-    button.main-icon-square-btn,
+    button.main-icon-square-btn:not(.header-popover-trigger),
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
@@ -445,7 +438,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-    button.main-icon-square-btn,
+    button.main-icon-square-btn:not(.header-popover-trigger),
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
@@ -458,7 +451,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-  button.main-icon-square-btn,
+  button.main-icon-square-btn:not(.header-popover-trigger),
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
@@ -469,7 +462,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-  button.main-icon-square-btn,
+  button.main-icon-square-btn:not(.header-popover-trigger),
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
@@ -484,7 +477,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-    button.main-icon-square-btn,
+    button.main-icon-square-btn:not(.header-popover-trigger),
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
         .fullscreen-action-btn
@@ -495,7 +488,7 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
-  button.main-icon-square-btn,
+  button.main-icon-square-btn:not(.header-popover-trigger),
   .settings-floating-panel
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
       .fullscreen-action-btn
@@ -507,7 +500,7 @@
   cursor: not-allowed;
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -526,7 +519,7 @@
     ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .meta-tabs button:not(.mpx-overlay-cell-btn)
 ):focus,
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -548,7 +541,7 @@
   outline: none;
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -571,7 +564,7 @@
   box-shadow: var(--mpx-btn-variant-default-shadow-hover);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -590,7 +583,7 @@
       ):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .meta-tabs button:not(.mpx-overlay-cell-btn)
   )[aria-pressed="true"]:focus,
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -644,4 +637,86 @@
 :root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn:focus-visible,
 :root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
   outline: none;
+}
+
+.main-header-actions-manage :is(
+    .feature-action-btn,
+    .toolbar-icon-btn,
+    .header-popover-trigger:not(.manage-ad-review-icon-btn),
+    .manage-ad-review-icon-btn,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill
+  ),
+.main-header-actions-manage :is(
+    .feature-action-btn,
+    .toolbar-icon-btn,
+    .header-popover-trigger:not(.manage-ad-review-icon-btn),
+    .manage-ad-review-icon-btn,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill
+  ):not(:disabled):hover,
+.main-header-actions-manage :is(
+    .feature-action-btn,
+    .toolbar-icon-btn,
+    .header-popover-trigger:not(.manage-ad-review-icon-btn),
+    .manage-ad-review-icon-btn,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill
+  ):not(:disabled):active,
+.main-header-actions-manage :is(
+    .feature-action-btn,
+    .toolbar-icon-btn,
+    .header-popover-trigger:not(.manage-ad-review-icon-btn),
+    .manage-ad-review-icon-btn,
+    .main-header-ad-review-review-pill,
+    .main-header-ad-review-running-pill
+  ):focus-visible {
+  border-radius: 0;
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-header-btn-radius-effective, var(--mpx-header-btn-radius));
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: var(--mpx-header-btn-shadow);
+  transform: translateY(0);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+  transform: var(--mpx-control-hover-transform);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.is-active {
+  color: var(--mpx-btn-variant-default-text-active);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-active,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control.is-open
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger[aria-pressed='true'] {
+  border-color: var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+  transform: var(--mpx-control-active-transform);
 }

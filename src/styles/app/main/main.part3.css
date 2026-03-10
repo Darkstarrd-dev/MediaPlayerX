@@ -113,7 +113,7 @@
 .video-preview {
   border: 1px solid
     var(--mpx-slot-fg-main-content-video-preview-border, var(--mpx-border-1));
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fg-main-content-video-preview-bg,
     var(--mpx-bg-elevated)
@@ -214,7 +214,7 @@
       --mpx-slot-fg-main-content-video-controls-border,
       var(--mpx-player-surface-border)
     );
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fg-main-content-video-controls-bg,
     var(--mpx-player-surface-bg)
@@ -331,6 +331,10 @@
 
 .video-controls-group.is-left {
   justify-self: start;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .video-controls-group.is-center {
@@ -339,6 +343,10 @@
 
 .video-controls-group.is-right {
   justify-self: end;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 [data-slot="fg-main-content-video-controls-left"] {
@@ -391,7 +399,7 @@
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     );
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))

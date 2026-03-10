@@ -57,6 +57,24 @@
     --mpx-workspace-surface-shadow: none;
   }
 
+  [data-slot="fg-header-g1"],
+  [data-slot="fg-header-g2"],
+  [data-slot="fg-header-g3"],
+  [data-slot="fg-header-g-debug"],
+  [data-slot="fg-meta-header-g3"] {
+    --mpx-header-btn-icon-display: inline-flex;
+    --mpx-header-btn-label-display: none;
+    --mpx-header-btn-gap: 0px;
+    --mpx-header-btn-padding-x: 0px;
+  }
+
+  [data-slot="fg-header-g2"] .mode-switch > button,
+  [data-slot="fg-meta-header-g3"] .search-trigger-btn {
+    width: var(--mpx-header-btn-size);
+    min-width: var(--mpx-header-btn-size);
+    padding: 0;
+  }
+
   .mpx-runway,
   .music-ctrl-shader-range {
     --mpx-range-fill-progress: var(--mpx-skeuo-range-pct, 0%);

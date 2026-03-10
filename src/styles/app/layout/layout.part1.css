@@ -595,6 +595,45 @@
   justify-content: center;
 }
 
+.app-header :is(
+    .logo-btn,
+    .window-control-btn,
+    .mode-action-btn,
+    .header-popover-trigger,
+    .mode-switch > button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn
+  ) {
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.app-header :is(
+    .logo-btn,
+    .window-control-btn,
+    .mode-action-btn,
+    .header-popover-trigger,
+    .mode-switch > button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn
+  ):not(:disabled):hover,
+.app-header :is(
+    .logo-btn,
+    .window-control-btn,
+    .mode-action-btn,
+    .header-popover-trigger,
+    .mode-switch > button,
+    .zoom-stepper .zoom-stepper-btn,
+    .auto-play-toggle-btn,
+    .header-settings-btn
+  ):not(:disabled):active {
+  box-shadow: none;
+  transform: none;
+}
+
 :root[data-mpx-style^='soft-skeuomorphic'] .header-settings-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);

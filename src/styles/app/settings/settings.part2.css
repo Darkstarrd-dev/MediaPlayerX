@@ -138,7 +138,7 @@
   width: 100%;
   min-height: 34px;
   border: 1px solid var(--mpx-settings-item-input-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   background: var(--mpx-settings-item-input-bg);
   color: var(--mpx-settings-item-value-text);
   text-align: left;
@@ -306,7 +306,7 @@
       --mpx-dialog-panel-border-color,
       var(--mpx-overlay-surface-border, var(--mpx-border-2))
     );
-  border-radius: var(--mpx-dialog-panel-radius, 12px);
+  border-radius: 0;
   background: var(
     --mpx-dialog-panel-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
@@ -701,6 +701,7 @@ button.music-audio-transcode-seamless-btn {
   padding: 0 12px;
   white-space: nowrap;
   border-color: var(--mpx-transcode-dialog-action-btn-border-current);
+  border-radius: 0;
   background: var(--mpx-transcode-dialog-action-btn-bg-current);
   color: var(--mpx-transcode-dialog-action-btn-text-current);
   box-shadow: none;
@@ -714,7 +715,7 @@ button.music-audio-transcode-seamless-btn:disabled {
 .music-audio-transcode-dialog .sidebar-rename-g2-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-transcode-dialog-action-btn-border-current);
-  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
+  border-radius: 0;
   background: var(--mpx-transcode-dialog-action-btn-bg-current);
   color: var(--mpx-transcode-dialog-action-btn-text-current);
   box-shadow: var(--mpx-header-btn-shadow);

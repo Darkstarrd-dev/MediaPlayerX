@@ -17,7 +17,7 @@
   display: flex;
   justify-content: center;
   border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-1));
-  border-radius: var(--mpx-radius-overlay-pop, 8px);
+  border-radius: 0;
   background: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
   padding: 8px 0;
   box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover));
@@ -71,10 +71,7 @@
   min-height: var(--mpx-header-btn-size);
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
-  border-radius: var(
-    --mpx-header-btn-radius-effective,
-    var(--mpx-header-btn-radius)
-  );
+  border-radius: var(--mpx-header-btn-radius-effective, var(--mpx-header-btn-radius));
   background: var(--mpx-btn-variant-player-bg-idle);
   color: var(--mpx-btn-variant-player-text-idle);
   cursor: pointer;
@@ -108,6 +105,11 @@
 }
 
 [data-slot="fg-header-g2"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   --mpx-header-g2-mode-border-effective: var(
     --mpx-slot-fg-header-g2-mode-border,
     var(--mpx-header-button-border-effective)
@@ -124,6 +126,11 @@
 }
 
 [data-slot="fg-header-g1"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g1-border,
     var(--mpx-header-button-border-effective)
@@ -238,6 +245,11 @@
 }
 
 [data-slot="fg-meta-header-g3"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--mpx-slot-fg-meta-header-g3-text, inherit);
 }
 
@@ -314,6 +326,11 @@
 }
 
 [data-slot="fg-header-g-debug"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g-debug-border,
     var(--mpx-header-button-border-effective)
@@ -393,6 +410,11 @@
 }
 
 [data-slot="fg-header-g3"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g3-border,
     var(--mpx-header-button-border-effective)
@@ -743,6 +765,7 @@
 }
 
 .fullscreen-media-video {
+  border-radius: 0;
   background: var(--mpx-video-screen-bg);
 }
 
@@ -886,7 +909,7 @@
       --mpx-slot-fs-image-controls-shell-border,
       var(--mpx-border-1)
     );
-  border-radius: var(--mpx-card-radius-effective, var(--mpx-card-radius));
+  border-radius: 0;
   background: var(
     --mpx-slot-fs-image-controls-shell-bg,
     var(--mpx-bg-elevated)

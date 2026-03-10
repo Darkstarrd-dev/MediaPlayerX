@@ -74,8 +74,6 @@
   --mpx-control-active-shadow: inset 2px 2px 4px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent),
     inset -2px -2px 4px color-mix(in srgb, var(--mpx-palette-surface) 86%, var(--mpx-bg-elevated));
 
-  --mpx-header-btn-icon-display: inline-flex;
-  --mpx-header-btn-label-display: none;
   --mpx-header-btn-gap: 0px;
   --mpx-header-btn-size: var(--mpx-header-btn-size-px, 40px);
   --mpx-header-btn-radius: 12px;
@@ -242,9 +240,9 @@
     0 1px 1px rgba(255, 255, 255, 0.5);
 
   --mpx-sidebar-tree-scrollbar-size: 10px;
-  --mpx-sidebar-tree-scrollbar-radius: 999px;
-  --mpx-sidebar-tree-scrollbar-track-radius: 10px;
-  --mpx-sidebar-tree-scrollbar-thumb-radius: 999px;
+  --mpx-sidebar-tree-scrollbar-radius: 0px;
+  --mpx-sidebar-tree-scrollbar-track-radius: 0px;
+  --mpx-sidebar-tree-scrollbar-thumb-radius: 0px;
   --mpx-sidebar-tree-scrollbar-color-thumb: #d6dce4;
   --mpx-sidebar-tree-scrollbar-color-track: #ecf0f3;
   --mpx-sidebar-tree-scrollbar-track-bg: #e9edf2;

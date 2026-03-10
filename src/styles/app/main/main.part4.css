@@ -265,7 +265,7 @@
 }
 
 .video-ctrl-panel-option {
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   min-height: 28px;
   font-size: 12px;
   cursor: pointer;
@@ -274,7 +274,7 @@
 .video-action-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: 0;
   width: 34px;
   min-width: 34px;
   height: 34px;
@@ -288,6 +288,27 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+.video-controls-group .video-action-btn,
+.music-controls-group .video-action-btn,
+.fullscreen-group .fullscreen-action-btn,
+.fullscreen-group .header-popover-trigger {
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.video-controls-group .video-action-btn:not(:disabled):hover,
+.video-controls-group .video-action-btn:not(:disabled):active,
+.music-controls-group .video-action-btn:not(:disabled):hover,
+.music-controls-group .video-action-btn:not(:disabled):active,
+.fullscreen-group .fullscreen-action-btn:not(:disabled):hover,
+.fullscreen-group .fullscreen-action-btn:not(:disabled):active,
+.fullscreen-group .header-popover-trigger:not(:disabled):hover,
+.fullscreen-group .header-popover-trigger:not(:disabled):active {
+  box-shadow: none;
+  transform: none;
 }
 
 .video-action-btn .video-action-icon {

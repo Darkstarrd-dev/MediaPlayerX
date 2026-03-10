@@ -1260,7 +1260,11 @@ function SettingsPanel({
             {SETTINGS_SECTIONS.map((section) => (
               <button
                 key={section.id}
-                className={activeSection === section.id ? "is-active" : ""}
+                className={
+                  activeSection === section.id
+                    ? "theme-parameter-side-btn is-active"
+                    : "theme-parameter-side-btn"
+                }
                 type="button"
                 onClick={() => {
                   setActiveSection(section.id);

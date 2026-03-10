@@ -395,14 +395,22 @@ function HelpPanel({
           >
             <button
               type="button"
-              className={activeSection === "image" ? "is-active" : ""}
+              className={
+                activeSection === "image"
+                  ? "theme-parameter-side-btn is-active"
+                  : "theme-parameter-side-btn"
+              }
               onClick={() => setActiveSection("image")}
             >
               {t("ui.help.section.image")}
             </button>
             <button
               type="button"
-              className={activeSection === "fullscreen" ? "is-active" : ""}
+              className={
+                activeSection === "fullscreen"
+                  ? "theme-parameter-side-btn is-active"
+                  : "theme-parameter-side-btn"
+              }
               onClick={() => setActiveSection("fullscreen")}
             >
               {t("ui.help.section.fullscreen")}
@@ -410,7 +418,9 @@ function HelpPanel({
             <button
               type="button"
               className={
-                activeSection === "adReviewStrategy" ? "is-active" : ""
+                activeSection === "adReviewStrategy"
+                  ? "theme-parameter-side-btn is-active"
+                  : "theme-parameter-side-btn"
               }
               onClick={() => setActiveSection("adReviewStrategy")}
             >

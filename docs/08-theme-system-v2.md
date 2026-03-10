@@ -360,6 +360,7 @@ gapped/liquid 风格下，面板有间距和圆角：
 - Theme 通过 token 决定显示策略：
   - 文字优先：`--mpx-header-btn-icon-display: none` + `--mpx-header-btn-label-display: inline`
   - 图标优先：`--mpx-header-btn-icon-display: inline-flex` + `--mpx-header-btn-label-display: none`
+- `theme-skeleton` 可为紧凑按钮组预置基础内容表达（如 `fg-header-g1/g2/g3`、`fg-meta-header-g3` 的 icon-only / 占位字符），公开 style 只负责外观皮肤，不再决定这些按钮是否显示 icon 或 label。
 - 按钮大小、圆角、内边距、阴影由 `--mpx-header-btn-*` token 驱动，不在组件里硬编码。
 - 无论图标/文字模式，按钮可访问名称由 `aria-label` 保证，禁止因 icon-only 失去可访问语义。
 
