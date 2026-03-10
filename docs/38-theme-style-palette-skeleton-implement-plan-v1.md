@@ -559,7 +559,7 @@ npm run build
 - 验证结果：通过
 - 人工验证结论：未单独执行 Electron 人工检查；自动验证确认 style/palette family 过滤、`TestStyle` settings 切换链路与默认 soft 构建链路正常。人工验收清单中的“视觉等价 / 可读性 / 稳定性”仍建议后续在 Electron 中补最终目视验收。
 - 回填文件：`docs/08-theme-system-v2.md`、`docs/01-README.md`、`docs/02-DOCS_INDEX.md`、`docs/38-theme-style-palette-skeleton-implement-plan-v1.md`
-- 提交 hash：待提交
+- 提交 hash：`ca77125`
 - 阻塞记录：
 
 ---
