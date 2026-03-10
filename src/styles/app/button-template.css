@@ -1,4 +1,4 @@
-.mpx-btn-group.is-groove {
+:root[data-mpx-style^='soft-skeuomorphic'] .mpx-btn-group.is-groove {
   padding: var(--mpx-button-group-inset-px, 2px);
   border: 1px solid var(--mpx-btn-group-groove-border);
   border-radius: var(--mpx-btn-group-groove-radius);
@@ -6,7 +6,7 @@
   box-shadow: var(--mpx-btn-group-groove-shadow);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -29,7 +29,7 @@
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -42,7 +42,7 @@
     button.settings-icon-btn,
     .mode-switch > button
   ):not(:disabled):hover,
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -60,7 +60,7 @@
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -73,7 +73,7 @@
     button.settings-icon-btn,
     .mode-switch > button
   ):not(:disabled):active,
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -91,7 +91,7 @@
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -107,7 +107,7 @@
   color: var(--mpx-btn-variant-default-text-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -127,7 +127,7 @@
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -143,7 +143,7 @@
   color: var(--mpx-btn-variant-default-text-merged);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
     button.window-control-btn,
     button.search-trigger-btn,
@@ -169,14 +169,14 @@
     button.settings-icon-btn,
     .mode-switch > button
   ).danger.force-hover,
-button.window-control-btn.window-control-btn--close:not(:disabled):hover {
+:root[data-mpx-style^='soft-skeuomorphic'] button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   background: var(--mpx-btn-variant-default-danger-hover-bg);
   border-color: var(--mpx-btn-variant-default-danger-hover-border);
   color: var(--mpx-btn-variant-default-danger-hover-text);
   box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -195,7 +195,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: translateY(0);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
   button.window-control-btn,
   button.search-trigger-btn,
@@ -213,7 +213,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   background: var(--mpx-status-warning-bg);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   .sidebar-header button,
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
@@ -325,12 +325,12 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   .main-header-ad-review-running-pill,
   .manage-ad-review-icon-btn
 ).is-active,
-.toolbar-icon-btn.is-grid-mode,
-.toolbar-icon-btn.is-names-mode {
+:root[data-mpx-style^='soft-skeuomorphic'] .toolbar-icon-btn.is-grid-mode,
+:root[data-mpx-style^='soft-skeuomorphic'] .toolbar-icon-btn.is-names-mode {
   color: var(--mpx-btn-variant-default-text-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   .sidebar-header button,
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
@@ -360,7 +360,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     .sidebar-header button,
     .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
     .metadata-header button,
@@ -387,7 +387,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   color: var(--mpx-btn-variant-default-text-merged);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   .sidebar-header button,
   .main-header-actions button:not(.metadata-fetch-preview-toggle):not(.mpx-overlay-cell-btn):not(.music-audio-transcode-seamless-btn),
   .metadata-header button,
@@ -415,7 +415,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   cursor: not-allowed;
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.main-icon-square-btn,
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -431,7 +431,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: translateY(0);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.main-icon-square-btn,
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -444,7 +444,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.main-icon-square-btn,
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -457,7 +457,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.main-icon-square-btn,
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -468,7 +468,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   color: var(--mpx-btn-variant-default-text-active);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.main-icon-square-btn,
   :is(.settings-floating-panel, .mpx-dialog-panel)
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -483,7 +483,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.main-icon-square-btn,
     :is(.settings-floating-panel, .mpx-dialog-panel)
       button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -494,7 +494,7 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   color: var(--mpx-btn-variant-default-text-merged);
 }
 
-:is(
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.main-icon-square-btn,
   .settings-floating-panel
     button:not(.sidebar-mini-btn):not(.video-action-btn):not(
@@ -613,9 +613,9 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
 }
 
-.video-controls-group.is-center .video-action-btn,
-.music-controls-group.is-center .video-action-btn,
-.fullscreen-group.is-center .fullscreen-action-btn {
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls-group.is-center .video-action-btn,
+:root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn,
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
   background: var(--mpx-btn-variant-player-bg-idle);
@@ -624,24 +624,24 @@ button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   transform: translateY(0);
 }
 
-.video-controls-group.is-center .video-action-btn:not(:disabled):hover,
-.music-controls-group.is-center .video-action-btn:not(:disabled):hover,
-.fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls-group.is-center .video-action-btn:not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn:not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
   background: var(--mpx-btn-variant-player-bg-hover);
 }
 
-.video-controls-group.is-center .video-action-btn:not(:disabled):active,
-.music-controls-group.is-center .video-action-btn:not(:disabled):active,
-.fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls-group.is-center .video-action-btn:not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn:not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: var(--mpx-btn-variant-player-border-active);
 }
 
-.video-controls-group.is-center .video-action-btn:focus,
-.music-controls-group.is-center .video-action-btn:focus,
-.fullscreen-group.is-center .fullscreen-action-btn:focus,
-.video-controls-group.is-center .video-action-btn:focus-visible,
-.music-controls-group.is-center .video-action-btn:focus-visible,
-.fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls-group.is-center .video-action-btn:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls-group.is-center .video-action-btn:focus-visible,
+:root[data-mpx-style^='soft-skeuomorphic'] .music-controls-group.is-center .video-action-btn:focus-visible,
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
   outline: none;
 }

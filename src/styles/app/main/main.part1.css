@@ -86,7 +86,7 @@
     0 0 24px 5px var(--mpx-pane-focus-metal-ambient);
 }
 
-.main-pane
+:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -97,7 +97,7 @@
   border-color: var(--mpx-main-control-border-color, var(--mpx-border-2));
 }
 
-.main-pane
+:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -110,7 +110,7 @@
   );
 }
 
-.main-pane
+:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),

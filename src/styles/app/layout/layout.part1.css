@@ -51,7 +51,7 @@
   width: 100%;
 }
 
-.app-header
+:root[data-mpx-style^='soft-skeuomorphic'] .app-header
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -182,12 +182,12 @@
   transition: var(--mpx-control-transition);
 }
 
-.search-trigger-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.search-trigger-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -243,13 +243,13 @@
   transition: var(--mpx-control-transition);
 }
 
-.logo-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .logo-btn:hover {
   background: var(--mpx-btn-variant-player-bg-hover);
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.logo-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .logo-btn:active {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: var(--mpx-btn-variant-player-border-active);
   transform: var(--mpx-control-active-transform);
@@ -415,12 +415,12 @@
   transition: var(--mpx-control-transition);
 }
 
-.mode-action-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .mode-action-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.mode-action-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .mode-action-btn:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -445,12 +445,12 @@
   pointer-events: auto;
 }
 
-.mode-switch button:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .mode-switch button:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.mode-switch button:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .mode-switch button:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -528,12 +528,12 @@
   transition: var(--mpx-control-transition);
 }
 
-.zoom-stepper .zoom-stepper-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .zoom-stepper .zoom-stepper-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.zoom-stepper .zoom-stepper-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .zoom-stepper .zoom-stepper-btn:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -557,12 +557,12 @@
   transition: var(--mpx-control-transition);
 }
 
-.auto-play-toggle-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .auto-play-toggle-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.auto-play-toggle-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .auto-play-toggle-btn:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -595,12 +595,12 @@
   justify-content: center;
 }
 
-.header-settings-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .header-settings-btn:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.header-settings-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .header-settings-btn:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }

@@ -17,31 +17,31 @@
   color: var(--mpx-btn-variant-default-text-idle);
 }
 
-.search-box select:focus,
-.search-box input:focus,
-.header-right select:focus,
-.settings-block input:focus,
-.settings-block select:focus,
-.settings-block textarea:focus,
-.feature-query-input:focus {
+:root[data-mpx-style^='soft-skeuomorphic'] .search-box select:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .search-box input:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .header-right select:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-block input:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-block select:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-block textarea:focus,
+:root[data-mpx-style^='soft-skeuomorphic'] .feature-query-input:focus {
   background: var(--mpx-input-focus-bg);
   border-color: var(--mpx-input-focus-border);
   outline: none;
   box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
 }
 
-.sidebar-header button,
-.main-header-actions button,
-.metadata-header button,
-.settings-head button,
-.settings-side button,
-.settings-shortcuts-head button,
-.main-footer-pagination button,
-.video-controls button:not(.video-action-btn),
-.fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
-.main-header button,
-.settings-block button,
-.search-trigger-btn {
+:root[data-mpx-style^='soft-skeuomorphic'] .sidebar-header button,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header-actions button,
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header button,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-head button,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-side button,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-shortcuts-head button,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-footer-pagination button,
+:root[data-mpx-style^='soft-skeuomorphic'] .video-controls button:not(.video-action-btn),
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header button,
+:root[data-mpx-style^='soft-skeuomorphic'] .settings-block button,
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
   border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
@@ -53,28 +53,28 @@
   cursor: pointer;
 }
 
-.sidebar-header button:hover,
-.main-header-actions button:hover,
-.metadata-header button:hover,
-.main-header button:hover,
-.search-trigger-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .sidebar-header button:hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header-actions button:hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header button:hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header button:hover,
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn:hover {
   background: var(--mpx-btn-variant-default-bg-hover);
 }
 
-.sidebar-header button:active,
-.main-header-actions button:active,
-.metadata-header button:active,
-.main-header button:active,
-.search-trigger-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .sidebar-header button:active,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header-actions button:active,
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header button:active,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header button:active,
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn:active {
   background: var(--mpx-btn-variant-default-bg-active);
   border-color: var(--mpx-btn-variant-default-border);
 }
 
-.sidebar-header button:disabled,
-.main-header-actions button:disabled,
-.metadata-header button:disabled,
-.main-header button:disabled,
-.search-trigger-btn:disabled {
+:root[data-mpx-style^='soft-skeuomorphic'] .sidebar-header button:disabled,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header-actions button:disabled,
+:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header button:disabled,
+:root[data-mpx-style^='soft-skeuomorphic'] .main-header button:disabled,
+:root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn:disabled {
   opacity: 0.56;
   color: var(--mpx-btn-variant-default-text-disabled);
 }

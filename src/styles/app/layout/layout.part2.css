@@ -1,9 +1,9 @@
-.header-popover-trigger:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .header-popover-trigger:hover {
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.header-popover-trigger:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .header-popover-trigger:active {
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -94,13 +94,13 @@
   line-height: 1;
 }
 
-.window-control-btn:hover {
+:root[data-mpx-style^='soft-skeuomorphic'] .window-control-btn:hover {
   background: var(--mpx-btn-variant-player-bg-hover);
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
-.window-control-btn:active {
+:root[data-mpx-style^='soft-skeuomorphic'] .window-control-btn:active {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: var(--mpx-btn-variant-player-border-active);
   transform: var(--mpx-control-active-transform);
