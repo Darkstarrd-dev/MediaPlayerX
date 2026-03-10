@@ -11,6 +11,7 @@ export interface StyleInfo {
 export interface PaletteInfo {
   id: string
   label: string
+  styleId: string
 }
 
 export type PaletteMode = 'day' | 'night'
@@ -19,8 +20,8 @@ export const DEFAULT_STYLE_ID = 'soft-skeuomorphic'
 export const DEFAULT_PALETTE_ID = 'skeuomorphic-luxury-white'
 export const DEFAULT_THEME_ID = DEFAULT_PALETTE_ID
 
-const STYLE_PALETTE_ALLOWLIST: Record<string, readonly string[]> = {
-  'soft-skeuomorphic': ['skeuomorphic-luxury-white'],
+const PALETTE_STYLE_ID_OVERRIDES: Record<string, string> = {
+  'skeuomorphic-luxury-white': 'soft-skeuomorphic',
 }
 
 const STYLE_DEFAULT_PALETTE_ID: Record<string, string> = {
@@ -76,6 +77,36 @@ function collectInfos(files: Record<string, unknown>): ThemeInfo[] {
   return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label))
 }
 
+function collectPaletteInfos(files: Record<string, unknown>): PaletteInfo[] {
+  const byId = new Map<string, PaletteInfo>()
+
+  for (const path in files) {
+    const segments = path.split('/').filter(Boolean)
+    const fileName = segments.at(-1)
+    if (!fileName || !fileName.endsWith('.css') || fileName.startsWith('_')) {
+      continue
+    }
+
+    const id = fileName.slice(0, -'.css'.length)
+    if (!id || byId.has(id)) {
+      continue
+    }
+
+    const palettesIndex = segments.lastIndexOf('palettes')
+    const familySegment = palettesIndex >= 0 ? segments[palettesIndex + 1] : undefined
+    const styleId =
+      familySegment && familySegment !== fileName ? familySegment : PALETTE_STYLE_ID_OVERRIDES[id] ?? DEFAULT_STYLE_ID
+
+    byId.set(id, {
+      id,
+      label: LABEL_OVERRIDES[id] ?? toLabel(id),
+      styleId,
+    })
+  }
+
+  return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label))
+}
+
 function resolveId<T extends { id: string }>(id: string, items: T[], fallbackId: string): string {
   if (items.some((item) => item.id === id)) {
     return id
@@ -113,25 +144,13 @@ export function listPalettes(): PaletteInfo[] {
 }
 
 export function listPalettesByStyle(styleId?: string): PaletteInfo[] {
-  const byId = new Map<string, PaletteInfo>()
-
-  for (const item of [...collectInfos(PALETTE_FILES), ...collectInfos(THEME_FILES)]) {
-    if (!byId.has(item.id)) {
-      byId.set(item.id, item)
-    }
-  }
-
-  const allPalettes = ensureDefaultOption(Array.from(byId.values()), DEFAULT_PALETTE_ID)
+  const allPalettes = ensureDefaultOption(collectPaletteInfos(PALETTE_FILES), DEFAULT_PALETTE_ID)
   if (!styleId) {
     return allPalettes
   }
 
-  const allowedPaletteIds = STYLE_PALETTE_ALLOWLIST[styleId]
-  if (!allowedPaletteIds || allowedPaletteIds.length === 0) {
-    return allPalettes
-  }
-
-  const filtered = allPalettes.filter((palette) => allowedPaletteIds.includes(palette.id))
+  const resolvedStyleId = listStyles().some((style) => style.id === styleId) ? styleId : DEFAULT_STYLE_ID
+  const filtered = allPalettes.filter((palette) => palette.styleId === resolvedStyleId)
   return filtered
 }
 

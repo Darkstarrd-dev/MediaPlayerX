@@ -1,4 +1,4 @@
-@layer contract, palette, theme-style, app-base, app-layout, app-component, app-state;
+@layer contract, palette-base, palette, theme-skeleton, theme-style, app-base, app-layout, app-component, app-state;
 
 @import './styles/themes/index.css';
 

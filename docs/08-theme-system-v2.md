@@ -38,18 +38,20 @@ styles/<name>.css     → :root[data-mpx-style="x"]    → 布局效果 + 效果
 Theme 系统已迁移为显式 `@layer` 架构，固定层序如下：
 
 ```css
-@layer contract, palette, theme-style, app-base, app-layout, app-component, app-state;
+@layer contract, palette-base, palette, theme-skeleton, theme-style, app-base, app-layout, app-component, app-state;
 ```
 
 各层职责：
 
 1. `contract`：`src/styles/themes/contract.css`，提供全部 token 默认值与语义 fallback。
-2. `palette`：`src/styles/themes/palettes/*.css`，只负责颜色覆写。
-3. `theme-style`：`src/styles/themes/styles/*.css`，负责风格层几何、阴影、渐变、模糊与效果派生。
-4. `app-base`：`base.css`，负责浏览器标准化、滚动条、基础控件统一样式。
-5. `app-layout`：`layout.css / sidebar.css / main.css / metadata.css`，负责四大容器与主布局结构。
-6. `app-component`：`settings.css / manage.css / vector.css / subtitles.css`，负责业务组件与面板内部件。
-7. `app-state`：`responsive.css / button-template.css`，负责状态机、响应式与最终态裁决。
+2. `palette-base`：隐藏最小 palette 骨架层，仅提供内部中性色 fallback，不对 settings 暴露。
+3. `palette`：公开 palette 层；palette 必须绑定到某个 style family，不再视为全局共享池。
+4. `theme-skeleton`：隐藏最小 style 骨架层，只负责零装饰骨架 token，不对 settings 暴露。
+5. `theme-style`：公开 style 视觉层，负责几何、阴影、渐变、模糊与效果派生。
+6. `app-base`：`base.css`，负责浏览器标准化、滚动条、基础控件统一样式。
+7. `app-layout`：`layout.css / sidebar.css / main.css / metadata.css`，负责四大容器与主布局结构。
+8. `app-component`：`settings.css / manage.css / vector.css / subtitles.css`，负责业务组件与面板内部件。
+9. `app-state`：`responsive.css / button-template.css`，负责状态机、响应式与最终态裁决。
 
 迁移目的：
 
@@ -105,9 +107,17 @@ Level 2 (L2)
 
 ### 1.3 纯 CSS 驱动
 
-- 新增 style/palette 只需在对应目录下新增 CSS 文件，无需改 JS。
+- 新增 style/palette 只需在对应目录下新增 CSS 文件；公开 family 规则之外的隐藏文件使用 `_` 前缀，无需改 JS。
 - 运行时自动发现（`import.meta.glob`）。
 - 文件名即 ID，`_` 前缀文件会被排除（用于模板）。
+
+### 1.3.1 Style Family / Palette Family 绑定（2026-03）
+
+- Palette 归属于 style family；运行时 registry 必须能解析 `palette -> styleId`。
+- 公开 palette 推荐目录：`src/styles/themes/palettes/<style-id>/<palette-id>.css`。
+- 兼容期允许旧 palette 暂留在 `palettes/` 根目录，但必须在 registry 中显式映射其 `styleId`。
+- `listPalettesByStyle(styleId)` 只返回该 style family 自己的 palette；隐藏 `_palette-base.css` 不参与公开列表。
+- 隐藏 `_skeleton.css` 与 `_palette-base.css` 只作为层级骨架，不属于用户可选 style/palette。
 
 ### 1.4 Token 隔离
 
@@ -166,9 +176,10 @@ npm run theme:verify:slots
 ```
 src/styles/themes/
   contract.css                    # 全量 token 默认值（SSOT）
-  index.css                       # 主题入口（导入 contract + palettes + styles）
+  index.css                       # 主题入口（导入 contract + palette-base + palettes + skeleton + styles）
 
   styles/                         # Style 预设
+    _skeleton.css                 # 隐藏最小 skeleton style
     _flush.css                    # 默认风格（flush，无间距无圆角）
     _style-template.css           # Style 开发模板
     liquid-glass.css              # 示例：毛玻璃
@@ -182,12 +193,13 @@ src/styles/themes/
     soft-skeuomorphic.image-grid.css         # image-grid/manage 专项
 
   palettes/                       # Palette 预设
+    _palette-base.css             # 隐藏最小 skeleton palette
     _palette-template.css         # Palette 开发模板
-    parchment.css                 # 默认配色
-    tokyo-night.css
-    rose-pine.css
-    catppuccin-mocha.css
-    ... (其他迁移自 presets/ 的配色)
+    soft-skeuomorphic/
+      skeuomorphic-luxury-white.css
+    test-style/
+      test-skeleton.css
+    ... (其他 family palette)
 
   presets/                        # 旧格式（向后兼容，不再新增）
     _template.css
@@ -204,7 +216,7 @@ src/features/theme/
 main.tsx
   -> src/index.css
      -> src/styles/themes/index.css
-        -> contract / palette / theme-style
+        -> contract / palette-base / palette / theme-skeleton / theme-style
 
 App.tsx
   -> src/App.css

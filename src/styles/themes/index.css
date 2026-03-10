@@ -1,13 +1,15 @@
 /* Global Theme Entry */
 
-@layer contract, palette, theme-style;
+@layer contract, palette-base, palette, theme-skeleton, theme-style;
 
 @import './contract.css';
+@import './palettes/_palette-base.css';
 
 /* Palette presets (color layer) */
 @import './palettes/skeuomorphic-luxury-white.css';
 
 /* Style presets (layout/effect layer) */
+@import './styles/_skeleton.css';
 @import './styles/soft-skeuomorphic.css';
 @import './styles/soft-skeuomorphic.components.css';
 @import './styles/soft-skeuomorphic.main-transport.css';

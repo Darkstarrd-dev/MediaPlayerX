@@ -54,7 +54,7 @@ describe('resolveStyleIdFromStyles', () => {
 
 describe('resolvePaletteIdFromPalettes', () => {
   const palettes: PaletteInfo[] = [
-    { id: 'skeuomorphic-luxury-white', label: 'Luxury White' },
+    { id: 'skeuomorphic-luxury-white', label: 'Luxury White', styleId: 'soft-skeuomorphic' },
   ]
 
   it('keeps current palette when still available', () => {
@@ -72,13 +72,23 @@ describe('resolvePaletteIdFromPalettes', () => {
 
 describe('listPalettesByStyle', () => {
   it('limits soft-skeuomorphic to dedicated palettes', () => {
-    const ids = listPalettesByStyle('soft-skeuomorphic').map((item) => item.id)
-    expect(ids).toEqual(['skeuomorphic-luxury-white'])
+    expect(listPalettesByStyle('soft-skeuomorphic')).toEqual([
+      {
+        id: 'skeuomorphic-luxury-white',
+        label: 'Luxury White',
+        styleId: 'soft-skeuomorphic',
+      },
+    ])
   })
 
   it('keeps fallback style compatible with default palette', () => {
     const ids = listPalettesByStyle('missing-style').map((item) => item.id)
     expect(ids).toEqual([DEFAULT_PALETTE_ID])
+  })
+
+  it('keeps hidden palette-base out of public palette list', () => {
+    const ids = listPalettesByStyle().map((item) => item.id)
+    expect(ids).not.toContain('_palette-base')
   })
 })
 
