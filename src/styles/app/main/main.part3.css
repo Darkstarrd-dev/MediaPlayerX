@@ -77,16 +77,16 @@
 
 .music-ctrl-shader-range {
   width: 100%;
-  --mpx-skeuo-range-pct: 0%;
+  --mpx-range-fill-progress: 0%;
 }
 
 .music-ctrl-shader-range::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
     var(--mpx-music-ctrl-range-fill) 0%,
-    var(--mpx-music-ctrl-range-fill) var(--mpx-skeuo-range-pct, 0%),
+    var(--mpx-music-ctrl-range-fill) var(--mpx-range-fill-progress, 0%),
     color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
-      var(--mpx-skeuo-range-pct, 0%),
+      var(--mpx-range-fill-progress, 0%),
     color-mix(in srgb, var(--mpx-btn-variant-player-border) 36%, transparent)
       100%
   );

@@ -144,9 +144,7 @@
     0 0 26px 6px var(--mpx-pane-focus-day-ambient);
 }
 
-:root[data-mpx-palette-mode="night"][data-mpx-style^="soft-skeuomorphic"]
-  .sidebar.is-focus
-  > .sidebar-frame {
+:root[data-mpx-palette-mode="night"] .sidebar.is-focus > .sidebar-frame {
   box-shadow:
     var(--mpx-sidebar-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app-base),
@@ -577,31 +575,37 @@
   background: var(--mpx-status-success-bg);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .sidebar-row:not(.is-pressed-active)
-  .sidebar-label {
-  border: 1px solid
+.sidebar-row:not(.is-pressed-active) .sidebar-label {
+  border: var(--mpx-control-border-width) solid
     var(
-      --mpx-sidebar-node-border,
-      color-mix(in srgb, var(--mpx-border-2) 68%, var(--mpx-bg-panel) 32%)
+      --mpx-slot-fg-sidebar-main-label-border,
+      var(
+        --mpx-sidebar-main-label-border,
+        var(
+          --mpx-sidebar-node-border,
+          color-mix(in srgb, var(--mpx-border-2) 68%, var(--mpx-bg-panel) 32%)
+        )
+      )
     );
   border-radius: var(
     --mpx-sidebar-node-label-radius,
     var(--mpx-radius-sidebar-label, 12px)
   );
-  background: var(--mpx-sidebar-node-bg, var(--mpx-btn-variant-player-bg-idle));
-  color: var(--mpx-sidebar-node-text, var(--mpx-btn-variant-player-text-idle));
-  box-shadow:
-    2px 2px 3px
-      color-mix(in srgb, var(--mpx-skeuo-shadow-dark) 82%, transparent),
-    -2px -2px 3px
-      color-mix(in srgb, var(--mpx-skeuo-shadow-light) 82%, transparent),
-    0 1px 0
-      color-mix(
-        in srgb,
-        var(--mpx-sidebar-node-bg, var(--mpx-btn-variant-player-bg-idle)) 78%,
-        var(--mpx-bg-elevated) 22%
-      );
+  background: var(
+    --mpx-slot-fg-sidebar-main-label-bg,
+    var(--mpx-sidebar-main-label-bg, var(--mpx-btn-variant-player-bg-idle))
+  );
+  color: var(
+    --mpx-slot-fg-sidebar-main-label-text,
+    var(--mpx-sidebar-main-label-text, var(--mpx-btn-variant-player-text-idle))
+  );
+  box-shadow: var(
+    --mpx-slot-fg-sidebar-main-label-shadow,
+    var(
+      --mpx-sidebar-main-label-shadow,
+      var(--mpx-sidebar-control-shadow, var(--mpx-control-shadow))
+    )
+  );
 }
 
 .sidebar-row.is-hover-active .sidebar-label {
@@ -646,9 +650,7 @@
       );
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row.is-active
-  .sidebar-bullet {
+.sidebar-row.is-active .sidebar-bullet {
   opacity: 1;
   background: var(
     --mpx-slot-fg-sidebar-main-bullet-active-bg,
@@ -693,30 +695,22 @@
   padding-left: calc(2px + 1.2em + var(--mpx-sidebar-node-indent, 0px));
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row
-  .sidebar-label.is-collapsible.is-collapsed {
+.sidebar-row .sidebar-label.is-collapsible.is-collapsed {
   background: var(
     --mpx-slot-fg-sidebar-main-label-collapsed-bg,
     var(--mpx-sidebar-main-label-collapsed-bg, var(--mpx-bg-panel))
   );
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row
-  .sidebar-label.is-collapsible:not(.is-collapsed) {
+.sidebar-row .sidebar-label.is-collapsible:not(.is-collapsed) {
   background: var(
     --mpx-slot-fg-sidebar-main-label-expanded-bg,
     var(--mpx-sidebar-main-label-expanded-bg, var(--mpx-bg-panel))
   );
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row.is-hover-active:not(.is-active)
-  .sidebar-label:not(.is-collapsible),
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .sidebar-row:not(.is-active)
-  .sidebar-label:not(.is-collapsible) {
+.sidebar-row.is-hover-active:not(.is-active) .sidebar-label:not(.is-collapsible),
+.sidebar-row:not(.is-active) .sidebar-label:not(.is-collapsible) {
   background: var(
     --mpx-slot-fg-sidebar-main-label-plain-bg,
     var(--mpx-sidebar-main-label-plain-bg, var(--mpx-bg-panel))

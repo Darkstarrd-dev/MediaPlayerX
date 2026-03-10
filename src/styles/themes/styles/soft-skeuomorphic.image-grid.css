@@ -1,4 +1,16 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-main-content-image-grid"],
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-main-content-image-node-grid"],
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  [data-slot="fg-main-content-video-grid"] {
+  --mpx-workspace-surface-shadow:
+    inset 6px 6px 14px color-mix(in srgb, var(--mpx-palette-shadow-color) 34%, transparent),
+    inset -6px -6px 14px color-mix(in srgb, var(--mpx-bg-elevated) 72%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--mpx-bg-elevated) 65%, transparent);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-image-grid-card"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-main-content-image-node-grid-card"],

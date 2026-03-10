@@ -54,6 +54,12 @@
     --mpx-runway-fill-inset-inline: 2px;
     --mpx-runway-thumb-size: 16px;
     --mpx-runway-thumb-padding: 2px;
+    --mpx-workspace-surface-shadow: none;
+  }
+
+  .mpx-runway,
+  .music-ctrl-shader-range {
+    --mpx-range-fill-progress: var(--mpx-skeuo-range-pct, 0%);
   }
 
   .video-controls-shell:not(.fullscreen-video-controls-shell)

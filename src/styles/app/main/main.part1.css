@@ -56,9 +56,7 @@
     0 0 26px 6px var(--mpx-pane-focus-day-ambient);
 }
 
-:root[data-mpx-palette-mode="night"][data-mpx-style^="soft-skeuomorphic"]
-  .workspace.is-focus
-  .main-pane-frame {
+:root[data-mpx-palette-mode="night"] .workspace.is-focus .main-pane-frame {
   box-shadow:
     var(--mpx-main-shadow),
     0 0 0 var(--mpx-pane-focus-ring-offset) var(--mpx-bg-app-base),
@@ -240,21 +238,10 @@
       var(--mpx-workspace-fill-end, var(--mpx-main-fill-end)) 100%
     )
   );
-  box-shadow:
-    inset 6px 6px 14px
-      color-mix(in srgb, var(--mpx-skeuo-shadow-dark, #0b0d10) 34%, transparent),
-    inset -6px -6px 14px
-      color-mix(
-        in srgb,
-        var(--mpx-skeuo-shadow-light, var(--mpx-bg-elevated)) 72%,
-        transparent
-      ),
-    inset 0 1px 0
-      color-mix(
-        in srgb,
-        var(--mpx-skeuo-shadow-light, var(--mpx-bg-elevated)) 65%,
-        transparent
-      );
+  box-shadow: var(
+    --mpx-slot-fg-main-content-image-grid-shadow,
+    var(--mpx-workspace-surface-shadow, none)
+  );
   padding: var(--mpx-pane-inner-padding-px, 8px);
   isolation: isolate;
   display: grid;

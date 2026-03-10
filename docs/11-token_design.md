@@ -184,17 +184,19 @@ Metadata 主面板 body / edit-grid / preference-record / tag 编辑区语义统
 Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music / overlay / rating 残留硬编码色。ThemeParameter 当前分组归属为：`--mpx-workspace-*` 与 `--mpx-ad-review-overlay-*` 落在 `2.3.2.1 工作区 缩略图模式`，`--mpx-thumbnail-card-*` 落在 `6.4 缩略图卡片样式（总控）`，`--mpx-image-grid-card-*` / `--mpx-video-grid-card-*` 作为 `2.3.2.1` image/video 局部覆写，`--mpx-music-vis-*` / `--mpx-music-ctrl-*` / `--mpx-video-screen-bg` 落在 `2.3.2.3 工作区 预览模式`，`--mpx-rating-heart-*` 落在 `2.4.2.1 评价组件`。
 
 1. Music visualizer / shader 控件链路：
-   - `--mpx-music-vis-text`
-   - `--mpx-music-vis-hud-bg`
-   - `--mpx-music-vis-hud-text`
-   - `--mpx-music-vis-hud-border`
-   - `--mpx-music-vis-error-bg`
-   - `--mpx-music-vis-error-border`
-   - `--mpx-music-ctrl-focus-color`
-   - `--mpx-music-ctrl-range-fill`
-   - `--mpx-music-ctrl-toggle-bg`
+    - `--mpx-music-vis-text`
+    - `--mpx-music-vis-hud-bg`
+    - `--mpx-music-vis-hud-text`
+    - `--mpx-music-vis-hud-border`
+    - `--mpx-music-vis-error-bg`
+    - `--mpx-music-vis-error-border`
+    - `--mpx-music-ctrl-focus-color`
+    - `--mpx-music-ctrl-range-fill`
+    - `--mpx-range-fill-progress`
+    - `--mpx-music-ctrl-toggle-bg`
 2. Video screen / fullscreen 背景链路：
-   - `--mpx-video-screen-bg`
+    - `--mpx-video-screen-bg`
+    - `--mpx-workspace-surface-shadow`
 3. 广告审核删除 overlay 链路：
    - `--mpx-ad-review-overlay-stage-bg`
    - `--mpx-ad-review-overlay-card-bg`

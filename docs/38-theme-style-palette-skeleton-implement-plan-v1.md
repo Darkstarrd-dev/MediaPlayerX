@@ -486,12 +486,12 @@ npm run build
 
 ### Phase 记录
 
-- [ ] 已完成
-- 验证命令：
-- 验证结果：
-- 人工验证结论：
-- 回填文件：
-- 提交 hash：
+- [x] 已完成
+- 验证命令：`npm run build`
+- 验证结果：通过
+- 人工验证结论：未单独执行 Electron 人工检查；已通过构建级验证，app 层已移除对 `soft-skeuomorphic` selector 与 `--mpx-skeuo-*` 的直接依赖，默认 soft 皮肤仍由 style / palette token 提供
+- 回填文件：`docs/38-theme-style-palette-skeleton-implement-plan-v1.md`、`docs/11-token_design.md`
+- 提交 hash：待提交
 - 阻塞记录：
 
 ---

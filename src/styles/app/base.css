@@ -357,7 +357,7 @@ input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
   left: var(--mpx-runway-fill-inset-inline);
   top: 50%;
   height: var(--mpx-runway-fill-height);
-  width: var(--mpx-skeuo-range-pct, 0%);
+  width: var(--mpx-range-fill-progress, 0%);
   max-width: calc(100% - (var(--mpx-runway-fill-inset-inline) * 2));
   border-radius: 999px;
   transform: translateY(-50%);
@@ -369,7 +369,7 @@ input[type='range']:not(.mpx-runway-input):focus-visible::-moz-range-thumb {
 .mpx-runway-thumb {
   display: flex;
   position: absolute;
-  left: var(--mpx-skeuo-range-pct, 0%);
+  left: var(--mpx-range-fill-progress, 0%);
   top: 50%;
   width: var(--mpx-runway-thumb-size);
   height: var(--mpx-runway-thumb-size);
