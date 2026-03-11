@@ -128,6 +128,7 @@ npm run test
 - `docs/13-music-visualizer-shader-migration-playbook.md`
 - `docs/08-theme-system-v2.md`
 - `docs/09-theme-brainstorm-entry.md`
+- `docs/39-theme-derived-fallback-audit-and-fix-plan-v1.md`
 - `docs/10-ui_definition.md`
 - `docs/11-token_design.md`
 - `docs/25-windows-release-signing-runbook.md`

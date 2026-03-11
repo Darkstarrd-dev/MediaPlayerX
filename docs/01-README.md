@@ -23,6 +23,7 @@
 - Theme 迭代入口：`09-theme-brainstorm-entry.md`
 - Theme skeleton 分阶段实施计划（前置计划，Phase 1~6 已完成）：`38-theme-style-palette-skeleton-implement-plan-v1.md`
 - Theme Native Controls Baseline 分阶段实施计划（已完成，后续维护入口）：`38-theme-native-controls-baseline-implement-plan-v1.md`
+- Theme 派生回落审计与修正实施文档（当前收口入口）：`39-theme-derived-fallback-audit-and-fix-plan-v1.md`
 - 疑难点记录：`27-Tips.md`
 - UI 稳定路径表：`10-ui_definition.md`
 - UI 槽位 Token 前缀表：`11-token_design.md`
