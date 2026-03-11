@@ -346,6 +346,7 @@ export function MetadataVideoEditor({
               <button
                 type="button"
                 className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+                data-mpx-button-variant="overlay-cell"
                 aria-label={t("ui.metadata.createPlaylist")}
                 data-tooltip-label={t("ui.metadata.createPlaylist")}
                 onClick={() => {
@@ -357,6 +358,7 @@ export function MetadataVideoEditor({
               </button>
               <button
                 className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+                data-mpx-button-variant="overlay-cell"
                 type="button"
                 aria-label={t("ui.metadata.savePlaylist")}
                 data-tooltip-label={t("ui.metadata.savePlaylist")}
@@ -370,6 +372,7 @@ export function MetadataVideoEditor({
               <button
                 type="button"
                 className="main-icon-square-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn mpx-overlay-cell-btn"
+                data-mpx-button-variant="overlay-cell"
                 aria-label={t("ui.metadata.deleteSavedPlaylist")}
                 data-tooltip-label={t("ui.metadata.deleteSavedPlaylist")}
                 disabled={!canDeleteSelectedSavedPlaylist}

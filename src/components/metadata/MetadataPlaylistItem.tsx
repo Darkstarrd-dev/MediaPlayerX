@@ -1,33 +1,33 @@
-import { useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
-import { useOverflowMarquee } from '../useOverflowMarquee'
+import { useOverflowMarquee } from "../useOverflowMarquee";
 import {
   canReplaySweepWhenGlobalMediaIdle,
   useRandomSweepAnimation,
-} from '../useRandomSweepAnimation'
+} from "../useRandomSweepAnimation";
 
 interface MetadataPlaylistItemProps {
-  mediaId: string
-  title: string
-  index: number
-  durationSec: number
-  active: boolean
-  onSelect: (mediaId: string) => void
-  onSelectAndPlay: (mediaId: string) => void
-  onTogglePlayPause?: (mediaId: string) => void
-  onDelete?: (mediaId: string) => void
-  buttonRef?: (element: HTMLButtonElement | null) => void
+  mediaId: string;
+  title: string;
+  index: number;
+  durationSec: number;
+  active: boolean;
+  onSelect: (mediaId: string) => void;
+  onSelectAndPlay: (mediaId: string) => void;
+  onTogglePlayPause?: (mediaId: string) => void;
+  onDelete?: (mediaId: string) => void;
+  buttonRef?: (element: HTMLButtonElement | null) => void;
 }
 
 function formatPlaylistIndex(index: number): string {
-  return String(Math.max(1, index)).padStart(2, '0')
+  return String(Math.max(1, index)).padStart(2, "0");
 }
 
 function formatDurationLabel(durationSec: number): string {
-  const totalSeconds = Math.max(0, Math.round(Math.max(0, durationSec)))
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  const totalSeconds = Math.max(0, Math.round(Math.max(0, durationSec)));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 export function MetadataPlaylistItem({
@@ -42,8 +42,8 @@ export function MetadataPlaylistItem({
   onDelete,
   buttonRef,
 }: MetadataPlaylistItemProps) {
-  const [focused, setFocused] = useState(false)
-  const sheenEnabled = focused
+  const [focused, setFocused] = useState(false);
+  const sheenEnabled = focused;
   const { sweeping, onAnimationEnd } = useRandomSweepAnimation({
     enabled: sheenEnabled,
     playOnEnable: true,
@@ -53,37 +53,39 @@ export function MetadataPlaylistItem({
     idleDelayRangeMs: [240000, 580000],
     stopOnInteraction: true,
     canReplayWhenIdle: canReplaySweepWhenGlobalMediaIdle,
-  })
-  const { hostRef, textRef, overflowing, marqueeStyle } = useOverflowMarquee<HTMLSpanElement>({
-    text: title,
-    cssDurationVar: '--mpx-metadata-playlist-marquee-duration',
-    secondsPerChar: 0.24,
-  })
-  const marqueeActive = focused && overflowing
-  const indexLabel = formatPlaylistIndex(index)
-  const durationLabel = formatDurationLabel(durationSec)
+  });
+  const { hostRef, textRef, overflowing, marqueeStyle } =
+    useOverflowMarquee<HTMLSpanElement>({
+      text: title,
+      cssDurationVar: "--mpx-metadata-playlist-marquee-duration",
+      secondsPerChar: 0.24,
+    });
+  const marqueeActive = focused && overflowing;
+  const indexLabel = formatPlaylistIndex(index);
+  const durationLabel = formatDurationLabel(durationSec);
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === 'Delete' && onDelete) {
-      event.preventDefault()
-      event.stopPropagation()
-      onDelete(mediaId)
-      return
+    if (event.key === "Delete" && onDelete) {
+      event.preventDefault();
+      event.stopPropagation();
+      onDelete(mediaId);
+      return;
     }
 
-    if ((event.key === ' ' || event.code === 'Space') && onTogglePlayPause) {
-      event.preventDefault()
-      event.stopPropagation()
-      onTogglePlayPause(mediaId)
+    if ((event.key === " " || event.code === "Space") && onTogglePlayPause) {
+      event.preventDefault();
+      event.stopPropagation();
+      onTogglePlayPause(mediaId);
     }
-  }
+  };
 
   return (
     <button
       ref={buttonRef}
-      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${focused ? 'mpx-random-sheen-host' : ''} ${active ? 'is-active' : ''} ${focused ? 'is-focused' : ''} ${sheenEnabled && sweeping ? 'is-sweeping' : ''}`}
+      className={`metadata-music-playlist-item mpx-overlay-cell-btn ${focused ? "mpx-random-sheen-host" : ""} ${active ? "is-active" : ""} ${focused ? "is-focused" : ""} ${sheenEnabled && sweeping ? "is-sweeping" : ""}`}
+      data-mpx-button-variant="overlay-cell"
       type="button"
-      aria-keyshortcuts={onDelete ? 'Delete' : undefined}
+      aria-keyshortcuts={onDelete ? "Delete" : undefined}
       onClick={() => onSelect(mediaId)}
       onDoubleClick={() => onSelectAndPlay(mediaId)}
       onFocus={() => setFocused(true)}
@@ -96,11 +98,15 @@ export function MetadataPlaylistItem({
       </span>
 
       <span
-        className={`metadata-music-playlist-title-marquee ${marqueeActive ? 'is-overflow' : ''}`}
+        className={`metadata-music-playlist-title-marquee ${marqueeActive ? "is-overflow" : ""}`}
         ref={hostRef}
         style={marqueeStyle}
       >
-        <span className="metadata-music-playlist-title" ref={textRef} data-tooltip-label={title}>
+        <span
+          className="metadata-music-playlist-title"
+          ref={textRef}
+          data-tooltip-label={title}
+        >
           {title}
         </span>
         {marqueeActive ? (
@@ -117,5 +123,5 @@ export function MetadataPlaylistItem({
         {durationLabel}
       </span>
     </button>
-  )
+  );
 }

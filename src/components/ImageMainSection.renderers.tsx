@@ -220,6 +220,7 @@ export function renderImageMainContent({
               >
                 <button
                   className="name-list-row-main mpx-overlay-cell-btn"
+                  data-mpx-button-variant="overlay-cell"
                   type="button"
                   aria-pressed={manageMode ? isChecked : undefined}
                   onClick={

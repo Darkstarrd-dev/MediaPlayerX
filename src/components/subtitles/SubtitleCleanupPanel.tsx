@@ -239,15 +239,15 @@ function SubtitleCleanupPanel({
         className="mpx-large-panel mpx-large-panel--subtitle-cleanup settings-panel subtitle-cleanup-panel"
         data-slot="fg-main-header-manage-subtitle-cleanup-panel"
         data-overlay-close="subtitle-cleanup-panel"
-        >
-          <header className="mpx-large-panel-head settings-head metadata-fetch-head">
-            <span className="settings-head-spacer" />
-            <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
-              {t("ui.media.subtitleCleanupTitle")}
-            </h2>
-            <button
-              className="feature-action-btn main-icon-square-btn"
-              type="button"
+      >
+        <header className="mpx-large-panel-head settings-head metadata-fetch-head">
+          <span className="settings-head-spacer" />
+          <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
+            {t("ui.media.subtitleCleanupTitle")}
+          </h2>
+          <button
+            className="feature-action-btn main-icon-square-btn"
+            type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
             onClick={onClose}
@@ -326,6 +326,7 @@ function SubtitleCleanupPanel({
                 <button
                   type="button"
                   className="metadata-fetch-preview-toggle"
+                  data-mpx-button-variant="panel-action"
                   onClick={() => setRawCollapsed((value) => !value)}
                 >
                   <span>{t("ui.media.subtitleCleanupRaw")}</span>
@@ -348,6 +349,7 @@ function SubtitleCleanupPanel({
                 <button
                   type="button"
                   className="metadata-fetch-preview-toggle"
+                  data-mpx-button-variant="panel-action"
                   onClick={() => setCleanCollapsed((value) => !value)}
                 >
                   <span>{t("ui.media.subtitleCleanupCleaned")}</span>

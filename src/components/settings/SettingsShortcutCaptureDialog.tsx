@@ -50,6 +50,7 @@ export function SettingsShortcutCaptureDialog({
               <button
                 key={preset.combo}
                 className="mpx-overlay-chip-btn"
+                data-mpx-button-variant="chip"
                 type="button"
                 data-capture-ignore="true"
                 onClick={() => onPickPreset(preset.combo)}

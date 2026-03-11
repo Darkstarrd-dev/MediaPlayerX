@@ -968,13 +968,41 @@
 }
 
 .metadata-fetch-preview-toggle {
+  --mpx-button-panel-action-border: var(
+    --mpx-metadata-fetch-preview-toggle-border
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-metadata-fetch-preview-toggle-bg
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-metadata-fetch-preview-toggle-hover-bg
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-metadata-fetch-preview-toggle-active-bg
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-metadata-fetch-preview-toggle-text
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-metadata-fetch-preview-toggle-text
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-metadata-fetch-preview-toggle-text
+  );
+  --mpx-button-panel-action-shadow-idle: none;
+  --mpx-button-panel-action-shadow-hover: none;
+  --mpx-button-panel-action-shadow-active: none;
+  --mpx-button-panel-action-transform-hover: translateY(0);
+  --mpx-button-panel-action-transform-active: translateY(0);
+  --mpx-button-panel-action-focus-outline-width: 1px;
+  --mpx-button-panel-action-focus-outline-color: var(
+    --mpx-metadata-fetch-preview-toggle-focus-outline
+  );
   appearance: none;
   width: 100%;
   min-height: 44px;
   margin: 0;
-  border: 1px solid var(--mpx-metadata-fetch-preview-toggle-border);
   border-radius: 0;
-  background: var(--mpx-metadata-fetch-preview-toggle-bg);
   padding: 0 18px;
   display: flex;
   align-items: center;
@@ -982,34 +1010,10 @@
   justify-content: space-between;
   gap: 10px;
   text-align: left;
-  color: var(--mpx-metadata-fetch-preview-toggle-text);
   font: inherit;
   line-height: inherit;
-  box-shadow: none;
   backdrop-filter: none;
-  transform: none;
-  transition:
-    color 160ms ease,
-    background-color 160ms ease;
   cursor: pointer;
-}
-
-.metadata-fetch-preview-toggle:hover {
-  color: var(--mpx-metadata-fetch-preview-toggle-text);
-  background: var(--mpx-metadata-fetch-preview-toggle-hover-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.metadata-fetch-preview-toggle:active {
-  background: var(--mpx-metadata-fetch-preview-toggle-active-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.metadata-fetch-preview-toggle:focus-visible {
-  outline: 1px solid var(--mpx-metadata-fetch-preview-toggle-focus-outline);
-  outline-offset: -2px;
 }
 
 .metadata-fetch-preview-state {
@@ -1052,33 +1056,40 @@
 .subtitle-cleanup-panel
   [data-slot$="-preview-panel"]
   .metadata-fetch-preview-toggle {
-  border: 1px solid var(--mpx-subtitle-cleanup-preview-toggle-border-current);
-  background: var(--mpx-subtitle-cleanup-preview-toggle-bg-current);
-  color: var(--mpx-subtitle-cleanup-preview-toggle-text-current);
+  --mpx-button-panel-action-border: var(
+    --mpx-subtitle-cleanup-preview-toggle-border-current
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-subtitle-cleanup-preview-toggle-bg-current
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-subtitle-cleanup-preview-toggle-hover-bg-current
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-subtitle-cleanup-preview-toggle-active-bg-current
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-subtitle-cleanup-preview-toggle-text-current
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-subtitle-cleanup-preview-toggle-text-current
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-subtitle-cleanup-preview-toggle-text-current
+  );
+  --mpx-button-panel-action-focus-outline-color: var(
+    --mpx-subtitle-cleanup-preview-toggle-focus-outline-current
+  );
 }
 
 .subtitle-cleanup-panel
   [data-slot$="-preview-panel"]
-  .metadata-fetch-preview-toggle:hover {
-  background: var(--mpx-subtitle-cleanup-preview-toggle-hover-bg-current);
-  color: var(--mpx-subtitle-cleanup-preview-toggle-text-current);
-}
-
-.subtitle-cleanup-panel
-  [data-slot$="-preview-panel"]
-  .metadata-fetch-preview-toggle:active {
-  background: var(--mpx-subtitle-cleanup-preview-toggle-active-bg-current);
-}
-
-.subtitle-cleanup-panel
-  [data-slot$="-preview-panel"]
-  .metadata-fetch-preview-toggle:focus-visible {
-  outline: 1px solid
-    var(--mpx-subtitle-cleanup-preview-toggle-focus-outline-current);
+  .metadata-fetch-preview-toggle,
+.subtitle-cleanup-panel [data-slot$="-preview-panel"] textarea {
+  width: 100%;
 }
 
 .subtitle-cleanup-panel [data-slot$="-preview-panel"] textarea {
-  width: 100%;
   min-height: 120px;
   resize: vertical;
   margin: 0;

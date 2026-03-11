@@ -468,7 +468,9 @@
   );
   --mpx-dialog-panel-width: min(520px, 92vw);
   color: var(--mpx-sidebar-rename-dialog-text, inherit);
-  --mpx-sidebar-rename-dialog-text-current: var(--mpx-sidebar-rename-dialog-text);
+  --mpx-sidebar-rename-dialog-text-current: var(
+    --mpx-sidebar-rename-dialog-text
+  );
   --mpx-sidebar-rename-dialog-muted-text-current: var(
     --mpx-sidebar-rename-dialog-muted-text
   );
@@ -696,15 +698,45 @@
 }
 
 button.music-audio-transcode-seamless-btn {
+  --mpx-button-panel-action-border: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-hover: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-active: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-shadow-idle: none;
+  --mpx-button-panel-action-shadow-hover: none;
+  --mpx-button-panel-action-shadow-active: none;
+  --mpx-button-panel-action-transform-hover: translateY(0);
+  --mpx-button-panel-action-transform-active: translateY(0);
+  --mpx-button-panel-action-radius: 0;
+  --mpx-button-panel-action-transition:
+    color 160ms ease, background-color 160ms ease;
   height: 44px;
   min-height: 44px;
   padding: 0 12px;
   white-space: nowrap;
-  border-color: var(--mpx-transcode-dialog-action-btn-border-current);
-  border-radius: 0;
-  background: var(--mpx-transcode-dialog-action-btn-bg-current);
-  color: var(--mpx-transcode-dialog-action-btn-text-current);
-  box-shadow: none;
 }
 
 button.music-audio-transcode-seamless-btn:disabled {
@@ -713,23 +745,42 @@ button.music-audio-transcode-seamless-btn:disabled {
 }
 
 .music-audio-transcode-dialog .sidebar-rename-g2-btn {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-transcode-dialog-action-btn-border-current);
+  --mpx-button-panel-action-border: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-hover: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-active: var(
+    --mpx-transcode-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-transcode-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-transcode-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-shadow-idle: var(--mpx-header-btn-shadow);
+  --mpx-button-panel-action-shadow-hover: var(--mpx-header-btn-hover-shadow);
+  --mpx-button-panel-action-shadow-active: var(--mpx-header-btn-active-shadow);
+  --mpx-button-panel-action-transform-hover: var(--mpx-control-hover-transform);
+  --mpx-button-panel-action-transform-active: var(
+    --mpx-control-active-transform
+  );
+  --mpx-button-panel-action-radius: 0;
   border-radius: 0;
-  background: var(--mpx-transcode-dialog-action-btn-bg-current);
-  color: var(--mpx-transcode-dialog-action-btn-text-current);
-  box-shadow: var(--mpx-header-btn-shadow);
-  transition: var(--mpx-control-transition);
-}
-
-.music-audio-transcode-dialog .sidebar-rename-g2-btn:hover {
-  transform: var(--mpx-control-hover-transform);
-  box-shadow: var(--mpx-header-btn-hover-shadow);
-}
-
-.music-audio-transcode-dialog .sidebar-rename-g2-btn:active {
-  transform: var(--mpx-control-active-transform);
-  box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
 .music-audio-transcode-footer-actions {
@@ -798,23 +849,42 @@ button.music-audio-transcode-seamless-btn:disabled {
 }
 
 .sidebar-rename-dialog .sidebar-rename-g2-btn {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-sidebar-rename-dialog-action-btn-border-current);
+  --mpx-button-panel-action-border: var(
+    --mpx-sidebar-rename-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-hover: var(
+    --mpx-sidebar-rename-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-border-active: var(
+    --mpx-sidebar-rename-dialog-action-btn-border-current
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-sidebar-rename-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-sidebar-rename-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-sidebar-rename-dialog-action-btn-bg-current
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-sidebar-rename-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-sidebar-rename-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-sidebar-rename-dialog-action-btn-text-current
+  );
+  --mpx-button-panel-action-shadow-idle: var(--mpx-header-btn-shadow);
+  --mpx-button-panel-action-shadow-hover: var(--mpx-header-btn-hover-shadow);
+  --mpx-button-panel-action-shadow-active: var(--mpx-header-btn-active-shadow);
+  --mpx-button-panel-action-transform-hover: var(--mpx-control-hover-transform);
+  --mpx-button-panel-action-transform-active: var(
+    --mpx-control-active-transform
+  );
+  --mpx-button-panel-action-radius: calc(var(--mpx-header-btn-radius) - 2px);
   border-radius: calc(var(--mpx-header-btn-radius) - 2px);
-  background: var(--mpx-sidebar-rename-dialog-action-btn-bg-current);
-  color: var(--mpx-sidebar-rename-dialog-action-btn-text-current);
-  box-shadow: var(--mpx-header-btn-shadow);
-  transition: var(--mpx-control-transition);
-}
-
-.sidebar-rename-dialog .sidebar-rename-g2-btn:hover {
-  transform: var(--mpx-control-hover-transform);
-  box-shadow: var(--mpx-header-btn-hover-shadow);
-}
-
-.sidebar-rename-dialog .sidebar-rename-g2-btn:active {
-  transform: var(--mpx-control-active-transform);
-  box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
 .sidebar-rename-hint {
@@ -833,7 +903,8 @@ button.music-audio-transcode-seamless-btn:disabled {
   width: 100%;
   min-height: 44px;
   border: 0;
-  border-right: 1px solid var(--mpx-sidebar-rename-dialog-control-border-current);
+  border-right: 1px solid
+    var(--mpx-sidebar-rename-dialog-control-border-current);
   background: var(--mpx-sidebar-rename-dialog-control-bg-current);
   color: var(--mpx-sidebar-rename-dialog-control-text-current);
   font-size: 14px;
@@ -879,7 +950,8 @@ button.music-audio-transcode-seamless-btn:disabled {
 .sidebar-rename-mode-cell {
   min-height: 44px;
   padding: 0 0 0 18px;
-  border-right: 1px solid var(--mpx-sidebar-rename-dialog-control-border-current);
+  border-right: 1px solid
+    var(--mpx-sidebar-rename-dialog-control-border-current);
   background: var(--mpx-sidebar-rename-dialog-control-bg-current);
 }
 
