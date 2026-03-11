@@ -36,14 +36,11 @@
 :root[data-mpx-style^='soft-skeuomorphic'] .settings-head button,
 :root[data-mpx-style^='soft-skeuomorphic'] .settings-shortcuts-head button,
 :root[data-mpx-style^='soft-skeuomorphic'] .main-footer-pagination button,
-:root[data-mpx-style^='soft-skeuomorphic'] .video-controls button:not(.video-action-btn),
-:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-footer button:not(.video-action-btn):not(.fullscreen-action-btn),
 :root[data-mpx-style^='soft-skeuomorphic'] .main-header button,
 :root[data-mpx-style^='soft-skeuomorphic'] .settings-block button,
 :root[data-mpx-style^='soft-skeuomorphic'] .search-trigger-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: 0;
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   font-weight: var(--mpx-control-font-weight);

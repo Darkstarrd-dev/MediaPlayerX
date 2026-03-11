@@ -8,13 +8,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -31,26 +26,16 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
-    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
-    button.logo-btn,
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
     .mode-switch > button
   ):not(:disabled):hover,
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -62,26 +47,16 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
-    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
-    button.logo-btn,
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
     .mode-switch > button
   ):not(:disabled):active,
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -93,13 +68,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -109,13 +79,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -129,13 +94,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
-    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
-    button.logo-btn,
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
     .mode-switch > button
@@ -145,26 +105,16 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
-    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
-    button.logo-btn,
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
     .mode-switch > button
   ).danger:not(:disabled):hover,
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
     button.feature-action-btn,
-    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
-    button.logo-btn,
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
     .mode-switch > button
@@ -178,13 +128,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -197,13 +142,8 @@
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
   button.feature-action-btn,
-  button.window-control-btn,
   button.search-trigger-btn,
   button.mode-action-btn,
-  button.logo-btn,
-  button.video-action-btn,
-  button.fullscreen-action-btn,
-  button.header-popover-trigger,
   button.toolbar-icon-btn,
   button.settings-icon-btn,
   .mode-switch > button
@@ -211,6 +151,106 @@
   color: var(--mpx-status-warning-text);
   border-color: var(--mpx-status-warning-border);
   background: var(--mpx-status-warning-bg);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  button.logo-btn,
+  button.window-control-btn,
+  button.header-popover-trigger
+) {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+    button.logo-btn,
+    button.window-control-btn,
+    button.header-popover-trigger
+  ):not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  button.logo-btn,
+  button.window-control-btn,
+  button.header-popover-trigger
+).force-hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+    button.logo-btn,
+    button.window-control-btn,
+    button.header-popover-trigger
+  ):not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  button.logo-btn,
+  button.window-control-btn,
+  button.header-popover-trigger
+).force-active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  button.logo-btn,
+  button.window-control-btn,
+  button.header-popover-trigger
+):disabled {
+  color: var(--mpx-btn-variant-default-text-disabled);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  .video-controls-group .video-action-btn,
+  .music-controls-group .video-action-btn,
+  .fullscreen-group .fullscreen-action-btn,
+  .video-controls-group .header-popover-trigger,
+  .music-controls-group .header-popover-trigger,
+  .fullscreen-group .header-popover-trigger
+) {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger
+  ):not(:disabled):hover {
+  background: var(--mpx-btn-variant-player-bg-hover);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger
+  ):not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  .video-controls-group .video-action-btn,
+  .music-controls-group .video-action-btn,
+  .fullscreen-group .fullscreen-action-btn,
+  .video-controls-group .header-popover-trigger,
+  .music-controls-group .header-popover-trigger,
+  .fullscreen-group .header-popover-trigger
+).force-active {
+  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-btn-variant-player-border-active);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic'] :is(
+  .video-controls-group .video-action-btn,
+  .music-controls-group .video-action-btn,
+  .fullscreen-group .fullscreen-action-btn,
+  .video-controls-group .header-popover-trigger,
+  .music-controls-group .header-popover-trigger,
+  .fullscreen-group .header-popover-trigger
+):disabled {
+  color: var(--mpx-btn-variant-player-text-disabled);
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] :is(
@@ -639,6 +679,47 @@
   outline: none;
 }
 
+:root[data-mpx-style^='soft-skeuomorphic'] .fullscreen-group .auto-play-toggle-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn:not(:disabled):hover,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn.force-hover {
+  border-color: var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-hover);
+  color: var(--mpx-btn-variant-player-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn:not(:disabled):active,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn.force-active,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn.is-active,
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn[aria-pressed='true'],
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn.is-active[aria-pressed='true'] {
+  border-color: var(--mpx-btn-variant-player-border-active);
+  background: var(--mpx-btn-variant-player-bg-active);
+  color: var(--mpx-btn-variant-player-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+:root[data-mpx-style^='soft-skeuomorphic']
+  .fullscreen-group .auto-play-toggle-btn:disabled {
+  color: var(--mpx-btn-variant-player-text-disabled);
+}
+
 .main-header-actions-manage :is(
     .feature-action-btn,
     .toolbar-icon-btn,
@@ -671,7 +752,10 @@
     .main-header-ad-review-review-pill,
     .main-header-ad-review-running-pill
   ):focus-visible {
-  border-radius: 0;
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
 }
 
 :root[data-mpx-style^='soft-skeuomorphic']

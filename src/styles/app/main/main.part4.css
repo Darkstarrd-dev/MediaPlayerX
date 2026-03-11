@@ -274,7 +274,7 @@
 .video-action-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
-  border-radius: 0;
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   width: 34px;
   min-width: 34px;
   height: 34px;
@@ -292,23 +292,15 @@
 
 .video-controls-group .video-action-btn,
 .music-controls-group .video-action-btn,
+.video-controls-group .header-popover-trigger,
+.music-controls-group .header-popover-trigger,
 .fullscreen-group .fullscreen-action-btn,
 .fullscreen-group .header-popover-trigger {
-  border-radius: 0;
-  box-shadow: none;
-  transform: none;
-}
-
-.video-controls-group .video-action-btn:not(:disabled):hover,
-.video-controls-group .video-action-btn:not(:disabled):active,
-.music-controls-group .video-action-btn:not(:disabled):hover,
-.music-controls-group .video-action-btn:not(:disabled):active,
-.fullscreen-group .fullscreen-action-btn:not(:disabled):hover,
-.fullscreen-group .fullscreen-action-btn:not(:disabled):active,
-.fullscreen-group .header-popover-trigger:not(:disabled):hover,
-.fullscreen-group .header-popover-trigger:not(:disabled):active {
-  box-shadow: none;
-  transform: none;
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
 }
 
 .video-action-btn .video-action-icon {
@@ -327,12 +319,36 @@
   background: var(--mpx-btn-variant-player-bg-hover);
 }
 
+.video-controls-group .header-popover-trigger:hover,
+.music-controls-group .header-popover-trigger:hover,
+.fullscreen-group .fullscreen-action-btn:hover,
+.fullscreen-group .header-popover-trigger:hover {
+  background: var(--mpx-btn-variant-player-bg-hover);
+}
+
 .video-controls-row .video-action-btn:active {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: var(--mpx-btn-variant-player-border-active);
 }
 
+.video-controls-group .header-popover-trigger:active,
+.music-controls-group .header-popover-trigger:active,
+.fullscreen-group .fullscreen-action-btn:active,
+.fullscreen-group .header-popover-trigger:active {
+  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-btn-variant-player-border-active);
+}
+
 .video-controls-row .video-action-btn:disabled {
+  opacity: 0.56;
+  color: var(--mpx-btn-variant-player-text-disabled);
+  cursor: not-allowed;
+}
+
+.video-controls-group .header-popover-trigger:disabled,
+.music-controls-group .header-popover-trigger:disabled,
+.fullscreen-group .fullscreen-action-btn:disabled,
+.fullscreen-group .header-popover-trigger:disabled {
   opacity: 0.56;
   color: var(--mpx-btn-variant-player-text-disabled);
   cursor: not-allowed;

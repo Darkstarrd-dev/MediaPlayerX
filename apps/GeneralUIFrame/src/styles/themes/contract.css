@@ -214,14 +214,8 @@
   --mpx-btn-template-danger-hover-shadow:
     0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
     inset 0 -2px 1px rgba(220, 38, 38, 0.15);
-  --mpx-btn-group-groove-bg: var(
-    --mpx-slot-fg-header-g2-mode-image-bg,
-    var(--mpx-btn-template-base)
-  );
-  --mpx-btn-group-groove-border: var(
-    --mpx-slot-fg-header-g2-mode-image-border,
-    var(--mpx-btn-template-border)
-  );
+  --mpx-btn-group-groove-bg: var(--mpx-btn-template-base);
+  --mpx-btn-group-groove-border: var(--mpx-btn-template-border);
   --mpx-btn-group-groove-radius: 10px;
   --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
 

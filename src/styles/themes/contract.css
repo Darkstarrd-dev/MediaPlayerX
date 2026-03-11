@@ -294,14 +294,8 @@
       var(--mpx-border-2)
     );
 
-    --mpx-btn-group-groove-bg: var(
-      --mpx-slot-fg-header-g2-mode-image-bg,
-      var(--mpx-btn-variant-default-bg-idle)
-    );
-    --mpx-btn-group-groove-border: var(
-      --mpx-slot-fg-header-g2-mode-image-border,
-      var(--mpx-btn-variant-default-border)
-    );
+    --mpx-btn-group-groove-bg: var(--mpx-btn-variant-default-bg-idle);
+    --mpx-btn-group-groove-border: var(--mpx-btn-variant-default-border);
     --mpx-btn-group-groove-radius: 10px;
     --mpx-btn-group-groove-shadow: var(--mpx-runway-groove-shadow, none);
 

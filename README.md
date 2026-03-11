@@ -13,6 +13,11 @@
 
 ## 待执行计划
 
+- [ ] Theme 基础骨架按钮统一（进行中）：已将按钮基线收敛到“普通按钮 `--mpx-btn-variant-default-*` / player 面板按钮 `--mpx-btn-variant-player-*`”两条根链，并完成 `TestStyle + test-skeleton` 下 header / side / main / meta / player 主要入口的消费链清理；下一步继续清除剩余局部覆盖，确保 Theme Parameter 的按钮分页可在隐藏骨架下稳定统一驱动两类按钮。
+  - 当前卡点：`image fullscreen` 场景下仍有少量 `video-action-btn` / `fullscreen-action-btn` / `header-popover-trigger` / `auto-play-toggle-btn` 可见结果未完全与 player 根层同步，且部分 header 子槽位仍残留区域特例。
+  - 相关文件：`src/styles/app/button-template.css`、`src/styles/app/layout/layout.part1.css`、`src/styles/app/layout/layout.part2.css`、`src/styles/app/layout/layout.part3.css`、`src/styles/app/main/main.part2.css`、`src/styles/app/main/main.part3.css`、`src/styles/app/main/main.part4.css`、`src/styles/app/sidebar.css`、`src/styles/app/metadata.css`、`src/styles/themes/contract.css`、`src/styles/themes/styles/soft-skeuomorphic.css`。
+  - 相关文档：`docs/08-theme-system-v2.md`、`docs/11-token_design.md`、`docs/39-theme-derived-fallback-audit-and-fix-plan-v1.md`。
+
 - [ ] 用户行为偏好分析（User Behavior Preference Analysis）与基于用户行为偏好的作品推荐（Behavior-Based Content Recommendation）：完成指标消费、推荐策略定义与前端推荐结果展示链路。
   - 参考文档：`docs/ref/Xpanalysis.md`、`docs/16-preference-metrics-spec-v1.md`。
 

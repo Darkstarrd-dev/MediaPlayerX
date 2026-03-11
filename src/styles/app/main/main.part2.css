@@ -281,11 +281,23 @@
   margin-top: 10px;
   padding: 10px 14px;
   border: 1px solid
-    var(--mpx-slot-fg-main-content-music-controls-border, var(--mpx-border-1));
+    var(
+      --mpx-slot-fg-main-content-music-controls-border,
+      var(--mpx-player-surface-border)
+    );
   border-radius: 0;
-  background: var(--mpx-slot-fg-main-content-music-controls-bg, var(--mpx-bg-elevated));
-  color: var(--mpx-slot-fg-main-content-music-controls-text, var(--mpx-text-1));
-  box-shadow: var(--mpx-slot-fg-main-content-music-controls-shadow, none);
+  background: var(
+    --mpx-slot-fg-main-content-music-controls-bg,
+    var(--mpx-player-surface-bg)
+  );
+  color: var(
+    --mpx-slot-fg-main-content-music-controls-text,
+    var(--mpx-player-surface-text)
+  );
+  box-shadow: var(
+    --mpx-slot-fg-main-content-music-controls-shadow,
+    var(--mpx-shadow-panel)
+  );
 }
 
 .music-controls-shell.is-fullscreen-floating {

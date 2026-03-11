@@ -8,9 +8,9 @@
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-pane .fullscreen-autoplay-control .header-popover-trigger {
-    background: var(--mpx-btn-variant-default-bg-idle);
-    color: var(--mpx-btn-variant-default-text-idle);
-    border-color: var(--mpx-btn-variant-default-border);
+    background: var(--mpx-btn-variant-player-bg-idle);
+    color: var(--mpx-btn-variant-player-text-idle);
+    border-color: var(--mpx-btn-variant-player-border);
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"] .fullscreen-video-controls-shell .video-action-btn,
@@ -52,42 +52,4 @@
   border-radius: var(--mpx-fs-center-btn-radius);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-video-controls-shell"] .video-controls-group.is-center .video-action-btn,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls"].is-fullscreen-floating .music-controls-group.is-center .video-action-btn,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .fullscreen-action-btn {
-  border: none;
-  outline: none;
-  background: linear-gradient(135deg, #f0e6d6 0%, #c9b393 100%);
-  color: #574226;
-  box-shadow:
-    inset 2px 2px 4px rgba(255, 255, 255, 0.8),
-    inset -3px -3px 6px rgba(150, 120, 80, 0.4),
-    4px 5px 10px rgba(160, 140, 110, 0.5);
-  transition: filter 0.2s ease, transform 0.2s ease;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-video-controls-shell"] .video-controls-group.is-center .video-action-btn:hover,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls"].is-fullscreen-floating .music-controls-group.is-center .video-action-btn:hover,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .fullscreen-action-btn:hover {
-  filter: brightness(1.05);
-  transform: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-video-controls-shell"] .video-controls-group.is-center .video-action-btn:active,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls"].is-fullscreen-floating .music-controls-group.is-center .video-action-btn:active,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .fullscreen-action-btn:active {
-  transform: none;
-  box-shadow:
-    inset 2px 2px 4px rgba(120, 95, 65, 0.34),
-    inset -2px -2px 3px rgba(255, 255, 255, 0.72);
-}
-
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-video-controls-shell"] .video-controls-group.is-center .video-action-icon,
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fg-main-content-music-controls"].is-fullscreen-floating .music-controls-group.is-center .music-action-icon,
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .video-action-icon,
-  :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"] [data-slot="fs-image-controls-shell"].is-image-mode .fullscreen-group.is-center .header-action-icon {
-  color: #574226;
-  fill: currentColor;
-  transform: none;
-  }
 }

@@ -197,35 +197,19 @@
   gap: var(--mpx-pane-recessed-padding-px, 8px);
 }
 
+.metadata-header button {
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
+}
+
 .metadata-header-g3 .search-trigger-btn {
   min-width: var(--mpx-icon-button-size);
   width: var(--mpx-icon-button-size);
   height: var(--mpx-icon-button-size);
   min-height: var(--mpx-icon-button-size);
   padding: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.metadata-header-g3 .main-icon-square-btn {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
-    .search-trigger-btn,
-    .main-icon-square-btn
-  ),
-:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
-    .search-trigger-btn,
-    .main-icon-square-btn
-  ):not(:disabled):hover,
-:root[data-mpx-style^='soft-skeuomorphic'] .metadata-header-g3 :is(
-    .search-trigger-btn,
-    .main-icon-square-btn
-  ):not(:disabled):active {
-  box-shadow: none;
-  transform: none;
 }
 
 .metadata-header-g3 .header-btn-label {
@@ -248,11 +232,15 @@
 }
 
 .metadata-header-icon-btn.is-image {
-  background: var(--mpx-bg-selected);
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
 }
 
 .metadata-header-icon-btn.is-metadata {
-  background: var(--mpx-bg-muted);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-idle);
 }
 
 .metadata-content {

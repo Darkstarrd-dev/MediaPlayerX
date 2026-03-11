@@ -175,6 +175,14 @@
   padding-left: var(--mpx-pane-recessed-padding-px, 8px);
 }
 
+.main-header button,
+.main-footer-pagination button {
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
+}
+
 .main-header-title.is-video {
   text-indent: 4px;
 }

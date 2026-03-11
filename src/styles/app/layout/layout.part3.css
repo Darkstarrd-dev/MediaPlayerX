@@ -211,22 +211,20 @@
 }
 
 .fullscreen-group .fullscreen-autoplay-control .header-popover-trigger {
-  border-radius: 0;
-  background: var(--mpx-bg-elevated);
-  color: var(--mpx-text-1);
-  border-color: var(--mpx-border-1);
-  box-shadow: none;
+  border-color: var(--mpx-btn-variant-player-border);
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
 }
 
 :root[data-mpx-style^='soft-skeuomorphic']
   .fullscreen-group .header-popover-control .header-popover-trigger:hover {
-  background: var(--mpx-btn-variant-default-bg-hover);
+  background: var(--mpx-btn-variant-player-bg-hover);
 }
 
 :root[data-mpx-style^='soft-skeuomorphic']
   .fullscreen-group .header-popover-control .header-popover-trigger:active {
-  background: var(--mpx-btn-variant-default-bg-active);
-  border-color: var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-btn-variant-player-border-active);
 }
 
 .fullscreen-group .fullscreen-autoplay-control .header-popover-panel {

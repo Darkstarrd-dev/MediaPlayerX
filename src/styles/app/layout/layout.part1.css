@@ -220,18 +220,21 @@
   align-items: center;
   justify-content: center;
   border: var(--mpx-control-border-width) solid
-    var(--mpx-slot-fg-header-logo-border, var(--mpx-btn-variant-player-border));
+    var(
+      --mpx-slot-fg-header-logo-border,
+      var(--mpx-header-button-border-effective)
+    );
   border-radius: var(
     --mpx-header-btn-radius-effective,
     var(--mpx-header-btn-radius)
   );
   background: var(
     --mpx-slot-fg-header-logo-bg,
-    var(--mpx-btn-variant-player-bg-idle)
+    var(--mpx-header-button-bg-effective)
   );
   color: var(
     --mpx-slot-fg-header-logo-text,
-    var(--mpx-btn-variant-player-text-idle)
+    var(--mpx-header-button-text-effective)
   );
   font-weight: var(--mpx-control-font-weight);
   height: var(--mpx-header-btn-size);
@@ -244,14 +247,14 @@
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] .logo-btn:hover {
-  background: var(--mpx-btn-variant-player-bg-hover);
+  background: var(--mpx-btn-variant-default-bg-hover);
   transform: var(--mpx-control-hover-transform);
   box-shadow: var(--mpx-header-btn-hover-shadow);
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] .logo-btn:active {
-  background: var(--mpx-btn-variant-player-bg-active);
-  border-color: var(--mpx-btn-variant-player-border-active);
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
   transform: var(--mpx-control-active-transform);
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
@@ -593,45 +596,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.app-header :is(
-    .logo-btn,
-    .window-control-btn,
-    .mode-action-btn,
-    .header-popover-trigger,
-    .mode-switch > button,
-    .zoom-stepper .zoom-stepper-btn,
-    .auto-play-toggle-btn,
-    .header-settings-btn
-  ) {
-  border-radius: 0;
-  box-shadow: none;
-  transform: none;
-}
-
-.app-header :is(
-    .logo-btn,
-    .window-control-btn,
-    .mode-action-btn,
-    .header-popover-trigger,
-    .mode-switch > button,
-    .zoom-stepper .zoom-stepper-btn,
-    .auto-play-toggle-btn,
-    .header-settings-btn
-  ):not(:disabled):hover,
-.app-header :is(
-    .logo-btn,
-    .window-control-btn,
-    .mode-action-btn,
-    .header-popover-trigger,
-    .mode-switch > button,
-    .zoom-stepper .zoom-stepper-btn,
-    .auto-play-toggle-btn,
-    .header-settings-btn
-  ):not(:disabled):active {
-  box-shadow: none;
-  transform: none;
 }
 
 :root[data-mpx-style^='soft-skeuomorphic'] .header-settings-btn:hover {

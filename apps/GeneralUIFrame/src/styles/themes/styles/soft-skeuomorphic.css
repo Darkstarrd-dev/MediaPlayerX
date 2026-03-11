@@ -282,6 +282,5 @@
     inset 0 -1px 0 rgba(165, 146, 119, 0.45);
   --mpx-screen-bg: #110f0e;
 
-  --mpx-slot-fg-main-content-video-controls-left-bg: var(--mpx-runway-groove-bg);
   --mpx-slot-bg-app-root-bg: var(--mpx-bg-app);
 }

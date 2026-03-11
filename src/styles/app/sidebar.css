@@ -226,6 +226,13 @@
   gap: var(--mpx-pane-recessed-padding-px, 8px);
 }
 
+.sidebar-header button {
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
+}
+
 .sidebar-title-btn {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-title-border,
@@ -442,9 +449,9 @@
 }
 
 .sidebar-header-icon-btn.is-root-set {
-  background: var(--mpx-bg-selected);
-  border-color: var(--mpx-accent);
-  color: var(--mpx-accent);
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
 }
 
 .sidebar-header .sidebar-title-btn {

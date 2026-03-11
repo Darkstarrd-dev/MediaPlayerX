@@ -530,14 +530,25 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .fullscreen-convert-format-btn,
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .main-header-ad-review-review-pill,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .main-header-ad-review-running-pill {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-radius-main-card, 12px);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  min-height: 30px;
+  padding: 0 12px;
+  text-align: left;
+  color: var(--mpx-btn-variant-default-text-idle);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  box-shadow: var(--mpx-btn-variant-default-shadow-idle);
+}
+
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  .fullscreen-convert-format-btn {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   min-height: 30px;
   padding: 0 12px;
   text-align: left;
@@ -551,7 +562,13 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .music-ctrl-panel-option:hover,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .fullscreen-convert-format-btn:hover,
+  .fullscreen-convert-format-btn:hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
+  filter: none;
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .main-header-ad-review-review-pill:hover {
   background: var(--mpx-btn-variant-default-bg-hover);
@@ -567,9 +584,17 @@
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .music-ctrl-panel-option:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
+  .music-ctrl-panel-option.is-active,
+:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .fullscreen-convert-format-btn:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .fullscreen-convert-format-btn.is-active,
+  .fullscreen-convert-format-btn.is-active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+}
+
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .main-header-ad-review-review-pill:active,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
