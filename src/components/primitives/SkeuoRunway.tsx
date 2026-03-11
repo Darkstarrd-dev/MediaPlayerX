@@ -62,7 +62,7 @@ export function SkeuoRunway({
   const clampedPercent = Math.max(0, Math.min(100, rangePercent))
   const runwayStyle = {
     ...(style ?? {}),
-    '--mpx-skeuo-range-pct': `${clampedPercent}%`,
+    '--mpx-range-progress-pct': `${clampedPercent}%`,
   } as CSSProperties
 
   return (

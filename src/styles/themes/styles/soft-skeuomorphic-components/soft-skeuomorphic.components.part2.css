@@ -148,14 +148,14 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .mpx-skeuo-well {
+  .mpx-soft-well {
   border: 1px solid #bcc4cf;
   background: var(--mpx-runway-groove-bg);
   box-shadow: var(--mpx-runway-groove-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .mpx-skeuo-metal-btn {
+  .mpx-soft-metal-btn {
   border: 1px solid #d5d8df;
   background: linear-gradient(145deg, #f8f9fa 0%, #e8eaef 100%);
   box-shadow:
@@ -165,7 +165,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  .mpx-skeuo-label-chip {
+  .mpx-soft-label-chip {
   border: 1px solid #d5d8df;
   border-radius: var(--mpx-radius-main-card, 10px);
   background: linear-gradient(145deg, #f8f9fa 0%, #e8eaef 100%);
@@ -388,7 +388,7 @@
   background: var(--mpx-btn-variant-default-bg-active);
   border-color: var(--mpx-btn-variant-default-border);
   box-shadow: var(--mpx-btn-variant-default-shadow-active);
-  color: var(--mpx-skeuo-active-icon);
+  color: var(--mpx-soft-active-icon);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
@@ -398,7 +398,7 @@
   background: var(--mpx-btn-variant-default-bg-active);
   border-color: var(--mpx-btn-variant-default-border);
   box-shadow: var(--mpx-btn-variant-default-shadow-active);
-  color: var(--mpx-skeuo-active-icon);
+  color: var(--mpx-soft-active-icon);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
@@ -601,9 +601,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"]
   .fullscreen-footer
   .fullscreen-meta-line {
-  box-shadow:
-    inset 2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    inset -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-panel-inset-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .music-controls-shell {
@@ -633,9 +631,7 @@
     calc(var(--mpx-radius-main-card, 6px) - var(--mpx-radius-inset-stack, 0px))
   );
   background: var(--mpx-player-surface-bg);
-  box-shadow:
-    inset 2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    inset -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-panel-inset-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-controls-group.is-center,
@@ -658,9 +654,7 @@
   height: 40px;
   min-height: 40px;
   border-radius: var(--mpx-radius-main-card, 12px);
-  box-shadow:
-    2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-control-raised-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-action-btn,
@@ -690,9 +684,7 @@
   height: 56px;
   min-height: 56px;
   border-radius: var(--mpx-radius-main-card, 12px);
-  box-shadow:
-    2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-control-raised-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-action-prev,
@@ -703,9 +695,7 @@
   height: 40px;
   min-height: 40px;
   border-radius: var(--mpx-radius-main-card, 12px);
-  box-shadow:
-    2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-control-raised-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -722,9 +712,7 @@
   height: 40px;
   min-height: 40px;
   border-radius: var(--mpx-radius-main-card, 12px);
-  box-shadow:
-    2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-control-raised-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -735,9 +723,7 @@
   height: 56px;
   min-height: 56px;
   border-radius: var(--mpx-radius-main-card, 12px);
-  box-shadow:
-    2px 2px 3px var(--mpx-skeuo-shadow-dark),
-    -2px -2px 3px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-control-raised-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -795,10 +781,8 @@
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: transparent;
   transform: none;
-  color: var(--mpx-skeuo-active-icon);
-  box-shadow:
-    inset 3px 3px 6px var(--mpx-skeuo-shadow-dark),
-    inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
+  color: var(--mpx-soft-active-icon);
+  box-shadow: var(--mpx-soft-control-pressed-shadow);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -859,7 +843,7 @@
   box-shadow: var(--mpx-control-active-shadow);
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: transparent;
-  color: var(--mpx-skeuo-active-icon);
+  color: var(--mpx-soft-active-icon);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"]
@@ -1016,10 +1000,8 @@
   > .video-action-btn:not(:disabled) {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: transparent;
-  color: var(--mpx-skeuo-active-icon);
-  box-shadow:
-    inset 3px 3px 6px var(--mpx-skeuo-shadow-dark),
-    inset -3px -3px 6px var(--mpx-skeuo-shadow-light);
+  color: var(--mpx-soft-active-icon);
+  box-shadow: var(--mpx-soft-control-pressed-shadow);
   transform: none;
 }
 

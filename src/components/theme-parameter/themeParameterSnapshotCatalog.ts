@@ -2233,12 +2233,12 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "control-slider-vertical-accent-fill",
-    cssVar: "--mpx-skeuo-accent-fill",
+    cssVar: "--mpx-soft-accent-fill",
     fallback: "#8a6a3b",
   },
   {
     id: "control-slider-vertical-inset-bg",
-    cssVar: "--mpx-skeuo-inset-bg",
+    cssVar: "--mpx-soft-surface-inset-bg",
     fallback: "#f3e9d8",
   },
   {
@@ -2684,11 +2684,11 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
   {
     id: "control-slider-vertical-shadow-dark",
-    cssVar: "--mpx-skeuo-shadow-dark",
+    cssVar: "--mpx-soft-shadow-dark",
   },
   {
     id: "control-slider-vertical-shadow-light",
-    cssVar: "--mpx-skeuo-shadow-light",
+    cssVar: "--mpx-soft-shadow-light",
   },
   {
     id: "control-slider-settings-groove-shadow",

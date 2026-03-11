@@ -192,6 +192,7 @@ Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music 
     - `--mpx-music-vis-error-border`
     - `--mpx-music-ctrl-focus-color`
     - `--mpx-music-ctrl-range-fill`
+    - `--mpx-range-progress-pct`
     - `--mpx-range-fill-progress`
     - `--mpx-music-ctrl-toggle-bg`
 2. Video screen / fullscreen 背景链路：
@@ -210,8 +211,41 @@ Main 内容区在 Phase 5 新增以下语义 token，用于收口 video / music 
    - `--mpx-ad-review-overlay-track-mid`
    - `--mpx-ad-review-overlay-track-end`
 4. Rating heart 链路：
-   - `--mpx-rating-heart-color`
-   - `--mpx-rating-heart-active-color`
+    - `--mpx-rating-heart-color`
+    - `--mpx-rating-heart-active-color`
+
+## Soft 皮肤语义 token 补充（2026-03）
+
+soft family 现统一拆分为三层：
+
+1. palette 内部兼容层：`--mpx-skeuo-*`
+2. soft 公开视觉语义层：`--mpx-soft-*`
+3. 业务 / 组件消费层：`--mpx-header-*`、`--mpx-soft-range-*`、`--mpx-btn-variant-*`、`--mpx-player-*`
+
+当前新增并已投入使用的 `--mpx-soft-*` 语义 token：
+
+- 颜色 / 图标
+  - `--mpx-soft-accent-fill`
+  - `--mpx-soft-surface-inset-bg`
+  - `--mpx-soft-icon-active`
+- 阴影基底
+  - `--mpx-soft-shadow-dark`
+  - `--mpx-soft-shadow-light`
+  - `--mpx-soft-border-color`
+- 组合皮肤 token
+  - `--mpx-soft-active-icon`
+  - `--mpx-soft-control-raised-shadow`
+  - `--mpx-soft-control-pressed-shadow`
+  - `--mpx-soft-panel-inset-shadow`
+  - `--mpx-soft-range-track-bg`
+  - `--mpx-soft-range-progress-bg`
+  - `--mpx-soft-range-track-shadow`
+
+约束：
+
+1. style 文件与 Theme Parameter 面板应优先公开 / 消费 `--mpx-soft-*`，不再直接暴露 `--mpx-skeuo-*`。
+2. `--mpx-skeuo-*` 仅作为 soft palette 内部兼容层保留；后续新增 soft 皮肤变量时禁止继续向 app/style 暴露 skeuo 命名。
+3. transport / runway 的运行时进度变量不属于 soft 皮肤层，统一使用中性协议 `--mpx-range-progress-pct -> --mpx-range-fill-progress`。
 
 ## 容器 frame / spacing 补充
 

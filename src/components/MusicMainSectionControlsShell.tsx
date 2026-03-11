@@ -168,7 +168,7 @@ export function MusicMainSectionControlsShell({
       </div>
 
       <div className="music-controls-row">
-        <div className="music-controls-group is-left mpx-skeuo-well" data-slot="fg-main-content-music-controls-left">
+        <div className="music-controls-group is-left mpx-soft-well" data-slot="fg-main-content-music-controls-left">
           <button
             aria-label={t('a11y.music.shaderSelected', { label: selectedShaderLabel })}
             className="video-action-btn"
@@ -218,7 +218,7 @@ export function MusicMainSectionControlsShell({
           </button>
         </div>
 
-        <div className="music-controls-group is-right mpx-skeuo-well" data-slot="fg-main-content-music-controls-right">
+        <div className="music-controls-group is-right mpx-soft-well" data-slot="fg-main-content-music-controls-right">
           <button
             aria-label={t('a11y.music.loopMode', { label: musicLoopModeLabel })}
             className="video-action-btn"

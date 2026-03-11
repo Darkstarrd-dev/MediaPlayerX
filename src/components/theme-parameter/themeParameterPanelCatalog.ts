@@ -3261,14 +3261,14 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   },
   {
     id: "control-slider-vertical-accent-fill",
-    cssVar: "--mpx-skeuo-accent-fill",
+    cssVar: "--mpx-soft-accent-fill",
     fallback: "#8a6a3b",
     groupId: "box",
     sectionId: "control-slider-vertical",
   },
   {
     id: "control-slider-vertical-inset-bg",
-    cssVar: "--mpx-skeuo-inset-bg",
+    cssVar: "--mpx-soft-surface-inset-bg",
     fallback: "#f3e9d8",
     groupId: "box",
     sectionId: "control-slider-vertical",
@@ -3652,14 +3652,14 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   },
   {
     id: "control-slider-vertical-shadow-dark",
-    cssVar: "--mpx-skeuo-shadow-dark",
+    cssVar: "--mpx-soft-shadow-dark",
     fallback: "#cdb799",
     groupId: "box",
     sectionId: "control-slider-vertical",
   },
   {
     id: "control-slider-vertical-shadow-light",
-    cssVar: "--mpx-skeuo-shadow-light",
+    cssVar: "--mpx-soft-shadow-light",
     fallback: "#fffdf7",
     groupId: "box",
     sectionId: "control-slider-vertical",

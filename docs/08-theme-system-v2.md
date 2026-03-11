@@ -124,7 +124,9 @@ Level 2 (L2)
 - `TestStyle.css` 必须保持空壳 selector；其调试链路只允许通过 `test-skeleton` 与隐藏 skeleton 层提供最小视觉。
 - `_skeleton.css` 当前已接管主布局/Header 基础几何：`layout-padding`、`splitter-width`、`panel-padding`、`pane-frame-padding`、`pane-stack-gap`、`sidebar/main/metadata padding`、`header-floating-gap`、`header-btn-size`、`header-group-*`、`header-music-actions-*`。
 - `_skeleton.css` 当前也已接管 transport / runway 基础几何：非全屏/全屏中心组 gap、按钮尺寸、图标尺寸、音量面板宽高、竖向 slider 轴宽高、runway / thumb 尺寸。
+- runway 运行时进度协议统一使用中性变量：组件写入 `--mpx-range-progress-pct`，skeleton 将其映射为 `--mpx-range-fill-progress`；隐藏骨架不得再直接读取 `--mpx-skeuo-*`。
 - app 层主链路已完成去 soft 直连；业务样式仅消费中性 token，如 `--mpx-range-fill-progress`、`--mpx-workspace-surface-shadow`，不再直接依赖 `soft-skeuomorphic` selector 或 `--mpx-skeuo-*`。
+- `soft-skeuomorphic` style 层当前统一消费 `--mpx-soft-*` 视觉语义 token（如 `--mpx-soft-shadow-dark/light`、`--mpx-soft-surface-inset-bg`、`--mpx-soft-accent-fill`、`--mpx-soft-icon-active`）；`--mpx-skeuo-*` 仅允许作为 soft palette 内部兼容来源存在。
 
 ### 1.4 Token 隔离
 
@@ -619,6 +621,10 @@ gapped/liquid 风格下，面板有间距和圆角：
 补充边界：`_skeleton.css` 负责 Header 组宽、按钮尺寸、浮动间距等几何骨架；`soft-skeuomorphic.css` 仅保留圆角、阴影、渐变与按钮皮肤。
 
 补充边界：transport / runway 的尺寸骨架已由 `_skeleton.css` 承担；`soft-skeuomorphic.main-transport.css`、`soft-skeuomorphic.fullscreen-transport.css`、`soft-skeuomorphic.fullscreen-shell.css`、`soft-skeuomorphic.runway.css` 只保留视觉皮肤与状态效果。
+
+补充边界：transport / runway 的运行时进度值统一走 `--mpx-range-progress-pct -> --mpx-range-fill-progress` 中性链路；soft runway 仅消费 `--mpx-soft-range-*` 视觉 token，不再直接依赖 `--mpx-skeuo-range-pct`。
+
+补充边界：Theme Parameter 面板中与 soft 竖向 slider / 阴影强度相关的公开变量统一暴露 `--mpx-soft-*`，避免调参界面继续把 palette 内部兼容变量当成正式语义入口。
 
 #### 内卡统一
 

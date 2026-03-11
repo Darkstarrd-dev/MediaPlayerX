@@ -1111,7 +1111,7 @@ function VideoMainSection({
 
             <div className="video-controls-row video-controls">
               <div
-                className="video-controls-group is-left mpx-skeuo-well"
+                className="video-controls-group is-left mpx-soft-well"
                 data-slot="fg-main-content-video-controls-left"
               >
                 {fullscreenActive ? (
@@ -1356,7 +1356,7 @@ function VideoMainSection({
               </div>
 
               <div
-                className="video-controls-group is-right mpx-skeuo-well"
+                className="video-controls-group is-right mpx-soft-well"
                 data-slot="fg-main-content-video-controls-right"
               >
                 <button

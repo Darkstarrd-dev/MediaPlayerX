@@ -624,7 +624,7 @@ export function MusicAudioTranscodePanel({
             </div>
             <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || Boolean(confirmDisabledReason)}
                 onClick={() => void onConfirm()}
@@ -632,7 +632,7 @@ export function MusicAudioTranscodePanel({
                 {t("ui.music.audioTranscodeStart")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || taskHistory.length <= 0}
                 onClick={onClearTaskHistory}
@@ -640,7 +640,7 @@ export function MusicAudioTranscodePanel({
                 {t("ui.common.clear")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 onClick={() => void onCancel()}
               >

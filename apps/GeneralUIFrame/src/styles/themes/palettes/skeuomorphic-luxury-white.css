@@ -185,6 +185,12 @@
   --mpx-skeuo-inset-bg: #f3e9d8;
   --mpx-skeuo-accent-fill: #8a6a3b;
   --mpx-skeuo-active-icon: #7d5e31;
+  --mpx-soft-shadow-dark: var(--mpx-skeuo-shadow-dark);
+  --mpx-soft-shadow-light: var(--mpx-skeuo-shadow-light);
+  --mpx-soft-border-color: var(--mpx-skeuo-border-color);
+  --mpx-soft-surface-inset-bg: var(--mpx-skeuo-inset-bg);
+  --mpx-soft-accent-fill: var(--mpx-skeuo-accent-fill);
+  --mpx-soft-icon-active: var(--mpx-skeuo-active-icon);
 
   --mpx-shadow-panel: 0 16px 34px rgba(116, 88, 50, 0.24);
   --mpx-shadow-popover: 0 14px 30px rgba(116, 88, 50, 0.22);

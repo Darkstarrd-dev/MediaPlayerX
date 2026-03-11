@@ -40,6 +40,27 @@ interface SnapshotPayloadOptions {
   sourceValues?: ThemeParameterValues;
 }
 
+const LEGACY_PARAMETER_ID_MAP: Readonly<Record<string, string>> = {
+  "skeuo-panel-padding": "soft-panel-padding",
+  "skeuo-header-btn-size": "soft-header-btn-size",
+  "skeuo-header-btn-radius": "soft-header-btn-radius",
+  "skeuo-header-group-gap": "soft-header-group-gap",
+  "skeuo-header-item-gap": "soft-header-item-gap",
+  "skeuo-pane-elevation": "soft-pane-elevation",
+  "skeuo-container-elevation": "soft-container-elevation",
+  "skeuo-control-elevation": "soft-control-elevation",
+  "skeuo-border-contrast": "soft-border-contrast",
+  "skeuo-shadow-strength": "soft-shadow-strength",
+  "skeuo-press-depth": "soft-press-depth",
+};
+
+function normalizeLegacyParameterId(parameterId: string): string {
+  if (/^skeuo-(header|sidebar|main|metadata)-(pane|control)-/.test(parameterId)) {
+    return parameterId.replace(/^skeuo-/, "soft-");
+  }
+  return LEGACY_PARAMETER_ID_MAP[parameterId] ?? parameterId;
+}
+
 function buildSnapshotPayload(options: {
   parameters: ThemeParameterDefinition[];
   styleId: string;
@@ -256,12 +277,18 @@ export function useThemeParameterSnapshotControls({
       }
 
       const importedValues = (payload.values ?? {}) as Record<string, unknown>;
+      const normalizedImportedValues = Object.fromEntries(
+        Object.entries(importedValues).map(([parameterId, rawValue]) => [
+          normalizeLegacyParameterId(parameterId),
+          rawValue,
+        ]),
+      );
       const root = document.documentElement;
       const nextValues: ThemeParameterValues = { ...values };
       const importedParameterIds = new Set<string>();
       resetThemeParameterSyncState(parameterSyncStateRef.current);
       for (const parameter of parameters) {
-        const rawValue = importedValues[parameter.id];
+        const rawValue = normalizedImportedValues[parameter.id];
         if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
           continue;
         }
@@ -283,7 +310,7 @@ export function useThemeParameterSnapshotControls({
           !applyImportedThemeParameterSyncTargets({
             state: parameterSyncStateRef.current,
             parameterId: parameter.id,
-            importedValues,
+            importedValues: normalizedImportedValues,
             importedParameterIds,
             parameterMap,
             root,

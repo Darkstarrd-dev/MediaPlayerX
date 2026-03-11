@@ -301,9 +301,9 @@ describe("ThemeParameterPanel", () => {
 
     const baselineLayoutPadding = getSliderByLabelText("布局内边距").value;
     const baselineSkeuoShadowStrength =
-      getSliderByLabelText("拟物阴影强度").value;
+      getSliderByLabelText("Soft 阴影强度").value;
     const baselineSkeuoPaneElevation =
-      getSliderByLabelText("拟物面板浮起高度").value;
+      getSliderByLabelText("Soft 面板浮起高度").value;
 
     fireEvent.change(getSliderByLabelText("布局内边距"), {
       target: { value: "14" },
@@ -312,12 +312,12 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
     ).toBe("14px");
 
-    fireEvent.change(getSliderByLabelText("拟物阴影强度"), {
+    fireEvent.change(getSliderByLabelText("Soft 阴影强度"), {
       target: { value: "24" },
     });
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-skeuo-shadow-dark",
+        "--mpx-soft-shadow-dark",
       ),
     ).toContain("color-mix");
 
@@ -335,7 +335,7 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-main-shadow"),
     ).toContain("17px");
 
-    fireEvent.change(getSliderByLabelText("拟物面板浮起高度"), {
+    fireEvent.change(getSliderByLabelText("Soft 面板浮起高度"), {
       target: { value: "18" },
     });
     expect(
@@ -360,10 +360,10 @@ describe("ThemeParameterPanel", () => {
     expect(getSliderByLabelText("布局内边距").value).toBe(
       baselineLayoutPadding,
     );
-    expect(getSliderByLabelText("拟物阴影强度").value).toBe(
+    expect(getSliderByLabelText("Soft 阴影强度").value).toBe(
       baselineSkeuoShadowStrength,
     );
-    expect(getSliderByLabelText("拟物面板浮起高度").value).toBe(
+    expect(getSliderByLabelText("Soft 面板浮起高度").value).toBe(
       baselineSkeuoPaneElevation,
     );
   });
@@ -630,7 +630,7 @@ describe("ThemeParameterPanel", () => {
             styleId: "liquid-glass",
             values: {
               "layout-padding": 9,
-              "skeuo-shadow-strength": 26,
+              "soft-shadow-strength": 26,
             },
             debugTexts: {
               "container-bg-app-fill":
@@ -650,7 +650,7 @@ describe("ThemeParameterPanel", () => {
     ).toBe("9px");
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-skeuo-shadow-dark",
+        "--mpx-soft-shadow-dark",
       ),
     ).toContain("26%");
     expect(

@@ -212,13 +212,13 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-webkit-slider-runnable-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-webkit-slider-runnable-track {
   border-radius: 2px;
-  box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
+  box-shadow: var(--mpx-soft-range-track-shadow);
   background: linear-gradient(
     to right,
-    var(--mpx-skeuo-accent-fill) 0%,
-    var(--mpx-skeuo-accent-fill) var(--mpx-skeuo-range-pct, 0%),
-    var(--mpx-skeuo-inset-bg) var(--mpx-skeuo-range-pct, 0%),
-    var(--mpx-skeuo-inset-bg) 100%
+    var(--mpx-soft-range-progress-bg) 0%,
+    var(--mpx-soft-range-progress-bg) var(--mpx-range-progress-pct, 0%),
+    var(--mpx-soft-range-track-bg) var(--mpx-range-progress-pct, 0%),
+    var(--mpx-soft-range-track-bg) 100%
   );
 }
 
@@ -273,8 +273,8 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-track,
 :root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-moz-range-track {
   border-radius: 2px;
-  box-shadow: inset 2px 2px 4px var(--mpx-skeuo-shadow-dark), inset -1px -1px 2px var(--mpx-skeuo-shadow-light);
-  background: var(--mpx-skeuo-inset-bg);
+  box-shadow: var(--mpx-soft-range-track-shadow);
+  background: var(--mpx-soft-range-track-bg);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-progress,
@@ -284,7 +284,7 @@
 :root[data-mpx-style^="soft-skeuomorphic"] .music-ctrl-shader-range::-moz-range-progress,
 :root[data-mpx-style^="soft-skeuomorphic"] .header-vertical-range::-moz-range-progress {
   border-radius: 2px;
-  background: var(--mpx-skeuo-accent-fill);
+  background: var(--mpx-soft-range-progress-bg);
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"] .video-controls-progress input[type='range']::-moz-range-thumb,

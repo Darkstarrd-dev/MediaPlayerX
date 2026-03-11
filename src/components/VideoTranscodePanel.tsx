@@ -592,7 +592,7 @@ export function VideoTranscodePanel({
 
             <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || !canOpenOutputDirectory}
                 onClick={() => void onOpenOutputDirectory()}
@@ -600,7 +600,7 @@ export function VideoTranscodePanel({
                 {t("ui.media.videoTranscodeOpenOutputDirectory")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || Boolean(confirmDisabledReason)}
                 onClick={() => void onConfirm()}
@@ -608,7 +608,7 @@ export function VideoTranscodePanel({
                 {t("ui.media.videoTranscodeStart")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-skeuo-metal-btn mpx-overlay-footer-btn"
+                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-soft-metal-btn mpx-overlay-footer-btn"
                 type="button"
                 onClick={() => void onCancel()}
               >

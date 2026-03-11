@@ -77,7 +77,7 @@
 
   .mpx-runway,
   .music-ctrl-shader-range {
-    --mpx-range-fill-progress: var(--mpx-skeuo-range-pct, 0%);
+    --mpx-range-fill-progress: var(--mpx-range-progress-pct, 0%);
   }
 
   .video-controls-shell:not(.fullscreen-video-controls-shell)

@@ -574,21 +574,21 @@ function MusicMainSection({
   const audioVolumePercent = clamp(audioMuted ? 0 : audioVolume, 0, 100)
   const toneMapExposurePercent = clamp(((musicVisualizerShaderSettings.toneMapExposure - 0.5) / 1.5) * 100, 0, 100)
   const toneMapExposureRangeStyle = {
-    '--mpx-skeuo-range-pct': `${toneMapExposurePercent}%`,
+    '--mpx-range-progress-pct': `${toneMapExposurePercent}%`,
   } as CSSProperties
   const toneMapStrengthPercent = clamp(musicVisualizerShaderSettings.toneMapStrength * 100, 0, 100)
   const toneMapStrengthRangeStyle = {
-    '--mpx-skeuo-range-pct': `${toneMapStrengthPercent}%`,
+    '--mpx-range-progress-pct': `${toneMapStrengthPercent}%`,
   } as CSSProperties
   const foregroundRenderScaleCoeffValue = foregroundRenderScaleCoeffDraft ?? foregroundLayerRenderScaleCoeff
   const foregroundRenderScaleCoeffPercent = clamp(((foregroundRenderScaleCoeffValue - 1) / 4) * 100, 0, 100)
   const foregroundRenderScaleCoeffStyle = {
-    '--mpx-skeuo-range-pct': `${foregroundRenderScaleCoeffPercent}%`,
+    '--mpx-range-progress-pct': `${foregroundRenderScaleCoeffPercent}%`,
   } as CSSProperties
   const backgroundRenderScaleCoeffValue = backgroundRenderScaleCoeffDraft ?? backgroundLayerRenderScaleCoeff
   const backgroundRenderScaleCoeffPercent = clamp(((backgroundRenderScaleCoeffValue - 1) / 4) * 100, 0, 100)
   const backgroundRenderScaleCoeffStyle = {
-    '--mpx-skeuo-range-pct': `${backgroundRenderScaleCoeffPercent}%`,
+    '--mpx-range-progress-pct': `${backgroundRenderScaleCoeffPercent}%`,
   } as CSSProperties
   const visualizerDisplayBackend = visualizerStats?.backend ?? visualizerActiveBackend ?? runtimeRenderer
   const gpuCanvasStyle = hasNoLayerEnabled

@@ -329,7 +329,7 @@ function createSectionMetricId(
   target: SectionTarget,
   metric: SectionMetric,
 ): string {
-  return `skeuo-${scope}-${target}-${metric}`;
+  return `soft-${scope}-${target}-${metric}`;
 }
 
 function createSectionMetricStateVariable(
@@ -478,7 +478,7 @@ function getSectionMetricValue(
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function buildSkeuoBorderColor(contrast: number, tint: number): string {
+function buildSoftBorderColor(contrast: number, tint: number): string {
   const tintMix = clampValue(tint, 0, 100);
   const contrastMix = clampValue(contrast, 10, 50);
   return `color-mix(in srgb, color-mix(in srgb, var(--mpx-palette-accent-raw) ${tintMix}%, var(--mpx-palette-text-raw)) ${contrastMix}%, var(--mpx-palette-surface))`;
@@ -522,7 +522,7 @@ function applySectionPaneVisual(
   );
   const shadowColor = `color-mix(in srgb, var(--mpx-palette-text-raw) ${strength}%, transparent)`;
   const highlightColor = `color-mix(in srgb, var(--mpx-palette-surface) ${clampValue(100 - Math.round(strength * 0.75), 62, 98)}%, #ffffff)`;
-  const borderColor = buildSkeuoBorderColor(borderContrast, borderTint);
+  const borderColor = buildSoftBorderColor(borderContrast, borderTint);
 
   root.style.setProperty(
     getPaneShadowVariable(scope),
@@ -574,7 +574,7 @@ function applySectionControlVisual(
 
   const darkColor = `color-mix(in srgb, var(--mpx-palette-text-raw) ${strength}%, transparent)`;
   const lightColor = `color-mix(in srgb, var(--mpx-palette-surface) ${clampValue(100 - Math.round(strength * 0.7), 62, 98)}%, #ffffff)`;
-  const borderColor = buildSkeuoBorderColor(borderContrast, borderTint);
+  const borderColor = buildSoftBorderColor(borderContrast, borderTint);
 
   const shadow = `${elevation}px ${elevation}px ${blur}px ${darkColor}, -${elevation}px -${elevation}px ${blur}px ${lightColor}`;
   const hoverShadow = `${hoverElevation}px ${hoverElevation}px ${hoverBlur}px ${darkColor}, -${hoverElevation}px -${hoverElevation}px ${hoverBlur}px ${lightColor}`;
@@ -687,7 +687,7 @@ function createSectionMetricParameter(
   };
 }
 
-const SKEUO_SECTION_PARAMETERS: ThemeParameterDefinition[] = [
+const SOFT_SECTION_PARAMETERS: ThemeParameterDefinition[] = [
   ...SECTION_SCOPES.flatMap((scope) =>
     SECTION_METRICS.map((metric) =>
       createSectionMetricParameter(scope, "pane", metric),
@@ -1410,7 +1410,7 @@ export const STYLE_PARAMETERS: Record<
 > = {
   "soft-skeuomorphic": [
     createCssPxParameter({
-      id: "skeuo-panel-padding",
+      id: "soft-panel-padding",
       labelKey: "ui.themeParameter.panelPadding",
       variableName: "--mpx-panel-padding",
       min: 6,
@@ -1419,7 +1419,7 @@ export const STYLE_PARAMETERS: Record<
       fallback: 12,
     }),
     createCssPxParameter({
-      id: "skeuo-header-btn-size",
+      id: "soft-header-btn-size",
       labelKey: "ui.themeParameter.headerButtonSize",
       variableName: "--mpx-header-btn-size",
       min: 30,
@@ -1428,7 +1428,7 @@ export const STYLE_PARAMETERS: Record<
       fallback: 40,
     }),
     createCssPxParameter({
-      id: "skeuo-header-btn-radius",
+      id: "soft-header-btn-radius",
       labelKey: "ui.themeParameter.headerButtonRadius",
       variableName: "--mpx-header-btn-radius",
       min: 6,
@@ -1437,7 +1437,7 @@ export const STYLE_PARAMETERS: Record<
       fallback: 12,
     }),
     createCssPxParameter({
-      id: "skeuo-header-group-gap",
+      id: "soft-header-group-gap",
       labelKey: "ui.themeParameter.headerGroupGap",
       variableName: "--mpx-header-group-gap",
       min: 8,
@@ -1446,7 +1446,7 @@ export const STYLE_PARAMETERS: Record<
       fallback: 22,
     }),
     createCssPxParameter({
-      id: "skeuo-header-item-gap",
+      id: "soft-header-item-gap",
       labelKey: "ui.themeParameter.headerItemGap",
       variableName: "--mpx-header-item-gap",
       min: 4,
@@ -1454,10 +1454,10 @@ export const STYLE_PARAMETERS: Record<
       step: 1,
       fallback: 8,
     }),
-    ...SKEUO_SECTION_PARAMETERS,
+    ...SOFT_SECTION_PARAMETERS,
     {
-      id: "skeuo-pane-elevation",
-      labelKey: "ui.themeParameter.skeuoPaneElevation",
+      id: "soft-pane-elevation",
+      labelKey: "ui.themeParameter.softPaneElevation",
       min: 8,
       max: 24,
       step: 1,
@@ -1476,7 +1476,7 @@ export const STYLE_PARAMETERS: Record<
         const headerBlur = Math.max(14, Math.round(elevation * 2.3));
         root.style.setProperty(
           "--mpx-panel-shadow",
-          `0 ${elevation}px ${panelBlur}px var(--mpx-skeuo-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff)`,
+          `0 ${elevation}px ${panelBlur}px var(--mpx-soft-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 96%, #ffffff)`,
         );
         root.style.setProperty("--mpx-main-shadow", "var(--mpx-panel-shadow)");
         root.style.setProperty(
@@ -1489,7 +1489,7 @@ export const STYLE_PARAMETERS: Record<
         );
         root.style.setProperty(
           "--mpx-header-shadow",
-          `0 ${headerElevation}px ${headerBlur}px var(--mpx-skeuo-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 97%, #ffffff)`,
+          `0 ${headerElevation}px ${headerBlur}px var(--mpx-soft-shadow-dark), 0 2px 6px color-mix(in srgb, var(--mpx-palette-text-raw) 16%, transparent), inset 0 1px 0 color-mix(in srgb, var(--mpx-palette-surface) 97%, #ffffff)`,
         );
       },
       reset: (root) => {
@@ -1528,8 +1528,8 @@ export const STYLE_PARAMETERS: Record<
       },
     },
     {
-      id: "skeuo-container-elevation",
-      labelKey: "ui.themeParameter.skeuoContainerElevation",
+      id: "soft-container-elevation",
+      labelKey: "ui.themeParameter.softContainerElevation",
       min: 4,
       max: 18,
       step: 1,
@@ -1547,7 +1547,7 @@ export const STYLE_PARAMETERS: Record<
         const lightLift = Math.max(2, Math.round(elevation * 0.35));
         root.style.setProperty(
           "--mpx-card-shadow",
-          `0 ${elevation}px ${blur}px var(--mpx-skeuo-shadow-dark), -${lightLift}px -${lightLift}px ${Math.max(6, blur - 4)}px var(--mpx-skeuo-shadow-light)`,
+          `0 ${elevation}px ${blur}px var(--mpx-soft-shadow-dark), -${lightLift}px -${lightLift}px ${Math.max(6, blur - 4)}px var(--mpx-soft-shadow-light)`,
         );
       },
       reset: (root) => {
@@ -1555,8 +1555,8 @@ export const STYLE_PARAMETERS: Record<
       },
     },
     {
-      id: "skeuo-control-elevation",
-      labelKey: "ui.themeParameter.skeuoControlElevation",
+      id: "soft-control-elevation",
+      labelKey: "ui.themeParameter.softControlElevation",
       min: 3,
       max: 12,
       step: 1,
@@ -1575,15 +1575,15 @@ export const STYLE_PARAMETERS: Record<
         const blur = Math.max(7, Math.round(elevation * 2.1));
         root.style.setProperty(
           "--mpx-control-shadow",
-          `${elevation}px ${elevation}px ${blur}px var(--mpx-skeuo-shadow-dark), -${elevation}px -${elevation}px ${blur}px var(--mpx-skeuo-shadow-light)`,
+          `${elevation}px ${elevation}px ${blur}px var(--mpx-soft-shadow-dark), -${elevation}px -${elevation}px ${blur}px var(--mpx-soft-shadow-light)`,
         );
         root.style.setProperty(
           "--mpx-control-hover-shadow",
-          `${hover}px ${hover}px ${blur + 3}px var(--mpx-skeuo-shadow-dark), -${hover}px -${hover}px ${blur + 3}px var(--mpx-skeuo-shadow-light)`,
+          `${hover}px ${hover}px ${blur + 3}px var(--mpx-soft-shadow-dark), -${hover}px -${hover}px ${blur + 3}px var(--mpx-soft-shadow-light)`,
         );
         root.style.setProperty(
           "--mpx-control-active-shadow",
-          `inset ${active}px ${active}px ${active * 2}px var(--mpx-skeuo-shadow-dark), inset -${active}px -${active}px ${active * 2}px var(--mpx-skeuo-shadow-light)`,
+          `inset ${active}px ${active}px ${active * 2}px var(--mpx-soft-shadow-dark), inset -${active}px -${active}px ${active * 2}px var(--mpx-soft-shadow-light)`,
         );
       },
       reset: (root) => {
@@ -1595,8 +1595,8 @@ export const STYLE_PARAMETERS: Record<
       },
     },
     {
-      id: "skeuo-border-contrast",
-      labelKey: "ui.themeParameter.skeuoBorderContrast",
+      id: "soft-border-contrast",
+      labelKey: "ui.themeParameter.softBorderContrast",
       min: 14,
       max: 44,
       step: 1,
@@ -1604,14 +1604,14 @@ export const STYLE_PARAMETERS: Record<
       unit: "%",
       read: (computed) => {
         return parseFirstPercentValue(
-          computed.getPropertyValue("--mpx-skeuo-border-contrast").trim(),
+          computed.getPropertyValue("--mpx-soft-border-contrast").trim(),
           22,
         );
       },
       apply: (root, value) => {
         const contrast = clampValue(value, 14, 44);
         const accentContrast = clampValue(contrast + 8, 20, 56);
-        root.style.setProperty("--mpx-skeuo-border-contrast", `${contrast}%`);
+        root.style.setProperty("--mpx-soft-border-contrast", `${contrast}%`);
         root.style.setProperty(
           "--mpx-border-1",
           `color-mix(in srgb, var(--mpx-palette-text-raw) ${contrast}%, var(--mpx-palette-surface))`,
@@ -1623,15 +1623,15 @@ export const STYLE_PARAMETERS: Record<
       },
       reset: (root) => {
         removeVariables(root, [
-          "--mpx-skeuo-border-contrast",
+          "--mpx-soft-border-contrast",
           "--mpx-border-1",
           "--mpx-border-2",
         ]);
       },
     },
     {
-      id: "skeuo-shadow-strength",
-      labelKey: "ui.themeParameter.skeuoShadowStrength",
+      id: "soft-shadow-strength",
+      labelKey: "ui.themeParameter.softShadowStrength",
       min: 8,
       max: 40,
       step: 1,
@@ -1651,24 +1651,24 @@ export const STYLE_PARAMETERS: Record<
           95,
         );
         root.style.setProperty(
-          "--mpx-skeuo-shadow-dark",
+          "--mpx-soft-shadow-dark",
           `color-mix(in srgb, var(--mpx-palette-text-raw) ${strength}%, transparent)`,
         );
         root.style.setProperty(
-          "--mpx-skeuo-shadow-light",
+          "--mpx-soft-shadow-light",
           `color-mix(in srgb, var(--mpx-palette-surface) ${lightStrength}%, var(--mpx-bg-elevated))`,
         );
       },
       reset: (root) => {
         removeVariables(root, [
-          "--mpx-skeuo-shadow-dark",
-          "--mpx-skeuo-shadow-light",
+          "--mpx-soft-shadow-dark",
+          "--mpx-soft-shadow-light",
         ]);
       },
     },
     {
-      id: "skeuo-press-depth",
-      labelKey: "ui.themeParameter.skeuoPressDepth",
+      id: "soft-press-depth",
+      labelKey: "ui.themeParameter.softPressDepth",
       min: 1,
       max: 10,
       step: 1,
@@ -1684,7 +1684,7 @@ export const STYLE_PARAMETERS: Record<
         const depth = clampValue(value, 1, 10);
         root.style.setProperty(
           "--mpx-header-btn-active-shadow",
-          `inset ${depth}px ${depth}px ${depth * 2}px var(--mpx-skeuo-shadow-dark), inset -${depth}px -${depth}px ${depth * 2}px var(--mpx-skeuo-shadow-light)`,
+          `inset ${depth}px ${depth}px ${depth * 2}px var(--mpx-soft-shadow-dark), inset -${depth}px -${depth}px ${depth * 2}px var(--mpx-soft-shadow-light)`,
         );
         root.style.setProperty(
           "--mpx-control-active-shadow",

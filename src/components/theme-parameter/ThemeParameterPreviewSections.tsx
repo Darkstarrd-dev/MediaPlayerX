@@ -13,7 +13,7 @@ import {
   COMMON_CONTROL_TEXT_FIELDS,
   CONTROL_SECTION_DEFINITIONS,
 } from "./themeParameterPanelCatalog";
-import { buildSkeuoRangeStyle } from "./themeParameterRangeStyle";
+import { buildSoftRangeStyle } from "./themeParameterRangeStyle";
 import type {
   ControlPreviewValues,
   ThemeDebugColorField,
@@ -169,7 +169,7 @@ const renderCommonControlHorizontalPreview = (
               max={100}
               min={0}
               step={1}
-              style={buildSkeuoRangeStyle(
+              style={buildSoftRangeStyle(
                 controlPreviewValues.sliderVerticalReference,
               )}
               type="range"

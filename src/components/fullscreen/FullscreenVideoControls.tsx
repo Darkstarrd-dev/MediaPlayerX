@@ -201,7 +201,7 @@ export function FullscreenVideoControlsShell({
       <div className="video-controls-row video-controls">
         {!hideLeftGroup ? (
           <div
-            className="video-controls-group is-left mpx-skeuo-well"
+            className="video-controls-group is-left mpx-soft-well"
             data-slot="fg-main-content-video-controls-left"
           >
             <button
@@ -446,7 +446,7 @@ export function FullscreenVideoControlsShell({
         </div>
 
         <div
-          className="video-controls-group is-right mpx-skeuo-well"
+          className="video-controls-group is-right mpx-soft-well"
           data-slot="fg-main-content-video-controls-right"
         >
           <button
