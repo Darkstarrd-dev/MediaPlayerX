@@ -386,7 +386,6 @@ function SidebarRenameDialog({
           ) : null}
           <button
             className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn"
-            data-mpx-button-variant="panel-action"
             type="button"
             aria-label={closeLabel}
             data-tooltip-label={closeLabel}
@@ -807,7 +806,6 @@ function SidebarRenameDialog({
             <div className="mpx-overlay-actions mpx-overlay-footer-actions">
               <button
                 className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
-                data-mpx-button-variant="panel-action"
                 type="button"
                 disabled={pending}
                 onClick={onCancel}
@@ -816,7 +814,6 @@ function SidebarRenameDialog({
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
-                data-mpx-button-variant="panel-action"
                 type="button"
                 disabled={batchModeActive ? pending : singleConfirmDisabled}
                 onClick={onConfirm}

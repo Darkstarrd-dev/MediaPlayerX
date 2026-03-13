@@ -483,7 +483,6 @@ export function VideoTranscodePanel({
                 />
                 <button
                   className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
-                  data-mpx-button-variant="panel-action"
                   type="button"
                   disabled={executing || pickingOutputDir}
                   onClick={() => void onPickOutputDir()}
@@ -494,7 +493,6 @@ export function VideoTranscodePanel({
                 </button>
                 <button
                   className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
-                  data-mpx-button-variant="panel-action"
                   type="button"
                   disabled={executing || outputDir.trim().length <= 0}
                   onClick={() => onOutputDirChange("")}
@@ -595,7 +593,6 @@ export function VideoTranscodePanel({
             <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
               <button
                 className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
-                data-mpx-button-variant="panel-action"
                 type="button"
                 disabled={executing || !canOpenOutputDirectory}
                 onClick={() => void onOpenOutputDirectory()}
@@ -604,7 +601,6 @@ export function VideoTranscodePanel({
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
-                data-mpx-button-variant="panel-action"
                 type="button"
                 disabled={executing || Boolean(confirmDisabledReason)}
                 onClick={() => void onConfirm()}
@@ -613,7 +609,6 @@ export function VideoTranscodePanel({
               </button>
               <button
                 className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
-                data-mpx-button-variant="panel-action"
                 type="button"
                 onClick={() => void onCancel()}
               >

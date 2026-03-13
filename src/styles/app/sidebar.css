@@ -34,7 +34,7 @@
   min-height: 0;
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .sidebar
+:root .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -45,7 +45,7 @@
   border-color: var(--mpx-sidebar-control-border-color, var(--mpx-border-2));
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .sidebar
+:root .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -58,7 +58,7 @@
   );
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .sidebar
+:root .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),

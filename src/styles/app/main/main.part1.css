@@ -86,7 +86,7 @@
     0 0 24px 5px var(--mpx-pane-focus-metal-ambient);
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
+:root .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -97,7 +97,7 @@
   border-color: var(--mpx-main-control-border-color, var(--mpx-border-2));
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
+:root .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -110,7 +110,7 @@
   );
 }
 
-:root[data-mpx-style^='soft-skeuomorphic'] .main-pane
+:root .main-pane
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -124,25 +124,6 @@
 }
 
 .main-header {
-  --mpx-main-header-button-border-effective: var(
-    --mpx-slot-fg-main-header-button-border,
-    var(--mpx-btn-variant-default-border)
-  );
-  --mpx-main-header-button-bg-effective: var(
-    --mpx-slot-fg-main-header-button-bg,
-    var(--mpx-btn-variant-default-bg-idle)
-  );
-  --mpx-main-header-button-text-effective: var(
-    --mpx-slot-fg-main-header-button-text,
-    var(--mpx-btn-variant-default-text-idle)
-  );
-  --mpx-btn-variant-default-border: var(
-    --mpx-main-header-button-border-effective
-  );
-  --mpx-btn-variant-default-bg-idle: var(--mpx-main-header-button-bg-effective);
-  --mpx-btn-variant-default-text-idle: var(
-    --mpx-main-header-button-text-effective
-  );
   display: flex;
   justify-content: space-between;
   align-items: flex-end;

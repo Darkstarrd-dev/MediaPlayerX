@@ -1,4 +1,4 @@
-:root[data-mpx-style^="soft-skeuomorphic"] .mpx-btn-group.is-groove {
+:root .mpx-btn-group.is-groove {
   padding: var(--mpx-button-group-inset-px, 2px);
   border: 1px solid var(--mpx-btn-group-groove-border);
   border-radius: var(--mpx-btn-group-groove-radius);
@@ -6,14 +6,23 @@
   box-shadow: var(--mpx-btn-group-groove-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    .sidebar-header button:not([data-mpx-button-variant]),
+    .main-header button:not([data-mpx-button-variant]),
+    .main-header-actions button:not([data-mpx-button-variant]),
+    .metadata-header button:not([data-mpx-button-variant]),
+    .settings-head button:not([data-mpx-button-variant]),
+    .settings-shortcuts-head button:not([data-mpx-button-variant]),
+    .main-footer-pagination button:not([data-mpx-button-variant]),
+    .mpx-overlay-actions button:not([data-mpx-button-variant]),
     button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
     button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    .mode-action-btn:not([data-mpx-button-variant])
+  ):not(.video-action-btn):not(.fullscreen-action-btn):not(
+    .header-popover-trigger
   ) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
@@ -22,75 +31,72 @@
   color: var(--mpx-btn-variant-default-text-idle);
   box-shadow: none;
   transform: translateY(0);
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    .sidebar-header button:not([data-mpx-button-variant]),
+    .main-header button:not([data-mpx-button-variant]),
+    .main-header-actions button:not([data-mpx-button-variant]),
+    .metadata-header button:not([data-mpx-button-variant]),
+    .settings-head button:not([data-mpx-button-variant]),
+    .settings-shortcuts-head button:not([data-mpx-button-variant]),
+    .main-footer-pagination button:not([data-mpx-button-variant]),
+    .mpx-overlay-actions button:not([data-mpx-button-variant]),
     button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
     button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
-  ):not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
     button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
-  ).force-hover {
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    .mode-action-btn:not([data-mpx-button-variant])
+  ):not(.video-action-btn):not(.fullscreen-action-btn):not(
+    .header-popover-trigger
+  ):not(:disabled):hover {
   background: var(--mpx-btn-variant-default-bg-hover);
   box-shadow: var(--mpx-btn-variant-default-shadow-hover);
   transform: var(--mpx-btn-variant-default-transform-hover);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    .sidebar-header button:not([data-mpx-button-variant]),
+    .main-header button:not([data-mpx-button-variant]),
+    .main-header-actions button:not([data-mpx-button-variant]),
+    .metadata-header button:not([data-mpx-button-variant]),
+    .settings-head button:not([data-mpx-button-variant]),
+    .settings-shortcuts-head button:not([data-mpx-button-variant]),
+    .main-footer-pagination button:not([data-mpx-button-variant]),
+    .mpx-overlay-actions button:not([data-mpx-button-variant]),
     button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
     button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
-  ):not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
     button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
-  ).force-active {
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    .mode-action-btn:not([data-mpx-button-variant])
+  ):not(.video-action-btn):not(.fullscreen-action-btn):not(
+    .header-popover-trigger
+  ):not(:disabled):active {
   background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
   box-shadow: var(--mpx-btn-variant-default-shadow-active);
   transform: var(--mpx-btn-variant-default-transform-active);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    .sidebar-header button:not([data-mpx-button-variant]),
+    .main-header button:not([data-mpx-button-variant]),
+    .main-header-actions button:not([data-mpx-button-variant]),
+    .metadata-header button:not([data-mpx-button-variant]),
+    .settings-head button:not([data-mpx-button-variant]),
+    .settings-shortcuts-head button:not([data-mpx-button-variant]),
+    .main-footer-pagination button:not([data-mpx-button-variant]),
+    .mpx-overlay-actions button:not([data-mpx-button-variant]),
     button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
     button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
-  ).is-active {
-  color: var(--mpx-btn-variant-default-text-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
     button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    .mode-switch > button
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    .mode-action-btn:not([data-mpx-button-variant])
+  ):not(.video-action-btn):not(.fullscreen-action-btn):not(
+    .header-popover-trigger
   )[aria-pressed="true"] {
   background: var(--mpx-btn-variant-default-bg-pressed);
   border-color: var(--mpx-btn-variant-default-border);
@@ -99,20 +105,355 @@
   transform: var(--mpx-btn-variant-default-transform-pressed);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    .sidebar-header button:not([data-mpx-button-variant]),
+    .main-header button:not([data-mpx-button-variant]),
+    .main-header-actions button:not([data-mpx-button-variant]),
+    .metadata-header button:not([data-mpx-button-variant]),
+    .settings-head button:not([data-mpx-button-variant]),
+    .settings-shortcuts-head button:not([data-mpx-button-variant]),
+    .main-footer-pagination button:not([data-mpx-button-variant]),
+    .mpx-overlay-actions button:not([data-mpx-button-variant]),
+    button.feature-action-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    .mode-action-btn:not([data-mpx-button-variant])
+  ):not(.video-action-btn):not(.fullscreen-action-btn):not(
+    .header-popover-trigger
+  ):disabled {
+  color: var(--mpx-btn-variant-default-text-disabled);
+  opacity: 0.56;
+}
+
+button.vector-search-btn:not([data-mpx-button-variant]) {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+button.vector-search-btn:not([data-mpx-button-variant]):not(:disabled):hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
+}
+
+button.vector-search-btn:not([data-mpx-button-variant]):not(:disabled):active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+}
+
+button.vector-search-btn:not([data-mpx-button-variant])[aria-pressed="true"] {
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
+  transform: var(--mpx-btn-variant-default-transform-pressed);
+}
+
+button.vector-search-btn:not([data-mpx-button-variant]):disabled {
+  color: var(--mpx-btn-variant-default-text-disabled);
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+button.vector-search-btn.is-active {
+  color: var(--mpx-btn-variant-default-text-active);
+}
+
+button.vector-search-btn.is-active[aria-pressed="true"] {
+  color: var(--mpx-btn-variant-default-text-merged);
+}
+
+button.vector-search-btn.is-pending {
+  color: var(--mpx-status-warning-text);
+  border-color: var(--mpx-status-warning-border);
+  background: var(--mpx-status-warning-bg);
+}
+
+button.vector-search-btn.danger:not(:disabled):hover {
+  background: var(--mpx-btn-variant-default-danger-hover-bg);
+  border-color: var(--mpx-btn-variant-default-danger-hover-border);
+  color: var(--mpx-btn-variant-default-danger-hover-text);
+  box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow);
+}
+
+:is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger,
+    .fullscreen-group .auto-play-toggle-btn
+  ) {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-player-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-player-bg-idle);
+  color: var(--mpx-btn-variant-player-text-idle);
+}
+
+:is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger,
+    .fullscreen-group .auto-play-toggle-btn
+  ):not(:disabled):hover {
+  background: var(--mpx-btn-variant-player-bg-hover);
+}
+
+:is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger,
+    .fullscreen-group .auto-play-toggle-btn
+  ):not(:disabled):active,
+.fullscreen-group .header-popover-control.is-open > .header-popover-trigger:not(:disabled) {
+  background: var(--mpx-btn-variant-player-bg-active);
+  border-color: var(--mpx-btn-variant-player-border-active);
+}
+
+:is(
+    .video-controls-group .video-action-btn,
+    .music-controls-group .video-action-btn,
+    .fullscreen-group .fullscreen-action-btn,
+    .video-controls-group .header-popover-trigger,
+    .music-controls-group .header-popover-trigger,
+    .fullscreen-group .header-popover-trigger,
+    .fullscreen-group .auto-play-toggle-btn
+  ):disabled {
+  color: var(--mpx-btn-variant-player-text-disabled);
+  opacity: 0.56;
+}
+
+:is(
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      ),
+    .search-mode-switch button:not([data-mpx-button-variant]),
+    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
+    .settings-block
+      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant]),
+    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
+    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
+    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
+    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      )
+  ) {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+:is(
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      ),
+    .search-mode-switch button:not([data-mpx-button-variant]),
+    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
+    .settings-block
+      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant]),
+    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
+    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
+    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
+    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      )
+  ):not(:disabled):hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
+}
+
+:is(
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      ),
+    .search-mode-switch button:not([data-mpx-button-variant]),
+    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
+    .settings-block
+      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant]),
+    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
+    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
+    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
+    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      )
+  ):not(:disabled):active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+}
+
+:is(
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      ),
+    .search-mode-switch button:not([data-mpx-button-variant]),
+    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
+    .settings-block
+      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant]),
+    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
+    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
+    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
+    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      )
+  )[aria-pressed="true"] {
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
+  transform: var(--mpx-btn-variant-default-transform-pressed);
+}
+
+:is(
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      ),
+    .search-mode-switch button:not([data-mpx-button-variant]),
+    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
+    .settings-block
+      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant]),
+    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
+    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
+    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
+    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
+    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
+        [data-mpx-button-variant]
+      )
+  ):disabled {
+  color: var(--mpx-btn-variant-default-text-disabled);
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+:is(
     button.feature-action-btn,
+    button.window-control-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
+    button.logo-btn,
+    button.header-popover-trigger,
     button.toolbar-icon-btn,
     button.settings-icon-btn,
-    .mode-switch > button
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .settings-block button:not(.sidebar-mini-btn)
+  ).is-active {
+  color: var(--mpx-btn-variant-default-text-active);
+}
+
+:is(
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .settings-block button:not(.sidebar-mini-btn)
   ).is-active[aria-pressed="true"] {
   color: var(--mpx-btn-variant-default-text-merged);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+:is(
+    button.feature-action-btn,
+    button.window-control-btn,
+    button.search-trigger-btn,
+    button.mode-action-btn,
+    button.logo-btn,
+    button.header-popover-trigger,
+    button.toolbar-icon-btn,
+    button.settings-icon-btn,
+    button.main-icon-square-btn,
+    .mode-switch > button,
+    .search-mode-switch button,
+    .zoom-stepper .zoom-stepper-btn,
+    .settings-block button:not(.sidebar-mini-btn)
+  ).is-pending {
+  color: var(--mpx-status-warning-text);
+  border-color: var(--mpx-status-warning-border);
+  background: var(--mpx-status-warning-bg);
+}
+
+:is(
     button.feature-action-btn,
     button.search-trigger-btn,
     button.mode-action-btn,
@@ -120,542 +461,190 @@
     button.settings-icon-btn,
     .mode-switch > button
   ).danger:not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn,
-    button.search-trigger-btn,
-    button.mode-action-btn,
-    button.toolbar-icon-btn,
-    button.settings-icon-btn,
-    .mode-switch > button
-  ).danger.force-hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button.window-control-btn.window-control-btn--close:not(:disabled):hover {
+button.window-control-btn.window-control-btn--close:not(:disabled):hover {
   background: var(--mpx-btn-variant-default-danger-hover-bg);
   border-color: var(--mpx-btn-variant-default-danger-hover-border);
   color: var(--mpx-btn-variant-default-danger-hover-text);
   box-shadow: var(--mpx-btn-variant-default-danger-hover-shadow);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn,
-    button.search-trigger-btn,
-    button.mode-action-btn,
-    button.toolbar-icon-btn,
-    button.settings-icon-btn,
-    .mode-switch > button
-  ):disabled {
-  opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled);
-  cursor: not-allowed;
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn,
-    button.search-trigger-btn,
-    button.mode-action-btn,
-    button.toolbar-icon-btn,
-    button.settings-icon-btn,
-    .mode-switch > button
-  ).is-pending {
-  color: var(--mpx-status-warning-text);
-  border-color: var(--mpx-status-warning-border);
-  background: var(--mpx-status-warning-bg);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.logo-btn:not([data-mpx-button-variant]),
+:is(
+    button.feature-action-btn:not([data-mpx-button-variant]),
     button.window-control-btn:not([data-mpx-button-variant]),
-    button.header-popover-trigger:not([data-mpx-button-variant])
-  ) {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border);
-  background: var(--mpx-btn-variant-default-bg-idle);
-  color: var(--mpx-btn-variant-default-text-idle);
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    button.mode-action-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant])
+  ):focus,
+:is(
+    button.feature-action-btn:not([data-mpx-button-variant]),
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    button.mode-action-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant])
+  ):focus-visible {
+  outline: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.logo-btn:not([data-mpx-button-variant]),
+:is(
+    button.feature-action-btn:not([data-mpx-button-variant]),
     button.window-control-btn:not([data-mpx-button-variant]),
-    button.header-popover-trigger:not([data-mpx-button-variant])
-  ):not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    button.mode-action-btn:not([data-mpx-button-variant]),
     button.logo-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.header-popover-trigger:not([data-mpx-button-variant])
-  ).force-hover {
-  background: var(--mpx-btn-variant-default-bg-hover);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.logo-btn,
-    button.window-control-btn,
-    button.header-popover-trigger
-  ):not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.logo-btn,
-    button.window-control-btn,
-    button.header-popover-trigger
-  ).force-active {
-  background: var(--mpx-btn-variant-default-bg-active);
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant])
+  ):focus-visible:not([aria-pressed="true"]) {
   border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.logo-btn,
-    button.window-control-btn,
-    button.header-popover-trigger
-  ):disabled {
-  color: var(--mpx-btn-variant-default-text-disabled);
+:is(
+    button.feature-action-btn:not([data-mpx-button-variant]),
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    button.mode-action-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant])
+  )[aria-pressed="true"]:focus,
+:is(
+    button.feature-action-btn:not([data-mpx-button-variant]),
+    button.window-control-btn:not([data-mpx-button-variant]),
+    button.search-trigger-btn:not([data-mpx-button-variant]),
+    button.mode-action-btn:not([data-mpx-button-variant]),
+    button.logo-btn:not([data-mpx-button-variant]),
+    button.header-popover-trigger:not([data-mpx-button-variant]),
+    button.toolbar-icon-btn:not([data-mpx-button-variant]),
+    button.settings-icon-btn:not([data-mpx-button-variant]),
+    button.main-icon-square-btn:not([data-mpx-button-variant]),
+    .mode-switch > button:not([data-mpx-button-variant]),
+    :is(.settings-floating-panel, .mpx-dialog-panel)
+      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
+        .fullscreen-action-btn
+      ):not([data-mpx-button-variant]),
+    .meta-tabs button:not([data-mpx-button-variant])
+  )[aria-pressed="true"]:focus-visible {
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .video-controls-group .video-action-btn,
-    .music-controls-group .video-action-btn,
-    .fullscreen-group .fullscreen-action-btn,
-    .video-controls-group .header-popover-trigger,
-    .music-controls-group .header-popover-trigger,
-    .fullscreen-group .header-popover-trigger
-  ) {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
-  background: var(--mpx-btn-variant-player-bg-idle);
-  color: var(--mpx-btn-variant-player-text-idle);
+.toolbar-icon-btn.is-grid-mode,
+.toolbar-icon-btn.is-names-mode {
+  color: var(--mpx-btn-variant-default-text-active);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .video-controls-group .video-action-btn,
-    .music-controls-group .video-action-btn,
-    .fullscreen-group .fullscreen-action-btn,
-    .video-controls-group .header-popover-trigger,
-    .music-controls-group .header-popover-trigger,
-    .fullscreen-group .header-popover-trigger
-  ):not(:disabled):hover {
+.video-controls-group.is-center .video-action-btn:focus,
+.music-controls-group.is-center .video-action-btn:focus,
+.fullscreen-group.is-center .fullscreen-action-btn:focus,
+.video-controls-group.is-center .video-action-btn:focus-visible,
+.music-controls-group.is-center .video-action-btn:focus-visible,
+.fullscreen-group.is-center .fullscreen-action-btn:focus-visible {
+  outline: none;
+}
+
+.fullscreen-group .auto-play-toggle-btn.force-hover {
+  border-color: var(--mpx-btn-variant-player-border);
   background: var(--mpx-btn-variant-player-bg-hover);
+  color: var(--mpx-btn-variant-player-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .video-controls-group .video-action-btn,
-    .music-controls-group .video-action-btn,
-    .fullscreen-group .fullscreen-action-btn,
-    .video-controls-group .header-popover-trigger,
-    .music-controls-group .header-popover-trigger,
-    .fullscreen-group .header-popover-trigger
-  ):not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .video-controls-group .video-action-btn,
-    .music-controls-group .video-action-btn,
-    .fullscreen-group .fullscreen-action-btn,
-    .video-controls-group .header-popover-trigger,
-    .music-controls-group .header-popover-trigger,
-    .fullscreen-group .header-popover-trigger
-  ).force-active {
-  background: var(--mpx-btn-variant-player-bg-active);
+.fullscreen-group .auto-play-toggle-btn.force-active,
+.fullscreen-group .auto-play-toggle-btn.is-active,
+.fullscreen-group .auto-play-toggle-btn[aria-pressed="true"],
+.fullscreen-group .auto-play-toggle-btn.is-active[aria-pressed="true"] {
   border-color: var(--mpx-btn-variant-player-border-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .video-controls-group .video-action-btn,
-    .music-controls-group .video-action-btn,
-    .fullscreen-group .fullscreen-action-btn,
-    .video-controls-group .header-popover-trigger,
-    .music-controls-group .header-popover-trigger,
-    .fullscreen-group .header-popover-trigger
-  ):disabled {
-  color: var(--mpx-btn-variant-player-text-disabled);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ) {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border);
-  background: var(--mpx-btn-variant-default-bg-idle);
-  color: var(--mpx-btn-variant-default-text-idle);
+  background: var(--mpx-btn-variant-player-bg-active);
+  color: var(--mpx-btn-variant-player-text-idle);
   box-shadow: none;
   transform: translateY(0);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ):not(:disabled):hover {
-  background: var(--mpx-btn-variant-default-bg-hover);
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
-  transform: var(--mpx-btn-variant-default-transform-hover);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ):not(:disabled):active {
-  background: var(--mpx-btn-variant-default-bg-active);
-  box-shadow: var(--mpx-btn-variant-default-shadow-active);
-  transform: var(--mpx-btn-variant-default-transform-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ).is-active,
-:root[data-mpx-style^="soft-skeuomorphic"] .toolbar-icon-btn.is-grid-mode,
-:root[data-mpx-style^="soft-skeuomorphic"] .toolbar-icon-btn.is-names-mode {
-  color: var(--mpx-btn-variant-default-text-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  )[aria-pressed="true"] {
-  background: var(--mpx-btn-variant-default-bg-pressed);
-  border-color: var(--mpx-btn-variant-default-border);
-  color: var(--mpx-btn-variant-default-text-pressed);
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
-  transform: var(--mpx-btn-variant-default-transform-pressed);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-variant-default-text-merged);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    .sidebar-header button:not([data-mpx-button-variant]),
-    .main-header-actions button:not([data-mpx-button-variant]),
-    .metadata-header button:not([data-mpx-button-variant]),
-    .settings-head button:not([data-mpx-button-variant]),
-    .settings-shortcuts-head button:not([data-mpx-button-variant]),
-    .main-footer-pagination button:not([data-mpx-button-variant]),
-    .video-controls
-      button:not(.video-action-btn):not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .fullscreen-footer
-      button:not(.video-action-btn):not(.fullscreen-action-btn):not(
-        .header-popover-trigger
-      ):not([data-mpx-button-variant]),
-    .main-header button:not([data-mpx-button-variant]),
-    .settings-block
-      button:not(.sidebar-mini-btn):not([data-mpx-button-variant]),
-    .search-mode-switch button:not([data-mpx-button-variant]),
-    .zoom-stepper .zoom-stepper-btn:not([data-mpx-button-variant]),
-    .auto-play-toggle-btn:not([data-mpx-button-variant]),
-    .header-settings-btn:not([data-mpx-button-variant]),
-    button.video-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.music-ctrl-panel-option:not([data-mpx-button-variant]),
-    button.fullscreen-convert-format-btn:not([data-mpx-button-variant]),
-    button.main-header-ad-review-review-pill:not([data-mpx-button-variant]),
-    button.main-header-ad-review-running-pill:not([data-mpx-button-variant]),
-    button.manage-ad-review-icon-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      )
-  ):disabled {
-  opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled);
-  cursor: not-allowed;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ) {
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
-  box-shadow: none;
+  box-shadow: var(--mpx-header-btn-shadow);
   transform: translateY(0);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):not(:disabled):hover {
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(
+    :disabled
+  ):hover,
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-hover {
   background: var(--mpx-btn-variant-default-bg-hover);
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
-  transform: var(--mpx-btn-variant-default-transform-hover);
+  box-shadow: var(--mpx-header-btn-hover-shadow);
+  transform: var(--mpx-control-hover-transform);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):not(:disabled):active {
-  background: var(--mpx-btn-variant-default-bg-active);
-  box-shadow: var(--mpx-btn-variant-default-shadow-active);
-  transform: var(--mpx-btn-variant-default-transform-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ).is-active {
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.is-active {
   color: var(--mpx-btn-variant-default-text-active);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  )[aria-pressed="true"] {
-  background: var(--mpx-btn-variant-default-bg-pressed);
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(
+    :disabled
+  ):active,
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-active,
+.main-header-ad-review-strategy-control.is-open
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger,
+.main-header-ad-review-strategy-control
+  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger[aria-pressed="true"] {
   border-color: var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-pressed);
   color: var(--mpx-btn-variant-default-text-pressed);
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
-  transform: var(--mpx-btn-variant-default-transform-pressed);
+  box-shadow: var(--mpx-header-btn-active-shadow);
+  transform: var(--mpx-control-active-transform);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ).is-active[aria-pressed="true"] {
-  color: var(--mpx-btn-variant-default-text-merged);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.main-icon-square-btn:not(.header-popover-trigger):not(
-        [data-mpx-button-variant]
-      ),
-    .settings-floating-panel
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):disabled {
-  opacity: 0.56;
-  color: var(--mpx-btn-variant-default-text-disabled);
-  cursor: not-allowed;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"] {
+button[data-mpx-button-variant="panel-action"] {
   border: var(--mpx-control-border-width) solid
     var(--mpx-button-panel-action-border, var(--mpx-btn-variant-default-border));
   border-radius: var(
@@ -678,8 +667,7 @@
   );
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:not(:disabled):hover {
+button[data-mpx-button-variant="panel-action"]:not(:disabled):hover {
   border-color: var(
     --mpx-button-panel-action-border-hover,
     var(--mpx-button-panel-action-border, var(--mpx-btn-variant-default-border))
@@ -702,12 +690,9 @@
   transform: var(--mpx-button-panel-action-transform-hover, translateY(0));
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"].is-active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"][aria-pressed="true"] {
+button[data-mpx-button-variant="panel-action"]:not(:disabled):active,
+button[data-mpx-button-variant="panel-action"].is-active,
+button[data-mpx-button-variant="panel-action"][aria-pressed="true"] {
   border-color: var(
     --mpx-button-panel-action-border-active,
     var(--mpx-button-panel-action-border, var(--mpx-btn-variant-default-border))
@@ -730,8 +715,7 @@
   transform: var(--mpx-button-panel-action-transform-active, translateY(0));
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:disabled {
+button[data-mpx-button-variant="panel-action"]:disabled {
   opacity: 0.56;
   color: var(
     --mpx-button-panel-action-text-disabled,
@@ -740,19 +724,14 @@
   cursor: not-allowed;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:focus-visible,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"]:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"]:focus-visible {
+button[data-mpx-button-variant="panel-action"]:focus,
+button[data-mpx-button-variant="panel-action"]:focus-visible,
+button[data-mpx-button-variant="chip"]:focus,
+button[data-mpx-button-variant="chip"]:focus-visible {
   outline: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="panel-action"]:focus-visible {
+button[data-mpx-button-variant="panel-action"]:focus-visible {
   outline: var(--mpx-button-panel-action-focus-outline-width, 0px) solid
     var(--mpx-button-panel-action-focus-outline-color, transparent);
   outline-offset: var(--mpx-button-panel-action-focus-outline-offset, -2px);
@@ -762,8 +741,7 @@
   );
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"] {
+button[data-mpx-button-variant="chip"] {
   border: 1px solid var(--mpx-overlay-soft-border);
   border-radius: 999px;
   min-height: 32px;
@@ -777,248 +755,18 @@
   transform: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"]:not(:disabled):hover {
+button[data-mpx-button-variant="chip"]:not(:disabled):hover {
   background: var(--mpx-overlay-soft-hover-bg);
   box-shadow: none;
   transform: none;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"]:not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"][aria-pressed="true"],
-:root[data-mpx-style^="soft-skeuomorphic"]
-  button[data-mpx-button-variant="chip"]:focus-visible {
+button[data-mpx-button-variant="chip"]:not(:disabled):active,
+button[data-mpx-button-variant="chip"][aria-pressed="true"],
+button[data-mpx-button-variant="chip"]:focus-visible {
   background: var(--mpx-overlay-soft-focus-bg);
   box-shadow: none;
   transform: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.logo-btn:not([data-mpx-button-variant]),
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    button.main-icon-square-btn:not([data-mpx-button-variant]),
-    .mode-switch > button,
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.logo-btn:not([data-mpx-button-variant]),
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    button.main-icon-square-btn:not([data-mpx-button-variant]),
-    .mode-switch > button,
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):focus-visible {
-  outline: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.logo-btn:not([data-mpx-button-variant]),
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    button.main-icon-square-btn:not([data-mpx-button-variant]),
-    .mode-switch > button,
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  ):focus-visible:not([aria-pressed="true"]) {
-  border-color: var(--mpx-btn-variant-default-border);
-  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.logo-btn:not([data-mpx-button-variant]),
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    button.main-icon-square-btn:not([data-mpx-button-variant]),
-    .mode-switch > button,
-    :is(.settings-floating-panel, .mpx-dialog-panel)
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  )[aria-pressed="true"]:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  :is(
-    button.feature-action-btn:not([data-mpx-button-variant]),
-    button.window-control-btn:not([data-mpx-button-variant]),
-    button.search-trigger-btn:not([data-mpx-button-variant]),
-    button.mode-action-btn:not([data-mpx-button-variant]),
-    button.logo-btn:not([data-mpx-button-variant]),
-    button.video-action-btn,
-    button.fullscreen-action-btn,
-    button.header-popover-trigger:not([data-mpx-button-variant]),
-    button.toolbar-icon-btn:not([data-mpx-button-variant]),
-    button.settings-icon-btn:not([data-mpx-button-variant]),
-    button.main-icon-square-btn:not([data-mpx-button-variant]),
-    .mode-switch > button,
-    .settings-floating-panel
-      button:not(.sidebar-mini-btn):not(.video-action-btn):not(
-        .fullscreen-action-btn
-      ):not([data-mpx-button-variant]),
-    .meta-tabs button:not([data-mpx-button-variant])
-  )[aria-pressed="true"]:focus-visible {
-  border-color: var(--mpx-btn-variant-default-border);
-  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .video-controls-group.is-center
-  .video-action-btn,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .music-controls-group.is-center
-  .video-action-btn,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group.is-center
-  .fullscreen-action-btn {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
-  background: var(--mpx-btn-variant-player-bg-idle);
-  color: var(--mpx-btn-variant-player-text-idle);
-  box-shadow: none;
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .video-controls-group.is-center
-  .video-action-btn:not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .music-controls-group.is-center
-  .video-action-btn:not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:not(:disabled):hover {
-  background: var(--mpx-btn-variant-player-bg-hover);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .video-controls-group.is-center
-  .video-action-btn:not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .music-controls-group.is-center
-  .video-action-btn:not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:not(:disabled):active {
-  background: var(--mpx-btn-variant-player-bg-active);
-  border-color: var(--mpx-btn-variant-player-border-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .video-controls-group.is-center
-  .video-action-btn:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .music-controls-group.is-center
-  .video-action-btn:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:focus,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .video-controls-group.is-center
-  .video-action-btn:focus-visible,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .music-controls-group.is-center
-  .video-action-btn:focus-visible,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:focus-visible {
-  outline: none;
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-player-border);
-  background: var(--mpx-btn-variant-player-bg-idle);
-  color: var(--mpx-btn-variant-player-text-idle);
-  box-shadow: none;
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn:not(:disabled):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn.force-hover {
-  border-color: var(--mpx-btn-variant-player-border);
-  background: var(--mpx-btn-variant-player-bg-hover);
-  color: var(--mpx-btn-variant-player-text-idle);
-  box-shadow: none;
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn:not(:disabled):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn.force-active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn.is-active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn[aria-pressed="true"],
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn.is-active[aria-pressed="true"] {
-  border-color: var(--mpx-btn-variant-player-border-active);
-  background: var(--mpx-btn-variant-player-bg-active);
-  color: var(--mpx-btn-variant-player-text-idle);
-  box-shadow: none;
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .fullscreen-group
-  .auto-play-toggle-btn:disabled {
-  color: var(--mpx-btn-variant-player-text-disabled);
 }
 
 .main-header-actions-manage
@@ -1061,59 +809,4 @@
     --mpx-header-btn-radius-effective,
     var(--mpx-header-btn-radius)
   );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger {
-  border: var(--mpx-control-border-width) solid
-    var(--mpx-btn-variant-default-border);
-  border-radius: var(
-    --mpx-header-btn-radius-effective,
-    var(--mpx-header-btn-radius)
-  );
-  background: var(--mpx-btn-variant-default-bg-idle);
-  color: var(--mpx-btn-variant-default-text-idle);
-  box-shadow: var(--mpx-header-btn-shadow);
-  transform: translateY(0);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(
-    :disabled
-  ):hover,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-hover {
-  background: var(--mpx-btn-variant-default-bg-hover);
-  box-shadow: var(--mpx-header-btn-hover-shadow);
-  transform: var(--mpx-control-hover-transform);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.is-active {
-  color: var(--mpx-btn-variant-default-text-active);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger:not(
-    :disabled
-  ):active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger.force-active,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control.is-open
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger,
-:root[data-mpx-style^="soft-skeuomorphic"]
-  .main-header-ad-review-strategy-control
-  > button.manage-ad-review-icon-btn.main-icon-square-btn.header-popover-trigger[aria-pressed="true"] {
-  border-color: var(--mpx-btn-variant-default-border);
-  background: var(--mpx-btn-variant-default-bg-pressed);
-  color: var(--mpx-btn-variant-default-text-pressed);
-  box-shadow: var(--mpx-header-btn-active-shadow);
-  transform: var(--mpx-control-active-transform);
 }

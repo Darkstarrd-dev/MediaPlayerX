@@ -1,14 +1,23 @@
 .zoom-stepper-btn,
 .auto-play-toggle-btn,
 .header-settings-btn,
-.vector-search-btn,
-.vector-collapse-btn,
-.feature-action-btn {
-  border: var(--mpx-control-border-width) solid var(--mpx-btn-secondary-border);
-  border-radius: 0;
+.vector-collapse-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   min-height: var(--mpx-control-height);
-  background: var(--mpx-btn-secondary-bg);
-  color: var(--mpx-btn-secondary-text);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  font-weight: var(--mpx-control-font-weight);
+  padding: 0 var(--mpx-control-padding-x);
+}
+
+.vector-search-btn,
+.feature-action-btn {
+  border: var(--mpx-control-border-width) solid var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  min-height: var(--mpx-control-height);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
   font-weight: var(--mpx-control-font-weight);
   padding: 0 var(--mpx-control-padding-x);
 }

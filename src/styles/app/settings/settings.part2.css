@@ -698,41 +698,6 @@
 }
 
 button.music-audio-transcode-seamless-btn {
-  --mpx-button-panel-action-border: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-hover: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-active: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-bg-idle: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-hover: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-active: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-text-idle: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-hover: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-active: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-shadow-idle: none;
-  --mpx-button-panel-action-shadow-hover: none;
-  --mpx-button-panel-action-shadow-active: none;
-  --mpx-button-panel-action-transform-hover: translateY(0);
-  --mpx-button-panel-action-transform-active: translateY(0);
-  --mpx-button-panel-action-radius: 0;
-  --mpx-button-panel-action-transition:
-    color 160ms ease, background-color 160ms ease;
   height: 44px;
   min-height: 44px;
   padding: 0 12px;
@@ -742,45 +707,6 @@ button.music-audio-transcode-seamless-btn {
 button.music-audio-transcode-seamless-btn:disabled {
   opacity: 0.56;
   cursor: not-allowed;
-}
-
-.music-audio-transcode-dialog .sidebar-rename-g2-btn {
-  --mpx-button-panel-action-border: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-hover: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-active: var(
-    --mpx-transcode-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-bg-idle: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-hover: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-active: var(
-    --mpx-transcode-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-text-idle: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-hover: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-active: var(
-    --mpx-transcode-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-shadow-idle: var(--mpx-header-btn-shadow);
-  --mpx-button-panel-action-shadow-hover: var(--mpx-header-btn-hover-shadow);
-  --mpx-button-panel-action-shadow-active: var(--mpx-header-btn-active-shadow);
-  --mpx-button-panel-action-transform-hover: var(--mpx-control-hover-transform);
-  --mpx-button-panel-action-transform-active: var(
-    --mpx-control-active-transform
-  );
-  --mpx-button-panel-action-radius: 0;
-  border-radius: 0;
 }
 
 .music-audio-transcode-footer-actions {
@@ -843,48 +769,9 @@ button.music-audio-transcode-seamless-btn:disabled {
   min-width: var(--mpx-header-btn-size);
   min-height: var(--mpx-header-btn-size);
   padding: 0;
-  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   font-size: 22px;
   line-height: 1;
-}
-
-.sidebar-rename-dialog .sidebar-rename-g2-btn {
-  --mpx-button-panel-action-border: var(
-    --mpx-sidebar-rename-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-hover: var(
-    --mpx-sidebar-rename-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-border-active: var(
-    --mpx-sidebar-rename-dialog-action-btn-border-current
-  );
-  --mpx-button-panel-action-bg-idle: var(
-    --mpx-sidebar-rename-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-hover: var(
-    --mpx-sidebar-rename-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-bg-active: var(
-    --mpx-sidebar-rename-dialog-action-btn-bg-current
-  );
-  --mpx-button-panel-action-text-idle: var(
-    --mpx-sidebar-rename-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-hover: var(
-    --mpx-sidebar-rename-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-text-active: var(
-    --mpx-sidebar-rename-dialog-action-btn-text-current
-  );
-  --mpx-button-panel-action-shadow-idle: var(--mpx-header-btn-shadow);
-  --mpx-button-panel-action-shadow-hover: var(--mpx-header-btn-hover-shadow);
-  --mpx-button-panel-action-shadow-active: var(--mpx-header-btn-active-shadow);
-  --mpx-button-panel-action-transform-hover: var(--mpx-control-hover-transform);
-  --mpx-button-panel-action-transform-active: var(
-    --mpx-control-active-transform
-  );
-  --mpx-button-panel-action-radius: calc(var(--mpx-header-btn-radius) - 2px);
-  border-radius: calc(var(--mpx-header-btn-radius) - 2px);
 }
 
 .sidebar-rename-hint {
@@ -1049,7 +936,7 @@ button.music-audio-transcode-seamless-btn:disabled {
 }
 
 .sidebar-rename-single-dialog .feature-action-btn {
-  border-color: var(--mpx-sidebar-rename-dialog-action-btn-border-current);
-  background: var(--mpx-sidebar-rename-dialog-action-btn-bg-current);
-  color: var(--mpx-sidebar-rename-dialog-action-btn-text-current);
+  border-color: var(--mpx-btn-variant-default-border);
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
 }

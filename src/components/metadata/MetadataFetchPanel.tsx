@@ -927,7 +927,6 @@ function MetadataFetchPanel({
                             <button
                               type="button"
                               className="metadata-fetch-preview-toggle"
-                              data-mpx-button-variant="panel-action"
                               onClick={() => {
                                 if (!currentTarget) {
                                   return;
@@ -974,7 +973,6 @@ function MetadataFetchPanel({
                             <button
                               type="button"
                               className="metadata-fetch-preview-toggle"
-                              data-mpx-button-variant="panel-action"
                               onClick={() => {
                                 if (!currentTarget) {
                                   return;
@@ -1021,7 +1019,6 @@ function MetadataFetchPanel({
                             <button
                               type="button"
                               className="metadata-fetch-preview-toggle"
-                              data-mpx-button-variant="panel-action"
                               onClick={() => {
                                 if (!currentTarget) {
                                   return;
@@ -1072,7 +1069,6 @@ function MetadataFetchPanel({
                             <button
                               type="button"
                               className="metadata-fetch-preview-toggle"
-                              data-mpx-button-variant="panel-action"
                               onClick={() => {
                                 if (!currentTarget) {
                                   return;
@@ -1127,7 +1123,6 @@ function MetadataFetchPanel({
                             <button
                               type="button"
                               className="metadata-fetch-preview-toggle"
-                              data-mpx-button-variant="panel-action"
                               onClick={() => {
                                 if (!currentTarget) {
                                   return;

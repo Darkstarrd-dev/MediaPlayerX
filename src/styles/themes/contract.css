@@ -1601,9 +1601,9 @@
     --mpx-transcode-dialog-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
     --mpx-transcode-dialog-control-text: var(--mpx-text-1);
     --mpx-transcode-dialog-control-placeholder: var(--mpx-text-2);
-    --mpx-transcode-dialog-action-btn-border: var(--mpx-border-2);
-    --mpx-transcode-dialog-action-btn-bg: var(--mpx-bg-elevated);
-    --mpx-transcode-dialog-action-btn-text: var(--mpx-text-1);
+    --mpx-transcode-dialog-action-btn-border: var(--mpx-btn-variant-default-border);
+    --mpx-transcode-dialog-action-btn-bg: var(--mpx-btn-variant-default-bg-idle);
+    --mpx-transcode-dialog-action-btn-text: var(--mpx-btn-variant-default-text-idle);
 
     --mpx-sidebar-rename-dialog-text: var(--mpx-text-1);
     --mpx-sidebar-rename-dialog-muted-text: var(--mpx-text-2);
@@ -1617,9 +1617,9 @@
     );
     --mpx-sidebar-rename-dialog-control-text: var(--mpx-text-1);
     --mpx-sidebar-rename-dialog-control-placeholder: var(--mpx-text-2);
-    --mpx-sidebar-rename-dialog-action-btn-border: var(--mpx-border-2);
-    --mpx-sidebar-rename-dialog-action-btn-bg: var(--mpx-bg-elevated);
-    --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-text-1);
+    --mpx-sidebar-rename-dialog-action-btn-border: var(--mpx-btn-variant-default-border);
+    --mpx-sidebar-rename-dialog-action-btn-bg: var(--mpx-btn-variant-default-bg-idle);
+    --mpx-sidebar-rename-dialog-action-btn-text: var(--mpx-btn-variant-default-text-idle);
     --mpx-sidebar-rename-preview-border: var(--mpx-overlay-soft-border);
     --mpx-sidebar-rename-preview-bg: var(--mpx-bg-elevated);
     --mpx-sidebar-rename-preview-head-border: var(

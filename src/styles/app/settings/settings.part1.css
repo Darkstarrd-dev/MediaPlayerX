@@ -17,28 +17,28 @@
   color: var(--mpx-btn-variant-default-text-idle);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"] .search-box select:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .search-box input:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .header-right select:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-block input:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-block select:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-block textarea:focus,
-:root[data-mpx-style^="soft-skeuomorphic"] .feature-query-input:focus {
+:root .search-box select:focus,
+:root .search-box input:focus,
+:root .header-right select:focus,
+:root .settings-block input:focus,
+:root .settings-block select:focus,
+:root .settings-block textarea:focus,
+:root .feature-query-input:focus {
   background: var(--mpx-input-focus-bg);
   border-color: var(--mpx-input-focus-border);
   outline: none;
   box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"] .sidebar-header button,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header-actions button,
-:root[data-mpx-style^="soft-skeuomorphic"] .metadata-header button,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-head button,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-shortcuts-head button,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-footer-pagination button,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header button,
-:root[data-mpx-style^="soft-skeuomorphic"] .settings-block button,
-:root[data-mpx-style^="soft-skeuomorphic"] .search-trigger-btn {
+:root .sidebar-header button,
+:root .main-header-actions button,
+:root .metadata-header button,
+:root .settings-head button,
+:root .settings-shortcuts-head button,
+:root .main-footer-pagination button,
+:root .main-header button,
+:root .settings-block button,
+:root .search-trigger-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
   background: var(--mpx-btn-variant-default-bg-idle);
@@ -49,28 +49,28 @@
   cursor: pointer;
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"] .sidebar-header button:hover,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header-actions button:hover,
-:root[data-mpx-style^="soft-skeuomorphic"] .metadata-header button:hover,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header button:hover,
-:root[data-mpx-style^="soft-skeuomorphic"] .search-trigger-btn:hover {
+:root .sidebar-header button:hover,
+:root .main-header-actions button:hover,
+:root .metadata-header button:hover,
+:root .main-header button:hover,
+:root .search-trigger-btn:hover {
   background: var(--mpx-btn-variant-default-bg-hover);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"] .sidebar-header button:active,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header-actions button:active,
-:root[data-mpx-style^="soft-skeuomorphic"] .metadata-header button:active,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header button:active,
-:root[data-mpx-style^="soft-skeuomorphic"] .search-trigger-btn:active {
+:root .sidebar-header button:active,
+:root .main-header-actions button:active,
+:root .metadata-header button:active,
+:root .main-header button:active,
+:root .search-trigger-btn:active {
   background: var(--mpx-btn-variant-default-bg-active);
   border-color: var(--mpx-btn-variant-default-border);
 }
 
-:root[data-mpx-style^="soft-skeuomorphic"] .sidebar-header button:disabled,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header-actions button:disabled,
-:root[data-mpx-style^="soft-skeuomorphic"] .metadata-header button:disabled,
-:root[data-mpx-style^="soft-skeuomorphic"] .main-header button:disabled,
-:root[data-mpx-style^="soft-skeuomorphic"] .search-trigger-btn:disabled {
+:root .sidebar-header button:disabled,
+:root .main-header-actions button:disabled,
+:root .metadata-header button:disabled,
+:root .main-header button:disabled,
+:root .search-trigger-btn:disabled {
   opacity: 0.56;
   color: var(--mpx-btn-variant-default-text-disabled);
 }
@@ -704,42 +704,87 @@
   [data-slot="fg-header-g3-help-root-panel"],
   [data-slot="fg-header-g3-theme-parameter-root-panel"]
 ) {
-  --mpx-panel-side-nav-border-idle: var(--mpx-btn-variant-default-border);
-  --mpx-panel-side-nav-bg-idle: var(--mpx-btn-variant-default-bg-idle);
-  --mpx-panel-side-nav-text-idle: var(--mpx-btn-variant-default-text-idle);
+  --mpx-panel-side-nav-border-idle: var(
+    --mpx-btn-variant-theme-parameter-side-border-idle,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-panel-side-nav-bg-idle: var(
+    --mpx-btn-variant-theme-parameter-side-bg-idle,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-panel-side-nav-text-idle: var(
+    --mpx-btn-variant-theme-parameter-side-text-idle,
+    var(--mpx-btn-variant-default-text-idle)
+  );
   --mpx-panel-side-nav-border-hover: var(--mpx-panel-side-nav-border-idle);
-  --mpx-panel-side-nav-bg-hover: var(--mpx-btn-variant-default-bg-hover);
+  --mpx-panel-side-nav-bg-hover: var(
+    --mpx-btn-variant-theme-parameter-side-bg-hover,
+    var(--mpx-btn-variant-default-bg-hover)
+  );
   --mpx-panel-side-nav-text-hover: var(--mpx-panel-side-nav-text-idle);
   --mpx-panel-side-nav-border-active: var(--mpx-panel-side-nav-border-idle);
-  --mpx-panel-side-nav-bg-active: var(--mpx-btn-variant-default-bg-active);
-  --mpx-panel-side-nav-text-active: var(--mpx-btn-variant-default-text-active);
-  --mpx-panel-side-nav-border-selected: var(--mpx-border-1);
-  --mpx-panel-side-nav-bg-selected: var(--mpx-bg-elevated);
-  --mpx-panel-side-nav-text-selected: var(--mpx-text-1);
+  --mpx-panel-side-nav-bg-active: var(
+    --mpx-btn-variant-theme-parameter-side-bg-active,
+    var(--mpx-btn-variant-default-bg-active)
+  );
+  --mpx-panel-side-nav-text-active: var(
+    --mpx-btn-variant-theme-parameter-side-text-active,
+    var(--mpx-btn-variant-default-text-active)
+  );
+  --mpx-panel-side-nav-border-selected: var(
+    --mpx-btn-variant-theme-parameter-side-border-selected,
+    var(--mpx-border-1)
+  );
+  --mpx-panel-side-nav-bg-selected: var(
+    --mpx-btn-variant-theme-parameter-side-bg-selected,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-panel-side-nav-text-selected: var(
+    --mpx-btn-variant-theme-parameter-side-text-selected,
+    var(--mpx-text-1)
+  );
   --mpx-panel-side-nav-border-pressed: var(--mpx-panel-side-nav-border-idle);
-  --mpx-panel-side-nav-bg-pressed: var(--mpx-btn-variant-default-bg-pressed);
+  --mpx-panel-side-nav-bg-pressed: var(
+    --mpx-btn-variant-theme-parameter-side-bg-pressed,
+    var(--mpx-btn-variant-default-bg-pressed)
+  );
   --mpx-panel-side-nav-text-pressed: var(
-    --mpx-btn-variant-default-text-pressed
+    --mpx-btn-variant-theme-parameter-side-text-pressed,
+    var(--mpx-btn-variant-default-text-pressed)
   );
   --mpx-panel-side-nav-border-disabled: var(--mpx-panel-side-nav-border-idle);
   --mpx-panel-side-nav-bg-disabled: var(--mpx-panel-side-nav-bg-idle);
   --mpx-panel-side-nav-text-disabled: var(
-    --mpx-btn-variant-default-text-disabled
+    --mpx-btn-variant-theme-parameter-side-text-disabled,
+    var(--mpx-btn-variant-default-text-disabled)
   );
-  --mpx-panel-side-nav-pending-border: var(--mpx-status-warning-border);
-  --mpx-panel-side-nav-pending-bg: var(--mpx-status-warning-bg);
-  --mpx-panel-side-nav-pending-text: var(--mpx-status-warning-text);
+  --mpx-panel-side-nav-pending-border: var(
+    --mpx-btn-variant-theme-parameter-side-pending-border,
+    var(--mpx-status-warning-border)
+  );
+  --mpx-panel-side-nav-pending-bg: var(
+    --mpx-btn-variant-theme-parameter-side-pending-bg,
+    var(--mpx-status-warning-bg)
+  );
+  --mpx-panel-side-nav-pending-text: var(
+    --mpx-btn-variant-theme-parameter-side-pending-text,
+    var(--mpx-status-warning-text)
+  );
   --mpx-panel-side-nav-danger-hover-border: var(
-    --mpx-btn-variant-default-danger-hover-border
+    --mpx-btn-variant-theme-parameter-side-danger-hover-border,
+    var(--mpx-btn-variant-default-danger-hover-border)
   );
   --mpx-panel-side-nav-danger-hover-bg: var(
-    --mpx-btn-variant-default-danger-hover-bg
+    --mpx-btn-variant-theme-parameter-side-danger-hover-bg,
+    var(--mpx-btn-variant-default-danger-hover-bg)
   );
   --mpx-panel-side-nav-danger-hover-text: var(
-    --mpx-btn-variant-default-danger-hover-text
+    --mpx-btn-variant-theme-parameter-side-danger-hover-text,
+    var(--mpx-btn-variant-default-danger-hover-text)
   );
   --mpx-panel-side-nav-danger-hover-shadow: var(
-    --mpx-btn-variant-default-danger-hover-shadow
+    --mpx-btn-variant-theme-parameter-side-danger-hover-shadow,
+    var(--mpx-btn-variant-default-danger-hover-shadow)
   );
 }
 
@@ -2343,6 +2388,27 @@
   justify-content: flex-end;
 }
 
+.mpx-overlay-actions > button:not([data-mpx-button-variant]) {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+}
+
+.mpx-overlay-actions > button:not([data-mpx-button-variant]):not(:disabled):hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
+}
+
+.mpx-overlay-actions > button:not([data-mpx-button-variant]):not(:disabled):active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+}
+
 .mpx-overlay-actions-inline-end {
   margin-top: 0;
   margin-left: auto;
@@ -2399,7 +2465,7 @@
 
 button.mpx-overlay-footer-btn {
   min-width: 88px;
-  border-radius: 14px;
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
   height: 44px;
   padding: 0 20px;
   font-size: inherit;
@@ -2848,50 +2914,6 @@ button.mpx-overlay-footer-btn {
 
 .theme-parameter-side {
   justify-content: flex-start;
-}
-
-.theme-parameter-side-btn {
-  --mpx-btn-variant-default-border: var(
-    --mpx-btn-variant-theme-parameter-side-border-idle
-  );
-  --mpx-btn-variant-default-bg-idle: var(
-    --mpx-btn-variant-theme-parameter-side-bg-idle
-  );
-  --mpx-btn-variant-default-text-idle: var(
-    --mpx-btn-variant-theme-parameter-side-text-idle
-  );
-  --mpx-btn-variant-default-bg-hover: var(
-    --mpx-btn-variant-theme-parameter-side-bg-hover
-  );
-  --mpx-btn-variant-default-bg-active: var(
-    --mpx-btn-variant-theme-parameter-side-bg-active
-  );
-  --mpx-btn-variant-default-bg-pressed: var(
-    --mpx-btn-variant-theme-parameter-side-bg-pressed
-  );
-  --mpx-btn-variant-default-text-pressed: var(
-    --mpx-btn-variant-theme-parameter-side-text-pressed
-  );
-  --mpx-btn-variant-default-text-disabled: var(
-    --mpx-btn-variant-theme-parameter-side-text-disabled
-  );
-  --mpx-btn-variant-default-danger-hover-bg: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-bg
-  );
-  --mpx-btn-variant-default-danger-hover-border: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-border
-  );
-  --mpx-btn-variant-default-danger-hover-text: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-text
-  );
-  --mpx-btn-variant-default-danger-hover-shadow: var(
-    --mpx-btn-variant-theme-parameter-side-danger-hover-shadow
-  );
-  border: 1px solid var(--mpx-btn-variant-theme-parameter-side-border-idle);
-  border-radius: 0;
-  background: var(--mpx-btn-variant-theme-parameter-side-bg-idle);
-  color: var(--mpx-btn-variant-theme-parameter-side-text-idle);
-  min-height: 34px;
 }
 
 .theme-parameter-side-btn.is-active {

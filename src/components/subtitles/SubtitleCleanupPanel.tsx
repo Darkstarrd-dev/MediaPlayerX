@@ -326,7 +326,6 @@ function SubtitleCleanupPanel({
                 <button
                   type="button"
                   className="metadata-fetch-preview-toggle"
-                  data-mpx-button-variant="panel-action"
                   onClick={() => setRawCollapsed((value) => !value)}
                 >
                   <span>{t("ui.media.subtitleCleanupRaw")}</span>
@@ -349,7 +348,6 @@ function SubtitleCleanupPanel({
                 <button
                   type="button"
                   className="metadata-fetch-preview-toggle"
-                  data-mpx-button-variant="panel-action"
                   onClick={() => setCleanCollapsed((value) => !value)}
                 >
                   <span>{t("ui.media.subtitleCleanupCleaned")}</span>
