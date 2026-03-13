@@ -1,4 +1,10 @@
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import {
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 
 import { SkeuoRunway } from "../primitives/SkeuoRunway";
 import { ThemeParameterCommonControlTextFieldRow } from "./ThemeParameterFieldRows";
@@ -75,22 +81,64 @@ interface ThemeParameterButtonStateDebugProps {
   renderTextFieldRow: (field: ThemeDebugTextField) => ReactNode;
 }
 
+type ScrollbarPreviewState = "idle" | "hover" | "active";
+
+function buildScrollbarPreviewStyle(
+  state: ScrollbarPreviewState,
+): CSSProperties | undefined {
+  if (state === "idle") {
+    return undefined;
+  }
+  const style = {} as CSSProperties;
+  const cssVars = style as Record<string, string>;
+  if (state === "hover") {
+    cssVars["--mpx-scrollbar-thumb-bg"] =
+      "var(--mpx-scrollbar-thumb-hover-bg)";
+    return style;
+  }
+  cssVars["--mpx-scrollbar-thumb-bg"] =
+    "var(--mpx-scrollbar-thumb-active-bg, var(--mpx-scrollbar-thumb-hover-bg))";
+  cssVars["--mpx-scrollbar-thumb-shadow"] =
+    "var(--mpx-scrollbar-thumb-active-shadow, var(--mpx-scrollbar-thumb-shadow, none))";
+  return style;
+}
+
 const renderCommonControlHorizontalPreview = (
   sectionId: ThemeControlSectionId,
   controlPreviewValues: ControlPreviewValues,
   setControlPreviewValues: Dispatch<SetStateAction<ControlPreviewValues>>,
+  scrollbarPreviewState: ScrollbarPreviewState,
+  setScrollbarPreviewState: Dispatch<SetStateAction<ScrollbarPreviewState>>,
 ) => {
   switch (sectionId) {
     case "control-scrollbar": {
+      const previewStyle = buildScrollbarPreviewStyle(scrollbarPreviewState);
       return (
         <div
           className="theme-parameter-control-preview-row is-horizontal"
           data-testid="theme-control-preview-scrollbar-horizontal"
         >
+          <div className="theme-parameter-scroll-preview-state-bar">
+            {([
+              ["idle", "Idle 预览"],
+              ["hover", "Hover 预览"],
+              ["active", "Active 预览"],
+            ] as const).map(([state, label]) => (
+              <button
+                key={state}
+                type="button"
+                className={`theme-parameter-debug-preview-btn${scrollbarPreviewState === state ? " is-active" : ""}`}
+                onClick={() => setScrollbarPreviewState(state)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div
             className="theme-parameter-scroll-preview mpx-scroll-area"
             aria-label="滚动条横向预览"
             tabIndex={0}
+            style={previewStyle}
           >
             <div className="theme-parameter-scroll-preview-content">
               {Array.from({ length: 18 }).map((_, index) => (
@@ -103,6 +151,9 @@ const renderCommonControlHorizontalPreview = (
               ))}
             </div>
           </div>
+          <p className="theme-parameter-scroll-preview-note">
+            Electron 原生滚动条状态色不稳定，6.1 仅保证基础态真实落地；Hover/Active 请使用这里的预览态验收。
+          </p>
         </div>
       );
     }
@@ -461,6 +512,9 @@ export function ThemeParameterCommonControlSections({
   resetLabel,
   renderColorFieldRow,
 }: ThemeParameterCommonControlSectionsProps) {
+  const [scrollbarPreviewState, setScrollbarPreviewState] =
+    useState<ScrollbarPreviewState>("idle");
+
   const renderTextFieldRow = (field: ThemeDebugTextField) => {
     return (
       <ThemeParameterCommonControlTextFieldRow
@@ -520,6 +574,8 @@ export function ThemeParameterCommonControlSections({
           section.id,
           controlPreviewValues,
           setControlPreviewValues,
+          scrollbarPreviewState,
+          setScrollbarPreviewState,
         );
         const verticalPreview = renderCommonControlVerticalPreview(
           section.id,

@@ -1,6 +1,9 @@
 export function formatValue(value: number, step: number): string {
   if (step < 1) {
-    return value.toFixed(1);
+    const stepText = step.toString();
+    const dotIndex = stepText.indexOf(".");
+    const precision = dotIndex === -1 ? 1 : stepText.length - dotIndex - 1;
+    return value.toFixed(Math.max(1, precision));
   }
   return String(Math.round(value));
 }

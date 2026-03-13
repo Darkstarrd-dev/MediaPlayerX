@@ -2632,8 +2632,11 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-btn-variant-theme-parameter-side-")) {
     return "用于 Theme Parameter 大面板侧栏按钮变体";
   }
+  if (cssVar.startsWith("--mpx-scrollbar-")) {
+    return "用于全局滚动条基础链路";
+  }
   if (cssVar.startsWith("--mpx-sidebar-tree-scrollbar-")) {
-    return "用于侧栏滚动条样式";
+    return "用于侧栏滚动条局部覆写";
   }
   if (cssVar.startsWith("--mpx-range-")) {
     return "用于 Slider 基础层样式";
@@ -3185,49 +3188,49 @@ export const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
 export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
   {
     id: "control-scrollbar-track-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-bg",
+    cssVar: "--mpx-scrollbar-track-bg",
     fallback: "#ece5d9",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+    cssVar: "--mpx-scrollbar-thumb-bg",
     fallback: "#b7ab95",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-hover-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-hover-bg",
+    cssVar: "--mpx-scrollbar-thumb-hover-bg",
     fallback: "#2e6f7f",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-active-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-bg",
+    cssVar: "--mpx-scrollbar-thumb-active-bg",
     fallback: "#2e6f7f",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-color-thumb",
-    cssVar: "--mpx-sidebar-tree-scrollbar-color-thumb",
+    cssVar: "--mpx-scrollbar-color-thumb",
     fallback: "#b7ab95",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-color-track",
-    cssVar: "--mpx-sidebar-tree-scrollbar-color-track",
+    cssVar: "--mpx-scrollbar-color-track",
     fallback: "#ece5d9",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-border-color",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-color",
+    cssVar: "--mpx-scrollbar-thumb-border-color",
     fallback: "rgba(0, 0, 0, 0)",
     groupId: "box",
     sectionId: "control-scrollbar",
@@ -3587,70 +3590,70 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "control-scrollbar-size",
-    cssVar: "--mpx-sidebar-tree-scrollbar-size",
+    cssVar: "--mpx-scrollbar-size",
     fallback: "10px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-track-radius",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-radius",
-    fallback: "10px",
+    cssVar: "--mpx-scrollbar-track-radius",
+    fallback: "0px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-radius",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
-    fallback: "999px",
+    cssVar: "--mpx-scrollbar-thumb-radius",
+    fallback: "0px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-track-border",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-border",
+    cssVar: "--mpx-scrollbar-track-border",
     fallback: "none",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-track-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-shadow",
+    cssVar: "--mpx-scrollbar-track-shadow",
     fallback: "none",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-end-gap",
-    cssVar: "--mpx-sidebar-tree-scrollbar-end-gap",
+    cssVar: "--mpx-scrollbar-end-gap",
     fallback: "0px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-min-height",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-min-height",
+    cssVar: "--mpx-scrollbar-thumb-min-height",
     fallback: "24px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-border-width",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-width",
+    cssVar: "--mpx-scrollbar-thumb-border-width",
     fallback: "0px",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-shadow",
+    cssVar: "--mpx-scrollbar-thumb-shadow",
     fallback: "none",
     groupId: "box",
     sectionId: "control-scrollbar",
   },
   {
     id: "control-scrollbar-thumb-active-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-shadow",
+    cssVar: "--mpx-scrollbar-thumb-active-shadow",
     fallback: "none",
     groupId: "box",
     sectionId: "control-scrollbar",

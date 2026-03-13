@@ -179,6 +179,187 @@ function ResetFieldButton(props: {
   ) : null;
 }
 
+type NumericCssUnit = "" | "px" | "deg" | "%";
+
+interface NumericCssValue {
+  value: number;
+  unit: NumericCssUnit;
+}
+
+interface NumericCssFieldModel {
+  value: number;
+  unit: NumericCssUnit;
+  min: number;
+  max: number;
+  step: number;
+}
+
+function parseNumericCssValue(raw: string): NumericCssValue | null {
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^(-?(?:\d+|\d*\.\d+))(px|deg|%)?$/i);
+  if (!match) {
+    return null;
+  }
+  const value = Number.parseFloat(match[1]);
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+  const unit = (match[2]?.toLowerCase() ?? "") as NumericCssUnit;
+  return {
+    value,
+    unit,
+  };
+}
+
+function resolveNumericCssRange(
+  unit: NumericCssUnit,
+  baseValue: number,
+): { min: number; max: number; step: number } {
+  const absBase = Math.abs(baseValue);
+  if (unit === "deg") {
+    return { min: -360, max: 360, step: 1 };
+  }
+  if (unit === "%") {
+    return { min: 0, max: Math.max(100, Math.ceil(absBase * 2)), step: 1 };
+  }
+  if (unit === "px") {
+    const max =
+      absBase <= 8
+        ? 32
+        : absBase <= 24
+          ? 64
+          : absBase <= 64
+            ? 160
+            : absBase <= 160
+              ? 320
+              : Math.ceil(absBase * 2);
+    const hasDecimal = !Number.isInteger(baseValue);
+    return {
+      min: 0,
+      max,
+      step: hasDecimal ? 0.1 : 1,
+    };
+  }
+  const max =
+    absBase <= 2
+      ? 3
+      : absBase <= 10
+        ? 20
+        : absBase <= 100
+          ? 200
+          : Math.ceil(Math.max(absBase * 2, 2000));
+  const step = max <= 3 ? 0.01 : max <= 20 ? 0.1 : 1;
+  return {
+    min: 0,
+    max,
+    step,
+  };
+}
+
+function precisionFromStep(step: number): number {
+  if (step >= 1) {
+    return 0;
+  }
+  const stepText = step.toString();
+  const dotIndex = stepText.indexOf(".");
+  if (dotIndex === -1) {
+    return 0;
+  }
+  return stepText.length - dotIndex - 1;
+}
+
+function formatNumericCssValue(
+  value: number,
+  step: number,
+  unit: NumericCssUnit,
+): string {
+  const precision = precisionFromStep(step);
+  const normalized = Number(value.toFixed(precision));
+  return `${normalized}${unit}`;
+}
+
+function resolveNumericCssFieldModel(
+  field: ThemeDebugTextField,
+  raw: string,
+): NumericCssFieldModel | null {
+  const fallbackNumeric = parseNumericCssValue(field.fallback);
+  if (!fallbackNumeric) {
+    return null;
+  }
+  const rawNumeric = parseNumericCssValue(raw);
+  const unit = fallbackNumeric.unit;
+  const currentValue =
+    rawNumeric && (rawNumeric.unit === unit || rawNumeric.unit === "")
+      ? rawNumeric.value
+      : fallbackNumeric.value;
+  const range = resolveNumericCssRange(unit, currentValue);
+  const value = Math.max(range.min, Math.min(range.max, currentValue));
+  return {
+    value,
+    unit,
+    min: range.min,
+    max: range.max,
+    step: range.step,
+  };
+}
+
+function renderNumericCssFieldRow(props: {
+  field: ThemeDebugTextField;
+  raw: string;
+  isChanged: boolean;
+  onChange: (field: ThemeDebugTextField, raw: string) => void;
+  onReset: (field: ThemeDebugTextField) => void;
+  resetLabel: string;
+}) {
+  const { field, raw, isChanged, onChange, onReset, resetLabel } = props;
+  const model = resolveNumericCssFieldModel(field, raw);
+  if (!model) {
+    return null;
+  }
+
+  const applyNumericValue = (nextValue: number) => {
+    if (!Number.isFinite(nextValue)) {
+      return;
+    }
+    const bounded = Math.max(model.min, Math.min(model.max, nextValue));
+    onChange(field, formatNumericCssValue(bounded, model.step, model.unit));
+  };
+
+  return (
+    <div key={field.id} className="theme-parameter-row theme-parameter-text-row">
+      <ThemeParameterVarLabel cssVar={field.cssVar} />
+      <div className="theme-parameter-control">
+        <input
+          type="range"
+          min={model.min}
+          max={model.max}
+          step={model.step}
+          value={model.value}
+          onChange={(event) => applyNumericValue(Number(event.target.value))}
+        />
+        <input
+          className="theme-parameter-number-input"
+          type="number"
+          aria-label={field.cssVar}
+          min={model.min}
+          max={model.max}
+          step={model.step}
+          value={model.value}
+          onChange={(event) => applyNumericValue(Number(event.target.value))}
+        />
+        <code className="theme-parameter-value-text">
+          {`${formatValue(model.value, model.step)}${model.unit}`}
+        </code>
+        <ResetFieldButton
+          visible={isChanged}
+          onReset={() => onReset(field)}
+          resetLabel={resetLabel}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ThemeParameterTextFieldRow(props: {
   field: ThemeDebugTextField;
   raw: string;
@@ -456,6 +637,18 @@ export function ThemeParameterTextFieldRow(props: {
     );
   }
 
+  const numericRow = renderNumericCssFieldRow({
+    field,
+    raw,
+    isChanged,
+    onChange,
+    onReset,
+    resetLabel,
+  });
+  if (numericRow) {
+    return numericRow;
+  }
+
   return (
     <label key={field.id} className="theme-parameter-text-row">
       <ThemeParameterVarLabel cssVar={field.cssVar} />
@@ -484,6 +677,17 @@ export function ThemeParameterCommonControlTextFieldRow(props: {
   resetLabel: string;
 }) {
   const { field, raw, isChanged, onChange, onReset, resetLabel } = props;
+  const numericRow = renderNumericCssFieldRow({
+    field,
+    raw,
+    isChanged,
+    onChange,
+    onReset,
+    resetLabel,
+  });
+  if (numericRow) {
+    return numericRow;
+  }
   return (
     <label key={field.id} className="theme-parameter-text-row">
       <ThemeParameterVarLabel cssVar={field.cssVar} />

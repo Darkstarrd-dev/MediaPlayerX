@@ -3430,6 +3430,19 @@ button.mpx-overlay-footer-btn {
   border-radius: 0;
 }
 
+.theme-parameter-scroll-preview-state-bar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-parameter-scroll-preview-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--mpx-text-3);
+}
+
 .theme-parameter-scroll-preview-content {
   width: max-content;
   min-width: 190%;

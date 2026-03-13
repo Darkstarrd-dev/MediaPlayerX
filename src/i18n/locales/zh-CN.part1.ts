@@ -476,7 +476,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.controls.section.textInput": "6.6 文本框样式",
   "ui.themeParameter.controls.section.select": "6.7 下拉菜单样式",
   "ui.themeParameter.controls.note.scrollbar":
-    "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
+    "滚动条页仅覆盖全局基础链路（--mpx-scrollbar-*）；真实容器只验收基础态，Hover/Active 仅在预览区验收。",
   "ui.themeParameter.controls.note.sliderBase":
     "作为 slider 变体的基础样式入口，覆盖通用 range 控件轨道/滑块状态。",
   "ui.themeParameter.controls.note.sliderPlayer":

@@ -56,28 +56,42 @@
 
     --mpx-scrollbar-size: 10px;
     --mpx-scrollbar-radius: 0px;
+    --mpx-scrollbar-track-radius: var(--mpx-scrollbar-radius);
+    --mpx-scrollbar-thumb-radius: var(--mpx-scrollbar-radius);
     --mpx-scrollbar-track-bg: #f1f3f5;
+    --mpx-scrollbar-color-track: var(--mpx-scrollbar-track-bg);
+    --mpx-scrollbar-track-border: none;
+    --mpx-scrollbar-track-shadow: none;
     --mpx-scrollbar-thumb-bg: #c7cdd4;
+    --mpx-scrollbar-color-thumb: var(--mpx-scrollbar-thumb-bg);
     --mpx-scrollbar-thumb-hover-bg: #a6b0ba;
     --mpx-scrollbar-thumb-active-bg: var(--mpx-scrollbar-thumb-hover-bg);
+    --mpx-scrollbar-end-gap: 0px;
+    --mpx-scrollbar-thumb-min-height: 24px;
+    --mpx-scrollbar-thumb-border-width: 0px;
+    --mpx-scrollbar-thumb-border-color: transparent;
+    --mpx-scrollbar-thumb-shadow: none;
+    --mpx-scrollbar-thumb-active-shadow: var(--mpx-scrollbar-thumb-shadow);
 
     --mpx-sidebar-tree-scrollbar-size: var(--mpx-scrollbar-size);
     --mpx-sidebar-tree-scrollbar-radius: var(--mpx-scrollbar-radius);
-    --mpx-sidebar-tree-scrollbar-track-radius: var(
-      --mpx-sidebar-tree-scrollbar-radius
-    );
-    --mpx-sidebar-tree-scrollbar-thumb-radius: var(
-      --mpx-sidebar-tree-scrollbar-radius
-    );
-    --mpx-sidebar-tree-scrollbar-color-thumb: var(--mpx-scrollbar-thumb-bg);
-    --mpx-sidebar-tree-scrollbar-color-track: var(--mpx-scrollbar-track-bg);
+    --mpx-sidebar-tree-scrollbar-track-radius: var(--mpx-scrollbar-track-radius);
+    --mpx-sidebar-tree-scrollbar-thumb-radius: var(--mpx-scrollbar-thumb-radius);
+    --mpx-sidebar-tree-scrollbar-color-thumb: var(--mpx-scrollbar-color-thumb);
+    --mpx-sidebar-tree-scrollbar-color-track: var(--mpx-scrollbar-color-track);
     --mpx-sidebar-tree-scrollbar-track-bg: var(--mpx-scrollbar-track-bg);
-    --mpx-sidebar-tree-scrollbar-track-border: none;
-    --mpx-sidebar-tree-scrollbar-track-shadow: none;
-    --mpx-sidebar-tree-scrollbar-end-gap: 0px;
-    --mpx-sidebar-tree-scrollbar-thumb-min-height: 24px;
-    --mpx-sidebar-tree-scrollbar-thumb-border-width: 0px;
-    --mpx-sidebar-tree-scrollbar-thumb-border-color: transparent;
+    --mpx-sidebar-tree-scrollbar-track-border: var(--mpx-scrollbar-track-border);
+    --mpx-sidebar-tree-scrollbar-track-shadow: var(--mpx-scrollbar-track-shadow);
+    --mpx-sidebar-tree-scrollbar-end-gap: var(--mpx-scrollbar-end-gap);
+    --mpx-sidebar-tree-scrollbar-thumb-min-height: var(
+      --mpx-scrollbar-thumb-min-height
+    );
+    --mpx-sidebar-tree-scrollbar-thumb-border-width: var(
+      --mpx-scrollbar-thumb-border-width
+    );
+    --mpx-sidebar-tree-scrollbar-thumb-border-color: var(
+      --mpx-scrollbar-thumb-border-color
+    );
     --mpx-sidebar-tree-scrollbar-thumb-bg: var(--mpx-scrollbar-thumb-bg);
     --mpx-sidebar-tree-scrollbar-thumb-hover-bg: var(
       --mpx-scrollbar-thumb-hover-bg
@@ -86,9 +100,9 @@
       --mpx-scrollbar-thumb-active-bg,
       var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg)
     );
-    --mpx-sidebar-tree-scrollbar-thumb-shadow: none;
+    --mpx-sidebar-tree-scrollbar-thumb-shadow: var(--mpx-scrollbar-thumb-shadow);
     --mpx-sidebar-tree-scrollbar-thumb-active-shadow: var(
-      --mpx-sidebar-tree-scrollbar-thumb-shadow
+      --mpx-scrollbar-thumb-active-shadow
     );
 
     --mpx-range-track-height: 6px;

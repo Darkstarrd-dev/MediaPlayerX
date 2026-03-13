@@ -756,7 +756,7 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.change(
       screen.getByRole("textbox", {
-        name: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+        name: "--mpx-scrollbar-thumb-bg",
       }),
       {
         target: { value: "#224466" },
@@ -790,10 +790,18 @@ describe("ThemeParameterPanel", () => {
         target: { value: "#8899aa" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("spinbutton", {
+        name: "--mpx-scrollbar-thumb-border-width",
+      }),
+      {
+        target: { value: "2" },
+      },
+    );
 
     expect(
       document.documentElement.style.getPropertyValue(
-        "--mpx-sidebar-tree-scrollbar-thumb-bg",
+        "--mpx-scrollbar-thumb-bg",
       ),
     ).toBe("#224466");
     expect(
@@ -814,6 +822,11 @@ describe("ThemeParameterPanel", () => {
         "--mpx-popover-panel-fill-start",
       ),
     ).toBe("#8899aa");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-scrollbar-thumb-border-width",
+      ),
+    ).toBe("2px");
 
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -835,6 +848,9 @@ describe("ThemeParameterPanel", () => {
     );
     expect(snapshotTextarea.value).toContain(
       '"control-popover-panel-fill-start": "#8899aa"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"control-scrollbar-thumb-border-width": "2px"',
     );
   });
 
@@ -1456,7 +1472,7 @@ describe("ThemeParameterPanel", () => {
 
     ensureDetailsOpen("3.10.2 元数据抓取");
     expect(
-      screen.getByRole("textbox", {
+      screen.getByRole("spinbutton", {
         name: "--mpx-metadata-fetch-control-font-size",
       }),
     ).toBeInTheDocument();
@@ -2069,7 +2085,7 @@ describe("ThemeParameterPanel", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      within(workspaceThumbnailContainerDetails).getByRole("textbox", {
+      within(workspaceThumbnailContainerDetails).getByRole("spinbutton", {
         name: "--mpx-workspace-border-width",
       }),
     ).toBeInTheDocument();
@@ -2933,7 +2949,7 @@ describe("ThemeParameterPanel", () => {
     ensureDetailsOpen("3.10 内部件");
     ensureDetailsOpen("3.10.2 元数据抓取");
     expect(
-      screen.getByRole("textbox", {
+      screen.getByRole("spinbutton", {
         name: "--mpx-metadata-fetch-control-font-size",
       }),
     ).toBeInTheDocument();
@@ -2962,7 +2978,7 @@ describe("ThemeParameterPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "大面板层调试" }));
     expect(
-      screen.getByRole("textbox", {
+      screen.getByRole("spinbutton", {
         name: "--mpx-metadata-fetch-control-font-size",
       }),
     ).toBeInTheDocument();

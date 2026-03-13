@@ -2243,37 +2243,37 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
   },
   {
     id: "control-scrollbar-track-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-bg",
+    cssVar: "--mpx-scrollbar-track-bg",
     fallback: "#ece5d9",
   },
   {
     id: "control-scrollbar-thumb-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-bg",
+    cssVar: "--mpx-scrollbar-thumb-bg",
     fallback: "#b7ab95",
   },
   {
     id: "control-scrollbar-thumb-hover-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-hover-bg",
+    cssVar: "--mpx-scrollbar-thumb-hover-bg",
     fallback: "#2e6f7f",
   },
   {
     id: "control-scrollbar-thumb-active-bg",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-bg",
+    cssVar: "--mpx-scrollbar-thumb-active-bg",
     fallback: "#2e6f7f",
   },
   {
     id: "control-scrollbar-color-thumb",
-    cssVar: "--mpx-sidebar-tree-scrollbar-color-thumb",
+    cssVar: "--mpx-scrollbar-color-thumb",
     fallback: "#b7ab95",
   },
   {
     id: "control-scrollbar-color-track",
-    cssVar: "--mpx-sidebar-tree-scrollbar-color-track",
+    cssVar: "--mpx-scrollbar-color-track",
     fallback: "#ece5d9",
   },
   {
     id: "control-scrollbar-thumb-border-color",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-color",
+    cssVar: "--mpx-scrollbar-thumb-border-color",
     fallback: "rgba(0, 0, 0, 0)",
   },
   {
@@ -2688,43 +2688,43 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   },
   {
     id: "control-scrollbar-size",
-    cssVar: "--mpx-sidebar-tree-scrollbar-size",
+    cssVar: "--mpx-scrollbar-size",
   },
   {
     id: "control-scrollbar-track-radius",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-radius",
+    cssVar: "--mpx-scrollbar-track-radius",
   },
   {
     id: "control-scrollbar-thumb-radius",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-radius",
+    cssVar: "--mpx-scrollbar-thumb-radius",
   },
   {
     id: "control-scrollbar-track-border",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-border",
+    cssVar: "--mpx-scrollbar-track-border",
   },
   {
     id: "control-scrollbar-track-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-track-shadow",
+    cssVar: "--mpx-scrollbar-track-shadow",
   },
   {
     id: "control-scrollbar-end-gap",
-    cssVar: "--mpx-sidebar-tree-scrollbar-end-gap",
+    cssVar: "--mpx-scrollbar-end-gap",
   },
   {
     id: "control-scrollbar-thumb-min-height",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-min-height",
+    cssVar: "--mpx-scrollbar-thumb-min-height",
   },
   {
     id: "control-scrollbar-thumb-border-width",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-border-width",
+    cssVar: "--mpx-scrollbar-thumb-border-width",
   },
   {
     id: "control-scrollbar-thumb-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-shadow",
+    cssVar: "--mpx-scrollbar-thumb-shadow",
   },
   {
     id: "control-scrollbar-thumb-active-shadow",
-    cssVar: "--mpx-sidebar-tree-scrollbar-thumb-active-shadow",
+    cssVar: "--mpx-scrollbar-thumb-active-shadow",
   },
   {
     id: "control-slider-base-track-height",

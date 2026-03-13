@@ -502,7 +502,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.section.textInput": "6.6 Text input style",
   "ui.themeParameter.controls.section.select": "6.7 Select style",
   "ui.themeParameter.controls.note.scrollbar":
-    "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
+    "The scrollbar page targets global base chain only (--mpx-scrollbar-*); real containers validate idle/base state, while hover/active are preview-only.",
   "ui.themeParameter.controls.note.sliderBase":
     "Base style entry for slider variants, covering shared range track/thumb states.",
   "ui.themeParameter.controls.note.sliderPlayer":

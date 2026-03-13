@@ -30,92 +30,58 @@ body {
 
 .mpx-scroll-area {
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(
-      --mpx-sidebar-tree-scrollbar-color-thumb,
-      var(--mpx-scrollbar-thumb-bg)
-    )
-    var(
-      --mpx-sidebar-tree-scrollbar-color-track,
-      var(--mpx-scrollbar-track-bg)
-    );
   -ms-overflow-style: auto;
 }
 
-.mpx-scroll-area::-webkit-scrollbar {
-  width: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
-  height: var(--mpx-sidebar-tree-scrollbar-size, var(--mpx-scrollbar-size));
+:root *::-webkit-scrollbar {
+  width: var(--mpx-scrollbar-size);
+  height: var(--mpx-scrollbar-size);
 }
 
-.mpx-scroll-area::-webkit-scrollbar-track {
-  border: var(--mpx-sidebar-tree-scrollbar-track-border, none);
-  border-radius: var(
-    --mpx-sidebar-tree-scrollbar-track-radius,
-    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius))
-  );
-  background: var(
-    --mpx-sidebar-tree-scrollbar-track-bg,
-    var(--mpx-scrollbar-track-bg)
-  );
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, none);
+:root *::-webkit-scrollbar-track {
+  border: var(--mpx-scrollbar-track-border);
+  border-radius: var(--mpx-scrollbar-track-radius, var(--mpx-scrollbar-radius));
+  background: var(--mpx-scrollbar-track-bg);
+  box-shadow: var(--mpx-scrollbar-track-shadow);
 }
 
-.mpx-scroll-area::-webkit-scrollbar-thumb {
-  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, 24px);
-  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, 0px) solid
-    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, transparent);
-  border-radius: var(
-    --mpx-sidebar-tree-scrollbar-thumb-radius,
-    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-radius))
-  );
-  background: var(
-    --mpx-sidebar-tree-scrollbar-thumb-bg,
-    var(--mpx-scrollbar-thumb-bg)
-  );
+:root *::-webkit-scrollbar-thumb {
+  min-height: var(--mpx-scrollbar-thumb-min-height, 24px);
+  border: var(--mpx-scrollbar-thumb-border-width, 0px) solid
+    var(--mpx-scrollbar-thumb-border-color, transparent);
+  border-radius: var(--mpx-scrollbar-thumb-radius, var(--mpx-scrollbar-radius));
+  background: var(--mpx-scrollbar-thumb-bg);
   background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none);
+  box-shadow: var(--mpx-scrollbar-thumb-shadow, none);
 }
 
-.mpx-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: var(
-    --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
-    var(--mpx-scrollbar-thumb-hover-bg)
-  );
-}
-
-.mpx-scroll-area::-webkit-scrollbar-thumb:active {
-  background: var(
-    --mpx-sidebar-tree-scrollbar-thumb-active-bg,
-    var(
-      --mpx-scrollbar-thumb-active-bg,
-      var(
-        --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
-        var(--mpx-scrollbar-thumb-hover-bg)
-      )
-    )
-  );
-  box-shadow: var(
-    --mpx-sidebar-tree-scrollbar-thumb-active-shadow,
-    var(--mpx-sidebar-tree-scrollbar-thumb-shadow, none)
-  );
-}
-
-.mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:decrement,
-.mpx-scroll-area::-webkit-scrollbar-button:single-button:vertical:increment {
+:root *::-webkit-scrollbar-button:single-button:vertical:decrement,
+:root *::-webkit-scrollbar-button:single-button:vertical:increment {
   display: block;
-  height: var(
-    --mpx-scrollbar-end-gap,
-    var(--mpx-sidebar-tree-scrollbar-end-gap, 0px)
-  );
+  height: var(--mpx-scrollbar-end-gap, 0px);
   background: transparent;
   border: 0;
 }
 
-.mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:decrement,
-.mpx-scroll-area::-webkit-scrollbar-button:single-button:horizontal:increment {
+:root *::-webkit-scrollbar-button:single-button:horizontal:decrement,
+:root *::-webkit-scrollbar-button:single-button:horizontal:increment {
   display: none;
   width: 0;
   height: 0;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  :root * {
+    scrollbar-width: thin;
+    scrollbar-color: var(
+        --mpx-scrollbar-color-thumb,
+        var(--mpx-scrollbar-thumb-bg)
+      )
+      var(
+        --mpx-scrollbar-color-track,
+        var(--mpx-scrollbar-track-bg)
+      );
+  }
 }
 
 .mpx-scrollbar-hidden {
