@@ -499,6 +499,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "6.4 Thumbnail card style (shared)",
   "ui.themeParameter.controls.section.popoverPanel":
     "6.5 Popover panel style",
+  "ui.themeParameter.controls.section.textInput": "6.6 Text input style",
+  "ui.themeParameter.controls.section.select": "6.7 Select style",
   "ui.themeParameter.controls.note.scrollbar":
     "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
   "ui.themeParameter.controls.note.sliderBase":
@@ -515,6 +517,10 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "6.4 is the shared thumbnail-card baseline. 2.3.2.1 image/video card groups can still override it locally.",
   "ui.themeParameter.controls.note.popoverPanel":
     "6.5 targets popover panel shell only (border/fill/radius/shadow/z-index). Buttons and sliders inside popovers remain on 4.x / 6.2 chains.",
+  "ui.themeParameter.controls.note.textInput":
+    "6.6 covers input/textarea base chain (bg/border/text/focus).",
+  "ui.themeParameter.controls.note.select":
+    "6.7 covers select/option chain; defaults fall back to input tokens.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",

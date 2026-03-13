@@ -126,13 +126,14 @@
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"] select {
-    background: var(--mpx-input-bg);
-    color: var(--mpx-input-text);
+    border-color: var(--mpx-select-border, var(--mpx-input-border));
+    background: var(--mpx-select-bg, var(--mpx-input-bg));
+    color: var(--mpx-select-text, var(--mpx-input-text));
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"] select option {
-    background: var(--mpx-input-bg);
-    color: var(--mpx-input-text);
+    background: var(--mpx-select-option-bg, var(--mpx-select-bg, var(--mpx-input-bg)));
+    color: var(--mpx-select-option-text, var(--mpx-select-text, var(--mpx-input-text)));
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"]

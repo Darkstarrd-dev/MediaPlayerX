@@ -318,6 +318,28 @@ export function useThemeParameterUiSession() {
       setControlPopoverPanelExpanded: createBooleanSetter(
         "controlPopoverPanelExpanded",
       ),
+      setControlTextInputExpanded: createBooleanSetter(
+        "controlTextInputExpanded",
+      ),
+      setControlSelectExpanded: createBooleanSetter("controlSelectExpanded"),
+      setWorkspaceThumbnailContainerExpanded: createBooleanSetter(
+        "workspaceThumbnailContainerExpanded",
+      ),
+      setWorkspaceThumbnailStyleExpanded: createBooleanSetter(
+        "workspaceThumbnailStyleExpanded",
+      ),
+      setWorkspaceImageCardExpanded: createBooleanSetter(
+        "workspaceImageCardExpanded",
+      ),
+      setWorkspaceVideoCardExpanded: createBooleanSetter(
+        "workspaceVideoCardExpanded",
+      ),
+      setWorkspacePreviewMusicExpanded: createBooleanSetter(
+        "workspacePreviewMusicExpanded",
+      ),
+      setWorkspacePreviewVideoExpanded: createBooleanSetter(
+        "workspacePreviewVideoExpanded",
+      ),
     }),
     [createBooleanSetter],
   );

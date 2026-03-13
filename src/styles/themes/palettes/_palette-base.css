@@ -29,10 +29,10 @@
     --mpx-accent-soft: rgba(95, 114, 134, 0.16);
     --mpx-accent-contrast: #ffffff;
 
-    --mpx-input-bg: #ffffff;
+    --mpx-input-bg: transparent;
     --mpx-input-border: var(--mpx-border-1);
     --mpx-input-text: var(--mpx-text-1);
-    --mpx-input-focus-bg: #ffffff;
+    --mpx-input-focus-bg: transparent;
     --mpx-input-focus-border: var(--mpx-border-focus);
 
     --mpx-btn-primary-bg: var(--mpx-accent);

@@ -104,6 +104,14 @@ export interface ThemeParameterUISessionState {
   controlFileListExpanded: boolean;
   controlThumbnailCardExpanded: boolean;
   controlPopoverPanelExpanded: boolean;
+  controlTextInputExpanded: boolean;
+  controlSelectExpanded: boolean;
+  workspaceThumbnailContainerExpanded: boolean;
+  workspaceThumbnailStyleExpanded: boolean;
+  workspaceImageCardExpanded: boolean;
+  workspaceVideoCardExpanded: boolean;
+  workspacePreviewMusicExpanded: boolean;
+  workspacePreviewVideoExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -144,10 +152,10 @@ const DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED: SmallPanelSectionsExpandedState = {
 const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   activePage: "parameters",
   pageScrollTops: {},
-  containerBackgroundExpanded: true,
-  containerSharedShellExpanded: true,
+  containerBackgroundExpanded: false,
+  containerSharedShellExpanded: false,
   containerHeaderExpanded: false,
-  containerHeaderAppearanceExpanded: true,
+  containerHeaderAppearanceExpanded: false,
   containerHeaderButtonsExpanded: false,
   containerHeaderLogoExpanded: false,
   containerHeaderG1Expanded: false,
@@ -155,18 +163,18 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerHeaderGDebugExpanded: false,
   containerHeaderG3Expanded: false,
   containerSidebarExpanded: false,
-  containerSidebarAppearanceExpanded: true,
+  containerSidebarAppearanceExpanded: false,
   containerSidebarHeaderExpanded: false,
   containerSidebarHeaderTitleExpanded: false,
   containerSidebarHeaderActionsExpanded: false,
   containerMainExpanded: false,
-  containerMainAppearanceExpanded: true,
+  containerMainAppearanceExpanded: false,
   containerMainHeaderExpanded: false,
   containerMainHeaderButtonsExpanded: false,
   containerMainWorkspaceExpanded: false,
   containerMainPreviewExpanded: false,
   containerMetadataExpanded: false,
-  containerMetadataAppearanceExpanded: true,
+  containerMetadataAppearanceExpanded: false,
   containerMetadataHeaderExpanded: false,
   containerMetadataHeaderButtonsExpanded: false,
   containerMetadataRatingExpanded: false,
@@ -176,8 +184,8 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   containerMetadataBookletBindingExpanded: false,
   containerSidebarMainExpanded: false,
   containerMainImageNameListExpanded: false,
-  largePanelRootExpanded: true,
-  largePanelSharedSectionExpanded: true,
+  largePanelRootExpanded: false,
+  largePanelSharedSectionExpanded: false,
   largePanelHeadExpanded: false,
   largePanelSideExpanded: false,
   largePanelMainExpanded: false,
@@ -189,11 +197,11 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   largePanelInternalSettingsGroupsExpanded: {
     ...DEFAULT_LARGE_PANEL_INTERNAL_SETTINGS_GROUPS_EXPANDED,
   },
-  smallPanelRootExpanded: true,
+  smallPanelRootExpanded: false,
   smallPanelSectionsExpanded: {
     ...DEFAULT_SMALL_PANEL_SECTIONS_EXPANDED,
   },
-  buttonVariantDefaultExpanded: true,
+  buttonVariantDefaultExpanded: false,
   buttonVariantPlayerExpanded: false,
   buttonVariantOverlayCellExpanded: false,
   buttonSlotExpanded: false,
@@ -201,16 +209,24 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   buttonSlotSidebarHeaderExpanded: false,
   buttonSlotMainHeaderExpanded: false,
   buttonSlotMetadataHeaderExpanded: false,
-  controlScrollbarExpanded: true,
-  controlSliderBaseExpanded: true,
-  controlSliderPlayerExpanded: true,
-  controlSliderVerticalExpanded: true,
-  controlSliderSettingsExpanded: true,
-  controlFileListExpanded: true,
-  controlThumbnailCardExpanded: true,
-  controlPopoverPanelExpanded: true,
-  commonExpanded: true,
-  styleExpanded: true,
+  controlScrollbarExpanded: false,
+  controlSliderBaseExpanded: false,
+  controlSliderPlayerExpanded: false,
+  controlSliderVerticalExpanded: false,
+  controlSliderSettingsExpanded: false,
+  controlFileListExpanded: false,
+  controlThumbnailCardExpanded: false,
+  controlPopoverPanelExpanded: false,
+  controlTextInputExpanded: false,
+  controlSelectExpanded: false,
+  workspaceThumbnailContainerExpanded: false,
+  workspaceThumbnailStyleExpanded: false,
+  workspaceImageCardExpanded: false,
+  workspaceVideoCardExpanded: false,
+  workspacePreviewMusicExpanded: false,
+  workspacePreviewVideoExpanded: false,
+  commonExpanded: false,
+  styleExpanded: false,
 };
 
 let containerDebugSessionState: ContainerDebugSessionState = {

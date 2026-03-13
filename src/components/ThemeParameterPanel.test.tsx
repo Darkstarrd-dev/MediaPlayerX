@@ -730,6 +730,8 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("6.3 文件列表样式")).toBeInTheDocument();
     expect(screen.getByText("6.4 缩略图卡片样式（总控）")).toBeInTheDocument();
     expect(screen.getByText("6.5 Popover面板样式")).toBeInTheDocument();
+    expect(screen.getByText("6.6 文本框样式")).toBeInTheDocument();
+    expect(screen.getByText("6.7 下拉菜单样式")).toBeInTheDocument();
     expect(
       screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
     ).toBeInTheDocument();
@@ -2226,7 +2228,14 @@ describe("ThemeParameterPanel", () => {
         ".settings-collapsible-content",
       );
     expect(headerAppearanceContent?.textContent).toContain("视觉变换");
-    fireEvent.click(ensuredHeaderAppearanceDetails.querySelector("summary")!);
+    const headerAppearanceSummary =
+      ensuredHeaderAppearanceDetails.querySelector("summary");
+    expect(headerAppearanceSummary).not.toBeNull();
+    if (!ensuredHeaderAppearanceDetails.open) {
+      fireEvent.click(headerAppearanceSummary!);
+    }
+    expect(ensuredHeaderAppearanceDetails.open).toBe(true);
+    fireEvent.click(headerAppearanceSummary!);
     expect(ensuredHeaderAppearanceDetails.open).toBe(false);
 
     const sidebarRootDetails = getDetailsBySummaryText("2.2 Sidebar");

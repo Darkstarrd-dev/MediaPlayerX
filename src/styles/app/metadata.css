@@ -616,7 +616,7 @@
 
 .meta-tabs {
   --metadata-playlist-soft-border: var(--mpx-overlay-soft-border);
-  --metadata-playlist-soft-input-bg: var(--mpx-overlay-soft-bg);
+  --metadata-playlist-soft-input-bg: transparent;
   --metadata-playlist-soft-input-hover-bg: var(--mpx-overlay-soft-hover-bg);
   --metadata-playlist-soft-input-focus-bg: var(--mpx-overlay-soft-focus-bg);
   display: flex;
@@ -1189,7 +1189,10 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--mpx-slot-fg-meta-main-search-bg, var(--mpx-metadata-body-bg));
+  background: var(
+    --mpx-slot-fg-meta-main-search-bg,
+    var(--mpx-metadata-search-section-bg, var(--mpx-input-bg, var(--mpx-metadata-body-bg)))
+  );
   color: var(--mpx-slot-fg-meta-main-search-text, var(--mpx-metadata-body-text));
 }
 

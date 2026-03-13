@@ -288,6 +288,22 @@ interface ThemeParameterPanelMainProps {
   setControlThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
   controlPopoverPanelExpanded: boolean;
   setControlPopoverPanelExpanded: Dispatch<SetStateAction<boolean>>;
+  controlTextInputExpanded: boolean;
+  setControlTextInputExpanded: Dispatch<SetStateAction<boolean>>;
+  controlSelectExpanded: boolean;
+  setControlSelectExpanded: Dispatch<SetStateAction<boolean>>;
+  workspaceThumbnailContainerExpanded: boolean;
+  setWorkspaceThumbnailContainerExpanded: Dispatch<SetStateAction<boolean>>;
+  workspaceThumbnailStyleExpanded: boolean;
+  setWorkspaceThumbnailStyleExpanded: Dispatch<SetStateAction<boolean>>;
+  workspaceImageCardExpanded: boolean;
+  setWorkspaceImageCardExpanded: Dispatch<SetStateAction<boolean>>;
+  workspaceVideoCardExpanded: boolean;
+  setWorkspaceVideoCardExpanded: Dispatch<SetStateAction<boolean>>;
+  workspacePreviewMusicExpanded: boolean;
+  setWorkspacePreviewMusicExpanded: Dispatch<SetStateAction<boolean>>;
+  workspacePreviewVideoExpanded: boolean;
+  setWorkspacePreviewVideoExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -448,6 +464,22 @@ export function ThemeParameterPanelMain({
   setControlThumbnailCardExpanded,
   controlPopoverPanelExpanded,
   setControlPopoverPanelExpanded,
+  controlTextInputExpanded,
+  setControlTextInputExpanded,
+  controlSelectExpanded,
+  setControlSelectExpanded,
+  workspaceThumbnailContainerExpanded,
+  setWorkspaceThumbnailContainerExpanded,
+  workspaceThumbnailStyleExpanded,
+  setWorkspaceThumbnailStyleExpanded,
+  workspaceImageCardExpanded,
+  setWorkspaceImageCardExpanded,
+  workspaceVideoCardExpanded,
+  setWorkspaceVideoCardExpanded,
+  workspacePreviewMusicExpanded,
+  setWorkspacePreviewMusicExpanded,
+  workspacePreviewVideoExpanded,
+  setWorkspacePreviewVideoExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -516,21 +548,6 @@ export function ThemeParameterPanelMain({
       sliderVerticalDown: 28,
       sliderSettingsHorizontal: 52,
     });
-  const [
-    workspaceThumbnailContainerExpanded,
-    setWorkspaceThumbnailContainerExpanded,
-  ] = useState(true);
-  const [workspaceThumbnailStyleExpanded, setWorkspaceThumbnailStyleExpanded] =
-    useState(true);
-  const [workspaceImageCardExpanded, setWorkspaceImageCardExpanded] =
-    useState(true);
-  const [workspaceVideoCardExpanded, setWorkspaceVideoCardExpanded] =
-    useState(true);
-  const [workspacePreviewMusicExpanded, setWorkspacePreviewMusicExpanded] =
-    useState(true);
-  const [workspacePreviewVideoExpanded, setWorkspacePreviewVideoExpanded] =
-    useState(true);
-
   const containerDebugColorVarSet = useMemo(
     () => new Set(CONTAINER_LAYER_COLOR_FIELDS.map((field) => field.cssVar)),
     [],
@@ -2262,6 +2279,10 @@ export function ThemeParameterPanelMain({
           setThumbnailCardExpanded={setControlThumbnailCardExpanded}
           popoverPanelExpanded={controlPopoverPanelExpanded}
           setPopoverPanelExpanded={setControlPopoverPanelExpanded}
+          textInputExpanded={controlTextInputExpanded}
+          setTextInputExpanded={setControlTextInputExpanded}
+          selectExpanded={controlSelectExpanded}
+          setSelectExpanded={setControlSelectExpanded}
           debugTextValues={debugTextValues}
           isTextFieldChanged={isTextFieldChanged}
           setDebugTextFieldValue={setDebugTextFieldValue}

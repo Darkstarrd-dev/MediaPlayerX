@@ -183,11 +183,18 @@
     --mpx-accent-contrast: #ffffff;
     --mpx-accent-soft: #dcecf0;
 
-    --mpx-input-bg: #ffffff;
+    --mpx-input-bg: transparent;
     --mpx-input-border: #d6cfc1;
     --mpx-input-text: #2e2a22;
-    --mpx-input-focus-bg: #ffffff;
+    --mpx-input-focus-bg: transparent;
     --mpx-input-focus-border: #2e6f7f;
+    --mpx-select-bg: var(--mpx-input-bg);
+    --mpx-select-border: var(--mpx-input-border);
+    --mpx-select-text: var(--mpx-input-text);
+    --mpx-select-focus-bg: var(--mpx-input-focus-bg);
+    --mpx-select-focus-border: var(--mpx-input-focus-border);
+    --mpx-select-option-bg: var(--mpx-select-bg);
+    --mpx-select-option-text: var(--mpx-select-text);
     --mpx-input-readonly-bg: #f8f5ef;
     --mpx-input-readonly-text: #6b6356;
     --mpx-input-readonly-border: #d6cfc1;
@@ -1412,8 +1419,8 @@
     --mpx-settings-group-head-bg: transparent;
     --mpx-settings-item-label-text: var(--mpx-text-2);
     --mpx-settings-item-value-text: var(--mpx-settings-main-text);
-    --mpx-settings-item-input-bg: var(--mpx-large-panel-main-fill-start);
-    --mpx-settings-item-input-focus-bg: var(--mpx-large-panel-main-fill-end);
+    --mpx-settings-item-input-bg: var(--mpx-input-bg);
+    --mpx-settings-item-input-focus-bg: var(--mpx-input-focus-bg);
     --mpx-settings-item-input-border: var(--mpx-input-border);
     --mpx-settings-danger-btn-bg: var(--mpx-status-danger-bg);
     --mpx-settings-danger-btn-border: var(--mpx-status-danger-border);
@@ -1435,7 +1442,7 @@
 
     /* Metadata Fetch 子块语义（3.5 内部件） */
     --mpx-metadata-fetch-control-border: var(--mpx-overlay-soft-border);
-    --mpx-metadata-fetch-control-bg: var(--mpx-overlay-soft-bg);
+    --mpx-metadata-fetch-control-bg: var(--mpx-input-bg);
     --mpx-metadata-fetch-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
     --mpx-metadata-fetch-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
     --mpx-metadata-fetch-control-text: var(--mpx-text-1);
@@ -1494,7 +1501,7 @@
     --mpx-metadata-pref-card-border: var(--mpx-border-1);
     --mpx-metadata-pref-card-text: var(--mpx-metadata-body-text);
 
-    --mpx-metadata-tag-editor-bg: var(--mpx-bg-elevated);
+    --mpx-metadata-tag-editor-bg: var(--mpx-input-bg);
     --mpx-metadata-tag-editor-border: var(--mpx-border-2);
     --mpx-metadata-tag-item-bg: var(--mpx-accent-soft);
     --mpx-metadata-tag-item-text: var(--mpx-accent);

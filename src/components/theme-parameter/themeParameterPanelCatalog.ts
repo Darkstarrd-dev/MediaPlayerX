@@ -2559,6 +2559,9 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-popover-panel-")) {
     return "用于通用 Popover 面板本体（边框/渐变/圆角/阴影/层级）";
   }
+  if (cssVar.startsWith("--mpx-select-")) {
+    return "用于下拉菜单控件（select/option）样式链路";
+  }
   if (
     cssVar.startsWith("--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-")
   ) {
@@ -3167,6 +3170,16 @@ export const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
     titleKey: "ui.themeParameter.controls.section.popoverPanel",
     noteKey: "ui.themeParameter.controls.note.popoverPanel",
   },
+  {
+    id: "control-text-input",
+    titleKey: "ui.themeParameter.controls.section.textInput",
+    noteKey: "ui.themeParameter.controls.note.textInput",
+  },
+  {
+    id: "control-select",
+    titleKey: "ui.themeParameter.controls.section.select",
+    noteKey: "ui.themeParameter.controls.note.select",
+  },
 ];
 
 export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
@@ -3485,6 +3498,90 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
     sectionId: "control-popover-panel",
   },
+  {
+    id: "control-text-input-bg",
+    cssVar: "--mpx-input-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-text-input-border",
+    cssVar: "--mpx-input-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-text-input-text",
+    cssVar: "--mpx-input-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-text-input-focus-bg",
+    cssVar: "--mpx-input-focus-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-text-input-focus-border",
+    cssVar: "--mpx-input-focus-border",
+    fallback: "#2e6f7f",
+    groupId: "main",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-select-bg",
+    cssVar: "--mpx-select-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-border",
+    cssVar: "--mpx-select-border",
+    fallback: "#d6cfc1",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-text",
+    cssVar: "--mpx-select-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-focus-bg",
+    cssVar: "--mpx-select-focus-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-focus-border",
+    cssVar: "--mpx-select-focus-border",
+    fallback: "#2e6f7f",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-option-bg",
+    cssVar: "--mpx-select-option-bg",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-select",
+  },
+  {
+    id: "control-select-option-text",
+    cssVar: "--mpx-select-option-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+    sectionId: "control-select",
+  },
 ];
 
 export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
@@ -3771,6 +3868,20 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     fallback: "1200",
     groupId: "main",
     sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-text-input-radius",
+    cssVar: "--mpx-control-radius",
+    fallback: "12px",
+    groupId: "box",
+    sectionId: "control-text-input",
+  },
+  {
+    id: "control-select-radius",
+    cssVar: "--mpx-control-radius",
+    fallback: "12px",
+    groupId: "box",
+    sectionId: "control-select",
   },
 ];
 

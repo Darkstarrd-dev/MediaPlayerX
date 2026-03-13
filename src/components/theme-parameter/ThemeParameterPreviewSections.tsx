@@ -41,6 +41,10 @@ interface ThemeParameterCommonControlSectionsProps {
   setThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
   popoverPanelExpanded: boolean;
   setPopoverPanelExpanded: Dispatch<SetStateAction<boolean>>;
+  textInputExpanded: boolean;
+  setTextInputExpanded: Dispatch<SetStateAction<boolean>>;
+  selectExpanded: boolean;
+  setSelectExpanded: Dispatch<SetStateAction<boolean>>;
   debugTextValues: Record<string, string>;
   isTextFieldChanged: (field: ThemeDebugTextField) => boolean;
   setDebugTextFieldValue: (field: ThemeDebugTextField, raw: string) => void;
@@ -275,6 +279,49 @@ const renderCommonControlHorizontalPreview = (
         </div>
       );
     }
+    case "control-text-input": {
+      return (
+        <div
+          className="theme-parameter-control-preview-row is-horizontal"
+          data-testid="theme-control-preview-text-input-horizontal"
+        >
+          <label className="theme-parameter-control-range-row">
+            <span>文本框</span>
+            <input
+              className="theme-parameter-text-input-preview"
+              placeholder="Text input preview"
+              type="text"
+            />
+          </label>
+          <label className="theme-parameter-control-range-row">
+            <span>多行文本框</span>
+            <textarea
+              className="theme-parameter-text-input-preview"
+              placeholder="Textarea preview"
+              rows={3}
+            />
+          </label>
+        </div>
+      );
+    }
+    case "control-select": {
+      return (
+        <div
+          className="theme-parameter-control-preview-row is-horizontal"
+          data-testid="theme-control-preview-select-horizontal"
+        >
+          <label className="theme-parameter-control-range-row">
+            <span>下拉菜单</span>
+            <select className="theme-parameter-select-preview" defaultValue="all">
+              <option value="all">全部</option>
+              <option value="image">图片</option>
+              <option value="video">视频</option>
+              <option value="music">音乐</option>
+            </select>
+          </label>
+        </div>
+      );
+    }
     default:
       return null;
   }
@@ -403,6 +450,10 @@ export function ThemeParameterCommonControlSections({
   setThumbnailCardExpanded,
   popoverPanelExpanded,
   setPopoverPanelExpanded,
+  textInputExpanded,
+  setTextInputExpanded,
+  selectExpanded,
+  setSelectExpanded,
   debugTextValues,
   isTextFieldChanged,
   setDebugTextFieldValue,
@@ -433,6 +484,8 @@ export function ThemeParameterCommonControlSections({
     "control-file-list": fileListExpanded,
     "control-thumbnail-card": thumbnailCardExpanded,
     "control-popover-panel": popoverPanelExpanded,
+    "control-text-input": textInputExpanded,
+    "control-select": selectExpanded,
   };
 
   const expandedSetterMap: Record<
@@ -447,6 +500,8 @@ export function ThemeParameterCommonControlSections({
     "control-file-list": setFileListExpanded,
     "control-thumbnail-card": setThumbnailCardExpanded,
     "control-popover-panel": setPopoverPanelExpanded,
+    "control-text-input": setTextInputExpanded,
+    "control-select": setSelectExpanded,
   };
 
   return (

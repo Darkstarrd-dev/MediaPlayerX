@@ -55,7 +55,9 @@ export type ThemeControlSectionId =
   | "control-slider-settings"
   | "control-file-list"
   | "control-thumbnail-card"
-  | "control-popover-panel";
+  | "control-popover-panel"
+  | "control-text-input"
+  | "control-select";
 
 export interface ThemeDebugColorField {
   id: string;

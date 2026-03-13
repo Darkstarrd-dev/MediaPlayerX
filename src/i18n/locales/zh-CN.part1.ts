@@ -473,6 +473,8 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.controls.section.thumbnailCard":
     "6.4 缩略图卡片样式（总控）",
   "ui.themeParameter.controls.section.popoverPanel": "6.5 Popover面板样式",
+  "ui.themeParameter.controls.section.textInput": "6.6 文本框样式",
+  "ui.themeParameter.controls.section.select": "6.7 下拉菜单样式",
   "ui.themeParameter.controls.note.scrollbar":
     "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
   "ui.themeParameter.controls.note.sliderBase":
@@ -489,6 +491,10 @@ export const zhCnCatalogPart1 = {
     "6.4 作为缩略图卡片总控，2.3.2.1 中 image/video 卡片可在此基础上继续局部覆写。",
   "ui.themeParameter.controls.note.popoverPanel":
     "6.5 仅用于 Popover 面板本体（边框/渐变/圆角/阴影/层级）；面板内按钮与 slider 继续走 4.x / 6.2 链路。",
+  "ui.themeParameter.controls.note.textInput":
+    "6.6 用于 input / textarea 的基础链路（背景/边框/文字/焦点）。",
+  "ui.themeParameter.controls.note.select":
+    "6.7 用于 select / option 的独立链路；默认回退到 input token。",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",

@@ -277,6 +277,14 @@ function ThemeParameterPanel({
     setControlFileListExpanded,
     setControlThumbnailCardExpanded,
     setControlPopoverPanelExpanded,
+    setControlTextInputExpanded,
+    setControlSelectExpanded,
+    setWorkspaceThumbnailContainerExpanded,
+    setWorkspaceThumbnailStyleExpanded,
+    setWorkspaceImageCardExpanded,
+    setWorkspaceVideoCardExpanded,
+    setWorkspacePreviewMusicExpanded,
+    setWorkspacePreviewVideoExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const parameterSyncStateRef = useRef(createThemeParameterSyncState());
@@ -350,6 +358,14 @@ function ThemeParameterPanel({
     controlFileListExpanded,
     controlThumbnailCardExpanded,
     controlPopoverPanelExpanded,
+    controlTextInputExpanded,
+    controlSelectExpanded,
+    workspaceThumbnailContainerExpanded,
+    workspaceThumbnailStyleExpanded,
+    workspaceImageCardExpanded,
+    workspaceVideoCardExpanded,
+    workspacePreviewMusicExpanded,
+    workspacePreviewVideoExpanded,
   } = uiState;
 
   const containerLayerParameters = useMemo(
@@ -1016,6 +1032,22 @@ function ThemeParameterPanel({
           setControlThumbnailCardExpanded={setControlThumbnailCardExpanded}
           controlPopoverPanelExpanded={controlPopoverPanelExpanded}
           setControlPopoverPanelExpanded={setControlPopoverPanelExpanded}
+          controlTextInputExpanded={controlTextInputExpanded}
+          setControlTextInputExpanded={setControlTextInputExpanded}
+          controlSelectExpanded={controlSelectExpanded}
+          setControlSelectExpanded={setControlSelectExpanded}
+          workspaceThumbnailContainerExpanded={workspaceThumbnailContainerExpanded}
+          setWorkspaceThumbnailContainerExpanded={setWorkspaceThumbnailContainerExpanded}
+          workspaceThumbnailStyleExpanded={workspaceThumbnailStyleExpanded}
+          setWorkspaceThumbnailStyleExpanded={setWorkspaceThumbnailStyleExpanded}
+          workspaceImageCardExpanded={workspaceImageCardExpanded}
+          setWorkspaceImageCardExpanded={setWorkspaceImageCardExpanded}
+          workspaceVideoCardExpanded={workspaceVideoCardExpanded}
+          setWorkspaceVideoCardExpanded={setWorkspaceVideoCardExpanded}
+          workspacePreviewMusicExpanded={workspacePreviewMusicExpanded}
+          setWorkspacePreviewMusicExpanded={setWorkspacePreviewMusicExpanded}
+          workspacePreviewVideoExpanded={workspacePreviewVideoExpanded}
+          setWorkspacePreviewVideoExpanded={setWorkspacePreviewVideoExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

@@ -3385,6 +3385,34 @@ button.mpx-overlay-footer-btn {
   margin: 0;
 }
 
+.theme-parameter-text-input-preview,
+.theme-parameter-select-preview {
+  width: 100%;
+  border: 1px solid var(--mpx-input-border);
+  border-radius: 0;
+  background: var(--mpx-input-bg);
+  color: var(--mpx-input-text);
+  padding: 6px 8px;
+}
+
+.theme-parameter-select-preview {
+  border-color: var(--mpx-select-border, var(--mpx-input-border));
+  background: var(--mpx-select-bg, var(--mpx-input-bg));
+  color: var(--mpx-select-text, var(--mpx-input-text));
+}
+
+.theme-parameter-select-preview:focus,
+.theme-parameter-select-preview:focus-visible,
+.theme-parameter-select-preview:focus-within {
+  border-color: var(--mpx-select-focus-border, var(--mpx-input-focus-border));
+  background: var(--mpx-select-focus-bg, var(--mpx-input-focus-bg));
+}
+
+.theme-parameter-select-preview option {
+  background: var(--mpx-select-option-bg, var(--mpx-select-bg, var(--mpx-input-bg)));
+  color: var(--mpx-select-option-text, var(--mpx-select-text, var(--mpx-input-text)));
+}
+
 .theme-parameter-scroll-preview {
   width: 100%;
   max-width: 100%;

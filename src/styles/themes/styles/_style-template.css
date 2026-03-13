@@ -318,7 +318,7 @@
   --mpx-import-task-hash-log-text: var(--mpx-status-info-text);
 
   --mpx-metadata-fetch-control-border: var(--mpx-overlay-soft-border);
-  --mpx-metadata-fetch-control-bg: var(--mpx-overlay-soft-bg);
+  --mpx-metadata-fetch-control-bg: var(--mpx-input-bg);
   --mpx-metadata-fetch-control-hover-bg: var(--mpx-overlay-soft-hover-bg);
   --mpx-metadata-fetch-control-focus-bg: var(--mpx-overlay-soft-focus-bg);
   --mpx-metadata-fetch-control-text: var(--mpx-text-1);
@@ -379,6 +379,14 @@
   --mpx-metadata-booklet-binding-control-border: var(--mpx-input-border);
   --mpx-metadata-booklet-binding-control-bg: var(--mpx-input-bg);
   --mpx-metadata-booklet-binding-control-text: var(--mpx-input-text);
+
+  --mpx-select-bg: var(--mpx-input-bg);
+  --mpx-select-border: var(--mpx-input-border);
+  --mpx-select-text: var(--mpx-input-text);
+  --mpx-select-focus-bg: var(--mpx-input-focus-bg);
+  --mpx-select-focus-border: var(--mpx-input-focus-border);
+  --mpx-select-option-bg: var(--mpx-select-bg);
+  --mpx-select-option-text: var(--mpx-select-text);
 
   --mpx-metadata-feature-tag-picker-hint-text: var(--mpx-text-2);
   --mpx-metadata-feature-tag-picker-group-key-text: var(--mpx-text-2);

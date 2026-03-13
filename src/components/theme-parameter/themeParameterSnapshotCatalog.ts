@@ -114,6 +114,66 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#2e2a22",
   },
   {
+    id: "control-text-input-bg",
+    cssVar: "--mpx-input-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-text-input-border",
+    cssVar: "--mpx-input-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "control-text-input-text",
+    cssVar: "--mpx-input-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "control-text-input-focus-bg",
+    cssVar: "--mpx-input-focus-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-text-input-focus-border",
+    cssVar: "--mpx-input-focus-border",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-select-bg",
+    cssVar: "--mpx-select-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-select-border",
+    cssVar: "--mpx-select-border",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "control-select-text",
+    cssVar: "--mpx-select-text",
+    fallback: "#2e2a22",
+  },
+  {
+    id: "control-select-focus-bg",
+    cssVar: "--mpx-select-focus-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-select-focus-border",
+    cssVar: "--mpx-select-focus-border",
+    fallback: "#2e6f7f",
+  },
+  {
+    id: "control-select-option-bg",
+    cssVar: "--mpx-select-option-bg",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-select-option-text",
+    cssVar: "--mpx-select-option-text",
+    fallback: "#2e2a22",
+  },
+  {
     id: "container-bg-panel",
     cssVar: "--mpx-bg-panel",
     fallback: "#fbf8f3",
@@ -2468,6 +2528,14 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "control-popover-panel-z-index",
     cssVar: "--mpx-popover-panel-z-index",
+  },
+  {
+    id: "control-text-input-radius",
+    cssVar: "--mpx-control-radius",
+  },
+  {
+    id: "control-select-radius",
+    cssVar: "--mpx-control-radius",
   },
   {
     id: "container-metadata-shadow",
