@@ -472,6 +472,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.controls.section.fileList": "6.3 文件列表样式",
   "ui.themeParameter.controls.section.thumbnailCard":
     "6.4 缩略图卡片样式（总控）",
+  "ui.themeParameter.controls.section.popoverPanel": "6.5 Popover面板样式",
   "ui.themeParameter.controls.note.scrollbar":
     "滚动条页当前覆盖全局基础链路与 sidebar-tree 细节覆写，便于一起验收基础值与场景别名。",
   "ui.themeParameter.controls.note.sliderBase":
@@ -486,6 +487,8 @@ export const zhCnCatalogPart1 = {
     "6.3 作为文件列表样式源头；Main 的 image/music 与 Metadata 的 video/music 都应先回落到这里，再按各自派生链路局部覆写。",
   "ui.themeParameter.controls.note.thumbnailCard":
     "6.4 作为缩略图卡片总控，2.3.2.1 中 image/video 卡片可在此基础上继续局部覆写。",
+  "ui.themeParameter.controls.note.popoverPanel":
+    "6.5 仅用于 Popover 面板本体（边框/渐变/圆角/阴影/层级）；面板内按钮与 slider 继续走 4.x / 6.2 链路。",
   "ui.themeParameter.noStyleSpecific": "当前风格暂无专属调试参数。",
   "ui.themeParameter.layoutPadding": "布局内边距",
   "ui.themeParameter.splitterWidth": "分割条宽度",

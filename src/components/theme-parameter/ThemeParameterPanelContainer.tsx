@@ -276,6 +276,7 @@ function ThemeParameterPanel({
     setControlSliderSettingsExpanded,
     setControlFileListExpanded,
     setControlThumbnailCardExpanded,
+    setControlPopoverPanelExpanded,
   } = useThemeParameterUiSession();
   const [values, setValues] = useState<ThemeParameterValues>({});
   const parameterSyncStateRef = useRef(createThemeParameterSyncState());
@@ -348,6 +349,7 @@ function ThemeParameterPanel({
     controlSliderSettingsExpanded,
     controlFileListExpanded,
     controlThumbnailCardExpanded,
+    controlPopoverPanelExpanded,
   } = uiState;
 
   const containerLayerParameters = useMemo(
@@ -1012,6 +1014,8 @@ function ThemeParameterPanel({
           setControlFileListExpanded={setControlFileListExpanded}
           controlThumbnailCardExpanded={controlThumbnailCardExpanded}
           setControlThumbnailCardExpanded={setControlThumbnailCardExpanded}
+          controlPopoverPanelExpanded={controlPopoverPanelExpanded}
+          setControlPopoverPanelExpanded={setControlPopoverPanelExpanded}
           filteredCommonParameters={filteredCommonParameters}
           filteredStyleParameters={filteredStyleParameters}
           styleParameters={styleParameters}

@@ -2556,6 +2556,9 @@ export function resolveDebugVarUsage(cssVar: string): string {
   if (cssVar.startsWith("--mpx-subtitle-cleanup-")) {
     return "用于字幕清理面板预览区（raw / clean preview panels）";
   }
+  if (cssVar.startsWith("--mpx-popover-panel-")) {
+    return "用于通用 Popover 面板本体（边框/渐变/圆角/阴影/层级）";
+  }
   if (
     cssVar.startsWith("--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-")
   ) {
@@ -3159,6 +3162,11 @@ export const CONTROL_SECTION_DEFINITIONS: ReadonlyArray<{
     titleKey: "ui.themeParameter.controls.section.thumbnailCard",
     noteKey: "ui.themeParameter.controls.note.thumbnailCard",
   },
+  {
+    id: "control-popover-panel",
+    titleKey: "ui.themeParameter.controls.section.popoverPanel",
+    noteKey: "ui.themeParameter.controls.note.popoverPanel",
+  },
 ];
 
 export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
@@ -3449,6 +3457,34 @@ export const COMMON_CONTROL_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
     groupId: "main",
     sectionId: "control-thumbnail-card",
   },
+  {
+    id: "control-popover-panel-border-color",
+    cssVar: "--mpx-popover-panel-border-color",
+    fallback: "#d6cfc1",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-fill-start",
+    cssVar: "--mpx-popover-panel-fill-start",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-fill-end",
+    cssVar: "--mpx-popover-panel-fill-end",
+    fallback: "#ffffff",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-text",
+    cssVar: "--mpx-popover-panel-text",
+    fallback: "#2e2a22",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
 ];
 
 export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
@@ -3700,6 +3736,41 @@ export const COMMON_CONTROL_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
     fallback: "12px",
     groupId: "box",
     sectionId: "control-thumbnail-card",
+  },
+  {
+    id: "control-popover-panel-border-width",
+    cssVar: "--mpx-popover-panel-border-width",
+    fallback: "1px",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-fill-angle",
+    cssVar: "--mpx-popover-panel-fill-angle",
+    fallback: "180deg",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-radius",
+    cssVar: "--mpx-popover-panel-radius",
+    fallback: "0px",
+    groupId: "main",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-shadow",
+    cssVar: "--mpx-popover-panel-shadow",
+    fallback: "0 8px 20px rgba(0, 0, 0, 0.12)",
+    groupId: "shadow",
+    sectionId: "control-popover-panel",
+  },
+  {
+    id: "control-popover-panel-z-index",
+    cssVar: "--mpx-popover-panel-z-index",
+    fallback: "1200",
+    groupId: "main",
+    sectionId: "control-popover-panel",
   },
 ];
 

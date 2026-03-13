@@ -103,6 +103,7 @@ export interface ThemeParameterUISessionState {
   controlSliderSettingsExpanded: boolean;
   controlFileListExpanded: boolean;
   controlThumbnailCardExpanded: boolean;
+  controlPopoverPanelExpanded: boolean;
   commonExpanded: boolean;
   styleExpanded: boolean;
 }
@@ -207,6 +208,7 @@ const DEFAULT_UI_SESSION_STATE: ThemeParameterUISessionState = {
   controlSliderSettingsExpanded: true,
   controlFileListExpanded: true,
   controlThumbnailCardExpanded: true,
+  controlPopoverPanelExpanded: true,
   commonExpanded: true,
   styleExpanded: true,
 };

@@ -1,30 +1,55 @@
 .header-popover-panel,
 .video-ctrl-panel,
 .music-ctrl-panel {
-  --mpx-popover-panel-border-width: 1px;
-  --mpx-popover-panel-border-color: var(
-    --mpx-overlay-surface-border,
-    var(--mpx-border-1)
+  --_mpx-popover-panel-border-width: var(
+    --mpx-popover-panel-border-width,
+    1px
   );
-  --mpx-popover-panel-radius: 0;
-  --mpx-popover-panel-bg: var(
-    --mpx-overlay-surface-bg,
-    var(--mpx-bg-elevated)
+  --_mpx-popover-panel-border-color: var(
+    --mpx-popover-panel-border-color,
+    var(
+      --mpx-overlay-surface-border,
+      var(--mpx-border-1)
+    )
   );
-  --mpx-popover-panel-text: var(--mpx-text-1);
-  --mpx-popover-panel-shadow: var(
-    --mpx-overlay-surface-shadow,
-    var(--mpx-shadow-popover)
+  --_mpx-popover-panel-fill-start: var(
+    --mpx-popover-panel-fill-start,
+    var(
+      --mpx-popover-panel-bg,
+      var(
+        --mpx-overlay-surface-bg,
+        var(--mpx-bg-elevated)
+      )
+    )
   );
-  --mpx-popover-panel-z-index: 1200;
+  --_mpx-popover-panel-fill-end: var(
+    --mpx-popover-panel-fill-end,
+    var(--_mpx-popover-panel-fill-start)
+  );
+  --_mpx-popover-panel-fill-angle: var(--mpx-popover-panel-fill-angle, 180deg);
+  --mpx-popover-panel-bg: linear-gradient(
+    var(--_mpx-popover-panel-fill-angle),
+    var(--_mpx-popover-panel-fill-start),
+    var(--_mpx-popover-panel-fill-end)
+  );
+  --_mpx-popover-panel-radius: var(--mpx-popover-panel-radius, 0px);
+  --_mpx-popover-panel-text: var(--mpx-popover-panel-text, var(--mpx-text-1));
+  --_mpx-popover-panel-shadow: var(
+    --mpx-popover-panel-shadow,
+    var(
+      --mpx-overlay-surface-shadow,
+      var(--mpx-shadow-popover)
+    )
+  );
+  --_mpx-popover-panel-z-index: var(--mpx-popover-panel-z-index, 1200);
 
-  border: var(--mpx-popover-panel-border-width) solid
-    var(--mpx-popover-panel-border-color);
-  border-radius: var(--mpx-popover-panel-radius);
+  border: var(--_mpx-popover-panel-border-width) solid
+    var(--_mpx-popover-panel-border-color);
+  border-radius: var(--_mpx-popover-panel-radius);
   background: var(--mpx-popover-panel-bg);
-  color: var(--mpx-popover-panel-text);
-  box-shadow: var(--mpx-popover-panel-shadow);
-  z-index: var(--mpx-popover-panel-z-index);
+  color: var(--_mpx-popover-panel-text);
+  box-shadow: var(--_mpx-popover-panel-shadow);
+  z-index: var(--_mpx-popover-panel-z-index);
 
   --mpx-button-panel-action-border: var(
     --mpx-popover-action-border,

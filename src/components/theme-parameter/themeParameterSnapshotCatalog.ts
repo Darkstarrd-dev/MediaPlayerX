@@ -94,6 +94,26 @@ export const SNAPSHOT_COLOR_FIELDS: readonly SnapshotColorField[] = [
     fallback: "#9a885f",
   },
   {
+    id: "control-popover-panel-border-color",
+    cssVar: "--mpx-popover-panel-border-color",
+    fallback: "#d6cfc1",
+  },
+  {
+    id: "control-popover-panel-fill-start",
+    cssVar: "--mpx-popover-panel-fill-start",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-popover-panel-fill-end",
+    cssVar: "--mpx-popover-panel-fill-end",
+    fallback: "#ffffff",
+  },
+  {
+    id: "control-popover-panel-text",
+    cssVar: "--mpx-popover-panel-text",
+    fallback: "#2e2a22",
+  },
+  {
     id: "container-bg-panel",
     cssVar: "--mpx-bg-panel",
     fallback: "#fbf8f3",
@@ -2428,6 +2448,26 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
   {
     id: "control-thumbnail-card-radius",
     cssVar: "--mpx-thumbnail-card-radius",
+  },
+  {
+    id: "control-popover-panel-border-width",
+    cssVar: "--mpx-popover-panel-border-width",
+  },
+  {
+    id: "control-popover-panel-fill-angle",
+    cssVar: "--mpx-popover-panel-fill-angle",
+  },
+  {
+    id: "control-popover-panel-radius",
+    cssVar: "--mpx-popover-panel-radius",
+  },
+  {
+    id: "control-popover-panel-shadow",
+    cssVar: "--mpx-popover-panel-shadow",
+  },
+  {
+    id: "control-popover-panel-z-index",
+    cssVar: "--mpx-popover-panel-z-index",
   },
   {
     id: "container-metadata-shadow",

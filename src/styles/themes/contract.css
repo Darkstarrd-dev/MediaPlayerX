@@ -315,6 +315,15 @@
 
     --mpx-shadow-panel: 0 10px 26px rgba(60, 48, 30, 0.14);
     --mpx-shadow-popover: 0 8px 20px rgba(0, 0, 0, 0.12);
+    --mpx-popover-panel-border-width: 1px;
+    --mpx-popover-panel-border-color: var(--mpx-overlay-surface-border);
+    --mpx-popover-panel-fill-start: var(--mpx-overlay-surface-bg);
+    --mpx-popover-panel-fill-end: var(--mpx-popover-panel-fill-start);
+    --mpx-popover-panel-fill-angle: 180deg;
+    --mpx-popover-panel-radius: 0px;
+    --mpx-popover-panel-text: var(--mpx-text-1);
+    --mpx-popover-panel-shadow: var(--mpx-overlay-surface-shadow);
+    --mpx-popover-panel-z-index: 1200;
     --mpx-overlay-surface-border: var(--mpx-border-1);
     --mpx-overlay-surface-bg: var(--mpx-bg-elevated);
     --mpx-overlay-surface-shadow: var(--mpx-shadow-popover);
@@ -1403,7 +1412,8 @@
     --mpx-settings-group-head-bg: transparent;
     --mpx-settings-item-label-text: var(--mpx-text-2);
     --mpx-settings-item-value-text: var(--mpx-settings-main-text);
-    --mpx-settings-item-input-bg: var(--mpx-input-bg);
+    --mpx-settings-item-input-bg: var(--mpx-large-panel-main-fill-start);
+    --mpx-settings-item-input-focus-bg: var(--mpx-large-panel-main-fill-end);
     --mpx-settings-item-input-border: var(--mpx-input-border);
     --mpx-settings-danger-btn-bg: var(--mpx-status-danger-bg);
     --mpx-settings-danger-btn-border: var(--mpx-status-danger-border);

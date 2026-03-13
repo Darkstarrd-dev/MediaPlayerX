@@ -729,6 +729,7 @@ describe("ThemeParameterPanel", () => {
     expect(screen.getByText("6.2.3 Slider 变体：设置面板")).toBeInTheDocument();
     expect(screen.getByText("6.3 文件列表样式")).toBeInTheDocument();
     expect(screen.getByText("6.4 缩略图卡片样式（总控）")).toBeInTheDocument();
+    expect(screen.getByText("6.5 Popover面板样式")).toBeInTheDocument();
     expect(
       screen.getByTestId("theme-control-preview-scrollbar-horizontal"),
     ).toBeInTheDocument();
@@ -779,6 +780,14 @@ describe("ThemeParameterPanel", () => {
         target: { value: "#778899" },
       },
     );
+    fireEvent.change(
+      screen.getByRole("textbox", {
+        name: "--mpx-popover-panel-fill-start",
+      }),
+      {
+        target: { value: "#8899aa" },
+      },
+    );
 
     expect(
       document.documentElement.style.getPropertyValue(
@@ -798,6 +807,11 @@ describe("ThemeParameterPanel", () => {
         "--mpx-thumbnail-card-selected-bg",
       ),
     ).toBe("#778899");
+    expect(
+      document.documentElement.style.getPropertyValue(
+        "--mpx-popover-panel-fill-start",
+      ),
+    ).toBe("#8899aa");
 
     fireEvent.click(screen.getByRole("button", { name: "参数导入导出" }));
     fireEvent.click(screen.getByRole("button", { name: "导出 JSON" }));
@@ -816,6 +830,9 @@ describe("ThemeParameterPanel", () => {
     );
     expect(snapshotTextarea.value).toContain(
       '"control-thumbnail-card-selected-bg": "#778899"',
+    );
+    expect(snapshotTextarea.value).toContain(
+      '"control-popover-panel-fill-start": "#8899aa"',
     );
   });
 

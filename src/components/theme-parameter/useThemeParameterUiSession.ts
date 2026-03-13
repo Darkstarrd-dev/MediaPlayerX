@@ -315,6 +315,9 @@ export function useThemeParameterUiSession() {
       setControlThumbnailCardExpanded: createBooleanSetter(
         "controlThumbnailCardExpanded",
       ),
+      setControlPopoverPanelExpanded: createBooleanSetter(
+        "controlPopoverPanelExpanded",
+      ),
     }),
     [createBooleanSetter],
   );

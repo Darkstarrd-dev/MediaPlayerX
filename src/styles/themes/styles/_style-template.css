@@ -155,6 +155,25 @@
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
   );
 
+  --mpx-popover-panel-border-width: 1px;
+  --mpx-popover-panel-border-color: var(
+    --mpx-overlay-surface-border,
+    var(--mpx-border-1)
+  );
+  --mpx-popover-panel-fill-start: var(
+    --mpx-overlay-surface-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-popover-panel-fill-end: var(--mpx-popover-panel-fill-start);
+  --mpx-popover-panel-fill-angle: 180deg;
+  --mpx-popover-panel-radius: 0px;
+  --mpx-popover-panel-text: var(--mpx-text-1);
+  --mpx-popover-panel-shadow: var(
+    --mpx-overlay-surface-shadow,
+    var(--mpx-shadow-popover)
+  );
+  --mpx-popover-panel-z-index: 1200;
+
   --mpx-large-panel-head-border-width: var(
     --mpx-large-panel-section-border-width,
     1px

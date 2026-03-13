@@ -39,6 +39,8 @@ interface ThemeParameterCommonControlSectionsProps {
   setFileListExpanded: Dispatch<SetStateAction<boolean>>;
   thumbnailCardExpanded: boolean;
   setThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
+  popoverPanelExpanded: boolean;
+  setPopoverPanelExpanded: Dispatch<SetStateAction<boolean>>;
   debugTextValues: Record<string, string>;
   isTextFieldChanged: (field: ThemeDebugTextField) => boolean;
   setDebugTextFieldValue: (field: ThemeDebugTextField, raw: string) => void;
@@ -256,6 +258,23 @@ const renderCommonControlHorizontalPreview = (
         </div>
       );
     }
+    case "control-popover-panel": {
+      return (
+        <div
+          className="theme-parameter-control-preview-row is-horizontal"
+          data-testid="theme-control-preview-popover-panel-horizontal"
+        >
+          <section className="theme-parameter-popover-preview">
+            <header className="theme-parameter-popover-preview-head">
+              Popover Header
+            </header>
+            <div className="theme-parameter-popover-preview-body">
+              <p>Popover body text preview</p>
+            </div>
+          </section>
+        </div>
+      );
+    }
     default:
       return null;
   }
@@ -382,6 +401,8 @@ export function ThemeParameterCommonControlSections({
   setFileListExpanded,
   thumbnailCardExpanded,
   setThumbnailCardExpanded,
+  popoverPanelExpanded,
+  setPopoverPanelExpanded,
   debugTextValues,
   isTextFieldChanged,
   setDebugTextFieldValue,
@@ -411,6 +432,7 @@ export function ThemeParameterCommonControlSections({
     "control-slider-settings": sliderSettingsExpanded,
     "control-file-list": fileListExpanded,
     "control-thumbnail-card": thumbnailCardExpanded,
+    "control-popover-panel": popoverPanelExpanded,
   };
 
   const expandedSetterMap: Record<
@@ -424,6 +446,7 @@ export function ThemeParameterCommonControlSections({
     "control-slider-settings": setSliderSettingsExpanded,
     "control-file-list": setFileListExpanded,
     "control-thumbnail-card": setThumbnailCardExpanded,
+    "control-popover-panel": setPopoverPanelExpanded,
   };
 
   return (

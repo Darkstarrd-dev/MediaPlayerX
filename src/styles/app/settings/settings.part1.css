@@ -24,7 +24,10 @@
 :root .settings-block select:focus,
 :root .settings-block textarea:focus,
 :root .feature-query-input:focus {
-  background: var(--mpx-input-focus-bg);
+  background: var(
+    --mpx-settings-item-input-focus-bg,
+    var(--mpx-input-focus-bg)
+  );
   border-color: var(--mpx-input-focus-border);
   outline: none;
   box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
@@ -615,7 +618,7 @@
   );
   --mpx-btn-variant-theme-parameter-side-bg-selected: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-bg,
-    var(--mpx-bg-elevated)
+    var(--mpx-settings-side-bg)
   );
   --mpx-btn-variant-theme-parameter-side-border-selected: var(
     --mpx-slot-fg-header-g3-theme-parameter-root-panel-side-btn-selected-border,
@@ -717,7 +720,7 @@
   );
   --mpx-panel-side-nav-bg-selected: var(
     --mpx-btn-variant-theme-parameter-side-bg-selected,
-    var(--mpx-bg-elevated)
+    var(--mpx-settings-side-bg)
   );
   --mpx-panel-side-nav-text-selected: var(
     --mpx-btn-variant-theme-parameter-side-text-selected,
@@ -2729,7 +2732,7 @@ button.mpx-overlay-footer-btn {
   border-radius: 0;
   padding: 2px 8px;
   color: var(--mpx-text-1);
-  background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
+  background: var(--mpx-settings-main-bg);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   word-break: break-word;
@@ -2799,7 +2802,7 @@ button.mpx-overlay-footer-btn {
   border: 1px solid var(--mpx-border-1);
   border-radius: 0;
   padding: 8px 10px;
-  background: var(--mpx-bg-elevated-soft, var(--mpx-bg-elevated));
+  background: var(--mpx-settings-main-bg);
 }
 
 .settings-collapsible > summary {
@@ -2958,16 +2961,16 @@ button.mpx-overlay-footer-btn {
 .theme-parameter-debug-preview-btn {
   border: 1px solid var(--mpx-border-2);
   border-radius: 0;
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
+  background: var(--mpx-settings-item-input-bg);
+  color: var(--mpx-settings-item-value-text);
   min-height: 34px;
   padding: 0 10px;
 }
 
 .theme-parameter-debug-preview-btn.is-active {
   border-color: var(--mpx-border-1);
-  background: var(--mpx-bg-elevated);
-  color: var(--mpx-text-1);
+  background: var(--mpx-settings-item-input-focus-bg, var(--mpx-settings-main-bg));
+  color: var(--mpx-settings-main-text);
 }
 
 .theme-parameter-search,
@@ -2986,8 +2989,8 @@ button.mpx-overlay-footer-btn {
   resize: vertical;
   border: 1px solid var(--mpx-input-border);
   border-radius: 0;
-  background: var(--mpx-input-bg);
-  color: var(--mpx-input-text);
+  background: var(--mpx-settings-item-input-bg);
+  color: var(--mpx-settings-item-value-text);
   padding: 8px 10px;
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -3081,7 +3084,7 @@ button.mpx-overlay-footer-btn {
   padding: 10px;
   border: 1px solid var(--mpx-border-1);
   border-radius: 0;
-  background: var(--mpx-bg-elevated);
+  background: var(--mpx-settings-main-bg);
 }
 
 .theme-parameter-structured-grid {
@@ -3339,6 +3342,49 @@ button.mpx-overlay-footer-btn {
   margin: 0;
 }
 
+.theme-parameter-popover-preview {
+  width: min(280px, 100%);
+  border: var(--mpx-popover-panel-border-width, 1px) solid
+    var(--mpx-popover-panel-border-color, var(--mpx-border-1));
+  border-radius: var(--mpx-popover-panel-radius, 0px);
+  background: linear-gradient(
+    var(--mpx-popover-panel-fill-angle, 180deg),
+    var(
+      --mpx-popover-panel-fill-start,
+      var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+    ),
+    var(
+      --mpx-popover-panel-fill-end,
+      var(--mpx-popover-panel-fill-start, var(--mpx-overlay-surface-bg))
+    )
+  );
+  color: var(--mpx-popover-panel-text, var(--mpx-text-1));
+  box-shadow: var(
+    --mpx-popover-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
+  );
+  overflow: hidden;
+}
+
+.theme-parameter-popover-preview-head {
+  margin: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--mpx-popover-panel-border-color, var(--mpx-border-1)) 82%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.theme-parameter-popover-preview-body {
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.theme-parameter-popover-preview-body > p {
+  margin: 0;
+}
+
 .theme-parameter-scroll-preview {
   width: 100%;
   max-width: 100%;
@@ -3348,7 +3394,7 @@ button.mpx-overlay-footer-btn {
   overflow-y: hidden;
   border: 1px solid var(--mpx-border-1);
   border-radius: 0;
-  background: color-mix(in srgb, var(--mpx-bg-elevated) 92%, transparent);
+  background: color-mix(in srgb, var(--mpx-settings-main-bg) 92%, transparent);
   padding: 8px;
 }
 
@@ -3373,7 +3419,7 @@ button.mpx-overlay-footer-btn {
   padding: 0 8px;
   border-radius: 0;
   border: 1px solid var(--mpx-border-1);
-  background: color-mix(in srgb, var(--mpx-bg-elevated) 80%, transparent);
+  background: color-mix(in srgb, var(--mpx-settings-main-bg) 80%, transparent);
   color: var(--mpx-text-2);
   font-size: 11px;
 }

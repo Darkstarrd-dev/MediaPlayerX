@@ -286,6 +286,8 @@ interface ThemeParameterPanelMainProps {
   setControlFileListExpanded: Dispatch<SetStateAction<boolean>>;
   controlThumbnailCardExpanded: boolean;
   setControlThumbnailCardExpanded: Dispatch<SetStateAction<boolean>>;
+  controlPopoverPanelExpanded: boolean;
+  setControlPopoverPanelExpanded: Dispatch<SetStateAction<boolean>>;
   filteredCommonParameters: ThemeParameterDefinition[];
   filteredStyleParameters: ThemeParameterDefinition[];
   styleParameters: ThemeParameterDefinition[];
@@ -444,6 +446,8 @@ export function ThemeParameterPanelMain({
   setControlFileListExpanded,
   controlThumbnailCardExpanded,
   setControlThumbnailCardExpanded,
+  controlPopoverPanelExpanded,
+  setControlPopoverPanelExpanded,
   filteredCommonParameters,
   filteredStyleParameters,
   styleParameters,
@@ -2256,6 +2260,8 @@ export function ThemeParameterPanelMain({
           setFileListExpanded={setControlFileListExpanded}
           thumbnailCardExpanded={controlThumbnailCardExpanded}
           setThumbnailCardExpanded={setControlThumbnailCardExpanded}
+          popoverPanelExpanded={controlPopoverPanelExpanded}
+          setPopoverPanelExpanded={setControlPopoverPanelExpanded}
           debugTextValues={debugTextValues}
           isTextFieldChanged={isTextFieldChanged}
           setDebugTextFieldValue={setDebugTextFieldValue}

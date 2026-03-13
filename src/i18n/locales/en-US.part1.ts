@@ -497,6 +497,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.section.fileList": "6.3 File list style",
   "ui.themeParameter.controls.section.thumbnailCard":
     "6.4 Thumbnail card style (shared)",
+  "ui.themeParameter.controls.section.popoverPanel":
+    "6.5 Popover panel style",
   "ui.themeParameter.controls.note.scrollbar":
     "The scrollbar page now covers both the global base chain and sidebar-tree detail overrides for side-by-side validation.",
   "ui.themeParameter.controls.note.sliderBase":
@@ -511,6 +513,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "6.3 is the source for file-list styling. Main image/music and Metadata video/music should all fall back here first, then apply local derived overrides.",
   "ui.themeParameter.controls.note.thumbnailCard":
     "6.4 is the shared thumbnail-card baseline. 2.3.2.1 image/video card groups can still override it locally.",
+  "ui.themeParameter.controls.note.popoverPanel":
+    "6.5 targets popover panel shell only (border/fill/radius/shadow/z-index). Buttons and sliders inside popovers remain on 4.x / 6.2 chains.",
   "ui.themeParameter.noStyleSpecific":
     "No style-specific parameter for current style.",
   "ui.themeParameter.layoutPadding": "Layout padding",
