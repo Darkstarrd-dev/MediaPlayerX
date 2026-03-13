@@ -30,15 +30,7 @@
   box-shadow: 0 0 0 2px var(--mpx-card-focus-ring);
 }
 
-:root .sidebar-header button,
-:root .main-header-actions button,
-:root .metadata-header button,
-:root .settings-head button,
-:root .settings-shortcuts-head button,
-:root .main-footer-pagination button,
-:root .main-header button,
-:root .settings-block button,
-:root .search-trigger-btn {
+:root .mpx-btn:not([data-mpx-button-variant]) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
   background: var(--mpx-btn-variant-default-bg-idle);
@@ -49,28 +41,16 @@
   cursor: pointer;
 }
 
-:root .sidebar-header button:hover,
-:root .main-header-actions button:hover,
-:root .metadata-header button:hover,
-:root .main-header button:hover,
-:root .search-trigger-btn:hover {
+:root .mpx-btn:not([data-mpx-button-variant]):hover {
   background: var(--mpx-btn-variant-default-bg-hover);
 }
 
-:root .sidebar-header button:active,
-:root .main-header-actions button:active,
-:root .metadata-header button:active,
-:root .main-header button:active,
-:root .search-trigger-btn:active {
+:root .mpx-btn:not([data-mpx-button-variant]):active {
   background: var(--mpx-btn-variant-default-bg-active);
   border-color: var(--mpx-btn-variant-default-border);
 }
 
-:root .sidebar-header button:disabled,
-:root .main-header-actions button:disabled,
-:root .metadata-header button:disabled,
-:root .main-header button:disabled,
-:root .search-trigger-btn:disabled {
+:root .mpx-btn:not([data-mpx-button-variant]):disabled {
   opacity: 0.56;
   color: var(--mpx-btn-variant-default-text-disabled);
 }

@@ -59,7 +59,7 @@
 
 ## Import Task（3.10）补充
 
-`fg.header.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。
+`fg.header.btnGroup.g1.task.importTask.panel` 在实现层使用 `data-slot="fg-import-task-root"`。
 3.10 起，推荐调节变量语义如下：
 
 1. 遮罩层链路：`--mpx-slot-fg-import-task-ovl-bg/ovl-text`
@@ -114,7 +114,7 @@
    - 按钮基架 -> `buttonStates`
    - 滚动条 / slider / runway -> `commonControls`
 2. 下列实现别名在 Phase 3 之前视为受控保留，不视为违规：
-   - `fg.header.g1.task.importTask.*` 的实现别名家族：`--mpx-slot-fg-import-task-*`
+   - `fg.header.btnGroup.g1.task.importTask.*` 的实现别名家族：`--mpx-slot-fg-import-task-*`
    - `fg.sidebar.main` 的语义家族：`--mpx-sidebar-main-*`
    - `fg.main.content.image.nameList*` 的语义家族：`--mpx-main-image-name-list-*`
    - 滚动条基础层与场景别名并存：`--mpx-scrollbar-*` + `--mpx-sidebar-tree-scrollbar-*`
@@ -126,7 +126,7 @@
 
 ## Settings 内部件（3.10.0）补充
 
-`fg.header.g1.settings.root.panel` 的 side / main / group / item 语义统一收口到 `--mpx-settings-*`。
+`fg.header.btnGroup.g1.settings.root.panel` 的 side / main / group / item 语义统一收口到 `--mpx-settings-*`。
 
 1. Side 导航链路：
    - `--mpx-settings-side-bg`
@@ -297,47 +297,47 @@ soft family 现统一拆分为三层：
 | `fg.header.logo.state.idle`                       | `--mpx-slot-fg-header-logo-state-idle-*`                         |
 | `fg.header.logo.state.busy`                       | `--mpx-slot-fg-header-logo-state-busy-*`                         |
 | `fg.header.logo.state.open`                       | `--mpx-slot-fg-header-logo-state-open-*`                         |
-| `fg.header.g1`                                    | `--mpx-slot-fg-header-g1-*`                                      |
-| `fg.header.g1.panelToggles`                       | `--mpx-slot-fg-header-g1-panel-toggles-*`                        |
-| `fg.header.g1.toggle.sidebar`                     | `--mpx-slot-fg-header-g1-toggle-sidebar-*`                       |
-| `fg.header.g1.toggle.metadata`                    | `--mpx-slot-fg-header-g1-toggle-metadata-*`                      |
-| `fg.header.g1.task.importTask.panel`              | `--mpx-slot-fg-header-g1-task-import-task-panel-*`               |
-| `fg.header.g1.task.importTask.ovl`                | `--mpx-slot-fg-header-g1-task-import-task-ovl-*`                 |
-| `fg.header.g1.task.importTask.error.panel`        | `--mpx-slot-fg-header-g1-task-import-task-error-panel-*`         |
-| `fg.header.g1.task.importTask.hint.panel`         | `--mpx-slot-fg-header-g1-task-import-task-hint-panel-*`          |
-| `fg.header.g1.task.importTask.reviewNotice.panel` | `--mpx-slot-fg-header-g1-task-import-task-review-notice-panel-*` |
-| `fg.header.g1.task.importTask.hashLogList.panel`  | `--mpx-slot-fg-header-g1-task-import-task-hash-log-list-panel-*` |
-| `fg.header.g1.palette`                            | `--mpx-slot-fg-header-g1-palette-*`                              |
-| `fg.header.g1.settings`                           | `--mpx-slot-fg-header-g1-settings-*`                             |
+| `fg.header.btnGroup.g1`                           | `--mpx-slot-fg-header-g1-*`                                      |
+| `fg.header.btnGroup.g1.panelToggles`              | `--mpx-slot-fg-header-g1-panel-toggles-*`                        |
+| `fg.header.btnGroup.g1.btn.toggleSidebar`         | `--mpx-slot-fg-header-g1-toggle-sidebar-*`                       |
+| `fg.header.btnGroup.g1.btn.toggleMetadata`        | `--mpx-slot-fg-header-g1-toggle-metadata-*`                      |
+| `fg.header.btnGroup.g1.task.importTask.panel`     | `--mpx-slot-fg-header-g1-task-import-task-panel-*`               |
+| `fg.header.btnGroup.g1.task.importTask.ovl`       | `--mpx-slot-fg-header-g1-task-import-task-ovl-*`                 |
+| `fg.header.btnGroup.g1.task.importTask.error.panel` | `--mpx-slot-fg-header-g1-task-import-task-error-panel-*`       |
+| `fg.header.btnGroup.g1.task.importTask.hint.panel` | `--mpx-slot-fg-header-g1-task-import-task-hint-panel-*`        |
+| `fg.header.btnGroup.g1.task.importTask.reviewNotice.panel` | `--mpx-slot-fg-header-g1-task-import-task-review-notice-panel-*` |
+| `fg.header.btnGroup.g1.task.importTask.hashLogList.panel` | `--mpx-slot-fg-header-g1-task-import-task-hash-log-list-panel-*` |
+| `fg.header.btnGroup.g1.btn.palette`               | `--mpx-slot-fg-header-g1-palette-*`                              |
+| `fg.header.btnGroup.g1.btn.settings`              | `--mpx-slot-fg-header-g1-settings-*`                             |
 | `*.settings.root.*`                               | `--mpx-slot-*-settings-root-*-*`                                 |
-| `fg.header.g1.settings.root.ovl`                  | `--mpx-slot-fg-header-g1-settings-root-ovl-*`                    |
-| `fg.header.g1.settings.root.panel`                | `--mpx-slot-fg-header-g1-settings-root-panel-*`                  |
+| `fg.header.btnGroup.g1.btn.settings.root.ovl`     | `--mpx-slot-fg-header-g1-settings-root-ovl-*`                    |
+| `fg.header.btnGroup.g1.btn.settings.root.panel`   | `--mpx-slot-fg-header-g1-settings-root-panel-*`                  |
 | `*.shortcutEdit.*`                                | `--mpx-slot-*-shortcut-edit-*-*`                                 |
-| `fg.header.g1.settings.shortcutEdit.ovl`          | `--mpx-slot-fg-header-g1-settings-shortcut-edit-ovl-*`           |
-| `fg.header.g1.settings.shortcutEdit.panel`        | `--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-*`         |
-| `fg.header.g1.settings.shortcutCapture.ovl`       | `--mpx-slot-fg-header-g1-settings-shortcut-capture-ovl-*`        |
-| `fg.header.g1.settings.shortcutCapture.panel`     | `--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-*`      |
-| `fg.header.g2`                                    | `--mpx-slot-fg-header-g2-*`                                      |
-| `fg.header.g2.mode.image`                         | `--mpx-slot-fg-header-g2-mode-image-*`                           |
-| `fg.header.g2.mode.video`                         | `--mpx-slot-fg-header-g2-mode-video-*`                           |
-| `fg.header.g2.mode.music`                         | `--mpx-slot-fg-header-g2-mode-music-*`                           |
-| `fg.header.g2.musicQuick`                         | `--mpx-slot-fg-header-g2-music-quick-*`                          |
-| `fg.header.gDebug`                                | `--mpx-slot-fg-header-g-debug-*`                                 |
-| `fg.header.gDebug.tooltips`                       | `--mpx-slot-fg-header-g-debug-tooltips-*`                        |
-| `fg.header.gDebug.nativeChrome`                   | `--mpx-slot-fg-header-g-debug-native-chrome-*`                   |
-| `fg.header.gDebug.themeParameter`                 | `--mpx-slot-fg-header-g-debug-theme-parameter-*`                 |
-| `fg.header.g3`                                    | `--mpx-slot-fg-header-g3-*`                                      |
-| `fg.header.g3.popoverDebugPin`                    | `--mpx-slot-fg-header-g3-popover-debug-pin-*`                    |
-| `fg.header.g3.themeParameter`                     | `--mpx-slot-fg-header-g3-theme-parameter-*`                      |
-| `fg.header.g3.themeParameter.root.ovl`            | `--mpx-slot-fg-header-g3-theme-parameter-root-ovl-*`             |
-| `fg.header.g3.themeParameter.root.panel`          | `--mpx-slot-fg-header-g3-theme-parameter-root-panel-*`           |
-| `fg.header.g3.help`                               | `--mpx-slot-fg-header-g3-help-*`                                 |
-| `fg.header.g3.help.root.ovl`                      | `--mpx-slot-fg-header-g3-help-root-ovl-*`                        |
-| `fg.header.g3.help.root.panel`                    | `--mpx-slot-fg-header-g3-help-root-panel-*`                      |
-| `fg.header.g3.help.root.buttonOverlay.ovl`        | `--mpx-slot-fg-header-g3-help-root-button-overlay-ovl-*`         |
-| `fg.header.g3.window.min`                         | `--mpx-slot-fg-header-g3-window-min-*`                           |
-| `fg.header.g3.window.maxrestore`                  | `--mpx-slot-fg-header-g3-window-maxrestore-*`                    |
-| `fg.header.g3.window.close`                       | `--mpx-slot-fg-header-g3-window-close-*`                         |
+| `fg.header.btnGroup.g1.btn.settings.shortcutEdit.ovl` | `--mpx-slot-fg-header-g1-settings-shortcut-edit-ovl-*`       |
+| `fg.header.btnGroup.g1.btn.settings.shortcutEdit.panel` | `--mpx-slot-fg-header-g1-settings-shortcut-edit-panel-*`     |
+| `fg.header.btnGroup.g1.btn.settings.shortcutCapture.ovl` | `--mpx-slot-fg-header-g1-settings-shortcut-capture-ovl-*`    |
+| `fg.header.btnGroup.g1.btn.settings.shortcutCapture.panel` | `--mpx-slot-fg-header-g1-settings-shortcut-capture-panel-*`  |
+| `fg.header.btnGroup.g2`                           | `--mpx-slot-fg-header-g2-*`                                      |
+| `fg.header.btnGroup.g2.btn.mode.image`            | `--mpx-slot-fg-header-g2-mode-image-*`                           |
+| `fg.header.btnGroup.g2.btn.mode.video`            | `--mpx-slot-fg-header-g2-mode-video-*`                           |
+| `fg.header.btnGroup.g2.btn.mode.music`            | `--mpx-slot-fg-header-g2-mode-music-*`                           |
+| `fg.header.btnGroup.g2.btnGroup.musicQuick`       | `--mpx-slot-fg-header-g2-music-quick-*`                          |
+| `fg.header.btnGroup.gDebug`                       | `--mpx-slot-fg-header-g-debug-*`                                 |
+| `fg.header.btnGroup.gDebug.btn.tooltips`          | `--mpx-slot-fg-header-g-debug-tooltips-*`                        |
+| `fg.header.btnGroup.gDebug.btn.nativeChrome`      | `--mpx-slot-fg-header-g-debug-native-chrome-*`                   |
+| `fg.header.btnGroup.gDebug.btn.themeParameter`    | `--mpx-slot-fg-header-g-debug-theme-parameter-*`                 |
+| `fg.header.btnGroup.g3`                           | `--mpx-slot-fg-header-g3-*`                                      |
+| `fg.header.btnGroup.gDebug.btn.popoverDebugPin`   | `--mpx-slot-fg-header-g3-popover-debug-pin-*`                    |
+| `fg.header.btnGroup.g3.btn.themeParameter`        | `--mpx-slot-fg-header-g3-theme-parameter-*`                      |
+| `fg.header.btnGroup.g3.btn.themeParameter.root.ovl` | `--mpx-slot-fg-header-g3-theme-parameter-root-ovl-*`           |
+| `fg.header.btnGroup.g3.btn.themeParameter.root.panel` | `--mpx-slot-fg-header-g3-theme-parameter-root-panel-*`         |
+| `fg.header.btnGroup.g3.btn.help`                  | `--mpx-slot-fg-header-g3-help-*`                                 |
+| `fg.header.btnGroup.g3.btn.help.root.ovl`         | `--mpx-slot-fg-header-g3-help-root-ovl-*`                        |
+| `fg.header.btnGroup.g3.btn.help.root.panel`       | `--mpx-slot-fg-header-g3-help-root-panel-*`                      |
+| `fg.header.btnGroup.g3.btn.help.root.buttonOverlay.ovl` | `--mpx-slot-fg-header-g3-help-root-button-overlay-ovl-*`   |
+| `fg.header.btnGroup.g3.btn.window.min`            | `--mpx-slot-fg-header-g3-window-min-*`                           |
+| `fg.header.btnGroup.g3.btn.window.maxrestore`     | `--mpx-slot-fg-header-g3-window-maxrestore-*`                    |
+| `fg.header.btnGroup.g3.btn.window.close`          | `--mpx-slot-fg-header-g3-window-close-*`                         |
 
 Header containerLayer 下钻补充（2026-03）：
 
@@ -352,15 +352,15 @@ Header containerLayer 下钻补充（2026-03）：
 | `fg.sysinfo.backendError` | `--mpx-slot-fg-sysinfo-backend-error-*` |
 | `fg.sysinfo.runtimeWarning` | `--mpx-slot-fg-sysinfo-runtime-warning-*` |
 | `fg.sidebar.expand` | `--mpx-slot-fg-sidebar-expand-*` |
-| `fg.sidebar.toolbar` | `--mpx-slot-fg-sidebar-toolbar-*` |
-| `fg.sidebar.toolbar.title` | `--mpx-slot-fg-sidebar-toolbar-title-*` |
-| `fg.sidebar.toolbar.back` | `--mpx-slot-fg-sidebar-toolbar-back-*` |
-| `fg.sidebar.toolbar.clear` | `--mpx-slot-fg-sidebar-toolbar-clear-*` |
-| `fg.sidebar.toolbar.labelModeToggle` | `--mpx-slot-fg-sidebar-toolbar-label-mode-toggle-*` |
-| `fg.sidebar.toolbar.collapseAll` | `--mpx-slot-fg-sidebar-toolbar-collapse-all-*` |
-| `fg.sidebar.toolbar.prevImageParent` | `--mpx-slot-fg-sidebar-toolbar-prev-image-parent-*` |
-| `fg.sidebar.toolbar.nextImageParent` | `--mpx-slot-fg-sidebar-toolbar-next-image-parent-*` |
-| `fg.sidebar.toolbar.rootToggle` | `--mpx-slot-fg-sidebar-toolbar-root-toggle-*` |
+| `fg.sidebar.toolbar` | `--mpx-slot-fg-sidebar-header-*` |
+| `fg.sidebar.header.btnGroup.title.btn.root` | `--mpx-slot-fg-sidebar-header-title-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.back` | `--mpx-slot-fg-sidebar-header-back-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.clear` | `--mpx-slot-fg-sidebar-header-clear-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.labelModeToggle` | `--mpx-slot-fg-sidebar-header-label-mode-toggle-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.collapseAll` | `--mpx-slot-fg-sidebar-header-collapse-all-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.prevImageParent` | `--mpx-slot-fg-sidebar-header-prev-image-parent-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.nextImageParent` | `--mpx-slot-fg-sidebar-header-next-image-parent-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.rootToggle` | `--mpx-slot-fg-sidebar-header-root-toggle-*` |
 | `fg.sidebar.main` | `--mpx-slot-fg-sidebar-main-*` |
 | `fg.sidebar.main.label` | `--mpx-slot-fg-sidebar-main-label-*` |
 | `fg.sidebar.shortcut.rename.batch.ovl` | `--mpx-slot-fg-sidebar-shortcut-rename-batch-ovl-*` |
@@ -456,13 +456,13 @@ Main / Metadata header 语义 token 补充（2026-03）：
   | `fg.main.footer.meta` | `--mpx-slot-fg-main-footer-meta-*` |
   | `fg.main.footer.pagination` | `--mpx-slot-fg-main-footer-pagination-*` |
   | `fg.meta.restore` | `--mpx-slot-fg-meta-restore-*` |
-  | `fg.meta.toolbar` | `--mpx-slot-fg-meta-toolbar-*` |
-  | `fg.meta.toolbar.g3` | `--mpx-slot-fg-meta-toolbar-g3-*` |
-  | `fg.meta.toolbar.g3.search` | `--mpx-slot-fg-meta-toolbar-g3-search-*` |
-  | `fg.meta.toolbar.g3.manage` | `--mpx-slot-fg-meta-toolbar-g3-manage-*` |
-  | `fg.meta.toolbar.g3.metadata` | `--mpx-slot-fg-meta-toolbar-g3-metadata-*` |
-  | `fg.meta.toolbar.g3.playlist` | `--mpx-slot-fg-meta-toolbar-g3-playlist-*` |
-  | `fg.meta.toolbar.toggle` | `--mpx-slot-fg-meta-toolbar-toggle-*` |
+  | `fg.meta.toolbar` | `--mpx-slot-fg-meta-header-*` |
+  | `fg.meta.header.btnGroup.g3` | `--mpx-slot-fg-meta-header-g3-*` |
+  | `fg.meta.header.btnGroup.g3.btn.search` | `--mpx-slot-fg-meta-header-g3-search-*` |
+  | `fg.meta.header.btnGroup.g3.btn.manage` | `--mpx-slot-fg-meta-header-g3-manage-*` |
+  | `fg.meta.header.btnGroup.g3.btn.metadata` | `--mpx-slot-fg-meta-header-g3-metadata-*` |
+  | `fg.meta.header.btnGroup.g3.btn.playlist` | `--mpx-slot-fg-meta-header-g3-playlist-*` |
+  | `fg.meta.header.btnGroup.toggle.btn.mode` | `--mpx-slot-fg-meta-header-toggle-*` |
   | `fg.meta.main` | `--mpx-slot-fg-meta-main-*` |
   | `fg.meta.main.imageEditor` | `--mpx-slot-fg-meta-main-image-editor-*` |
   | `fg.meta.main.imageEditor.preferenceMetrics.panel` | `--mpx-slot-fg-meta-main-image-editor-preference-metrics-panel-*` |
@@ -523,7 +523,7 @@ Main / Metadata header 语义 token 补充（2026-03）：
 ## Phase 2 补充（2026-03-08）
 
 - 小面板 root 骨架从单一 `bg` 改为 `fill-start / fill-end / fill-angle` 三件套；`--mpx-dialog-panel-bg` 不再在 `:root` 预合成，而是下沉到 `.mpx-dialog-panel` / `.settings-floating-panel` 元素级消费层生成，避免 slot 覆写被继承的已解析 gradient 吞掉。
-- `fg.header.g1.settings.shortcutEdit.panel`、`fg.header.g1.settings.shortcutCapture.panel`、`fg.main.header.manage.groupName.panel`、`fg.main.header.manage.deleteConfirm.panel`、`fg.main.header.image.convert.panel`、`fg.main.header.image.adReviewStart.panel`、`fg.meta.main.adReviewStart.panel`、`fg.meta.main.videoEditor.playlistNameDialog.panel`、`fg.sidebar.shortcut.rename.single.panel` 均新增 `fill-start / fill-end / fill-angle` 后缀，统一按 `root 总控 -> slot 分控 -> 个别覆写` 链路消费。
+- `fg.header.btnGroup.g1.settings.shortcutEdit.panel`、`fg.header.btnGroup.g1.settings.shortcutCapture.panel`、`fg.main.header.manage.groupName.panel`、`fg.main.header.manage.deleteConfirm.panel`、`fg.main.header.image.convert.panel`、`fg.main.header.image.adReviewStart.panel`、`fg.meta.main.adReviewStart.panel`、`fg.meta.main.videoEditor.playlistNameDialog.panel`、`fg.sidebar.shortcut.rename.single.panel` 均新增 `fill-start / fill-end / fill-angle` 后缀，统一按 `root 总控 -> slot 分控 -> 个别覆写` 链路消费。
 - `fg.sidebar.shortcut.rename.single.panel` 在 ThemeParameter 小面板页只保留 `border / fill-start / fill-end / fill-angle / shadow`；共享内部件统一并入大面板内部件页，通过 `--mpx-sidebar-rename-dialog-*` 调试。
 
 ## 变更约束

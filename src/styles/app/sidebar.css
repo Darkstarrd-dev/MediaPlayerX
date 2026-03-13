@@ -280,7 +280,7 @@
   height: var(--mpx-icon-button-size);
 }
 
-[data-slot="fg-sidebar-header-back"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-back"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-back-border,
     var(
@@ -304,7 +304,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-clear"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-clear"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-clear-border,
     var(
@@ -328,7 +328,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-label-mode-toggle"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-label-mode-toggle"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-label-mode-toggle-border,
     var(
@@ -352,7 +352,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-root-toggle"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-root-toggle"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-root-toggle-border,
     var(
@@ -376,7 +376,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-collapse-all"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-collapse-all"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-collapse-all-border,
     var(
@@ -400,7 +400,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-prev-image-parent"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-prev-image-parent"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-prev-image-parent-border,
     var(
@@ -424,7 +424,7 @@
   );
 }
 
-[data-slot="fg-sidebar-header-next-image-parent"] {
+[data-slot="fg-sidebar-header-btn-group-actions-btn-next-image-parent"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-sidebar-header-next-image-parent-border,
     var(

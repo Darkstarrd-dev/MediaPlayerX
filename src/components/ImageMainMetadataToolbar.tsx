@@ -34,9 +34,12 @@ export function ImageMainMetadataToolbar({
       <strong className="main-header-title">
         {t("ui.header.metadataManage")}
       </strong>
-      <div className="main-header-actions main-header-actions-manage">
+      <div
+        className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-metadata"
+        data-slot="fg-main-header-btn-group-metadata"
+      >
         <button
-          className="feature-action-btn main-icon-square-btn"
+          className="mpx-btn feature-action-btn main-icon-square-btn"
           type="button"
           aria-label={metadataSelectionToggleLabel}
           data-tooltip-label={metadataSelectionToggleLabel}
@@ -45,7 +48,7 @@ export function ImageMainMetadataToolbar({
           {metadataManageSelectionMode === "single" ? "S" : "M"}
         </button>
         <button
-          className="feature-action-btn main-icon-square-btn"
+          className="mpx-btn feature-action-btn main-icon-square-btn"
           type="button"
           aria-label={t("a11y.common.syncName")}
           data-tooltip-label={t("tip.common.syncName")}
@@ -55,7 +58,7 @@ export function ImageMainMetadataToolbar({
           <MainUiIcon name="refresh" />
         </button>
         <button
-          className="feature-action-btn main-icon-square-btn"
+          className="mpx-btn feature-action-btn main-icon-square-btn"
           type="button"
           aria-label={t("a11y.metadata.fetch")}
           data-tooltip-label={t("a11y.metadata.fetch")}

@@ -443,7 +443,7 @@ function AppHeader(props: AppHeaderProps) {
           : {}),
       }}
     >
-      <div className="app-header-frame">
+      <div className="app-header-frame mpx-btn-scope-header">
         <div className="header-left">
           <div className="header-logo-group">
             <div
@@ -498,17 +498,17 @@ function AppHeader(props: AppHeaderProps) {
           </div>
 
           <div
-            className="header-group header-group-primary"
-            data-slot="fg-header-g1"
+            className="header-group header-group-primary mpx-btn-group mpx-btn-group--header-g1"
+            data-slot="fg-header-btn-group-g1"
           >
             {showPanelToggleControls ? (
               <div
-                className="panel-toggle-wrap"
-                data-slot="fg-header-g1-panel-toggles"
+                className="panel-toggle-wrap mpx-btn-group mpx-btn-group--header-g1-panel-toggles"
+                data-slot="fg-header-btn-group-g1-panel-toggles"
               >
                 <button
-                  className={`mode-action-btn panel-toggle-btn ${sidebarCollapsed ? "is-collapsed" : ""}`}
-                  data-slot="fg-header-g1-toggle-sidebar"
+                  className={`mpx-btn mode-action-btn panel-toggle-btn ${sidebarCollapsed ? "is-collapsed" : ""}`}
+                  data-slot="fg-header-btn-group-g1-btn-toggle-sidebar"
                   type="button"
                   aria-label={
                     sidebarCollapsed
@@ -527,8 +527,8 @@ function AppHeader(props: AppHeaderProps) {
                   <span className="window-control-btn-text">L</span>
                 </button>
                 <button
-                  className={`mode-action-btn panel-toggle-btn ${metadataCollapsed ? "is-collapsed" : ""}`}
-                  data-slot="fg-header-g1-toggle-metadata"
+                  className={`mpx-btn mode-action-btn panel-toggle-btn ${metadataCollapsed ? "is-collapsed" : ""}`}
+                  data-slot="fg-header-btn-group-g1-btn-toggle-metadata"
                   type="button"
                   aria-label={
                     metadataCollapsed
@@ -555,8 +555,8 @@ function AppHeader(props: AppHeaderProps) {
                 ? t("a11y.header.switchToNightPalette")
                 : t("a11y.header.switchToDayPalette")
             }
-            className="window-control-btn"
-            data-slot="fg-header-g1-palette"
+            className="mpx-btn window-control-btn"
+            data-slot="fg-header-btn-group-g1-btn-palette"
             data-tooltip-label={
               paletteMode === "day"
                 ? t("a11y.header.switchToNightPalette")
@@ -571,8 +571,8 @@ function AppHeader(props: AppHeaderProps) {
           <button
             {...settingsButtonA11y}
             aria-pressed={settingsOpen}
-            className="window-control-btn"
-            data-slot="fg-header-g1-settings"
+            className="mpx-btn window-control-btn"
+            data-slot="fg-header-btn-group-g1-btn-settings"
             type="button"
             onClick={onOpenSettings}
           >
@@ -581,19 +581,19 @@ function AppHeader(props: AppHeaderProps) {
         </div>
 
         <div
-          className={`header-group header-group-modes mpx-btn-group is-groove ${musicQuickActionsVisible ? "has-music-quick-actions" : ""}`}
-          data-slot="fg-header-g2"
+          className={`header-group header-group-modes mpx-btn-group mpx-btn-group--header-g2 is-groove ${musicQuickActionsVisible ? "has-music-quick-actions" : ""}`}
+          data-slot="fg-header-btn-group-g2"
         >
           <div
-            className="mode-switch"
+            className="mode-switch mpx-btn-group mpx-btn-group--header-g2-mode"
             role="group"
             aria-label={t(a11yRegistry.headerModeSwitch.labelKey)}
           >
             <button
               {...buildA11yPropsByRegistry({ key: "headerModeImage", t })}
               aria-pressed={mode === "image"}
-              className={mode === "image" ? "is-active" : ""}
-              data-slot="fg-header-g2-mode-image"
+              className={mode === "image" ? "mpx-btn is-active" : "mpx-btn"}
+              data-slot="fg-header-btn-group-g2-btn-mode-image"
               type="button"
               disabled={interactionLocked}
               onClick={() => onModeChange("image")}
@@ -608,8 +608,8 @@ function AppHeader(props: AppHeaderProps) {
             <button
               {...buildA11yPropsByRegistry({ key: "headerModeVideo", t })}
               aria-pressed={mode === "video"}
-              className={mode === "video" ? "is-active" : ""}
-              data-slot="fg-header-g2-mode-video"
+              className={mode === "video" ? "mpx-btn is-active" : "mpx-btn"}
+              data-slot="fg-header-btn-group-g2-btn-mode-video"
               type="button"
               disabled={interactionLocked}
               onClick={() => onModeChange("video")}
@@ -624,8 +624,8 @@ function AppHeader(props: AppHeaderProps) {
             <button
               {...buildA11yPropsByRegistry({ key: "headerModeMusic", t })}
               aria-pressed={mode === "music"}
-              className={mode === "music" ? "is-active" : ""}
-              data-slot="fg-header-g2-mode-music"
+              className={mode === "music" ? "mpx-btn is-active" : "mpx-btn"}
+              data-slot="fg-header-btn-group-g2-btn-mode-music"
               type="button"
               disabled={interactionLocked}
               onClick={() => onModeChange("music")}
@@ -639,8 +639,8 @@ function AppHeader(props: AppHeaderProps) {
             </button>
           </div>
           <div
-            className={`music-quick-actions ${musicQuickActionsVisible ? "is-visible" : ""}`}
-            data-slot="fg-header-g2-music-quick"
+            className={`music-quick-actions mpx-btn-group mpx-btn-group--header-g2-music-quick ${musicQuickActionsVisible ? "is-visible" : ""}`}
+            data-slot="fg-header-btn-group-g2-btn-group-music-quick"
           >
             <button
               aria-label={
@@ -648,7 +648,7 @@ function AppHeader(props: AppHeaderProps) {
                   ? t("a11y.header.musicPause")
                   : t("a11y.header.musicPlay")
               }
-              className="mode-action-btn"
+              className="mpx-btn mode-action-btn"
               data-tooltip-label={
                 musicQuickPlaying
                   ? t("a11y.header.musicPause")
@@ -663,7 +663,7 @@ function AppHeader(props: AppHeaderProps) {
             </button>
             <button
               {...buildA11yPropsByRegistry({ key: "headerMusicStop", t })}
-              className="mode-action-btn"
+              className="mpx-btn mode-action-btn"
               type="button"
               onClick={() => {
                 setShowMusicQuickActions(false);
@@ -682,8 +682,8 @@ function AppHeader(props: AppHeaderProps) {
             <button
               {...themeParameterButtonA11y}
               aria-pressed={themeParameterPanelOpen}
-              className="window-control-btn window-control-btn--theme-parameter"
-              data-slot="fg-header-g3-theme-parameter"
+              className="mpx-btn window-control-btn window-control-btn--theme-parameter"
+              data-slot="fg-header-btn-group-g3-btn-theme-parameter"
               type="button"
               onClick={onOpenThemeParameter}
             >
@@ -693,16 +693,16 @@ function AppHeader(props: AppHeaderProps) {
           {headerDebugGroupVisible ? (
             <div
               aria-label={t("ui.settings.sectionDebug")}
-              className="header-group header-group-debug"
-              data-slot="fg-header-g-debug"
+              className="header-group header-group-debug mpx-btn-group mpx-btn-group--header-g-debug"
+              data-slot="fg-header-btn-group-g-debug"
               role="group"
             >
               <button
                 aria-label={tooltipLabel}
                 aria-pressed={tooltipEnabled}
-                className="window-control-btn window-control-btn--theme-parameter"
+                className="mpx-btn window-control-btn window-control-btn--theme-parameter"
                 data-tooltip-label={tooltipLabel}
-                data-slot="fg-header-g-debug-tooltips"
+                data-slot="fg-header-btn-group-g-debug-btn-tooltips"
                 type="button"
                 onClick={() => {
                   onTooltipEnabledChange(!tooltipEnabled);
@@ -715,9 +715,9 @@ function AppHeader(props: AppHeaderProps) {
               <button
                 aria-label={nativeChromeLabel}
                 aria-pressed={electronNativeChromeEnabled}
-                className="window-control-btn window-control-btn--theme-parameter"
+                className="mpx-btn window-control-btn window-control-btn--theme-parameter"
                 data-tooltip-label={nativeChromeLabel}
-                data-slot="fg-header-g-debug-native-chrome"
+                data-slot="fg-header-btn-group-g-debug-btn-native-chrome"
                 type="button"
                 onClick={() => {
                   onElectronNativeChromeEnabledChange(
@@ -732,8 +732,8 @@ function AppHeader(props: AppHeaderProps) {
               <button
                 {...themeParameterButtonA11y}
                 aria-pressed={themeParameterPanelOpen}
-                className="window-control-btn window-control-btn--theme-parameter"
-                data-slot="fg-header-g-debug-theme-parameter"
+                className="mpx-btn window-control-btn window-control-btn--theme-parameter"
+                data-slot="fg-header-btn-group-g-debug-btn-theme-parameter"
                 type="button"
                 onClick={() => {
                   if (!themeParameterButtonVisible) {
@@ -749,8 +749,8 @@ function AppHeader(props: AppHeaderProps) {
               <button
                 {...popoverDebugPinnedButtonA11y}
                 aria-pressed={popoverDebugPinned}
-                className="window-control-btn window-control-btn--theme-parameter"
-                data-slot="fg-header-g3-popover-debug-pin"
+                className="mpx-btn window-control-btn window-control-btn--theme-parameter"
+                data-slot="fg-header-btn-group-g-debug-btn-popover-debug-pin"
                 type="button"
                 onClick={onTogglePopoverDebugPinned}
               >
@@ -762,15 +762,15 @@ function AppHeader(props: AppHeaderProps) {
           ) : null}
           <div
             aria-label={t(a11yRegistry.headerWindowControls.labelKey)}
-            className="window-controls header-group header-group-window"
-            data-slot="fg-header-g3"
+            className="window-controls header-group header-group-window mpx-btn-group mpx-btn-group--header-g3"
+            data-slot="fg-header-btn-group-g3"
             role="group"
           >
               <button
                 {...helpButtonA11y}
                 aria-pressed={helpOpen}
-                className="window-control-btn"
-                data-slot="fg-header-g3-help"
+                className="mpx-btn window-control-btn"
+                data-slot="fg-header-btn-group-g3-btn-help"
                 type="button"
                 onClick={onOpenHelp}
               >
@@ -778,8 +778,8 @@ function AppHeader(props: AppHeaderProps) {
               </button>
             <button
               aria-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
-              className="window-control-btn"
-              data-slot="fg-header-g3-window-min"
+              className="mpx-btn window-control-btn"
+              data-slot="fg-header-btn-group-g3-btn-window-min"
               data-tooltip-label={t(a11yRegistry.headerWindowMinimize.labelKey)}
               type="button"
               onClick={() => {
@@ -790,8 +790,8 @@ function AppHeader(props: AppHeaderProps) {
             </button>
             <button
               aria-label={windowMaxRestoreLabel}
-              className="window-control-btn"
-              data-slot="fg-header-g3-window-maxrestore"
+              className="mpx-btn window-control-btn"
+              data-slot="fg-header-btn-group-g3-btn-window-maxrestore"
               data-tooltip-label={windowMaxRestoreLabel}
               type="button"
               onClick={async () => {
@@ -823,8 +823,8 @@ function AppHeader(props: AppHeaderProps) {
             </button>
             <button
               aria-label={t(a11yRegistry.headerWindowClose.labelKey)}
-              className="window-control-btn window-control-btn--close"
-              data-slot="fg-header-g3-window-close"
+              className="mpx-btn window-control-btn window-control-btn--close"
+              data-slot="fg-header-btn-group-g3-btn-window-close"
               data-tooltip-label={t(a11yRegistry.headerWindowClose.labelKey)}
               type="button"
               onClick={() => {

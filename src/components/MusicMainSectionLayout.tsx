@@ -113,13 +113,16 @@ export function MusicMainSectionLayout({
 
   return (
     <>
-      <div className="main-header" data-slot="fg-main-header">
+      <div className="main-header mpx-btn-scope-main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
             <span hidden data-slot="fg-main-header-state-manage" />
-            <div className="main-header-actions main-header-actions-manage">
+            <div
+              className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-manage"
+              data-slot="fg-main-header-btn-group-manage"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={
                   allManageSelectableAudiosChecked
@@ -137,7 +140,7 @@ export function MusicMainSectionLayout({
                 <MainUiIcon name={allManageSelectableAudiosChecked ? "unselectAll" : "selectAll"} />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.organize")}
                 data-tooltip-label={t("tip.common.organize")}
@@ -147,7 +150,7 @@ export function MusicMainSectionLayout({
                 <MainUiIcon name="organize" />
               </button>
               <button
-                className={`feature-action-btn main-icon-square-btn ${audioTranscodePanelOpen ? "is-active" : ""}`}
+                className={`mpx-btn feature-action-btn main-icon-square-btn ${audioTranscodePanelOpen ? "is-active" : ""}`}
                 type="button"
                 aria-label="TC"
                 data-tooltip-label="TC"
@@ -157,7 +160,7 @@ export function MusicMainSectionLayout({
                 <span aria-hidden="true">TC</span>
               </button>
               <button
-                className="vector-search-btn main-icon-square-btn"
+                className="mpx-btn vector-search-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.delete")}
                 data-tooltip-label={t("tip.common.delete")}
@@ -176,9 +179,12 @@ export function MusicMainSectionLayout({
           <>
             <span hidden data-slot="fg-main-header-state-metadata" />
             <strong className="main-header-title">{t("ui.header.metadataManage")}</strong>
-            <div className="main-header-actions main-header-actions-manage">
+            <div
+              className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-metadata"
+              data-slot="fg-main-header-btn-group-metadata"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={metadataSelectionToggleLabel}
                 data-tooltip-label={metadataSelectionToggleLabel}
@@ -192,9 +198,12 @@ export function MusicMainSectionLayout({
           <>
             <span hidden data-slot="fg-main-header-state-normal" />
             <ToolbarTitleMarquee text={musicToolbarTitle} />
-            <div className="main-header-actions">
+            <div
+              className="main-header-actions mpx-btn-group mpx-btn-group--main-header-normal"
+              data-slot="fg-main-header-btn-group-normal"
+            >
               <button
-                className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
+                className={`mpx-btn toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
                 type="button"
                 aria-label={
                   showNamesOnly
@@ -212,10 +221,13 @@ export function MusicMainSectionLayout({
               </button>
             </div>
             {canJumpToManga || canJumpToAnimation || canJumpToCover || canJumpToBooklet ? (
-              <div className="main-header-actions">
+              <div
+                className="main-header-actions mpx-btn-group mpx-btn-group--main-header-normal-jump"
+                data-slot="fg-main-header-btn-group-normal-jump"
+              >
                 {canJumpToCover ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("ui.metadata.openCover")}
                     data-tooltip-label={t("ui.metadata.openCover")}
@@ -226,7 +238,7 @@ export function MusicMainSectionLayout({
                 ) : null}
                 {canJumpToBooklet ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.booklet")}
                     data-tooltip-label={t("tip.media.booklet")}
@@ -237,7 +249,7 @@ export function MusicMainSectionLayout({
                 ) : null}
                 {canJumpToManga ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.manga")}
                     data-tooltip-label={t("tip.media.manga")}
@@ -248,7 +260,7 @@ export function MusicMainSectionLayout({
                 ) : null}
                 {canJumpToAnimation ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.animation")}
                     data-tooltip-label={t("tip.media.animation")}

@@ -42,16 +42,20 @@ export function ThemeParameterPageSidebar({
   t: Translate;
 }) {
   return (
-    <aside className="mpx-large-panel-side settings-side theme-parameter-side">
+    <aside
+      className="mpx-large-panel-side settings-side theme-parameter-side mpx-btn-group mpx-btn-group--panel-large-side"
+      data-slot="fg-panel-large-side-btn-group-nav"
+    >
       {pages.map((page) => (
         <button
           key={page.id}
           type="button"
           className={
             activePage === page.id
-              ? "theme-parameter-side-btn is-active"
-              : "theme-parameter-side-btn"
+              ? "mpx-btn theme-parameter-side-btn is-active"
+              : "mpx-btn theme-parameter-side-btn"
           }
+          data-slot="fg-panel-large-side-btn-group-nav-btn-item"
           onClick={() => setActivePage(page.id)}
         >
           {t(page.labelKey)}

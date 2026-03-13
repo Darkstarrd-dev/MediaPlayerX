@@ -1226,7 +1226,7 @@ function SettingsPanel({
       data-overlay-close="settings"
     >
       <section
-        className={`mpx-large-panel mpx-large-panel--settings settings-panel ${panelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--settings settings-panel mpx-btn-scope-panel-large ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g1-settings-root-panel"
         style={{
           fontSize: `${settingsFontSize}px`,
@@ -1243,7 +1243,8 @@ function SettingsPanel({
           </h2>
           <button
             {...settingsCloseA11y}
-            className="settings-icon-btn main-icon-square-btn"
+            className="mpx-btn settings-icon-btn main-icon-square-btn"
+            data-slot="fg-panel-large-head-btn-group-main-btn-close"
             type="button"
             data-no-drag="true"
             onClick={onClose}
@@ -1254,7 +1255,8 @@ function SettingsPanel({
 
         <div className="mpx-large-panel-shell settings-shell">
           <aside
-            className="mpx-large-panel-side settings-side"
+            className="mpx-large-panel-side settings-side mpx-btn-group mpx-btn-group--panel-large-side"
+            data-slot="fg-panel-large-side-btn-group-nav"
             aria-label={t(a11yRegistry.settingsGroups.labelKey)}
           >
             {SETTINGS_SECTIONS.map((section) => (
@@ -1262,9 +1264,10 @@ function SettingsPanel({
                 key={section.id}
                 className={
                   activeSection === section.id
-                    ? "theme-parameter-side-btn is-active"
-                    : "theme-parameter-side-btn"
+                    ? "mpx-btn theme-parameter-side-btn is-active"
+                    : "mpx-btn theme-parameter-side-btn"
                 }
+                data-slot="fg-panel-large-side-btn-group-nav-btn-item"
                 type="button"
                 onClick={() => {
                   setActiveSection(section.id);

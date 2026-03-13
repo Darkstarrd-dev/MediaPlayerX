@@ -28,7 +28,7 @@ export function SettingsShortcutCaptureDialog({
       aria-label={t(a11yRegistry.settingsShortcutCaptureDialog.labelKey)}
     >
       <section
-        className="settings-floating-panel mpx-dialog-panel"
+        className="settings-floating-panel mpx-dialog-panel mpx-btn-scope-panel-small"
         data-slot="fg-header-g1-settings-shortcut-capture-panel"
       >
         <h3>{t("ui.settings.shortcutCaptureTitle")}</h3>
@@ -60,8 +60,12 @@ export function SettingsShortcutCaptureDialog({
             ))}
           </div>
         </div>
-        <div className="mpx-overlay-actions">
+        <div
+          className="mpx-overlay-actions mpx-btn-group mpx-btn-group--panel-small-actions"
+          data-slot="fg-panel-small-btn-group-actions"
+        >
           <button
+            className="mpx-btn"
             type="button"
             data-capture-ignore="true"
             disabled={!capturedCombo}
@@ -69,7 +73,12 @@ export function SettingsShortcutCaptureDialog({
           >
             {t("ui.settings.shortcutConfirmAdd")}
           </button>
-          <button type="button" data-capture-ignore="true" onClick={onCancel}>
+          <button
+            className="mpx-btn"
+            type="button"
+            data-capture-ignore="true"
+            onClick={onCancel}
+          >
             {t("ui.common.cancel")}
           </button>
         </div>

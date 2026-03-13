@@ -614,7 +614,7 @@ function MetadataFetchPanel({
       data-overlay-close="metadata-fetch-panel"
     >
       <section
-        className={`mpx-large-panel mpx-large-panel--metadata-fetch settings-panel metadata-fetch-panel ${panelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--metadata-fetch settings-panel metadata-fetch-panel mpx-btn-scope-panel-large ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-main-header-image-metadata-fetch-panel"
         data-overlay-close="metadata-fetch-panel"
         style={{
@@ -634,7 +634,7 @@ function MetadataFetchPanel({
             </p>
           </div>
           <button
-            className="feature-action-btn main-icon-square-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn"
             type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
@@ -735,7 +735,7 @@ function MetadataFetchPanel({
 
                 <div className="metadata-fetch-search-action">
                   <button
-                    className="feature-action-btn main-icon-square-btn metadata-fetch-search-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn"
+                    className="mpx-btn feature-action-btn main-icon-square-btn metadata-fetch-search-btn mpx-overlay-seamless-cell mpx-overlay-seamless-btn"
                     type="button"
                     aria-label={
                       loading
@@ -793,9 +793,9 @@ function MetadataFetchPanel({
                             count: list.length,
                           })}
                         </span>
-                        <div className="mpx-overlay-actions mpx-overlay-actions-inline-end mpx-overlay-inline-icon-actions metadata-fetch-source-actions">
+                        <div className="mpx-overlay-actions mpx-overlay-actions-inline-end mpx-overlay-inline-icon-actions metadata-fetch-source-actions mpx-btn-group mpx-btn-group--panel-large-inline-actions">
                           <button
-                            className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
+                            className="mpx-btn feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                             data-mpx-button-variant="overlay-cell"
                             type="button"
                             aria-label={t("a11y.common.prevPage")}
@@ -812,7 +812,7 @@ function MetadataFetchPanel({
                             <MainUiIcon name="prev" />
                           </button>
                           <button
-                            className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
+                            className="mpx-btn feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                             data-mpx-button-variant="overlay-cell"
                             type="button"
                             aria-label={t("a11y.common.nextPage")}
@@ -830,7 +830,7 @@ function MetadataFetchPanel({
                             <MainUiIcon name="next" />
                           </button>
                           <button
-                            className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
+                            className="mpx-btn feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                             data-mpx-button-variant="overlay-cell"
                             type="button"
                             aria-label={t("a11y.common.parse")}
@@ -844,7 +844,7 @@ function MetadataFetchPanel({
                             <MainUiIcon name="parse" />
                           </button>
                           <button
-                            className="feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
+                            className="mpx-btn feature-action-btn main-icon-square-btn mpx-overlay-cell-btn"
                             data-mpx-button-variant="overlay-cell"
                             type="button"
                             aria-label={

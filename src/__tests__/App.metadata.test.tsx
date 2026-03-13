@@ -369,10 +369,10 @@ describe("MediaPlayer 虚拟 UI - metadata", () => {
 
       expect(screen.queryByRole("button", { name: "元数据面板" })).toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-meta-header-g3"]'),
+        document.querySelector('[data-slot="fg-meta-header-btn-group-g3"]'),
       ).not.toBeNull();
       expect(
-        document.querySelector('[data-slot="fg-meta-header-g3-search"]'),
+        document.querySelector('[data-slot="fg-meta-header-btn-group-g3-btn-search"]'),
       ).not.toBeNull();
     },
     uiLongTestTimeoutMs,

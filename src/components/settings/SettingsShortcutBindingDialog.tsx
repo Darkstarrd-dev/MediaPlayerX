@@ -28,7 +28,7 @@ export function SettingsShortcutBindingDialog({
       aria-label={t(a11yRegistry.settingsShortcutEditDialog.labelKey)}
     >
       <section
-        className="settings-floating-panel mpx-dialog-panel"
+        className="settings-floating-panel mpx-dialog-panel mpx-btn-scope-panel-small"
         data-slot="fg-header-g1-settings-shortcut-edit-panel"
       >
         <h3>{bindingTarget.label}</h3>
@@ -45,8 +45,12 @@ export function SettingsShortcutBindingDialog({
             {t("ui.settings.shortcutNoneConfigured")}
           </p>
         )}
-        <div className="mpx-overlay-actions">
+        <div
+          className="mpx-overlay-actions mpx-btn-group mpx-btn-group--panel-small-actions"
+          data-slot="fg-panel-small-btn-group-actions"
+        >
           <button
+            className="mpx-btn"
             type="button"
             data-capture-ignore="true"
             onClick={onStartCapture}
@@ -54,13 +58,19 @@ export function SettingsShortcutBindingDialog({
             {t("ui.common.add")}
           </button>
           <button
+            className="mpx-btn"
             type="button"
             data-capture-ignore="true"
             onClick={onClearBinding}
           >
             {t("ui.common.clear")}
           </button>
-          <button type="button" data-capture-ignore="true" onClick={onClose}>
+          <button
+            className="mpx-btn"
+            type="button"
+            data-capture-ignore="true"
+            onClick={onClose}
+          >
             {t("ui.common.close")}
           </button>
         </div>

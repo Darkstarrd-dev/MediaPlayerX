@@ -608,7 +608,7 @@
   box-shadow: var(--mpx-header-btn-active-shadow);
 }
 
-[data-slot="fg-header-g1-palette"] {
+[data-slot="fg-header-btn-group-g1-btn-palette"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g1-palette-border,
     var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
@@ -635,7 +635,7 @@
   );
 }
 
-[data-slot="fg-header-g1-settings"] {
+[data-slot="fg-header-btn-group-g1-btn-settings"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g1-settings-border,
     var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
@@ -662,7 +662,7 @@
   );
 }
 
-[data-slot="fg-header-g1-toggle-sidebar"] {
+[data-slot="fg-header-btn-group-g1-btn-toggle-sidebar"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g1-toggle-sidebar-border,
     var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))
@@ -689,7 +689,7 @@
   );
 }
 
-[data-slot="fg-header-g1-toggle-metadata"] {
+[data-slot="fg-header-btn-group-g1-btn-toggle-metadata"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-header-g1-toggle-metadata-border,
     var(--mpx-slot-fg-header-g1-border, var(--mpx-header-button-border-effective))

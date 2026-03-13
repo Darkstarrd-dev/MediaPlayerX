@@ -236,7 +236,7 @@ function SubtitleCleanupPanel({
       data-overlay-close="subtitle-cleanup-panel"
     >
       <section
-        className="mpx-large-panel mpx-large-panel--subtitle-cleanup settings-panel subtitle-cleanup-panel"
+        className="mpx-large-panel mpx-large-panel--subtitle-cleanup settings-panel subtitle-cleanup-panel mpx-btn-scope-panel-large"
         data-slot="fg-main-header-manage-subtitle-cleanup-panel"
         data-overlay-close="subtitle-cleanup-panel"
       >
@@ -246,7 +246,7 @@ function SubtitleCleanupPanel({
             {t("ui.media.subtitleCleanupTitle")}
           </h2>
           <button
-            className="feature-action-btn main-icon-square-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn"
             type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
@@ -281,9 +281,9 @@ function SubtitleCleanupPanel({
                 />
               </label>
 
-              <div className="settings-test-row">
+              <div className="settings-test-row mpx-btn-group mpx-btn-group--panel-large-inline-actions">
                 <button
-                  className="feature-action-btn"
+                  className="mpx-btn feature-action-btn"
                   type="button"
                   disabled={!canLoadRaw}
                   onClick={() => void startCleanup()}
@@ -293,7 +293,7 @@ function SubtitleCleanupPanel({
                     : t("ui.media.subtitleCleanupStart")}
                 </button>
                 <button
-                  className="feature-action-btn"
+                  className="mpx-btn feature-action-btn"
                   type="button"
                   disabled={!canRunCleanup}
                   onClick={() => void runCleanup()}
@@ -301,7 +301,7 @@ function SubtitleCleanupPanel({
                   {t("ui.media.subtitleCleanupRun")}
                 </button>
                 <button
-                  className="feature-action-btn"
+                  className="mpx-btn feature-action-btn"
                   type="button"
                   disabled={!canSave}
                   onClick={() => void saveCleanup()}

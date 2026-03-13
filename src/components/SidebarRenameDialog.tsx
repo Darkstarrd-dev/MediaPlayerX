@@ -285,7 +285,7 @@ function SidebarRenameDialog({
         data-overlay-close="sidebar-rename-single-dialog"
       >
         <section
-          className="settings-floating-panel mpx-dialog-panel sidebar-rename-single-dialog"
+          className="settings-floating-panel mpx-dialog-panel sidebar-rename-single-dialog mpx-btn-scope-panel-small"
           data-slot="fg-sidebar-shortcut-rename-single-panel"
           role="document"
         >
@@ -316,9 +316,12 @@ function SidebarRenameDialog({
             }}
             autoFocus
           />
-          <div className="mpx-overlay-actions mpx-overlay-actions-start">
+          <div
+            className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-small-actions"
+            data-slot="fg-panel-small-btn-group-actions"
+          >
             <button
-              className="feature-action-btn main-icon-square-btn"
+              className="mpx-btn feature-action-btn main-icon-square-btn"
               type="button"
               disabled={pending}
               onClick={onCancel}
@@ -326,7 +329,7 @@ function SidebarRenameDialog({
               {cancelLabel}
             </button>
             <button
-              className="feature-action-btn main-icon-square-btn"
+              className="mpx-btn feature-action-btn main-icon-square-btn"
               type="button"
               disabled={singleConfirmDisabled}
               onClick={onConfirm}
@@ -349,7 +352,7 @@ function SidebarRenameDialog({
       data-overlay-close="sidebar-rename-dialog"
     >
       <section
-        className={`mpx-large-panel mpx-large-panel--sidebar-rename manage-group-dialog sidebar-rename-dialog ${panelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--sidebar-rename manage-group-dialog sidebar-rename-dialog mpx-btn-scope-panel-large ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-sidebar-shortcut-rename-panel"
         style={{
           transform: `translate(${panelOffset.x}px, ${panelOffset.y}px)`,
@@ -385,7 +388,7 @@ function SidebarRenameDialog({
             </p>
           ) : null}
           <button
-            className="feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-close-btn sidebar-rename-g2-btn"
             type="button"
             aria-label={closeLabel}
             data-tooltip-label={closeLabel}
@@ -803,9 +806,12 @@ function SidebarRenameDialog({
                 autoFocus
               />
             )}
-            <div className="mpx-overlay-actions mpx-overlay-footer-actions">
+            <div
+              className="mpx-overlay-actions mpx-overlay-footer-actions mpx-btn-group mpx-btn-group--panel-large-footer-actions"
+              data-slot="fg-panel-large-footer-btn-group-actions"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={pending}
                 onClick={onCancel}
@@ -813,7 +819,7 @@ function SidebarRenameDialog({
                 {cancelLabel}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-confirm-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={batchModeActive ? pending : singleConfirmDisabled}
                 onClick={onConfirm}

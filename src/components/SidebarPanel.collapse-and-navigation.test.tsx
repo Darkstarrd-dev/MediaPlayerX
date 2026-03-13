@@ -468,7 +468,7 @@ describe("SidebarPanel music interactions", () => {
     const { onCollapseSidebar, onToggleSidebarTreeDisplayMode } =
       renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE);
     const titleButton = document.querySelector<HTMLButtonElement>(
-      '[data-slot="fg-sidebar-header-title"]',
+      '[data-slot="fg-sidebar-header-btn-group-title-btn-root"]',
     );
     expect(titleButton).not.toBeNull();
 

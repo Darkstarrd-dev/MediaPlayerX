@@ -184,7 +184,7 @@ export function VideoTranscodePanel({
       }}
     >
       <section
-        className="mpx-large-panel mpx-large-panel--video-transcode settings-panel music-audio-transcode-dialog video-transcode-panel"
+        className="mpx-large-panel mpx-large-panel--video-transcode settings-panel music-audio-transcode-dialog video-transcode-panel mpx-btn-scope-panel-large"
         data-slot="fg-main-header-manage-video-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
@@ -197,7 +197,7 @@ export function VideoTranscodePanel({
             {t("ui.media.videoTranscodeTitle")}
           </h2>
           <button
-            className="feature-action-btn main-icon-square-btn settings-icon-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn settings-icon-btn"
             type="button"
             aria-label={t("a11y.common.close")}
             data-tooltip-label={t("tip.common.close")}
@@ -482,7 +482,7 @@ export function VideoTranscodePanel({
                   onChange={(event) => onOutputDirChange(event.target.value)}
                 />
                 <button
-                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
+                  className="mpx-btn feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
                   type="button"
                   disabled={executing || pickingOutputDir}
                   onClick={() => void onPickOutputDir()}
@@ -492,7 +492,7 @@ export function VideoTranscodePanel({
                     : t("ui.media.videoTranscodePickOutputDirectory")}
                 </button>
                 <button
-                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
+                  className="mpx-btn feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
                   type="button"
                   disabled={executing || outputDir.trim().length <= 0}
                   onClick={() => onOutputDirChange("")}
@@ -590,9 +590,12 @@ export function VideoTranscodePanel({
               ) : null}
             </div>
 
-            <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
+            <div
+              className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions mpx-btn-group mpx-btn-group--panel-large-footer-actions"
+              data-slot="fg-panel-large-footer-btn-group-actions"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || !canOpenOutputDirectory}
                 onClick={() => void onOpenOutputDirectory()}
@@ -600,7 +603,7 @@ export function VideoTranscodePanel({
                 {t("ui.media.videoTranscodeOpenOutputDirectory")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || Boolean(confirmDisabledReason)}
                 onClick={() => void onConfirm()}
@@ -608,7 +611,7 @@ export function VideoTranscodePanel({
                 {t("ui.media.videoTranscodeStart")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 onClick={() => void onCancel()}
               >

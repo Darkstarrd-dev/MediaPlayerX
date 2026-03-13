@@ -6,6 +6,52 @@
   box-shadow: var(--mpx-btn-group-groove-shadow);
 }
 
+.mpx-btn:not([data-mpx-button-variant]):not(.video-action-btn):not(
+    .fullscreen-action-btn
+  ):not(.header-popover-trigger) {
+  border: var(--mpx-control-border-width) solid
+    var(--mpx-btn-variant-default-border);
+  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  background: var(--mpx-btn-variant-default-bg-idle);
+  color: var(--mpx-btn-variant-default-text-idle);
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+.mpx-btn:not([data-mpx-button-variant]):not(.video-action-btn):not(
+    .fullscreen-action-btn
+  ):not(.header-popover-trigger):not(:disabled):hover {
+  background: var(--mpx-btn-variant-default-bg-hover);
+  box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+  transform: var(--mpx-btn-variant-default-transform-hover);
+}
+
+.mpx-btn:not([data-mpx-button-variant]):not(.video-action-btn):not(
+    .fullscreen-action-btn
+  ):not(.header-popover-trigger):not(:disabled):active {
+  background: var(--mpx-btn-variant-default-bg-active);
+  border-color: var(--mpx-btn-variant-default-border);
+  box-shadow: var(--mpx-btn-variant-default-shadow-active);
+  transform: var(--mpx-btn-variant-default-transform-active);
+}
+
+.mpx-btn:not([data-mpx-button-variant]):not(.video-action-btn):not(
+    .fullscreen-action-btn
+  ):not(.header-popover-trigger)[aria-pressed="true"] {
+  background: var(--mpx-btn-variant-default-bg-pressed);
+  border-color: var(--mpx-btn-variant-default-border);
+  color: var(--mpx-btn-variant-default-text-pressed);
+  box-shadow: var(--mpx-btn-variant-default-shadow-pressed);
+  transform: var(--mpx-btn-variant-default-transform-pressed);
+}
+
+.mpx-btn:not([data-mpx-button-variant]):not(.video-action-btn):not(
+    .fullscreen-action-btn
+  ):not(.header-popover-trigger):disabled {
+  color: var(--mpx-btn-variant-default-text-disabled);
+  opacity: 0.56;
+}
+
 :is(
     .sidebar-header button:not([data-mpx-button-variant]),
     .main-header button:not([data-mpx-button-variant]),

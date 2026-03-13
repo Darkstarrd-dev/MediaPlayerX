@@ -53,7 +53,7 @@ function GroupNameDialog({
       data-overlay-close="group-name-dialog"
     >
       <section
-        className="settings-floating-panel mpx-dialog-panel manage-group-dialog"
+        className="settings-floating-panel mpx-dialog-panel manage-group-dialog mpx-btn-scope-panel-small"
         data-slot="fg-main-header-manage-group-name-panel"
         role="document"
         style={{ width: `min(92vw, max(270px, ${dialogWidthCh}))` }}
@@ -82,9 +82,12 @@ function GroupNameDialog({
           }}
           autoFocus
         />
-        <div className="mpx-overlay-actions mpx-overlay-actions-start">
+        <div
+          className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-small-actions"
+          data-slot="fg-panel-small-btn-group-actions"
+        >
           <button
-            className="feature-action-btn main-icon-square-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn"
             type="button"
             onClick={onGroup}
             disabled={disabledGroup}
@@ -92,7 +95,7 @@ function GroupNameDialog({
             {groupLabel}
           </button>
           <button
-            className="feature-action-btn main-icon-square-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn"
             type="button"
             onClick={onMove}
             disabled={pending}
@@ -100,7 +103,7 @@ function GroupNameDialog({
             {moveLabel}
           </button>
           <button
-            className="feature-action-btn main-icon-square-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn"
             type="button"
             onClick={onCancel}
             disabled={pending}

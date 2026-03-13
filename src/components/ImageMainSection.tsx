@@ -1083,13 +1083,16 @@ function ImageMainSection({
 
   return (
     <>
-      <div className="main-header" data-slot="fg-main-header">
+      <div className="main-header mpx-btn-scope-main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
             <span hidden data-slot="fg-main-header-state-manage" />
-            <div className="main-header-actions main-header-actions-manage">
+            <div
+              className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-manage"
+              data-slot="fg-main-header-btn-group-manage"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={
                   hasAnyManageSelection
@@ -1116,7 +1119,7 @@ function ImageMainSection({
                 />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.hide")}
                 data-tooltip-label={t("tip.common.hide")}
@@ -1126,7 +1129,7 @@ function ImageMainSection({
                 <MainUiIcon name="hidden" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.unhide")}
                 data-tooltip-label={t("tip.common.unhide")}
@@ -1136,7 +1139,7 @@ function ImageMainSection({
                 <MainUiIcon name="reveal" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.organize")}
                 data-tooltip-label={t("tip.common.organize")}
@@ -1146,7 +1149,7 @@ function ImageMainSection({
                 <MainUiIcon name="organize" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.rename")}
                 data-tooltip-label={t("tip.common.rename")}
@@ -1156,7 +1159,7 @@ function ImageMainSection({
                 <MainUiIcon name="rename" />
               </button>
               <button
-                className={`feature-action-btn main-icon-square-btn ${
+                className={`mpx-btn feature-action-btn main-icon-square-btn ${
                   imageConvertPanelOpen || imageConvertPreviewMode
                     ? "is-active"
                     : ""
@@ -1170,7 +1173,7 @@ function ImageMainSection({
                 <span aria-hidden="true">RS</span>
               </button>
               <button
-                className={`vector-search-btn main-icon-square-btn ${adReviewDeletePending ? "is-pending" : ""}`}
+                className={`mpx-btn vector-search-btn main-icon-square-btn ${adReviewDeletePending ? "is-pending" : ""}`}
                 type="button"
                 aria-label={
                   adReviewDeletePending
@@ -1189,7 +1192,7 @@ function ImageMainSection({
               </button>
               {adReviewFeatureEnabled ? (
                 <button
-                  className={`feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? "is-active" : ""}`}
+                  className={`mpx-btn feature-action-btn main-icon-square-btn ${adReviewPanelOpen ? "is-active" : ""}`}
                   type="button"
                   aria-label={t("a11y.manage.adReview")}
                   data-tooltip-label={t("tip.manage.adReview")}
@@ -1300,7 +1303,10 @@ function ImageMainSection({
                 onCancel={handleImageConvertCancel}
               />
             </div>
-            <div className="main-header-actions main-header-actions-manage-secondary">
+            <div
+              className="main-header-actions main-header-actions-manage-secondary mpx-btn-group mpx-btn-group--main-header-manage-secondary"
+              data-slot="fg-main-header-btn-group-manage-secondary"
+            >
               <strong
                 className="main-header-summary"
                 data-tooltip-label={manageSummaryText}

@@ -1167,13 +1167,13 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g1"],
+  [data-slot="fg-header-btn-group-g1"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g2"],
+  [data-slot="fg-header-btn-group-g2"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g-debug"],
+  [data-slot="fg-header-btn-group-g-debug"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g3"] {
+  [data-slot="fg-header-btn-group-g3"] {
   padding: var(--mpx-button-group-inset-px, 2px);
   border: 1px solid #bcc4cf;
   border-radius: var(--mpx-radius-header-group, 12px);
@@ -1195,7 +1195,7 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g2-panel-toggles"] {
+  [data-slot="fg-header-btn-group-g1-panel-toggles"] {
   border: none;
   border-radius: 0;
   background: transparent;
@@ -1204,25 +1204,25 @@
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g1-toggle-sidebar"],
+  [data-slot="fg-header-btn-group-g1-btn-toggle-sidebar"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g1-toggle-metadata"],
+  [data-slot="fg-header-btn-group-g1-btn-toggle-metadata"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-header-logo"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g1-palette"],
+  [data-slot="fg-header-btn-group-g1-btn-palette"],
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g1-settings"],
+  [data-slot="fg-header-btn-group-g1-btn-settings"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g-debug-tooltips"],
+  [data-slot="fg-header-btn-group-g-debug-btn-tooltips"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g-debug-native-chrome"],
+  [data-slot="fg-header-btn-group-g-debug-btn-native-chrome"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g-debug-theme-parameter"],
+  [data-slot="fg-header-btn-group-g-debug-btn-theme-parameter"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g3-popover-debug-pin"],
+  [data-slot="fg-header-btn-group-g-debug-btn-popover-debug-pin"],
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-header-g2-music-quick"]
+  [data-slot="fg-header-btn-group-g2-btn-group-music-quick"]
   .mode-action-btn,
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   .mode-switch

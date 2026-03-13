@@ -57,10 +57,16 @@ export function ImageMainNormalToolbar({
     <>
       <span hidden data-slot="fg-main-header-state-normal" />
       <ToolbarTitleMarquee text={browseToolbarTitle} />
-      <div className="main-header-actions main-header-actions-image-mode">
-        <div className="main-header-actions main-header-actions-image-primary">
+      <div
+        className="main-header-actions main-header-actions-image-mode mpx-btn-group mpx-btn-group--main-header-normal"
+        data-slot="fg-main-header-btn-group-normal"
+      >
+        <div
+          className="main-header-actions main-header-actions-image-primary mpx-btn-group mpx-btn-group--main-header-normal-primary"
+          data-slot="fg-main-header-btn-group-normal-primary"
+        >
           <button
-            className={`toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
+            className={`mpx-btn toolbar-icon-btn ${showNamesOnly ? "is-names-mode" : "is-grid-mode"}`}
             type="button"
             aria-label={
               showNamesOnly
@@ -89,7 +95,7 @@ export function ImageMainNormalToolbar({
             onScaleChange={onScaleChange}
           />
           <button
-            className="toolbar-icon-btn"
+            className="mpx-btn toolbar-icon-btn"
             type="button"
             aria-label={t("a11y.media.enterFullscreen")}
             data-tooltip-label={t("tip.media.enterFullscreen")}
@@ -103,7 +109,7 @@ export function ImageMainNormalToolbar({
           </button>
           {canJumpToMusicFromBooklet ? (
             <button
-              className="toolbar-icon-btn"
+              className="mpx-btn toolbar-icon-btn"
               type="button"
               aria-label={t("a11y.media.music")}
               data-tooltip-label={t("tip.media.music")}
@@ -115,10 +121,13 @@ export function ImageMainNormalToolbar({
         </div>
         {canJumpToAnimation ||
         (canJumpToMusic && !canJumpToMusicFromBooklet) ? (
-          <div className="main-header-actions main-header-actions-series-jump">
+          <div
+            className="main-header-actions main-header-actions-series-jump mpx-btn-group mpx-btn-group--main-header-normal-jump"
+            data-slot="fg-main-header-btn-group-normal-jump"
+          >
             {canJumpToAnimation ? (
               <button
-                className="toolbar-icon-btn"
+                className="mpx-btn toolbar-icon-btn"
                 type="button"
                 aria-label={t("a11y.media.animation")}
                 data-tooltip-label={t("tip.media.animation")}
@@ -129,7 +138,7 @@ export function ImageMainNormalToolbar({
             ) : null}
             {canJumpToMusic && !canJumpToMusicFromBooklet ? (
               <button
-                className="toolbar-icon-btn"
+                className="mpx-btn toolbar-icon-btn"
                 type="button"
                 aria-label={t("a11y.media.music")}
                 data-tooltip-label={t("tip.media.music")}

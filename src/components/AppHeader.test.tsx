@@ -77,7 +77,7 @@ describe("AppHeader music quick actions", () => {
     );
 
     const modeSwitchGroup = container.querySelector(
-      '[data-slot="fg-header-g2"]',
+      '[data-slot="fg-header-btn-group-g2"]',
     ) as HTMLElement;
     const modeSwitch = container.querySelector(".mode-switch") as HTMLElement;
     emitPlaybackState(true);
@@ -85,10 +85,10 @@ describe("AppHeader music quick actions", () => {
       ".music-quick-actions",
     ) as HTMLElement;
     expect(modeSwitchGroup.classList.contains("mpx-btn-group")).toBe(true);
-    expect(modeSwitch.classList.contains("mpx-btn-group")).toBe(false);
+    expect(modeSwitch.classList.contains("mpx-btn-group")).toBe(true);
     expect(modeSwitch.querySelectorAll(":scope > button")).toHaveLength(3);
     expect(modeSwitchGroup.contains(quickActions)).toBe(true);
-    expect(quickActions.classList.contains("mpx-btn-group")).toBe(false);
+    expect(quickActions.classList.contains("mpx-btn-group")).toBe(true);
     expect(quickActions.classList.contains("is-visible")).toBe(false);
     expect(modeSwitchGroup.classList.contains("has-music-quick-actions")).toBe(
       false,
@@ -133,7 +133,7 @@ describe("AppHeader music quick actions", () => {
     expect(quickActions.classList.contains("is-visible")).toBe(false);
     expect(
       (
-        container.querySelector('[data-slot="fg-header-g2"]') as HTMLElement
+        container.querySelector('[data-slot="fg-header-btn-group-g2"]') as HTMLElement
       ).classList.contains("has-music-quick-actions"),
     ).toBe(false);
 

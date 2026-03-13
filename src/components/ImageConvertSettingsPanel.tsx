@@ -84,7 +84,7 @@ export function ImageConvertSettingsPanel({
       }}
     >
       <section
-        className="settings-floating-panel mpx-dialog-panel main-header-image-convert-panel main-header-image-convert-dialog"
+        className="settings-floating-panel mpx-dialog-panel main-header-image-convert-panel main-header-image-convert-dialog mpx-btn-scope-panel-small"
         data-slot="fg-main-header-image-convert-panel"
         onMouseDown={onPanelMouseDown}
       >
@@ -175,8 +175,12 @@ export function ImageConvertSettingsPanel({
             {`RS ${imageConvertTaskStatus} ${Math.round(imageConvertTaskProgress * 100)}%${imageConvertTaskMessage ? ` | ${imageConvertTaskMessage}` : ""}`}
           </p>
         ) : null}
-        <div className="mpx-overlay-actions mpx-overlay-actions-start">
+        <div
+          className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-small-actions"
+          data-slot="fg-panel-small-btn-group-actions"
+        >
           <button
+            className="mpx-btn"
             type="button"
             disabled={imageConvertExecuting}
             data-tooltip-label={
@@ -189,13 +193,14 @@ export function ImageConvertSettingsPanel({
             预览
           </button>
           <button
+            className="mpx-btn"
             type="button"
             disabled={imageConvertExecuting}
             onClick={() => void onConfirm()}
           >
             确定
           </button>
-          <button type="button" onClick={() => void onCancel()}>
+          <button className="mpx-btn" type="button" onClick={() => void onCancel()}>
             取消
           </button>
         </div>

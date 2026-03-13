@@ -55,7 +55,7 @@ function DangerConfirmDialog({
       data-overlay-close="delete-confirm"
     >
       <section
-        className="settings-floating-panel mpx-dialog-panel manage-confirm-dialog"
+        className="settings-floating-panel mpx-dialog-panel manage-confirm-dialog mpx-btn-scope-panel-small"
         data-slot="fg-main-header-manage-delete-confirm-panel"
       >
         <h3>{title}</h3>
@@ -88,9 +88,13 @@ function DangerConfirmDialog({
           <span>{acknowledgeLabel}</span>
         </label>
 
-        <div className="mpx-overlay-actions">
+        <div
+          className="mpx-overlay-actions mpx-btn-group mpx-btn-group--panel-small-actions"
+          data-slot="fg-panel-small-btn-group-actions"
+        >
           {onRemoveOnly && removeOnlyLabel ? (
             <button
+              className="mpx-btn"
               type="button"
               disabled={!removeOnlyEnabled || pending}
               onClick={onRemoveOnly}
@@ -99,13 +103,19 @@ function DangerConfirmDialog({
             </button>
           ) : null}
           <button
+            className="mpx-btn"
             type="button"
             disabled={!acknowledged || pending}
             onClick={onConfirm}
           >
             {confirmLabel}
           </button>
-          <button type="button" disabled={pending} onClick={onCancel}>
+          <button
+            className="mpx-btn"
+            type="button"
+            disabled={pending}
+            onClick={onCancel}
+          >
             {cancelLabel}
           </button>
         </div>

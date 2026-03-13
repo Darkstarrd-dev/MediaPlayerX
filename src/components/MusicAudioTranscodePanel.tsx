@@ -161,7 +161,7 @@ export function MusicAudioTranscodePanel({
       }}
     >
       <section
-        className="mpx-large-panel mpx-large-panel--music-transcode settings-panel music-audio-transcode-dialog"
+        className="mpx-large-panel mpx-large-panel--music-transcode settings-panel music-audio-transcode-dialog mpx-btn-scope-panel-large"
         data-slot="fg-main-header-manage-music-transcode-panel"
         onMouseDown={onPanelMouseDown}
       >
@@ -174,7 +174,7 @@ export function MusicAudioTranscodePanel({
             {t("ui.music.audioTranscodeTitle")}
           </h2>
           <button
-            className="feature-action-btn main-icon-square-btn settings-icon-btn"
+            className="mpx-btn feature-action-btn main-icon-square-btn settings-icon-btn"
             type="button"
             aria-label={closeA11yLabel}
             data-tooltip-label={closeTooltipLabel}
@@ -268,7 +268,7 @@ export function MusicAudioTranscodePanel({
                   onChange={(event) => onOutputDirChange(event.target.value)}
                 />
                 <button
-                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
+                  className="mpx-btn feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
                   type="button"
                   disabled={executing || pickingOutputDir}
                   onClick={() => void onPickOutputDir()}
@@ -278,7 +278,7 @@ export function MusicAudioTranscodePanel({
                     : t("ui.music.audioTranscodePickOutputDirectory")}
                 </button>
                 <button
-                  className="feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
+                  className="mpx-btn feature-action-btn main-icon-square-btn music-audio-transcode-seamless-btn mpx-overlay-seamless-cell"
                   type="button"
                   disabled={executing || outputDir.trim().length <= 0}
                   onClick={() => onOutputDirChange("")}
@@ -307,14 +307,15 @@ export function MusicAudioTranscodePanel({
                 <p className="mpx-overlay-caption">{confirmDisabledReason}</p>
               ) : null}
               <section className="mpx-overlay-section">
-                <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                <div className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-large-inline-actions">
                   <p className="mpx-overlay-caption">
                     {t("ui.music.audioTranscodeParameterSection")}
                   </p>
-                  <button
-                    type="button"
-                    disabled={executing}
-                    onClick={onSaveDefaults}
+                    <button
+                      className="mpx-btn"
+                      type="button"
+                      disabled={executing}
+                      onClick={onSaveDefaults}
                   >
                     {t("ui.music.audioTranscodeSaveDefaults")}
                   </button>
@@ -556,11 +557,12 @@ export function MusicAudioTranscodePanel({
               ) : null}
               {taskHistory.length > 0 ? (
                 <section className="mpx-overlay-section">
-                  <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                  <div className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-large-inline-actions">
                     <p className="mpx-overlay-caption">
                       {t("ui.music.audioTranscodeHistoryTitle")}
                     </p>
                     <button
+                      className="mpx-btn"
                       type="button"
                       disabled={executing}
                       onClick={() => {
@@ -572,6 +574,7 @@ export function MusicAudioTranscodePanel({
                         : t("ui.music.audioTranscodeHistoryShowFailedOnly")}
                     </button>
                     <button
+                      className="mpx-btn"
                       type="button"
                       disabled={executing || failedTaskCount <= 0}
                       onClick={() => void onRetryFailedTasks()}
@@ -588,7 +591,7 @@ export function MusicAudioTranscodePanel({
                       );
                       return (
                         <li key={task.taskId}>
-                          <div className="mpx-overlay-actions mpx-overlay-actions-start">
+                          <div className="mpx-overlay-actions mpx-overlay-actions-start mpx-btn-group mpx-btn-group--panel-large-inline-actions">
                             <span className="mpx-overlay-list-item-truncate">
                               {t("ui.music.audioTranscodeHistoryItem", {
                                 id: task.taskId.slice(0, 8),
@@ -598,6 +601,7 @@ export function MusicAudioTranscodePanel({
                               })}
                             </span>
                             <button
+                              className="mpx-btn"
                               type="button"
                               disabled={executing || task.status !== "failed"}
                               onClick={() => void onRetryTask(task.taskId)}
@@ -622,9 +626,12 @@ export function MusicAudioTranscodePanel({
                 </section>
               ) : null}
             </div>
-            <div className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions">
+            <div
+              className="mpx-overlay-actions mpx-overlay-footer-actions music-audio-transcode-footer-actions mpx-btn-group mpx-btn-group--panel-large-footer-actions"
+              data-slot="fg-panel-large-footer-btn-group-actions"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || Boolean(confirmDisabledReason)}
                 onClick={() => void onConfirm()}
@@ -632,7 +639,7 @@ export function MusicAudioTranscodePanel({
                 {t("ui.music.audioTranscodeStart")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 disabled={executing || taskHistory.length <= 0}
                 onClick={onClearTaskHistory}
@@ -640,7 +647,7 @@ export function MusicAudioTranscodePanel({
                 {t("ui.common.clear")}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn sidebar-rename-g2-btn mpx-overlay-footer-btn"
                 type="button"
                 onClick={() => void onCancel()}
               >

@@ -360,7 +360,7 @@ function HelpPanel({
       data-overlay-close="help"
     >
       <section
-        className={`mpx-large-panel mpx-large-panel--help settings-panel ${panelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--help settings-panel mpx-btn-scope-panel-large ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g3-help-root-panel"
         style={{
           fontSize: `${settingsFontSize}px`,
@@ -380,7 +380,8 @@ function HelpPanel({
           </h2>
           <button
             {...helpCloseA11y}
-            className="settings-icon-btn main-icon-square-btn"
+            className="mpx-btn settings-icon-btn main-icon-square-btn"
+            data-slot="fg-panel-large-head-btn-group-main-btn-close"
             type="button"
             onClick={onClose}
           >
@@ -390,16 +391,18 @@ function HelpPanel({
 
         <div className="mpx-large-panel-shell settings-shell">
           <aside
-            className="mpx-large-panel-side settings-side"
+            className="mpx-large-panel-side settings-side mpx-btn-group mpx-btn-group--panel-large-side"
+            data-slot="fg-panel-large-side-btn-group-nav"
             aria-label={t("a11y.help.sections")}
           >
             <button
               type="button"
               className={
                 activeSection === "image"
-                  ? "theme-parameter-side-btn is-active"
-                  : "theme-parameter-side-btn"
+                  ? "mpx-btn theme-parameter-side-btn is-active"
+                  : "mpx-btn theme-parameter-side-btn"
               }
+              data-slot="fg-panel-large-side-btn-group-nav-btn-item"
               onClick={() => setActiveSection("image")}
             >
               {t("ui.help.section.image")}
@@ -408,9 +411,10 @@ function HelpPanel({
               type="button"
               className={
                 activeSection === "fullscreen"
-                  ? "theme-parameter-side-btn is-active"
-                  : "theme-parameter-side-btn"
+                  ? "mpx-btn theme-parameter-side-btn is-active"
+                  : "mpx-btn theme-parameter-side-btn"
               }
+              data-slot="fg-panel-large-side-btn-group-nav-btn-item"
               onClick={() => setActiveSection("fullscreen")}
             >
               {t("ui.help.section.fullscreen")}
@@ -419,9 +423,10 @@ function HelpPanel({
               type="button"
               className={
                 activeSection === "adReviewStrategy"
-                  ? "theme-parameter-side-btn is-active"
-                  : "theme-parameter-side-btn"
+                  ? "mpx-btn theme-parameter-side-btn is-active"
+                  : "mpx-btn theme-parameter-side-btn"
               }
+              data-slot="fg-panel-large-side-btn-group-nav-btn-item"
               onClick={() => setActiveSection("adReviewStrategy")}
             >
               {t("ui.help.section.adReviewStrategy")}

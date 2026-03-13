@@ -216,7 +216,7 @@
   display: none;
 }
 
-[data-slot="fg-meta-header-g3-playlist"] {
+[data-slot="fg-meta-header-btn-group-g3-btn-playlist"] {
   --mpx-btn-variant-default-border: var(
     --mpx-slot-fg-meta-header-g3-playlist-border,
     var(--mpx-slot-fg-meta-header-g3-border, var(--mpx-metadata-header-button-border-effective))

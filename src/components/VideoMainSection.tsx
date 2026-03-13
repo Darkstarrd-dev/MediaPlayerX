@@ -706,13 +706,16 @@ function VideoMainSection({
 
   return (
     <>
-      <div className="main-header" data-slot="fg-main-header">
+      <div className="main-header mpx-btn-scope-main-header" data-slot="fg-main-header">
         {manageMode ? (
           <>
             <span hidden data-slot="fg-main-header-state-manage" />
-            <div className="main-header-actions main-header-actions-manage">
+            <div
+              className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-manage"
+              data-slot="fg-main-header-btn-group-manage"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.media.addToPlaylist")}
                 data-tooltip-label={t("tip.media.addToPlaylist")}
@@ -722,7 +725,7 @@ function VideoMainSection({
                 <MainUiIcon name="playlistAdd" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.organize")}
                 data-tooltip-label={t("tip.common.organize")}
@@ -732,7 +735,7 @@ function VideoMainSection({
                 <MainUiIcon name="organize" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.rename")}
                 data-tooltip-label={t("tip.common.rename")}
@@ -742,7 +745,7 @@ function VideoMainSection({
                 <MainUiIcon name="rename" />
               </button>
               <button
-                className="vector-search-btn main-icon-square-btn"
+                className="mpx-btn vector-search-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.delete")}
                 data-tooltip-label={t("tip.common.delete")}
@@ -752,7 +755,7 @@ function VideoMainSection({
                 <MainUiIcon name="delete" />
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("ui.media.videoTranscodeTitle")}
                 data-tooltip-label={t("ui.media.videoTranscodeTitle")}
@@ -762,7 +765,7 @@ function VideoMainSection({
                 TC
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("ui.media.subtitleCleanupTitle")}
                 data-tooltip-label={t("ui.media.subtitleCleanupTitle")}
@@ -785,9 +788,12 @@ function VideoMainSection({
             <strong className="main-header-title">
               {t("ui.header.metadataManage")}
             </strong>
-            <div className="main-header-actions main-header-actions-manage">
+            <div
+              className="main-header-actions main-header-actions-manage mpx-btn-group mpx-btn-group--main-header-metadata"
+              data-slot="fg-main-header-btn-group-metadata"
+            >
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={metadataSelectionToggleLabel}
                 data-tooltip-label={metadataSelectionToggleLabel}
@@ -796,7 +802,7 @@ function VideoMainSection({
                 {metadataManageSelectionMode === "single" ? "S" : "M"}
               </button>
               <button
-                className="feature-action-btn main-icon-square-btn"
+                className="mpx-btn feature-action-btn main-icon-square-btn"
                 type="button"
                 aria-label={t("a11y.common.syncName")}
                 data-tooltip-label={t("tip.common.syncName")}
@@ -815,7 +821,10 @@ function VideoMainSection({
               text={toolbarVideoSummary}
             />
             {canJumpToManga || canJumpToMusic ? (
-              <div className="main-header-actions">
+              <div
+                className="main-header-actions mpx-btn-group mpx-btn-group--main-header-normal-secondary"
+                data-slot="fg-main-header-btn-group-normal-secondary"
+              >
                 {nodeBrowseMode ? (
                   <ImageMainScaleControl
                     t={t}
@@ -834,7 +843,7 @@ function VideoMainSection({
                 ) : null}
                 {canJumpToManga ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.manga")}
                     data-tooltip-label={t("tip.media.manga")}
@@ -845,7 +854,7 @@ function VideoMainSection({
                 ) : null}
                 {canJumpToMusic ? (
                   <button
-                    className="toolbar-icon-btn"
+                    className="mpx-btn toolbar-icon-btn"
                     type="button"
                     aria-label={t("a11y.media.music")}
                     data-tooltip-label={t("tip.media.music")}
@@ -857,7 +866,10 @@ function VideoMainSection({
               </div>
             ) : null}
             {nodeBrowseMode && !canJumpToManga && !canJumpToMusic ? (
-              <div className="main-header-actions">
+              <div
+                className="main-header-actions mpx-btn-group mpx-btn-group--main-header-normal"
+                data-slot="fg-main-header-btn-group-normal"
+              >
                 <ImageMainScaleControl
                   t={t}
                   openScalePopover={effectiveOpenScalePopover}

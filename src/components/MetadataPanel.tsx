@@ -918,12 +918,15 @@ function MetadataPanel({
         onContextMenu={handlePanelContextMenu}
       >
         <div className="metadata-frame">
-          <div className="metadata-header" data-slot="fg-meta-header">
-            <div className="metadata-header-g3" data-slot="fg-meta-header-g3">
+          <div className="metadata-header mpx-btn-scope-meta-header" data-slot="fg-meta-header">
+            <div
+              className="metadata-header-g3 mpx-btn-group mpx-btn-group--meta-header-g3"
+              data-slot="fg-meta-header-btn-group-g3"
+            >
               <button
                 {...searchButtonA11y}
-                className={`search-trigger-btn ${searchPanelOpen ? "is-active" : ""}`}
-                data-slot="fg-meta-header-g3-search"
+                className={`mpx-btn search-trigger-btn ${searchPanelOpen ? "is-active" : ""}`}
+                data-slot="fg-meta-header-btn-group-g3-btn-search"
                 type="button"
                 disabled={interactionLocked}
                 onClick={onToggleSearchPanel}
@@ -940,8 +943,8 @@ function MetadataPanel({
 
             <button
               {...manageButtonA11y}
-              className={`search-trigger-btn ${manageMode ? "is-active" : ""}`}
-              data-slot="fg-meta-header-g3-manage"
+              className={`mpx-btn search-trigger-btn ${manageMode ? "is-active" : ""}`}
+              data-slot="fg-meta-header-btn-group-g3-btn-manage"
               type="button"
               disabled={interactionLocked}
               onClick={onToggleManageMode}
@@ -958,8 +961,8 @@ function MetadataPanel({
 
             <button
               {...metadataToggleA11y}
-              className={`search-trigger-btn ${metadataManageMode ? "is-active" : ""}`}
-              data-slot="fg-meta-header-g3-metadata"
+              className={`mpx-btn search-trigger-btn ${metadataManageMode ? "is-active" : ""}`}
+              data-slot="fg-meta-header-btn-group-g3-btn-metadata"
               type="button"
               disabled={interactionLocked}
               onClick={onToggleMetadataManageMode}
@@ -978,8 +981,8 @@ function MetadataPanel({
 
             {mode === "video" ? (
               <button
-                className={`main-icon-square-btn ${metadataTab === "playlist" ? "is-active" : ""}`}
-                data-slot="fg-meta-header-g3-playlist"
+                className={`mpx-btn main-icon-square-btn ${metadataTab === "playlist" ? "is-active" : ""}`}
+                data-slot="fg-meta-header-btn-group-g3-btn-playlist"
                 type="button"
                 aria-label={
                   metadataTab === "info"
@@ -1006,8 +1009,8 @@ function MetadataPanel({
 
             {mode === "image" ? (
               <button
-                className={`metadata-header-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
-                data-slot="fg-meta-header-toggle"
+                className={`mpx-btn metadata-header-icon-btn ${showImagePreview ? "is-image" : "is-metadata"}`}
+                data-slot="fg-meta-header-btn-group-toggle-btn-mode"
                 type="button"
                 aria-label={metadataToggleLabel}
                 data-tooltip-label={metadataToggleLabel}

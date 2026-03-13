@@ -741,7 +741,7 @@ function ThemeParameterPanel({
         </div>
       ) : null}
       <section
-        className={`mpx-large-panel mpx-large-panel--theme-parameter settings-panel theme-parameter-panel ${panelDragging ? "is-dragging" : ""}`}
+        className={`mpx-large-panel mpx-large-panel--theme-parameter settings-panel theme-parameter-panel mpx-btn-scope-panel-large ${panelDragging ? "is-dragging" : ""}`}
         data-slot="fg-header-g3-theme-parameter-root-panel"
         style={{
           fontSize: `${settingsFontSize}px`,
@@ -759,10 +759,14 @@ function ThemeParameterPanel({
           <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
             {t("ui.themeParameter.panel")}
           </h2>
-          <div className="settings-head-actions">
+          <div
+            className="settings-head-actions mpx-btn-group mpx-btn-group--panel-large-head-main"
+            data-slot="fg-panel-large-head-btn-group-main"
+          >
             <button
               {...resetA11y}
-              className="settings-icon-btn main-icon-square-btn"
+              className="mpx-btn settings-icon-btn main-icon-square-btn"
+              data-slot="fg-panel-large-head-btn-group-main-btn-reset"
               type="button"
               onClick={handleResetToOpenState}
             >
@@ -770,7 +774,8 @@ function ThemeParameterPanel({
             </button>
             <button
               {...hideA11y}
-              className="settings-icon-btn main-icon-square-btn"
+              className="mpx-btn settings-icon-btn main-icon-square-btn"
+              data-slot="fg-panel-large-head-btn-group-main-btn-hide"
               type="button"
               onClick={onHide}
             >
@@ -778,7 +783,8 @@ function ThemeParameterPanel({
             </button>
             <button
               {...closeA11y}
-              className="settings-icon-btn main-icon-square-btn"
+              className="mpx-btn settings-icon-btn main-icon-square-btn"
+              data-slot="fg-panel-large-head-btn-group-main-btn-close"
               type="button"
               onClick={onClose}
             >

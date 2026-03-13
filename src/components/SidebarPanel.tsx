@@ -1105,10 +1105,10 @@ function SidebarPanel({
       }}
     >
       <div className="sidebar-frame">
-        <div className="sidebar-header" data-slot="fg-sidebar-header">
+        <div className="sidebar-header mpx-btn-scope-sidebar-header" data-slot="fg-sidebar-header">
           <button
-            className="sidebar-title-btn"
-            data-slot="fg-sidebar-header-title"
+            className="mpx-btn sidebar-title-btn"
+            data-slot="fg-sidebar-header-btn-group-title-btn-root"
             type="button"
             aria-label={sidebarTreeDisplayToggleLabel}
             data-tooltip-label={sidebarTreeDisplayToggleTip}
@@ -1126,11 +1126,14 @@ function SidebarPanel({
             {currentRootLabel ?? t("ui.sidebar.structure")}
           </button>
 
-          <div className="sidebar-header-actions">
+          <div
+            className="sidebar-header-actions mpx-btn-group mpx-btn-group--sidebar-header-actions"
+            data-slot="fg-sidebar-header-btn-group-actions"
+          >
             {searchResultMode ? (
               <button
-                className="sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-back"
+                className="mpx-btn sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-back"
                 type="button"
                 aria-label={t("a11y.common.back")}
                 data-tooltip-label={t("tip.common.back")}
@@ -1144,8 +1147,8 @@ function SidebarPanel({
           {showRootToggle ? (
             manageStyleEnabled ? (
               <button
-                className="sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-clear"
+                className="mpx-btn sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-clear"
                 type="button"
                 aria-label={t("a11y.common.clearSelection")}
                 data-tooltip-label={t("tip.common.clearSelection")}
@@ -1159,8 +1162,8 @@ function SidebarPanel({
 
           {showRootToggle ? (
             <button
-              className={`sidebar-header-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-header-label-mode-toggle"
+              className={`mpx-btn sidebar-header-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-header-btn-group-actions-btn-label-mode-toggle"
               type="button"
               data-tooltip-label={
                 effectiveSidebarLabelDisplayMode === "full"
@@ -1184,8 +1187,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-collapse-all"
+                className="mpx-btn sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-collapse-all"
                 type="button"
                 aria-label={collapseImageParentsLabel}
                 data-tooltip-label={
@@ -1212,8 +1215,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-prev-image-parent"
+                className="mpx-btn sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-prev-image-parent"
                 type="button"
                 aria-label={previousImageParentLabel}
                 data-tooltip-label={t("tip.sidebar.previousImageParent")}
@@ -1242,8 +1245,8 @@ function SidebarPanel({
           {showRootToggle ? (
             parentJumpModeEnabled ? (
               <button
-                className="sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-next-image-parent"
+                className="mpx-btn sidebar-header-icon-btn"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-next-image-parent"
                 type="button"
                 aria-label={nextImageParentLabel}
                 data-tooltip-label={t("tip.sidebar.nextImageParent")}
@@ -1265,8 +1268,8 @@ function SidebarPanel({
 
           {showRootToggle ? (
             <button
-              className={`sidebar-header-icon-btn ${rootSet ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-header-root-toggle"
+              className={`mpx-btn sidebar-header-icon-btn ${rootSet ? "is-root-set" : ""}`}
+              data-slot="fg-sidebar-header-btn-group-actions-btn-root-toggle"
               type="button"
               aria-label={rootToggleLabel}
               data-tooltip-label={rootToggleLabel}
