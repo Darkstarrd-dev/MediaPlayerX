@@ -720,6 +720,44 @@ describe("SidebarPanel image collapse interactions", () => {
     expect(onSelectPackage).toHaveBeenCalledWith("pkg-1");
   });
 
+  it("sidebar main 可折叠节点使用表头角色，不可折叠节点使用表项角色", () => {
+    renderImageSidebar(IMAGE_TREE_COLLAPSIBLE_FIXTURE);
+
+    const collapsibleButton = screen.getByRole("button", { name: "图库" });
+    const itemButton = screen.getByRole("button", { name: "Vol.1" });
+
+    expect(collapsibleButton.closest(".sidebar-row")).toHaveAttribute(
+      "data-sidebar-node-role",
+      "collapsible-header",
+    );
+    expect(itemButton.closest(".sidebar-row")).toHaveAttribute(
+      "data-sidebar-node-role",
+      "list-item",
+    );
+    expect(itemButton).toHaveAttribute(
+      "data-mpx-button-variant",
+      "overlay-cell",
+    );
+  });
+
+  it("非根层可折叠目录仍使用表头角色", () => {
+    renderImageSidebar(IMAGE_TREE_POINTER_COLLAPSE_FIXTURE);
+
+    const collapsibleButton = screen.getByRole("button", {
+      name: "D:/Gallery/cool",
+    });
+    const itemButton = screen.getByRole("button", { name: "2.zip" });
+    expect(collapsibleButton.closest(".sidebar-row")).toHaveAttribute(
+      "data-sidebar-node-role",
+      "collapsible-header",
+    );
+    expect(collapsibleButton).not.toHaveAttribute("data-mpx-button-variant");
+    expect(itemButton.closest(".sidebar-row")).toHaveAttribute(
+      "data-sidebar-node-role",
+      "list-item",
+    );
+  });
+
   it("元数据管理单选模式下点击图片节点只同步单选目标与包选择", () => {
     const onToggleManageNode = vi.fn();
     const onSelectMetadataSingleNode = vi.fn();

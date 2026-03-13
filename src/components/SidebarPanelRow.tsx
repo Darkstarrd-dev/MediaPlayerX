@@ -157,6 +157,10 @@ export function SidebarPanelRow({
     imageNodeType,
     sidebarTreeDisplayMode,
   );
+  const isListItemNode = !imageFolderCollapsible;
+  const sidebarNodeRole = imageFolderCollapsible
+    ? "collapsible-header"
+    : "list-item";
   const imageFolderCollapsed =
     imageFolderCollapsible && collapsedImageFolderNodeIds.has(node.id);
   const visibleImageCount = node.directImageCount ?? 0;
@@ -234,6 +238,7 @@ export function SidebarPanelRow({
   return (
     <div
       data-sidebar-node-id={node.id}
+      data-sidebar-node-role={sidebarNodeRole}
       className={`sidebar-row ${manageStyleEnabled ? "is-manage" : ""} ${checkedNodes.has(node.id) ? "is-selected" : ""} ${isFocusedNode ? "is-active" : ""} ${isHoverActive ? "is-hover-active" : ""} ${isPressedActive ? "is-pressed-active" : ""} ${loadState === "running" ? "is-processing" : ""}`}
     >
       <span
@@ -242,8 +247,9 @@ export function SidebarPanelRow({
       />
 
       <button
-        className={`sidebar-label ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""} ${isFocusedNode ? "mpx-random-sheen-host" : ""} ${isFocusedNode && sidebarFocusSweeping ? "is-sweeping" : ""}`}
+        className={`sidebar-label ${isListItemNode ? "mpx-overlay-cell-btn" : ""} ${imageFolderCollapsible ? "is-collapsible" : ""} ${imageFolderCollapsed ? "is-collapsed" : ""} ${isFocusedNode ? "mpx-random-sheen-host" : ""} ${isFocusedNode && sidebarFocusSweeping ? "is-sweeping" : ""}`}
         data-slot="fg-sidebar-main-label"
+        data-mpx-button-variant={isListItemNode ? "overlay-cell" : undefined}
         type="button"
         aria-label={displayLabel}
         aria-pressed={

@@ -146,7 +146,8 @@ function SidebarPanel({
     manageMode ||
     (metadataManageMode && metadataManageSelectionMode === "multiple");
   const checkedNodes = checkedSidebarNodeIds ?? new Set<string>();
-  const sidebarGapPx = Math.max(0, Math.round(sidebarVerticalGap));
+  const sidebarConfiguredGapPx = Math.max(0, Math.round(sidebarVerticalGap));
+  const sidebarRowGapPx = Math.min(sidebarConfiguredGapPx, 0);
   const [
     localCollapsedImageFolderNodeIds,
     setLocalCollapsedImageFolderNodeIds,
@@ -496,7 +497,7 @@ function SidebarPanel({
 
       const rowHeight = Math.max(
         24,
-        Math.round(sidebarFontSize + sidebarGapPx + 14),
+        Math.round(sidebarFontSize + sidebarRowGapPx + 14),
       );
       const rowTop = targetIndex * rowHeight;
       const rowBottom = rowTop + rowHeight;
@@ -516,7 +517,7 @@ function SidebarPanel({
       collapsedImageFolderNodeIds,
       effectiveSidebarTreeDisplayMode,
       mode,
-      sidebarGapPx,
+      sidebarRowGapPx,
       sidebarFontSize,
     ],
   );
@@ -872,8 +873,8 @@ function SidebarPanel({
     [sidebarFontSize],
   );
   const estimatedRowBlockHeight = useMemo(
-    () => Math.max(1, estimatedRowContentHeight + sidebarGapPx),
-    [estimatedRowContentHeight, sidebarGapPx],
+    () => Math.max(1, estimatedRowContentHeight + sidebarRowGapPx),
+    [estimatedRowContentHeight, sidebarRowGapPx],
   );
   const virtualizeThreshold = 220;
   const shouldVirtualize =
@@ -891,7 +892,7 @@ function SidebarPanel({
     }
 
     const overscanRows = 10;
-    const rowGap = sidebarGapPx;
+    const rowGap = sidebarRowGapPx;
     const safeScrollTop = Math.max(0, sidebarScrollTop);
     const startIndex = Math.max(
       0,
@@ -925,7 +926,7 @@ function SidebarPanel({
     estimatedRowBlockHeight,
     estimatedRowContentHeight,
     shouldVirtualize,
-    sidebarGapPx,
+    sidebarRowGapPx,
     sidebarScrollTop,
     sidebarViewportHeight,
     visibleSidebarRows.length,
@@ -1291,7 +1292,7 @@ function SidebarPanel({
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: `${sidebarGapPx}px`,
+              gap: `${sidebarRowGapPx}px`,
             }}
           >
             {shouldVirtualize && virtualRange.topSpacerHeight > 0 ? (
