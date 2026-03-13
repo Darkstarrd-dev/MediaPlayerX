@@ -2526,6 +2526,10 @@ export const SNAPSHOT_TEXT_FIELDS: readonly SnapshotTextField[] = [
     cssVar: "--mpx-slot-fg-meta-main-ad-review-start-panel-shadow",
   },
   {
+    id: "button-default-radius",
+    cssVar: "--mpx-btn-variant-default-radius",
+  },
+  {
     id: "button-default-shadow-idle",
     cssVar: "--mpx-btn-variant-default-shadow-idle",
   },

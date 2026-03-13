@@ -11,7 +11,7 @@
   ):not(.header-popover-trigger) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   box-shadow: none;
@@ -72,7 +72,7 @@
   ) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   box-shadow: none;
@@ -176,7 +176,7 @@
 button.vector-search-btn:not([data-mpx-button-variant]) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   box-shadow: none;
@@ -313,7 +313,7 @@ button.vector-search-btn.danger:not(:disabled):hover {
   ) {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-default-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   background: var(--mpx-btn-variant-default-bg-idle);
   color: var(--mpx-btn-variant-default-text-idle);
   box-shadow: none;

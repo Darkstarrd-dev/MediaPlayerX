@@ -2986,6 +2986,12 @@ export const BUTTON_STATE_COLOR_FIELDS: readonly ThemeDebugColorField[] = [
 
 export const BUTTON_STATE_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
+    id: "button-default-radius",
+    cssVar: "--mpx-btn-variant-default-radius",
+    fallback: "0px",
+    groupId: "root",
+  },
+  {
     id: "button-default-shadow-idle",
     cssVar: "--mpx-btn-variant-default-shadow-idle",
     fallback: "none",

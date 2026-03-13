@@ -114,6 +114,7 @@
   --mpx-btn-variant-default-text-active: var(--mpx-btn-core-text-active);
   --mpx-btn-variant-default-text-pressed: var(--mpx-btn-core-text-pressed);
   --mpx-btn-variant-default-text-merged: var(--mpx-btn-core-text-merged);
+  --mpx-btn-variant-default-radius: 0px;
   --mpx-btn-variant-default-shadow-idle: var(--mpx-btn-core-shadow-idle);
   --mpx-btn-variant-default-shadow-hover: var(--mpx-btn-core-shadow-hover);
   --mpx-btn-variant-default-shadow-active: var(--mpx-btn-core-shadow-active);

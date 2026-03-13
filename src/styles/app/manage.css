@@ -824,7 +824,7 @@
   height: 44px;
   min-width: 48px;
   min-height: 44px;
-  border-radius: 0;
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   color: var(--mpx-metadata-fetch-control-text);
   padding: 0;
   display: inline-flex;
@@ -1002,7 +1002,7 @@
   width: 100%;
   min-height: 44px;
   margin: 0;
-  border-radius: 0;
+  border-radius: var(--mpx-btn-variant-default-radius, 0px);
   padding: 0 18px;
   display: flex;
   align-items: center;
@@ -1108,8 +1108,6 @@
 
 [data-slot="fg-main-header-image-metadata-fetch-panel"]
   .metadata-fetch-preview-card,
-[data-slot="fg-main-header-image-metadata-fetch-panel"]
-  .metadata-fetch-preview-toggle,
 [data-slot="fg-main-header-image-metadata-fetch-panel"]
   .metadata-fetch-preview-textarea {
   border-radius: 0;
