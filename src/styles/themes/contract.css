@@ -207,28 +207,17 @@
     --mpx-btn-core-text-pressed: #555555;
     --mpx-btn-core-text-merged: #0f172a;
     --mpx-btn-core-text-disabled: rgba(213, 223, 236, 0.62);
-    --mpx-btn-core-shadow-idle:
-      0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9),
-      inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-    --mpx-btn-core-shadow-hover:
-      0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1),
-      inset 0 -2px 1px rgba(0, 0, 0, 0.08);
-    --mpx-btn-core-shadow-active:
-      0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15),
-      inset 0 -1px 1px rgba(255, 255, 255, 0.5);
-    --mpx-btn-core-shadow-pressed:
-      0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25),
-      inset 0 -2px 2px rgba(255, 255, 255, 0.7);
-    --mpx-btn-core-transform-hover: translateY(-1px);
-    --mpx-btn-core-transform-active: translateY(2px);
-    --mpx-btn-core-transform-pressed: translateY(1px);
+    --mpx-btn-core-shadow-idle: none;
+    --mpx-btn-core-shadow-hover: none;
+    --mpx-btn-core-shadow-active: none;
+    --mpx-btn-core-shadow-pressed: none;
+    --mpx-btn-core-transform-hover: translateY(0);
+    --mpx-btn-core-transform-active: translateY(0);
+    --mpx-btn-core-transform-pressed: translateY(0);
     --mpx-btn-core-danger-hover-bg: #fee2e2;
     --mpx-btn-core-danger-hover-border: #fca5a5;
     --mpx-btn-core-danger-hover-text: #dc2626;
-    --mpx-btn-core-danger-hover-shadow:
-      0 6px 10px rgba(220, 38, 38, 0.15),
-      inset 0 2px 1px rgba(255, 255, 255, 1),
-      inset 0 -2px 1px rgba(220, 38, 38, 0.15);
+    --mpx-btn-core-danger-hover-shadow: none;
 
     --mpx-btn-variant-default-border: var(--mpx-btn-core-border);
     --mpx-btn-variant-default-bg-idle: var(--mpx-btn-core-bg-idle);

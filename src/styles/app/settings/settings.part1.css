@@ -3444,6 +3444,42 @@ button.mpx-overlay-footer-btn {
 }
 
 .theme-parameter-file-list-preview-row-main {
+  --mpx-btn-variant-overlay-cell-bg-hover: var(
+    --mpx-file-list-row-main-hover-bg,
+    var(--mpx-file-list-row-hover-bg, var(--mpx-overlay-soft-hover-bg))
+  );
+  --mpx-btn-variant-overlay-cell-text-hover: var(
+    --mpx-file-list-row-main-hover-text,
+    var(--mpx-file-list-row-text, var(--mpx-text-1))
+  );
+  --mpx-btn-variant-overlay-cell-bg-active: var(
+    --mpx-file-list-row-main-active-bg,
+    var(--mpx-file-list-row-main-pressed-bg, var(--mpx-overlay-soft-focus-bg))
+  );
+  --mpx-btn-variant-overlay-cell-text-active: var(
+    --mpx-file-list-row-main-active-text,
+    var(--mpx-file-list-row-main-pressed-text, var(--mpx-text-1))
+  );
+  --mpx-btn-variant-overlay-cell-bg-pressed: var(
+    --mpx-file-list-row-main-pressed-bg,
+    var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color))
+  );
+  --mpx-btn-variant-overlay-cell-text-pressed: var(
+    --mpx-file-list-row-main-pressed-text,
+    var(--mpx-file-list-row-main-text, var(--mpx-text-1))
+  );
+  --mpx-btn-variant-overlay-cell-font-weight-pressed: var(
+    --mpx-file-list-row-main-pressed-font-weight,
+    600
+  );
+  --mpx-btn-variant-overlay-cell-focus-outline-width: var(
+    --mpx-file-list-row-main-focus-outline-width,
+    1px
+  );
+  --mpx-btn-variant-overlay-cell-focus-outline-color: var(
+    --mpx-file-list-row-main-focus-outline-color,
+    var(--mpx-state-focus-color)
+  );
   width: 100%;
   border: 0;
   background: transparent;

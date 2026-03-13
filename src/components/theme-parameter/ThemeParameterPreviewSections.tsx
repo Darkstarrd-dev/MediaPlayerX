@@ -228,7 +228,8 @@ const renderCommonControlHorizontalPreview = (
               <div className="theme-parameter-file-list-preview-row is-focused">
                 <button
                   type="button"
-                  className="theme-parameter-file-list-preview-row-main"
+                  className="theme-parameter-file-list-preview-row-main mpx-overlay-cell-btn"
+                  data-mpx-button-variant="overlay-cell"
                 >
                   <span className="theme-parameter-file-list-preview-label">
                     Main-image.png
@@ -240,7 +241,8 @@ const renderCommonControlHorizontalPreview = (
               <div className="theme-parameter-file-list-preview-row is-selected">
                 <button
                   type="button"
-                  className="theme-parameter-file-list-preview-row-main is-selected"
+                  className="theme-parameter-file-list-preview-row-main is-selected mpx-overlay-cell-btn"
+                  data-mpx-button-variant="overlay-cell"
                 >
                   <span className="theme-parameter-file-list-preview-label">
                     Music-track.flac

@@ -2988,54 +2988,49 @@ export const BUTTON_STATE_TEXT_FIELDS: readonly ThemeDebugTextField[] = [
   {
     id: "button-default-shadow-idle",
     cssVar: "--mpx-btn-variant-default-shadow-idle",
-    fallback:
-      "0 4px 6px rgba(0, 0, 0, 0.12), inset 0 2px 1px rgba(255, 255, 255, 0.9), inset 0 -2px 1px rgba(0, 0, 0, 0.08)",
+    fallback: "none",
     groupId: "shadow",
   },
   {
     id: "button-default-shadow-hover",
     cssVar: "--mpx-btn-variant-default-shadow-hover",
-    fallback:
-      "0 6px 10px rgba(0, 0, 0, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1), inset 0 -2px 1px rgba(0, 0, 0, 0.08)",
+    fallback: "none",
     groupId: "shadow",
   },
   {
     id: "button-default-shadow-active",
     cssVar: "--mpx-btn-variant-default-shadow-active",
-    fallback:
-      "0 1px 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 -1px 1px rgba(255, 255, 255, 0.5)",
+    fallback: "none",
     groupId: "shadow",
   },
   {
     id: "button-default-shadow-pressed",
     cssVar: "--mpx-btn-variant-default-shadow-pressed",
-    fallback:
-      "0 1px 1px rgba(255, 255, 255, 0.8), inset 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 -2px 2px rgba(255, 255, 255, 0.7)",
+    fallback: "none",
     groupId: "shadow",
   },
   {
     id: "button-default-transform-hover",
     cssVar: "--mpx-btn-variant-default-transform-hover",
-    fallback: "translateY(-1px)",
+    fallback: "translateY(0)",
     groupId: "root",
   },
   {
     id: "button-default-transform-active",
     cssVar: "--mpx-btn-variant-default-transform-active",
-    fallback: "translateY(2px)",
+    fallback: "translateY(0)",
     groupId: "root",
   },
   {
     id: "button-default-transform-pressed",
     cssVar: "--mpx-btn-variant-default-transform-pressed",
-    fallback: "translateY(1px)",
+    fallback: "translateY(0)",
     groupId: "root",
   },
   {
     id: "button-default-danger-hover-shadow",
     cssVar: "--mpx-btn-variant-default-danger-hover-shadow",
-    fallback:
-      "0 6px 10px rgba(220, 38, 38, 0.15), inset 0 2px 1px rgba(255, 255, 255, 1), inset 0 -2px 1px rgba(220, 38, 38, 0.15)",
+    fallback: "none",
     groupId: "shadow",
   },
   {
