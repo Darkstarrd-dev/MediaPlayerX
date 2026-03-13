@@ -16,12 +16,8 @@
   width: var(--mpx-header-btn-size);
   display: flex;
   justify-content: center;
-  border: 1px solid var(--mpx-overlay-surface-border, var(--mpx-border-1));
-  border-radius: 0;
-  background: var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated));
   padding: 8px 0;
-  box-shadow: var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover));
-  z-index: 24;
+  z-index: var(--mpx-popover-panel-z-index, 1200);
 }
 
 .header-popover-panel--upward {

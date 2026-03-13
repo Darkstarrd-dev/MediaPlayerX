@@ -379,6 +379,10 @@
   align-items: center;
 }
 
+.video-ctrl-popover.is-open {
+  z-index: var(--mpx-popover-panel-z-index, 1200);
+}
+
 .video-ctrl-popover::before {
   content: "";
   position: absolute;
@@ -394,26 +398,24 @@
   transform: translateX(-50%);
   bottom: calc(100% + 8px);
   min-width: 170px;
-  border: 1px solid
-    var(
-      --mpx-slot-fg-main-content-video-controls-fit-pop-border,
-      var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
-    );
-  border-radius: 0;
-  background: var(
+  --mpx-popover-panel-border-color: var(
+    --mpx-slot-fg-main-content-video-controls-fit-pop-border,
+    var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
+  );
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-text,
     var(--mpx-player-hud-text)
   );
-  box-shadow: var(
+  --mpx-popover-panel-shadow: var(
     --mpx-slot-fg-main-content-video-controls-fit-pop-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
   );
   padding: 10px;
-  z-index: 15;
+  z-index: var(--mpx-popover-panel-z-index, 1200);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -449,21 +451,21 @@
 }
 
 #video-main-popover-subtitle.video-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-video-controls-subtitle-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-video-controls-subtitle-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
       var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-video-controls-subtitle-pop-text,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-text,

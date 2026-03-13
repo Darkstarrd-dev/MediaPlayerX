@@ -389,6 +389,10 @@ function ImageMainSection({
   };
 
   const effectiveOpenScalePopover = popoverDebugPinned || openScalePopover;
+  const effectiveOpenAdReviewStrategyPopover =
+    popoverDebugPinned || openAdReviewStrategyPopover;
+  const effectiveOpenAdReviewProgressPopover =
+    popoverDebugPinned || openAdReviewProgressPopover;
 
   const clearAdReviewStrategyPopoverHideTimer = () => {
     if (adReviewStrategyPopoverHideTimerRef.current != null) {
@@ -836,6 +840,9 @@ function ImageMainSection({
   };
 
   const closeAdReviewProgressPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return;
+    }
     clearAdReviewProgressPopoverHideTimer();
     adReviewProgressPopoverHideTimerRef.current = window.setTimeout(() => {
       setOpenAdReviewProgressPopover(false);
@@ -975,6 +982,9 @@ function ImageMainSection({
   };
 
   const closeAdReviewStrategyPopoverByHover = () => {
+    if (popoverDebugPinned) {
+      return;
+    }
     clearAdReviewStrategyPopoverHideTimer();
     adReviewStrategyPopoverHideTimerRef.current = window.setTimeout(() => {
       setOpenAdReviewStrategyPopover(false);
@@ -1214,7 +1224,9 @@ function ImageMainSection({
                 adReviewExecutionMode={adReviewExecutionMode}
                 manageReviewMode={manageReviewMode}
                 onManageReviewModeChange={onManageReviewModeChange}
-                openAdReviewStrategyPopover={openAdReviewStrategyPopover}
+                openAdReviewStrategyPopover={
+                  effectiveOpenAdReviewStrategyPopover
+                }
                 openAdReviewStrategyPopoverByHover={
                   openAdReviewStrategyPopoverByHover
                 }
@@ -1233,7 +1245,9 @@ function ImageMainSection({
                 onAdReviewTailStopCleanStreakChange={
                   onAdReviewTailStopCleanStreakChange
                 }
-                openAdReviewProgressPopover={openAdReviewProgressPopover}
+                openAdReviewProgressPopover={
+                  effectiveOpenAdReviewProgressPopover
+                }
                 openAdReviewProgressPopoverByHover={
                   openAdReviewProgressPopoverByHover
                 }

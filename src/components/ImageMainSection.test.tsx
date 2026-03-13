@@ -895,6 +895,44 @@ describe('ImageMainSection layout', () => {
     expect(settledButtons.every((button) => !button.disabled)).toBe(true)
   })
 
+  it('开启 popoverDebugPinned 时 H 头尾策略弹层保持打开', () => {
+    const baseOverrides = {
+      adReviewFeatureEnabled: true,
+      adReviewPanelOpen: true,
+      manageReviewMode: 'ad' as const,
+      adReviewStrategyMode: 'head-tail' as const,
+    }
+    const { rerender } = render(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          ...baseOverrides,
+          popoverDebugPinned: false,
+        })}
+      />,
+    )
+
+    const strategyPanel = document.querySelector(
+      '.main-header-ad-review-strategy-panel',
+    ) as HTMLElement | null
+    expect(strategyPanel).not.toBeNull()
+    expect(strategyPanel?.hasAttribute('hidden')).toBe(true)
+
+    rerender(
+      <ImageMainSection
+        {...createManageImageConvertProps({
+          ...baseOverrides,
+          popoverDebugPinned: true,
+        })}
+      />,
+    )
+
+    const pinnedStrategyPanel = document.querySelector(
+      '.main-header-ad-review-strategy-panel',
+    ) as HTMLElement | null
+    expect(pinnedStrategyPanel).not.toBeNull()
+    expect(pinnedStrategyPanel?.hasAttribute('hidden')).toBe(false)
+  })
+
   it('广告审核聚焦结果模式点击缩略图时同步焦点到元数据目标图', async () => {
     const activeStatuses = ['running', 'paused', 'review'] as const
 

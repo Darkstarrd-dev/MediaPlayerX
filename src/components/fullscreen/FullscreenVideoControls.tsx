@@ -257,6 +257,7 @@ export function FullscreenVideoControlsShell({
                     <button
                       aria-pressed={videoFitMode === option.mode}
                       className={`video-ctrl-panel-option ${videoFitMode === option.mode ? "is-active" : ""}`}
+                      data-mpx-button-variant="panel-action"
                       key={option.mode}
                       type="button"
                       onClick={() => {
@@ -326,6 +327,7 @@ export function FullscreenVideoControlsShell({
                     <button
                       aria-pressed={selectedSubtitleId === option.id}
                       className={`video-ctrl-panel-option ${selectedSubtitleId === option.id ? "is-active" : ""}`}
+                      data-mpx-button-variant="panel-action"
                       key={option.id}
                       type="button"
                       onClick={() => {
@@ -374,6 +376,7 @@ export function FullscreenVideoControlsShell({
                       <button
                         aria-pressed={Math.abs(videoRate - rate) < 0.01}
                         className={`video-ctrl-panel-option ${Math.abs(videoRate - rate) < 0.01 ? "is-active" : ""}`}
+                        data-mpx-button-variant="panel-action"
                         key={rate}
                         type="button"
                         onClick={() => {
@@ -493,6 +496,7 @@ export function FullscreenVideoControlsShell({
                     <button
                       aria-pressed={entry.id === selectedVideoId}
                       className={`video-ctrl-panel-option ${entry.id === selectedVideoId ? "is-active" : ""}`}
+                      data-mpx-button-variant="panel-action"
                       key={entry.id}
                       type="button"
                       onClick={() => {

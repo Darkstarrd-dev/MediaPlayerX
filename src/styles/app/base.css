@@ -605,10 +605,10 @@ select {
 }
 
 [data-slot='fg-main-header-image-scale-pop'] {
-  border-color: var(--mpx-slot-fg-main-header-image-scale-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
-  background: var(--mpx-slot-fg-main-header-image-scale-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
-  color: var(--mpx-slot-fg-main-header-image-scale-pop-text, var(--mpx-text-1));
-  box-shadow: var(--mpx-slot-fg-main-header-image-scale-pop-shadow, var(--mpx-shadow-popover));
+  --mpx-popover-panel-border-color: var(--mpx-slot-fg-main-header-image-scale-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
+  --mpx-popover-panel-bg: var(--mpx-slot-fg-main-header-image-scale-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  --mpx-popover-panel-text: var(--mpx-slot-fg-main-header-image-scale-pop-text, var(--mpx-text-1));
+  --mpx-popover-panel-shadow: var(--mpx-slot-fg-main-header-image-scale-pop-shadow, var(--mpx-shadow-popover));
 }
 
 .main-header-actions .main-header-scale-control .header-vertical-slider-body {
@@ -633,10 +633,10 @@ select {
 }
 
 [data-slot='fg-main-header-image-ad-review-strategy-pop'] {
-  border-color: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
-  background: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
-  color: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-text, var(--mpx-text-1));
-  box-shadow: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-shadow, var(--mpx-shadow-popover));
+  --mpx-popover-panel-border-color: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
+  --mpx-popover-panel-bg: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  --mpx-popover-panel-text: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-text, var(--mpx-text-1));
+  --mpx-popover-panel-shadow: var(--mpx-slot-fg-main-header-image-ad-review-strategy-pop-shadow, var(--mpx-shadow-popover));
 }
 
 .main-header-ad-review-strategy-title {
@@ -728,10 +728,10 @@ select {
 }
 
 [data-slot='fg-main-header-image-ad-review-progress-pop'] {
-  border-color: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
-  background: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
-  color: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-text, var(--mpx-text-1));
-  box-shadow: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-shadow, var(--mpx-shadow-popover));
+  --mpx-popover-panel-border-color: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-border, var(--mpx-overlay-surface-border, var(--mpx-border-1)));
+  --mpx-popover-panel-bg: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-bg, var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated)));
+  --mpx-popover-panel-text: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-text, var(--mpx-text-1));
+  --mpx-popover-panel-shadow: var(--mpx-slot-fg-main-header-image-ad-review-progress-pop-shadow, var(--mpx-shadow-popover));
 }
 
 .main-header-ad-review-progress-line {

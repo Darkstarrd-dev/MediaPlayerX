@@ -722,6 +722,10 @@
   align-items: center;
 }
 
+.header-popover-control.is-open {
+  z-index: var(--mpx-popover-panel-z-index, 1200);
+}
+
 .header-popover-control::before {
   content: "";
   position: absolute;

@@ -33,6 +33,18 @@
   flex: 1 1 auto;
 }
 
+.main-pane-frame:has(.header-popover-panel:not([hidden])),
+.main-pane-frame:has(.video-ctrl-panel:not([hidden])),
+.main-pane-frame:has(.music-ctrl-panel:not([hidden])) {
+  overflow: visible;
+}
+
+.main-pane:has(.header-popover-panel:not([hidden])),
+.main-pane:has(.video-ctrl-panel:not([hidden])),
+.main-pane:has(.music-ctrl-panel:not([hidden])) {
+  z-index: var(--mpx-popover-host-z-index, 2600);
+}
+
 .main-pane-frame > * + * {
   margin-top: var(--mpx-pane-section-gap-px, 0px);
 }

@@ -426,6 +426,10 @@
   align-items: center;
 }
 
+.music-ctrl-popover.is-open {
+  z-index: var(--mpx-popover-panel-z-index, 1200);
+}
+
 .music-ctrl-popover.is-dock-left .music-ctrl-panel {
   left: 0;
   transform: none;
@@ -449,25 +453,23 @@
   min-width: 34px;
   width: 34px;
   padding: 6px 0;
-  border: 1px solid
-    var(
-      --mpx-slot-fg-main-content-music-controls-shader-pop-border,
-      var(--mpx-overlay-surface-border, var(--mpx-border-1))
-    );
-  border-radius: 0;
-  background: var(
+  --mpx-popover-panel-border-color: var(
+    --mpx-slot-fg-main-content-music-controls-shader-pop-border,
+    var(--mpx-overlay-surface-border, var(--mpx-border-1))
+  );
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
     var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-music-controls-shader-pop-text,
     var(--mpx-text-1)
   );
-  box-shadow: var(
+  --mpx-popover-panel-shadow: var(
     --mpx-slot-fg-main-content-music-controls-shader-pop-shadow,
     var(--mpx-overlay-surface-shadow, var(--mpx-shadow-popover))
   );
-  z-index: 12;
+  z-index: var(--mpx-popover-panel-z-index, 1200);
   display: flex;
   justify-content: center;
 }
@@ -477,21 +479,21 @@
 }
 
 #music-main-popover-shader-settings.music-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-music-controls-shader-settings-pop-border,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-border,
       var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-music-controls-shader-settings-pop-bg,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
       var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-music-controls-shader-settings-pop-text,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-text,
@@ -501,28 +503,28 @@
 }
 
 #music-main-popover-volume.music-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-music-controls-volume-pop-border,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-border,
       var(--mpx-overlay-surface-border, var(--mpx-player-hud-border))
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-music-controls-volume-pop-bg,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-bg,
       var(--mpx-overlay-surface-bg, var(--mpx-player-hud-bg))
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-music-controls-volume-pop-text,
     var(
       --mpx-slot-fg-main-content-music-controls-shader-pop-text,
       var(--mpx-player-hud-text)
     )
   );
-  z-index: 30;
+  z-index: var(--mpx-popover-panel-z-index, 1200);
 }
 
 .music-ctrl-panel.is-shader {

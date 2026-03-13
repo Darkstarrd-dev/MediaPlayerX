@@ -1,19 +1,143 @@
+.header-popover-panel,
+.video-ctrl-panel,
+.music-ctrl-panel {
+  --mpx-popover-panel-border-width: 1px;
+  --mpx-popover-panel-border-color: var(
+    --mpx-overlay-surface-border,
+    var(--mpx-border-1)
+  );
+  --mpx-popover-panel-radius: 0;
+  --mpx-popover-panel-bg: var(
+    --mpx-overlay-surface-bg,
+    var(--mpx-bg-elevated)
+  );
+  --mpx-popover-panel-text: var(--mpx-text-1);
+  --mpx-popover-panel-shadow: var(
+    --mpx-overlay-surface-shadow,
+    var(--mpx-shadow-popover)
+  );
+  --mpx-popover-panel-z-index: 1200;
+
+  border: var(--mpx-popover-panel-border-width) solid
+    var(--mpx-popover-panel-border-color);
+  border-radius: var(--mpx-popover-panel-radius);
+  background: var(--mpx-popover-panel-bg);
+  color: var(--mpx-popover-panel-text);
+  box-shadow: var(--mpx-popover-panel-shadow);
+  z-index: var(--mpx-popover-panel-z-index);
+
+  --mpx-button-panel-action-border: var(
+    --mpx-popover-action-border,
+    var(--mpx-btn-variant-default-border)
+  );
+  --mpx-button-panel-action-bg-idle: var(
+    --mpx-popover-action-bg-idle,
+    var(--mpx-btn-variant-default-bg-idle)
+  );
+  --mpx-button-panel-action-bg-hover: var(
+    --mpx-popover-action-bg-hover,
+    var(--mpx-btn-variant-default-bg-hover)
+  );
+  --mpx-button-panel-action-bg-active: var(
+    --mpx-popover-action-bg-active,
+    var(--mpx-btn-variant-default-bg-active)
+  );
+  --mpx-button-panel-action-text-idle: var(
+    --mpx-popover-action-text-idle,
+    var(--mpx-btn-variant-default-text-idle)
+  );
+  --mpx-button-panel-action-text-hover: var(
+    --mpx-popover-action-text-hover,
+    var(--mpx-btn-variant-default-text-idle)
+  );
+  --mpx-button-panel-action-text-active: var(
+    --mpx-popover-action-text-active,
+    var(--mpx-btn-variant-default-text-active)
+  );
+  --mpx-button-panel-action-text-disabled: var(
+    --mpx-popover-action-text-disabled,
+    var(--mpx-btn-variant-default-text-disabled)
+  );
+  --mpx-button-panel-action-shadow-idle: var(
+    --mpx-popover-action-shadow-idle,
+    none
+  );
+  --mpx-button-panel-action-shadow-hover: var(
+    --mpx-popover-action-shadow-hover,
+    none
+  );
+  --mpx-button-panel-action-shadow-active: var(
+    --mpx-popover-action-shadow-active,
+    none
+  );
+  --mpx-button-panel-action-transform-hover: var(
+    --mpx-popover-action-transform-hover,
+    translateY(0)
+  );
+  --mpx-button-panel-action-transform-active: var(
+    --mpx-popover-action-transform-active,
+    translateY(0)
+  );
+  --mpx-button-panel-action-focus-outline-width: var(
+    --mpx-popover-action-focus-outline-width,
+    1px
+  );
+  --mpx-button-panel-action-focus-outline-color: var(
+    --mpx-popover-action-focus-outline-color,
+    color-mix(in srgb, var(--mpx-accent) 52%, var(--mpx-border-2))
+  );
+}
+
+.video-ctrl-panel-option,
+.music-ctrl-panel-option,
+.fullscreen-convert-format-btn {
+  min-height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.main-header-actions .main-header-ad-review-strategy-panel,
+.main-header-actions .main-header-ad-review-progress-panel {
+  top: calc(100% + 8px);
+  left: auto;
+  right: 0;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 10px 12px;
+}
+
+.main-header-actions .main-header-ad-review-strategy-panel {
+  width: min(360px, calc(100vw - 32px));
+}
+
+.main-header-actions .main-header-ad-review-progress-panel {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.main-header-actions .main-header-ad-review-strategy-panel[hidden],
+.main-header-actions .main-header-ad-review-progress-panel[hidden] {
+  display: none;
+}
+
 #video-main-popover-speed.video-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-video-controls-speed-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-player-hud-border)
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-video-controls-speed-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
       var(--mpx-player-hud-bg)
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-video-controls-speed-pop-text,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-text,
@@ -23,21 +147,21 @@
 }
 
 #video-main-popover-playlist.video-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-video-controls-playlist-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-player-hud-border)
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-video-controls-playlist-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
       var(--mpx-player-hud-bg)
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-video-controls-playlist-pop-text,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-text,
@@ -47,21 +171,21 @@
 }
 
 #video-main-popover-volume.video-ctrl-panel {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fg-main-content-video-controls-volume-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-player-hud-border)
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fg-main-content-video-controls-volume-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
       var(--mpx-player-hud-bg)
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fg-main-content-video-controls-volume-pop-text,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-text,
@@ -71,21 +195,21 @@
 }
 
 [data-slot="fs-video-controls-fit-pop"] {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fs-video-controls-fit-pop-border,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-border,
       var(--mpx-player-hud-border)
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fs-video-controls-fit-pop-bg,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-bg,
       var(--mpx-player-hud-bg)
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fs-video-controls-fit-pop-text,
     var(
       --mpx-slot-fg-main-content-video-controls-fit-pop-text,
@@ -95,7 +219,7 @@
 }
 
 [data-slot="fs-video-controls-subtitle-pop"] {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fs-video-controls-subtitle-pop-border,
     var(
       --mpx-slot-fs-video-controls-fit-pop-border,
@@ -105,7 +229,7 @@
       )
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fs-video-controls-subtitle-pop-bg,
     var(
       --mpx-slot-fs-video-controls-fit-pop-bg,
@@ -115,7 +239,7 @@
       )
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fs-video-controls-subtitle-pop-text,
     var(
       --mpx-slot-fs-video-controls-fit-pop-text,
@@ -128,7 +252,7 @@
 }
 
 [data-slot="fs-video-controls-speed-pop"] {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fs-video-controls-speed-pop-border,
     var(
       --mpx-slot-fs-video-controls-fit-pop-border,
@@ -138,7 +262,7 @@
       )
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fs-video-controls-speed-pop-bg,
     var(
       --mpx-slot-fs-video-controls-fit-pop-bg,
@@ -148,7 +272,7 @@
       )
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fs-video-controls-speed-pop-text,
     var(
       --mpx-slot-fs-video-controls-fit-pop-text,
@@ -161,7 +285,7 @@
 }
 
 [data-slot="fs-video-controls-playlist-pop"] {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fs-video-controls-playlist-pop-border,
     var(
       --mpx-slot-fs-video-controls-fit-pop-border,
@@ -171,7 +295,7 @@
       )
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fs-video-controls-playlist-pop-bg,
     var(
       --mpx-slot-fs-video-controls-fit-pop-bg,
@@ -181,7 +305,7 @@
       )
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fs-video-controls-playlist-pop-text,
     var(
       --mpx-slot-fs-video-controls-fit-pop-text,
@@ -194,7 +318,7 @@
 }
 
 [data-slot="fs-video-controls-volume-pop"] {
-  border-color: var(
+  --mpx-popover-panel-border-color: var(
     --mpx-slot-fs-video-controls-volume-pop-border,
     var(
       --mpx-slot-fs-video-controls-fit-pop-border,
@@ -204,7 +328,7 @@
       )
     )
   );
-  background: var(
+  --mpx-popover-panel-bg: var(
     --mpx-slot-fs-video-controls-volume-pop-bg,
     var(
       --mpx-slot-fs-video-controls-fit-pop-bg,
@@ -214,7 +338,7 @@
       )
     )
   );
-  color: var(
+  --mpx-popover-panel-text: var(
     --mpx-slot-fs-video-controls-volume-pop-text,
     var(
       --mpx-slot-fs-video-controls-fit-pop-text,
@@ -265,7 +389,6 @@
 }
 
 .video-ctrl-panel-option {
-  border-radius: 0;
   min-height: 28px;
   font-size: 12px;
   cursor: pointer;

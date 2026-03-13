@@ -1693,16 +1693,37 @@ describe("MusicMainSection", () => {
     }
   });
 
-  it("Shader 快捷按钮仅用于打开设置面板", () => {
-    const onOpenShaderSettingsPanel = vi.fn();
-    renderMusicMainSection({ onOpenShaderSettingsPanel });
+  it("Shader 选择与参数按钮均通过 popover 打开", () => {
+    renderMusicMainSection();
 
-    const shaderButton = screen.getByRole("button", { name: /^Shader：/ });
-    fireEvent.click(shaderButton);
+    const shaderSelectButton = screen.getByRole("button", { name: /^Shader：/ });
+    const shaderSettingsButton = screen.getByRole("button", {
+      name: "Shader 设置",
+    });
+    const shaderPanel = document.getElementById("music-main-popover-shader");
+    const shaderSettingsPanel = document.getElementById(
+      "music-main-popover-shader-settings",
+    );
+    expect(shaderPanel).toBeTruthy();
+    expect(shaderSettingsPanel).toBeTruthy();
+    expect(shaderPanel).toHaveAttribute("hidden");
+    expect(shaderSettingsPanel).toHaveAttribute("hidden");
 
-    expect(onOpenShaderSettingsPanel).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole("button", { name: "Default" })).toBeNull();
-    expect(screen.queryByText("Shader 参数")).toBeNull();
+    const shaderSelectPopover =
+      shaderSelectButton.closest(".music-ctrl-popover");
+    expect(shaderSelectPopover).toBeTruthy();
+    fireEvent.mouseEnter(shaderSelectPopover as HTMLElement);
+
+    expect(shaderPanel).not.toHaveAttribute("hidden");
+    expect(screen.getByRole("button", { name: "Default" })).toBeInTheDocument();
+
+    const shaderSettingsPopover =
+      shaderSettingsButton.closest(".music-ctrl-popover");
+    expect(shaderSettingsPopover).toBeTruthy();
+    fireEvent.mouseEnter(shaderSettingsPopover as HTMLElement);
+
+    expect(shaderSettingsPanel).not.toHaveAttribute("hidden");
+    expect(screen.getByText("Shader 参数")).toBeInTheDocument();
   });
 
   it("仅开启单层时按钮标签显示该层 shader，双层关闭时显示透明", () => {

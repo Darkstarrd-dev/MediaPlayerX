@@ -734,7 +734,7 @@ export function FullscreenFooter({
                       <button
                         key={option}
                         className={`fullscreen-convert-format-btn fullscreen-action-btn ${option === imageConvertPreviewFormat ? "is-active" : ""}`}
-                        data-mpx-button-variant="player"
+                        data-mpx-button-variant="panel-action"
                         type="button"
                         onClick={() =>
                           onChangeImageConvertPreviewFormat?.(option)
