@@ -59,10 +59,10 @@
   --mpx-accent-contrast: #fffaf2;
   --mpx-accent-soft: rgba(138, 106, 59, 0.19);
 
-  --mpx-input-bg: transparent;
+  --mpx-input-bg: #fffdf8;
   --mpx-input-border: #ccb89b;
   --mpx-input-text: #33281d;
-  --mpx-input-focus-bg: transparent;
+  --mpx-input-focus-bg: #fffcf7;
   --mpx-input-focus-border: #8a6a3b;
   --mpx-input-readonly-bg: #f3f2ef;
   --mpx-input-readonly-text: #6e5b42;

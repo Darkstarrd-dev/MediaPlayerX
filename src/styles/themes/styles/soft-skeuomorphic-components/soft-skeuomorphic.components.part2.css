@@ -543,7 +543,7 @@
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
     .fullscreen-convert-format-btn {
     border: var(--mpx-control-border-width) solid
-      var(--mpx-btn-variant-player-border);
+      var(--mpx-btn-variant-default-border);
     border-radius: var(
       --mpx-control-radius-effective,
       var(--mpx-control-radius)
@@ -551,9 +551,9 @@
     min-height: 30px;
     padding: 0 12px;
     text-align: left;
-    color: var(--mpx-btn-variant-player-text-idle);
-    background: var(--mpx-btn-variant-player-bg-idle);
-    box-shadow: none;
+    color: var(--mpx-btn-variant-default-text-idle);
+    background: var(--mpx-btn-variant-default-bg-idle);
+    box-shadow: var(--mpx-btn-variant-default-shadow-idle);
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
@@ -562,9 +562,9 @@
     .music-ctrl-panel-option:hover,
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
     .fullscreen-convert-format-btn:hover {
-    background: var(--mpx-btn-variant-player-bg-hover);
-    box-shadow: none;
-    transform: translateY(0);
+    background: var(--mpx-btn-variant-default-bg-hover);
+    box-shadow: var(--mpx-btn-variant-default-shadow-hover);
+    transform: var(--mpx-btn-variant-default-transform-hover);
     filter: none;
   }
 
@@ -588,10 +588,10 @@
     .fullscreen-convert-format-btn:active,
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
     .fullscreen-convert-format-btn.is-active {
-    background: var(--mpx-btn-variant-player-bg-active);
-    border-color: var(--mpx-btn-variant-player-border-active);
-    box-shadow: none;
-    transform: translateY(0);
+    background: var(--mpx-btn-variant-default-bg-active);
+    border-color: var(--mpx-btn-variant-default-border);
+    box-shadow: var(--mpx-btn-variant-default-shadow-active);
+    transform: var(--mpx-btn-variant-default-transform-active);
   }
 
   :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]

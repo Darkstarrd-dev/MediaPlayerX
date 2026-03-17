@@ -386,10 +386,11 @@
 }
 
 .video-ctrl-panel.is-volume {
-  min-width: var(--mpx-control-height);
-  width: var(--mpx-control-height);
-  min-height: 142px;
-  padding: 10px 0;
+  min-width: var(--mpx-player-volume-popover-width, var(--mpx-control-height));
+  width: var(--mpx-player-volume-popover-width, var(--mpx-control-height));
+  min-height: var(--mpx-player-volume-popover-min-height, 142px);
+  padding: var(--mpx-player-volume-popover-padding-block, 10px)
+    var(--mpx-player-volume-popover-padding-inline, 0px);
   align-items: center;
   justify-content: center;
   flex-direction: row;
@@ -402,7 +403,7 @@
 
 .video-ctrl-volume-range {
   width: 100%;
-  min-width: 120px;
+  min-width: var(--mpx-player-volume-track-min-width, 120px);
   margin: 0;
   direction: ltr;
 }
@@ -422,11 +423,14 @@
 .video-action-btn {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  min-height: 34px;
+  border-radius: var(
+    --mpx-player-action-btn-radius,
+    var(--mpx-control-radius-effective, var(--mpx-control-radius))
+  );
+  width: var(--mpx-player-action-btn-size, 34px);
+  min-width: var(--mpx-player-action-btn-size, 34px);
+  height: var(--mpx-player-action-btn-size, 34px);
+  min-height: var(--mpx-player-action-btn-size, 34px);
   padding: 0;
   background: var(--mpx-btn-variant-player-bg-idle);
   color: var(--mpx-btn-variant-player-text-idle);
@@ -446,20 +450,23 @@
 .fullscreen-group .header-popover-trigger {
   border: var(--mpx-control-border-width) solid
     var(--mpx-btn-variant-player-border);
-  border-radius: var(--mpx-control-radius-effective, var(--mpx-control-radius));
+  border-radius: var(
+    --mpx-player-action-btn-radius,
+    var(--mpx-control-radius-effective, var(--mpx-control-radius))
+  );
   background: var(--mpx-btn-variant-player-bg-idle);
   color: var(--mpx-btn-variant-player-text-idle);
 }
 
 .video-action-btn .video-action-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--mpx-player-action-icon-size, 18px);
+  height: var(--mpx-player-action-icon-size, 18px);
   display: block;
 }
 
 .video-action-btn .music-action-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--mpx-player-action-icon-size, 18px);
+  height: var(--mpx-player-action-icon-size, 18px);
   display: block;
 }
 

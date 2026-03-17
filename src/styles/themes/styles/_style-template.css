@@ -632,6 +632,55 @@
   --mpx-btn-variant-player-text-idle: var(--mpx-player-surface-text);
   --mpx-btn-variant-player-text-disabled: var(--mpx-player-surface-text-muted);
 
+  /* ---------- App bridge tokens (slider/scrollbar/label/btn) ---------- */
+  --mpx-range-track-radius: 0px;
+  --mpx-range-thumb-radius: 0px;
+  --mpx-runway-groove-radius: 0px;
+  --mpx-runway-fill-radius: 0px;
+  --mpx-runway-thumb-radius: 0px;
+  --mpx-runway-thumb-core-radius: 0px;
+  --mpx-runway-thumb-hover-scale: 1.06;
+  --mpx-runway-thumb-active-scale: 1.03;
+
+  --mpx-player-action-btn-size: 34px;
+  --mpx-player-action-icon-size: 18px;
+  --mpx-player-action-btn-radius: var(
+    --mpx-control-radius-effective,
+    var(--mpx-control-radius)
+  );
+  --mpx-player-volume-popover-width: var(--mpx-control-height);
+  --mpx-player-volume-popover-min-height: 142px;
+  --mpx-player-volume-track-min-width: 120px;
+
+  --mpx-fullscreen-controls-shell-radius: 0px;
+  --mpx-fullscreen-controls-shell-padding: 10px;
+  --mpx-fullscreen-controls-shell-gap: 8px;
+  --mpx-fullscreen-controls-shell-backdrop-filter: none;
+  --mpx-fullscreen-meta-line-radius: 0px;
+  --mpx-fullscreen-action-btn-size: 34px;
+  --mpx-fullscreen-convert-format-btn-radius: 6px;
+  --mpx-fullscreen-convert-format-btn-padding-block: 4px;
+  --mpx-fullscreen-convert-format-btn-padding-inline: 8px;
+
+  --mpx-sidebar-list-head-label-radius: 0px;
+  --mpx-sidebar-list-head-label-padding-block: 10px;
+  --mpx-sidebar-list-head-label-padding-inline: 12px;
+  --mpx-sidebar-list-row-active-marker-width: 12px;
+  --mpx-sidebar-list-row-label-radius: 0px;
+  --mpx-sidebar-list-row-label-padding-block: 9px;
+  --mpx-sidebar-list-row-label-padding-inline: 12px;
+
+  --mpx-header-popover-offset: 10px;
+  --mpx-header-popover-padding-block: 8px;
+  --mpx-header-popover-padding-inline: 0px;
+  --mpx-header-vertical-slider-gap: 8px;
+  --mpx-header-vertical-slider-height: 120px;
+
+  --mpx-theme-parameter-vertical-track-width: 132px;
+  --mpx-theme-parameter-vertical-track-height: 24px;
+  --mpx-theme-parameter-vertical-item-width: 34px;
+  --mpx-theme-parameter-vertical-item-min-height: 132px;
+
   --mpx-btn-variant-overlay-cell-text-hover: color-mix(
     in srgb,
     var(--mpx-accent) 72%,

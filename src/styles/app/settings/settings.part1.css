@@ -3282,9 +3282,9 @@ button.mpx-overlay-footer-btn {
 }
 
 .theme-parameter-control-vertical-runway {
-  width: 132px;
-  width: max(132px, 100cqh);
-  height: 24px;
+  width: var(--mpx-theme-parameter-vertical-track-width, 132px);
+  width: max(var(--mpx-theme-parameter-vertical-track-width, 132px), 100cqh);
+  height: var(--mpx-theme-parameter-vertical-track-height, 24px);
 }
 
 .theme-parameter-control-vertical-track-box
@@ -3302,9 +3302,9 @@ button.mpx-overlay-footer-btn {
 
 .theme-parameter-control-vertical-track-box
   .mpx-runway-axis.theme-parameter-control-vertical-axis {
-  width: 132px;
-  width: max(132px, 100cqh);
-  height: 24px;
+  width: var(--mpx-theme-parameter-vertical-track-width, 132px);
+  width: max(var(--mpx-theme-parameter-vertical-track-width, 132px), 100cqh);
+  height: var(--mpx-theme-parameter-vertical-track-height, 24px);
   position: absolute;
   left: 50%;
   top: 50%;
@@ -3323,14 +3323,14 @@ button.mpx-overlay-footer-btn {
   gap: 4px;
   align-items: center;
   justify-content: flex-start;
-  width: 34px;
+  width: var(--mpx-theme-parameter-vertical-item-width, 34px);
 }
 
 .theme-parameter-control-vertical-track-box {
   position: relative;
-  width: 34px;
+  width: var(--mpx-theme-parameter-vertical-item-width, 34px);
   height: auto;
-  min-height: 132px;
+  min-height: var(--mpx-theme-parameter-vertical-item-min-height, 132px);
   flex: 1;
   align-self: stretch;
   container-type: size;
