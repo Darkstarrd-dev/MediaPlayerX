@@ -82,15 +82,7 @@ export function buildNodeBrowseItems({
       : resolveFirstVisibleImage(previewSourceIds, packageByIdEffective);
     const previewSourceId =
       coverSourceIdFromNode ?? firstVisibleImage?.sourceId ?? previewSourceIds[0] ?? null;
-    const ownSource = child.imageSourceId
-      ? packageByIdEffective.get(child.imageSourceId)
-      : null;
-    const visibleImageCount = ownSource
-      ? ownSource.images.reduce(
-          (count, image) => (image.hidden ? count : count + 1),
-          0,
-        )
-      : (child.directImageCount ?? 0);
+    const visibleImageCount = child.directImageCount ?? 0;
     const coverImageUrl =
       (previewSourceId
         ? sourceCoverImageUrlBySourceId[previewSourceId]

@@ -179,6 +179,17 @@ export function collectImageSourceIds(node: SidebarNode): string[] {
   return [...current, ...node.children.flatMap((child) => collectImageSourceIds(child))]
 }
 
+/**
+ * 解析某个图片源的可见图片数量。
+ * 结构性分页后，未加载的源 images 为空但 imageCount 由后端权威给出；
+ * 已加载（或旧链路）时回退到 images.length，二者在同一 includeHidden 口径下一致。
+ */
+export function resolveSourceImageCount(
+  source: { imageCount?: number; images: ReadonlyArray<unknown> },
+): number {
+  return source.imageCount ?? source.images.length
+}
+
 export function buildInitialVideoCoverMap(videos: Array<Pick<VideoItem, 'id' | 'coverColor'>>): Record<string, string> {
   const map: Record<string, string> = {}
   for (const video of videos) {

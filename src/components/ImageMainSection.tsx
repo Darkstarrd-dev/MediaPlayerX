@@ -20,6 +20,7 @@ import type { ImageMainSectionProps } from "./ImageMainSection.types";
 import { useManageImageSelectionInteractions } from "../features/management/useManageImageSelectionInteractions";
 import { useI18n } from "../i18n/useI18n";
 import type { FocusedImageRef } from "../types";
+import { resolveSourceImageCount } from "../utils/mediaHelpers";
 import {
   type ThumbnailGridSession,
   buildThumbnailGridSession,
@@ -765,11 +766,11 @@ function ImageMainSection({
   }, [toggleImageConvertPanel]);
 
   const activePackageImageProgress = (() => {
-    if (!activePackage || activePackage.images.length === 0) {
+    if (!activePackage || resolveSourceImageCount(activePackage) === 0) {
       return null;
     }
 
-    const total = activePackage.images.length;
+    const total = resolveSourceImageCount(activePackage);
 
     if (focusedRef?.packageId === activePackage.id) {
       const current = Math.max(1, Math.min(total, focusedRef.imageIndex + 1));

@@ -5,6 +5,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type { ParsedExternalMetadata } from "../../features/metadata/parseExternalMetadata";
 import type { ImageItem, ImagePackage } from "../../types";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
 import { MetadataRatingGroup } from "./MetadataRatingGroup";
 import { useI18n } from "../../i18n/useI18n";
 import { useMetadataImageParsedDraft } from "./useMetadataImageParsedDraft";
@@ -186,7 +187,8 @@ export function MetadataImageEditor({
   const imagePagesRead = Math.max(0, imagePreference?.pagesRead ?? 0);
   const imageTotalPages = Math.max(
     0,
-    imagePreference?.totalPages ?? focusedImagePackage?.images.length ?? 0,
+    imagePreference?.totalPages ??
+      (focusedImagePackage ? resolveSourceImageCount(focusedImagePackage) : 0),
   );
   const imageCompletionPercent = `${(Math.max(0, Math.min(1, imagePreference?.completionRatio ?? 0)) * 100).toFixed(1)}%`;
   const imagePagesReadSummary = `${imagePagesRead} / ${imageTotalPages}`;

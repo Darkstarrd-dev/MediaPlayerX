@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+import { resolveSourceImageCount } from '../../utils/mediaHelpers'
+
 import type {
   ImageMetadataViewModel,
   ImagePageViewModel,
@@ -115,7 +117,7 @@ export function useEffectiveDisplayState({
   const normalizeRefs = (refs: FocusedImageRef[]): FocusedImageRef[] =>
     refs.filter((ref) => {
       const pkg = packageById.get(ref.packageId)
-      return Boolean(pkg && ref.imageIndex >= 0 && ref.imageIndex < pkg.images.length)
+      return Boolean(pkg && ref.imageIndex >= 0 && ref.imageIndex < resolveSourceImageCount(pkg))
     })
 
   const activePackageForDisplay =

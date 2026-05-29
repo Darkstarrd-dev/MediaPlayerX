@@ -2,6 +2,7 @@ import { useEffect, type Dispatch, type SetStateAction } from 'react'
 
 import type { ImagePackage } from '../../types'
 import { clamp } from '../../utils/ui'
+import { resolveSourceImageCount } from '../../utils/mediaHelpers'
 
 interface UseScopedImageSourceStateSyncParams {
   scopedImageSources: ImagePackage[]
@@ -26,7 +27,7 @@ export function useScopedImageSourceStateSync({
       for (const source of scopedImageSources) {
         const hadPrev = Object.prototype.hasOwnProperty.call(previous, source.id)
         const prevValue = previous[source.id] ?? 0
-        const nextValue = clamp(prevValue, 0, Math.max(0, source.images.length - 1))
+        const nextValue = clamp(prevValue, 0, Math.max(0, resolveSourceImageCount(source) - 1))
         next[source.id] = nextValue
         if (!hadPrev || nextValue !== prevValue) {
           changed = true

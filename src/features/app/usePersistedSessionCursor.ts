@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { BrowserMode } from "../../types";
 import type { MediaRepository } from "../backend/repository";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
 import { getBenchSettings } from "../perf/benchSettings";
 
 const SESSION_CURSOR_STATE_KEY = "ui_session_cursor_v1";
@@ -288,10 +289,10 @@ export function usePersistedSessionCursor({
         if (
           !resolvedImagePackageId ||
           !resolvedImagePackage ||
-          !resolvedImagePackage.images.some((image) => !image.hidden)
+          resolveSourceImageCount(resolvedImagePackage) === 0
         ) {
           for (const candidate of packageByIdEffective.values()) {
-            if (!candidate.images.some((image) => !image.hidden)) {
+            if (resolveSourceImageCount(candidate) === 0) {
               continue;
             }
             resolvedImagePackageId = candidate.id;
@@ -301,7 +302,7 @@ export function usePersistedSessionCursor({
         }
 
         if (resolvedImagePackageId && resolvedImagePackage) {
-          const maxIndex = Math.max(0, resolvedImagePackage.images.length - 1);
+          const maxIndex = Math.max(0, resolveSourceImageCount(resolvedImagePackage) - 1);
           const nextImageIndex = Math.min(persisted.image.imageIndex, maxIndex);
           if (resolvedImagePackageId !== selectedPackageId) {
             setSelectedPackageId(resolvedImagePackageId);

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import type { FocusedImageRef, ImagePackage, SidebarNode } from '../../types'
-import { collectImageSourceIds } from '../../utils/mediaHelpers'
+import { collectImageSourceIds, resolveSourceImageCount } from '../../utils/mediaHelpers'
 
 interface UseRootScopedImageDataParams {
   imageRootNode: SidebarNode | null
@@ -33,9 +33,10 @@ export function useRootScopedImageData({
   const allScopedRefs = useMemo<FocusedImageRef[]>(() => {
     const refs: FocusedImageRef[] = []
     for (const pkg of rootScopedPackages) {
-      pkg.images.forEach((_, imageIndex) => {
+      const count = resolveSourceImageCount(pkg)
+      for (let imageIndex = 0; imageIndex < count; imageIndex += 1) {
         refs.push({ packageId: pkg.id, imageIndex })
-      })
+      }
     }
     return refs
   }, [rootScopedPackages])

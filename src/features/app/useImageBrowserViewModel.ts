@@ -2,6 +2,7 @@ import { useCallback, useMemo, type Dispatch, type SetStateAction } from 'react'
 
 import type { BrowserMode, FocusedImageRef, ImageItem, ImagePackage, VectorCandidate } from '../../types'
 import { clamp } from '../../utils/ui'
+import { resolveSourceImageCount } from '../../utils/mediaHelpers'
 import {
   resolveFullscreenImageNavigationEnabled,
   type FullscreenImageNavigationSource,
@@ -115,7 +116,7 @@ export function useImageBrowserViewModel({
 
     return {
       packageId: activePackage.id,
-      imageIndex: clamp(focusByPackage[activePackage.id] ?? 0, 0, activePackage.images.length - 1),
+      imageIndex: clamp(focusByPackage[activePackage.id] ?? 0, 0, resolveSourceImageCount(activePackage) - 1),
     }
   }, [activePackage, activeVectorRef, focusByPackage, imageFocusActive, mode, vectorResultsActive])
 
@@ -153,7 +154,7 @@ export function useImageBrowserViewModel({
       return []
     }
 
-    return activePackage.images.map((_, imageIndex) => ({
+    return Array.from({ length: resolveSourceImageCount(activePackage) }, (_, imageIndex) => ({
       packageId: activePackage.id,
       imageIndex,
     }))
@@ -173,7 +174,7 @@ export function useImageBrowserViewModel({
         return
       }
 
-      const clampedIndex = clamp(imageIndex, 0, pkg.images.length - 1)
+      const clampedIndex = clamp(imageIndex, 0, resolveSourceImageCount(pkg) - 1)
       setImageFocusActive(true)
       setSelectedPackageId(packageId)
       setFocusByPackage((previous) => ({
@@ -233,7 +234,7 @@ export function useImageBrowserViewModel({
       }
 
       const currentIndex = orderedRootScopedImageRefs.findIndex(
-        (ref) => ref.packageId === activePackage.id && ref.imageIndex === clamp(current, 0, activePackage.images.length - 1),
+        (ref) => ref.packageId === activePackage.id && ref.imageIndex === clamp(current, 0, resolveSourceImageCount(activePackage) - 1),
       )
 
       if (currentIndex < 0) {
@@ -303,8 +304,8 @@ export function useImageBrowserViewModel({
         return
       }
 
-      if (candidate >= activePackage.images.length) {
-        setImageFocus(activePackage.id, activePackage.images.length - 1)
+      if (candidate >= resolveSourceImageCount(activePackage)) {
+        setImageFocus(activePackage.id, resolveSourceImageCount(activePackage) - 1)
         return
       }
 
@@ -350,7 +351,7 @@ export function useImageBrowserViewModel({
         return
       }
 
-      const nextIndex = target === 'first' ? 0 : activePackage.images.length - 1
+      const nextIndex = target === 'first' ? 0 : resolveSourceImageCount(activePackage) - 1
       setImageFocus(activePackage.id, nextIndex)
     },
     [activePackage, canNavigateImageInCurrentContext, setImageFocus, setVectorFocusIndex, vectorResultsActive, vectorSearchResults],

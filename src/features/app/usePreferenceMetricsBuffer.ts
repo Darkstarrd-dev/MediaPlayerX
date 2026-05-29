@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import type { MediaRepository } from "../backend/repository";
 import type { BrowserMode, ImagePackage, VideoItem } from "../../types";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
 
 const PREFERENCE_METRICS_STATE_KEY = "xp_preference_metrics_v1";
 const PREFERENCE_RUNTIME_HEARTBEAT_MS = 2_000;
@@ -186,7 +187,7 @@ export function usePreferenceMetricsBuffer({
 
   useEffect(() => {
     for (const source of packageById.values()) {
-      const totalPages = clampNonNegativeInt(source.images.length);
+      const totalPages = clampNonNegativeInt(resolveSourceImageCount(source));
       const existing = imageMetricsBySourceIdRef.current.get(source.id);
       if (existing) {
         if (totalPages > 0 && totalPages > existing.totalPages) {
@@ -550,7 +551,7 @@ export function usePreferenceMetricsBuffer({
     } else if (shouldTrackImage && focusedImageRef) {
       const currentPackage = packageById.get(focusedImageRef.packageId) ?? null;
       const totalPages = clampNonNegativeInt(
-        currentPackage?.images.length ?? 0,
+        currentPackage ? resolveSourceImageCount(currentPackage) : 0,
       );
       if (!currentImageSession.active) {
         imageSessionRef.current = {
