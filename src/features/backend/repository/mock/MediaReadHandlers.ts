@@ -1,6 +1,7 @@
 import {
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
+  readSourceImagesResponseSchema,
   readImageSidebarTreeResponseSchema,
   readImportTasksResponseSchema,
   readPlaylistResponseSchema,
@@ -11,6 +12,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadPlaylistResponseDto,
@@ -129,6 +132,24 @@ export class MockMediaReadHandlers {
           }
         : null,
     )
+  }
+
+  readSourceImagesSync(
+    request: ReadSourceImagesRequestDto,
+  ): ReadSourceImagesResponseDto {
+    const snapshot = MOCK_LIBRARY_SNAPSHOT_REF.current
+    const includeHidden = request.include_hidden ?? false
+    const allSources = snapshot
+      ? [...snapshot.image_packages, ...snapshot.image_directories]
+      : []
+    const source = allSources.find((item) => item.id === request.source_id)
+    const visibleSource = source
+      ? filterHiddenImagesForSource(source, includeHidden)
+      : null
+    return readSourceImagesResponseSchema.parse({
+      source_id: request.source_id,
+      images: visibleSource ? visibleSource.images : [],
+    })
   }
 
   resolveMediaResourceSync(

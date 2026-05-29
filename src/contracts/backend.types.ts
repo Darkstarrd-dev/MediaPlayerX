@@ -29,6 +29,12 @@ export type ReadImagePageRequestDto = Infer<
 export type ReadImagePageResponseDto = Infer<
   typeof Backend.readImagePageResponseSchema
 >;
+export type ReadSourceImagesRequestDto = Infer<
+  typeof Backend.readSourceImagesRequestSchema
+>;
+export type ReadSourceImagesResponseDto = Infer<
+  typeof Backend.readSourceImagesResponseSchema
+>;
 export type ReadImageMetadataRequestDto = Infer<
   typeof Backend.readImageMetadataRequestSchema
 >;

@@ -129,6 +129,8 @@ import type {
   ReadPlaylistResponseDto,
   ReadImagePageRequestDto,
   ReadImagePageResponseDto,
+  ReadSourceImagesRequestDto,
+  ReadSourceImagesResponseDto,
   ReadImageSidebarTreeRequestDto,
   ReadImageSidebarTreeResponseDto,
   ResolveMediaResourceRequestDto,
@@ -180,6 +182,10 @@ export interface MediaRepository {
     request: ReadImagePageRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<ReadImagePageResponseDto>;
+  readSourceImages?(
+    request: ReadSourceImagesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSourceImagesResponseDto>;
   readImageMetadata(
     request: ReadImageMetadataRequestDto,
     options?: RepositoryRequestOptions,

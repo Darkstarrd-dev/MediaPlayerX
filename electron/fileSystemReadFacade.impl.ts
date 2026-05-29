@@ -33,6 +33,8 @@ import {
   type ReadArchiveLoadStatusResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
@@ -1312,6 +1314,12 @@ export class FileSystemMediaReadService {
     request: ReadImageMetadataRequestDto,
   ): Promise<ReadImageMetadataResponseDto> {
     return this.libraryHandlers.readImageMetadata(request);
+  }
+
+  async readSourceImages(
+    request: ReadSourceImagesRequestDto,
+  ): Promise<ReadSourceImagesResponseDto> {
+    return this.libraryHandlers.readSourceImages(request);
   }
 
   async writePackageGrade(

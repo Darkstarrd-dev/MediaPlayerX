@@ -78,6 +78,8 @@ import {
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
   readImagePageResponseSchema,
+  readSourceImagesRequestSchema,
+  readSourceImagesResponseSchema,
   readImageSidebarTreeRequestSchema,
   readImageSidebarTreeResponseSchema,
   resolveMediaResourceRequestSchema,
@@ -216,6 +218,14 @@ const backendApi = {
       parsed,
     );
     return readImagePageResponseSchema.parse(response);
+  },
+  readSourceImages: async (request: unknown) => {
+    const parsed = readSourceImagesRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.readSourceImages,
+      parsed,
+    );
+    return readSourceImagesResponseSchema.parse(response);
   },
   readImageMetadata: async (request: unknown) => {
     const parsed = readImageMetadataRequestSchema.parse(request);

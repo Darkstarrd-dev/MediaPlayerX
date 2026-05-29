@@ -27,6 +27,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadManageSubtitleCleanupTaskRequestDto,
@@ -416,6 +418,26 @@ export class LibraryReadWriteService {
           }
         : null,
     );
+  }
+
+  async readSourceImages(
+    request: ReadSourceImagesRequestDto,
+  ): Promise<ReadSourceImagesResponseDto> {
+    this.options.markInteractiveRead();
+    const includeHidden = request.include_hidden ?? false;
+    const snapshot = await this.options.ensureSnapshotLoaded();
+    const allSources = [
+      ...snapshot.image_packages,
+      ...snapshot.image_directories,
+    ];
+    const source = allSources.find((item) => item.id === request.source_id);
+    const visibleSource = source
+      ? filterHiddenImagesFromSource(source, includeHidden)
+      : null;
+    return {
+      source_id: request.source_id,
+      images: visibleSource ? visibleSource.images : [],
+    };
   }
 
   async writePackageGrade(

@@ -369,6 +369,16 @@ export const readImagePageResponseSchema = z.object({
   refs: z.array(focusedImageRefDtoSchema),
 });
 
+export const readSourceImagesRequestSchema = z.object({
+  source_id: z.string().min(1),
+  include_hidden: z.boolean().optional(),
+});
+
+export const readSourceImagesResponseSchema = z.object({
+  source_id: z.string().min(1),
+  images: z.array(imageItemDtoSchema),
+});
+
 export const readImageMetadataRequestSchema = z.object({
   package_id: z.string().min(1),
   image_index: nonNegativeIntSchema,

@@ -89,6 +89,8 @@ import {
   readImageMetadataResponseSchema,
   readImagePageRequestSchema,
   readImagePageResponseSchema,
+  readSourceImagesRequestSchema,
+  readSourceImagesResponseSchema,
   readImageSidebarTreeRequestSchema,
   readImageSidebarTreeResponseSchema,
   setImageHiddenRequestSchema,
@@ -533,6 +535,13 @@ export function registerBackendIpcHandlers(): void {
     readImagePageRequestSchema,
     readImagePageResponseSchema,
     (request) => ensureService().readImagePage(request),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.readSourceImages,
+    readSourceImagesRequestSchema,
+    readSourceImagesResponseSchema,
+    (request) => ensureService().readSourceImages(request),
   );
 
   registerIpcCommand(

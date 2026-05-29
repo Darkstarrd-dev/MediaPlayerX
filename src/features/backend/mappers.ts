@@ -65,6 +65,8 @@ export function mapImageItemDto(item: ImageItemDto): ImageItem {
 }
 
 export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
+  const coverImage =
+    source.images.find((image) => !(image.hidden ?? false)) ?? source.images[0];
   return {
     id: source.id,
     packageName: source.package_name,
@@ -112,6 +114,10 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
           lastEventTimeMs: source.preference_metrics.last_event_time_ms,
           updatedAtMs: source.preference_metrics.updated_at_ms,
         }
+      : null,
+    imageCount: source.images.length,
+    coverMediaLocator: coverImage
+      ? mapMediaLocatorDto(coverImage.media_locator)
       : null,
     images: source.images.map(mapImageItemDto),
   };

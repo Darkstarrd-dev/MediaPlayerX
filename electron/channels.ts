@@ -3,6 +3,7 @@ export const BACKEND_CHANNELS = {
   readLibrarySnapshotLite: "backend:readLibrarySnapshotLite",
   readImageSidebarTree: "backend:readImageSidebarTree",
   readImagePage: "backend:readImagePage",
+  readSourceImages: "backend:readSourceImages",
   readImageMetadata: "backend:readImageMetadata",
   resolveMediaResource: "backend:resolveMediaResource",
   updatePerformanceConfig: "backend:updatePerformanceConfig",

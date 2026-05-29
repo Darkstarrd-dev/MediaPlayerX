@@ -43,6 +43,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadImportTasksResponseDto,
@@ -288,6 +290,17 @@ export class MockMediaRepository implements MediaRepository, SynchronousMediaRep
     options?: RepositoryRequestOptions,
   ): Promise<ReadImagePageResponseDto> {
     return resolveAsync(this.readImagePageSync(request), options)
+  }
+
+  readSourceImagesSync(request: ReadSourceImagesRequestDto): ReadSourceImagesResponseDto {
+    return this.read.readSourceImagesSync(request)
+  }
+
+  async readSourceImages(
+    request: ReadSourceImagesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSourceImagesResponseDto> {
+    return resolveAsync(this.readSourceImagesSync(request), options)
   }
 
   readImageMetadataSync(request: ReadImageMetadataRequestDto): ReadImageMetadataResponseDto {

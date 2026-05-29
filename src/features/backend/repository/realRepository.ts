@@ -54,6 +54,7 @@ import {
   prepareSubtitleTrackResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
+  readSourceImagesResponseSchema,
   resolveMediaResourceResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
@@ -165,6 +166,8 @@ import {
   type PrepareSubtitleTrackResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ResolveMediaResourceRequestDto,
@@ -326,6 +329,17 @@ export class RealMediaRepository implements MediaRepository {
     return withIpcTiming("readImagePage", async () => {
       const response = await withAbort(api.readImagePage(request), options);
       return readImagePageResponseSchema.parse(response);
+    });
+  }
+
+  async readSourceImages(
+    request: ReadSourceImagesRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<ReadSourceImagesResponseDto> {
+    const readSourceImages = requireBackendMethod("readSourceImages");
+    return withIpcTiming("readSourceImages", async () => {
+      const response = await withAbort(readSourceImages(request), options);
+      return readSourceImagesResponseSchema.parse(response);
     });
   }
 

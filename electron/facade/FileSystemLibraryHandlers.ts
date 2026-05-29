@@ -3,6 +3,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadPlaylistResponseDto,
@@ -101,6 +103,10 @@ export class FileSystemLibraryHandlers {
 
   async readImagePage(request: ReadImagePageRequestDto, signal?: AbortSignal): Promise<ReadImagePageResponseDto> {
     return this.context.libraryReadWriteService.readImagePage(request, signal)
+  }
+
+  async readSourceImages(request: ReadSourceImagesRequestDto): Promise<ReadSourceImagesResponseDto> {
+    return this.context.libraryReadWriteService.readSourceImages(request)
   }
 
   async readImageMetadata(
