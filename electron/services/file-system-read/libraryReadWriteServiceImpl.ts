@@ -9,7 +9,6 @@ import {
   readAppStateResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
-  readImageSidebarTreeResponseSchema,
   readPlaylistResponseSchema,
   saveVideoCoverResponseSchema,
   writeAppStateResponseSchema,
@@ -275,11 +274,11 @@ export class LibraryReadWriteService {
     );
     ensureNotAborted(signal);
 
-    return readImageSidebarTreeResponseSchema.parse({
+    return {
       image_packages: filteredPackages,
       image_directories: filteredDirectories,
       tree: buildImageSidebarTree(filteredPackages, filteredDirectories),
-    });
+    };
   }
 
   async readImagePage(

@@ -469,7 +469,10 @@ export function registerBackendIpcHandlers(): void {
     requestSchema: ParseSchema<TRequest>,
     responseSchema: ParseSchema<TResponse>,
     action: (request: TRequest) => Promise<unknown> | unknown,
-    options?: { fallbackEmptyPayloadToObject?: boolean },
+    options?: {
+      fallbackEmptyPayloadToObject?: boolean;
+      skipResponseSchemaParse?: boolean;
+    },
   ): void => {
     ipcMain.handle(channel, async (_event, payload: unknown) => {
       const normalizedPayload =
@@ -479,6 +482,9 @@ export function registerBackendIpcHandlers(): void {
           : payload;
       const request = requestSchema.parse(normalizedPayload);
       const response = await action(request);
+      if (options?.skipResponseSchemaParse) {
+        return response as TResponse;
+      }
       return responseSchema.parse(response);
     });
   };
@@ -519,6 +525,7 @@ export function registerBackendIpcHandlers(): void {
     readImageSidebarTreeRequestSchema,
     readImageSidebarTreeResponseSchema,
     (request) => ensureService().readImageSidebarTree(request),
+    { skipResponseSchemaParse: true },
   );
 
   registerIpcCommand(

@@ -54,7 +54,6 @@ import {
   prepareSubtitleTrackResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
-  readImageSidebarTreeResponseSchema,
   resolveMediaResourceResponseSchema,
   retryImportTaskResponseSchema,
   saveVideoCoverResponseSchema,
@@ -315,7 +314,7 @@ export class RealMediaRepository implements MediaRepository {
         api.readImageSidebarTree(request),
         options,
       );
-      return readImageSidebarTreeResponseSchema.parse(response);
+      return response;
     });
   }
 
