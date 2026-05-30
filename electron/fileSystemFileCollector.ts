@@ -131,7 +131,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
 
       const nextLevel: string[] = []
       const pendingMediaRecords: Array<{ absolutePath: string; extension: string }> = []
-      const pendingImageOrArchiveRecords: Array<{ absolutePath: string; extension: string }> = []
+      const pendingImageRecords: Array<{ absolutePath: string; extension: string }> = []
 
       for (const entry of entries) {
         const absolutePath = path.join(current, entry.name)
@@ -172,12 +172,20 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           continue
         }
 
-        pendingImageOrArchiveRecords.push({ absolutePath, extension })
+        // 压缩包直接入库、跳过昂贵的逐个 stat：isFile 已由 readdir 的 Dirent 确认，
+        // 且压缩包的 sizeBytes 全程无人消费（createArchiveSource 用 zip 条目的 uncompressedSize）。
+        // 这避免了导入后重启全量刷新时对大量 .zip 做 stat 触发的磁盘/杀软慢 IO 卡顿。
+        if (params.archiveExtensions.has(extension)) {
+          pushFile(absolutePath, extension, 0, 0, 0)
+          continue
+        }
+
+        pendingImageRecords.push({ absolutePath, extension })
       }
 
-      if (pendingImageOrArchiveRecords.length > 0) {
-        const imageOrArchiveFiles = await parallelMapLimit(
-          pendingImageOrArchiveRecords,
+      if (pendingImageRecords.length > 0) {
+        const imageFiles = await parallelMapLimit(
+          pendingImageRecords,
           params.directoryScanConcurrency,
           async (record) => {
             const stat = await timedStat(record.absolutePath)
@@ -195,7 +203,7 @@ export async function collectMediaFiles(params: CollectMediaFilesParams): Promis
           },
         )
 
-        for (const file of imageOrArchiveFiles) {
+        for (const file of imageFiles) {
           if (!file) {
             continue
           }
