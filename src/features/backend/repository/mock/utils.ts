@@ -9,6 +9,7 @@ import {
 } from "../../../../contracts/backend.shared";
 import {
   type ImagePackageDto,
+  type ImageSourceSidebarDto,
   type MediaLocatorDto,
   type ReadImageSidebarTreeRequestDto,
 } from "../../../../contracts/backend";
@@ -105,6 +106,16 @@ export function filterHiddenSources(
   return sources
     .map((source) => filterHiddenImagesForSource(source, includeHidden))
     .filter((source) => source.images.length > 0);
+}
+
+export function toSidebarSource(source: ImagePackageDto): ImageSourceSidebarDto {
+  const { images, ...rest } = source;
+  const cover = images[0] ?? null;
+  return {
+    ...rest,
+    image_count: images.length,
+    cover_media_locator: cover ? cover.media_locator : null,
+  };
 }
 
 export function locatorPathKey(locator: MediaLocatorDto): string {

@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { mapImageItemDto } from "../backend/mappers";
-import type { MediaRepository } from "../backend/repository";
+import type {
+  MediaRepository,
+  SynchronousMediaRepository,
+} from "../backend/repository";
 import type { ImageItem } from "../../types";
 
 interface UseSourceImageCacheParams {
@@ -13,12 +16,24 @@ interface UseSourceImageCacheParams {
   generation: number;
 }
 
+function isSynchronousRepository(
+  repository: MediaRepository,
+): repository is SynchronousMediaRepository {
+  return (
+    "readSourceImagesSync" in repository &&
+    typeof (repository as SynchronousMediaRepository).readSourceImagesSync ===
+      "function"
+  );
+}
+
 /**
  * 会话级按需图片缓存。
  *
  * 结构性分页后侧边栏不再携带全库 images，本 hook 按 source id 懒加载并在会话内保留，
  * 使渲染进程持有的图片量与「访问过的源」成正比，而非与入库总量成正比。
  * 已访问的源不主动卸载，保证 validImageIdSet / 跨包导航 / 管理选择覆盖访问集合。
+ *
+ * 同步仓库（测试）下走同步取数，避免异步加载引入的渲染时序问题。
  */
 export function useSourceImageCache({
   repository,
@@ -26,18 +41,47 @@ export function useSourceImageCache({
   includeHidden,
   generation,
 }: UseSourceImageCacheParams): ReadonlyMap<string, ImageItem[]> {
+  // 同步仓库（测试）：直接同步取数，结果随渲染即时可用
+  const syncCache = useMemo<Map<string, ImageItem[]> | null>(() => {
+    // generation 变化（库删除/隐藏/移动）时强制重算，读取最新同步快照
+    void generation;
+    if (!isSynchronousRepository(repository)) {
+      return null;
+    }
+    const map = new Map<string, ImageItem[]>();
+    for (const sourceId of neededSourceIds) {
+      if (!sourceId) {
+        continue;
+      }
+      try {
+        const response = repository.readSourceImagesSync({
+          source_id: sourceId,
+          include_hidden: includeHidden,
+        });
+        map.set(sourceId, response.images.map(mapImageItemDto));
+      } catch {
+        // 忽略，源保持为空
+      }
+    }
+    return map;
+    // generation 纳入依赖以在库变更后重算
+  }, [repository, neededSourceIds, includeHidden, generation]);
+
   const [cache, setCache] = useState<Map<string, ImageItem[]>>(
     () => new Map(),
   );
   const inFlightRef = useRef<Set<string>>(new Set());
 
-  // includeHidden / 库版本变化会改变可见图片集，清空缓存重载
+  // includeHidden / 库版本变化会改变可见图片集，清空异步缓存重载
   useEffect(() => {
     setCache((prev) => (prev.size === 0 ? prev : new Map()));
     inFlightRef.current = new Set();
   }, [includeHidden, generation]);
 
   useEffect(() => {
+    if (syncCache) {
+      return;
+    }
     const readSourceImages = repository.readSourceImages;
     if (!readSourceImages) {
       return;
@@ -80,7 +124,7 @@ export function useSourceImageCache({
     return () => {
       cancelled = true;
     };
-  }, [repository, neededSourceIds, includeHidden, cache]);
+  }, [repository, neededSourceIds, includeHidden, cache, syncCache]);
 
-  return cache;
+  return syncCache ?? cache;
 }

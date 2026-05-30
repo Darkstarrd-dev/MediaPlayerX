@@ -516,6 +516,9 @@ export interface SynchronousMediaRepository extends MediaRepository {
     request: ReadImageSidebarTreeRequestDto,
   ): ReadImageSidebarTreeResponseDto;
   readImagePageSync(request: ReadImagePageRequestDto): ReadImagePageResponseDto;
+  readSourceImagesSync(
+    request: ReadSourceImagesRequestDto,
+  ): ReadSourceImagesResponseDto;
   readImageMetadataSync(
     request: ReadImageMetadataRequestDto,
   ): ReadImageMetadataResponseDto;

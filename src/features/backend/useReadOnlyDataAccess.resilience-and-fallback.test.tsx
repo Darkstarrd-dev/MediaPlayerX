@@ -202,8 +202,15 @@ function createBaselineRepository(
 function createSidebarResponse(
   packageDto: ReturnType<typeof createPackageDto>,
 ): ReadImageSidebarTreeResponseDto {
+  const { images, ...rest } = packageDto;
   return {
-    image_packages: [packageDto],
+    image_packages: [
+      {
+        ...rest,
+        image_count: images.length,
+        cover_media_locator: images[0]?.media_locator ?? null,
+      },
+    ],
     image_directories: [],
     tree: [
       {
@@ -215,7 +222,7 @@ function createSidebarResponse(
         children: [],
         package_id: packageDto.id,
         image_source_id: packageDto.id,
-        direct_image_count: packageDto.images.length,
+        direct_image_count: images.length,
         path_key: packageDto.tree_path.join("/"),
       },
     ],

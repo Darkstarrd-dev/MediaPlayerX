@@ -101,8 +101,8 @@ describe("FileSystemMediaReadService", () => {
     expect(serializedTree).toContain("かな!@#");
 
     const sourceId =
-      sidebar.image_packages.find((item) => item.images.length > 0)?.id ??
-      sidebar.image_directories.find((item) => item.images.length > 0)?.id;
+      sidebar.image_packages.find((item) => item.image_count > 0)?.id ??
+      sidebar.image_directories.find((item) => item.image_count > 0)?.id;
     expect(sourceId).toBeTruthy();
 
     const page = await service.readImagePage({

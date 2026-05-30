@@ -9,6 +9,9 @@ export type MediaLocatorDto = Infer<typeof Backend.mediaLocatorDtoSchema>;
 export type ImageItemDto = Infer<typeof Backend.imageItemDtoSchema>;
 export type ImagePackageDto = Infer<typeof Backend.imagePackageDtoSchema>;
 export type ImageSourceLiteDto = Infer<typeof Backend.imageSourceLiteDtoSchema>;
+export type ImageSourceSidebarDto = Infer<
+  typeof Backend.imageSourceSidebarDtoSchema
+>;
 export type VideoItemDto = Infer<typeof Backend.videoItemDtoSchema>;
 export type AudioItemDto = Infer<typeof Backend.audioItemDtoSchema>;
 export type FocusedImageRefDto = Infer<typeof Backend.focusedImageRefDtoSchema>;

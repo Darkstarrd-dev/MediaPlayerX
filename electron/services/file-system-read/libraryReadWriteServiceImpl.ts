@@ -16,6 +16,8 @@ import {
   writePackageGradeResponseSchema,
   writePlaylistResponseSchema,
   type LibrarySnapshotDto,
+  type ImagePackageDto,
+  type ImageSourceSidebarDto,
   type ListVideoSubtitlesRequestDto,
   type ListVideoSubtitlesResponseDto,
   type MediaLocatorDto,
@@ -204,6 +206,16 @@ function mergePreferenceMetricsState(
   };
 }
 
+function toSidebarSource(source: ImagePackageDto): ImageSourceSidebarDto {
+  const { images, ...rest } = source;
+  const cover = images[0] ?? null;
+  return {
+    ...rest,
+    image_count: images.length,
+    cover_media_locator: cover ? cover.media_locator : null,
+  };
+}
+
 export class LibraryReadWriteService {
   private readonly subtitleCleanupTaskService: LibrarySubtitleCleanupTaskService;
 
@@ -277,8 +289,8 @@ export class LibraryReadWriteService {
     ensureNotAborted(signal);
 
     return {
-      image_packages: filteredPackages,
-      image_directories: filteredDirectories,
+      image_packages: filteredPackages.map(toSidebarSource),
+      image_directories: filteredDirectories.map(toSidebarSource),
       tree: buildImageSidebarTree(filteredPackages, filteredDirectories),
     };
   }

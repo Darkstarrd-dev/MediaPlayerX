@@ -34,6 +34,7 @@ import {
   filterHiddenSources,
   filterHiddenImagesForSource,
   toMockImageDataUrl,
+  toSidebarSource,
   locatorPathKey,
 } from './utils'
 import { MOCK_LIBRARY_SNAPSHOT_REF, type MockRepositoryState } from './types'
@@ -58,8 +59,8 @@ export class MockMediaReadHandlers {
     ).map(toSidebarNodeDto)
 
     return readImageSidebarTreeResponseSchema.parse({
-      image_packages: filteredPackages,
-      image_directories: filteredDirectories,
+      image_packages: filteredPackages.map(toSidebarSource),
+      image_directories: filteredDirectories.map(toSidebarSource),
       tree,
     })
   }
