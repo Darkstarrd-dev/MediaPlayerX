@@ -52,6 +52,8 @@ interface UseAppSidebarScopeStateParams {
   mediaRepository: MediaRepository;
   selectedPackageId: string;
   includeHidden: boolean;
+  adReviewResultSourceIds: string[];
+  adReviewResultImageIds: string[];
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
   bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null;
@@ -169,6 +171,8 @@ export function useAppSidebarScopeState({
   mediaRepository,
   selectedPackageId,
   includeHidden,
+  adReviewResultSourceIds,
+  adReviewResultImageIds,
   fullscreenActive,
   fullscreenDisplay,
   bootstrapLibrarySnapshot,
@@ -279,6 +283,10 @@ export function useAppSidebarScopeState({
         candidateIds.add(candidate.packageId);
       }
     }
+    // ad-review 结果横跨多个源（按候选包），逐源加载以正常显示与默认选中计数
+    for (const sourceId of adReviewResultSourceIds) {
+      candidateIds.add(sourceId);
+    }
     if (candidateIds.size === 0) {
       return [];
     }
@@ -303,6 +311,7 @@ export function useAppSidebarScopeState({
     selectedPackageId,
     vectorResultsActive,
     vectorSearchResults,
+    adReviewResultSourceIds,
   ]);
   const sidebarSnapshotForGeneration =
     backendRead.sidebar.data ?? backendRead.sidebar.snapshot;
@@ -348,8 +357,18 @@ export function useAppSidebarScopeState({
         next.add(image.id);
       }
     }
+    // ad-review 候选 id 始终视为有效，避免按需加载窗口内被 useManageSelection 剪枝
+    for (const imageId of adReviewResultImageIds) {
+      next.add(imageId);
+    }
     return next;
-  }, [audiosEffective, isImageMode, isMusicMode, packageByIdEffective]);
+  }, [
+    audiosEffective,
+    isImageMode,
+    isMusicMode,
+    packageByIdEffective,
+    adReviewResultImageIds,
+  ]);
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],
