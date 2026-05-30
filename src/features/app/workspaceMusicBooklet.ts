@@ -1,4 +1,5 @@
 import type { AudioItem, ImagePackage } from '../../types'
+import { resolveSourceImageCount } from '../../utils/mediaHelpers'
 
 const MUSIC_BOOKLET_ROOT_LABEL = 'CD Booklet'
 export const MUSIC_BOOKLET_AUTO_VALUE = '__auto__'
@@ -275,7 +276,7 @@ function buildMusicBookletCandidates(params: {
         sourceId: source.id,
         absolutePath: source.absolutePath,
         label: relativeLabel || baseName || source.displayName,
-        imageCount: source.images.length,
+        imageCount: resolveSourceImageCount(source),
         relativeDepth: relativeSegments.length,
         coverHint: hasKeyword(baseName, COVER_HINT_KEYWORDS),
         bookletHint: hasKeyword(baseName, BOOKLET_HINT_KEYWORDS),

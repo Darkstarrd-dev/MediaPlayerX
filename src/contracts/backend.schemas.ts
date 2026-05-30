@@ -235,6 +235,12 @@ export const imageSourceLiteDtoSchema = z.object({
   preference_metrics: imagePreferenceMetricsDtoSchema.nullable().optional(),
 });
 
+// 侧边栏源：lite 字段 + 可见图片数 + 封面 locator（不携带全库 images，按需加载）
+export const imageSourceSidebarDtoSchema = imageSourceLiteDtoSchema.extend({
+  image_count: nonNegativeIntSchema,
+  cover_media_locator: mediaLocatorDtoSchema.nullable(),
+});
+
 export const videoItemDtoSchema = z.object({
   id: z.string().min(1),
   file_name: z.string().min(1),
@@ -346,8 +352,8 @@ export const readImageSidebarTreeRequestSchema = z.object({
 });
 
 export const readImageSidebarTreeResponseSchema = z.object({
-  image_packages: z.array(imagePackageDtoSchema),
-  image_directories: z.array(imagePackageDtoSchema),
+  image_packages: z.array(imageSourceSidebarDtoSchema),
+  image_directories: z.array(imageSourceSidebarDtoSchema),
   tree: z.array(sidebarNodeDtoSchema),
 });
 
@@ -367,6 +373,16 @@ export const readImagePageResponseSchema = z.object({
   page_index: nonNegativeIntSchema,
   page_size: z.number().int().positive(),
   refs: z.array(focusedImageRefDtoSchema),
+});
+
+export const readSourceImagesRequestSchema = z.object({
+  source_id: z.string().min(1),
+  include_hidden: z.boolean().optional(),
+});
+
+export const readSourceImagesResponseSchema = z.object({
+  source_id: z.string().min(1),
+  images: z.array(imageItemDtoSchema),
 });
 
 export const readImageMetadataRequestSchema = z.object({

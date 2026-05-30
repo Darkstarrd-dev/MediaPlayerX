@@ -66,7 +66,14 @@ function createLibrarySnapshotDto(): LibrarySnapshotDto {
 
 function createSidebarResponseDto(): ReadImageSidebarTreeResponseDto {
   return {
-    image_packages: createLibrarySnapshotDto().image_packages,
+    image_packages: createLibrarySnapshotDto().image_packages.map((source) => {
+      const { images, ...rest } = source;
+      return {
+        ...rest,
+        image_count: images.length,
+        cover_media_locator: images[0]?.media_locator ?? null,
+      };
+    }),
     image_directories: [],
     tree: [
       {

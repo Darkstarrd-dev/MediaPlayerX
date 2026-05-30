@@ -4,6 +4,7 @@ import type {
   ImageItemDto,
   ImagePackageDto,
   ImageSourceLiteDto,
+  ImageSourceSidebarDto,
   LibrarySnapshotDto,
   LibrarySnapshotLiteDto,
   ReadImageMetadataResponseDto,
@@ -65,6 +66,8 @@ export function mapImageItemDto(item: ImageItemDto): ImageItem {
 }
 
 export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
+  const coverImage =
+    source.images.find((image) => !(image.hidden ?? false)) ?? source.images[0];
   return {
     id: source.id,
     packageName: source.package_name,
@@ -112,6 +115,10 @@ export function mapImagePackageDto(source: ImagePackageDto): ImagePackage {
           lastEventTimeMs: source.preference_metrics.last_event_time_ms,
           updatedAtMs: source.preference_metrics.updated_at_ms,
         }
+      : null,
+    imageCount: source.images.length,
+    coverMediaLocator: coverImage
+      ? mapMediaLocatorDto(coverImage.media_locator)
       : null,
     images: source.images.map(mapImageItemDto),
   };
@@ -169,6 +176,18 @@ export function mapImageSourceLiteDto(
         }
       : null,
     images: [],
+  };
+}
+
+export function mapImageSourceSidebarDto(
+  source: ImageSourceSidebarDto,
+): ImagePackage {
+  return {
+    ...mapImageSourceLiteDto(source),
+    imageCount: source.image_count,
+    coverMediaLocator: source.cover_media_locator
+      ? mapMediaLocatorDto(source.cover_media_locator)
+      : null,
   };
 }
 
@@ -353,8 +372,10 @@ export function mapLibrarySnapshotAnyDto(
 export function mapImageSidebarTreeDto(
   response: ReadImageSidebarTreeResponseDto,
 ): ImageSidebarTreeViewModel {
-  const imagePackages = response.image_packages.map(mapImagePackageDto);
-  const imageDirectories = response.image_directories.map(mapImagePackageDto);
+  const imagePackages = response.image_packages.map(mapImageSourceSidebarDto);
+  const imageDirectories = response.image_directories.map(
+    mapImageSourceSidebarDto,
+  );
   const sourceById = new Map<string, ImagePackage>([
     ...imagePackages.map((source) => [source.id, source] as const),
     ...imageDirectories.map((source) => [source.id, source] as const),

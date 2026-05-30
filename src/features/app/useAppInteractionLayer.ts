@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { normalizeSeriesId, pickFirstBySeriesId } from "./workspaceSharedUtils";
 import { isEditableTarget } from "../../utils/ui";
 import { computeRenameDialogParams } from "./renameDialogLogic";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
 import type { MediaStateResult } from "../media/useMediaState";
@@ -304,10 +305,11 @@ export function useAppInteractionLayer({
         );
         const isImagePackageNode =
           node.kind === "package" || node.imageNodeType === "package";
-        const hasUsableImages = sourceId
-          ? (packageByIdEffective
-              .get(sourceId)
-              ?.images.some((image) => !image.hidden) ?? false)
+        const usableSource = sourceId
+          ? (packageByIdEffective.get(sourceId) ?? null)
+          : null;
+        const hasUsableImages = usableSource
+          ? resolveSourceImageCount(usableSource) > 0
           : false;
 
         if (sourceId && isImagePackageNode && !isCoverNode && hasUsableImages) {
@@ -332,38 +334,49 @@ export function useAppInteractionLayer({
         findFirstImageNodeFromTree(imageTreeForSidebar);
 
       const findFirstVisibleImageIndex = (packageId: string): number | null => {
-        const images = packageByIdEffective.get(packageId)?.images ?? [];
-        const firstVisibleIndex = images.findIndex((image) => !image.hidden);
-        return firstVisibleIndex >= 0 ? firstVisibleIndex : null;
+        const source = packageByIdEffective.get(packageId);
+        if (!source) {
+          return null;
+        }
+        if (source.images.length > 0) {
+          const firstVisibleIndex = source.images.findIndex(
+            (image) => !image.hidden,
+          );
+          return firstVisibleIndex >= 0 ? firstVisibleIndex : null;
+        }
+        // 源未按需加载（images 为空）时，可见序列首项即下标 0
+        return resolveSourceImageCount(source) > 0 ? 0 : null;
       };
 
+      const selectedPackageSource =
+        packageByIdEffective.get(selectedPackageId) ?? null;
       const selectedPackageUsable =
         rootScopedPackageIds.has(selectedPackageId) &&
-        (packageByIdEffective
-          .get(selectedPackageId)
-          ?.images.some((image) => !image.hidden) ??
-          false);
+        Boolean(
+          selectedPackageSource &&
+            resolveSourceImageCount(selectedPackageSource) > 0,
+        );
 
       const firstSidebarPackageId =
         firstImageSidebarNode?.imageSourceId?.trim() ?? "";
       const fallbackPackageId = preferSidebarFirst
         ? firstSidebarPackageId ||
           (selectedPackageUsable ? selectedPackageId : "") ||
-          orderedRootScopedPackages.find((pkg) =>
-            pkg.images.some((image) => !image.hidden),
+          orderedRootScopedPackages.find(
+            (pkg) => resolveSourceImageCount(pkg) > 0,
           )?.id ||
-          scopedImageSourcesEffective.find((source) =>
-            source.images.some((image) => !image.hidden),
+          scopedImageSourcesEffective.find(
+            (source) => resolveSourceImageCount(source) > 0,
           )?.id ||
           ""
         : selectedPackageUsable
           ? selectedPackageId
           : firstSidebarPackageId ||
-            orderedRootScopedPackages.find((pkg) =>
-              pkg.images.some((image) => !image.hidden),
+            orderedRootScopedPackages.find(
+              (pkg) => resolveSourceImageCount(pkg) > 0,
             )?.id ||
-            scopedImageSourcesEffective.find((source) =>
-              source.images.some((image) => !image.hidden),
+            scopedImageSourcesEffective.find(
+              (source) => resolveSourceImageCount(source) > 0,
             )?.id ||
             "";
 

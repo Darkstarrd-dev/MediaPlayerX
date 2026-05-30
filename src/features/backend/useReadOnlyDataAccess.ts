@@ -210,6 +210,8 @@ export function useReadOnlyDataAccess({
   const deferredLibraryRefreshAfterLoadRef = useRef(false)
   const deferredSidebarRefreshAfterLoadRef = useRef(false)
   const pendingRefreshScopeRef = useRef<RefreshScope | null>(null)
+  // 记录上次"回到前台"刷新的时间戳，用于合并 focus + visibilitychange 的重复触发
+  const lastForegroundRefreshAtRef = useRef(0)
 
   const [libraryRetryNonce, setLibraryRetryNonce] = useState(0)
   const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0)
@@ -662,10 +664,18 @@ export function useReadOnlyDataAccess({
       return
     }
 
+    const FOREGROUND_REFRESH_MIN_INTERVAL_MS = 1_500
     const refreshOnForeground = () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
         return
       }
+      // focus 与 visibilitychange 常对同一次切换同时触发；且 onLibraryChanged
+      // 已能实时刷新，此处仅作兜底，故加最小间隔去重，避免每次 alt-tab 全量重拉。
+      const now = Date.now()
+      if (now - lastForegroundRefreshAtRef.current < FOREGROUND_REFRESH_MIN_INTERVAL_MS) {
+        return
+      }
+      lastForegroundRefreshAtRef.current = now
       triggerLibraryRefresh()
       triggerSidebarRefresh()
       triggerPageRefresh()

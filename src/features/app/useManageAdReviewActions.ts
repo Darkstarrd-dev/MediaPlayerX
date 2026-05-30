@@ -59,6 +59,8 @@ interface UseManageAdReviewActionsParams {
   clearAllSelections: () => void;
   replaceImageCheckedIds: (imageIds: string[], append?: boolean) => void;
   setManageOperationHint: (message: string | null) => void;
+  setAdReviewResultSourceIds?: (sourceIds: string[]) => void;
+  setAdReviewResultImageIds?: (imageIds: string[]) => void;
   adReviewPanelOpen?: boolean;
   adReviewFocusTaskId?: string | null;
   onDeleteRoundCompleted?: (payload: {
@@ -279,6 +281,8 @@ export function useManageAdReviewActions({
   clearAllSelections,
   replaceImageCheckedIds,
   setManageOperationHint,
+  setAdReviewResultSourceIds,
+  setAdReviewResultImageIds,
   adReviewPanelOpen = true,
   adReviewFocusTaskId = null,
   onDeleteRoundCompleted,
@@ -638,6 +642,33 @@ export function useManageAdReviewActions({
     selectionLoaded,
     task,
   ]);
+
+  // 同步 ad-review 候选包 id 给会话状态，供按需缓存预加载这些源的图片
+  // （结构性分页后侧边栏不再携带 images，跨源结果需逐源加载才能显示与计数）
+  const syncedSourceSignatureRef = useRef<string>("");
+  useEffect(() => {
+    const status = task?.status;
+    const active =
+      Boolean(task) &&
+      (status === "running" || status === "paused" || status === "review");
+    const imageIds =
+      active && task
+        ? task.candidates.map((candidate) => candidate.image_id)
+        : [];
+    const sourceIds =
+      active && task
+        ? Array.from(
+            new Set(task.candidates.map((candidate) => candidate.package_id)),
+          )
+        : [];
+    const signature = imageIds.join("|");
+    if (signature === syncedSourceSignatureRef.current) {
+      return;
+    }
+    syncedSourceSignatureRef.current = signature;
+    setAdReviewResultSourceIds?.(sourceIds);
+    setAdReviewResultImageIds?.(imageIds);
+  }, [task, setAdReviewResultSourceIds, setAdReviewResultImageIds]);
 
   useEffect(() => {
     if (!selectionLoaded || !task) {

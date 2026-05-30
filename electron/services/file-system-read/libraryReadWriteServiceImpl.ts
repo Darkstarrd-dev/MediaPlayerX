@@ -9,7 +9,6 @@ import {
   readAppStateResponseSchema,
   readImageMetadataResponseSchema,
   readImagePageResponseSchema,
-  readImageSidebarTreeResponseSchema,
   readPlaylistResponseSchema,
   saveVideoCoverResponseSchema,
   writeAppStateResponseSchema,
@@ -17,6 +16,8 @@ import {
   writePackageGradeResponseSchema,
   writePlaylistResponseSchema,
   type LibrarySnapshotDto,
+  type ImagePackageDto,
+  type ImageSourceSidebarDto,
   type ListVideoSubtitlesRequestDto,
   type ListVideoSubtitlesResponseDto,
   type MediaLocatorDto,
@@ -28,6 +29,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadManageSubtitleCleanupTaskRequestDto,
@@ -203,6 +206,16 @@ function mergePreferenceMetricsState(
   };
 }
 
+function toSidebarSource(source: ImagePackageDto): ImageSourceSidebarDto {
+  const { images, ...rest } = source;
+  const cover = images[0] ?? null;
+  return {
+    ...rest,
+    image_count: images.length,
+    cover_media_locator: cover ? cover.media_locator : null,
+  };
+}
+
 export class LibraryReadWriteService {
   private readonly subtitleCleanupTaskService: LibrarySubtitleCleanupTaskService;
 
@@ -275,11 +288,11 @@ export class LibraryReadWriteService {
     );
     ensureNotAborted(signal);
 
-    return readImageSidebarTreeResponseSchema.parse({
-      image_packages: filteredPackages,
-      image_directories: filteredDirectories,
+    return {
+      image_packages: filteredPackages.map(toSidebarSource),
+      image_directories: filteredDirectories.map(toSidebarSource),
       tree: buildImageSidebarTree(filteredPackages, filteredDirectories),
-    });
+    };
   }
 
   async readImagePage(
@@ -417,6 +430,26 @@ export class LibraryReadWriteService {
           }
         : null,
     );
+  }
+
+  async readSourceImages(
+    request: ReadSourceImagesRequestDto,
+  ): Promise<ReadSourceImagesResponseDto> {
+    this.options.markInteractiveRead();
+    const includeHidden = request.include_hidden ?? false;
+    const snapshot = await this.options.ensureSnapshotLoaded();
+    const allSources = [
+      ...snapshot.image_packages,
+      ...snapshot.image_directories,
+    ];
+    const source = allSources.find((item) => item.id === request.source_id);
+    const visibleSource = source
+      ? filterHiddenImagesFromSource(source, includeHidden)
+      : null;
+    return {
+      source_id: request.source_id,
+      images: visibleSource ? visibleSource.images : [],
+    };
   }
 
   async writePackageGrade(

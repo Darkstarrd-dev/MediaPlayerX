@@ -3,6 +3,8 @@ import {
   type ReadImageMetadataResponseDto,
   type ReadImagePageRequestDto,
   type ReadImagePageResponseDto,
+  type ReadSourceImagesRequestDto,
+  type ReadSourceImagesResponseDto,
   type ReadImageSidebarTreeRequestDto,
   type ReadImageSidebarTreeResponseDto,
   type ReadPlaylistResponseDto,
@@ -70,13 +72,22 @@ export class FileSystemLibraryHandlers {
 
   async readLibrarySnapshotLite(): Promise<LibrarySnapshotLiteDto> {
     this.context.markInteractiveRead()
-    const snapshot = await this.context.ensureSnapshotLoaded()
     const dbResult = this.context.database.readSnapshotLite()
-    // DB 为空（扫描期间 replaceSnapshot 未完成）但缓存有数据时，从缓存构造 lite DTO
+    const dbHasContent =
+      dbResult.image_packages.length > 0 ||
+      dbResult.image_directories.length > 0 ||
+      dbResult.videos.length > 0 ||
+      (dbResult.audios?.length ?? 0) > 0
+    // DB 有数据时直接返回，避免触发整库 readSnapshot（含所有图片项）进内存。
+    if (dbHasContent) {
+      return dbResult
+    }
+    // DB 全空（首次启动或扫描尚未写入）：触发快照加载/warmup，
+    // 并在缓存（含扫描预览）有图片时回退构造 lite，避免前端拿到空 sidebar。
+    const snapshot = await this.context.ensureSnapshotLoaded()
     if (
-      dbResult.image_packages.length === 0 &&
-      dbResult.image_directories.length === 0 &&
-      (snapshot.image_packages.length > 0 || snapshot.image_directories.length > 0)
+      snapshot.image_packages.length > 0 ||
+      snapshot.image_directories.length > 0
     ) {
       return buildLiteDtoFromSnapshot(snapshot)
     }
@@ -92,6 +103,10 @@ export class FileSystemLibraryHandlers {
 
   async readImagePage(request: ReadImagePageRequestDto, signal?: AbortSignal): Promise<ReadImagePageResponseDto> {
     return this.context.libraryReadWriteService.readImagePage(request, signal)
+  }
+
+  async readSourceImages(request: ReadSourceImagesRequestDto): Promise<ReadSourceImagesResponseDto> {
+    return this.context.libraryReadWriteService.readSourceImages(request)
   }
 
   async readImageMetadata(

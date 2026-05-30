@@ -99,6 +99,8 @@ export interface ImagePackage {
     lastEventTimeMs: number | null;
     updatedAtMs: number;
   } | null;
+  imageCount?: number;
+  coverMediaLocator?: MediaLocator | null;
   images: ImageItem[];
 }
 

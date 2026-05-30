@@ -1,5 +1,8 @@
 import {
+  useEffect,
   useMemo,
+  useRef,
+  useState,
   type Dispatch,
   type RefObject,
   type SetStateAction,
@@ -29,6 +32,9 @@ import { useAudioSidebarState } from "./useAudioSidebarState";
 import { useManageSelection } from "../management/useManageSelection";
 import { useSidebarNavigation } from "../sidebar/useSidebarNavigation";
 import { resolvePreferredSidebarSources } from "./sidebarSourceSelection";
+import { useSourceImageCache } from "./useSourceImageCache";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
+import type { MediaRepository } from "../backend/repository";
 
 interface ReadSliceSnapshot<T> {
   data: T | null;
@@ -43,6 +49,11 @@ interface AppSidebarBackendReadState {
 interface UseAppSidebarScopeStateParams {
   backendRead: AppSidebarBackendReadState;
   mode: BrowserMode;
+  mediaRepository: MediaRepository;
+  selectedPackageId: string;
+  includeHidden: boolean;
+  adReviewResultSourceIds: string[];
+  adReviewResultImageIds: string[];
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
   bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null;
@@ -157,6 +168,11 @@ function buildImageSourceNodeIdMapFromSources(
 export function useAppSidebarScopeState({
   backendRead,
   mode,
+  mediaRepository,
+  selectedPackageId,
+  includeHidden,
+  adReviewResultSourceIds,
+  adReviewResultImageIds,
   fullscreenActive,
   fullscreenDisplay,
   bootstrapLibrarySnapshot,
@@ -253,11 +269,79 @@ export function useAppSidebarScopeState({
   );
   const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos;
   const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios;
-  const packageByIdEffective = useMemo(
-    () =>
-      new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
-    [scopedImageSourcesEffective],
-  );
+  // 结构性分页：侧边栏源不再携带全库 images，按需加载当前包并合并。
+  // 仅当源已知、images 为空（未加载）且确有图片（imageCount>0）时才触发加载，
+  // 因此在旧链路（源已带 images）下本段完全惰性、零运行时影响。
+  const neededSourceIds = useMemo(() => {
+    const candidateIds = new Set<string>();
+    if (selectedPackageId) {
+      candidateIds.add(selectedPackageId);
+    }
+    // 向量检索结果横跨多个源，逐个确保加载以正常显示缩略图
+    if (vectorResultsActive) {
+      for (const candidate of vectorSearchResults) {
+        candidateIds.add(candidate.packageId);
+      }
+    }
+    // ad-review 结果横跨多个源（按候选包），逐源加载以正常显示与默认选中计数
+    for (const sourceId of adReviewResultSourceIds) {
+      candidateIds.add(sourceId);
+    }
+    if (candidateIds.size === 0) {
+      return [];
+    }
+    const sourceById = new Map(
+      scopedImageSourcesEffective.map((item) => [item.id, item]),
+    );
+    const result: string[] = [];
+    for (const id of candidateIds) {
+      const source = sourceById.get(id);
+      // 仅当源已知、images 为空（未加载）且确有图片时才需要按需加载
+      if (
+        source &&
+        source.images.length === 0 &&
+        resolveSourceImageCount(source) > 0
+      ) {
+        result.push(id);
+      }
+    }
+    return result;
+  }, [
+    scopedImageSourcesEffective,
+    selectedPackageId,
+    vectorResultsActive,
+    vectorSearchResults,
+    adReviewResultSourceIds,
+  ]);
+  const sidebarSnapshotForGeneration =
+    backendRead.sidebar.data ?? backendRead.sidebar.snapshot;
+  const [sourceCacheGeneration, setSourceCacheGeneration] = useState(0);
+  const prevSidebarSnapshotRef = useRef(sidebarSnapshotForGeneration);
+  useEffect(() => {
+    if (prevSidebarSnapshotRef.current !== sidebarSnapshotForGeneration) {
+      prevSidebarSnapshotRef.current = sidebarSnapshotForGeneration;
+      setSourceCacheGeneration((value) => value + 1);
+    }
+  }, [sidebarSnapshotForGeneration]);
+  const sourceImageCache = useSourceImageCache({
+    repository: mediaRepository,
+    neededSourceIds,
+    includeHidden,
+    generation: sourceCacheGeneration,
+  });
+  const packageByIdEffective = useMemo(() => {
+    const map = new Map<string, ImagePackage>();
+    for (const source of scopedImageSourcesEffective) {
+      const cachedImages = sourceImageCache.get(source.id);
+      map.set(
+        source.id,
+        cachedImages && source.images.length === 0
+          ? { ...source, images: cachedImages }
+          : source,
+      );
+    }
+    return map;
+  }, [scopedImageSourcesEffective, sourceImageCache]);
   const validImageIdSet = useMemo(() => {
     if (isMusicMode) {
       return new Set(audiosEffective.map((audio) => audio.id));
@@ -268,13 +352,23 @@ export function useAppSidebarScopeState({
     }
 
     const next = new Set<string>();
-    for (const source of scopedImageSourcesEffective) {
+    for (const source of packageByIdEffective.values()) {
       for (const image of source.images) {
         next.add(image.id);
       }
     }
+    // ad-review 候选 id 始终视为有效，避免按需加载窗口内被 useManageSelection 剪枝
+    for (const imageId of adReviewResultImageIds) {
+      next.add(imageId);
+    }
     return next;
-  }, [audiosEffective, isImageMode, isMusicMode, scopedImageSourcesEffective]);
+  }, [
+    audiosEffective,
+    isImageMode,
+    isMusicMode,
+    packageByIdEffective,
+    adReviewResultImageIds,
+  ]);
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],

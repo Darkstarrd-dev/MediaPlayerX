@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import type { AppSettings } from "../../contracts/settings";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
 import {
   resolveAncestorNodeIds,
   resolveFirstAudioId,
@@ -386,7 +387,7 @@ export function useAppEffects({
     const focused = clamp(
       focusByPackage[activePackage.id] ?? 0,
       0,
-      activePackage.images.length - 1,
+      resolveSourceImageCount(activePackage) - 1,
     );
     const nextPage = Math.floor(focused / pagedPageSize);
     setPageByPackage((previous) => {
@@ -516,7 +517,7 @@ export function useAppEffects({
 
     if (!rootScopedPackageIds.has(selectedPackageId)) {
       const firstReadyPackage = orderedRootScopedPackages.find(
-        (item) => item.images.length > 0,
+        (item) => resolveSourceImageCount(item) > 0,
       );
       setSelectedPackageId(
         (firstReadyPackage ?? orderedRootScopedPackages[0]).id,

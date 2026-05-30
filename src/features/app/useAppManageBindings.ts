@@ -49,6 +49,8 @@ export function useAppManageBindings({
     setAdReviewPanelOpen,
     adReviewPanelOpen,
     adReviewFocusTaskId,
+    setAdReviewResultSourceIds,
+    setAdReviewResultImageIds,
     setManageOperationHint,
     setDeleteConfirmOpen,
   } = sessionState;
@@ -135,6 +137,8 @@ export function useAppManageBindings({
     clearAllSelections,
     replaceImageCheckedIds,
     setManageOperationHint,
+    setAdReviewResultSourceIds,
+    setAdReviewResultImageIds,
     adReviewPanelOpen,
     adReviewFocusTaskId,
     onDeleteRoundCompleted: () => {

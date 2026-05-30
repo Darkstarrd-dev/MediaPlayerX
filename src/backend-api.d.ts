@@ -70,6 +70,8 @@ import type {
   ReadImageMetadataResponseDto,
   ReadImagePageRequestDto,
   ReadImagePageResponseDto,
+  ReadSourceImagesRequestDto,
+  ReadSourceImagesResponseDto,
   ReadImageSidebarTreeRequestDto,
   ReadImageSidebarTreeResponseDto,
   MediaAccessAuditResponseDto,
@@ -190,6 +192,9 @@ interface MediaPlayerBackendApi {
   readImagePage: (
     request: ReadImagePageRequestDto,
   ) => Promise<ReadImagePageResponseDto>;
+  readSourceImages?: (
+    request: ReadSourceImagesRequestDto,
+  ) => Promise<ReadSourceImagesResponseDto>;
   readImageMetadata: (
     request: ReadImageMetadataRequestDto,
   ) => Promise<ReadImageMetadataResponseDto>;

@@ -68,7 +68,10 @@ describe("FileSystemMediaReadService", () => {
     if (!source) {
       throw new Error("source not found");
     }
-    const firstImage = source.images[0];
+    const sourceImages = await service.readSourceImages({
+      source_id: source.id,
+    });
+    const firstImage = sourceImages.images[0];
     expect(firstImage?.media_locator.kind).toBe("filesystem");
     if (!firstImage || firstImage.media_locator.kind !== "filesystem") {
       throw new Error("image locator not found");

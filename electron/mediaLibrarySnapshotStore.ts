@@ -70,13 +70,8 @@ export class MediaLibrarySnapshotStore {
       videos,
       audios,
     };
-    const totalImageCount =
-      imagePackages.reduce((sum, item) => sum + item.images.length, 0) +
-      imageDirectories.reduce((sum, item) => sum + item.images.length, 0);
-    const shouldSkipDeepClone = totalImageCount >= 20_000;
-    if (!shouldSkipDeepClone) {
-      return librarySnapshotDtoSchema.parse(snapshot);
-    }
+    // 校验但不深拷贝：mappers 已填好各字段默认值，原对象形状完整，
+    // 直接返回原对象可避免整库对象图的 Zod clone 放大堆压力。
     const validated = librarySnapshotDtoSchema.safeParse(snapshot);
     if (!validated.success) {
       throw validated.error;
@@ -108,14 +103,7 @@ export class MediaLibrarySnapshotStore {
       videos,
       audios,
     };
-    const totalItems =
-      imagePackages.length +
-      imageDirectories.length +
-      videos.length +
-      audios.length;
-    if (totalItems < 5_000) {
-      return librarySnapshotLiteDtoSchema.parse(snapshot);
-    }
+    // 校验但不深拷贝，避免整库对象图的 Zod clone 放大堆压力。
     const validated = librarySnapshotLiteDtoSchema.safeParse(snapshot);
     if (!validated.success) {
       throw validated.error;

@@ -156,10 +156,13 @@ export function useAppDisplayPageResources({
         continue;
       }
 
-      const image = source.images.find(
+      // images 已加载时按 id 精确匹配；否则回退到源上的封面 locator
+      // （结构性分页后 images 可能尚未按需加载）。
+      const matchedImage = source.images.find(
         (item) => item.id === imageId && !item.hidden,
       );
-      if (!image) {
+      const locator = matchedImage?.mediaLocator ?? source.coverMediaLocator ?? null;
+      if (!locator) {
         continue;
       }
 
@@ -167,7 +170,7 @@ export function useAppDisplayPageResources({
       nodeBrowseCoverThumbnailLocators.push({
         sourceId,
         imageId,
-        locator: image.mediaLocator,
+        locator,
       });
     }
   }

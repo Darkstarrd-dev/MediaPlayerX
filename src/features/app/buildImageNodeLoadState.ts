@@ -1,4 +1,5 @@
 import type { ImagePackage, SidebarNode } from '../../types'
+import { resolveSourceImageCount } from '../../utils/mediaHelpers'
 
 interface BuildImageNodeLoadStateParams {
   archiveLoadStatus: {
@@ -34,7 +35,7 @@ export function buildImageNodeLoadState({
       continue
     }
 
-    if (pendingPathSet.has(normalizedPath) || source.images.length === 0) {
+    if (pendingPathSet.has(normalizedPath) || resolveSourceImageCount(source) === 0) {
       packageLoadStateBySourceId.set(source.id, 'pending')
     }
   }

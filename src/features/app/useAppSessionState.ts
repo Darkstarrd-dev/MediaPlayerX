@@ -141,6 +141,14 @@ export function useAppSessionState({
     null,
   );
   const [adReviewPageIndex, setAdReviewPageIndex] = useState(0);
+  // ad-review 结果涉及的源 id（候选包），用于按需预加载这些源的图片
+  const [adReviewResultSourceIds, setAdReviewResultSourceIds] = useState<
+    string[]
+  >([]);
+  // ad-review 候选 image id，纳入 validImageIdSet 防止按需加载窗口内被剪枝
+  const [adReviewResultImageIds, setAdReviewResultImageIds] = useState<
+    string[]
+  >([]);
   const [dismissedImportTaskIds, setDismissedImportTaskIds] = useState<
     Record<string, true>
   >({});
@@ -285,6 +293,10 @@ export function useAppSessionState({
     setAdReviewFocusTaskId,
     adReviewPageIndex,
     setAdReviewPageIndex,
+    adReviewResultSourceIds,
+    setAdReviewResultSourceIds,
+    adReviewResultImageIds,
+    setAdReviewResultImageIds,
     dismissedImportTaskIds,
     setDismissedImportTaskIds,
     importTaskPanelOpen,
