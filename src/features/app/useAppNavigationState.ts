@@ -197,6 +197,9 @@ export function useAppNavigationState({
   } = useAppSidebarScopeState({
     backendRead,
     mode,
+    mediaRepository: repositoryBootstrap.mediaRepository,
+    selectedPackageId,
+    includeHidden: sessionState.manageMode && mode === "image",
     fullscreenActive,
     fullscreenDisplay,
     bootstrapLibrarySnapshot,

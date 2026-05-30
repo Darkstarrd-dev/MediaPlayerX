@@ -1,5 +1,8 @@
 import {
+  useEffect,
   useMemo,
+  useRef,
+  useState,
   type Dispatch,
   type RefObject,
   type SetStateAction,
@@ -29,6 +32,9 @@ import { useAudioSidebarState } from "./useAudioSidebarState";
 import { useManageSelection } from "../management/useManageSelection";
 import { useSidebarNavigation } from "../sidebar/useSidebarNavigation";
 import { resolvePreferredSidebarSources } from "./sidebarSourceSelection";
+import { useSourceImageCache } from "./useSourceImageCache";
+import { resolveSourceImageCount } from "../../utils/mediaHelpers";
+import type { MediaRepository } from "../backend/repository";
 
 interface ReadSliceSnapshot<T> {
   data: T | null;
@@ -43,6 +49,9 @@ interface AppSidebarBackendReadState {
 interface UseAppSidebarScopeStateParams {
   backendRead: AppSidebarBackendReadState;
   mode: BrowserMode;
+  mediaRepository: MediaRepository;
+  selectedPackageId: string;
+  includeHidden: boolean;
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
   bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null;
@@ -157,6 +166,9 @@ function buildImageSourceNodeIdMapFromSources(
 export function useAppSidebarScopeState({
   backendRead,
   mode,
+  mediaRepository,
+  selectedPackageId,
+  includeHidden,
   fullscreenActive,
   fullscreenDisplay,
   bootstrapLibrarySnapshot,
@@ -253,11 +265,54 @@ export function useAppSidebarScopeState({
   );
   const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos;
   const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios;
-  const packageByIdEffective = useMemo(
-    () =>
-      new Map(scopedImageSourcesEffective.map((source) => [source.id, source])),
-    [scopedImageSourcesEffective],
-  );
+  // 结构性分页：侧边栏源不再携带全库 images，按需加载当前包并合并。
+  // 仅当源已知、images 为空（未加载）且确有图片（imageCount>0）时才触发加载，
+  // 因此在旧链路（源已带 images）下本段完全惰性、零运行时影响。
+  const neededSourceIds = useMemo(() => {
+    if (!selectedPackageId) {
+      return [];
+    }
+    const source = scopedImageSourcesEffective.find(
+      (item) => item.id === selectedPackageId,
+    );
+    if (
+      source &&
+      source.images.length === 0 &&
+      resolveSourceImageCount(source) > 0
+    ) {
+      return [selectedPackageId];
+    }
+    return [];
+  }, [scopedImageSourcesEffective, selectedPackageId]);
+  const sidebarSnapshotForGeneration =
+    backendRead.sidebar.data ?? backendRead.sidebar.snapshot;
+  const [sourceCacheGeneration, setSourceCacheGeneration] = useState(0);
+  const prevSidebarSnapshotRef = useRef(sidebarSnapshotForGeneration);
+  useEffect(() => {
+    if (prevSidebarSnapshotRef.current !== sidebarSnapshotForGeneration) {
+      prevSidebarSnapshotRef.current = sidebarSnapshotForGeneration;
+      setSourceCacheGeneration((value) => value + 1);
+    }
+  }, [sidebarSnapshotForGeneration]);
+  const sourceImageCache = useSourceImageCache({
+    repository: mediaRepository,
+    neededSourceIds,
+    includeHidden,
+    generation: sourceCacheGeneration,
+  });
+  const packageByIdEffective = useMemo(() => {
+    const map = new Map<string, ImagePackage>();
+    for (const source of scopedImageSourcesEffective) {
+      const cachedImages = sourceImageCache.get(source.id);
+      map.set(
+        source.id,
+        cachedImages && source.images.length === 0
+          ? { ...source, images: cachedImages }
+          : source,
+      );
+    }
+    return map;
+  }, [scopedImageSourcesEffective, sourceImageCache]);
   const validImageIdSet = useMemo(() => {
     if (isMusicMode) {
       return new Set(audiosEffective.map((audio) => audio.id));
@@ -268,13 +323,13 @@ export function useAppSidebarScopeState({
     }
 
     const next = new Set<string>();
-    for (const source of scopedImageSourcesEffective) {
+    for (const source of packageByIdEffective.values()) {
       for (const image of source.images) {
         next.add(image.id);
       }
     }
     return next;
-  }, [audiosEffective, isImageMode, isMusicMode, scopedImageSourcesEffective]);
+  }, [audiosEffective, isImageMode, isMusicMode, packageByIdEffective]);
   const videoByIdEffective = useMemo(
     () => new Map(videosEffective.map((video) => [video.id, video])),
     [videosEffective],
