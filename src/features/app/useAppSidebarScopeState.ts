@@ -269,21 +269,41 @@ export function useAppSidebarScopeState({
   // 仅当源已知、images 为空（未加载）且确有图片（imageCount>0）时才触发加载，
   // 因此在旧链路（源已带 images）下本段完全惰性、零运行时影响。
   const neededSourceIds = useMemo(() => {
-    if (!selectedPackageId) {
+    const candidateIds = new Set<string>();
+    if (selectedPackageId) {
+      candidateIds.add(selectedPackageId);
+    }
+    // 向量检索结果横跨多个源，逐个确保加载以正常显示缩略图
+    if (vectorResultsActive) {
+      for (const candidate of vectorSearchResults) {
+        candidateIds.add(candidate.packageId);
+      }
+    }
+    if (candidateIds.size === 0) {
       return [];
     }
-    const source = scopedImageSourcesEffective.find(
-      (item) => item.id === selectedPackageId,
+    const sourceById = new Map(
+      scopedImageSourcesEffective.map((item) => [item.id, item]),
     );
-    if (
-      source &&
-      source.images.length === 0 &&
-      resolveSourceImageCount(source) > 0
-    ) {
-      return [selectedPackageId];
+    const result: string[] = [];
+    for (const id of candidateIds) {
+      const source = sourceById.get(id);
+      // 仅当源已知、images 为空（未加载）且确有图片时才需要按需加载
+      if (
+        source &&
+        source.images.length === 0 &&
+        resolveSourceImageCount(source) > 0
+      ) {
+        result.push(id);
+      }
     }
-    return [];
-  }, [scopedImageSourcesEffective, selectedPackageId]);
+    return result;
+  }, [
+    scopedImageSourcesEffective,
+    selectedPackageId,
+    vectorResultsActive,
+    vectorSearchResults,
+  ]);
   const sidebarSnapshotForGeneration =
     backendRead.sidebar.data ?? backendRead.sidebar.snapshot;
   const [sourceCacheGeneration, setSourceCacheGeneration] = useState(0);
