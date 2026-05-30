@@ -27,6 +27,7 @@ Last updated: 2026-03-02
 - 音乐模式可视化已升级为双运行时架构：全局 `musicVisualizerRuntimeMode` 控制 `legacy | plugin`，并保留自动回退到 legacy 的安全阀。
 - Shader 参数入口已收口：音乐主区仅保留“打开设置”快捷入口，实际模式切换/输入映射/预览统一在设置面板 `Shader` 分页完成。
 - 缩略图变体链路已落地：`resolveMediaResource` 支持 `original/thumbnail` 变体，thumbnail 由 Main 使用 Sharp 生成 WebP 并落盘缓存。
+- 图片读链路已结构性分页：`readImageSidebarTree` 响应仅携带每源 `image_count` + 封面 locator（不再携带全库 `images[]`）；渲染进程通过 `readSourceImages` 按访问到的源懒加载并在会话内缓存（`useSourceImageCache`），使单文件夹浏览代价与入库总量解耦。向量检索与 AdReview 等跨源视图会按需预加载其涉及的源。
 - 运行时依赖预检已落地：Main 暴露依赖可用性与降级策略矩阵（`sharp/ffmpeg/ffprobe/archive-wasm/powershell`），Renderer 在降级时显示告警。
 - `rar/7z` 归一化调度采用“双优先级队列”：默认低优先级（交互空闲后按路径排序执行），用户显式打开目标包时提升为高优先级后台处理。
 - Main 通过 `libraryChanged + archiveLoadStatus` 向 Renderer 推送/暴露归一化进度状态，UI 可在不阻塞交互的前提下显示 pending/running。

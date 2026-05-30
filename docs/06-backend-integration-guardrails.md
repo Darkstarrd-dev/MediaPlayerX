@@ -1,6 +1,6 @@
 # 后端接入规避方案（强制执行）
 
-Last updated: 2026-02-18
+Last updated: 2026-05-30
 
 ## 适用范围
 
@@ -57,6 +57,12 @@ Last updated: 2026-02-18
     - 新增功能禁止把“数据读取 + 状态编排 + UI 组装 + 副作用”堆在单个文件。
     - `App` 入口链路（`src/App.tsx`、`useAppController`、`useAppDataPipeline`）仅保留编排，不承载业务细节。
     - 同一文件若同时出现跨层职责并持续膨胀，必须先拆分再继续叠加需求。
+
+12. 图片读链路结构性分页（强制）
+    - `readImageSidebarTree` 响应禁止携带全库 `images[]`：侧边栏源仅含 `image_count` 与封面 `cover_media_locator`（对应 `imageSourceSidebarDtoSchema`）。
+    - 渲染进程通过 `readSourceImages(source_id)` 按“访问到的源”懒加载图片并在会话内缓存（`useSourceImageCache`），禁止恢复“整库 images 常驻渲染进程”的旧模型。
+    - 任何同时展示多源缩略图的视图（向量检索结果、AdReview 聚合结果等）必须把涉及的源 id 纳入按需加载集合（`useAppSidebarScopeState` 的 `neededSourceIds`），并把其有效 image id 纳入 `validImageIdSet`，否则会出现缩略图空白与管理选择被误剪（默认全选被清空）。
+    - 计数/枚举（页数、导航边界、ref 枚举）必须使用 `resolveSourceImageCount`（= `imageCount ?? images.length`），不得依赖已加载的 `images.length`。
 
 ## 新增能力实施顺序（建议按序）
 
