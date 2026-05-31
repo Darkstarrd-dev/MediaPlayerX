@@ -1,61 +1,66 @@
-import type { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from "react";
 
-import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { FullscreenAlignDirection } from './useFullscreenPlaybackBindings'
-import { useShortcutEngine } from '../shortcuts/useShortcutEngine'
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { FullscreenAlignDirection } from "./useFullscreenPlaybackBindings";
+import { useShortcutEngine } from "../shortcuts/useShortcutEngine";
 
-type ShortcutEngineParams = Parameters<typeof useShortcutEngine>[0]
+type ShortcutEngineParams = Parameters<typeof useShortcutEngine>[0];
 
 interface UseAppShortcutBindingsParams {
-  shortcuts: ShortcutEngineParams['shortcuts']
-  featureTagPickerOpen: boolean
-  adReviewDeletePending: boolean
-  mode: ShortcutEngineParams['mode']
-  vectorResultsActive: boolean
-  settingsOpen: boolean
-  sidebarFocus: ShortcutEngineParams['sidebarFocus']
-  fullscreenActive: boolean
-  fullscreenDisplay: ShortcutEngineParams['fullscreenDisplay']
-  fullscreenVideoFocus: boolean
-  imageFocusActive: boolean
-  manageMode: boolean
-  videoShortcutActive: boolean
-  handleSidebarNavigationKey: ShortcutEngineParams['handleSidebarNavigationKey']
-  setImageFocusActive: Dispatch<SetStateAction<boolean>>
-  onEscapeFromVideoPlaybackToNodeBrowse: ShortcutEngineParams['onEscapeFromVideoPlaybackToNodeBrowse']
-  setFullscreenActiveWithAutoStop: ShortcutEngineParams['onSetFullscreenActive']
-  setFullscreenEntryDisplay: Dispatch<SetStateAction<'image-only' | 'video-only'>>
-  setFullscreenDisplay: Dispatch<SetStateAction<'dual' | 'video-only' | 'image-only'>>
-  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
-  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
-  moveImage: ShortcutEngineParams['onMoveImage']
-  moveImageVertical: ShortcutEngineParams['onMoveImageVertical']
-  jumpImageBoundary: ShortcutEngineParams['onJumpImageBoundary']
-  goPackage: ShortcutEngineParams['onGoPackage']
-  requestFullscreenAlign: (direction: FullscreenAlignDirection) => void
-  autoPlayEnabled: boolean
-  applyAutoplayIntervalByIndex: ShortcutEngineParams['onApplyAutoplayIntervalByIndex']
-  applyPackageGrade: ShortcutEngineParams['onSetPackageGrade']
-  applyVideoGrade: ShortcutEngineParams['onSetVideoGrade']
-  requestManageOrganize: ShortcutEngineParams['onRequestManageOrganize']
-  onTriggerImageConvertShortcut: ShortcutEngineParams['onTriggerImageConvertShortcut']
-  addFocusedVideoToPlaylist: ShortcutEngineParams['onAddFocusedVideoToPlaylist']
-  removeFocusedVideoFromPlaylist: ShortcutEngineParams['onRemoveFocusedVideoFromPlaylist']
-  setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: ShortcutEngineParams['onGoPlaylist']
-  seekVideoBy: ShortcutEngineParams['onSeekVideoBy']
-  adjustVideoRate: ShortcutEngineParams['onAdjustVideoRate']
-  adjustVideoVolume: ShortcutEngineParams['onAdjustVideoVolume']
-  toggleVideoMute: ShortcutEngineParams['onToggleVideoMute']
-  saveVideoCover: ShortcutEngineParams['onSaveVideoCover']
-  toggleVideoSubtitle: ShortcutEngineParams['onToggleVideoSubtitle']
-  adjustVideoSubtitleOffset: ShortcutEngineParams['onAdjustVideoSubtitleOffset']
-  cycleVideoFitMode: ShortcutEngineParams['onCycleVideoFitMode']
-  onImageWheelNavigatePage: ShortcutEngineParams['onImageWheelNavigatePage']
-  onImageCtrlWheelNavigateSidebar: ShortcutEngineParams['onImageCtrlWheelNavigateSidebar']
-  onCopyFocusedImageToClipboard: ShortcutEngineParams['onCopyFocusedImageToClipboard']
-  onCopyFocusedVideoFrameToClipboard: ShortcutEngineParams['onCopyFocusedVideoFrameToClipboard']
-  updateSettings: AppSettingsStoreSnapshot['updateSettings']
+  shortcuts: ShortcutEngineParams["shortcuts"];
+  featureTagPickerOpen: boolean;
+  adReviewDeletePending: boolean;
+  mode: ShortcutEngineParams["mode"];
+  vectorResultsActive: boolean;
+  settingsOpen: boolean;
+  sidebarFocus: ShortcutEngineParams["sidebarFocus"];
+  fullscreenActive: boolean;
+  fullscreenDisplay: ShortcutEngineParams["fullscreenDisplay"];
+  fullscreenVideoFocus: boolean;
+  imageFocusActive: boolean;
+  manageMode: boolean;
+  videoShortcutActive: boolean;
+  handleSidebarNavigationKey: ShortcutEngineParams["handleSidebarNavigationKey"];
+  setImageFocusActive: Dispatch<SetStateAction<boolean>>;
+  onEscapeFromVideoPlaybackToNodeBrowse: ShortcutEngineParams["onEscapeFromVideoPlaybackToNodeBrowse"];
+  setFullscreenActiveWithAutoStop: ShortcutEngineParams["onSetFullscreenActive"];
+  setFullscreenEntryDisplay: Dispatch<
+    SetStateAction<"image-only" | "video-only">
+  >;
+  setFullscreenDisplay: Dispatch<
+    SetStateAction<"dual" | "video-only" | "image-only">
+  >;
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>;
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>;
+  onToggleFullscreenDeleteMark: (pane: "image" | "video") => void;
+  moveImage: ShortcutEngineParams["onMoveImage"];
+  moveImageVertical: ShortcutEngineParams["onMoveImageVertical"];
+  jumpImageBoundary: ShortcutEngineParams["onJumpImageBoundary"];
+  goPackage: ShortcutEngineParams["onGoPackage"];
+  requestFullscreenAlign: (direction: FullscreenAlignDirection) => void;
+  autoPlayEnabled: boolean;
+  applyAutoplayIntervalByIndex: ShortcutEngineParams["onApplyAutoplayIntervalByIndex"];
+  applyPackageGrade: ShortcutEngineParams["onSetPackageGrade"];
+  applyVideoGrade: ShortcutEngineParams["onSetVideoGrade"];
+  requestManageOrganize: ShortcutEngineParams["onRequestManageOrganize"];
+  onTriggerImageConvertShortcut: ShortcutEngineParams["onTriggerImageConvertShortcut"];
+  addFocusedVideoToPlaylist: ShortcutEngineParams["onAddFocusedVideoToPlaylist"];
+  removeFocusedVideoFromPlaylist: ShortcutEngineParams["onRemoveFocusedVideoFromPlaylist"];
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>;
+  goPlaylist: ShortcutEngineParams["onGoPlaylist"];
+  seekVideoBy: ShortcutEngineParams["onSeekVideoBy"];
+  adjustVideoRate: ShortcutEngineParams["onAdjustVideoRate"];
+  adjustVideoVolume: ShortcutEngineParams["onAdjustVideoVolume"];
+  toggleVideoMute: ShortcutEngineParams["onToggleVideoMute"];
+  saveVideoCover: ShortcutEngineParams["onSaveVideoCover"];
+  toggleVideoSubtitle: ShortcutEngineParams["onToggleVideoSubtitle"];
+  adjustVideoSubtitleOffset: ShortcutEngineParams["onAdjustVideoSubtitleOffset"];
+  cycleVideoFitMode: ShortcutEngineParams["onCycleVideoFitMode"];
+  onImageWheelNavigatePage: ShortcutEngineParams["onImageWheelNavigatePage"];
+  onImageCtrlWheelNavigateSidebar: ShortcutEngineParams["onImageCtrlWheelNavigateSidebar"];
+  onCopyFocusedImageToClipboard: ShortcutEngineParams["onCopyFocusedImageToClipboard"];
+  onCopyFocusedVideoFrameToClipboard: ShortcutEngineParams["onCopyFocusedVideoFrameToClipboard"];
+  updateSettings: AppSettingsStoreSnapshot["updateSettings"];
 }
 
 export function useAppShortcutBindings({
@@ -80,6 +85,7 @@ export function useAppShortcutBindings({
   setFullscreenDisplay,
   setFullscreenVideoFocus,
   setFullscreenSwapped,
+  onToggleFullscreenDeleteMark,
   moveImage,
   moveImageVertical,
   jumpImageBoundary,
@@ -127,50 +133,57 @@ export function useAppShortcutBindings({
     onEscapeFromVideoPlaybackToNodeBrowse,
     onSetFullscreenActive: setFullscreenActiveWithAutoStop,
     onToggleWindowFullscreen: () => {
-      const windowApi = typeof window !== 'undefined' ? window.mediaPlayerWindow : undefined
+      const windowApi =
+        typeof window !== "undefined" ? window.mediaPlayerWindow : undefined;
       if (!windowApi?.setFullscreen || !windowApi.isFullscreen) {
-        return
+        return;
       }
 
       void windowApi
         .isFullscreen()
         .then((isFullscreen) => windowApi.setFullscreen(!isFullscreen))
-        .catch(() => undefined)
+        .catch(() => undefined);
     },
     onToggleFullscreenPaneFocus: () => {
-      if (fullscreenDisplay !== 'dual') {
-        return
+      if (fullscreenDisplay !== "dual") {
+        return;
       }
-      setFullscreenVideoFocus((value) => !value)
+      setFullscreenVideoFocus((value) => !value);
     },
     onToggleFullscreenDualDisplay: () => {
-      if (!fullscreenActive || (mode !== 'image' && mode !== 'video')) {
-        return
+      if (!fullscreenActive || (mode !== "image" && mode !== "video")) {
+        return;
       }
 
-      if (fullscreenDisplay === 'dual') {
-        const nextSingleDisplay = fullscreenVideoFocus ? 'video-only' : 'image-only'
-        setFullscreenEntryDisplay(nextSingleDisplay)
-        setFullscreenDisplay(nextSingleDisplay)
-        return
+      if (fullscreenDisplay === "dual") {
+        const nextSingleDisplay = fullscreenVideoFocus
+          ? "video-only"
+          : "image-only";
+        setFullscreenEntryDisplay(nextSingleDisplay);
+        setFullscreenDisplay(nextSingleDisplay);
+        return;
       }
 
-      const currentSingleDisplay = fullscreenDisplay === 'video-only' ? 'video-only' : 'image-only'
-      setFullscreenEntryDisplay(currentSingleDisplay)
-      setFullscreenDisplay('dual')
-      setFullscreenVideoFocus(currentSingleDisplay === 'video-only')
+      const currentSingleDisplay =
+        fullscreenDisplay === "video-only" ? "video-only" : "image-only";
+      setFullscreenEntryDisplay(currentSingleDisplay);
+      setFullscreenDisplay("dual");
+      setFullscreenVideoFocus(currentSingleDisplay === "video-only");
     },
     onToggleFullscreenSwapSides: () => {
-      if (!fullscreenActive || fullscreenDisplay !== 'dual') {
-        return
+      if (!fullscreenActive || fullscreenDisplay !== "dual") {
+        return;
       }
-      setFullscreenSwapped((value) => !value)
+      setFullscreenSwapped((value) => !value);
     },
+    onToggleFullscreenDeleteMark,
     onToggleSidebarFocus: () => {
       if (vectorResultsActive) {
-        return
+        return;
       }
-      updateSettings({ sidebarFocus: sidebarFocus === 'sidebar' ? 'main' : 'sidebar' })
+      updateSettings({
+        sidebarFocus: sidebarFocus === "sidebar" ? "main" : "sidebar",
+      });
     },
     onMoveImage: moveImage,
     onMoveImageVertical: moveImageVertical,
@@ -178,7 +191,7 @@ export function useAppShortcutBindings({
     onGoPackage: goPackage,
     onAlignFocus: requestFullscreenAlign,
     onToggleAutoplay: () => {
-      updateSettings({ autoPlayEnabled: !autoPlayEnabled })
+      updateSettings({ autoPlayEnabled: !autoPlayEnabled });
     },
     onApplyAutoplayIntervalByIndex: applyAutoplayIntervalByIndex,
     onSetPackageGrade: applyPackageGrade,
@@ -188,7 +201,7 @@ export function useAppShortcutBindings({
     onAddFocusedVideoToPlaylist: addFocusedVideoToPlaylist,
     onRemoveFocusedVideoFromPlaylist: removeFocusedVideoFromPlaylist,
     onToggleVideoPlaying: () => {
-      setVideoPlaying((value) => !value)
+      setVideoPlaying((value) => !value);
     },
     onGoPlaylist: goPlaylist,
     onSeekVideoBy: seekVideoBy,
@@ -203,5 +216,5 @@ export function useAppShortcutBindings({
     onImageCtrlWheelNavigateSidebar,
     onCopyFocusedImageToClipboard,
     onCopyFocusedVideoFrameToClipboard,
-  })
+  });
 }

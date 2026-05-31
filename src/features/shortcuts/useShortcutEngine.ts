@@ -48,6 +48,7 @@ interface UseShortcutEngineParams {
   onToggleFullscreenPaneFocus: () => void;
   onToggleFullscreenDualDisplay: () => void;
   onToggleFullscreenSwapSides: () => void;
+  onToggleFullscreenDeleteMark: (pane: "image" | "video") => void;
   onToggleSidebarFocus: () => void;
   onMoveImage: (delta: number) => void;
   onMoveImageVertical: (direction: "up" | "down") => void;
@@ -99,6 +100,7 @@ export function useShortcutEngine({
   onToggleFullscreenPaneFocus,
   onToggleFullscreenDualDisplay,
   onToggleFullscreenSwapSides,
+  onToggleFullscreenDeleteMark,
   onToggleSidebarFocus,
   onMoveImage,
   onMoveImageVertical,
@@ -543,6 +545,28 @@ export function useShortcutEngine({
         !event.altKey &&
         !event.shiftKey &&
         !event.metaKey &&
+        event.code === "Delete"
+      ) {
+        const targetPane: "image" | "video" =
+          fullscreenDisplay === "dual"
+            ? fullscreenVideoFocus
+              ? "video"
+              : "image"
+            : fullscreenDisplay === "video-only"
+              ? "video"
+              : "image";
+        event.preventDefault();
+        onToggleFullscreenDeleteMark(targetPane);
+        return;
+      }
+
+      if (
+        fullscreenActive &&
+        (mode === "image" || mode === "video") &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
         event.code === "KeyD"
       ) {
         event.preventDefault();
@@ -753,6 +777,7 @@ export function useShortcutEngine({
     onToggleFullscreenDualDisplay,
     onToggleFullscreenPaneFocus,
     onToggleFullscreenSwapSides,
+    onToggleFullscreenDeleteMark,
     onTriggerImageConvertShortcut,
     onGoPackage,
     onAlignFocus,

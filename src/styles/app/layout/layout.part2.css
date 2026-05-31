@@ -68,7 +68,10 @@
   min-height: var(--mpx-header-btn-size);
   border: var(--mpx-control-border-width) solid
     var(--mpx-header-button-border-effective);
-  border-radius: var(--mpx-header-btn-radius-effective, var(--mpx-header-btn-radius));
+  border-radius: var(
+    --mpx-header-btn-radius-effective,
+    var(--mpx-header-btn-radius)
+  );
   background: var(--mpx-header-button-bg-effective);
   color: var(--mpx-header-button-text-effective);
   cursor: pointer;
@@ -695,6 +698,28 @@
 
 .fullscreen-rating-feedback.is-rated .feature-rating-heart {
   display: none;
+}
+
+/* 待删除标记反馈遮罩：标记=红色，取消=蓝色，均 30% 透明度，约 0.5s 后淡出 */
+.fullscreen-delete-feedback {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 200ms linear;
+}
+
+.fullscreen-delete-feedback.is-mark {
+  background: rgba(229, 57, 53, 0.3);
+}
+
+.fullscreen-delete-feedback.is-unmark {
+  background: rgba(33, 150, 243, 0.3);
+}
+
+.fullscreen-delete-feedback.is-fading {
+  opacity: 0;
 }
 
 @keyframes mpx-fullscreen-rating-feedback-enter {

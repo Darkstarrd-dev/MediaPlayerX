@@ -6,6 +6,7 @@ import { usePersistedAppSettings } from "./usePersistedAppSettings";
 import { usePersistedSessionCursor } from "./usePersistedSessionCursor";
 import { usePreferenceMetricsBuffer } from "./usePreferenceMetricsBuffer";
 import { useAppInteractionLayer } from "./useAppInteractionLayer";
+import { useFullscreenDeleteMarks } from "./useFullscreenDeleteMarks";
 import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
@@ -372,6 +373,9 @@ export function useAppInteractionEffects({
     adReviewFocusTaskId,
     helpOverlayOpen,
     themeParameterPanelOpen,
+    deleteConfirmOpen,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
   } = sessionState;
 
   const {
@@ -419,9 +423,11 @@ export function useAppInteractionEffects({
     sidebarNodeById,
     sidebarCheckedNodeIds,
     activeSelectionScope,
+    clearAllSelections,
     clearSidebarSelections,
     checkSidebarNode,
     imageSourceNodeIdMap,
+    normalImageSourceNodeIdMap,
     videoNodeIdMap,
     videosForSidebar,
     audiosForSidebar,
@@ -584,6 +590,24 @@ export function useAppInteractionEffects({
     setFullscreenActiveWithAutoStop,
   });
 
+  const fullscreenDeleteImageNodeId =
+    normalImageSourceNodeIdMap.get(selectedPackageId) ??
+    imageSourceNodeIdMap.get(selectedPackageId) ??
+    null;
+  const fullscreenDeleteVideoNodeId =
+    videoNodeIdMap.get(selectedVideoId) ?? null;
+
+  const { toggleFullscreenDeleteMark } = useFullscreenDeleteMarks({
+    fullscreenActive,
+    deleteConfirmOpen,
+    imageDeleteTargetNodeId: fullscreenDeleteImageNodeId,
+    videoDeleteTargetNodeId: fullscreenDeleteVideoNodeId,
+    clearAllSelections,
+    checkSidebarNode,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+  });
+
   useAppShortcutBindings({
     shortcuts,
     featureTagPickerOpen,
@@ -607,6 +631,7 @@ export function useAppInteractionEffects({
     setFullscreenDisplay,
     setFullscreenVideoFocus,
     setFullscreenSwapped,
+    onToggleFullscreenDeleteMark: toggleFullscreenDeleteMark,
     moveImage,
     moveImageVertical,
     jumpImageBoundary,

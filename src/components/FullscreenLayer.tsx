@@ -65,6 +65,7 @@ import {
   resolveMediaPathForFooter,
 } from "./fullscreen/fullscreenImageAdjustUtils";
 import { onFullscreenRatingFeedback } from "../utils/fullscreenRatingFeedback";
+import { onFullscreenDeleteFeedback } from "../utils/fullscreenDeleteFeedback";
 
 const DEFAULT_FULLSCREEN_VIDEO_CONTROLS_MAX_WIDTH = 980;
 const DUAL_IMAGE_CONTROLS_COMPACT_WIDTH = 700;
@@ -77,11 +78,22 @@ const FULLSCREEN_DIVIDER_WIDTH = 8;
 const FULLSCREEN_RATING_FEEDBACK_HOLD_MS = 1000;
 const FULLSCREEN_RATING_FEEDBACK_FADE_MS = 500;
 const FULLSCREEN_RATING_FEEDBACK_REMOVE_BUFFER_MS = 80;
+// 待删除标记反馈遮罩：保持 + 淡出合计约 0.5s
+const FULLSCREEN_DELETE_FEEDBACK_HOLD_MS = 300;
+const FULLSCREEN_DELETE_FEEDBACK_FADE_MS = 200;
+const FULLSCREEN_DELETE_FEEDBACK_REMOVE_BUFFER_MS = 60;
 const NOOP_RATING_CHANGE = () => undefined;
 
 interface FullscreenRatingFeedbackState {
   id: number;
   grade: number | null;
+  pane: PaneKey;
+  fading: boolean;
+}
+
+interface FullscreenDeleteFeedbackState {
+  id: number;
+  marked: boolean;
   pane: PaneKey;
   fading: boolean;
 }
@@ -290,6 +302,9 @@ function FullscreenLayer({
   const ratingFeedbackHoldTimerRef = useRef<number | null>(null);
   const ratingFeedbackFadeTimerRef = useRef<number | null>(null);
   const ratingFeedbackNonceRef = useRef(0);
+  const deleteFeedbackHoldTimerRef = useRef<number | null>(null);
+  const deleteFeedbackFadeTimerRef = useRef<number | null>(null);
+  const deleteFeedbackNonceRef = useRef(0);
   const imageConvertPreviewActive = mode === "image" && imageConvertPreviewMode;
   const effectiveFullscreenDisplay = imageConvertPreviewActive
     ? "image-only"
@@ -325,14 +340,14 @@ function FullscreenLayer({
   } | null>(null);
   const [videoControlsVisible, setVideoControlsVisible] = useState(false);
   const [draggingPane, setDraggingPane] = useState<PaneKey | null>(null);
-  const [dualSplitMode, setDualSplitMode] = useState<"auto" | "manual">(
-    "auto",
-  );
+  const [dualSplitMode, setDualSplitMode] = useState<"auto" | "manual">("auto");
   const [dualAppliedAutoSplit, setDualAppliedAutoSplit] =
     useState<DualAdaptiveSplitResult | null>(null);
   const [footerHovering, setFooterHovering] = useState(false);
   const [ratingFeedback, setRatingFeedback] =
     useState<FullscreenRatingFeedbackState | null>(null);
+  const [deleteFeedback, setDeleteFeedback] =
+    useState<FullscreenDeleteFeedbackState | null>(null);
 
   useEffect(() => {
     setDisplayedImageNaturalSize(null);
@@ -412,6 +427,78 @@ function FullscreenLayer({
     [clearRatingFeedbackTimers],
   );
 
+  const clearDeleteFeedbackTimers = useCallback(() => {
+    if (deleteFeedbackHoldTimerRef.current !== null) {
+      window.clearTimeout(deleteFeedbackHoldTimerRef.current);
+      deleteFeedbackHoldTimerRef.current = null;
+    }
+
+    if (deleteFeedbackFadeTimerRef.current !== null) {
+      window.clearTimeout(deleteFeedbackFadeTimerRef.current);
+      deleteFeedbackFadeTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!fullscreenActive || mode === "music") {
+      clearDeleteFeedbackTimers();
+      setDeleteFeedback((previous) => (previous === null ? previous : null));
+      return;
+    }
+
+    return onFullscreenDeleteFeedback((detail) => {
+      const defaultPane =
+        effectiveFullscreenDisplay === "video-only" ? "video" : "image";
+      const targetPane =
+        effectiveFullscreenDisplay === "dual" ? detail.pane : defaultPane;
+      deleteFeedbackNonceRef.current += 1;
+      const feedbackId = deleteFeedbackNonceRef.current;
+
+      clearDeleteFeedbackTimers();
+      setDeleteFeedback({
+        id: feedbackId,
+        marked: detail.marked,
+        pane: targetPane,
+        fading: false,
+      });
+
+      deleteFeedbackHoldTimerRef.current = window.setTimeout(() => {
+        setDeleteFeedback((previous) => {
+          if (!previous || previous.id !== feedbackId) {
+            return previous;
+          }
+          return {
+            ...previous,
+            fading: true,
+          };
+        });
+        deleteFeedbackHoldTimerRef.current = null;
+
+        deleteFeedbackFadeTimerRef.current = window.setTimeout(() => {
+          setDeleteFeedback((previous) => {
+            if (!previous || previous.id !== feedbackId) {
+              return previous;
+            }
+            return null;
+          });
+          deleteFeedbackFadeTimerRef.current = null;
+        }, FULLSCREEN_DELETE_FEEDBACK_FADE_MS + FULLSCREEN_DELETE_FEEDBACK_REMOVE_BUFFER_MS);
+      }, FULLSCREEN_DELETE_FEEDBACK_HOLD_MS);
+    });
+  }, [
+    clearDeleteFeedbackTimers,
+    effectiveFullscreenDisplay,
+    fullscreenActive,
+    mode,
+  ]);
+
+  useEffect(
+    () => () => {
+      clearDeleteFeedbackTimers();
+    },
+    [clearDeleteFeedbackTimers],
+  );
+
   useEffect(() => {
     if (!fullscreenActive || effectiveFullscreenDisplay !== "dual") {
       setDualSplitMode("auto");
@@ -485,8 +572,10 @@ function FullscreenLayer({
     focusedVideo?.height ?? 0,
     16 / 9,
   );
-  const [previousImageAspectForSuppression, setPreviousImageAspectForSuppression] =
-    useState(imageAspect);
+  const [
+    previousImageAspectForSuppression,
+    setPreviousImageAspectForSuppression,
+  ] = useState(imageAspect);
   const [dualSuppressedImageAspectLock, setDualSuppressedImageAspectLock] =
     useState<number | null>(null);
   const focusedImageId = focusedImage?.id ?? null;
@@ -1105,7 +1194,7 @@ function FullscreenLayer({
     (dualAdaptiveDiffRatio ?? Number.POSITIVE_INFINITY) <=
       DUAL_ADAPTIVE_HORIZONTAL_DIFF_THRESHOLD_RATIO;
   const dualSuppressedImageAspect = dualAdaptiveSuppressedByThreshold
-    ? dualSuppressedImageAspectLock ?? previousImageAspectForSuppression
+    ? (dualSuppressedImageAspectLock ?? previousImageAspectForSuppression)
     : imageAspect;
   const imageSuppressedGeometry = computeMediaGeometryHeightAnchored(
     effectiveImageViewportSize,
@@ -1178,10 +1267,7 @@ function FullscreenLayer({
   );
   const dualImageRatio =
     dualSplitMode === "manual" ? dualManualImageRatio : dualAutoImageRatio;
-  const imageRatio =
-    effectiveFullscreenDisplay === "dual"
-      ? dualImageRatio
-      : 1;
+  const imageRatio = effectiveFullscreenDisplay === "dual" ? dualImageRatio : 1;
   const videoRatio = effectiveFullscreenDisplay === "dual" ? 1 - imageRatio : 1;
   const paneOrder: PaneKey[] = fullscreenSwapped
     ? ["video", "image"]
@@ -1208,8 +1294,18 @@ function FullscreenLayer({
     const rightPane: PaneKey = leftPane === "image" ? "video" : "image";
 
     return {
-      image: leftPane === "image" ? "end" : rightPane === "image" ? "start" : "center",
-      video: leftPane === "video" ? "end" : rightPane === "video" ? "start" : "center",
+      image:
+        leftPane === "image"
+          ? "end"
+          : rightPane === "image"
+            ? "start"
+            : "center",
+      video:
+        leftPane === "video"
+          ? "end"
+          : rightPane === "video"
+            ? "start"
+            : "center",
     } as const;
   })();
 
@@ -1453,6 +1549,22 @@ function FullscreenLayer({
       ? ratingFeedbackNode
       : null;
 
+  const deleteFeedbackNode = deleteFeedback ? (
+    <div
+      className={`fullscreen-delete-feedback ${deleteFeedback.marked ? "is-mark" : "is-unmark"} ${deleteFeedback.fading ? "is-fading" : ""}`}
+      key={deleteFeedback.id}
+    />
+  ) : null;
+
+  const imageDeleteOverlay =
+    deleteFeedbackNode && deleteFeedback?.pane === "image"
+      ? deleteFeedbackNode
+      : null;
+  const videoDeleteOverlay =
+    deleteFeedbackNode && deleteFeedback?.pane === "video"
+      ? deleteFeedbackNode
+      : null;
+
   const imageControls =
     showFullscreenFooter && !imageConvertAdjustPanelOpen ? (
       <FullscreenFooter
@@ -1535,6 +1647,7 @@ function FullscreenLayer({
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
       controlsRows={imageControls}
       overlayContent={imagePaneOverlay}
+      deleteOverlayContent={imageDeleteOverlay}
       imageConvertPreviewMode={imageConvertPreviewActive}
       imageConvertPreviewSrc={imageConvertPreviewRenderedSrc}
       imageConvertPreviewError={imageConvertPreviewError}
@@ -1635,6 +1748,7 @@ function FullscreenLayer({
       videoControlsWidth={videoControlsWidth}
       controlsRows={controlsRows}
       overlayContent={videoPaneOverlay}
+      deleteOverlayContent={videoDeleteOverlay}
       onSetVideoFocus={onSetVideoFocus}
       onWheel={(event) => handlePaneWheel("video", event)}
       onMouseDown={(event) => startPaneDrag("video", event)}

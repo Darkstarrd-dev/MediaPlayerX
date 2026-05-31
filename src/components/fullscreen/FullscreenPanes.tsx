@@ -4,37 +4,38 @@ import type {
   ReactNode,
   RefObject,
   WheelEvent as ReactWheelEvent,
-} from 'react'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import type { VideoFitMode } from '../../features/media/videoFitMode'
-import { clamp } from '../../utils/ui'
-import SubtitleOverlay from '../subtitles/SubtitleOverlay'
-import type { MediaGeometry, PaneKey, PaneTransform } from './paneMath'
+import type { VideoFitMode } from "../../features/media/videoFitMode";
+import { clamp } from "../../utils/ui";
+import SubtitleOverlay from "../subtitles/SubtitleOverlay";
+import type { MediaGeometry, PaneKey, PaneTransform } from "./paneMath";
 
 interface FullscreenImagePaneProps {
-  paneRef: RefObject<HTMLElement | null>
-  className: string
-  dataSlot?: string
-  flex: number
-  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
-  singlePane: PaneKey | null
-  draggingPane: PaneKey | null
-  imageGeometry: MediaGeometry
-  imageTransform: PaneTransform
-  displayedImageSrc: string | null
-  focusedImageOrdinal: number | null
-  controlsRows: ReactNode
-  overlayContent?: ReactNode
-  imageConvertPreviewMode?: boolean
-  imageConvertPreviewSrc?: string | null
-  imageConvertPreviewError?: string | null
-  imageConvertCompareSplit?: number
-  onSetImageConvertCompareSplit?: (value: number) => void
-  onSetVideoFocus: (enabled: boolean) => void
-  onWheel: (event: ReactWheelEvent<HTMLElement>) => void
-  onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void
-  onImageNaturalSize: (width: number, height: number) => void
+  paneRef: RefObject<HTMLElement | null>;
+  className: string;
+  dataSlot?: string;
+  flex: number;
+  fullscreenDisplay: "dual" | "video-only" | "image-only";
+  singlePane: PaneKey | null;
+  draggingPane: PaneKey | null;
+  imageGeometry: MediaGeometry;
+  imageTransform: PaneTransform;
+  displayedImageSrc: string | null;
+  focusedImageOrdinal: number | null;
+  controlsRows: ReactNode;
+  overlayContent?: ReactNode;
+  deleteOverlayContent?: ReactNode;
+  imageConvertPreviewMode?: boolean;
+  imageConvertPreviewSrc?: string | null;
+  imageConvertPreviewError?: string | null;
+  imageConvertCompareSplit?: number;
+  onSetImageConvertCompareSplit?: (value: number) => void;
+  onSetVideoFocus: (enabled: boolean) => void;
+  onWheel: (event: ReactWheelEvent<HTMLElement>) => void;
+  onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void;
+  onImageNaturalSize: (width: number, height: number) => void;
 }
 
 export function FullscreenImagePane({
@@ -51,6 +52,7 @@ export function FullscreenImagePane({
   focusedImageOrdinal,
   controlsRows,
   overlayContent,
+  deleteOverlayContent,
   imageConvertPreviewMode = false,
   imageConvertPreviewSrc,
   imageConvertPreviewError,
@@ -61,34 +63,45 @@ export function FullscreenImagePane({
   onMouseDown,
   onImageNaturalSize,
 }: FullscreenImagePaneProps) {
-  const clampedCompareSplit = Math.max(0.05, Math.min(0.95, imageConvertCompareSplit))
+  const clampedCompareSplit = Math.max(
+    0.05,
+    Math.min(0.95, imageConvertCompareSplit),
+  );
 
-  const startCompareDividerDrag = (event: ReactMouseEvent<HTMLButtonElement>) => {
-    if (!imageConvertPreviewMode || !onSetImageConvertCompareSplit || event.button !== 0) {
-      return
+  const startCompareDividerDrag = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ) => {
+    if (
+      !imageConvertPreviewMode ||
+      !onSetImageConvertCompareSplit ||
+      event.button !== 0
+    ) {
+      return;
     }
 
-    event.preventDefault()
-    event.stopPropagation()
+    event.preventDefault();
+    event.stopPropagation();
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      const stageElement = paneRef.current?.querySelector('.fullscreen-stage')
-      const rect = stageElement?.getBoundingClientRect()
+      const stageElement = paneRef.current?.querySelector(".fullscreen-stage");
+      const rect = stageElement?.getBoundingClientRect();
       if (!rect || rect.width <= 1) {
-        return
+        return;
       }
-      const ratio = (moveEvent.clientX - rect.left) / rect.width
-      onSetImageConvertCompareSplit(Math.max(0.05, Math.min(0.95, Number(ratio.toFixed(3)))))
-    }
+      const ratio = (moveEvent.clientX - rect.left) / rect.width;
+      onSetImageConvertCompareSplit(
+        Math.max(0.05, Math.min(0.95, Number(ratio.toFixed(3)))),
+      );
+    };
 
     const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
 
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-  }
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
 
   return (
     <section
@@ -97,19 +110,21 @@ export function FullscreenImagePane({
       data-slot={dataSlot}
       style={{ flex }}
       onClick={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(false)
+        if (fullscreenDisplay === "dual") {
+          onSetVideoFocus(false);
         }
       }}
       onMouseMove={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(false)
+        if (fullscreenDisplay === "dual") {
+          onSetVideoFocus(false);
         }
       }}
       onWheel={onWheel}
       onMouseDown={onMouseDown}
     >
-      <div className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === 'image' ? 'is-draggable' : ''} ${draggingPane === 'image' ? 'is-dragging' : ''}`}>
+      <div
+        className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === "image" ? "is-draggable" : ""} ${draggingPane === "image" ? "is-dragging" : ""}`}
+      >
         <div
           className="fullscreen-media fullscreen-media-image"
           style={{
@@ -120,22 +135,33 @@ export function FullscreenImagePane({
         >
           {displayedImageSrc ? (
             imageConvertPreviewMode ? (
-              <div className="fullscreen-image-compare" data-slot="fs-image-convert-preview-panel" style={{ '--mpx-fs-compare-split': `${Math.round(clampedCompareSplit * 100)}%` } as CSSProperties}>
+              <div
+                className="fullscreen-image-compare"
+                data-slot="fs-image-convert-preview-panel"
+                style={
+                  {
+                    "--mpx-fs-compare-split": `${Math.round(clampedCompareSplit * 100)}%`,
+                  } as CSSProperties
+                }
+              >
                 <img
                   className="fullscreen-image-compare-layer"
                   src={displayedImageSrc}
-                  alt={`图片 #${focusedImageOrdinal ?? '-'}`}
+                  alt={`图片 #${focusedImageOrdinal ?? "-"}`}
                   draggable={false}
                   onLoad={(event) => {
-                    const imageElement = event.currentTarget
-                    onImageNaturalSize(imageElement.naturalWidth, imageElement.naturalHeight)
+                    const imageElement = event.currentTarget;
+                    onImageNaturalSize(
+                      imageElement.naturalWidth,
+                      imageElement.naturalHeight,
+                    );
                   }}
                 />
                 {imageConvertPreviewError ? null : (
                   <img
                     className="fullscreen-image-compare-layer is-preview"
                     src={imageConvertPreviewSrc ?? displayedImageSrc}
-                    alt={`转换预览 #${focusedImageOrdinal ?? '-'}`}
+                    alt={`转换预览 #${focusedImageOrdinal ?? "-"}`}
                     draggable={false}
                   />
                 )}
@@ -146,75 +172,92 @@ export function FullscreenImagePane({
                     data-slot="fs-image-convert-preview-splitter"
                     data-tooltip-label="调整预览分割位置"
                     type="button"
-                    style={{ left: `${Math.round(clampedCompareSplit * 100)}%` }}
+                    style={{
+                      left: `${Math.round(clampedCompareSplit * 100)}%`,
+                    }}
                     onMouseDown={startCompareDividerDrag}
                   />
                 )}
-                {imageConvertPreviewError ? <div className="fullscreen-image-compare-error" data-slot="fs-image-convert-preview-error-ovl">预览失败，已回退为原图显示：{imageConvertPreviewError}</div> : null}
+                {imageConvertPreviewError ? (
+                  <div
+                    className="fullscreen-image-compare-error"
+                    data-slot="fs-image-convert-preview-error-ovl"
+                  >
+                    预览失败，已回退为原图显示：{imageConvertPreviewError}
+                  </div>
+                ) : null}
               </div>
             ) : (
               <img
                 className="fullscreen-media-image-element"
                 src={displayedImageSrc}
-                alt={`图片 #${focusedImageOrdinal ?? '-'}`}
+                alt={`图片 #${focusedImageOrdinal ?? "-"}`}
                 draggable={false}
                 onLoad={(event) => {
-                  const imageElement = event.currentTarget
-                  onImageNaturalSize(imageElement.naturalWidth, imageElement.naturalHeight)
+                  const imageElement = event.currentTarget;
+                  onImageNaturalSize(
+                    imageElement.naturalWidth,
+                    imageElement.naturalHeight,
+                  );
                 }}
               />
             )
           ) : null}
         </div>
 
-        {overlayContent ? <div className="fullscreen-pane-overlay">{overlayContent}</div> : null}
+        {overlayContent ? (
+          <div className="fullscreen-pane-overlay">{overlayContent}</div>
+        ) : null}
 
-        {fullscreenDisplay !== 'video-only' ? controlsRows : null}
+        {deleteOverlayContent}
+
+        {fullscreenDisplay !== "video-only" ? controlsRows : null}
       </div>
     </section>
-  )
+  );
 }
 
 interface FullscreenVideoPaneProps {
-  paneRef: RefObject<HTMLElement | null>
-  videoRef: RefObject<HTMLVideoElement | null>
-  className: string
-  dataSlot?: string
-  flex: number
-  fullscreenDisplay: 'dual' | 'video-only' | 'image-only'
-  singlePane: PaneKey | null
-  draggingPane: PaneKey | null
-  videoGeometry: MediaGeometry
-  videoTransform: PaneTransform
-  focusedVideoId: string | null
-  videoPlaying: boolean
-  videoTime: number
-  focusedVideoSrc: string | null
-  focusedVideoCoverImageSrc: string | null
-  focusedVideoCoverColor: string
-  subtitleTrackUrl: string | null
-  autoSubtitleActive: boolean
-  subtitleVisible: boolean
-  liveSubtitleText: string | null
-  subtitleOverlayStyle: CSSProperties
-  bindVideoElement: (element: HTMLVideoElement | null) => void
-  videoFitMode: VideoFitMode
-  videoLoopMode: 'single' | 'list'
-  videoControlsVisible: boolean
-  videoControlsAtTop: boolean
-  videoControlsTop: number
-  videoControlsLeft: number
-  videoControlsWidth: number
-  controlsRows: ReactNode
-  overlayContent?: ReactNode
-  onSetVideoFocus: (enabled: boolean) => void
-  onWheel: (event: ReactWheelEvent<HTMLElement>) => void
-  onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void
-  onShowControls: () => void
-  onHideControls: () => void
-  onVideoTimeUpdate: (time: number) => void
-  onVideoDurationDetected: (duration: number) => void
-  onVideoEnded: () => void
+  paneRef: RefObject<HTMLElement | null>;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  className: string;
+  dataSlot?: string;
+  flex: number;
+  fullscreenDisplay: "dual" | "video-only" | "image-only";
+  singlePane: PaneKey | null;
+  draggingPane: PaneKey | null;
+  videoGeometry: MediaGeometry;
+  videoTransform: PaneTransform;
+  focusedVideoId: string | null;
+  videoPlaying: boolean;
+  videoTime: number;
+  focusedVideoSrc: string | null;
+  focusedVideoCoverImageSrc: string | null;
+  focusedVideoCoverColor: string;
+  subtitleTrackUrl: string | null;
+  autoSubtitleActive: boolean;
+  subtitleVisible: boolean;
+  liveSubtitleText: string | null;
+  subtitleOverlayStyle: CSSProperties;
+  bindVideoElement: (element: HTMLVideoElement | null) => void;
+  videoFitMode: VideoFitMode;
+  videoLoopMode: "single" | "list";
+  videoControlsVisible: boolean;
+  videoControlsAtTop: boolean;
+  videoControlsTop: number;
+  videoControlsLeft: number;
+  videoControlsWidth: number;
+  controlsRows: ReactNode;
+  overlayContent?: ReactNode;
+  deleteOverlayContent?: ReactNode;
+  onSetVideoFocus: (enabled: boolean) => void;
+  onWheel: (event: ReactWheelEvent<HTMLElement>) => void;
+  onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void;
+  onShowControls: () => void;
+  onHideControls: () => void;
+  onVideoTimeUpdate: (time: number) => void;
+  onVideoDurationDetected: (duration: number) => void;
+  onVideoEnded: () => void;
 }
 
 export function FullscreenVideoPane({
@@ -249,6 +292,7 @@ export function FullscreenVideoPane({
   videoControlsWidth,
   controlsRows,
   overlayContent,
+  deleteOverlayContent,
   onSetVideoFocus,
   onWheel,
   onMouseDown,
@@ -258,129 +302,144 @@ export function FullscreenVideoPane({
   onVideoDurationDetected,
   onVideoEnded,
 }: FullscreenVideoPaneProps) {
-  const [displayedVideoId, setDisplayedVideoId] = useState(focusedVideoId)
-  const [displayedVideoSrc, setDisplayedVideoSrc] = useState(focusedVideoSrc)
-  const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false)
-  const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] = useState(false)
-  const lastStableTimeRef = useRef(0)
-  const sourceChangedAtMsRef = useRef(0)
-  const sourceRestoreAnchorTimeRef = useRef(0)
-  const sourceRestoreAnchorVideoIdRef = useRef<string | null>(focusedVideoId)
-  const previousDisplayedVideoIdRef = useRef<string | null>(focusedVideoId)
-  const pendingVideoSrcRef = useRef<string | null>(null)
+  const [displayedVideoId, setDisplayedVideoId] = useState(focusedVideoId);
+  const [displayedVideoSrc, setDisplayedVideoSrc] = useState(focusedVideoSrc);
+  const [hasPlayedCurrentSource, setHasPlayedCurrentSource] = useState(false);
+  const [hasSeekPreviewCurrentSource, setHasSeekPreviewCurrentSource] =
+    useState(false);
+  const lastStableTimeRef = useRef(0);
+  const sourceChangedAtMsRef = useRef(0);
+  const sourceRestoreAnchorTimeRef = useRef(0);
+  const sourceRestoreAnchorVideoIdRef = useRef<string | null>(focusedVideoId);
+  const previousDisplayedVideoIdRef = useRef<string | null>(focusedVideoId);
+  const pendingVideoSrcRef = useRef<string | null>(null);
 
   useLayoutEffect(() => {
     if (!focusedVideoId) {
-      pendingVideoSrcRef.current = null
-      lastStableTimeRef.current = 0
-      sourceRestoreAnchorTimeRef.current = 0
-      sourceRestoreAnchorVideoIdRef.current = null
-      setDisplayedVideoId(null)
-      setDisplayedVideoSrc(null)
-      return
+      pendingVideoSrcRef.current = null;
+      lastStableTimeRef.current = 0;
+      sourceRestoreAnchorTimeRef.current = 0;
+      sourceRestoreAnchorVideoIdRef.current = null;
+      setDisplayedVideoId(null);
+      setDisplayedVideoSrc(null);
+      return;
     }
 
     if (displayedVideoId !== focusedVideoId) {
-      pendingVideoSrcRef.current = null
-      lastStableTimeRef.current = Math.max(0, videoTime)
-      sourceRestoreAnchorTimeRef.current = Math.max(0, videoTime)
-      sourceRestoreAnchorVideoIdRef.current = focusedVideoId
-      setDisplayedVideoId(focusedVideoId)
-      setDisplayedVideoSrc(focusedVideoSrc)
-      return
+      pendingVideoSrcRef.current = null;
+      lastStableTimeRef.current = Math.max(0, videoTime);
+      sourceRestoreAnchorTimeRef.current = Math.max(0, videoTime);
+      sourceRestoreAnchorVideoIdRef.current = focusedVideoId;
+      setDisplayedVideoId(focusedVideoId);
+      setDisplayedVideoSrc(focusedVideoSrc);
+      return;
     }
 
     if (!focusedVideoSrc) {
       if (!videoPlaying) {
-        pendingVideoSrcRef.current = null
-        setDisplayedVideoSrc(null)
+        pendingVideoSrcRef.current = null;
+        setDisplayedVideoSrc(null);
       }
-      return
+      return;
     }
 
     if (displayedVideoSrc === null) {
-      pendingVideoSrcRef.current = null
+      pendingVideoSrcRef.current = null;
       if (displayedVideoSrc !== focusedVideoSrc) {
-        setDisplayedVideoSrc(focusedVideoSrc)
+        setDisplayedVideoSrc(focusedVideoSrc);
       }
-      return
+      return;
     }
 
     if (focusedVideoSrc === displayedVideoSrc) {
       if (pendingVideoSrcRef.current === focusedVideoSrc) {
-        pendingVideoSrcRef.current = null
+        pendingVideoSrcRef.current = null;
       }
-      return
+      return;
     }
 
-    pendingVideoSrcRef.current = focusedVideoSrc
+    pendingVideoSrcRef.current = focusedVideoSrc;
     if (!videoPlaying) {
-      pendingVideoSrcRef.current = null
-      setDisplayedVideoSrc(focusedVideoSrc)
+      pendingVideoSrcRef.current = null;
+      setDisplayedVideoSrc(focusedVideoSrc);
     }
-  }, [displayedVideoId, displayedVideoSrc, focusedVideoId, focusedVideoSrc, videoPlaying, videoTime])
+  }, [
+    displayedVideoId,
+    displayedVideoSrc,
+    focusedVideoId,
+    focusedVideoSrc,
+    videoPlaying,
+    videoTime,
+  ]);
 
   const commitPendingVideoSrc = () => {
-    const pendingVideoSrc = pendingVideoSrcRef.current
+    const pendingVideoSrc = pendingVideoSrcRef.current;
     if (!pendingVideoSrc || pendingVideoSrc === displayedVideoSrc) {
-      return false
+      return false;
     }
 
-    pendingVideoSrcRef.current = null
-    setDisplayedVideoSrc(pendingVideoSrc)
-    return true
-  }
+    pendingVideoSrcRef.current = null;
+    setDisplayedVideoSrc(pendingVideoSrc);
+    return true;
+  };
 
   useLayoutEffect(() => {
-    const previousDisplayedVideoId = previousDisplayedVideoIdRef.current
-    previousDisplayedVideoIdRef.current = displayedVideoId
+    const previousDisplayedVideoId = previousDisplayedVideoIdRef.current;
+    previousDisplayedVideoIdRef.current = displayedVideoId;
 
     const sameVideo =
       displayedVideoId !== null &&
       previousDisplayedVideoId !== null &&
-      displayedVideoId === previousDisplayedVideoId
+      displayedVideoId === previousDisplayedVideoId;
 
-    sourceChangedAtMsRef.current = Date.now()
+    sourceChangedAtMsRef.current = Date.now();
     if (sameVideo) {
       sourceRestoreAnchorTimeRef.current = Math.max(
         lastStableTimeRef.current,
         Math.max(0, videoTime),
-      )
-      sourceRestoreAnchorVideoIdRef.current = displayedVideoId
+      );
+      sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
     } else {
-      lastStableTimeRef.current = Math.max(0, videoTime)
-      sourceRestoreAnchorTimeRef.current = Math.max(0, videoTime)
-      sourceRestoreAnchorVideoIdRef.current = displayedVideoId
+      lastStableTimeRef.current = Math.max(0, videoTime);
+      sourceRestoreAnchorTimeRef.current = Math.max(0, videoTime);
+      sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
     }
-    setHasPlayedCurrentSource(false)
-    setHasSeekPreviewCurrentSource(false)
-  }, [displayedVideoId, displayedVideoSrc, videoTime])
+    setHasPlayedCurrentSource(false);
+    setHasSeekPreviewCurrentSource(false);
+  }, [displayedVideoId, displayedVideoSrc, videoTime]);
 
   useEffect(() => {
     if (videoPlaying && displayedVideoSrc) {
-      setHasPlayedCurrentSource(true)
+      setHasPlayedCurrentSource(true);
     }
-  }, [displayedVideoSrc, videoPlaying])
+  }, [displayedVideoSrc, videoPlaying]);
 
   useEffect(() => {
     if (videoTime > 0.05) {
-      sourceRestoreAnchorVideoIdRef.current = displayedVideoId
-      lastStableTimeRef.current = Math.max(lastStableTimeRef.current, videoTime)
+      sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
+      lastStableTimeRef.current = Math.max(
+        lastStableTimeRef.current,
+        videoTime,
+      );
       sourceRestoreAnchorTimeRef.current = Math.max(
         sourceRestoreAnchorTimeRef.current,
         videoTime,
-      )
+      );
     }
-  }, [displayedVideoId, videoTime])
+  }, [displayedVideoId, videoTime]);
 
-  const useFixedBottomControls = fullscreenDisplay !== 'image-only'
-  const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop
+  const useFixedBottomControls = fullscreenDisplay !== "image-only";
+  const controlsAtTop = useFixedBottomControls ? false : videoControlsAtTop;
   const showVideoFrame = Boolean(
-    displayedVideoSrc && (videoPlaying || hasPlayedCurrentSource || hasSeekPreviewCurrentSource || !focusedVideoCoverImageSrc),
-  )
+    displayedVideoSrc &&
+    (videoPlaying ||
+      hasPlayedCurrentSource ||
+      hasSeekPreviewCurrentSource ||
+      !focusedVideoCoverImageSrc),
+  );
   const controlsStyle = useFixedBottomControls
     ? {
-        bottom: 'var(--mpx-fullscreen-controls-bottom, 5%)',
+        bottom: "var(--mpx-fullscreen-controls-bottom, 5%)",
         left: `${videoControlsLeft}px`,
         width: `${videoControlsWidth}px`,
       }
@@ -388,7 +447,7 @@ export function FullscreenVideoPane({
         top: `${videoControlsTop}px`,
         left: `${videoControlsLeft}px`,
         width: `${videoControlsWidth}px`,
-      }
+      };
 
   return (
     <section
@@ -397,13 +456,13 @@ export function FullscreenVideoPane({
       data-slot={dataSlot}
       style={{ flex }}
       onClick={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(true)
+        if (fullscreenDisplay === "dual") {
+          onSetVideoFocus(true);
         }
       }}
       onMouseMove={() => {
-        if (fullscreenDisplay === 'dual') {
-          onSetVideoFocus(true)
+        if (fullscreenDisplay === "dual") {
+          onSetVideoFocus(true);
         }
       }}
       onWheel={onWheel}
@@ -411,153 +470,176 @@ export function FullscreenVideoPane({
       onMouseLeave={onHideControls}
     >
       <div
-        className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === 'video' || fullscreenDisplay === 'dual' ? 'is-draggable' : ''} ${draggingPane === 'video' ? 'is-dragging' : ''}`}
+        className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === "video" || fullscreenDisplay === "dual" ? "is-draggable" : ""} ${draggingPane === "video" ? "is-dragging" : ""}`}
       >
         <div
           className="fullscreen-media fullscreen-media-video"
-            style={{
-              width: `${videoGeometry.width}px`,
-              height: `${videoGeometry.height}px`,
-              transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
-              background: showVideoFrame ? 'var(--mpx-video-screen-bg)' : focusedVideoCoverColor,
-            }}
-          >
+          style={{
+            width: `${videoGeometry.width}px`,
+            height: `${videoGeometry.height}px`,
+            transform: `translate3d(${videoTransform.offsetX}px, ${videoTransform.offsetY}px, 0)`,
+            background: showVideoFrame
+              ? "var(--mpx-video-screen-bg)"
+              : focusedVideoCoverColor,
+          }}
+        >
           {displayedVideoSrc ? (
             <video
               ref={(element) => {
-                videoRef.current = element
-                bindVideoElement(element)
+                videoRef.current = element;
+                bindVideoElement(element);
               }}
               className="fullscreen-media-video-element"
               style={{
                 opacity: showVideoFrame ? 1 : 0,
-                objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
-                objectPosition: 'center center',
+                objectFit: videoFitMode === "original" ? "none" : videoFitMode,
+                objectPosition: "center center",
               }}
               src={displayedVideoSrc}
               crossOrigin="anonymous"
               preload="metadata"
               playsInline
-              loop={videoLoopMode === 'single'}
+              loop={videoLoopMode === "single"}
               onError={() => {
-                void commitPendingVideoSrc()
+                void commitPendingVideoSrc();
               }}
               onTimeUpdate={() => {
-                const currentTime = videoRef.current?.currentTime ?? 0
+                const currentTime = videoRef.current?.currentTime ?? 0;
                 const recentSourceSwap =
-                  Date.now() - sourceChangedAtMsRef.current < 2_500
+                  Date.now() - sourceChangedAtMsRef.current < 2_500;
                 const restoreAnchorTime =
                   sourceRestoreAnchorVideoIdRef.current === displayedVideoId
                     ? sourceRestoreAnchorTimeRef.current
-                    : 0
+                    : 0;
                 const shouldIgnoreTransientReset =
                   currentTime <= 0.05 &&
                   videoPlaying &&
                   recentSourceSwap &&
-                  restoreAnchorTime > 0.8
+                  restoreAnchorTime > 0.8;
 
                 if (shouldIgnoreTransientReset) {
-                  return
+                  return;
                 }
 
                 if (currentTime > 0.05) {
-                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId
-                  lastStableTimeRef.current = currentTime
+                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
+                  lastStableTimeRef.current = currentTime;
                   sourceRestoreAnchorTimeRef.current = Math.max(
                     sourceRestoreAnchorTimeRef.current,
                     currentTime,
-                  )
-                  setHasSeekPreviewCurrentSource(true)
+                  );
+                  setHasSeekPreviewCurrentSource(true);
                 }
-                onVideoTimeUpdate(currentTime)
+                onVideoTimeUpdate(currentTime);
               }}
               onLoadedMetadata={() => {
-                const videoElement = videoRef.current
-                const duration = videoElement?.duration ?? 0
+                const videoElement = videoRef.current;
+                const duration = videoElement?.duration ?? 0;
                 if (Number.isFinite(duration) && duration > 0) {
-                  onVideoDurationDetected(duration)
+                  onVideoDurationDetected(duration);
                 }
                 const restoreAnchorTime =
                   sourceRestoreAnchorVideoIdRef.current === displayedVideoId
                     ? sourceRestoreAnchorTimeRef.current
-                    : 0
+                    : 0;
                 const restoreTime = clamp(
                   Math.max(videoTime, restoreAnchorTime),
                   0,
                   Number.isFinite(duration) && duration > 0
                     ? duration
                     : Math.max(0, videoTime),
-                )
-                if (restoreTime > 0.05 && videoElement && Math.abs(videoElement.currentTime - restoreTime) > 0.05) {
-                  videoElement.currentTime = restoreTime
+                );
+                if (
+                  restoreTime > 0.05 &&
+                  videoElement &&
+                  Math.abs(videoElement.currentTime - restoreTime) > 0.05
+                ) {
+                  videoElement.currentTime = restoreTime;
                 }
                 if ((videoElement?.currentTime ?? 0) > 0.05) {
-                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId
+                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
                   lastStableTimeRef.current = Math.max(
                     lastStableTimeRef.current,
                     videoElement?.currentTime ?? 0,
-                  )
-                  setHasSeekPreviewCurrentSource(true)
+                  );
+                  setHasSeekPreviewCurrentSource(true);
                 }
                 if (videoPlaying && videoElement) {
-                  void videoElement.play().catch(() => undefined)
+                  void videoElement.play().catch(() => undefined);
                 }
               }}
               onSeeked={() => {
-                const currentTime = videoRef.current?.currentTime ?? 0
+                const currentTime = videoRef.current?.currentTime ?? 0;
                 if (currentTime > 0.05) {
-                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId
-                  lastStableTimeRef.current = currentTime
+                  sourceRestoreAnchorVideoIdRef.current = displayedVideoId;
+                  lastStableTimeRef.current = currentTime;
                   sourceRestoreAnchorTimeRef.current = Math.max(
                     sourceRestoreAnchorTimeRef.current,
                     currentTime,
-                  )
-                  setHasSeekPreviewCurrentSource(true)
+                  );
+                  setHasSeekPreviewCurrentSource(true);
                 }
-                onVideoTimeUpdate(currentTime)
+                onVideoTimeUpdate(currentTime);
               }}
               onEnded={() => {
-                if (videoLoopMode === 'single') {
-                  onVideoTimeUpdate(0)
-                  return
+                if (videoLoopMode === "single") {
+                  onVideoTimeUpdate(0);
+                  return;
                 }
-                onVideoEnded()
+                onVideoEnded();
               }}
             >
-              {!autoSubtitleActive && subtitleTrackUrl ? <track default kind="subtitles" label="字幕" src={subtitleTrackUrl} /> : null}
+              {!autoSubtitleActive && subtitleTrackUrl ? (
+                <track
+                  default
+                  kind="subtitles"
+                  label="字幕"
+                  src={subtitleTrackUrl}
+                />
+              ) : null}
             </video>
           ) : null}
 
-          <SubtitleOverlay text={autoSubtitleActive ? liveSubtitleText : null} visible={subtitleVisible} style={subtitleOverlayStyle} />
+          <SubtitleOverlay
+            text={autoSubtitleActive ? liveSubtitleText : null}
+            visible={subtitleVisible}
+            style={subtitleOverlayStyle}
+          />
 
           {!showVideoFrame && focusedVideoCoverImageSrc ? (
             <img
               className="fullscreen-media-video-cover"
               style={{
-                objectFit: videoFitMode === 'original' ? 'none' : videoFitMode,
-                objectPosition: 'center center',
+                objectFit: videoFitMode === "original" ? "none" : videoFitMode,
+                objectPosition: "center center",
               }}
               src={focusedVideoCoverImageSrc}
               alt="视频封面"
             />
           ) : null}
 
-          {!focusedVideoSrc ? <div className="fullscreen-media-empty">无可用视频源</div> : null}
+          {!focusedVideoSrc ? (
+            <div className="fullscreen-media-empty">无可用视频源</div>
+          ) : null}
         </div>
 
-        {overlayContent ? <div className="fullscreen-pane-overlay">{overlayContent}</div> : null}
+        {overlayContent ? (
+          <div className="fullscreen-pane-overlay">{overlayContent}</div>
+        ) : null}
 
-        {fullscreenDisplay !== 'image-only' ? (
+        {deleteOverlayContent}
+
+        {fullscreenDisplay !== "image-only" ? (
           <>
             <div
-              className={`fullscreen-video-controls-hotzone ${controlsAtTop ? 'is-top' : 'is-bottom'}`}
+              className={`fullscreen-video-controls-hotzone ${controlsAtTop ? "is-top" : "is-bottom"}`}
               data-slot="fs-video-controls-hotzone-ovl"
               style={controlsStyle}
               onMouseEnter={onShowControls}
               onMouseLeave={onHideControls}
             />
             <div
-              className={`fullscreen-video-controls ${controlsAtTop ? 'is-top' : 'is-bottom'} ${videoControlsVisible ? 'is-visible' : ''}`}
+              className={`fullscreen-video-controls ${controlsAtTop ? "is-top" : "is-bottom"} ${videoControlsVisible ? "is-visible" : ""}`}
               data-slot="fs-video-controls-float-panel"
               style={controlsStyle}
               onMouseEnter={onShowControls}
@@ -569,5 +651,5 @@ export function FullscreenVideoPane({
         ) : null}
       </div>
     </section>
-  )
+  );
 }
