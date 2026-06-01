@@ -1242,4 +1242,85 @@ describe("FileSystemMediaReadService", () => {
       ).length;
     expect(importedImageCountAfterSecondImport).toBe(2);
   });
+
+  it("setExternalSourceWatcherEnabled=false 应卸载 watcher 并清空内部状态", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-watcher-toggle-"),
+    );
+    createdRoots.push(root);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const serviceInternal = service as unknown as {
+      externalSourceWatcherEnabled: boolean;
+      externalSourceWatcherManager: {
+        stop: () => void;
+        refresh: (options: {
+          pathKeys: string[];
+          onChange: () => void;
+          onError: (error: Error) => void;
+          debounceMs: number;
+        }) => void;
+      };
+    };
+
+    expect(serviceInternal.externalSourceWatcherEnabled).toBe(true);
+    const stopSpy = vi.spyOn(
+      serviceInternal.externalSourceWatcherManager,
+      "stop",
+    );
+
+    const result = service.setExternalSourceWatcherEnabled(false);
+    expect(result.enabled).toBe(false);
+    expect(typeof result.updated_at_ms).toBe("number");
+    expect(stopSpy).toHaveBeenCalled();
+
+    stopSpy.mockClear();
+    const reenabled = service.setExternalSourceWatcherEnabled(true);
+    expect(reenabled.enabled).toBe(true);
+  });
+
+  it("setExternalSourceWatcherEnabled 关闭后 requestExternalSourceFolderRefresh 仅局部 prune 选中目录", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-folder-refresh-"),
+    );
+    createdRoots.push(root);
+
+    const keptDir = path.join(root, "kept");
+    const droppedDir = path.join(root, "dropped");
+    await fs.mkdir(keptDir, { recursive: true });
+    await fs.mkdir(droppedDir, { recursive: true });
+    await writeBinary(path.join(keptDir, "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(path.join(keptDir, "b.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(path.join(droppedDir, "c.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    const before = await service.readLibrarySnapshot();
+    expect(before.image_directories.length).toBeGreaterThan(0);
+
+    // 关闭 watcher，避免 fs.rm 触发自动清理
+    service.setExternalSourceWatcherEnabled(false);
+
+    // 模拟"用户外部删除 dropped 目录"
+    await fs.rm(droppedDir, { recursive: true, force: true });
+
+    const rootKey = path.resolve(root);
+    const result = await service.requestExternalSourceFolderRefresh(rootKey);
+
+    expect(result.matched_directory_root).toBe(rootKey);
+    expect(result.removed_import_source_count).toBeGreaterThanOrEqual(0);
+
+    const after = await service.readLibrarySnapshot();
+    // 仍保留 kept 目录
+    expect(
+      after.image_directories.some(
+        (entry) => path.resolve(entry.absolute_path) === path.resolve(keptDir),
+      ),
+    ).toBe(true);
+  });
 });

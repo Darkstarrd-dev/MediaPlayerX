@@ -179,6 +179,10 @@ import type {
   WriteAppStateResponseDto,
   UpdatePerformanceConfigRequestDto,
   UpdatePerformanceConfigResponseDto,
+  RequestExternalSourceFolderRefreshRequestDto,
+  RequestExternalSourceFolderRefreshResponseDto,
+  SetExternalSourceWatcherEnabledRequestDto,
+  SetExternalSourceWatcherEnabledResponseDto,
   OpenExternalUrlRequestDto,
   OpenExternalUrlResponseDto,
 } from "./contracts/backend";
@@ -452,6 +456,12 @@ interface MediaPlayerBackendApi {
   updatePerformanceConfig?: (
     request: UpdatePerformanceConfigRequestDto,
   ) => Promise<UpdatePerformanceConfigResponseDto>;
+  requestExternalSourceFolderRefresh?: (
+    request: RequestExternalSourceFolderRefreshRequestDto,
+  ) => Promise<RequestExternalSourceFolderRefreshResponseDto>;
+  setExternalSourceWatcherEnabled?: (
+    request: SetExternalSourceWatcherEnabledRequestDto,
+  ) => Promise<SetExternalSourceWatcherEnabledResponseDto>;
   onLibraryChanged?: (
     listener: (payload: { reason: string; updated_at_ms: number }) => void,
   ) => () => void;

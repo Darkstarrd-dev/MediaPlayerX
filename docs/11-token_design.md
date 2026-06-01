@@ -361,6 +361,7 @@ Header containerLayer 下钻补充（2026-03）：
 | `fg.sidebar.header.btnGroup.actions.btn.prevImageParent` | `--mpx-slot-fg-sidebar-header-prev-image-parent-*` |
 | `fg.sidebar.header.btnGroup.actions.btn.nextImageParent` | `--mpx-slot-fg-sidebar-header-next-image-parent-*` |
 | `fg.sidebar.header.btnGroup.actions.btn.rootToggle` | `--mpx-slot-fg-sidebar-header-root-toggle-*` |
+| `fg.sidebar.header.btnGroup.actions.btn.folderRefresh` | `--mpx-slot-fg-sidebar-header-folder-refresh-*` |
 | `fg.sidebar.main` | `--mpx-slot-fg-sidebar-main-*` |
 | `fg.sidebar.main.label` | `--mpx-slot-fg-sidebar-main-label-*` |
 | `fg.sidebar.shortcut.rename.batch.ovl` | `--mpx-slot-fg-sidebar-shortcut-rename-batch-ovl-*` |

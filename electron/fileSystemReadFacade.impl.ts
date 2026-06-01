@@ -2,6 +2,11 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import {
+  isPathInsideRoot,
+  normalizeAllowlistKey,
+} from "./fileSystemServiceHelpers";
+
+import {
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -285,6 +290,7 @@ export class FileSystemMediaReadService {
       ]),
       onDebouncedChange: () => this.runExternalSourceRefreshFromWatcher(),
     });
+  private externalSourceWatcherEnabled = true;
   private disposed = false;
 
   constructor(optionsOrRootDir: FileSystemMediaReadServiceOptions | string) {
@@ -548,6 +554,10 @@ export class FileSystemMediaReadService {
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
       markInteractiveRead: () => this.markInteractiveRead(),
       clearDatabase: () => this.clearDatabase(),
+      requestExternalSourceFolderRefresh: (pathKey: string) =>
+        this.requestExternalSourceFolderRefresh(pathKey),
+      setExternalSourceWatcherEnabled: (enabled: boolean) =>
+        this.setExternalSourceWatcherEnabled(enabled),
     });
     const handlers = createFacadeHandlers(context);
     this.libraryHandlers = handlers.libraryHandlers;
@@ -817,7 +827,11 @@ export class FileSystemMediaReadService {
   }
 
   private schedulePendingWatcherRefresh(delayMs: number): void {
-    if (this.disposed || this.watcherRefreshInFlight || !this.pendingWatcherRefresh) {
+    if (
+      this.disposed ||
+      this.watcherRefreshInFlight ||
+      !this.pendingWatcherRefresh
+    ) {
       return;
     }
 
@@ -877,7 +891,8 @@ export class FileSystemMediaReadService {
       }
 
       if (previousSnapshotKey !== null) {
-        const nextSnapshotKey = this.buildExternalWatcherSnapshotKey(nextSnapshot);
+        const nextSnapshotKey =
+          this.buildExternalWatcherSnapshotKey(nextSnapshot);
         if (nextSnapshotKey === previousSnapshotKey) {
           return;
         }
@@ -909,6 +924,11 @@ export class FileSystemMediaReadService {
     if (this.disposed) {
       return;
     }
+    if (!this.externalSourceWatcherEnabled) {
+      // 开关关闭时确保任何残留 watcher 句柄被释放，下次开启时再挂载
+      this.externalSourceWatcherManager.stop();
+      return;
+    }
     this.externalSourceWatcherManager.refresh({
       importDirectoryRoots: this.importPathRegistry.getImportDirectoryRoots(),
       importFilePaths: this.importPathRegistry.getImportFilePaths(),
@@ -917,6 +937,191 @@ export class FileSystemMediaReadService {
 
   private stopExternalSourceWatchers(): void {
     this.externalSourceWatcherManager.stop();
+  }
+
+  setExternalSourceWatcherEnabled(enabled: boolean): {
+    enabled: boolean;
+    updated_at_ms: number;
+  } {
+    if (this.disposed) {
+      return {
+        enabled: this.externalSourceWatcherEnabled,
+        updated_at_ms: Date.now(),
+      };
+    }
+    const nextEnabled = Boolean(enabled);
+    if (nextEnabled === this.externalSourceWatcherEnabled) {
+      return {
+        enabled: nextEnabled,
+        updated_at_ms: Date.now(),
+      };
+    }
+    this.externalSourceWatcherEnabled = nextEnabled;
+    if (nextEnabled) {
+      this.refreshExternalSourceWatchers();
+    } else {
+      this.externalSourceWatcherManager.stop();
+    }
+    return {
+      enabled: nextEnabled,
+      updated_at_ms: Date.now(),
+    };
+  }
+
+  async requestExternalSourceFolderRefresh(pathKey: string): Promise<{
+    matched_directory_root: string | null;
+    pruned_source_count: number;
+    pruned_video_count: number;
+    pruned_audio_count: number;
+    removed_import_source_count: number;
+    updated_at_ms: number;
+  }> {
+    if (this.disposed) {
+      return {
+        matched_directory_root: null,
+        pruned_source_count: 0,
+        pruned_video_count: 0,
+        pruned_audio_count: 0,
+        removed_import_source_count: 0,
+        updated_at_ms: Date.now(),
+      };
+    }
+    await this.ensureStateLoaded();
+
+    const normalizedKey = normalizeAllowlistKey(pathKey);
+    const importDirectoryRoots =
+      this.importPathRegistry.getImportDirectoryRoots();
+    const matchedRoot = importDirectoryRoots.find(
+      (root) => normalizeAllowlistKey(root) === normalizedKey,
+    );
+    if (!matchedRoot) {
+      return {
+        matched_directory_root: null,
+        pruned_source_count: 0,
+        pruned_video_count: 0,
+        pruned_audio_count: 0,
+        removed_import_source_count: 0,
+        updated_at_ms: Date.now(),
+      };
+    }
+
+    const pathFilter = (absolutePath: string): boolean =>
+      isPathInsideRoot(matchedRoot, absolutePath);
+
+    const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
+    const filteredSnapshot: LibrarySnapshotDto = previousSnapshot
+      ? {
+          ...previousSnapshot,
+          image_packages: previousSnapshot.image_packages.filter((source) =>
+            pathFilter(source.absolute_path),
+          ),
+          image_directories: previousSnapshot.image_directories.filter(
+            (source) => pathFilter(source.absolute_path),
+          ),
+          videos: previousSnapshot.videos.filter((video) =>
+            pathFilter(video.absolute_path),
+          ),
+          audios: (previousSnapshot.audios ?? []).filter((audio) =>
+            pathFilter(audio.absolute_path),
+          ),
+        }
+      : {
+          image_packages: [],
+          image_directories: [],
+          videos: [],
+          audios: [],
+        };
+
+    const before = this.countSnapshotEntries(filteredSnapshot);
+    let pruned: LibrarySnapshotDto;
+    try {
+      pruned = await this.pruneMissingSnapshotEntries(filteredSnapshot, {
+        pathFilter,
+      });
+    } catch (error) {
+      console.warn("manual folder refresh failed", {
+        reason:
+          error instanceof Error && error.message
+            ? error.message
+            : String(error),
+      });
+      return {
+        matched_directory_root: matchedRoot,
+        pruned_source_count: 0,
+        pruned_video_count: 0,
+        pruned_audio_count: 0,
+        removed_import_source_count: 0,
+        updated_at_ms: Date.now(),
+      };
+    }
+
+    const after = this.countSnapshotEntries(pruned);
+    const removedImportSourceCount =
+      await this.pruneImportSourcesForDirectoryRoot(matchedRoot);
+    const updatedAtMs = Date.now();
+    if (before !== after || removedImportSourceCount > 0) {
+      this.emitLibraryChanged({
+        reason: "manual-folder-refresh",
+        updated_at_ms: updatedAtMs,
+      });
+    }
+    return {
+      matched_directory_root: matchedRoot,
+      pruned_source_count: before.images - after.images,
+      pruned_video_count: before.videos - after.videos,
+      pruned_audio_count: before.audios - after.audios,
+      removed_import_source_count: removedImportSourceCount,
+      updated_at_ms: updatedAtMs,
+    };
+  }
+
+  private countSnapshotEntries(snapshot: LibrarySnapshotDto): {
+    images: number;
+    videos: number;
+    audios: number;
+  } {
+    return {
+      images:
+        snapshot.image_packages.length + snapshot.image_directories.length,
+      videos: snapshot.videos.length,
+      audios: (snapshot.audios ?? []).length,
+    };
+  }
+
+  private async pruneImportSourcesForDirectoryRoot(
+    directoryRoot: string,
+  ): Promise<number> {
+    const resolvedRoot = path.resolve(directoryRoot);
+    const importDirectoryRoots =
+      this.importPathRegistry.getImportDirectoryRoots();
+    const importFilePaths = this.importPathRegistry.getImportFilePaths();
+    const matchedRootKey = normalizeAllowlistKey(resolvedRoot);
+    const nextDirectoryRoots = importDirectoryRoots.filter(
+      (value) => normalizeAllowlistKey(value) !== matchedRootKey,
+    );
+    const nextFilePaths = importFilePaths.filter(
+      (value) => !isPathInsideRoot(resolvedRoot, value),
+    );
+    if (
+      nextDirectoryRoots.length === importDirectoryRoots.length &&
+      nextFilePaths.length === importFilePaths.length
+    ) {
+      return 0;
+    }
+    this.importPathRegistry.hydrate({
+      directories: nextDirectoryRoots,
+      files: nextFilePaths,
+    });
+    this.database.writeImportSources({
+      directories: nextDirectoryRoots,
+      files: nextFilePaths,
+    });
+    this.refreshExternalSourceWatchers();
+    return (
+      importDirectoryRoots.length -
+      nextDirectoryRoots.length +
+      (importFilePaths.length - nextFilePaths.length)
+    );
   }
 
   private syncSnapshotFromDatabase(): LibrarySnapshotDto {
@@ -1092,11 +1297,24 @@ export class FileSystemMediaReadService {
 
   private async pruneMissingSnapshotEntries(
     snapshot: LibrarySnapshotDto,
+    options?: { pathFilter?: (absolutePath: string) => boolean },
   ): Promise<LibrarySnapshotDto> {
     if (this.hasManagementMutationInFlight()) {
       this.pruneMissingSnapshotQueued = true;
       return snapshot;
     }
+
+    const pathFilter = options?.pathFilter;
+    const passesFilter = (absolutePath: string): boolean => {
+      if (!pathFilter) {
+        return true;
+      }
+      try {
+        return pathFilter(absolutePath);
+      } catch {
+        return true;
+      }
+    };
 
     const missingPaths = new Set<string>();
     const missingFilesystemPaths = new Set<string>();
@@ -1106,12 +1324,18 @@ export class FileSystemMediaReadService {
     ];
 
     for (const source of imageSources) {
+      if (!passesFilter(source.absolute_path)) {
+        continue;
+      }
       if (!(await this.pathExists(source.absolute_path))) {
         missingPaths.add(source.absolute_path);
         missingFilesystemPaths.add(path.resolve(source.absolute_path));
       }
     }
     for (const video of snapshot.videos) {
+      if (!passesFilter(video.absolute_path)) {
+        continue;
+      }
       if (!(await this.pathExists(video.absolute_path))) {
         missingPaths.add(video.absolute_path);
         missingFilesystemPaths.add(path.resolve(video.absolute_path));
@@ -1119,6 +1343,9 @@ export class FileSystemMediaReadService {
     }
     const missingSnapshotPaths = new Set<string>();
     for (const audio of snapshot.audios ?? []) {
+      if (!passesFilter(audio.absolute_path)) {
+        continue;
+      }
       const resolvedPaths = this.resolveAudioExistencePaths(audio);
       const missingCheckPaths: string[] = [];
       for (const targetPath of resolvedPaths.checkPaths) {

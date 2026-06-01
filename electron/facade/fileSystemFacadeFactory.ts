@@ -69,6 +69,8 @@ interface CreateFacadeContextOptions {
   emitLibraryChanged: (payload: LibraryChangedEventPayload) => void;
   markInteractiveRead: FileSystemFacadeContext["markInteractiveRead"];
   clearDatabase: FileSystemFacadeContext["clearDatabase"];
+  requestExternalSourceFolderRefresh: FileSystemFacadeContext["requestExternalSourceFolderRefresh"];
+  setExternalSourceWatcherEnabled: FileSystemFacadeContext["setExternalSourceWatcherEnabled"];
 }
 
 export function createFacadeContext(
@@ -99,6 +101,9 @@ export function createFacadeContext(
     emitLibraryChanged: options.emitLibraryChanged,
     markInteractiveRead: options.markInteractiveRead,
     clearDatabase: options.clearDatabase,
+    requestExternalSourceFolderRefresh:
+      options.requestExternalSourceFolderRefresh,
+    setExternalSourceWatcherEnabled: options.setExternalSourceWatcherEnabled,
   };
 }
 

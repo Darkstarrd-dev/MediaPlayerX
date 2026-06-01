@@ -781,3 +781,15 @@ export type SetRuntimeStoragePathsResponseDto = Infer<
 export type MediaAccessAuditResponseDto = Infer<
   typeof Backend.mediaAccessAuditResponseSchema
 >;
+export type RequestExternalSourceFolderRefreshRequestDto = Infer<
+  typeof Backend.requestExternalSourceFolderRefreshRequestSchema
+>;
+export type RequestExternalSourceFolderRefreshResponseDto = Infer<
+  typeof Backend.requestExternalSourceFolderRefreshResponseSchema
+>;
+export type SetExternalSourceWatcherEnabledRequestDto = Infer<
+  typeof Backend.setExternalSourceWatcherEnabledRequestSchema
+>;
+export type SetExternalSourceWatcherEnabledResponseDto = Infer<
+  typeof Backend.setExternalSourceWatcherEnabledResponseSchema
+>;

@@ -85,6 +85,7 @@ export interface SettingsPanelProps {
   fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   fullscreenDownsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   proxyServer: string;
+  externalSourceWatcherEnabled: boolean;
   ehentaiAuthState: "connected" | "disconnected" | "error";
   ehentaiAuthConnected: boolean;
   ehentaiAuthMessage: string | null;
@@ -279,6 +280,7 @@ export interface SettingsPanelProps {
     value: "lanczos3" | "mitchell" | "nearest" | "cubic",
   ) => void;
   onProxyServerChange: (value: string) => void;
+  onExternalSourceWatcherEnabledChange: (value: boolean) => void;
   onRefreshEhentaiAuthStatus: () => void;
   onConnectEhentaiAuth: () => void;
   onDisconnectEhentaiAuth: () => void;
@@ -337,7 +339,9 @@ export interface SettingsPanelProps {
   onSubtitleCleanupLlmPromptChange: (value: string) => void;
   onAdReviewExecutionModeChange: (value: "normal" | "performance") => void;
   onAdReviewHashCompareStageChange: (value: "ad-review" | "import") => void;
-  onAdReviewHashHitActionChange: (value: "silent-delete" | "user-confirm") => void;
+  onAdReviewHashHitActionChange: (
+    value: "silent-delete" | "user-confirm",
+  ) => void;
   onImportAdReviewKnownHashes: () => void;
   onExportAdReviewKnownHashes: () => void;
   onSetShortcut: (action: ShortcutAction, binding: string) => void;

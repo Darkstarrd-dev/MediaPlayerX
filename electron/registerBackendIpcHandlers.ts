@@ -192,6 +192,10 @@ import {
   openExternalUrlResponseSchema,
   updatePerformanceConfigRequestSchema,
   updatePerformanceConfigResponseSchema,
+  requestExternalSourceFolderRefreshRequestSchema,
+  requestExternalSourceFolderRefreshResponseSchema,
+  setExternalSourceWatcherEnabledRequestSchema,
+  setExternalSourceWatcherEnabledResponseSchema,
 } from "../src/contracts/backend";
 import { BACKEND_CHANNELS } from "./channels";
 import {
@@ -1532,6 +1536,22 @@ export function registerBackendIpcHandlers(): void {
       taskResourceGovernor.resizeCpuSemaphore(request.cpu_token_limit);
       return { applied: true };
     },
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.requestExternalSourceFolderRefresh,
+    requestExternalSourceFolderRefreshRequestSchema,
+    requestExternalSourceFolderRefreshResponseSchema,
+    (request) =>
+      ensureService().requestExternalSourceFolderRefresh(request.path_key),
+  );
+
+  registerIpcCommand(
+    BACKEND_CHANNELS.setExternalSourceWatcherEnabled,
+    setExternalSourceWatcherEnabledRequestSchema,
+    setExternalSourceWatcherEnabledResponseSchema,
+    (request) =>
+      ensureService().setExternalSourceWatcherEnabled(request.enabled),
   );
 }
 

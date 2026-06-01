@@ -471,6 +471,23 @@ export function useAppWorkspaceProps({
       checkSidebarNode(nodeId);
     },
     titleCollapseEnabled: !luxuryWhiteActive,
+    externalSourceWatcherEnabled: appSettings.externalSourceWatcherEnabled,
+    selectedFolderPathKey:
+      effectiveSidebarNodeById.get(selectedSidebarNodeId ?? "")?.pathKey ??
+      null,
+    onRefreshSelectedFolder: () => {
+      const pathKey =
+        effectiveSidebarNodeById.get(selectedSidebarNodeId ?? "")?.pathKey ??
+        null;
+      if (!pathKey) {
+        return;
+      }
+      mediaRepository
+        .requestExternalSourceFolderRefresh?.({ path_key: pathKey })
+        .catch(() => {
+          // 忽略 IPC 失败
+        });
+    },
   });
 
   const {

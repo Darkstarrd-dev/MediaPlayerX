@@ -395,6 +395,7 @@ export const appSettingsSchema = z.object({
   adReviewTailN: z.number().int().min(1).max(20),
   adReviewTailStopCleanStreak: z.number().int().min(1).max(20),
   adReviewMaxConcurrency: z.number().int().min(1).max(20),
+  externalSourceWatcherEnabled: z.boolean().default(true),
 });
 
 export type AppSettings = z.infer<typeof appSettingsSchema>;

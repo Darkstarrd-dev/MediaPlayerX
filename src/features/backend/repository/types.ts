@@ -159,6 +159,10 @@ import type {
   WriteAppStateResponseDto,
   UpdatePerformanceConfigRequestDto,
   UpdatePerformanceConfigResponseDto,
+  RequestExternalSourceFolderRefreshRequestDto,
+  RequestExternalSourceFolderRefreshResponseDto,
+  SetExternalSourceWatcherEnabledRequestDto,
+  SetExternalSourceWatcherEnabledResponseDto,
 } from "../../../contracts/backend";
 
 export interface RepositoryRequestOptions {
@@ -506,6 +510,14 @@ export interface MediaRepository {
     request: UpdatePerformanceConfigRequestDto,
     options?: RepositoryRequestOptions,
   ): Promise<UpdatePerformanceConfigResponseDto>;
+  requestExternalSourceFolderRefresh?(
+    request: RequestExternalSourceFolderRefreshRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RequestExternalSourceFolderRefreshResponseDto>;
+  setExternalSourceWatcherEnabled?(
+    request: SetExternalSourceWatcherEnabledRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetExternalSourceWatcherEnabledResponseDto>;
   onLibraryChanged?(
     listener: (payload: { reason: string; updated_at_ms: number }) => void,
   ): () => void;

@@ -104,6 +104,9 @@ export const BACKEND_CHANNELS = {
   writeAppState: "backend:writeAppState",
   openExternalUrl: "backend:openExternalUrl",
   libraryChanged: "backend:libraryChanged",
+  requestExternalSourceFolderRefresh:
+    "backend:requestExternalSourceFolderRefresh",
+  setExternalSourceWatcherEnabled: "backend:setExternalSourceWatcherEnabled",
 } as const;
 
 export const BENCH_CHANNELS = {

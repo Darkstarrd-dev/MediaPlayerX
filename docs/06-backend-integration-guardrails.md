@@ -1,6 +1,6 @@
 # 后端接入规避方案（强制执行）
 
-Last updated: 2026-05-30
+Last updated: 2026-06-01
 
 ## 适用范围
 
@@ -63,6 +63,11 @@ Last updated: 2026-05-30
     - 渲染进程通过 `readSourceImages(source_id)` 按“访问到的源”懒加载图片并在会话内缓存（`useSourceImageCache`），禁止恢复“整库 images 常驻渲染进程”的旧模型。
     - 任何同时展示多源缩略图的视图（向量检索结果、AdReview 聚合结果等）必须把涉及的源 id 纳入按需加载集合（`useAppSidebarScopeState` 的 `neededSourceIds`），并把其有效 image id 纳入 `validImageIdSet`，否则会出现缩略图空白与管理选择被误剪（默认全选被清空）。
     - 计数/枚举（页数、导航边界、ref 枚举）必须使用 `resolveSourceImageCount`（= `imageCount ?? images.length`），不得依赖已加载的 `images.length`。
+
+13. 外部源监听开关（自动 + 手动并存）
+    - `setExternalSourceWatcherEnabled(enabled)` 与 `requestExternalSourceFolderRefresh(path_key)` 必须走 Zod schema IPC 契约，前端 useSettingsPersistence 在 `externalSourceWatcherEnabled` 变化时主动 push；`requestExternalSourceFolderRefresh` 的 `path_key` 必须是 `normalizeAllowlistKey(node.pathKey)` 命中 `importPathRegistry` 中已登记 directory root 的字符串，未命中返回 `matched_directory_root: null` 且 counts 全为 0。
+    - 后端 prune 范围受 `pathFilter = (absolutePath) => isPathInsideRoot(matchedRoot, absolutePath)` 约束，禁止对全表 stat；同步清理 `importPathRegistry` 中以 `matchedRoot` 为前缀的 file import 登记，事件 `reason` 写 `manual-folder-refresh`；前端 useReadOnlyDataAccess 把它归为 transient reason，不触发主动重读。
+    - `pruneMissingSnapshotEntries` 必须接受可选 `pathFilter` 回调以支持局部 prune，老调用点（无 `pathFilter` 时）行为保持不变。
 
 ## 新增能力实施顺序（建议按序）
 

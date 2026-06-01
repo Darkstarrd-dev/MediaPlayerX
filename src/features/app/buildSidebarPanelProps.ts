@@ -61,6 +61,9 @@ interface BuildSidebarPanelPropsParams {
   onClearSidebarSelection: () => void;
   onSelectMetadataSingleNode?: (nodeId: string) => void;
   titleCollapseEnabled?: boolean;
+  externalSourceWatcherEnabled?: boolean;
+  onRefreshSelectedFolder?: () => void;
+  selectedFolderPathKey?: string | null;
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
@@ -194,5 +197,8 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
         return previous.filter((id) => id !== audioId);
       });
     },
+    externalSourceWatcherEnabled: params.externalSourceWatcherEnabled ?? true,
+    selectedFolderPathKey: params.selectedFolderPathKey ?? null,
+    onRefreshSelectedFolder: params.onRefreshSelectedFolder,
   };
 }

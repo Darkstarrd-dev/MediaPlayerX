@@ -84,6 +84,7 @@ export function toPersistedAppSettings(
     thumbnailAdaptiveResolution: settings.thumbnailAdaptiveResolution,
     thumbnailQueueSize: settings.thumbnailQueueSize,
     cpuTokenLimit: settings.cpuTokenLimit,
+    externalSourceWatcherEnabled: settings.externalSourceWatcherEnabled,
     thumbnailQuality: settings.thumbnailQuality,
     thumbnailWidth: settings.thumbnailWidth,
     thumbnailGenerationConcurrency: settings.thumbnailGenerationConcurrency,

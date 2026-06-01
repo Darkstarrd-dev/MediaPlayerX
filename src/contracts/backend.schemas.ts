@@ -1420,3 +1420,25 @@ export const mediaAccessAuditResponseSchema = z.object({
   token_active: nonNegativeIntSchema,
   generated_at_ms: z.number().int().positive(),
 });
+
+export const requestExternalSourceFolderRefreshRequestSchema = z.object({
+  path_key: z.string().min(1).max(8192),
+});
+
+export const requestExternalSourceFolderRefreshResponseSchema = z.object({
+  matched_directory_root: z.string().min(1).nullable(),
+  pruned_source_count: nonNegativeIntSchema,
+  pruned_video_count: nonNegativeIntSchema,
+  pruned_audio_count: nonNegativeIntSchema,
+  removed_import_source_count: nonNegativeIntSchema,
+  updated_at_ms: z.number().int().positive(),
+});
+
+export const setExternalSourceWatcherEnabledRequestSchema = z.object({
+  enabled: z.boolean(),
+});
+
+export const setExternalSourceWatcherEnabledResponseSchema = z.object({
+  enabled: z.boolean(),
+  updated_at_ms: z.number().int().positive(),
+});

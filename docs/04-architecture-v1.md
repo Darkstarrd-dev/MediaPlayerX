@@ -1,6 +1,6 @@
 # MediaPlayer 架构设计 V1
 
-Last updated: 2026-03-02
+Last updated: 2026-06-01
 
 ## 设计原则
 
@@ -43,6 +43,7 @@ Last updated: 2026-03-02
 - 管理模式广告图片审核 (LLM Ad Review) 已完成纵向接线：`Renderer -> Repository -> preload/ipc -> Main service -> manageAdReview core` 全链路可用。
 - 管理模式 RS 图包转换已接入真实后端任务：`start/read/cancelImageConvertTask` 由 Main 异步执行目录/zip 转换，执行态通过轮询上报 `total/processed/success/failed`。
 - RS 转换写入策略采用临时文件 + 备份回滚：目录文件遵循“新文件就位后删除源文件”，zip 重打包遵循“临时 zip 校验后原子替换”，失败时回滚并保留诊断错误。
+- 外部源监听支持“自动 + 手动”两套机制并存：`FileSystemMediaReadService.externalSourceWatcherEnabled` 默认为 `true`（保留原有 `ExternalSourceWatcherManager` 自动监听）；用户在设置面板关闭后，watcher 立即卸载并停止节流重扫，侧边栏头部在选中节点时露出 `refresh` 按钮，触发 `requestExternalSourceFolderRefresh` 对选中目录根做局部 prune（仅 `image_packages/image_directories/videos/audios` 中 `isPathInsideRoot(matchedRoot, entry.path)` 的条目）并清理 `importPathRegistry` 中对应 directory root 的 file imports。Linux 下不提供原生 `chokidar`，关闭开关可避免无效轮询。
 
 ### Electron Main 进程
 

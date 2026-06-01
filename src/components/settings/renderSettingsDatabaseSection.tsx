@@ -19,6 +19,7 @@ export function renderSettingsDatabaseSection({
     runtimePathUpdatePending,
     runtimePathUpdateMessage,
     proxyServer,
+    externalSourceWatcherEnabled,
     ehentaiAuthState,
     ehentaiAuthConnected,
     ehentaiAuthMessage,
@@ -29,6 +30,7 @@ export function renderSettingsDatabaseSection({
     onPickDatabaseDirectoryPath,
     onPickThumbnailCacheDirectoryPath,
     onProxyServerChange,
+    onExternalSourceWatcherEnabledChange,
     onRefreshEhentaiAuthStatus,
     onConnectEhentaiAuth,
     onDisconnectEhentaiAuth,
@@ -39,7 +41,9 @@ export function renderSettingsDatabaseSection({
 
   return (
     <div className="settings-block">
-      <p className="settings-placeholder">{t("ui.settings.databaseResetHint")}</p>
+      <p className="settings-placeholder">
+        {t("ui.settings.databaseResetHint")}
+      </p>
       <label data-tooltip-label={settingsTip("databaseReset")}>
         {t("ui.settings.databaseResetLabel")}
         <button
@@ -59,7 +63,9 @@ export function renderSettingsDatabaseSection({
 
       <fieldset className="settings-subsection">
         <legend>{t("ui.settings.databaseDirectoryLegend")}</legend>
-        <p className="settings-placeholder">{t("ui.settings.databaseDirectoryHint")}</p>
+        <p className="settings-placeholder">
+          {t("ui.settings.databaseDirectoryHint")}
+        </p>
         <p className="settings-placeholder">
           {t("ui.settings.databaseDirectoryMigrationHint")}
         </p>
@@ -110,7 +116,9 @@ export function renderSettingsDatabaseSection({
 
       <fieldset className="settings-subsection">
         <legend>{t("ui.settings.networkProxyLegend")}</legend>
-        <p className="settings-placeholder">{t("ui.settings.networkProxyHint")}</p>
+        <p className="settings-placeholder">
+          {t("ui.settings.networkProxyHint")}
+        </p>
         <label data-tooltip-label={settingsTip("proxyServer")}>
           {t("ui.settings.proxyServerLabel")}
           <input
@@ -123,8 +131,34 @@ export function renderSettingsDatabaseSection({
       </fieldset>
 
       <fieldset className="settings-subsection">
+        <legend>{t("ui.settings.externalSourceWatcherLegend")}</legend>
+        <p className="settings-placeholder">
+          {t("ui.settings.externalSourceWatcherHint")}
+        </p>
+        <label
+          className="settings-toggle-row"
+          data-tooltip-label={t("ui.settings.externalSourceWatcherTooltip")}
+        >
+          <span
+            data-tooltip-label={t("ui.settings.externalSourceWatcherTooltip")}
+          >
+            {t("ui.settings.externalSourceWatcherEnabled")}
+          </span>
+          <input
+            type="checkbox"
+            checked={externalSourceWatcherEnabled}
+            onChange={(event) =>
+              onExternalSourceWatcherEnabledChange?.(event.target.checked)
+            }
+          />
+        </label>
+      </fieldset>
+
+      <fieldset className="settings-subsection">
         <legend>{t("ui.settings.ehentaiAuthLegend")}</legend>
-        <p className="settings-placeholder">{t("ui.settings.ehentaiAuthHint")}</p>
+        <p className="settings-placeholder">
+          {t("ui.settings.ehentaiAuthHint")}
+        </p>
         <p
           className={`settings-test-status ${
             ehentaiAuthConnected
@@ -136,10 +170,10 @@ export function renderSettingsDatabaseSection({
         >
           {ehentaiAuthChecking
             ? t("ui.settings.ehentaiAuthChecking")
-            : ehentaiAuthMessage ??
+            : (ehentaiAuthMessage ??
               (ehentaiAuthConnected
                 ? t("ui.settings.ehentaiAuthConnected")
-                : t("ui.settings.ehentaiAuthDisconnected"))}
+                : t("ui.settings.ehentaiAuthDisconnected")))}
         </p>
         <div className="settings-runtime-actions">
           <button
@@ -160,7 +194,11 @@ export function renderSettingsDatabaseSection({
               ? t("ui.settings.ehentaiAuthDisconnecting")
               : t("ui.settings.ehentaiAuthDisconnectAction")}
           </button>
-          <button type="button" disabled={ehentaiAuthChecking} onClick={onRefreshEhentaiAuthStatus}>
+          <button
+            type="button"
+            disabled={ehentaiAuthChecking}
+            onClick={onRefreshEhentaiAuthStatus}
+          >
             {ehentaiAuthChecking
               ? t("ui.settings.ehentaiAuthChecking")
               : t("ui.settings.ehentaiAuthRefreshAction")}

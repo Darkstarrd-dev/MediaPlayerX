@@ -103,6 +103,10 @@ import {
   readAppStateResponseSchema,
   writeAppStateResponseSchema,
   updatePerformanceConfigResponseSchema,
+  requestExternalSourceFolderRefreshRequestSchema,
+  requestExternalSourceFolderRefreshResponseSchema,
+  setExternalSourceWatcherEnabledRequestSchema,
+  setExternalSourceWatcherEnabledResponseSchema,
   type EnqueueImportTaskRequestDto,
   type EnqueueImportTaskResponseDto,
   type ClearDatabaseResponseDto,
@@ -263,6 +267,10 @@ import {
   type WriteAppStateResponseDto,
   type UpdatePerformanceConfigRequestDto,
   type UpdatePerformanceConfigResponseDto,
+  type RequestExternalSourceFolderRefreshRequestDto,
+  type RequestExternalSourceFolderRefreshResponseDto,
+  type SetExternalSourceWatcherEnabledRequestDto,
+  type SetExternalSourceWatcherEnabledResponseDto,
 } from "../../../contracts/backend";
 import type { MediaRepository, RepositoryRequestOptions } from "./types";
 import { requireBackend, requireBackendMethod } from "./backendChannel";
@@ -1355,5 +1363,39 @@ export class RealMediaRepository implements MediaRepository {
 
     const response = await withAbort(updatePerformanceConfig(request), options);
     return updatePerformanceConfigResponseSchema.parse(response);
+  }
+
+  async requestExternalSourceFolderRefresh(
+    request: RequestExternalSourceFolderRefreshRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<RequestExternalSourceFolderRefreshResponseDto> {
+    const requestExternalSourceFolderRefresh = requireBackendMethod(
+      "requestExternalSourceFolderRefresh",
+    );
+    const parsedRequest =
+      requestExternalSourceFolderRefreshRequestSchema.parse(request);
+
+    const response = await withAbort(
+      requestExternalSourceFolderRefresh(parsedRequest),
+      options,
+    );
+    return requestExternalSourceFolderRefreshResponseSchema.parse(response);
+  }
+
+  async setExternalSourceWatcherEnabled(
+    request: SetExternalSourceWatcherEnabledRequestDto,
+    options?: RepositoryRequestOptions,
+  ): Promise<SetExternalSourceWatcherEnabledResponseDto> {
+    const setExternalSourceWatcherEnabled = requireBackendMethod(
+      "setExternalSourceWatcherEnabled",
+    );
+    const parsedRequest =
+      setExternalSourceWatcherEnabledRequestSchema.parse(request);
+
+    const response = await withAbort(
+      setExternalSourceWatcherEnabled(parsedRequest),
+      options,
+    );
+    return setExternalSourceWatcherEnabledResponseSchema.parse(response);
   }
 }

@@ -432,7 +432,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "2.2.2.1 fg-sidebar-main",
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 Workspace / File List Mode",
-  "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root/Shell Shared Layer",
+  "ui.themeParameter.largePanelLayer.sectionRoot":
+    "3.0 Root/Shell Shared Layer",
   "ui.themeParameter.largePanelLayer.rootShadowSettings":
     "Large Panel Background Shadow",
   "ui.themeParameter.largePanelLayer.sectionShared":
@@ -440,7 +441,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",
   "ui.themeParameter.largePanelLayer.sectionSide": "3.3 Side",
   "ui.themeParameter.largePanelLayer.sectionMain": "3.4 Main",
-  "ui.themeParameter.largePanelLayer.sectionButton": "3.5 Button master control",
+  "ui.themeParameter.largePanelLayer.sectionButton":
+    "3.5 Button master control",
   "ui.themeParameter.largePanelLayer.sectionInternal": "3.10 Internal parts",
   "ui.themeParameter.largePanelLayer.sectionInternalSettings":
     "3.10.0 Settings / Help / Theme Parameter",
@@ -470,8 +472,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.smallPanelLayer.sectionConvert": "5.6 Convert",
   "ui.themeParameter.smallPanelLayer.sectionPlaylistNameDialog":
     "5.7 Playlist Name Dialog",
-  "ui.themeParameter.smallPanelLayer.sectionRenameSingle":
-    "5.8 Rename Single",
+  "ui.themeParameter.smallPanelLayer.sectionRenameSingle": "5.8 Rename Single",
   "ui.themeParameter.sectionCommon": "Common parameters",
   "ui.themeParameter.sectionStyle": "Style parameters ({{styleId}})",
   "ui.themeParameter.sectionMetric": "{{scope}} {{target}} {{metric}}",
@@ -497,8 +498,7 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.themeParameter.controls.section.fileList": "6.3 File list style",
   "ui.themeParameter.controls.section.thumbnailCard":
     "6.4 Thumbnail card style (shared)",
-  "ui.themeParameter.controls.section.popoverPanel":
-    "6.5 Popover panel style",
+  "ui.themeParameter.controls.section.popoverPanel": "6.5 Popover panel style",
   "ui.themeParameter.controls.section.textInput": "6.6 Text input style",
   "ui.themeParameter.controls.section.select": "6.7 Select style",
   "ui.themeParameter.controls.note.scrollbar":
@@ -1106,6 +1106,14 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Used for metadata fetch flow; supports socks5:// and http(s)://.",
   "ui.settings.proxyServerLabel": "Proxy server",
   "ui.settings.proxyServerPlaceholder": "e.g. socks5://127.0.0.1:2080",
+  "ui.settings.externalSourceWatcherLegend": "External source watcher",
+  "ui.settings.externalSourceWatcherHint":
+    "When enabled, the backend auto-watches import source directories and syncs the database. Disable to manually refresh folders from the sidebar.",
+  "ui.settings.externalSourceWatcherEnabled": "Enable external source watcher",
+  "ui.settings.externalSourceWatcherTooltip":
+    "When disabled, sync only happens on demand. On Linux no filesystem watcher is provided, so disabling avoids ineffective polling.",
+  "a11y.sidebar.refreshFolder": "Refresh current folder",
+  "tip.sidebar.refreshFolder": "Refresh current folder",
   "ui.settings.ehentaiAuthLegend": "E-Hentai Account Connection",
   "ui.settings.ehentaiAuthHint":
     "Authentication now uses web sign-in session only; manual Cookie input is no longer supported.",

@@ -113,6 +113,7 @@ function SettingsPanel({
   fullscreenUpsamplingKernel,
   fullscreenDownsamplingKernel,
   proxyServer,
+  externalSourceWatcherEnabled,
   ehentaiAuthState,
   ehentaiAuthConnected,
   ehentaiAuthMessage,
@@ -251,6 +252,7 @@ function SettingsPanel({
   onFullscreenUpsamplingKernelChange,
   onFullscreenDownsamplingKernelChange,
   onProxyServerChange,
+  onExternalSourceWatcherEnabledChange,
   onRefreshEhentaiAuthStatus,
   onConnectEhentaiAuth,
   onDisconnectEhentaiAuth,
@@ -334,9 +336,8 @@ function SettingsPanel({
   const [cpuTokenLimitInput, setCpuTokenLimitInput] = useState(() =>
     String(cpuTokenLimit),
   );
-  const { panelOffset, panelDragging, headHandlers } = useDraggablePanel(
-    settingsOpen,
-  );
+  const { panelOffset, panelDragging, headHandlers } =
+    useDraggablePanel(settingsOpen);
   const {
     preferenceDebugLoading,
     preferenceDebugError,
@@ -930,6 +931,7 @@ function SettingsPanel({
     fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel,
     proxyServer,
+    externalSourceWatcherEnabled,
     ehentaiAuthState,
     ehentaiAuthConnected,
     ehentaiAuthMessage,
@@ -1112,6 +1114,7 @@ function SettingsPanel({
     onFullscreenUpsamplingKernelChange,
     onFullscreenDownsamplingKernelChange,
     onProxyServerChange,
+    onExternalSourceWatcherEnabledChange,
     onRefreshEhentaiAuthStatus,
     onConnectEhentaiAuth,
     onDisconnectEhentaiAuth,
@@ -1237,7 +1240,10 @@ function SettingsPanel({
           className="mpx-large-panel-head settings-head settings-head-draggable"
           {...headHandlers}
         >
-          <span className="mpx-large-panel-head-spacer settings-head-spacer" aria-hidden="true" />
+          <span
+            className="mpx-large-panel-head-spacer settings-head-spacer"
+            aria-hidden="true"
+          />
           <h2 style={{ color: "var(--mpx-large-panel-head-text, inherit)" }}>
             {t("ui.settings.panel")}
           </h2>
@@ -1279,7 +1285,9 @@ function SettingsPanel({
             ))}
           </aside>
 
-          <main className="mpx-large-panel-main settings-main mpx-scroll-area">{mainSection}</main>
+          <main className="mpx-large-panel-main settings-main mpx-scroll-area">
+            {mainSection}
+          </main>
         </div>
 
         {bindingTarget ? (

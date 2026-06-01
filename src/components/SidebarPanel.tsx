@@ -89,6 +89,9 @@ interface SidebarPanelProps {
   onToggleSidebarTreeDisplayMode?: () => void;
   titleCollapseEnabled?: boolean;
   videoNodeBrowseMode?: boolean;
+  externalSourceWatcherEnabled?: boolean;
+  selectedFolderPathKey?: string | null;
+  onRefreshSelectedFolder?: () => void;
 }
 
 function SidebarPanel({
@@ -137,6 +140,9 @@ function SidebarPanel({
   onToggleSidebarLabelDisplayMode,
   onToggleSidebarTreeDisplayMode,
   videoNodeBrowseMode = false,
+  externalSourceWatcherEnabled,
+  selectedFolderPathKey,
+  onRefreshSelectedFolder,
 }: SidebarPanelProps) {
   const { t } = useI18n();
   const manageStyleEnabled = manageMode || metadataManageMode;
@@ -816,6 +822,7 @@ function SidebarPanel({
     ? t("a11y.sidebar.restoreRoot")
     : t("a11y.sidebar.setAsRoot");
   const rootToggleIconName = rootSet ? "return" : "setRoot";
+  const refreshFolderLabel = t("a11y.sidebar.refreshFolder");
   const collapseImageParentsLabel = allImagePackageParentsCollapsed
     ? t("a11y.sidebar.expandImageParents")
     : t("a11y.sidebar.collapseImageParents");
@@ -1106,7 +1113,10 @@ function SidebarPanel({
       }}
     >
       <div className="sidebar-frame">
-        <div className="sidebar-header mpx-btn-scope-sidebar-header" data-slot="fg-sidebar-header">
+        <div
+          className="sidebar-header mpx-btn-scope-sidebar-header"
+          data-slot="fg-sidebar-header"
+        >
           <button
             className="mpx-btn sidebar-title-btn"
             data-slot="fg-sidebar-header-btn-group-title-btn-root"
@@ -1145,141 +1155,157 @@ function SidebarPanel({
               </button>
             ) : null}
 
-          {showRootToggle ? (
-            manageStyleEnabled ? (
-              <button
-                className="mpx-btn sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-btn-group-actions-btn-clear"
-                type="button"
-                aria-label={t("a11y.common.clearSelection")}
-                data-tooltip-label={t("tip.common.clearSelection")}
-                disabled={checkedNodes.size === 0}
-                onClick={onClearSidebarSelection}
-              >
-                <MainUiIcon name="unselectAll" />
-              </button>
-            ) : null
-          ) : null}
+            {showRootToggle ? (
+              manageStyleEnabled ? (
+                <button
+                  className="mpx-btn sidebar-header-icon-btn"
+                  data-slot="fg-sidebar-header-btn-group-actions-btn-clear"
+                  type="button"
+                  aria-label={t("a11y.common.clearSelection")}
+                  data-tooltip-label={t("tip.common.clearSelection")}
+                  disabled={checkedNodes.size === 0}
+                  onClick={onClearSidebarSelection}
+                >
+                  <MainUiIcon name="unselectAll" />
+                </button>
+              ) : null
+            ) : null}
 
-          {showRootToggle ? (
-            <button
-              className={`mpx-btn sidebar-header-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-header-btn-group-actions-btn-label-mode-toggle"
-              type="button"
-              data-tooltip-label={
-                effectiveSidebarLabelDisplayMode === "full"
-                  ? "切换到末段名"
-                  : "切换到完整路径"
-              }
-              onClick={() => {
-                if (onToggleSidebarLabelDisplayMode) {
-                  onToggleSidebarLabelDisplayMode();
-                  return;
-                }
-                setLocalSidebarLabelDisplayMode((previous) =>
-                  previous === "full" ? "leaf" : "full",
-                );
-              }}
-            >
-              {effectiveSidebarLabelDisplayMode === "full" ? "F" : "L"}
-            </button>
-          ) : null}
-
-          {showRootToggle ? (
-            parentJumpModeEnabled ? (
+            {showRootToggle ? (
               <button
-                className="mpx-btn sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-btn-group-actions-btn-collapse-all"
+                className={`mpx-btn sidebar-header-icon-btn ${effectiveSidebarLabelDisplayMode === "full" ? "is-root-set" : ""}`}
+                data-slot="fg-sidebar-header-btn-group-actions-btn-label-mode-toggle"
                 type="button"
-                aria-label={collapseImageParentsLabel}
                 data-tooltip-label={
-                  allTargetParentsCollapsed
-                    ? t("tip.sidebar.expandImageParents")
-                    : t("tip.sidebar.collapseImageParents")
+                  effectiveSidebarLabelDisplayMode === "full"
+                    ? "切换到末段名"
+                    : "切换到完整路径"
                 }
-                disabled={targetParentNodeIds.length === 0}
-                onClick={
-                  mode === "image"
-                    ? toggleCollapseImagePackageParentNodes
-                    : mode === "video"
-                      ? toggleCollapseVideoParentNodes
-                      : toggleCollapseAudioParentNodes
-                }
-              >
-                <MainUiIcon
-                  name={allTargetParentsCollapsed ? "expand" : "collapse"}
-                />
-              </button>
-            ) : null
-          ) : null}
-
-          {showRootToggle ? (
-            parentJumpModeEnabled ? (
-              <button
-                className="mpx-btn sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-btn-group-actions-btn-prev-image-parent"
-                type="button"
-                aria-label={previousImageParentLabel}
-                data-tooltip-label={t("tip.sidebar.previousImageParent")}
-                disabled={!targetParentNavigation.previousNodeId}
                 onClick={() => {
-                  if (mode === "image") {
-                    jumpToImageParentNode(
-                      targetParentNavigation.previousNodeId,
-                    );
-                  } else if (mode === "video") {
-                    jumpToVideoParentNode(
-                      targetParentNavigation.previousNodeId,
-                    );
-                  } else {
-                    jumpToAudioParentNode(
-                      targetParentNavigation.previousNodeId,
-                    );
+                  if (onToggleSidebarLabelDisplayMode) {
+                    onToggleSidebarLabelDisplayMode();
+                    return;
                   }
+                  setLocalSidebarLabelDisplayMode((previous) =>
+                    previous === "full" ? "leaf" : "full",
+                  );
                 }}
               >
-                <MainUiIcon name="prev" />
+                {effectiveSidebarLabelDisplayMode === "full" ? "F" : "L"}
               </button>
-            ) : null
-          ) : null}
+            ) : null}
 
-          {showRootToggle ? (
-            parentJumpModeEnabled ? (
+            {showRootToggle ? (
+              parentJumpModeEnabled ? (
+                <button
+                  className="mpx-btn sidebar-header-icon-btn"
+                  data-slot="fg-sidebar-header-btn-group-actions-btn-collapse-all"
+                  type="button"
+                  aria-label={collapseImageParentsLabel}
+                  data-tooltip-label={
+                    allTargetParentsCollapsed
+                      ? t("tip.sidebar.expandImageParents")
+                      : t("tip.sidebar.collapseImageParents")
+                  }
+                  disabled={targetParentNodeIds.length === 0}
+                  onClick={
+                    mode === "image"
+                      ? toggleCollapseImagePackageParentNodes
+                      : mode === "video"
+                        ? toggleCollapseVideoParentNodes
+                        : toggleCollapseAudioParentNodes
+                  }
+                >
+                  <MainUiIcon
+                    name={allTargetParentsCollapsed ? "expand" : "collapse"}
+                  />
+                </button>
+              ) : null
+            ) : null}
+
+            {showRootToggle ? (
+              parentJumpModeEnabled ? (
+                <button
+                  className="mpx-btn sidebar-header-icon-btn"
+                  data-slot="fg-sidebar-header-btn-group-actions-btn-prev-image-parent"
+                  type="button"
+                  aria-label={previousImageParentLabel}
+                  data-tooltip-label={t("tip.sidebar.previousImageParent")}
+                  disabled={!targetParentNavigation.previousNodeId}
+                  onClick={() => {
+                    if (mode === "image") {
+                      jumpToImageParentNode(
+                        targetParentNavigation.previousNodeId,
+                      );
+                    } else if (mode === "video") {
+                      jumpToVideoParentNode(
+                        targetParentNavigation.previousNodeId,
+                      );
+                    } else {
+                      jumpToAudioParentNode(
+                        targetParentNavigation.previousNodeId,
+                      );
+                    }
+                  }}
+                >
+                  <MainUiIcon name="prev" />
+                </button>
+              ) : null
+            ) : null}
+
+            {showRootToggle ? (
+              parentJumpModeEnabled ? (
+                <button
+                  className="mpx-btn sidebar-header-icon-btn"
+                  data-slot="fg-sidebar-header-btn-group-actions-btn-next-image-parent"
+                  type="button"
+                  aria-label={nextImageParentLabel}
+                  data-tooltip-label={t("tip.sidebar.nextImageParent")}
+                  disabled={!targetParentNavigation.nextNodeId}
+                  onClick={() => {
+                    if (mode === "image") {
+                      jumpToImageParentNode(targetParentNavigation.nextNodeId);
+                    } else if (mode === "video") {
+                      jumpToVideoParentNode(targetParentNavigation.nextNodeId);
+                    } else {
+                      jumpToAudioParentNode(targetParentNavigation.nextNodeId);
+                    }
+                  }}
+                >
+                  <MainUiIcon name="next" />
+                </button>
+              ) : null
+            ) : null}
+
+            {showRootToggle ? (
+              <button
+                className={`mpx-btn sidebar-header-icon-btn ${rootSet ? "is-root-set" : ""}`}
+                data-slot="fg-sidebar-header-btn-group-actions-btn-root-toggle"
+                type="button"
+                aria-label={rootToggleLabel}
+                data-tooltip-label={rootToggleLabel}
+                disabled={!rootSet && !canSetCurrentRoot}
+                onClick={rootSet ? onResetRoot : onSetCurrentRoot}
+              >
+                <MainUiIcon name={rootToggleIconName} />
+              </button>
+            ) : null}
+
+            {showRootToggle &&
+            !externalSourceWatcherEnabled &&
+            selectedFolderPathKey != null &&
+            onRefreshSelectedFolder ? (
               <button
                 className="mpx-btn sidebar-header-icon-btn"
-                data-slot="fg-sidebar-header-btn-group-actions-btn-next-image-parent"
+                data-slot="fg-sidebar-header-btn-group-actions-btn-folder-refresh"
                 type="button"
-                aria-label={nextImageParentLabel}
-                data-tooltip-label={t("tip.sidebar.nextImageParent")}
-                disabled={!targetParentNavigation.nextNodeId}
-                onClick={() => {
-                  if (mode === "image") {
-                    jumpToImageParentNode(targetParentNavigation.nextNodeId);
-                  } else if (mode === "video") {
-                    jumpToVideoParentNode(targetParentNavigation.nextNodeId);
-                  } else {
-                    jumpToAudioParentNode(targetParentNavigation.nextNodeId);
-                  }
-                }}
+                aria-label={refreshFolderLabel}
+                data-tooltip-label={refreshFolderLabel}
+                onClick={onRefreshSelectedFolder}
               >
-                <MainUiIcon name="next" />
+                <MainUiIcon name="refresh" />
               </button>
-            ) : null
-          ) : null}
-
-          {showRootToggle ? (
-            <button
-              className={`mpx-btn sidebar-header-icon-btn ${rootSet ? "is-root-set" : ""}`}
-              data-slot="fg-sidebar-header-btn-group-actions-btn-root-toggle"
-              type="button"
-              aria-label={rootToggleLabel}
-              data-tooltip-label={rootToggleLabel}
-              disabled={!rootSet && !canSetCurrentRoot}
-              onClick={rootSet ? onResetRoot : onSetCurrentRoot}
-            >
-              <MainUiIcon name={rootToggleIconName} />
-            </button>
-          ) : null}
+            ) : null}
           </div>
         </div>
         <div className="sidebar-main-shell" data-slot="fg-sidebar-main">

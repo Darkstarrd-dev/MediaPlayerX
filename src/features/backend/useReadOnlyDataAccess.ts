@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   FeatureFilterDto,
   ReadImageConvertTaskRequestDto,
   ReadImageConvertTaskResponseDto,
-} from '../../contracts/backend'
+} from "../../contracts/backend";
 import {
   mapImageMetadataDto,
   mapImagePageDto,
@@ -15,54 +15,70 @@ import {
   type ImagePageViewModel,
   type ImageSidebarTreeViewModel,
   type LibrarySnapshotViewModel,
-} from './mappers'
+} from "./mappers";
 import {
   createEmptySliceState,
   scheduleReadSlice,
   type ReadSliceState,
-} from './readSliceUtils'
-import type { MediaRepository, SynchronousMediaRepository } from './repository'
-import type { BrowserMode, FocusedImageRef } from '../../types'
-import { getBenchSettings } from '../perf/benchSettings'
+} from "./readSliceUtils";
+import type { MediaRepository, SynchronousMediaRepository } from "./repository";
+import type { BrowserMode, FocusedImageRef } from "../../types";
+import { getBenchSettings } from "../perf/benchSettings";
 
-const DEFAULT_IPC_TIMEOUT_MS = 8_000
-const PAGE_READ_DEBOUNCE_MS = 72
-const METADATA_READ_DEBOUNCE_MS = 84
+const DEFAULT_IPC_TIMEOUT_MS = 8_000;
+const PAGE_READ_DEBOUNCE_MS = 72;
+const METADATA_READ_DEBOUNCE_MS = 84;
 const TRANSIENT_LIBRARY_CHANGE_REASONS = new Set([
-  'thumbnail-rendering-start',
-  'thumbnail-rendering-progress',
-  'thumbnail-rendering-end',
-  'write-preference-metrics',
-])
+  "thumbnail-rendering-start",
+  "thumbnail-rendering-progress",
+  "thumbnail-rendering-end",
+  "write-preference-metrics",
+  "manual-folder-refresh",
+]);
 
 function parseOptionalBoolean(value: unknown): boolean | null {
-  if (typeof value === 'boolean') {
-    return value
+  if (typeof value === "boolean") {
+    return value;
   }
-  if (typeof value !== 'string') {
-    return null
+  if (typeof value !== "string") {
+    return null;
   }
-  const normalized = value.trim().toLowerCase()
-  if (normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on') {
-    return true
+  const normalized = value.trim().toLowerCase();
+  if (
+    normalized === "1" ||
+    normalized === "true" ||
+    normalized === "yes" ||
+    normalized === "on"
+  ) {
+    return true;
   }
-  if (normalized === '0' || normalized === 'false' || normalized === 'no' || normalized === 'off') {
-    return false
+  if (
+    normalized === "0" ||
+    normalized === "false" ||
+    normalized === "no" ||
+    normalized === "off"
+  ) {
+    return false;
   }
-  return null
+  return null;
 }
 
 function resolveLiteLibrarySnapshotEnabled(): boolean {
-  const benchSettings = getBenchSettings()
-  if (benchSettings.enabled && typeof benchSettings.librarySnapshotLite === 'boolean') {
-    return benchSettings.librarySnapshotLite
+  const benchSettings = getBenchSettings();
+  if (
+    benchSettings.enabled &&
+    typeof benchSettings.librarySnapshotLite === "boolean"
+  ) {
+    return benchSettings.librarySnapshotLite;
   }
 
-  const envValue = parseOptionalBoolean(import.meta.env.VITE_ENABLE_LITE_LIBRARY_SNAPSHOT)
+  const envValue = parseOptionalBoolean(
+    import.meta.env.VITE_ENABLE_LITE_LIBRARY_SNAPSHOT,
+  );
   if (envValue !== null) {
-    return envValue
+    return envValue;
   }
-  return true
+  return true;
 }
 
 /**
@@ -71,69 +87,77 @@ function resolveLiteLibrarySnapshotEnabled(): boolean {
  * import-task-updated 的范围收窄，以便与旧刷新逻辑做对照基线。
  */
 function resolveImportRefreshThrottleEnabled(): boolean {
-  const benchSettings = getBenchSettings()
-  if (benchSettings.enabled && typeof benchSettings.importRefreshThrottle === 'boolean') {
-    return benchSettings.importRefreshThrottle
+  const benchSettings = getBenchSettings();
+  if (
+    benchSettings.enabled &&
+    typeof benchSettings.importRefreshThrottle === "boolean"
+  ) {
+    return benchSettings.importRefreshThrottle;
   }
-  return true
+  return true;
 }
 
 function shouldFallbackToLegacySnapshotRead(error: unknown): boolean {
   if (!(error instanceof Error)) {
-    return false
+    return false;
   }
-  const message = error.message.toLowerCase()
-  if (!message.includes('readlibrarysnapshotlite')) {
-    return false
+  const message = error.message.toLowerCase();
+  if (!message.includes("readlibrarysnapshotlite")) {
+    return false;
   }
   return (
-    message.includes('not a function') ||
-    message.includes('is undefined') ||
-    message.includes('no handler registered') ||
-    message.includes('does not exist')
-  )
+    message.includes("not a function") ||
+    message.includes("is undefined") ||
+    message.includes("no handler registered") ||
+    message.includes("does not exist")
+  );
 }
 
 interface UseReadOnlyDataAccessParams {
-  repository: MediaRepository
-  mode: BrowserMode
-  includeHidden: boolean
-  importBusy?: boolean
-  enableImageSidebarRead?: boolean
-  suspendLibraryChangedRefresh?: boolean
-  selectedSourceId: string | null
-  pageIndex: number
-  pageSize: number
-  showNamesOnly: boolean
-  focusedRef: FocusedImageRef | null
-  vectorResultsActive: boolean
-  featureNameQuery: string
-  featureWorkTitleQuery: string
-  featureSeriesIdQuery: string
-  featureCircleQuery: string
-  featureAuthorQuery: string
-  featureTags: string[]
-  featureGradeFilter: number | null
-  gradeByPackage: Record<string, number | null>
+  repository: MediaRepository;
+  mode: BrowserMode;
+  includeHidden: boolean;
+  importBusy?: boolean;
+  enableImageSidebarRead?: boolean;
+  suspendLibraryChangedRefresh?: boolean;
+  selectedSourceId: string | null;
+  pageIndex: number;
+  pageSize: number;
+  showNamesOnly: boolean;
+  focusedRef: FocusedImageRef | null;
+  vectorResultsActive: boolean;
+  featureNameQuery: string;
+  featureWorkTitleQuery: string;
+  featureSeriesIdQuery: string;
+  featureCircleQuery: string;
+  featureAuthorQuery: string;
+  featureTags: string[];
+  featureGradeFilter: number | null;
+  gradeByPackage: Record<string, number | null>;
 }
 
 interface BackendReadErrors {
-  library: string | null
-  sidebar: string | null
-  page: string | null
-  metadata: string | null
+  library: string | null;
+  sidebar: string | null;
+  page: string | null;
+  metadata: string | null;
 }
 
-type RefreshScope = 'all' | 'library-sidebar-page' | 'library-sidebar' | 'library-only' | 'grade-dependent'
+type RefreshScope =
+  | "all"
+  | "library-sidebar-page"
+  | "library-sidebar"
+  | "library-only"
+  | "grade-dependent";
 
 function buildFeatureFilter(params: {
-  featureNameQuery: string
-  featureWorkTitleQuery: string
-  featureSeriesIdQuery: string
-  featureCircleQuery: string
-  featureAuthorQuery: string
-  featureTags: string[]
-  featureGradeFilter: number | null
+  featureNameQuery: string;
+  featureWorkTitleQuery: string;
+  featureSeriesIdQuery: string;
+  featureCircleQuery: string;
+  featureAuthorQuery: string;
+  featureTags: string[];
+  featureGradeFilter: number | null;
 }): FeatureFilterDto {
   return {
     name_query: params.featureNameQuery,
@@ -143,18 +167,20 @@ function buildFeatureFilter(params: {
     author_query: params.featureAuthorQuery,
     tags: params.featureTags,
     grade: params.featureGradeFilter,
-  }
+  };
 }
 
-function isSynchronousRepository(repository: MediaRepository): repository is SynchronousMediaRepository {
+function isSynchronousRepository(
+  repository: MediaRepository,
+): repository is SynchronousMediaRepository {
   return (
-    'readImageSidebarTreeSync' in repository &&
-    typeof repository.readImageSidebarTreeSync === 'function' &&
-    'readImagePageSync' in repository &&
-    typeof repository.readImagePageSync === 'function' &&
-    'readImageMetadataSync' in repository &&
-    typeof repository.readImageMetadataSync === 'function'
-  )
+    "readImageSidebarTreeSync" in repository &&
+    typeof repository.readImageSidebarTreeSync === "function" &&
+    "readImagePageSync" in repository &&
+    typeof repository.readImagePageSync === "function" &&
+    "readImageMetadataSync" in repository &&
+    typeof repository.readImageMetadataSync === "function"
+  );
 }
 
 export function useReadOnlyDataAccess({
@@ -180,43 +206,56 @@ export function useReadOnlyDataAccess({
   gradeByPackage,
 }: UseReadOnlyDataAccessParams) {
   const initialLibrarySnapshot = useMemo(() => {
-    const dto = repository.getInitialLibrarySnapshot()
-    return dto ? mapLibrarySnapshotDto(dto) : null
-  }, [repository])
+    const dto = repository.getInitialLibrarySnapshot();
+    return dto ? mapLibrarySnapshotDto(dto) : null;
+  }, [repository]);
 
-  const [libraryState, setLibraryState] = useState<ReadSliceState<LibrarySnapshotViewModel>>({
+  const [libraryState, setLibraryState] = useState<
+    ReadSliceState<LibrarySnapshotViewModel>
+  >({
     data: initialLibrarySnapshot,
     snapshot: initialLibrarySnapshot,
     loading: false,
     error: null,
     requestId: 0,
-  })
-  const [sidebarState, setSidebarState] = useState<ReadSliceState<ImageSidebarTreeViewModel>>(() => createEmptySliceState())
-  const [pageState, setPageState] = useState<ReadSliceState<ImagePageViewModel>>(() => createEmptySliceState())
-  const [metadataState, setMetadataState] = useState<ReadSliceState<ImageMetadataViewModel | null>>(() => createEmptySliceState())
+  });
+  const [sidebarState, setSidebarState] = useState<
+    ReadSliceState<ImageSidebarTreeViewModel>
+  >(() => createEmptySliceState());
+  const [pageState, setPageState] = useState<
+    ReadSliceState<ImagePageViewModel>
+  >(() => createEmptySliceState());
+  const [metadataState, setMetadataState] = useState<
+    ReadSliceState<ImageMetadataViewModel | null>
+  >(() => createEmptySliceState());
 
-  const libraryRequestIdRef = useRef(0)
-  const sidebarRequestIdRef = useRef(0)
-  const pageRequestIdRef = useRef(0)
-  const metadataRequestIdRef = useRef(0)
-  const deferredAllRefreshRef = useRef(false)
-  const deferredLibraryOnlyRefreshRef = useRef(false)
-  const refreshHashRef = useRef<{ library: string | null; sidebar: string | null; page: string | null; metadata: string | null }>({
+  const libraryRequestIdRef = useRef(0);
+  const sidebarRequestIdRef = useRef(0);
+  const pageRequestIdRef = useRef(0);
+  const metadataRequestIdRef = useRef(0);
+  const deferredAllRefreshRef = useRef(false);
+  const deferredLibraryOnlyRefreshRef = useRef(false);
+  const refreshHashRef = useRef<{
+    library: string | null;
+    sidebar: string | null;
+    page: string | null;
+    metadata: string | null;
+  }>({
     library: null,
     sidebar: null,
     page: null,
     metadata: null,
-  })
-  const deferredLibraryRefreshAfterLoadRef = useRef(false)
-  const deferredSidebarRefreshAfterLoadRef = useRef(false)
-  const pendingRefreshScopeRef = useRef<RefreshScope | null>(null)
+  });
+  const deferredLibraryRefreshAfterLoadRef = useRef(false);
+  const deferredSidebarRefreshAfterLoadRef = useRef(false);
+  const pendingRefreshScopeRef = useRef<RefreshScope | null>(null);
   // 记录上次"回到前台"刷新的时间戳，用于合并 focus + visibilitychange 的重复触发
-  const lastForegroundRefreshAtRef = useRef(0)
+  const lastForegroundRefreshAtRef = useRef(0);
 
-  const [libraryRetryNonce, setLibraryRetryNonce] = useState(0)
-  const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0)
-  const [pageRetryNonce, setPageRetryNonce] = useState(0)
-  const [metadataRetryNonce, setMetadataRetryNonce] = useState(0)
+  const [libraryRetryNonce, setLibraryRetryNonce] = useState(0);
+  const [sidebarRetryNonce, setSidebarRetryNonce] = useState(0);
+  const [pageRetryNonce, setPageRetryNonce] = useState(0);
+  const [metadataRetryNonce, setMetadataRetryNonce] = useState(0);
 
   const featureFilter = useMemo(
     () =>
@@ -238,56 +277,75 @@ export function useReadOnlyDataAccess({
       featureTags,
       featureWorkTitleQuery,
     ],
-  )
+  );
 
   const gradeOverridesForRead = useMemo(
     () => (featureGradeFilter === null ? undefined : gradeByPackage),
     [featureGradeFilter, gradeByPackage],
-  )
+  );
 
-  const featureFilterHash = useMemo(() => JSON.stringify(featureFilter), [featureFilter])
+  const featureFilterHash = useMemo(
+    () => JSON.stringify(featureFilter),
+    [featureFilter],
+  );
   const gradeOverridesHash = useMemo(
-    () => (gradeOverridesForRead ? JSON.stringify(gradeOverridesForRead) : ''),
+    () => (gradeOverridesForRead ? JSON.stringify(gradeOverridesForRead) : ""),
     [gradeOverridesForRead],
-  )
-  const libraryRefreshHash = 'library:v1'
+  );
+  const libraryRefreshHash = "library:v1";
   const sidebarRefreshHash = useMemo(
-    () => `sidebar:${includeHidden ? '1' : '0'}:${featureFilterHash}:${gradeOverridesHash}`,
+    () =>
+      `sidebar:${includeHidden ? "1" : "0"}:${featureFilterHash}:${gradeOverridesHash}`,
     [featureFilterHash, gradeOverridesHash, includeHidden],
-  )
+  );
   const pageRefreshHash = useMemo(
     () =>
-      `page:${selectedSourceId ?? ''}:${Math.max(0, pageIndex)}:${Math.max(1, pageSize)}:${showNamesOnly ? '1' : '0'}:${includeHidden ? '1' : '0'}:${featureFilterHash}:${gradeOverridesHash}`,
-    [featureFilterHash, gradeOverridesHash, includeHidden, pageIndex, pageSize, selectedSourceId, showNamesOnly],
-  )
+      `page:${selectedSourceId ?? ""}:${Math.max(0, pageIndex)}:${Math.max(1, pageSize)}:${showNamesOnly ? "1" : "0"}:${includeHidden ? "1" : "0"}:${featureFilterHash}:${gradeOverridesHash}`,
+    [
+      featureFilterHash,
+      gradeOverridesHash,
+      includeHidden,
+      pageIndex,
+      pageSize,
+      selectedSourceId,
+      showNamesOnly,
+    ],
+  );
   const metadataRefreshHash = useMemo(
-    () => `metadata:${focusedRef?.packageId ?? ''}:${focusedRef?.imageIndex ?? -1}:${includeHidden ? '1' : '0'}`,
+    () =>
+      `metadata:${focusedRef?.packageId ?? ""}:${focusedRef?.imageIndex ?? -1}:${includeHidden ? "1" : "0"}`,
     [focusedRef?.imageIndex, focusedRef?.packageId, includeHidden],
-  )
+  );
 
-  const enableLiteLibrarySnapshot = useMemo(() => resolveLiteLibrarySnapshotEnabled(), [])
-  const shouldReadImageSidebar = mode === 'image' || enableImageSidebarRead
-  const enableImportRefreshThrottle = useMemo(() => resolveImportRefreshThrottleEnabled(), [])
+  const enableLiteLibrarySnapshot = useMemo(
+    () => resolveLiteLibrarySnapshotEnabled(),
+    [],
+  );
+  const shouldReadImageSidebar = mode === "image" || enableImageSidebarRead;
+  const enableImportRefreshThrottle = useMemo(
+    () => resolveImportRefreshThrottleEnabled(),
+    [],
+  );
 
   // In test mode, allow the synchronous repository path so hook request timing is
   // deterministic in unit tests and avoids async jitter.
-  const isSynchronousTestMode = import.meta.env.MODE === 'test' && isSynchronousRepository(repository)
+  const isSynchronousTestMode =
+    import.meta.env.MODE === "test" && isSynchronousRepository(repository);
 
   const syncSnapshot = useMemo(() => {
     if (!isSynchronousTestMode) {
-      return null
+      return null;
     }
 
-    const sidebarDto =
-      shouldReadImageSidebar
-        ? repository.readImageSidebarTreeSync({
-            feature_filter: featureFilter,
-            grade_overrides: gradeOverridesForRead,
-            include_hidden: includeHidden,
-          })
-        : null
+    const sidebarDto = shouldReadImageSidebar
+      ? repository.readImageSidebarTreeSync({
+          feature_filter: featureFilter,
+          grade_overrides: gradeOverridesForRead,
+          include_hidden: includeHidden,
+        })
+      : null;
     const pageDto =
-      mode === 'image' && !vectorResultsActive
+      mode === "image" && !vectorResultsActive
         ? repository.readImagePageSync({
             source_id: selectedSourceId,
             page_index: Math.max(0, pageIndex),
@@ -297,22 +355,22 @@ export function useReadOnlyDataAccess({
             feature_filter: featureFilter,
             grade_overrides: gradeOverridesForRead,
           })
-        : null
+        : null;
     const metadataDto =
-      mode === 'image' && focusedRef && !vectorResultsActive
-          ? repository.readImageMetadataSync({
-              package_id: focusedRef.packageId,
-              image_index: focusedRef.imageIndex,
-              include_hidden: includeHidden,
-            })
-          : null
+      mode === "image" && focusedRef && !vectorResultsActive
+        ? repository.readImageMetadataSync({
+            package_id: focusedRef.packageId,
+            image_index: focusedRef.imageIndex,
+            include_hidden: includeHidden,
+          })
+        : null;
 
     return {
       libraryData: initialLibrarySnapshot,
       sidebarData: sidebarDto ? mapImageSidebarTreeDto(sidebarDto) : null,
       pageData: pageDto ? mapImagePageDto(pageDto) : null,
       metadataData: metadataDto ? mapImageMetadataDto(metadataDto) : null,
-    }
+    };
   }, [
     shouldReadImageSidebar,
     featureFilter,
@@ -328,37 +386,42 @@ export function useReadOnlyDataAccess({
     selectedSourceId,
     showNamesOnly,
     vectorResultsActive,
-  ])
+  ]);
 
   useEffect(() => {
     if (isSynchronousTestMode) {
-      return
+      return;
     }
 
     return scheduleReadSlice({
       requestIdRef: libraryRequestIdRef,
       setState: setLibraryState,
       fetcher: async (signal) => {
-        const requestOptions = { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS }
+        const requestOptions = { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS };
         if (enableLiteLibrarySnapshot && repository.readLibrarySnapshotLite) {
           try {
-            return await repository.readLibrarySnapshotLite(requestOptions)
+            return await repository.readLibrarySnapshotLite(requestOptions);
           } catch (error) {
             if (!shouldFallbackToLegacySnapshotRead(error)) {
-              throw error
+              throw error;
             }
-            return await repository.readLibrarySnapshot(requestOptions)
+            return await repository.readLibrarySnapshot(requestOptions);
           }
         }
-        return await repository.readLibrarySnapshot(requestOptions)
+        return await repository.readLibrarySnapshot(requestOptions);
       },
       mapDto: mapLibrarySnapshotAnyDto,
-    })
-  }, [enableLiteLibrarySnapshot, isSynchronousTestMode, libraryRetryNonce, repository])
+    });
+  }, [
+    enableLiteLibrarySnapshot,
+    isSynchronousTestMode,
+    libraryRetryNonce,
+    repository,
+  ]);
 
   useEffect(() => {
     if (isSynchronousTestMode || !shouldReadImageSidebar) {
-      return
+      return;
     }
 
     return scheduleReadSlice({
@@ -374,15 +437,23 @@ export function useReadOnlyDataAccess({
           { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         ),
       mapDto: mapImageSidebarTreeDto,
-    })
-  }, [featureFilter, gradeOverridesForRead, includeHidden, isSynchronousTestMode, repository, shouldReadImageSidebar, sidebarRetryNonce])
+    });
+  }, [
+    featureFilter,
+    gradeOverridesForRead,
+    includeHidden,
+    isSynchronousTestMode,
+    repository,
+    shouldReadImageSidebar,
+    sidebarRetryNonce,
+  ]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || mode !== 'image' || vectorResultsActive) {
-      return
+    if (isSynchronousTestMode || mode !== "image" || vectorResultsActive) {
+      return;
     }
 
-    const pageReadDebounceMs = importBusy ? 360 : PAGE_READ_DEBOUNCE_MS
+    const pageReadDebounceMs = importBusy ? 360 : PAGE_READ_DEBOUNCE_MS;
 
     return scheduleReadSlice({
       requestIdRef: pageRequestIdRef,
@@ -402,7 +473,7 @@ export function useReadOnlyDataAccess({
           { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         ),
       mapDto: mapImagePageDto,
-    })
+    });
   }, [
     featureFilter,
     gradeOverridesForRead,
@@ -417,11 +488,17 @@ export function useReadOnlyDataAccess({
     selectedSourceId,
     showNamesOnly,
     vectorResultsActive,
-  ])
+  ]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || mode !== 'image' || !focusedRef || vectorResultsActive || importBusy) {
-      return
+    if (
+      isSynchronousTestMode ||
+      mode !== "image" ||
+      !focusedRef ||
+      vectorResultsActive ||
+      importBusy
+    ) {
+      return;
     }
 
     return scheduleReadSlice({
@@ -438,7 +515,7 @@ export function useReadOnlyDataAccess({
           { signal, timeoutMs: DEFAULT_IPC_TIMEOUT_MS },
         ),
       mapDto: mapImageMetadataDto,
-    })
+    });
   }, [
     focusedRef,
     importBusy,
@@ -448,204 +525,237 @@ export function useReadOnlyDataAccess({
     mode,
     repository,
     vectorResultsActive,
-  ])
+  ]);
 
   const retryLibrary = useCallback(() => {
-    setLibraryRetryNonce((value) => value + 1)
-  }, [])
+    setLibraryRetryNonce((value) => value + 1);
+  }, []);
 
   const retrySidebar = useCallback(() => {
-    setSidebarRetryNonce((value) => value + 1)
-  }, [])
+    setSidebarRetryNonce((value) => value + 1);
+  }, []);
 
   const retryPage = useCallback(() => {
-    setPageRetryNonce((value) => value + 1)
-  }, [])
+    setPageRetryNonce((value) => value + 1);
+  }, []);
 
   const retryMetadata = useCallback(() => {
-    setMetadataRetryNonce((value) => value + 1)
-  }, [])
+    setMetadataRetryNonce((value) => value + 1);
+  }, []);
 
   const readImageConvertTask = useCallback(
     async (
       request: ReadImageConvertTaskRequestDto,
     ): Promise<ReadImageConvertTaskResponseDto> => {
       if (!repository.readImageConvertTask) {
-        throw new Error('manage_image_convert_read_unsupported')
+        throw new Error("manage_image_convert_read_unsupported");
       }
       return repository.readImageConvertTask(request, {
         timeoutMs: DEFAULT_IPC_TIMEOUT_MS,
-      })
+      });
     },
     [repository],
-  )
+  );
 
   const triggerSliceRefresh = useCallback(
-    (slice: 'library' | 'sidebar' | 'page' | 'metadata', hash: string, loading: boolean, retry: () => void) => {
+    (
+      slice: "library" | "sidebar" | "page" | "metadata",
+      hash: string,
+      loading: boolean,
+      retry: () => void,
+    ) => {
       if (loading && refreshHashRef.current[slice] === hash) {
-        return
+        return;
       }
-      refreshHashRef.current[slice] = hash
-      retry()
+      refreshHashRef.current[slice] = hash;
+      retry();
     },
     [],
-  )
+  );
 
   const triggerLibraryRefresh = useCallback(() => {
-    if (libraryState.loading && refreshHashRef.current.library === libraryRefreshHash) {
-      deferredLibraryRefreshAfterLoadRef.current = true
-      return
+    if (
+      libraryState.loading &&
+      refreshHashRef.current.library === libraryRefreshHash
+    ) {
+      deferredLibraryRefreshAfterLoadRef.current = true;
+      return;
     }
-    refreshHashRef.current.library = libraryRefreshHash
-    retryLibrary()
-  }, [libraryRefreshHash, libraryState.loading, retryLibrary])
+    refreshHashRef.current.library = libraryRefreshHash;
+    retryLibrary();
+  }, [libraryRefreshHash, libraryState.loading, retryLibrary]);
 
   const triggerSidebarRefresh = useCallback(() => {
-    if (sidebarState.loading && refreshHashRef.current.sidebar === sidebarRefreshHash) {
-      deferredSidebarRefreshAfterLoadRef.current = true
-      return
+    if (
+      sidebarState.loading &&
+      refreshHashRef.current.sidebar === sidebarRefreshHash
+    ) {
+      deferredSidebarRefreshAfterLoadRef.current = true;
+      return;
     }
-    refreshHashRef.current.sidebar = sidebarRefreshHash
-    retrySidebar()
-  }, [retrySidebar, sidebarRefreshHash, sidebarState.loading])
+    refreshHashRef.current.sidebar = sidebarRefreshHash;
+    retrySidebar();
+  }, [retrySidebar, sidebarRefreshHash, sidebarState.loading]);
 
   const triggerPageRefresh = useCallback(() => {
-    triggerSliceRefresh('page', pageRefreshHash, pageState.loading, retryPage)
-  }, [pageRefreshHash, pageState.loading, retryPage, triggerSliceRefresh])
+    triggerSliceRefresh("page", pageRefreshHash, pageState.loading, retryPage);
+  }, [pageRefreshHash, pageState.loading, retryPage, triggerSliceRefresh]);
 
   const triggerMetadataRefresh = useCallback(() => {
-    triggerSliceRefresh('metadata', metadataRefreshHash, metadataState.loading, retryMetadata)
-  }, [metadataRefreshHash, metadataState.loading, retryMetadata, triggerSliceRefresh])
+    triggerSliceRefresh(
+      "metadata",
+      metadataRefreshHash,
+      metadataState.loading,
+      retryMetadata,
+    );
+  }, [
+    metadataRefreshHash,
+    metadataState.loading,
+    retryMetadata,
+    triggerSliceRefresh,
+  ]);
 
   useEffect(() => {
     if (isSynchronousTestMode || !repository.onLibraryChanged) {
-      return
+      return;
     }
 
     const fireRefreshForScope = (scope: RefreshScope) => {
-      if (scope === 'all') {
-        triggerLibraryRefresh()
-        triggerSidebarRefresh()
-        triggerPageRefresh()
-        triggerMetadataRefresh()
-      } else if (scope === 'library-sidebar-page') {
-        triggerLibraryRefresh()
-        triggerSidebarRefresh()
-        triggerPageRefresh()
-      } else if (scope === 'library-sidebar') {
-        triggerLibraryRefresh()
-        triggerSidebarRefresh()
-      } else if (scope === 'library-only') {
-        triggerLibraryRefresh()
-      } else if (scope === 'grade-dependent') {
-        triggerSidebarRefresh()
-        triggerPageRefresh()
+      if (scope === "all") {
+        triggerLibraryRefresh();
+        triggerSidebarRefresh();
+        triggerPageRefresh();
+        triggerMetadataRefresh();
+      } else if (scope === "library-sidebar-page") {
+        triggerLibraryRefresh();
+        triggerSidebarRefresh();
+        triggerPageRefresh();
+      } else if (scope === "library-sidebar") {
+        triggerLibraryRefresh();
+        triggerSidebarRefresh();
+      } else if (scope === "library-only") {
+        triggerLibraryRefresh();
+      } else if (scope === "grade-dependent") {
+        triggerSidebarRefresh();
+        triggerPageRefresh();
       }
-    }
+    };
 
     // 恢复上一轮 effect 被 cleanup 中断的待执行刷新作用域
-    const carriedScope = pendingRefreshScopeRef.current
+    const carriedScope = pendingRefreshScopeRef.current;
     if (carriedScope !== null) {
-      pendingRefreshScopeRef.current = null
-      fireRefreshForScope(carriedScope)
+      pendingRefreshScopeRef.current = null;
+      fireRefreshForScope(carriedScope);
     }
 
-    let throttleTimer: ReturnType<typeof window.setTimeout> | null = null
-    let queuedRefreshScope: RefreshScope | null = null
+    let throttleTimer: ReturnType<typeof window.setTimeout> | null = null;
+    let queuedRefreshScope: RefreshScope | null = null;
 
     const scheduleRefresh = (scope: RefreshScope) => {
-      if (queuedRefreshScope === 'all' || scope === 'all') {
-        queuedRefreshScope = 'all'
-      } else if (queuedRefreshScope === 'library-sidebar-page' || scope === 'library-sidebar-page') {
-        queuedRefreshScope = 'library-sidebar-page'
-      } else if (queuedRefreshScope === 'library-sidebar' || scope === 'library-sidebar') {
-        queuedRefreshScope = 'library-sidebar'
-      } else if (queuedRefreshScope === 'library-only' || scope === 'library-only') {
-        queuedRefreshScope = 'library-only'
+      if (queuedRefreshScope === "all" || scope === "all") {
+        queuedRefreshScope = "all";
+      } else if (
+        queuedRefreshScope === "library-sidebar-page" ||
+        scope === "library-sidebar-page"
+      ) {
+        queuedRefreshScope = "library-sidebar-page";
+      } else if (
+        queuedRefreshScope === "library-sidebar" ||
+        scope === "library-sidebar"
+      ) {
+        queuedRefreshScope = "library-sidebar";
+      } else if (
+        queuedRefreshScope === "library-only" ||
+        scope === "library-only"
+      ) {
+        queuedRefreshScope = "library-only";
       } else {
-        queuedRefreshScope = 'grade-dependent'
+        queuedRefreshScope = "grade-dependent";
       }
 
       if (throttleTimer !== null) {
-        return
+        return;
       }
 
       // importRefreshThrottle=false 时跳过 120ms 聚合窗口，直接同步触发（bench 回滚基线用）
-      const throttleMs = enableImportRefreshThrottle ? 120 : 0
+      const throttleMs = enableImportRefreshThrottle ? 120 : 0;
       throttleTimer = window.setTimeout(() => {
-        throttleTimer = null
-        const scopeToRun = queuedRefreshScope
-        queuedRefreshScope = null
+        throttleTimer = null;
+        const scopeToRun = queuedRefreshScope;
+        queuedRefreshScope = null;
 
         if (scopeToRun !== null) {
-          fireRefreshForScope(scopeToRun)
+          fireRefreshForScope(scopeToRun);
         }
-      }, throttleMs)
-    }
+      }, throttleMs);
+    };
 
     const unsubscribe = repository.onLibraryChanged((payload) => {
       if (TRANSIENT_LIBRARY_CHANGE_REASONS.has(payload.reason)) {
-        return
+        return;
       }
 
-      if (payload.reason === 'auto-prune-missing-sources') {
-        triggerLibraryRefresh()
-        triggerSidebarRefresh()
-        triggerPageRefresh()
-        triggerMetadataRefresh()
-        return
+      if (payload.reason === "auto-prune-missing-sources") {
+        triggerLibraryRefresh();
+        triggerSidebarRefresh();
+        triggerPageRefresh();
+        triggerMetadataRefresh();
+        return;
       }
 
       const isMetadataManageWriteReason =
-        payload.reason === 'write-package-grade' ||
-        payload.reason === 'write-package-metadata' ||
-        payload.reason === 'write-package-external-metadata'
+        payload.reason === "write-package-grade" ||
+        payload.reason === "write-package-metadata" ||
+        payload.reason === "write-package-external-metadata";
 
       if (suspendLibraryChangedRefresh && isMetadataManageWriteReason) {
-        deferredAllRefreshRef.current = true
-        return
+        deferredAllRefreshRef.current = true;
+        return;
       }
 
-      if (payload.reason === 'write-package-grade') {
+      if (payload.reason === "write-package-grade") {
         if (featureGradeFilter !== null) {
-          scheduleRefresh('grade-dependent')
+          scheduleRefresh("grade-dependent");
         }
-        return
+        return;
       }
 
-      if (payload.reason === 'write-package-metadata' || payload.reason === 'write-package-external-metadata') {
-        scheduleRefresh('library-sidebar-page')
-        return
+      if (
+        payload.reason === "write-package-metadata" ||
+        payload.reason === "write-package-external-metadata"
+      ) {
+        scheduleRefresh("library-sidebar-page");
+        return;
       }
 
-      if (payload.reason === 'import-task-updated') {
+      if (payload.reason === "import-task-updated") {
         if (importBusy) {
-          deferredLibraryOnlyRefreshRef.current = true
-          return
+          deferredLibraryOnlyRefreshRef.current = true;
+          return;
         }
         // importRefreshThrottle=false 时恢复旧行为：import-task-updated 触发全量刷新
-        scheduleRefresh(enableImportRefreshThrottle ? 'library-only' : 'all')
-        return
+        scheduleRefresh(enableImportRefreshThrottle ? "library-only" : "all");
+        return;
       }
 
-      if (payload.reason === 'archive-normalized') {
-        scheduleRefresh('library-only')
-        return
+      if (payload.reason === "archive-normalized") {
+        scheduleRefresh("library-only");
+        return;
       }
 
-      scheduleRefresh('all')
-    })
+      scheduleRefresh("all");
+    });
 
     return () => {
       if (throttleTimer !== null) {
-        window.clearTimeout(throttleTimer)
+        window.clearTimeout(throttleTimer);
         // 定时器被取消但有待执行的刷新，保存到 ref 供下一轮 effect 恢复
         if (queuedRefreshScope !== null) {
-          pendingRefreshScopeRef.current = queuedRefreshScope
+          pendingRefreshScopeRef.current = queuedRefreshScope;
         }
       }
-      unsubscribe()
-    }
+      unsubscribe();
+    };
   }, [
     enableImportRefreshThrottle,
     featureGradeFilter,
@@ -657,61 +767,74 @@ export function useReadOnlyDataAccess({
     triggerPageRefresh,
     triggerSidebarRefresh,
     suspendLibraryChangedRefresh,
-  ])
+  ]);
 
   useEffect(() => {
     if (isSynchronousTestMode) {
-      return
+      return;
     }
 
-    const FOREGROUND_REFRESH_MIN_INTERVAL_MS = 1_500
+    const FOREGROUND_REFRESH_MIN_INTERVAL_MS = 1_500;
     const refreshOnForeground = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-        return
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
       }
       // focus 与 visibilitychange 常对同一次切换同时触发；且 onLibraryChanged
       // 已能实时刷新，此处仅作兜底，故加最小间隔去重，避免每次 alt-tab 全量重拉。
-      const now = Date.now()
-      if (now - lastForegroundRefreshAtRef.current < FOREGROUND_REFRESH_MIN_INTERVAL_MS) {
-        return
+      const now = Date.now();
+      if (
+        now - lastForegroundRefreshAtRef.current <
+        FOREGROUND_REFRESH_MIN_INTERVAL_MS
+      ) {
+        return;
       }
-      lastForegroundRefreshAtRef.current = now
-      triggerLibraryRefresh()
-      triggerSidebarRefresh()
-      triggerPageRefresh()
-      triggerMetadataRefresh()
-    }
+      lastForegroundRefreshAtRef.current = now;
+      triggerLibraryRefresh();
+      triggerSidebarRefresh();
+      triggerPageRefresh();
+      triggerMetadataRefresh();
+    };
 
     const onVisibilityChange = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        refreshOnForeground()
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "visible"
+      ) {
+        refreshOnForeground();
       }
-    }
+    };
 
-    window.addEventListener('focus', refreshOnForeground)
-    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener("focus", refreshOnForeground);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      window.removeEventListener('focus', refreshOnForeground)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-    }
+      window.removeEventListener("focus", refreshOnForeground);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [
     isSynchronousTestMode,
     triggerLibraryRefresh,
     triggerMetadataRefresh,
     triggerPageRefresh,
     triggerSidebarRefresh,
-  ])
+  ]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || suspendLibraryChangedRefresh || !deferredAllRefreshRef.current) {
-      return
+    if (
+      isSynchronousTestMode ||
+      suspendLibraryChangedRefresh ||
+      !deferredAllRefreshRef.current
+    ) {
+      return;
     }
-    deferredAllRefreshRef.current = false
-    triggerLibraryRefresh()
-    triggerSidebarRefresh()
-    triggerPageRefresh()
-    triggerMetadataRefresh()
+    deferredAllRefreshRef.current = false;
+    triggerLibraryRefresh();
+    triggerSidebarRefresh();
+    triggerPageRefresh();
+    triggerMetadataRefresh();
   }, [
     isSynchronousTestMode,
     suspendLibraryChangedRefresh,
@@ -719,40 +842,52 @@ export function useReadOnlyDataAccess({
     triggerMetadataRefresh,
     triggerPageRefresh,
     triggerSidebarRefresh,
-  ])
+  ]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || importBusy || !deferredLibraryOnlyRefreshRef.current) {
-      return
+    if (
+      isSynchronousTestMode ||
+      importBusy ||
+      !deferredLibraryOnlyRefreshRef.current
+    ) {
+      return;
     }
-    deferredLibraryOnlyRefreshRef.current = false
-    triggerLibraryRefresh()
-  }, [importBusy, isSynchronousTestMode, triggerLibraryRefresh])
+    deferredLibraryOnlyRefreshRef.current = false;
+    triggerLibraryRefresh();
+  }, [importBusy, isSynchronousTestMode, triggerLibraryRefresh]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || libraryState.loading || !deferredLibraryRefreshAfterLoadRef.current) {
-      return
+    if (
+      isSynchronousTestMode ||
+      libraryState.loading ||
+      !deferredLibraryRefreshAfterLoadRef.current
+    ) {
+      return;
     }
-    deferredLibraryRefreshAfterLoadRef.current = false
-    refreshHashRef.current.library = null
-    retryLibrary()
-  }, [isSynchronousTestMode, libraryState.loading, retryLibrary])
+    deferredLibraryRefreshAfterLoadRef.current = false;
+    refreshHashRef.current.library = null;
+    retryLibrary();
+  }, [isSynchronousTestMode, libraryState.loading, retryLibrary]);
 
   useEffect(() => {
-    if (isSynchronousTestMode || sidebarState.loading || !deferredSidebarRefreshAfterLoadRef.current) {
-      return
+    if (
+      isSynchronousTestMode ||
+      sidebarState.loading ||
+      !deferredSidebarRefreshAfterLoadRef.current
+    ) {
+      return;
     }
-    deferredSidebarRefreshAfterLoadRef.current = false
-    refreshHashRef.current.sidebar = null
-    retrySidebar()
-  }, [isSynchronousTestMode, sidebarState.loading, retrySidebar])
+    deferredSidebarRefreshAfterLoadRef.current = false;
+    refreshHashRef.current.sidebar = null;
+    retrySidebar();
+  }, [isSynchronousTestMode, sidebarState.loading, retrySidebar]);
 
   const errors: BackendReadErrors = {
     library: libraryState.error,
     sidebar: sidebarState.error,
     page: pageState.error,
     metadata: metadataState.error,
-  }
+  };
 
   if (isSynchronousTestMode && syncSnapshot) {
     return {
@@ -795,7 +930,7 @@ export function useReadOnlyDataAccess({
       retryPage: () => undefined,
       retryMetadata: () => undefined,
       readImageConvertTask,
-    }
+    };
   }
 
   return {
@@ -809,7 +944,7 @@ export function useReadOnlyDataAccess({
     retryPage,
     retryMetadata,
     readImageConvertTask,
-  }
+  };
 }
 
-export type ReadOnlyDataAccessResult = ReturnType<typeof useReadOnlyDataAccess>
+export type ReadOnlyDataAccessResult = ReturnType<typeof useReadOnlyDataAccess>;

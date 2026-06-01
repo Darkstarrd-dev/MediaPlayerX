@@ -1,6 +1,6 @@
 # MediaPlayer 交互规范 V1.5
 
-Last updated: 2026-03-01
+Last updated: 2026-06-01
 
 ## 主体布局
 
@@ -73,6 +73,7 @@ Last updated: 2026-03-01
 - 管理模式下，Sidebar 每个节点左侧显示勾选框 (checker，左对齐)，支持单选与 `Shift + 点击` 区间选择。
 - 管理模式下，勾选父节点会自动勾选全部子孙节点；取消父节点勾选会自动取消其全部子孙节点勾选。
 - 管理模式下可执行 Sidebar 选中节点删除：触发危险确认弹窗，需勾选“我了解此操作将永久不可逆地删除选中数据”后方可确认。
+- 外部源监听开关在“设置 → 数据库”里提供：`externalSourceWatcherEnabled` 默认开启；关闭后 watcher 立即卸载，Sidebar 头部在选中文件夹节点时露出 `refresh` 按钮（仅在 `!externalSourceWatcherEnabled && selectedFolderPathKey != null` 时显示，slot = `fg-sidebar-header-btn-group-actions-btn-folder-refresh`），点击触发 `requestExternalSourceFolderRefresh({ path_key })`，后端对选中目录根做局部 prune 并广播 `manual-folder-refresh` 事件；前端 useReadOnlyDataAccess 把它归为 transient reason，不做主动失效重读。
 
 ### 视频模式
 

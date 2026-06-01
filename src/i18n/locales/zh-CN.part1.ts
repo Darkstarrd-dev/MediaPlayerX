@@ -408,8 +408,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.containerLayer.sectionMainImageNameList":
     "2.3.2.2 工作区 文件列表模式",
   "ui.themeParameter.largePanelLayer.sectionRoot": "3.0 Root/Shell 共用层",
-  "ui.themeParameter.largePanelLayer.rootShadowSettings":
-    "大面板背景阴影设置",
+  "ui.themeParameter.largePanelLayer.rootShadowSettings": "大面板背景阴影设置",
   "ui.themeParameter.largePanelLayer.sectionShared":
     "3.1 Head / Side / Main 共享总控",
   "ui.themeParameter.largePanelLayer.sectionHead": "3.2 Head",
@@ -445,8 +444,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.smallPanelLayer.sectionConvert": "5.6 Convert",
   "ui.themeParameter.smallPanelLayer.sectionPlaylistNameDialog":
     "5.7 Playlist Name Dialog",
-  "ui.themeParameter.smallPanelLayer.sectionRenameSingle":
-    "5.8 Rename Single",
+  "ui.themeParameter.smallPanelLayer.sectionRenameSingle": "5.8 Rename Single",
   "ui.themeParameter.sectionCommon": "通用参数",
   "ui.themeParameter.sectionStyle": "风格参数（{{styleId}}）",
   "ui.themeParameter.sectionMetric": "{{scope}}{{target}}{{metric}}",
@@ -575,12 +573,10 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.smallPanelRadius": "小面板圆角",
   "ui.themeParameter.smallPanelPadding": "小面板内边距",
   "ui.themeParameter.smallPanelGap": "小面板内容间距",
-  "ui.themeParameter.smallPanelShortcutEditFillAngle":
-    "Shortcut Edit 渐变角度",
+  "ui.themeParameter.smallPanelShortcutEditFillAngle": "Shortcut Edit 渐变角度",
   "ui.themeParameter.smallPanelShortcutCaptureFillAngle":
     "Shortcut Capture 渐变角度",
-  "ui.themeParameter.smallPanelGroupNameFillAngle":
-    "Group Name 渐变角度",
+  "ui.themeParameter.smallPanelGroupNameFillAngle": "Group Name 渐变角度",
   "ui.themeParameter.smallPanelDeleteConfirmFillAngle":
     "Delete Confirm 渐变角度",
   "ui.themeParameter.smallPanelAdReviewStartMainFillAngle":
@@ -590,8 +586,7 @@ export const zhCnCatalogPart1 = {
   "ui.themeParameter.smallPanelConvertFillAngle": "Convert 渐变角度",
   "ui.themeParameter.smallPanelPlaylistNameDialogFillAngle":
     "Playlist Name Dialog 渐变角度",
-  "ui.themeParameter.smallPanelRenameSingleFillAngle":
-    "Rename Single 渐变角度",
+  "ui.themeParameter.smallPanelRenameSingleFillAngle": "Rename Single 渐变角度",
   "ui.themeParameter.panelPadding": "面板内边距",
   "ui.themeParameter.headerButtonSize": "Header 按钮尺寸",
   "ui.themeParameter.headerButtonRadius": "Header 按钮圆角",
@@ -1042,6 +1037,14 @@ export const zhCnCatalogPart1 = {
     "用于元数据抓取链路，支持 socks5:// 与 http(s)://。",
   "ui.settings.proxyServerLabel": "代理服务器",
   "ui.settings.proxyServerPlaceholder": "例如 socks5://127.0.0.1:2080",
+  "ui.settings.externalSourceWatcherLegend": "外部源监听",
+  "ui.settings.externalSourceWatcherHint":
+    "启用时，导入源所在目录会被自动监听并同步数据库；关闭后，请使用侧边栏文件夹刷新按钮手动同步。",
+  "ui.settings.externalSourceWatcherEnabled": "启用外部源监听",
+  "ui.settings.externalSourceWatcherTooltip":
+    "关闭后需手动触发同步；Linux 下不提供文件监听，关闭此选项可避免无效轮询。",
+  "a11y.sidebar.refreshFolder": "刷新当前文件夹",
+  "tip.sidebar.refreshFolder": "刷新当前文件夹",
   "ui.settings.ehentaiAuthLegend": "E-Hentai 账户连接",
   "ui.settings.ehentaiAuthHint":
     "使用网页登录会话进行鉴权，不再支持手动 Cookies。",

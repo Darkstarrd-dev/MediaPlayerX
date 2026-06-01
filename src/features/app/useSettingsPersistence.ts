@@ -197,7 +197,10 @@ function normalizePluginInputBindingEntry(
       source.audioLevelUniform,
       "iAudioLevel",
     ),
-    audioBeatUniform: normalizeUniformName(source.audioBeatUniform, "iAudioBeat"),
+    audioBeatUniform: normalizeUniformName(
+      source.audioBeatUniform,
+      "iAudioBeat",
+    ),
     timeUniform: normalizeUniformName(source.timeUniform, "iTime"),
     audioTextureSampler: normalizeUniformName(
       source.audioTextureSampler,
@@ -305,7 +308,9 @@ function normalizePluginCustomBindingEntry(
   };
 }
 
-function normalizeShaderLabConfig(value: unknown): MusicVisualizerShaderLab | null {
+function normalizeShaderLabConfig(
+  value: unknown,
+): MusicVisualizerShaderLab | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -323,7 +328,9 @@ function normalizeShaderLabConfig(value: unknown): MusicVisualizerShaderLab | nu
       ? adapterModeRaw
       : "auto";
   const previewFpsCap =
-    previewFpsCapRaw === 30 || previewFpsCapRaw === 60 || previewFpsCapRaw === 120
+    previewFpsCapRaw === 30 ||
+    previewFpsCapRaw === 60 ||
+    previewFpsCapRaw === 120
       ? previewFpsCapRaw
       : 60;
   const previewRenderLongEdgePx =
@@ -1147,7 +1154,8 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
 
   const normalizedPluginBindingsById: AppSettings["musicVisualizerPluginInputBindingsByShaderId"] =
     {};
-  const rawPluginBindingsById = next.musicVisualizerPluginInputBindingsByShaderId;
+  const rawPluginBindingsById =
+    next.musicVisualizerPluginInputBindingsByShaderId;
   if (rawPluginBindingsById && typeof rawPluginBindingsById === "object") {
     for (const [rawShaderId, rawValue] of Object.entries(
       rawPluginBindingsById as Record<string, unknown>,
@@ -1164,7 +1172,8 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (Object.keys(normalizedPluginBindingsById).length > 0) {
-    next.musicVisualizerPluginInputBindingsByShaderId = normalizedPluginBindingsById;
+    next.musicVisualizerPluginInputBindingsByShaderId =
+      normalizedPluginBindingsById;
   } else if ("musicVisualizerPluginInputBindingsByShaderId" in next) {
     delete next.musicVisualizerPluginInputBindingsByShaderId;
   }
@@ -1425,4 +1434,21 @@ export function useSettingsPersistence({
         });
     }
   }, [benchEnabled, repository, settings.cpuTokenLimit]);
+
+  // externalSourceWatcherEnabled 变更时通知后端挂载/卸载 watcher
+  useEffect(() => {
+    if (benchEnabled || !isHydratedRef.current) {
+      return;
+    }
+
+    if (repository.setExternalSourceWatcherEnabled) {
+      repository
+        .setExternalSourceWatcherEnabled({
+          enabled: settings.externalSourceWatcherEnabled,
+        })
+        .catch(() => {
+          // 忽略 IPC 调用失败（如后端未就绪）
+        });
+    }
+  }, [benchEnabled, repository, settings.externalSourceWatcherEnabled]);
 }

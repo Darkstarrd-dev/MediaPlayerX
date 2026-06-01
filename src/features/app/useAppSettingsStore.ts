@@ -75,6 +75,7 @@ export function useAppSettingsStore() {
       thumbnailAdaptiveResolution: state.thumbnailAdaptiveResolution,
       thumbnailQueueSize: state.thumbnailQueueSize,
       cpuTokenLimit: state.cpuTokenLimit,
+      externalSourceWatcherEnabled: state.externalSourceWatcherEnabled,
       thumbnailQuality: state.thumbnailQuality,
       thumbnailWidth: state.thumbnailWidth,
       thumbnailGenerationConcurrency: state.thumbnailGenerationConcurrency,
