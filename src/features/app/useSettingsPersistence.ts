@@ -941,6 +941,18 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (
+    typeof next.fullscreenCrossPackagePrefetchCount === "number" &&
+    Number.isFinite(next.fullscreenCrossPackagePrefetchCount)
+  ) {
+    next.fullscreenCrossPackagePrefetchCount = Math.max(
+      3,
+      Math.min(16, Math.floor(next.fullscreenCrossPackagePrefetchCount)),
+    );
+  } else if ("fullscreenCrossPackagePrefetchCount" in next) {
+    delete next.fullscreenCrossPackagePrefetchCount;
+  }
+
+  if (
     typeof next.fullscreenAdjacentPackagePrefetch === "number" &&
     Number.isFinite(next.fullscreenAdjacentPackagePrefetch)
   ) {

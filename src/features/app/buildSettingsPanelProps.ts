@@ -22,6 +22,7 @@ export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
     thumbnailWarmupRadius: 1,
     thumbnailWarmupConcurrency: 2,
     fullscreenPrefetchRadius: 6,
+    fullscreenCrossPackagePrefetchCount: 6,
     fullscreenDecodeCacheSize: 10,
   },
   performance: {
@@ -34,6 +35,7 @@ export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
     thumbnailWarmupRadius: 1,
     thumbnailWarmupConcurrency: 2,
     fullscreenPrefetchRadius: 8,
+    fullscreenCrossPackagePrefetchCount: 9,
     fullscreenDecodeCacheSize: 12,
   },
   ultra: {
@@ -46,6 +48,7 @@ export const PERFORMANCE_PRESETS: Record<string, Partial<AppSettings>> = {
     thumbnailWarmupRadius: 2,
     thumbnailWarmupConcurrency: 2,
     fullscreenPrefetchRadius: 10,
+    fullscreenCrossPackagePrefetchCount: 12,
     fullscreenDecodeCacheSize: 16,
   },
 };
@@ -112,6 +115,7 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
   fullscreenAdjacentPackagePrefetch: number;
+  fullscreenCrossPackagePrefetchCount: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
   fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
@@ -308,6 +312,8 @@ export function buildSettingsPanelProps(
     thumbnailWarmupConcurrency: params.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: params.fullscreenPrefetchRadius,
     fullscreenAdjacentPackagePrefetch: params.fullscreenAdjacentPackagePrefetch,
+    fullscreenCrossPackagePrefetchCount:
+      params.fullscreenCrossPackagePrefetchCount,
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: params.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
@@ -877,6 +883,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenPrefetchRadius: value }),
     onFullscreenAdjacentPackagePrefetchChange: (value) =>
       params.updateSettings({ fullscreenAdjacentPackagePrefetch: value }),
+    onFullscreenCrossPackagePrefetchCountChange: (value) =>
+      params.updateSettings({ fullscreenCrossPackagePrefetchCount: value }),
     onFullscreenDecodeCacheSizeChange: (value) =>
       params.updateSettings({ fullscreenDecodeCacheSize: value }),
     onFullscreenResamplingEnabledChange: (value) =>

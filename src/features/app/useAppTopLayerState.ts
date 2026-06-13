@@ -259,6 +259,7 @@ interface UseAppTopLayerStateParams {
   fullscreenSplit: number;
   focusedImage: ImageItem | null;
   fullscreenImageSrc: string | null;
+  adjacentFullscreenImageSrcs: string[];
   focusedVideo: VideoItem | null;
   focusedVideoSrc: string | null;
   subtitleTrackUrl: string | null;
@@ -402,6 +403,7 @@ export function useAppTopLayerState({
   fullscreenSplit,
   focusedImage,
   fullscreenImageSrc,
+  adjacentFullscreenImageSrcs,
   focusedVideo,
   focusedVideoSrc,
   subtitleTrackUrl,
@@ -899,6 +901,7 @@ export function useAppTopLayerState({
     fullscreenSplit,
     focusedImage,
     focusedImageSrc: fullscreenImageSrc,
+    adjacentFullscreenImageSrcs,
     focusedVideo,
     focusedVideoSrc,
     subtitleTrackUrl,
@@ -1042,6 +1045,8 @@ export function useAppTopLayerState({
     fullscreenPrefetchRadius: appSettings.fullscreenPrefetchRadius,
     fullscreenAdjacentPackagePrefetch:
       appSettings.fullscreenAdjacentPackagePrefetch,
+    fullscreenCrossPackagePrefetchCount:
+      appSettings.fullscreenCrossPackagePrefetchCount,
     fullscreenDecodeCacheSize: appSettings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: appSettings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: appSettings.fullscreenUpsamplingKernel,

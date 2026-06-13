@@ -39,6 +39,7 @@ interface UseFullscreenImageSourceParams {
   focusedImageSrc: string | null
   focusedImage: ImageItem | null
   decodeCacheSize?: number
+  adjacentImageSrcs?: string[]
 }
 
 interface UseFullscreenImageSourceResult {
@@ -51,6 +52,7 @@ export function useFullscreenImageSource({
   focusedImageSrc,
   focusedImage,
   decodeCacheSize = 10,
+  adjacentImageSrcs,
 }: UseFullscreenImageSourceParams): UseFullscreenImageSourceResult {
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(null)
   const [displayedImageAspect, setDisplayedImageAspectState] = useState<number | null>(null)
@@ -61,6 +63,20 @@ export function useFullscreenImageSource({
   useEffect(() => {
     trimDecodedCache(normalizedDecodeCacheSize)
   }, [normalizedDecodeCacheSize])
+
+  useEffect(() => {
+    if (IS_TEST_MODE || !adjacentImageSrcs || adjacentImageSrcs.length === 0) {
+      return
+    }
+    for (const src of adjacentImageSrcs) {
+      if (!src || fullscreenDecodedImageCache.has(src)) {
+        continue
+      }
+      const preload = new Image()
+      preload.decoding = 'async'
+      preload.src = src
+    }
+  }, [adjacentImageSrcs])
 
   useEffect(() => {
     if (IS_TEST_MODE) {

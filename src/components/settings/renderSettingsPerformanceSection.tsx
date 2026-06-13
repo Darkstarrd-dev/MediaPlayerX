@@ -18,6 +18,7 @@ export function renderSettingsPerformanceSection({
     thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius,
     fullscreenAdjacentPackagePrefetch,
+    fullscreenCrossPackagePrefetchCount,
     fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled,
     fullscreenDownsamplingKernel,
@@ -33,6 +34,7 @@ export function renderSettingsPerformanceSection({
     onThumbnailWarmupConcurrencyChange,
     onFullscreenPrefetchRadiusChange,
     onFullscreenAdjacentPackagePrefetchChange,
+    onFullscreenCrossPackagePrefetchCountChange,
     onFullscreenDecodeCacheSizeChange,
     onFullscreenResamplingEnabledChange,
     onFullscreenDownsamplingKernelChange,
@@ -151,6 +153,30 @@ export function renderSettingsPerformanceSection({
         </label>
 
         <label
+          htmlFor="settings-fullscreen-cross-package-prefetch-count-select"
+          data-tooltip-label={settingsTip(
+            "fullscreenCrossPackagePrefetchCount",
+          )}
+        >
+          {t("ui.settings.fullscreenCrossPackagePrefetchCount")}
+          <select
+            id="settings-fullscreen-cross-package-prefetch-count-select"
+            value={String(fullscreenCrossPackagePrefetchCount)}
+            onChange={(event) =>
+              onFullscreenCrossPackagePrefetchCountChange(
+                Number(event.target.value),
+              )
+            }
+          >
+            <option value="3">3</option>
+            <option value="6">6</option>
+            <option value="9">9</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+          </select>
+        </label>
+
+        <label
           htmlFor="settings-fullscreen-decode-cache-size-select"
           data-tooltip-label={settingsTip("fullscreenDecodeCacheSize")}
         >
@@ -233,9 +259,33 @@ export function renderSettingsPerformanceSection({
                   {t("ui.settings.resamplingKernelCubic")}
                 </option>
               </select>
-            </label>
+        </label>
 
-            <label
+        <label
+          htmlFor="settings-fullscreen-cross-package-prefetch-count-select"
+          data-tooltip-label={settingsTip(
+            "fullscreenCrossPackagePrefetchCount",
+          )}
+        >
+          {t("ui.settings.fullscreenCrossPackagePrefetchCount")}
+          <select
+            id="settings-fullscreen-cross-package-prefetch-count-select"
+            value={String(fullscreenCrossPackagePrefetchCount)}
+            onChange={(event) =>
+              onFullscreenCrossPackagePrefetchCountChange(
+                Number(event.target.value),
+              )
+            }
+          >
+            <option value="3">3</option>
+            <option value="6">6</option>
+            <option value="9">9</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+          </select>
+        </label>
+
+        <label
               htmlFor="settings-fullscreen-upsampling-kernel-select"
               data-tooltip-label={t(
                 "ui.settings.fullscreenUpsamplingKernelTooltip",

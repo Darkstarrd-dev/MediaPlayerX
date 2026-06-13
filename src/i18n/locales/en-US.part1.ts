@@ -304,6 +304,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.fullscreenPrefetchRadius": "Fullscreen prefetch depth",
   "ui.settings.fullscreenAdjacentPackagePrefetch":
     "Fullscreen adjacent package preload",
+  "ui.settings.fullscreenCrossPackagePrefetchCount":
+    "Fullscreen cross-package prefetch count",
   "ui.settings.fullscreenDecodeCacheSize": "Fullscreen decode cache size",
   "ui.settings.fullscreenResamplingEnabled": "Fullscreen resampling",
   "ui.settings.fullscreenResamplingEnabledTooltip":
@@ -756,6 +758,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Prefetch depth for adjacent media in fullscreen. Larger improves smoothness but uses more memory.",
   "ui.settings.tooltip.fullscreenAdjacentPackagePrefetch":
     "Number of neighboring image packages to preload while browsing in fullscreen. Larger makes package switching smoother but uses more memory.",
+  "ui.settings.tooltip.fullscreenCrossPackagePrefetchCount":
+    "Number of adjacent images to prefetch and pre-decode during cross-package navigation. Larger makes following images smoother but increases memory and decode pressure.",
   "ui.settings.tooltip.fullscreenDecodeCacheSize":
     "Fullscreen decode cache cap. Larger improves hit rate but raises memory usage.",
   "ui.settings.tooltip.databaseReset":

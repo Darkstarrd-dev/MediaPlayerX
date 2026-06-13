@@ -85,6 +85,8 @@ export function useAppSettingsStore() {
       fullscreenPrefetchRadius: state.fullscreenPrefetchRadius,
       fullscreenAdjacentPackagePrefetch:
         state.fullscreenAdjacentPackagePrefetch,
+      fullscreenCrossPackagePrefetchCount:
+        state.fullscreenCrossPackagePrefetchCount,
       fullscreenDecodeCacheSize: state.fullscreenDecodeCacheSize,
       fullscreenResamplingEnabled: state.fullscreenResamplingEnabled,
       fullscreenUpsamplingKernel: state.fullscreenUpsamplingKernel,

@@ -199,6 +199,7 @@ export function useAppDisplayResources({
     videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
+    adjacentFullscreenImageSrcs,
   } = useResolvedMediaState({
     repository: mediaRepository,
     benchSettings,
@@ -218,6 +219,8 @@ export function useAppDisplayResources({
     orderedRootScopedImageRefs,
     fullscreenActive,
     fullscreenPrefetchRadius: appSettings.fullscreenPrefetchRadius,
+    fullscreenCrossPackagePrefetchCount:
+      appSettings.fullscreenCrossPackagePrefetchCount,
     fullscreenResamplingEnabled: appSettings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: appSettings.fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel: appSettings.fullscreenDownsamplingKernel,
@@ -312,6 +315,7 @@ export function useAppDisplayResources({
     videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
+    adjacentFullscreenImageSrcs,
     subtitleVisible,
     subtitleOptions,
     selectedSubtitleId,

@@ -19,6 +19,7 @@ interface BuildFullscreenLayerPropsParams {
   fullscreenSplit: number
   focusedImage: ImageItem | null
   focusedImageSrc: string | null
+  adjacentFullscreenImageSrcs?: string[]
   focusedVideo: VideoItem | null
   focusedVideoSrc: string | null
   subtitleTrackUrl: string | null
@@ -115,6 +116,7 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     fullscreenSplit: params.fullscreenSplit,
     focusedImage: params.focusedImage,
     focusedImageSrc: params.focusedImageSrc,
+    adjacentFullscreenImageSrcs: params.adjacentFullscreenImageSrcs,
     focusedVideo: params.focusedVideo,
     focusedVideoSrc: params.focusedVideoSrc,
     subtitleTrackUrl: params.subtitleTrackUrl,

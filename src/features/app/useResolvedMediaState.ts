@@ -36,6 +36,7 @@ interface UseResolvedMediaStateParams {
   orderedRootScopedImageRefs: FocusedImageRef[];
   fullscreenActive: boolean;
   fullscreenPrefetchRadius?: number;
+  fullscreenCrossPackagePrefetchCount?: number;
   fullscreenResamplingEnabled?: boolean;
   fullscreenUpsamplingKernel?: "lanczos3" | "mitchell" | "nearest" | "cubic";
   fullscreenDownsamplingKernel?: "lanczos3" | "mitchell" | "nearest" | "cubic";
@@ -73,6 +74,7 @@ interface UseResolvedMediaStateResult {
   videoCoverImageUrlById: Record<string, string>;
   focusedVideoCoverImageSrc: string | null;
   sourceCoverImageUrlBySourceId: Record<string, string>;
+  adjacentFullscreenImageSrcs: string[];
 }
 
 export function useResolvedMediaState({
@@ -94,6 +96,7 @@ export function useResolvedMediaState({
   orderedRootScopedImageRefs,
   fullscreenActive,
   fullscreenPrefetchRadius = 4,
+  fullscreenCrossPackagePrefetchCount = 6,
   fullscreenResamplingEnabled = false,
   fullscreenUpsamplingKernel = "lanczos3",
   fullscreenDownsamplingKernel = "lanczos3",
@@ -302,6 +305,25 @@ export function useResolvedMediaState({
             );
           }
         }
+
+        if (
+          fullscreenActive &&
+          fullscreenCrossPackagePrefetchCount &&
+          fullscreenCrossPackagePrefetchCount > 0
+        ) {
+          const crossCount = Math.min(
+            fullscreenCrossPackagePrefetchCount,
+            orderedRootScopedImageRefs.length,
+          );
+          for (let offset = 1; offset <= crossCount; offset += 1) {
+            for (const sign of [1, -1] as const) {
+              pushOriginalImageTargetByRef(
+                orderedRootScopedImageRefs[focusedIndex + sign * offset],
+                true,
+              );
+            }
+          }
+        }
       }
     }
 
@@ -453,6 +475,7 @@ export function useResolvedMediaState({
     focusedRef,
     fullscreenActive,
     fullscreenPrefetchRadius,
+    fullscreenCrossPackagePrefetchCount,
     fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel,
@@ -579,6 +602,49 @@ export function useResolvedMediaState({
     return next;
   }, [resolvedMedia.urlByTargetId]);
 
+  const adjacentFullscreenImageSrcs = useMemo<string[]>(() => {
+    if (
+      !fullscreenActive ||
+      !focusedRef ||
+      orderedRootScopedImageRefs.length === 0
+    ) {
+      return [];
+    }
+    const fi = orderedRootScopedImageRefs.findIndex(
+      (ref) =>
+        ref.packageId === focusedRef.packageId &&
+        ref.imageIndex === focusedRef.imageIndex,
+    );
+    if (fi < 0) {
+      return [];
+    }
+    const N = Math.max(1, Math.floor(fullscreenCrossPackagePrefetchCount ?? 6));
+    const srcs: string[] = [];
+    for (let offset = 1; offset <= N; offset += 1) {
+      for (const sign of [1, -1] as const) {
+        const ref = orderedRootScopedImageRefs[fi + sign * offset];
+        if (!ref) {
+          continue;
+        }
+        const img = packageById.get(ref.packageId)?.images[ref.imageIndex];
+        if (img) {
+          const url = originalImageUrlById[img.id];
+          if (url) {
+            srcs.push(url);
+          }
+        }
+      }
+    }
+    return srcs;
+  }, [
+    fullscreenActive,
+    focusedRef,
+    orderedRootScopedImageRefs,
+    packageById,
+    fullscreenCrossPackagePrefetchCount,
+    originalImageUrlById,
+  ]);
+
   const fullscreenImageUrlById = useMemo<Record<string, string>>(() => {
     const next: Record<string, string> = {};
     for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
@@ -662,5 +728,6 @@ export function useResolvedMediaState({
     videoCoverImageUrlById,
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
+    adjacentFullscreenImageSrcs,
   };
 }

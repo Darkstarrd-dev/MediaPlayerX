@@ -111,6 +111,7 @@ export interface FullscreenLayerProps {
   fullscreenSplit: number;
   focusedImage: ImageItem | null;
   focusedImageSrc: string | null;
+  adjacentFullscreenImageSrcs?: string[];
   focusedVideo: VideoItem | null;
   focusedVideoSrc: string | null;
   subtitleTrackUrl: string | null;
@@ -205,6 +206,7 @@ function FullscreenLayer({
   fullscreenSplit,
   focusedImage,
   focusedImageSrc,
+  adjacentFullscreenImageSrcs,
   focusedVideo,
   focusedVideoSrc,
   subtitleTrackUrl,
@@ -334,6 +336,7 @@ function FullscreenLayer({
       focusedImageSrc,
       focusedImage,
       decodeCacheSize: fullscreenDecodeCacheSize,
+      adjacentImageSrcs: adjacentFullscreenImageSrcs,
     });
   const [displayedImageNaturalSize, setDisplayedImageNaturalSize] = useState<{
     width: number;
