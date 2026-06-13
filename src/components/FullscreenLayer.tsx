@@ -27,6 +27,7 @@ import {
 } from "./fullscreen/FullscreenPanes";
 import { resolveFullscreenControlsWidth } from "./fullscreen/controlsWidth";
 import { useFullscreenImageSource } from "./fullscreen/useFullscreenImageSource";
+import { useFullscreenWheelPager } from "./fullscreen/useFullscreenWheelPager";
 import { useFullscreenImageAdjustPanelController } from "./fullscreen/useFullscreenImageAdjustPanelController";
 import { useFullscreenViewportSize } from "./fullscreen/useFullscreenViewportSize";
 import { useFullscreenWindowViewport } from "./fullscreen/useFullscreenWindowViewport";
@@ -721,6 +722,18 @@ function FullscreenLayer({
     updatePaneTransform(singlePane, { ...DEFAULT_PANE_TRANSFORM });
   }, [setPaneAlign, singlePane, updatePaneTransform, zoomEnabled]);
 
+  // 图片翻页节流队列：把快速滚轮的瞬时多步输入拆成逐页、按最小持续时间消费（问题2）
+  const { enqueue: enqueueImageWheelStep } = useFullscreenWheelPager({
+    enabled: fullscreenActive,
+    onStep: (direction) => {
+      if (direction > 0) {
+        onNextImage();
+      } else {
+        onPrevImage();
+      }
+    },
+  });
+
   const handlePaneWheel = useCallback(
     (pane: PaneKey, event: ReactWheelEvent<HTMLElement>) => {
       const target = event.target;
@@ -747,28 +760,26 @@ function FullscreenLayer({
 
       const stepTargetPane: PaneKey =
         effectiveFullscreenDisplay === "dual" ? pane : focusedPane;
-      if (event.deltaY > 0) {
-        if (stepTargetPane === "video") {
+      const direction: -1 | 1 = event.deltaY > 0 ? 1 : -1;
+
+      if (stepTargetPane === "video") {
+        if (direction > 0) {
           onNextVideo();
-          return;
+        } else {
+          onPrevVideo();
         }
-        onNextImage();
         return;
       }
 
-      if (stepTargetPane === "video") {
-        onPrevVideo();
-        return;
-      }
-      onPrevImage();
+      // 图片翻页经节流队列逐页消费，避免快速滚轮跳过中间页（问题2）
+      enqueueImageWheelStep(direction);
     },
     [
       adjustPaneZoom,
+      enqueueImageWheelStep,
       focusedPane,
       effectiveFullscreenDisplay,
-      onNextImage,
       onNextVideo,
-      onPrevImage,
       onPrevVideo,
       singlePane,
       zoomEnabled,

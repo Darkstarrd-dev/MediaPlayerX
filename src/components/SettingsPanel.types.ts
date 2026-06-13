@@ -80,6 +80,7 @@ export interface SettingsPanelProps {
   thumbnailWarmupRadius: number;
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
+  fullscreenAdjacentPackagePrefetch: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
   fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
@@ -271,6 +272,7 @@ export interface SettingsPanelProps {
   onThumbnailWarmupRadiusChange: (value: number) => void;
   onThumbnailWarmupConcurrencyChange: (value: number) => void;
   onFullscreenPrefetchRadiusChange: (value: number) => void;
+  onFullscreenAdjacentPackagePrefetchChange: (value: number) => void;
   onFullscreenDecodeCacheSizeChange: (value: number) => void;
   onFullscreenResamplingEnabledChange: (value: boolean) => void;
   onFullscreenUpsamplingKernelChange: (

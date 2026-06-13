@@ -1,25 +1,27 @@
-import { useAppDisplayResources } from './useAppDisplayResources'
-import { useAppInteractionEffects } from './useAppInteractionEffects'
-import { useAppManageBindings } from './useAppManageBindings'
-import { useSearchAndVectorActions } from './useSearchAndVectorActions'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import type { AppSettingsStoreSnapshot } from './useAppSettingsStore'
-import type { AppSessionStateResult } from './useAppSessionState'
-import { useFullscreenPlaybackBindings } from './useFullscreenPlaybackBindings'
-import type { RepositoryBootstrapDataResult } from './useRepositoryBootstrapData'
-import type { MediaStateResult } from '../media/useMediaState'
-import type { UiBenchSettings } from '../perf/benchSettings'
+import { useCallback } from "react";
 
-const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8]
+import { useAppDisplayResources } from "./useAppDisplayResources";
+import { useAppInteractionEffects } from "./useAppInteractionEffects";
+import { useAppManageBindings } from "./useAppManageBindings";
+import { useSearchAndVectorActions } from "./useSearchAndVectorActions";
+import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
+import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
+import type { AppSessionStateResult } from "./useAppSessionState";
+import { useFullscreenPlaybackBindings } from "./useFullscreenPlaybackBindings";
+import type { RepositoryBootstrapDataResult } from "./useRepositoryBootstrapData";
+import type { MediaStateResult } from "../media/useMediaState";
+import type { UiBenchSettings } from "../perf/benchSettings";
+
+const AUTO_PLAY_PRESETS = [1, 2, 3, 5, 8];
 
 interface UseAppDisplayAndEffectsParams {
-  appSettings: AppSettingsStoreSnapshot
-  benchSettings: UiBenchSettings
-  mediaRepository: RepositoryBootstrapDataResult['mediaRepository']
-  importBusy: boolean
-  sessionState: AppSessionStateResult
-  mediaState: MediaStateResult
-  readNavigationState: AppReadAndNavigationResult
+  appSettings: AppSettingsStoreSnapshot;
+  benchSettings: UiBenchSettings;
+  mediaRepository: RepositoryBootstrapDataResult["mediaRepository"];
+  importBusy: boolean;
+  sessionState: AppSessionStateResult;
+  mediaState: MediaStateResult;
+  readNavigationState: AppReadAndNavigationResult;
 }
 
 export function useAppDisplayAndEffects({
@@ -31,12 +33,8 @@ export function useAppDisplayAndEffects({
   mediaState,
   readNavigationState,
 }: UseAppDisplayAndEffectsParams) {
-  const {
-    mode,
-    autoPlayEnabled,
-    vectorThreshold,
-    updateSettings,
-  } = appSettings
+  const { mode, autoPlayEnabled, vectorThreshold, updateSettings } =
+    appSettings;
 
   const {
     selectedSidebarNodeId,
@@ -45,14 +43,14 @@ export function useAppDisplayAndEffects({
     setVectorSearchResults,
     setVectorFocusIndex,
     setVectorPage,
-  } = sessionState
+  } = sessionState;
 
   const {
     fullscreenActive,
     fullscreenDisplay,
     fullscreenVideoFocus,
     setFullscreenActive,
-  } = mediaState
+  } = mediaState;
 
   const {
     setSearchPanelMode,
@@ -65,7 +63,7 @@ export function useAppDisplayAndEffects({
     normalImageSourceNodeIdMap,
     focusedRef,
     setImageFocus,
-  } = readNavigationState
+  } = readNavigationState;
 
   const manageBindings = useAppManageBindings({
     appSettings,
@@ -73,7 +71,7 @@ export function useAppDisplayAndEffects({
     sessionState,
     mediaState,
     readNavigationState,
-  })
+  });
 
   const displayResources = useAppDisplayResources({
     appSettings,
@@ -84,7 +82,7 @@ export function useAppDisplayAndEffects({
     mediaState,
     readNavigationState,
     manageBindings,
-  })
+  });
 
   const {
     videoShortcutActive: fullscreenVideoShortcutActive,
@@ -100,14 +98,11 @@ export function useAppDisplayAndEffects({
     updateSettings,
     setFullscreenActive,
     autoPlayPresets: AUTO_PLAY_PRESETS,
-  })
+  });
 
-  const videoShortcutActive = mode === 'video' || fullscreenVideoShortcutActive
+  const videoShortcutActive = mode === "video" || fullscreenVideoShortcutActive;
 
-  const {
-    runVectorSearch,
-    goToFromSearchMode,
-  } = useSearchAndVectorActions({
+  const { runVectorSearch, goToFromSearchMode } = useSearchAndVectorActions({
     mode,
     focusedRef,
     allScopedRefs,
@@ -127,7 +122,86 @@ export function useAppDisplayAndEffects({
     setImageFocus,
     clearQuickFeatureSearch,
     updateSettings,
-  })
+  });
+
+  // 全屏连按三次 Del 直接删除当前项：删除前先切到 sidebar 顺序的下一项（末尾回到首项），
+  // 再调用永久删除并刷新库；图包与视频均生效（问题4）。
+  const handleFullscreenDirectDelete = useCallback(
+    (pane: "image" | "video") => {
+      const { backendRead } = readNavigationState;
+      const refreshLibrary = () => {
+        backendRead.retryLibrary();
+        backendRead.retrySidebar();
+        backendRead.retryPage();
+        backendRead.retryMetadata();
+      };
+
+      if (pane === "video") {
+        const videoId = mediaState.selectedVideoId;
+        const nodeId = videoId
+          ? (readNavigationState.videoNodeIdMap.get(videoId) ?? null)
+          : null;
+        if (!videoId || !nodeId) {
+          return;
+        }
+        const orderedVideoIds = Array.from(
+          readNavigationState.rootScopedVideoIds,
+        );
+        const currentIndex = orderedVideoIds.indexOf(videoId);
+        const nextVideoId =
+          currentIndex >= 0
+            ? (orderedVideoIds[currentIndex + 1] ??
+              orderedVideoIds.find((id) => id !== videoId) ??
+              null)
+            : null;
+        if (nextVideoId) {
+          mediaState.selectVideoFromBrowser(nextVideoId);
+        } else {
+          setFullscreenActiveWithAutoStop(false);
+        }
+        void manageBindings.backendWrite
+          .deleteSidebarNodes([nodeId], { deleteFiles: true })
+          .finally(refreshLibrary);
+        return;
+      }
+
+      const packageId = sessionState.selectedPackageId;
+      const nodeId = packageId
+        ? (readNavigationState.normalImageSourceNodeIdMap.get(packageId) ??
+          readNavigationState.imageSourceNodeIdMap.get(packageId) ??
+          null)
+        : null;
+      if (!packageId || !nodeId) {
+        return;
+      }
+      const orderedPackages = readNavigationState.orderedRootScopedPackages;
+      const currentIndex = orderedPackages.findIndex(
+        (pkg) => pkg.id === packageId,
+      );
+      const targetPackage =
+        currentIndex >= 0
+          ? (orderedPackages[currentIndex + 1] ??
+            orderedPackages.find((pkg) => pkg.id !== packageId) ??
+            null)
+          : null;
+      if (targetPackage) {
+        setImageFocus(targetPackage.id, 0);
+      } else {
+        setFullscreenActiveWithAutoStop(false);
+      }
+      void manageBindings.backendWrite
+        .deleteSidebarNodes([nodeId], { deleteFiles: true })
+        .finally(refreshLibrary);
+    },
+    [
+      manageBindings.backendWrite,
+      mediaState,
+      readNavigationState,
+      sessionState,
+      setFullscreenActiveWithAutoStop,
+      setImageFocus,
+    ],
+  );
 
   useAppInteractionEffects({
     appSettings,
@@ -142,24 +216,25 @@ export function useAppDisplayAndEffects({
     setFullscreenActiveWithAutoStop,
     applyPackageGrade: displayResources.metadataWriteBindings.applyPackageGrade,
     applyVideoGrade: (grade) => {
-      displayResources.metadataWriteBindings.applyVideoMetadata({ grade })
+      displayResources.metadataWriteBindings.applyVideoMetadata({ grade });
     },
     requestManageOrganize: manageBindings.requestManageGroup,
     onToggleSubtitleByShortcut: () => {
-      displayResources.setSubtitleVisible((value) => !value)
+      displayResources.setSubtitleVisible((value) => !value);
     },
     onSaveVideoCoverByShortcut: () => {
       if (!mediaState.selectedVideoId) {
-        return
+        return;
       }
       void manageBindings.backendWrite.saveVideoCover(
         mediaState.selectedVideoId,
         mediaState.videoTime,
         displayResources.focusedVideoCoverColor,
-      )
+      );
     },
+    onFullscreenDirectDelete: handleFullscreenDirectDelete,
     adReviewDeletePending: manageBindings.manageAdReview.deletePending,
-  })
+  });
 
   return {
     ...manageBindings,
@@ -171,7 +246,9 @@ export function useAppDisplayAndEffects({
     setFullscreenActiveWithAutoStop,
     runVectorSearch,
     goToFromSearchMode,
-  }
+  };
 }
 
-export type AppDisplayAndEffectsResult = ReturnType<typeof useAppDisplayAndEffects>
+export type AppDisplayAndEffectsResult = ReturnType<
+  typeof useAppDisplayAndEffects
+>;

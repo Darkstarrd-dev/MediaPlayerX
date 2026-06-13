@@ -315,6 +315,7 @@ export const appSettingsSchema = z.object({
   thumbnailWarmupRadius: z.number().int().min(0).max(3),
   thumbnailWarmupConcurrency: z.number().int().min(1).max(4),
   fullscreenPrefetchRadius: z.number().int().min(2).max(12),
+  fullscreenAdjacentPackagePrefetch: z.number().int().min(1).max(5),
   fullscreenDecodeCacheSize: z.number().int().min(4).max(16),
   fullscreenResamplingEnabled: z.boolean(),
   fullscreenUpsamplingKernel: fullscreenResamplingKernelSchema,

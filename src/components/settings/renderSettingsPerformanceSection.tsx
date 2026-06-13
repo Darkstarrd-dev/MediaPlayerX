@@ -17,6 +17,7 @@ export function renderSettingsPerformanceSection({
     thumbnailWarmupRadius,
     thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius,
+    fullscreenAdjacentPackagePrefetch,
     fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled,
     fullscreenDownsamplingKernel,
@@ -31,6 +32,7 @@ export function renderSettingsPerformanceSection({
     onThumbnailWarmupRadiusChange,
     onThumbnailWarmupConcurrencyChange,
     onFullscreenPrefetchRadiusChange,
+    onFullscreenAdjacentPackagePrefetchChange,
     onFullscreenDecodeCacheSizeChange,
     onFullscreenResamplingEnabledChange,
     onFullscreenDownsamplingKernelChange,
@@ -127,6 +129,28 @@ export function renderSettingsPerformanceSection({
         </label>
 
         <label
+          htmlFor="settings-fullscreen-adjacent-package-prefetch-select"
+          data-tooltip-label={settingsTip("fullscreenAdjacentPackagePrefetch")}
+        >
+          {t("ui.settings.fullscreenAdjacentPackagePrefetch")}
+          <select
+            id="settings-fullscreen-adjacent-package-prefetch-select"
+            value={String(fullscreenAdjacentPackagePrefetch)}
+            onChange={(event) =>
+              onFullscreenAdjacentPackagePrefetchChange(
+                Number(event.target.value),
+              )
+            }
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+
+        <label
           htmlFor="settings-fullscreen-decode-cache-size-select"
           data-tooltip-label={settingsTip("fullscreenDecodeCacheSize")}
         >
@@ -148,9 +172,15 @@ export function renderSettingsPerformanceSection({
 
         <label
           className="settings-toggle-row"
-          data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}
+          data-tooltip-label={t(
+            "ui.settings.fullscreenResamplingEnabledTooltip",
+          )}
         >
-          <span data-tooltip-label={t("ui.settings.fullscreenResamplingEnabledTooltip")}>
+          <span
+            data-tooltip-label={t(
+              "ui.settings.fullscreenResamplingEnabledTooltip",
+            )}
+          >
             {t("ui.settings.fullscreenResamplingEnabled")}
           </span>
           <input
@@ -166,10 +196,14 @@ export function renderSettingsPerformanceSection({
           <>
             <label
               htmlFor="settings-fullscreen-downsampling-kernel-select"
-              data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+              data-tooltip-label={t(
+                "ui.settings.fullscreenDownsamplingKernelTooltip",
+              )}
             >
               <span
-                data-tooltip-label={t("ui.settings.fullscreenDownsamplingKernelTooltip")}
+                data-tooltip-label={t(
+                  "ui.settings.fullscreenDownsamplingKernelTooltip",
+                )}
               >
                 {t("ui.settings.fullscreenDownsamplingKernel")}
               </span>
@@ -203,10 +237,14 @@ export function renderSettingsPerformanceSection({
 
             <label
               htmlFor="settings-fullscreen-upsampling-kernel-select"
-              data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+              data-tooltip-label={t(
+                "ui.settings.fullscreenUpsamplingKernelTooltip",
+              )}
             >
               <span
-                data-tooltip-label={t("ui.settings.fullscreenUpsamplingKernelTooltip")}
+                data-tooltip-label={t(
+                  "ui.settings.fullscreenUpsamplingKernelTooltip",
+                )}
               >
                 {t("ui.settings.fullscreenUpsamplingKernel")}
               </span>
@@ -299,7 +337,9 @@ export function renderSettingsPerformanceSection({
                 aria-label={t("ui.settings.thumbnailResolution")}
                 value={thumbnailWidthInputValue}
                 onBlur={onThumbnailWidthInputBlur}
-                onChange={(event) => onThumbnailWidthInputChange(event.target.value)}
+                onChange={(event) =>
+                  onThumbnailWidthInputChange(event.target.value)
+                }
                 onKeyDown={onThumbnailWidthInputKeyDown}
               />
               <button
@@ -327,7 +367,9 @@ export function renderSettingsPerformanceSection({
                 value={thumbnailGenerationConcurrencyInput}
                 onBlur={onThumbnailGenerationConcurrencyInputBlur}
                 onChange={(event) =>
-                  onThumbnailGenerationConcurrencyInputChange(event.target.value)
+                  onThumbnailGenerationConcurrencyInputChange(
+                    event.target.value,
+                  )
                 }
                 onKeyDown={onThumbnailGenerationConcurrencyInputKeyDown}
               />
@@ -397,7 +439,9 @@ export function renderSettingsPerformanceSection({
             <option value="performance">
               {t("ui.settings.performancePresetPerformance")}
             </option>
-            <option value="ultra">{t("ui.settings.performancePresetUltra")}</option>
+            <option value="ultra">
+              {t("ui.settings.performancePresetUltra")}
+            </option>
           </select>
         </label>
         <div className="settings-compact-row">
@@ -437,7 +481,9 @@ export function renderSettingsPerformanceSection({
               type="text"
               inputMode="numeric"
               value={cpuTokenLimitInput}
-              onChange={(event) => onCpuTokenLimitInputChange(event.target.value)}
+              onChange={(event) =>
+                onCpuTokenLimitInputChange(event.target.value)
+              }
               onBlur={onCpuTokenLimitInputBlur}
               onKeyDown={onCpuTokenLimitInputKeyDown}
             />

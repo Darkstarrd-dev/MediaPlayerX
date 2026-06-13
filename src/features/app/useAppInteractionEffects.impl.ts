@@ -293,6 +293,7 @@ interface UseAppInteractionEffectsParams {
   requestManageOrganize: () => void;
   onToggleSubtitleByShortcut: () => void;
   onSaveVideoCoverByShortcut: () => void;
+  onFullscreenDirectDelete: (pane: "image" | "video") => void;
   adReviewDeletePending: boolean;
 }
 
@@ -312,6 +313,7 @@ export function useAppInteractionEffects({
   requestManageOrganize,
   onToggleSubtitleByShortcut,
   onSaveVideoCoverByShortcut,
+  onFullscreenDirectDelete,
   adReviewDeletePending,
 }: UseAppInteractionEffectsParams) {
   const {
@@ -606,6 +608,7 @@ export function useAppInteractionEffects({
     checkSidebarNode,
     setDeleteConfirmOpen,
     setManageOperationHint,
+    onFullscreenDirectDelete,
   });
 
   useAppShortcutBindings({

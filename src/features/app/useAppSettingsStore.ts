@@ -83,6 +83,8 @@ export function useAppSettingsStore() {
       thumbnailWarmupRadius: state.thumbnailWarmupRadius,
       thumbnailWarmupConcurrency: state.thumbnailWarmupConcurrency,
       fullscreenPrefetchRadius: state.fullscreenPrefetchRadius,
+      fullscreenAdjacentPackagePrefetch:
+        state.fullscreenAdjacentPackagePrefetch,
       fullscreenDecodeCacheSize: state.fullscreenDecodeCacheSize,
       fullscreenResamplingEnabled: state.fullscreenResamplingEnabled,
       fullscreenUpsamplingKernel: state.fullscreenUpsamplingKernel,

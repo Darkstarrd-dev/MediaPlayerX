@@ -111,6 +111,7 @@ interface BuildSettingsPanelPropsParams {
   thumbnailWarmupRadius: number;
   thumbnailWarmupConcurrency: number;
   fullscreenPrefetchRadius: number;
+  fullscreenAdjacentPackagePrefetch: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
   fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
@@ -306,6 +307,7 @@ export function buildSettingsPanelProps(
     thumbnailWarmupRadius: params.thumbnailWarmupRadius,
     thumbnailWarmupConcurrency: params.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: params.fullscreenPrefetchRadius,
+    fullscreenAdjacentPackagePrefetch: params.fullscreenAdjacentPackagePrefetch,
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: params.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
@@ -873,6 +875,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ thumbnailWarmupConcurrency: value }),
     onFullscreenPrefetchRadiusChange: (value) =>
       params.updateSettings({ fullscreenPrefetchRadius: value }),
+    onFullscreenAdjacentPackagePrefetchChange: (value) =>
+      params.updateSettings({ fullscreenAdjacentPackagePrefetch: value }),
     onFullscreenDecodeCacheSizeChange: (value) =>
       params.updateSettings({ fullscreenDecodeCacheSize: value }),
     onFullscreenResamplingEnabledChange: (value) =>

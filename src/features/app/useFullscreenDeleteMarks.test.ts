@@ -40,6 +40,7 @@ function createParams(overrides: Partial<Params> = {}): Params {
     checkSidebarNode: vi.fn(),
     setDeleteConfirmOpen: vi.fn(),
     setManageOperationHint: vi.fn(),
+    onFullscreenDirectDelete: vi.fn(),
     ...overrides,
   };
 }
@@ -127,5 +128,42 @@ describe("useFullscreenDeleteMarks", () => {
     rerender({ ...params, fullscreenActive: false });
 
     expect(setDeleteConfirmOpen).not.toHaveBeenCalled();
+  });
+
+  it("连按三次 Del 触发直接删除，前两次仍 toggle、第三次不再派发标记反馈", () => {
+    const feedback = listenDeleteFeedback();
+    const onFullscreenDirectDelete = vi.fn();
+    const params = createParams({ onFullscreenDirectDelete });
+    const { result } = renderHook(() => useFullscreenDeleteMarks(params));
+
+    act(() => {
+      result.current.toggleFullscreenDeleteMark("image");
+      result.current.toggleFullscreenDeleteMark("image");
+      result.current.toggleFullscreenDeleteMark("image");
+    });
+
+    expect(onFullscreenDirectDelete).toHaveBeenCalledTimes(1);
+    expect(onFullscreenDirectDelete).toHaveBeenCalledWith("image");
+    expect(feedback.events).toEqual([
+      { marked: true, pane: "image" },
+      { marked: false, pane: "image" },
+    ]);
+    feedback.dispose();
+  });
+
+  it("超过时间窗的 Del 不累计连击，不触发直接删除", () => {
+    const nowSpy = vi.spyOn(performance, "now");
+    const onFullscreenDirectDelete = vi.fn();
+    const params = createParams({ onFullscreenDirectDelete });
+    const { result } = renderHook(() => useFullscreenDeleteMarks(params));
+
+    nowSpy.mockReturnValue(0);
+    act(() => result.current.toggleFullscreenDeleteMark("image"));
+    nowSpy.mockReturnValue(1000);
+    act(() => result.current.toggleFullscreenDeleteMark("image"));
+    nowSpy.mockReturnValue(2000);
+    act(() => result.current.toggleFullscreenDeleteMark("image"));
+
+    expect(onFullscreenDirectDelete).not.toHaveBeenCalled();
   });
 });

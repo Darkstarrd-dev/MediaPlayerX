@@ -92,6 +92,8 @@ export function toPersistedAppSettings(
     thumbnailWarmupRadius: settings.thumbnailWarmupRadius,
     thumbnailWarmupConcurrency: settings.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: settings.fullscreenPrefetchRadius,
+    fullscreenAdjacentPackagePrefetch:
+      settings.fullscreenAdjacentPackagePrefetch,
     fullscreenDecodeCacheSize: settings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: settings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: settings.fullscreenUpsamplingKernel,

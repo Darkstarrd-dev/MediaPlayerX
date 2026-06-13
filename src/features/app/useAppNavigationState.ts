@@ -91,6 +91,7 @@ export function useAppNavigationState({
     videoRootNodeId,
     musicRootNodeId,
     sidebarTreeDisplayMode,
+    fullscreenAdjacentPackagePrefetch,
     updateSettings,
   } = appSettings;
 
@@ -206,6 +207,7 @@ export function useAppNavigationState({
     adReviewResultImageIds,
     fullscreenActive,
     fullscreenDisplay,
+    fullscreenAdjacentPackagePrefetch,
     bootstrapLibrarySnapshot,
     bootstrapImagePackages,
     bootstrapImageDirectories,
@@ -470,7 +472,10 @@ export function useAppNavigationState({
     const resolveSnapDirection = (mainDelta: number): "expand" | "shrink" =>
       mainDelta > 0 ? "expand" : "shrink";
     const resolveTargetColumnsByDelta = (mainDelta: number) => {
-      const targetGridWidth = Math.max(1, Math.round(gridSize.width + mainDelta));
+      const targetGridWidth = Math.max(
+        1,
+        Math.round(gridSize.width + mainDelta),
+      );
       return computeThumbnailGridLayout({
         gridWidth: targetGridWidth,
         gridHeight: gridSize.height,
@@ -496,7 +501,8 @@ export function useAppNavigationState({
 
       lastSnapTimeRef.current = performance.now();
       snapTargetWidthRef.current = gridSize.width + actualMainDelta;
-      snapTargetColumnsRef.current = resolveTargetColumnsByDelta(actualMainDelta);
+      snapTargetColumnsRef.current =
+        resolveTargetColumnsByDelta(actualMainDelta);
       return true;
     };
     const isMetadataImageHeightBound = () => {
@@ -1003,7 +1009,6 @@ export function useAppNavigationState({
     setGradeByPackage,
     packageById: packageByIdEffective,
     orderedRootScopedPackages,
-    orderedRootScopedImageRefs,
     vectorResultsActive,
     showNamesOnly,
     thumbnailColumns,
