@@ -159,11 +159,15 @@ describe("MediaPlayer 虚拟 UI - fullscreen", () => {
 
     const imageBeforeWheelDown = readFullscreenImageAlt();
     await wheel(fullscreenImagePane as HTMLElement, { deltaY: 120 });
-    const imageAfterWheelDown = readFullscreenImageAlt();
-    expect(imageAfterWheelDown).not.toBe(imageBeforeWheelDown);
+    // 滚轮翻页经节流队列异步逐页消费（问题2），等待翻页生效
+    await waitFor(() => {
+      expect(readFullscreenImageAlt()).not.toBe(imageBeforeWheelDown);
+    });
 
     await wheel(fullscreenImagePane as HTMLElement, { deltaY: -120 });
-    expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown);
+    await waitFor(() => {
+      expect(readFullscreenImageAlt()).toBe(imageBeforeWheelDown);
+    });
   });
 
   it("图片模式未建立焦点时按 F 仍可进入全屏并回退到首个图包首图", async () => {

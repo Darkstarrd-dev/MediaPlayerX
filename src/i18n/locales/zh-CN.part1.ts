@@ -283,6 +283,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.warmupRadiusOff": "关闭",
   "ui.settings.thumbnailWarmupConcurrency": "预热批量级别",
   "ui.settings.fullscreenPrefetchRadius": "全屏预取深度",
+  "ui.settings.fullscreenAdjacentPackagePrefetch": "全屏相邻图包预载",
   "ui.settings.fullscreenDecodeCacheSize": "全屏解码缓存数",
   "ui.settings.fullscreenResamplingEnabled": "全屏重采样",
   "ui.settings.fullscreenResamplingEnabledTooltip":
@@ -709,6 +710,8 @@ export const zhCnCatalogPart1 = {
     "预热批量级别（不是线程数）；越高预热更快，但更容易抢占前台资源。",
   "ui.settings.tooltip.fullscreenPrefetchRadius":
     "进入全屏后预取相邻媒体的深度；越大切换更顺滑但内存占用更高。",
+  "ui.settings.tooltip.fullscreenAdjacentPackagePrefetch":
+    "全屏浏览时预加载当前图包前后相邻图包的数量；越大切换图包越流畅，但常驻内存更高。",
   "ui.settings.tooltip.fullscreenDecodeCacheSize":
     "全屏解码缓存上限；值越大命中率越高，但内存占用显著上升。",
   "ui.settings.tooltip.databaseReset":

@@ -56,6 +56,7 @@ interface UseAppSidebarScopeStateParams {
   adReviewResultImageIds: string[];
   fullscreenActive: boolean;
   fullscreenDisplay: "dual" | "video-only" | "image-only";
+  fullscreenAdjacentPackagePrefetch: number;
   bootstrapLibrarySnapshot: LibrarySnapshotViewModel | null;
   bootstrapImagePackages: ImagePackage[];
   bootstrapImageDirectories: ImagePackage[];
@@ -175,6 +176,7 @@ export function useAppSidebarScopeState({
   adReviewResultImageIds,
   fullscreenActive,
   fullscreenDisplay,
+  fullscreenAdjacentPackagePrefetch,
   bootstrapLibrarySnapshot,
   bootstrapImagePackages,
   bootstrapImageDirectories,
@@ -269,6 +271,49 @@ export function useAppSidebarScopeState({
   );
   const videosEffective = librarySnapshotEffective?.videos ?? bootstrapVideos;
   const audiosEffective = librarySnapshotEffective?.audios ?? bootstrapAudios;
+  const scopedImageSourceIdSet = useMemo(
+    () => new Set(scopedImageSourcesEffective.map((item) => item.id)),
+    [scopedImageSourcesEffective],
+  );
+  // 「相邻图包预加载」用的 sidebar 顺序源 id 列表：仅依赖快照树与源 id 集，
+  // 不依赖按需加载的 images 缓存，避免与 sourceImageCache 形成 hook 顺序循环。
+  // 优先 DFS sidebar 快照树取 imageSourceId，缺失时回退到包数组顺序。
+  const prefetchOrderedSourceIds = useMemo<string[]>(() => {
+    if (!shouldUseImageSidebarSnapshot) {
+      return [];
+    }
+    const tree = sidebarSnapshot?.tree;
+    if (tree && tree.length > 0) {
+      const ordered: string[] = [];
+      const seen = new Set<string>();
+      const walk = (nodes: typeof tree) => {
+        for (const node of nodes) {
+          const sourceId = node.imageSourceId;
+          if (
+            sourceId &&
+            !seen.has(sourceId) &&
+            scopedImageSourceIdSet.has(sourceId)
+          ) {
+            seen.add(sourceId);
+            ordered.push(sourceId);
+          }
+          if (node.children.length > 0) {
+            walk(node.children);
+          }
+        }
+      };
+      walk(tree);
+      if (ordered.length > 0) {
+        return ordered;
+      }
+    }
+    return scopedSearchPackagesEffective.map((pkg) => pkg.id);
+  }, [
+    scopedImageSourceIdSet,
+    scopedSearchPackagesEffective,
+    shouldUseImageSidebarSnapshot,
+    sidebarSnapshot,
+  ]);
   // 结构性分页：侧边栏源不再携带全库 images，按需加载当前包并合并。
   // 仅当源已知、images 为空（未加载）且确有图片（imageCount>0）时才触发加载，
   // 因此在旧链路（源已带 images）下本段完全惰性、零运行时影响。
@@ -286,6 +331,30 @@ export function useAppSidebarScopeState({
     // ad-review 结果横跨多个源（按候选包），逐源加载以正常显示与默认选中计数
     for (const sourceId of adReviewResultSourceIds) {
       candidateIds.add(sourceId);
+    }
+    // 全屏浏览时预加载当前包前后相邻图包，使切包时下一包 images 已就绪、消除卡顿（问题3）
+    if (
+      fullscreenActive &&
+      selectedPackageId &&
+      prefetchOrderedSourceIds.length > 0
+    ) {
+      const currentIndex = prefetchOrderedSourceIds.indexOf(selectedPackageId);
+      if (currentIndex >= 0) {
+        const radius = Math.max(
+          1,
+          Math.min(5, Math.floor(fullscreenAdjacentPackagePrefetch)),
+        );
+        for (let offset = 1; offset <= radius; offset += 1) {
+          const nextId = prefetchOrderedSourceIds[currentIndex + offset];
+          const prevId = prefetchOrderedSourceIds[currentIndex - offset];
+          if (nextId) {
+            candidateIds.add(nextId);
+          }
+          if (prevId) {
+            candidateIds.add(prevId);
+          }
+        }
+      }
     }
     if (candidateIds.size === 0) {
       return [];
@@ -312,6 +381,9 @@ export function useAppSidebarScopeState({
     vectorResultsActive,
     vectorSearchResults,
     adReviewResultSourceIds,
+    fullscreenActive,
+    fullscreenAdjacentPackagePrefetch,
+    prefetchOrderedSourceIds,
   ]);
   const sidebarSnapshotForGeneration =
     backendRead.sidebar.data ?? backendRead.sidebar.snapshot;

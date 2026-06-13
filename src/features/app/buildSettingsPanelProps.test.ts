@@ -109,6 +109,7 @@ describe("buildSettingsPanelProps", () => {
       thumbnailWarmupRadius: 1,
       thumbnailWarmupConcurrency: 2,
       fullscreenPrefetchRadius: 6,
+      fullscreenAdjacentPackagePrefetch: 1,
       fullscreenDecodeCacheSize: 10,
       fullscreenResamplingEnabled: false,
       fullscreenUpsamplingKernel: "lanczos3",
@@ -409,7 +410,7 @@ describe("buildSettingsPanelProps", () => {
     expect(updateSettings).toHaveBeenCalledWith({
       paneHeaderHeightScaleCoeff: 1.2,
     });
-  expect(updateSettings).toHaveBeenCalledWith({
+    expect(updateSettings).toHaveBeenCalledWith({
       paneFooterHeightScaleCoeff: 0.9,
     });
   });
@@ -483,6 +484,7 @@ describe("buildSettingsPanelProps", () => {
       thumbnailWarmupRadius: 1,
       thumbnailWarmupConcurrency: 2,
       fullscreenPrefetchRadius: 6,
+      fullscreenAdjacentPackagePrefetch: 1,
       fullscreenDecodeCacheSize: 10,
       fullscreenResamplingEnabled: false,
       fullscreenUpsamplingKernel: "lanczos3",

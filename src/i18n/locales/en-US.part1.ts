@@ -302,6 +302,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.warmupRadiusOff": "Off",
   "ui.settings.thumbnailWarmupConcurrency": "Warmup batch level",
   "ui.settings.fullscreenPrefetchRadius": "Fullscreen prefetch depth",
+  "ui.settings.fullscreenAdjacentPackagePrefetch":
+    "Fullscreen adjacent package preload",
   "ui.settings.fullscreenDecodeCacheSize": "Fullscreen decode cache size",
   "ui.settings.fullscreenResamplingEnabled": "Fullscreen resampling",
   "ui.settings.fullscreenResamplingEnabledTooltip":
@@ -752,6 +754,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Warmup batch level (not thread count). Higher is faster but can steal foreground resources.",
   "ui.settings.tooltip.fullscreenPrefetchRadius":
     "Prefetch depth for adjacent media in fullscreen. Larger improves smoothness but uses more memory.",
+  "ui.settings.tooltip.fullscreenAdjacentPackagePrefetch":
+    "Number of neighboring image packages to preload while browsing in fullscreen. Larger makes package switching smoother but uses more memory.",
   "ui.settings.tooltip.fullscreenDecodeCacheSize":
     "Fullscreen decode cache cap. Larger improves hit rate but raises memory usage.",
   "ui.settings.tooltip.databaseReset":

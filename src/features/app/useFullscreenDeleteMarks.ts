@@ -2,6 +2,9 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { dispatchFullscreenDeleteFeedback } from "../../utils/fullscreenDeleteFeedback";
 
+// 三连击 Del 直删的时间窗：同一 pane 相邻两次 Del 间隔在此窗内才累计连击
+const TRIPLE_DELETE_WINDOW_MS = 500;
+
 interface UseFullscreenDeleteMarksParams {
   fullscreenActive: boolean;
   deleteConfirmOpen: boolean;
@@ -12,6 +15,8 @@ interface UseFullscreenDeleteMarksParams {
   checkSidebarNode: (nodeId: string) => void;
   setDeleteConfirmOpen: (open: boolean) => void;
   setManageOperationHint: (value: string | null) => void;
+  // 连续三次 Del 时直接删除当前项（不退出全屏、不弹确认）
+  onFullscreenDirectDelete: (pane: "image" | "video") => void;
 }
 
 interface UseFullscreenDeleteMarksResult {
@@ -36,6 +41,7 @@ export function useFullscreenDeleteMarks({
   checkSidebarNode,
   setDeleteConfirmOpen,
   setManageOperationHint,
+  onFullscreenDirectDelete,
 }: UseFullscreenDeleteMarksParams): UseFullscreenDeleteMarksResult {
   const markedNodeIdsRef = useRef<Set<string>>(new Set());
   const previousFullscreenActiveRef = useRef(fullscreenActive);
@@ -43,6 +49,14 @@ export function useFullscreenDeleteMarks({
   const fullscreenDeletePendingRef = useRef(false);
   const imageDeleteTargetNodeIdRef = useRef(imageDeleteTargetNodeId);
   const videoDeleteTargetNodeIdRef = useRef(videoDeleteTargetNodeId);
+  const onFullscreenDirectDeleteRef = useRef(onFullscreenDirectDelete);
+  const lastDeleteAtRef = useRef(0);
+  const lastDeletePaneRef = useRef<"image" | "video" | null>(null);
+  const deleteStreakRef = useRef(0);
+
+  useEffect(() => {
+    onFullscreenDirectDeleteRef.current = onFullscreenDirectDelete;
+  }, [onFullscreenDirectDelete]);
 
   useEffect(() => {
     imageDeleteTargetNodeIdRef.current = imageDeleteTargetNodeId;
@@ -58,6 +72,23 @@ export function useFullscreenDeleteMarks({
         ? videoDeleteTargetNodeIdRef.current
         : imageDeleteTargetNodeIdRef.current;
     if (!nodeId) {
+      return;
+    }
+
+    // 三连击 Del：同一 pane 在时间窗内连续按三次，直接删除当前项（不退出全屏、不弹确认）
+    const now = performance.now();
+    const withinWindow =
+      lastDeletePaneRef.current === pane &&
+      now - lastDeleteAtRef.current <= TRIPLE_DELETE_WINDOW_MS;
+    deleteStreakRef.current = withinWindow ? deleteStreakRef.current + 1 : 1;
+    lastDeleteAtRef.current = now;
+    lastDeletePaneRef.current = pane;
+
+    if (deleteStreakRef.current >= 3) {
+      deleteStreakRef.current = 0;
+      // 清除该节点的待删除标记，避免退出全屏时又把它灌入确认面板
+      markedNodeIdsRef.current.delete(nodeId);
+      onFullscreenDirectDeleteRef.current(pane);
       return;
     }
 
@@ -84,6 +115,8 @@ export function useFullscreenDeleteMarks({
 
     if (fullscreenActive) {
       markedNodeIdsRef.current = new Set();
+      deleteStreakRef.current = 0;
+      lastDeletePaneRef.current = null;
       return;
     }
 

@@ -1040,6 +1040,8 @@ export function useAppTopLayerState({
     thumbnailWarmupRadius: appSettings.thumbnailWarmupRadius,
     thumbnailWarmupConcurrency: appSettings.thumbnailWarmupConcurrency,
     fullscreenPrefetchRadius: appSettings.fullscreenPrefetchRadius,
+    fullscreenAdjacentPackagePrefetch:
+      appSettings.fullscreenAdjacentPackagePrefetch,
     fullscreenDecodeCacheSize: appSettings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: appSettings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: appSettings.fullscreenUpsamplingKernel,
