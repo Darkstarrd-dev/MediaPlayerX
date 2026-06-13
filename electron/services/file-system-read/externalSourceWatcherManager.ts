@@ -23,6 +23,8 @@ export class ExternalSourceWatcherManager {
   private readonly watchedPathStateByKey = new Map<string, WatchedPathState>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private lastIgnoredSubtitleEventAtMs = 0;
+  private suppressionCount = 0;
+  private suppressionTailUntilMs = 0;
 
   constructor(options: {
     debounceMs: number;
@@ -140,7 +142,40 @@ export class ExternalSourceWatcherManager {
     this.watchedPathStateByKey.clear();
   }
 
+  /**
+   * 进入事件抑制：应用自身的文件变更（删除/移动等管理操作）会触发 fs.watch 事件，
+   * 抑制期间事件直接丢弃，并清掉已排队的 debounce，避免自我事件引发全量重扫。
+   */
+  beginEventSuppression(): void {
+    this.suppressionCount += 1;
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+  }
+
+  /**
+   * 退出事件抑制，并保留 tailMs 尾窗覆盖操作完成后迟到的 fs 事件。
+   */
+  endEventSuppression(tailMs: number): void {
+    this.suppressionCount = Math.max(0, this.suppressionCount - 1);
+    this.suppressionTailUntilMs = Math.max(
+      this.suppressionTailUntilMs,
+      Date.now() + Math.max(0, tailMs),
+    );
+  }
+
+  private isEventSuppressed(): boolean {
+    if (this.suppressionCount > 0) {
+      return true;
+    }
+    return Date.now() < this.suppressionTailUntilMs;
+  }
+
   private scheduleDebouncedRefresh(): void {
+    if (this.isEventSuppressed()) {
+      return;
+    }
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
     }
@@ -150,9 +185,7 @@ export class ExternalSourceWatcherManager {
     }, this.debounceMs);
   }
 
-  private shouldIgnoreWatchFilename(
-    filename: string | Buffer | null,
-  ): boolean {
+  private shouldIgnoreWatchFilename(filename: string | Buffer | null): boolean {
     if (typeof filename === "string") {
       const normalized = filename.trim();
       if (!normalized) {

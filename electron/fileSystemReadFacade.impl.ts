@@ -222,10 +222,17 @@ export class FileSystemMediaReadService {
 
   private static readonly WATCHER_REFRESH_MIN_INTERVAL_MS = 5_000;
 
+  private static readonly WATCHER_SELF_EVENT_SUPPRESS_TAIL_MS = 2_000;
+
+  private static readonly AUTO_PRUNE_SWEEP_MIN_INTERVAL_MS = 60_000;
+
   private static readonly INTERACTIVE_READ_HOT_WINDOW_MS = 2_500;
 
   private static readonly ARCHIVE_NORMALIZE_QUEUE_APP_STATE_KEY =
     "archive_normalize_queue_paths";
+
+  private static readonly EXTERNAL_SOURCE_WATCHER_ENABLED_APP_STATE_KEY =
+    "external_source_watcher_enabled";
 
   private readonly rootDir: string;
   private readonly coverOutputRootDir: string;
@@ -259,6 +266,7 @@ export class FileSystemMediaReadService {
   private pruneMissingSnapshotPromise: Promise<void> | null = null;
 
   private pruneMissingSnapshotQueued = false;
+  private lastAutoPruneSweepAtMs = 0;
   private managementMutationInFlightCount = 0;
   private startupCleanupPromise: Promise<void> | null = null;
   private lastInteractiveReadAtMs = 0;
@@ -443,7 +451,6 @@ export class FileSystemMediaReadService {
 
     this.managementMutationService = new ManagementMutationService({
       rootDir: this.rootDir,
-      thumbnailCacheRootDir: this.thumbnailCacheRootDir,
       database: this.database,
       importPathRegistry: this.importPathRegistry,
       ffmpegBin: FFMPEG_BIN,
@@ -663,12 +670,20 @@ export class FileSystemMediaReadService {
     task: () => Promise<T>,
   ): Promise<T> {
     this.managementMutationInFlightCount += 1;
+    // 管理操作自身的文件变更（rm/rename 等）会触发 fs.watch 事件，
+    // 抑制期间丢弃事件并清掉已排队的刷新，避免自我事件引发全量重扫
+    this.externalSourceWatcherManager.beginEventSuppression();
+    this.pendingWatcherRefresh = false;
+    this.clearWatcherRefreshTimer();
     try {
       return await task();
     } finally {
       this.managementMutationInFlightCount = Math.max(
         0,
         this.managementMutationInFlightCount - 1,
+      );
+      this.externalSourceWatcherManager.endEventSuppression(
+        FileSystemMediaReadService.WATCHER_SELF_EVENT_SUPPRESS_TAIL_MS,
       );
       if (
         this.managementMutationInFlightCount === 0 &&
@@ -721,6 +736,11 @@ export class FileSystemMediaReadService {
     }
     this.importTaskService.recoverInterruptedImportTasks();
     this.importPathRegistry.hydrate(this.database.readImportSources());
+    // 开关持久化在后端 appState，避免依赖渲染端水合后异步推送（启动窗口期/推送失败会退回自动模式）
+    this.externalSourceWatcherEnabled = this.database.readAppState<boolean>(
+      FileSystemMediaReadService.EXTERNAL_SOURCE_WATCHER_ENABLED_APP_STATE_KEY,
+      this.externalSourceWatcherEnabled,
+    );
     this.refreshExternalSourceWatchers();
     this.archiveNormalizationService.recoverPersistedQueue();
     this.stateHydrated = true;
@@ -950,6 +970,11 @@ export class FileSystemMediaReadService {
       };
     }
     const nextEnabled = Boolean(enabled);
+    // 显式设置一律持久化，保证重启后 ensureStateLoaded 能恢复手动/自动模式
+    this.database.writeAppState(
+      FileSystemMediaReadService.EXTERNAL_SOURCE_WATCHER_ENABLED_APP_STATE_KEY,
+      nextEnabled,
+    );
     if (nextEnabled === this.externalSourceWatcherEnabled) {
       return {
         enabled: nextEnabled,
@@ -1088,6 +1113,10 @@ export class FileSystemMediaReadService {
     };
   }
 
+  /**
+   * 手动刷新后的导入源清理：仅注销磁盘上已不存在的登记项。
+   * 目录根仍存在时必须保留注册（注销会导致 allowlist 失效、watcher 卸载、后续刷新无法匹配）。
+   */
   private async pruneImportSourcesForDirectoryRoot(
     directoryRoot: string,
   ): Promise<number> {
@@ -1096,12 +1125,22 @@ export class FileSystemMediaReadService {
       this.importPathRegistry.getImportDirectoryRoots();
     const importFilePaths = this.importPathRegistry.getImportFilePaths();
     const matchedRootKey = normalizeAllowlistKey(resolvedRoot);
-    const nextDirectoryRoots = importDirectoryRoots.filter(
-      (value) => normalizeAllowlistKey(value) !== matchedRootKey,
-    );
-    const nextFilePaths = importFilePaths.filter(
-      (value) => !isPathInsideRoot(resolvedRoot, value),
-    );
+    const rootExists = await this.pathExists(resolvedRoot);
+    const nextDirectoryRoots = rootExists
+      ? importDirectoryRoots
+      : importDirectoryRoots.filter(
+          (value) => normalizeAllowlistKey(value) !== matchedRootKey,
+        );
+    const nextFilePaths: string[] = [];
+    for (const filePath of importFilePaths) {
+      if (!isPathInsideRoot(resolvedRoot, filePath)) {
+        nextFilePaths.push(filePath);
+        continue;
+      }
+      if (await this.pathExists(filePath)) {
+        nextFilePaths.push(filePath);
+      }
+    }
     if (
       nextDirectoryRoots.length === importDirectoryRoots.length &&
       nextFilePaths.length === importFilePaths.length
@@ -1150,11 +1189,7 @@ export class FileSystemMediaReadService {
     const snapshot = await this.librarySnapshotService.ensureSnapshotLoaded(
       () => this.ensureStateLoaded(),
     );
-    if (this.shouldPruneSynchronously(snapshot)) {
-      return this.pruneMissingSnapshotEntries(snapshot);
-    }
-    this.schedulePruneMissingSnapshotEntries();
-    return snapshot;
+    return this.maybePruneAfterSnapshotRead(snapshot);
   }
 
   private async refreshSnapshotFromFilesystem(
@@ -1164,6 +1199,20 @@ export class FileSystemMediaReadService {
       () => this.ensureStateLoaded(),
       options,
     );
+    return this.maybePruneAfterSnapshotRead(snapshot);
+  }
+
+  /**
+   * 快照读取后的整库存在性自动清理（auto-prune）。
+   * 手动模式（watcher 关闭）下完全跳过：外部删除保持静默，
+   * 由侧栏手动刷新（requestExternalSourceFolderRefresh）触发局部 prune。
+   */
+  private async maybePruneAfterSnapshotRead(
+    snapshot: LibrarySnapshotDto,
+  ): Promise<LibrarySnapshotDto> {
+    if (!this.externalSourceWatcherEnabled) {
+      return snapshot;
+    }
     if (this.shouldPruneSynchronously(snapshot)) {
       return this.pruneMissingSnapshotEntries(snapshot);
     }
@@ -1412,6 +1461,12 @@ export class FileSystemMediaReadService {
       return;
     }
 
+    // 手动模式下不做整库存在性扫描
+    if (!this.externalSourceWatcherEnabled) {
+      this.pruneMissingSnapshotQueued = false;
+      return;
+    }
+
     if (this.hasManagementMutationInFlight()) {
       this.pruneMissingSnapshotQueued = true;
       return;
@@ -1421,6 +1476,15 @@ export class FileSystemMediaReadService {
       this.pruneMissingSnapshotQueued = true;
       return;
     }
+
+    // 异步整库 sweep 是串行 stat 全部条目的重 IO 操作，限制最小间隔避免每次 UI 刷新都全库扫描
+    if (
+      Date.now() - this.lastAutoPruneSweepAtMs <
+      FileSystemMediaReadService.AUTO_PRUNE_SWEEP_MIN_INTERVAL_MS
+    ) {
+      return;
+    }
+    this.lastAutoPruneSweepAtMs = Date.now();
 
     this.pruneMissingSnapshotPromise = Promise.resolve()
       .then(async () => {

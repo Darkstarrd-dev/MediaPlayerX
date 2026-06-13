@@ -4,7 +4,6 @@ import { MediaLibraryDatabase } from "../../mediaLibraryDatabase";
 
 export interface ManagementRenameServiceDependencies {
   database: MediaLibraryDatabase;
-  thumbnailCacheRootDir: string;
   ensureStateLoaded: () => Promise<void>;
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   syncSnapshotFromDatabase: () => LibrarySnapshotDto;

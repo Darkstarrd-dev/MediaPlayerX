@@ -1313,7 +1313,8 @@ describe("FileSystemMediaReadService", () => {
     const result = await service.requestExternalSourceFolderRefresh(rootKey);
 
     expect(result.matched_directory_root).toBe(rootKey);
-    expect(result.removed_import_source_count).toBeGreaterThanOrEqual(0);
+    // 目录根仍存在于磁盘：手动刷新不得注销其导入源登记
+    expect(result.removed_import_source_count).toBe(0);
 
     const after = await service.readLibrarySnapshot();
     // 仍保留 kept 目录
@@ -1322,5 +1323,144 @@ describe("FileSystemMediaReadService", () => {
         (entry) => path.resolve(entry.absolute_path) === path.resolve(keptDir),
       ),
     ).toBe(true);
+    // dropped 目录的条目已被局部 prune
+    expect(
+      after.image_directories.some(
+        (entry) =>
+          path.resolve(entry.absolute_path) === path.resolve(droppedDir),
+      ),
+    ).toBe(false);
+
+    // 再次手动刷新仍能匹配目录根（导入源未被注销）
+    const second = await service.requestExternalSourceFolderRefresh(rootKey);
+    expect(second.matched_directory_root).toBe(rootKey);
+  });
+
+  it("externalSourceWatcherEnabled 持久化到 appState 并在重启后恢复", async () => {
+    const root = await fs.mkdtemp(
+      path.join(os.tmpdir(), "mpx-watcher-persist-"),
+    );
+    createdRoots.push(root);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    service.setExternalSourceWatcherEnabled(false);
+
+    // 同一数据库目录创建新实例，模拟应用重启
+    const restarted = new FileSystemMediaReadService(root);
+    createdServices.push(restarted);
+    // 触发 ensureStateLoaded
+    await restarted.readLibrarySnapshot();
+
+    const restartedInternal = restarted as unknown as {
+      externalSourceWatcherEnabled: boolean;
+    };
+    expect(restartedInternal.externalSourceWatcherEnabled).toBe(false);
+  });
+
+  it("手动模式下外部删除保持静默，手动刷新后才同步清理", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-manual-silent-"));
+    createdRoots.push(root);
+
+    const keptDir = path.join(root, "kept");
+    const droppedDir = path.join(root, "dropped");
+    await fs.mkdir(keptDir, { recursive: true });
+    await fs.mkdir(droppedDir, { recursive: true });
+    await writeBinary(path.join(keptDir, "a.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+    await writeBinary(path.join(droppedDir, "c.jpg"), [0xff, 0xd8, 0xff, 0xd9]);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await enqueueImportAndWait(service, "dialog-folders", [root]);
+
+    service.setExternalSourceWatcherEnabled(false);
+
+    // 模拟"用户外部删除 dropped 目录"
+    await fs.rm(droppedDir, { recursive: true, force: true });
+
+    // 手动模式：读取快照不触发 auto-prune，外部删除保持静默
+    const silent = await service.readLibrarySnapshot();
+    expect(
+      silent.image_directories.some(
+        (entry) =>
+          path.resolve(entry.absolute_path) === path.resolve(droppedDir),
+      ),
+    ).toBe(true);
+
+    // 手动刷新后才同步删除
+    const rootKey = path.resolve(root);
+    const refreshResult =
+      await service.requestExternalSourceFolderRefresh(rootKey);
+    expect(refreshResult.matched_directory_root).toBe(rootKey);
+
+    const after = await service.readLibrarySnapshot();
+    expect(
+      after.image_directories.some(
+        (entry) =>
+          path.resolve(entry.absolute_path) === path.resolve(droppedDir),
+      ),
+    ).toBe(false);
+  });
+
+  it("管理删除操作经 mutation guard 抑制 watcher 自我事件", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-self-suppress-"));
+    createdRoots.push(root);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+
+    const serviceInternal = service as unknown as {
+      externalSourceWatcherManager: {
+        beginEventSuppression: () => void;
+        endEventSuppression: (tailMs: number) => void;
+      };
+    };
+    const beginSpy = vi.spyOn(
+      serviceInternal.externalSourceWatcherManager,
+      "beginEventSuppression",
+    );
+    const endSpy = vi.spyOn(
+      serviceInternal.externalSourceWatcherManager,
+      "endEventSuppression",
+    );
+
+    const result = await service.deleteSidebarNodes({
+      node_ids: ["folder:not-exists"],
+      delete_files: true,
+    });
+    expect(result.deleted_count).toBe(0);
+
+    expect(beginSpy).toHaveBeenCalledTimes(1);
+    expect(endSpy).toHaveBeenCalledTimes(1);
+    expect(endSpy.mock.calls[0][0]).toBeGreaterThan(0);
+  });
+
+  it("auto-prune 异步 sweep 受最小间隔节流，手动模式下不调度", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "mpx-prune-gate-"));
+    createdRoots.push(root);
+
+    const service = new FileSystemMediaReadService(root);
+    createdServices.push(service);
+    await service.readLibrarySnapshot();
+
+    const serviceInternal = service as unknown as {
+      schedulePruneMissingSnapshotEntries: () => void;
+      pruneMissingSnapshotPromise: Promise<void> | null;
+    };
+
+    serviceInternal.schedulePruneMissingSnapshotEntries();
+    expect(serviceInternal.pruneMissingSnapshotPromise).not.toBeNull();
+    await serviceInternal.pruneMissingSnapshotPromise;
+
+    // 最小间隔内再次调度被节流
+    serviceInternal.schedulePruneMissingSnapshotEntries();
+    expect(serviceInternal.pruneMissingSnapshotPromise).toBeNull();
+
+    // 手动模式下不调度（即使间隔已过也不应启动，这里直接验证开关门控）
+    service.setExternalSourceWatcherEnabled(false);
+    serviceInternal.schedulePruneMissingSnapshotEntries();
+    expect(serviceInternal.pruneMissingSnapshotPromise).toBeNull();
   });
 });

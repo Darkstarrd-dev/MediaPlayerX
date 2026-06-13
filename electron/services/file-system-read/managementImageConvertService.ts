@@ -71,7 +71,10 @@ function buildCurveLutFromAnchors(
   const anchorX = [
     0,
     Math.max(1, Math.min(clampedShadowX, clampedMidtoneX - 2)),
-    Math.max(clampedShadowX + 1, Math.min(clampedMidtoneX, clampedHighlightX - 1)),
+    Math.max(
+      clampedShadowX + 1,
+      Math.min(clampedMidtoneX, clampedHighlightX - 1),
+    ),
     Math.max(clampedMidtoneX + 2, Math.min(clampedHighlightX, 254)),
     255,
   ];
@@ -121,13 +124,17 @@ function createImageConvertLut(
   profile: NonNullable<StartImageConvertTaskRequestDto["adjust"]>,
 ): Uint8ClampedArray {
   const lut = new Uint8ClampedArray(256);
-  const normalizedContrast = Math.max(-100, Math.min(100, profile.contrast)) / 100;
+  const normalizedContrast =
+    Math.max(-100, Math.min(100, profile.contrast)) / 100;
   const contrastFactor =
     (259 * (normalizedContrast * 255 + 255)) /
     (255 * (259 - normalizedContrast * 255));
   const brightnessOffset =
     (Math.max(-100, Math.min(100, profile.brightness)) / 100) * 255;
-  const inputBlack = Math.max(0, Math.min(254, Math.round(profile.level_input_black)));
+  const inputBlack = Math.max(
+    0,
+    Math.min(254, Math.round(profile.level_input_black)),
+  );
   const inputWhite = Math.max(
     inputBlack + 1,
     Math.min(255, Math.round(profile.level_input_white)),
@@ -139,13 +146,13 @@ function createImageConvertLut(
   const curveLut =
     profile.mode === "curve"
       ? buildCurveLutFromAnchors(
-        profile.curve_shadow_x,
-        profile.curve_midtone_x,
-        profile.curve_highlight_x,
-        curveShadow,
-        curveMidtone,
-        curveHighlight,
-      )
+          profile.curve_shadow_x,
+          profile.curve_midtone_x,
+          profile.curve_highlight_x,
+          curveShadow,
+          curveMidtone,
+          curveHighlight,
+        )
       : null;
 
   for (let index = 0; index < 256; index += 1) {
@@ -168,7 +175,6 @@ function createImageConvertLut(
 }
 
 interface ManagementImageConvertServiceDependencies {
-  thumbnailCacheRootDir: string;
   ensureStateLoaded: () => Promise<void>;
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
   refreshSnapshotFromFilesystem?: (options?: {
@@ -754,12 +760,7 @@ export class ManagementImageConvertService {
     }
 
     if (successCount > 0) {
-      await fs
-        .rm(this.dependencies.thumbnailCacheRootDir, {
-          recursive: true,
-          force: true,
-        })
-        .catch(() => undefined);
+      // 缩略图缓存键含源文件 path+mtime+size，转换/重打包后旧键自然失效，无需全清缓存目录
       if (changedArchivePaths.size > 0) {
         await this.dependencies
           .refreshArchiveIndexesForPaths(changedArchivePaths)

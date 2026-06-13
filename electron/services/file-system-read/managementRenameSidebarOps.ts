@@ -160,7 +160,10 @@ export async function renameSidebarNodesOperation(
 
     const resolvedSourcePath = path.resolve(sourcePath);
     if (isFileSystemRootPath(resolvedSourcePath)) {
-      failed.push({ node_id: nodeId, reason: "refuse to rename filesystem root" });
+      failed.push({
+        node_id: nodeId,
+        reason: "refuse to rename filesystem root",
+      });
       if (effectiveFailFast) {
         break;
       }
@@ -277,11 +280,14 @@ export async function renameSidebarNodesOperation(
       let suffixIndex = 2;
       let collided = false;
       while (true) {
-        const candidatePath = path.resolve(path.join(targetDir, resolvedFileName));
+        const candidatePath = path.resolve(
+          path.join(targetDir, resolvedFileName),
+        );
         const candidateKey = normalizeAllowlistKey(candidatePath);
         const alreadyUsed = usedNames.has(resolvedFileName.toLowerCase());
         const exists = await fs.stat(candidatePath).catch(() => null);
-        const existsConflict = Boolean(exists) && !sourceKeySet.has(candidateKey);
+        const existsConflict =
+          Boolean(exists) && !sourceKeySet.has(candidateKey);
         if (!alreadyUsed && !existsConflict) {
           target.targetPath = candidatePath;
           target.targetName = resolvedFileName;
@@ -327,7 +333,9 @@ export async function renameSidebarNodesOperation(
         });
       } catch (error) {
         const reason =
-          error instanceof Error && error.message ? error.message : String(error);
+          error instanceof Error && error.message
+            ? error.message
+            : String(error);
         failed.push({ node_id: target.nodeId, reason });
         if (failFast) {
           break;
@@ -375,13 +383,10 @@ export async function renameSidebarNodesOperation(
     await dependencies
       .refreshArchiveIndexesForPaths(movedMappings.map((item) => item.toPath))
       .catch(() => undefined);
-    await dependencies.replaceImportSourcePaths(movedMappings).catch(() => undefined);
-    await fs
-      .rm(dependencies.thumbnailCacheRootDir, {
-        recursive: true,
-        force: true,
-      })
+    await dependencies
+      .replaceImportSourcePaths(movedMappings)
       .catch(() => undefined);
+    // 缩略图缓存键含源文件 path+mtime+size，重命名后旧键自然失效，无需全清缓存目录
     dependencies.emitLibraryChanged({
       reason: "manage-rename-sidebar-nodes",
       updated_at_ms: Date.now(),
@@ -464,7 +469,10 @@ export async function renameSidebarNodeOperation(
   }
 
   if (!isPathAllowlisted(resolvedSourcePath, mediaAccessContext)) {
-    failed.push({ node_id: normalizedNodeId, reason: "path outside allowlist" });
+    failed.push({
+      node_id: normalizedNodeId,
+      reason: "path outside allowlist",
+    });
     return {
       renamed_count: 0,
       failed,
@@ -501,7 +509,8 @@ export async function renameSidebarNodeOperation(
     path.join(path.dirname(resolvedSourcePath), normalizedTargetName),
   );
   if (
-    normalizeAllowlistKey(targetPath) === normalizeAllowlistKey(resolvedSourcePath)
+    normalizeAllowlistKey(targetPath) ===
+    normalizeAllowlistKey(resolvedSourcePath)
   ) {
     failed.push({ node_id: normalizedNodeId, reason: "source equals target" });
     return {
@@ -514,7 +523,10 @@ export async function renameSidebarNodeOperation(
 
   const targetExists = await fs.stat(targetPath).catch(() => null);
   if (targetExists) {
-    failed.push({ node_id: normalizedNodeId, reason: "destination already exists" });
+    failed.push({
+      node_id: normalizedNodeId,
+      reason: "destination already exists",
+    });
     return {
       renamed_count: 0,
       failed,
@@ -545,13 +557,11 @@ export async function renameSidebarNodeOperation(
   dependencies.database.moveSnapshotEntriesByPaths(movedMappings);
   dependencies.syncSnapshotFromDatabase();
   dependencies.pruneArchiveIndexesByDeletedRoots([resolvedSourcePath]);
-  await dependencies.refreshArchiveIndexesForPaths([targetPath]).catch(() => undefined);
-  await dependencies.replaceImportSourcePaths(movedMappings).catch(() => undefined);
-  await fs
-    .rm(dependencies.thumbnailCacheRootDir, {
-      recursive: true,
-      force: true,
-    })
+  await dependencies
+    .refreshArchiveIndexesForPaths([targetPath])
+    .catch(() => undefined);
+  await dependencies
+    .replaceImportSourcePaths(movedMappings)
     .catch(() => undefined);
 
   dependencies.emitLibraryChanged({

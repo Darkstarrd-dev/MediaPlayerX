@@ -85,7 +85,6 @@ function createServiceHarness(rootDir: string, snapshot: LibrarySnapshotDto) {
 
   const service = new ManagementMutationService({
     rootDir,
-    thumbnailCacheRootDir: path.join(rootDir, ".thumb-cache"),
     database: database as unknown as MediaLibraryDatabase,
     importPathRegistry: new ImportPathRegistry(),
     ffmpegBin: "ffmpeg",
@@ -187,7 +186,6 @@ describe("ManagementMutationService.runAudioTranscodeTask import source sync", (
 
     const service = new ManagementMutationService({
       rootDir,
-      thumbnailCacheRootDir: path.join(rootDir, ".thumb-cache"),
       database: database as unknown as MediaLibraryDatabase,
       importPathRegistry,
       ffmpegBin: "ffmpeg",
@@ -330,7 +328,6 @@ describe("ManagementMutationService.runVideoTranscodeTask import source sync", (
 
     const service = new ManagementMutationService({
       rootDir,
-      thumbnailCacheRootDir: path.join(rootDir, ".thumb-cache"),
       database: database as unknown as MediaLibraryDatabase,
       importPathRegistry,
       ffmpegBin: "ffmpeg",

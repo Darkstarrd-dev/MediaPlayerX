@@ -107,7 +107,6 @@ interface RunVideoTranscodeTaskResult {
 
 interface ManagementMutationServiceOptions {
   rootDir: string;
-  thumbnailCacheRootDir: string;
   database: MediaLibraryDatabase;
   importPathRegistry: ImportPathRegistry;
   ensureStateLoaded: () => Promise<void>;
@@ -154,7 +153,6 @@ export class ManagementMutationService {
       withArchiveWriteLock: this.withArchiveWriteLock.bind(this),
     });
     this.imageConvertService = new ManagementImageConvertService({
-      thumbnailCacheRootDir: options.thumbnailCacheRootDir,
       ensureStateLoaded: options.ensureStateLoaded,
       ensureSnapshotLoaded: options.ensureSnapshotLoaded,
       refreshSnapshotFromFilesystem: options.refreshSnapshotFromFilesystem,
@@ -192,7 +190,6 @@ export class ManagementMutationService {
     });
     this.renameService = new ManagementRenameService({
       database: options.database,
-      thumbnailCacheRootDir: options.thumbnailCacheRootDir,
       ensureStateLoaded: options.ensureStateLoaded,
       ensureSnapshotLoaded: options.ensureSnapshotLoaded,
       syncSnapshotFromDatabase: options.syncSnapshotFromDatabase,
@@ -208,7 +205,6 @@ export class ManagementMutationService {
     });
     this.moveDeleteService = new ManagementMoveDeleteService({
       database: options.database,
-      thumbnailCacheRootDir: options.thumbnailCacheRootDir,
       importPathRegistry: options.importPathRegistry,
       ensureStateLoaded: options.ensureStateLoaded,
       ensureSnapshotLoaded: options.ensureSnapshotLoaded,

@@ -12,9 +12,7 @@ import {
   type RenameSidebarNodesRequestDto,
   type RenameSidebarNodesResponseDto,
 } from "../../../src/contracts/backend";
-import {
-  isPathAllowlisted,
-} from "../../fileSystemMediaAccessGuard";
+import { isPathAllowlisted } from "../../fileSystemMediaAccessGuard";
 import { normalizeAllowlistKey } from "../../fileSystemServiceHelpers";
 import {
   isMetadataUnknownToken,
@@ -839,12 +837,7 @@ export class ManagementRenameService {
         await this.dependencies
           .replaceImportSourcePaths(movedMappings)
           .catch(() => undefined);
-        await fs
-          .rm(this.dependencies.thumbnailCacheRootDir, {
-            recursive: true,
-            force: true,
-          })
-          .catch(() => undefined);
+        // 缩略图缓存键含源文件 path+mtime+size，重命名/重打包后旧键自然失效，无需全清缓存目录
         this.dependencies.emitLibraryChanged({
           reason: "manage-rename-items",
           updated_at_ms: Date.now(),

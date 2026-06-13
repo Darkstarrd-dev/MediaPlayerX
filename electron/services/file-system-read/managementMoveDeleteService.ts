@@ -31,7 +31,6 @@ import {
 
 interface ManagementMoveDeleteServiceDependencies {
   database: MediaLibraryDatabase;
-  thumbnailCacheRootDir: string;
   importPathRegistry: ImportPathRegistry;
   ensureStateLoaded: () => Promise<void>;
   ensureSnapshotLoaded: () => Promise<LibrarySnapshotDto>;
@@ -269,12 +268,8 @@ export class ManagementMoveDeleteService {
 
     const deletedCount = deletedImageIds.size;
     if (deletedCount > 0) {
-      await fs
-        .rm(this.dependencies.thumbnailCacheRootDir, {
-          recursive: true,
-          force: true,
-        })
-        .catch(() => undefined);
+      // 缩略图缓存键含源文件 path+mtime+size，删除/重打包后旧键自然失效，
+      // 无需清空整个缓存目录（全清会迫使全库缩略图重新生成）
       this.dependencies.emitLibraryChanged({
         reason: "manage-delete-image-items",
         updated_at_ms: Date.now(),
@@ -428,10 +423,11 @@ export class ManagementMoveDeleteService {
     const prunedPaths: string[] = [];
     for (const candidatePath of sortedPaths) {
       if (
-        prunedPaths.some((existingPath) =>
-          !hasUriScheme(existingPath) &&
-          !hasUriScheme(candidatePath) &&
-          isPathInsideRoot(existingPath, candidatePath),
+        prunedPaths.some(
+          (existingPath) =>
+            !hasUriScheme(existingPath) &&
+            !hasUriScheme(candidatePath) &&
+            isPathInsideRoot(existingPath, candidatePath),
         )
       ) {
         continue;
@@ -544,12 +540,6 @@ export class ManagementMoveDeleteService {
     }
 
     if (pathsToPurgeFromSnapshot.size > 0) {
-      await fs
-        .rm(this.dependencies.thumbnailCacheRootDir, {
-          recursive: true,
-          force: true,
-        })
-        .catch(() => undefined);
       this.dependencies.emitLibraryChanged({
         reason: "manage-delete-sidebar-nodes",
         updated_at_ms: Date.now(),
@@ -846,12 +836,6 @@ export class ManagementMoveDeleteService {
         movedMappings.map((mapping) => mapping.toPath),
       );
       await this.dependencies.replaceImportSourcePaths(movedMappings);
-      await fs
-        .rm(this.dependencies.thumbnailCacheRootDir, {
-          recursive: true,
-          force: true,
-        })
-        .catch(() => undefined);
 
       this.dependencies.emitLibraryChanged({
         reason:
