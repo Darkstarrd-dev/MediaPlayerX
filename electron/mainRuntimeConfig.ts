@@ -43,6 +43,8 @@ function resolveProxyBypassList(): string {
 export function applyElectronProxy(app: App): void {
   const proxyServer = resolveProxyServer()
   if (!proxyServer) {
+    // 阻止 Chromium 在 Windows 上默认执行 WPAD 代理自动检测，避免首请求超时延迟
+    app.commandLine.appendSwitch('no-proxy-server')
     return
   }
 

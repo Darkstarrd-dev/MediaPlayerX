@@ -172,7 +172,28 @@ export function resolveAppWindowIconPath(): string | null {
 }
 
 export function resolveRendererEntry(): { type: 'url' | 'file'; value: string } {
+  // 开发模式下优先使用 file:// 协议加载 dist/index.html，
+  // 避免 Electron Chromium 对 http://127.0.0.1 连接的异常延迟。
+  // vite build --watch 负责在文件变更时自动重建 dist/。
   if (process.env.VITE_DEV_SERVER_URL) {
+    const rendererRelativeCandidates = [
+      ['dist', 'index.html'],
+      ['..', 'dist', 'index.html'],
+    ] as const
+
+    for (const root of collectAppRootCandidates()) {
+      for (const relativeCandidate of rendererRelativeCandidates) {
+        const candidate = path.resolve(root, ...relativeCandidate)
+        if (existsSync(candidate)) {
+          return {
+            type: 'file',
+            value: candidate,
+          }
+        }
+      }
+    }
+
+    // 若 dist/index.html 不存在（例如首次启动尚未构建），回退到 URL 模式
     return {
       type: 'url',
       value: process.env.VITE_DEV_SERVER_URL,

@@ -306,7 +306,7 @@ function resolveStartupSplashMinDurationMs(): number {
     process.env.MEDIA_PLAYERX_SPLASH_MIN_DURATION_MS ?? ""
   ).trim();
   if (rawValue.length === 0) {
-    return 0;
+    return 1000;
   }
 
   const parsedValue = Number(rawValue);
@@ -566,7 +566,8 @@ function createMainWindow(): BrowserWindow {
     "console-message",
     (_event, level, message, line, sourceId) => {
       const isSubtitleMetrics = message.includes("[subtitle][metrics]");
-      if (resolveBenchMode() || isSubtitleMetrics) {
+      const isStartupTiming = message.includes("[startup]") || message.includes("total-startup");
+      if (resolveBenchMode() || isSubtitleMetrics || isStartupTiming) {
         console.log("[renderer]", { level, message, line, sourceId });
       }
     },
