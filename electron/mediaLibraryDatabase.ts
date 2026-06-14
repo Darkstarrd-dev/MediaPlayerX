@@ -1,488 +1,532 @@
-import { mkdirSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import path from 'node:path'
+import { mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
 
-import type { LibrarySnapshotDto, LibrarySnapshotLiteDto } from '../src/contracts/backend'
-import { MediaLibraryAppStateStore } from './mediaLibraryAppStateStore'
-import type { ImportTaskRecord, ImportTaskStatus, SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
-import { MediaLibraryMetadataStore } from './mediaLibraryMetadataStore'
-import { MediaLibraryPlaylistStore } from './mediaLibraryPlaylistStore'
-import { DATABASE_RELATIVE_PATH, migrateMediaLibrarySchema } from './mediaLibrarySchema'
-import { MediaLibrarySnapshotStore } from './mediaLibrarySnapshotStore'
-import { MediaLibraryTaskStore } from './mediaLibraryTaskStore'
+import type {
+  LibrarySnapshotDto,
+  LibrarySnapshotLiteDto,
+} from "../src/contracts/backend";
+import { MediaLibraryAppStateStore } from "./mediaLibraryAppStateStore";
+import type {
+  ImportTaskRecord,
+  ImportTaskStatus,
+  SQLiteDatabaseLike,
+} from "./mediaLibraryDatabaseTypes";
+import { MediaLibraryMetadataStore } from "./mediaLibraryMetadataStore";
+import { MediaLibraryPlaylistStore } from "./mediaLibraryPlaylistStore";
+import {
+  DATABASE_RELATIVE_PATH,
+  migrateMediaLibrarySchema,
+} from "./mediaLibrarySchema";
+import { MediaLibrarySnapshotStore } from "./mediaLibrarySnapshotStore";
+import { MediaLibraryTaskStore } from "./mediaLibraryTaskStore";
 
-const require = createRequire(process.execPath)
-const { DatabaseSync } = require('node:sqlite') as {
-  DatabaseSync: new (path: string) => SQLiteDatabaseLike
-}
+const require = createRequire(process.execPath);
+const { DatabaseSync } = require("node:sqlite") as {
+  DatabaseSync: new (path: string) => SQLiteDatabaseLike;
+};
 
-export type { ImportTaskRecord, ImportTaskStatus } from './mediaLibraryDatabaseTypes'
+export type {
+  ImportTaskRecord,
+  ImportTaskStatus,
+} from "./mediaLibraryDatabaseTypes";
 
 interface MediaLibraryDatabaseOptions {
-  rootDir: string
-  databaseFilePath?: string
+  rootDir: string;
+  databaseFilePath?: string;
 }
 
 export class MediaLibraryDatabase {
-  private readonly db: SQLiteDatabaseLike
+  private readonly db: SQLiteDatabaseLike;
 
-  private readonly appStateStore: MediaLibraryAppStateStore
+  private readonly appStateStore: MediaLibraryAppStateStore;
 
-  private readonly snapshotStore: MediaLibrarySnapshotStore
+  private readonly snapshotStore: MediaLibrarySnapshotStore;
 
-  private readonly metadataStore: MediaLibraryMetadataStore
+  private readonly metadataStore: MediaLibraryMetadataStore;
 
-  private readonly playlistStore: MediaLibraryPlaylistStore
+  private readonly playlistStore: MediaLibraryPlaylistStore;
 
-  private readonly taskStore: MediaLibraryTaskStore
+  private readonly taskStore: MediaLibraryTaskStore;
 
-  private disposed = false
+  private disposed = false;
 
-  private static readonly PREFERENCE_RUNTIME_RECOVERY_REASON = 'recovered-after-crash'
+  private static readonly PREFERENCE_RUNTIME_RECOVERY_REASON =
+    "recovered-after-crash";
 
   constructor(optionsOrRootDir: MediaLibraryDatabaseOptions | string) {
     const options =
-      typeof optionsOrRootDir === 'string'
+      typeof optionsOrRootDir === "string"
         ? { rootDir: optionsOrRootDir }
-        : optionsOrRootDir
-    const rootDir = path.resolve(options.rootDir)
+        : optionsOrRootDir;
+    const rootDir = path.resolve(options.rootDir);
     const dbPath = options.databaseFilePath
       ? path.resolve(options.databaseFilePath)
-      : path.join(rootDir, DATABASE_RELATIVE_PATH)
-    mkdirSync(path.dirname(dbPath), { recursive: true })
-    this.db = new DatabaseSync(dbPath)
-    this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;')
-    migrateMediaLibrarySchema(this.db)
+      : path.join(rootDir, DATABASE_RELATIVE_PATH);
+    mkdirSync(path.dirname(dbPath), { recursive: true });
+    this.db = new DatabaseSync(dbPath);
+    // WAL + synchronous=NORMAL：WAL 下的官方推荐配置。提交不再逐次 fsync（仅 checkpoint 同步），
+    // 使偏好指标等「一次 flush 写入上百行」的批量写从 fsync-bound 的秒级降到毫秒级，
+    // 消除连续翻页/切包时主进程被 writeAppState 同步钉死的卡顿。
+    // 代价：仅在操作系统崩溃/断电（非应用崩溃）时可能丢失最近若干已提交事务，对本地媒体库可接受。
+    this.db.exec(
+      "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;",
+    );
+    migrateMediaLibrarySchema(this.db);
 
-    this.appStateStore = new MediaLibraryAppStateStore(this.db)
-    this.snapshotStore = new MediaLibrarySnapshotStore(this.db, this.runInTransaction.bind(this))
-    this.metadataStore = new MediaLibraryMetadataStore(this.db)
-    this.playlistStore = new MediaLibraryPlaylistStore(this.db, this.runInTransaction.bind(this))
-    this.taskStore = new MediaLibraryTaskStore(this.db)
+    this.appStateStore = new MediaLibraryAppStateStore(this.db);
+    this.snapshotStore = new MediaLibrarySnapshotStore(
+      this.db,
+      this.runInTransaction.bind(this),
+    );
+    this.metadataStore = new MediaLibraryMetadataStore(this.db);
+    this.playlistStore = new MediaLibraryPlaylistStore(
+      this.db,
+      this.runInTransaction.bind(this),
+    );
+    this.taskStore = new MediaLibraryTaskStore(this.db);
 
     this.runInTransaction(() => {
       this.metadataStore.recoverAllPreferenceRuntimeSessions(
         MediaLibraryDatabase.PREFERENCE_RUNTIME_RECOVERY_REASON,
-      )
-    })
+      );
+    });
 
-    this.upsertRootConfig('library_root', rootDir)
+    this.upsertRootConfig("library_root", rootDir);
   }
 
   dispose(): void {
     if (this.disposed) {
-      return
+      return;
     }
-    this.disposed = true
-    this.db.close()
+    this.disposed = true;
+    this.db.close();
   }
 
   private runInTransaction<T>(task: () => T): T {
-    this.db.exec('BEGIN IMMEDIATE')
+    this.db.exec("BEGIN IMMEDIATE");
     try {
-      const result = task()
-      this.db.exec('COMMIT')
-      return result
+      const result = task();
+      this.db.exec("COMMIT");
+      return result;
     } catch (error) {
-      this.db.exec('ROLLBACK')
-      throw error
+      this.db.exec("ROLLBACK");
+      throw error;
     }
   }
 
   upsertRootConfig(configKey: string, configValue: string): void {
-    this.appStateStore.upsertRootConfig(configKey, configValue)
+    this.appStateStore.upsertRootConfig(configKey, configValue);
   }
 
   writeAppState(stateKey: string, value: unknown): void {
-    this.appStateStore.writeAppState(stateKey, value)
+    this.appStateStore.writeAppState(stateKey, value);
   }
 
   readAppState<T>(stateKey: string, fallback: T): T {
-    return this.appStateStore.readAppState(stateKey, fallback)
+    return this.appStateStore.readAppState(stateKey, fallback);
   }
 
   readImportSources(): { directories: string[]; files: string[] } {
-    return this.appStateStore.readImportSources()
+    return this.appStateStore.readImportSources();
   }
 
   writeImportSources(next: { directories: string[]; files: string[] }): void {
-    this.appStateStore.writeImportSources(next)
+    this.appStateStore.writeImportSources(next);
   }
 
   readMusicImportSources(): { directories: string[]; files: string[] } {
-    return this.appStateStore.readMusicImportSources()
+    return this.appStateStore.readMusicImportSources();
   }
 
-  writeMusicImportSources(next: { directories: string[]; files: string[] }): void {
-    this.appStateStore.writeMusicImportSources(next)
+  writeMusicImportSources(next: {
+    directories: string[];
+    files: string[];
+  }): void {
+    this.appStateStore.writeMusicImportSources(next);
   }
 
   replaceSnapshot(snapshot: LibrarySnapshotDto): void {
-    this.snapshotStore.replaceSnapshot(snapshot)
+    this.snapshotStore.replaceSnapshot(snapshot);
   }
 
   readSnapshot(): LibrarySnapshotDto {
-    return this.snapshotStore.readSnapshot()
+    return this.snapshotStore.readSnapshot();
   }
 
   readSnapshotLite(): LibrarySnapshotLiteDto {
-    return this.snapshotStore.readSnapshotLite()
+    return this.snapshotStore.readSnapshotLite();
   }
 
   readPackageGrades(): Map<string, number | null> {
-    return this.metadataStore.readPackageGrades()
+    return this.metadataStore.readPackageGrades();
   }
 
-  readVideoCovers(): Map<string, { coverColor: string; coverImagePath: string | null; updatedAtMs: number }> {
-    return this.metadataStore.readVideoCovers()
+  readVideoCovers(): Map<
+    string,
+    { coverColor: string; coverImagePath: string | null; updatedAtMs: number }
+  > {
+    return this.metadataStore.readVideoCovers();
   }
 
   readVideoMetadata(): Map<
     string,
     {
-      workTitle: string
-      workTitleJpn: string
-      seriesId: string
-      circle: string
-      circleJpn: string
-      author: string
-      authorJpn: string
-      tags: string[]
-      grade: number | null
-      updatedAtMs: number
+      workTitle: string;
+      workTitleJpn: string;
+      seriesId: string;
+      circle: string;
+      circleJpn: string;
+      author: string;
+      authorJpn: string;
+      tags: string[];
+      grade: number | null;
+      updatedAtMs: number;
     }
   > {
-    return this.metadataStore.readVideoMetadata()
+    return this.metadataStore.readVideoMetadata();
   }
 
   readAudioMetadata(): Map<
     string,
     {
-      album: string
-      author: string
-      trackTitle: string
-      seriesId: string
-      updatedAtMs: number
+      album: string;
+      author: string;
+      trackTitle: string;
+      seriesId: string;
+      updatedAtMs: number;
     }
   > {
-    return this.metadataStore.readAudioMetadata()
+    return this.metadataStore.readAudioMetadata();
   }
 
   readSourceExternalMetadata(): Map<
     string,
     {
-      sourceSite: 'nhentai' | 'ehentai'
-      sourceUrl: string
-      sourceRemoteId: string
-      sourceToken: string
-      title: string
-      titleJpn: string
-      groupName: string
-      groupNameJpn: string
-      artist: string
-      artistJpn: string
-      posted: string
-      rating: string | null
-      favorited: string | null
-      tags: Record<string, string>
-      rawJson: string
-      updatedAtMs: number
+      sourceSite: "nhentai" | "ehentai";
+      sourceUrl: string;
+      sourceRemoteId: string;
+      sourceToken: string;
+      title: string;
+      titleJpn: string;
+      groupName: string;
+      groupNameJpn: string;
+      artist: string;
+      artistJpn: string;
+      posted: string;
+      rating: string | null;
+      favorited: string | null;
+      tags: Record<string, string>;
+      rawJson: string;
+      updatedAtMs: number;
     }
   > {
-    return this.metadataStore.readSourceExternalMetadata()
+    return this.metadataStore.readSourceExternalMetadata();
   }
 
-  readSourceCovers(): Map<string, { coverColor: string; coverImagePath: string | null; updatedAtMs: number }> {
-    return this.metadataStore.readSourceCovers()
+  readSourceCovers(): Map<
+    string,
+    { coverColor: string; coverImagePath: string | null; updatedAtMs: number }
+  > {
+    return this.metadataStore.readSourceCovers();
   }
 
   readImagePreferenceMetrics(): Map<
     string,
     {
-      eventCount: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      lastEventTimeMs: number | null
-      updatedAtMs: number
+      eventCount: number;
+      pagesRead: number;
+      totalPages: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
+      updatedAtMs: number;
     }
   > {
-    return this.metadataStore.readImagePreferenceMetrics()
+    return this.metadataStore.readImagePreferenceMetrics();
   }
 
   readVideoPreferenceMetrics(): Map<
     string,
     {
-      eventCount: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      lastEventTimeMs: number | null
-      updatedAtMs: number
+      eventCount: number;
+      watchSeconds: number;
+      totalSeconds: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
+      updatedAtMs: number;
     }
   > {
-    return this.metadataStore.readVideoPreferenceMetrics()
+    return this.metadataStore.readVideoPreferenceMetrics();
   }
 
   writePackageGrade(sourceId: string, grade: number | null): void {
-    this.metadataStore.writePackageGrade(sourceId, grade)
+    this.metadataStore.writePackageGrade(sourceId, grade);
   }
 
   setImagesHidden(imageIds: string[], hidden: boolean): number {
-    return this.snapshotStore.setImagesHidden(imageIds, hidden)
+    return this.snapshotStore.setImagesHidden(imageIds, hidden);
   }
 
   writeAudioTreePath(audioId: string, treePath: string[]): void {
-    this.snapshotStore.writeAudioTreePath(audioId, treePath)
+    this.snapshotStore.writeAudioTreePath(audioId, treePath);
   }
 
-  deleteImageItems(imageIds: string[]): { deletedCount: number; touchedSourceIds: string[] } {
-    return this.snapshotStore.deleteImageItems(imageIds)
+  deleteImageItems(imageIds: string[]): {
+    deletedCount: number;
+    touchedSourceIds: string[];
+  } {
+    return this.snapshotStore.deleteImageItems(imageIds);
   }
 
-  deleteSnapshotEntriesByPaths(
-    paths: string[],
-  ): { deletedSourceCount: number; deletedVideoCount: number; deletedAudioCount: number } {
-    return this.snapshotStore.deleteSnapshotEntriesByPaths(paths)
+  deleteSnapshotEntriesByPaths(paths: string[]): {
+    deletedSourceCount: number;
+    deletedVideoCount: number;
+    deletedAudioCount: number;
+  } {
+    return this.snapshotStore.deleteSnapshotEntriesByPaths(paths);
   }
 
   moveSnapshotEntriesByPaths(
     mappings: Array<{ fromPath: string; toPath: string }>,
   ): {
-    movedSourceCount: number
-    movedImageLocatorCount: number
-    movedVideoCount: number
-    movedAudioCount: number
+    movedSourceCount: number;
+    movedImageLocatorCount: number;
+    movedVideoCount: number;
+    movedAudioCount: number;
   } {
-    return this.snapshotStore.moveSnapshotEntriesByPaths(mappings)
+    return this.snapshotStore.moveSnapshotEntriesByPaths(mappings);
   }
 
   renameImageArchiveEntries(
-    mappings: Array<{ archivePath: string; fromEntryName: string; toEntryName: string }>,
+    mappings: Array<{
+      archivePath: string;
+      fromEntryName: string;
+      toEntryName: string;
+    }>,
   ): { updatedImageCount: number } {
-    return this.snapshotStore.renameImageArchiveEntries(mappings)
+    return this.snapshotStore.renameImageArchiveEntries(mappings);
   }
 
   writeSourceMetadata(
     sourceId: string,
     payload: {
-      packageName: string
-      displayName: string
-      workTitle: string
-      seriesId: string
-      circle: string
-      author: string
-      tags: string[]
+      packageName: string;
+      displayName: string;
+      workTitle: string;
+      seriesId: string;
+      circle: string;
+      author: string;
+      tags: string[];
     },
   ): void {
-    this.metadataStore.writeSourceMetadata(sourceId, payload)
+    this.metadataStore.writeSourceMetadata(sourceId, payload);
   }
 
-  writeVideoCover(videoId: string, coverColor: string, coverImagePath: string | null): void {
-    this.metadataStore.writeVideoCover(videoId, coverColor, coverImagePath)
+  writeVideoCover(
+    videoId: string,
+    coverColor: string,
+    coverImagePath: string | null,
+  ): void {
+    this.metadataStore.writeVideoCover(videoId, coverColor, coverImagePath);
   }
 
   writeVideoMetadata(
     videoId: string,
     payload: {
-      workTitle: string
-      workTitleJpn: string
-      seriesId: string
-      circle: string
-      circleJpn: string
-      author: string
-      authorJpn: string
-      tags: string[]
-      grade: number | null
+      workTitle: string;
+      workTitleJpn: string;
+      seriesId: string;
+      circle: string;
+      circleJpn: string;
+      author: string;
+      authorJpn: string;
+      tags: string[];
+      grade: number | null;
     },
   ): void {
-    this.metadataStore.writeVideoMetadata(videoId, payload)
+    this.metadataStore.writeVideoMetadata(videoId, payload);
   }
 
   writeAudioMetadata(
     audioId: string,
     payload: {
-      album: string
-      author: string
-      trackTitle: string
-      seriesId: string
+      album: string;
+      author: string;
+      trackTitle: string;
+      seriesId: string;
     },
   ): void {
-    this.metadataStore.writeAudioMetadata(audioId, payload)
+    this.metadataStore.writeAudioMetadata(audioId, payload);
   }
 
   writeSourceExternalMetadata(
     sourceId: string,
     payload: {
-      sourceSite: 'nhentai' | 'ehentai' | 'others'
-      sourceUrl: string
-      sourceRemoteId: string
-      sourceToken: string
-      title: string
-      titleJpn: string
-      groupName: string
-      groupNameJpn: string
-      artist: string
-      artistJpn: string
-      posted: string
-      rating: string | null
-      favorited: string | null
-      tags: Record<string, string>
-      rawJson: string
+      sourceSite: "nhentai" | "ehentai" | "others";
+      sourceUrl: string;
+      sourceRemoteId: string;
+      sourceToken: string;
+      title: string;
+      titleJpn: string;
+      groupName: string;
+      groupNameJpn: string;
+      artist: string;
+      artistJpn: string;
+      posted: string;
+      rating: string | null;
+      favorited: string | null;
+      tags: Record<string, string>;
+      rawJson: string;
     },
   ): void {
-    this.metadataStore.writeSourceExternalMetadata(sourceId, payload)
+    this.metadataStore.writeSourceExternalMetadata(sourceId, payload);
   }
 
-  writeSourceCover(sourceId: string, coverColor: string, coverImagePath: string | null): void {
-    this.metadataStore.writeSourceCover(sourceId, coverColor, coverImagePath)
+  writeSourceCover(
+    sourceId: string,
+    coverColor: string,
+    coverImagePath: string | null,
+  ): void {
+    this.metadataStore.writeSourceCover(sourceId, coverColor, coverImagePath);
   }
 
   writeImagePreferenceMetrics(
     sourceId: string,
     payload: {
-      eventCount: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      lastEventTimeMs: number | null
+      eventCount: number;
+      pagesRead: number;
+      totalPages: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
     },
   ): void {
-    this.metadataStore.writeImagePreferenceMetrics(sourceId, payload)
+    this.metadataStore.writeImagePreferenceMetrics(sourceId, payload);
   }
 
   writeVideoPreferenceMetrics(
     videoId: string,
     payload: {
-      eventCount: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      lastEventTimeMs: number | null
+      eventCount: number;
+      watchSeconds: number;
+      totalSeconds: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
     },
   ): void {
-    this.metadataStore.writeVideoPreferenceMetrics(videoId, payload)
+    this.metadataStore.writeVideoPreferenceMetrics(videoId, payload);
   }
 
-  insertImagePreferenceSession(
-    payload: {
-      sessionId: string
-      sourceId: string
-      startedAtMs: number
-      endedAtMs: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      isFullscreen: boolean
-      endReason: string
-    },
-  ): void {
-    this.metadataStore.insertImagePreferenceSession(payload)
+  insertImagePreferenceSession(payload: {
+    sessionId: string;
+    sourceId: string;
+    startedAtMs: number;
+    endedAtMs: number;
+    pagesRead: number;
+    totalPages: number;
+    completionRatio: number;
+    isFullscreen: boolean;
+    endReason: string;
+  }): void {
+    this.metadataStore.insertImagePreferenceSession(payload);
   }
 
-  insertVideoPreferenceSession(
-    payload: {
-      sessionId: string
-      videoId: string
-      startedAtMs: number
-      endedAtMs: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      hadFullscreen: boolean
-      isNoise: boolean
-      endReason: string
-    },
-  ): void {
-    this.metadataStore.insertVideoPreferenceSession(payload)
+  insertVideoPreferenceSession(payload: {
+    sessionId: string;
+    videoId: string;
+    startedAtMs: number;
+    endedAtMs: number;
+    watchSeconds: number;
+    totalSeconds: number;
+    completionRatio: number;
+    hadFullscreen: boolean;
+    isNoise: boolean;
+    endReason: string;
+  }): void {
+    this.metadataStore.insertVideoPreferenceSession(payload);
   }
 
-  upsertImagePreferenceRuntime(
-    payload: {
-      sessionId: string
-      sourceId: string
-      startedAtMs: number
-      lastCheckpointMs: number
-      checkpointSeq: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      isFullscreen: boolean
-    },
-  ): void {
-    this.metadataStore.upsertImagePreferenceRuntime(payload)
+  upsertImagePreferenceRuntime(payload: {
+    sessionId: string;
+    sourceId: string;
+    startedAtMs: number;
+    lastCheckpointMs: number;
+    checkpointSeq: number;
+    pagesRead: number;
+    totalPages: number;
+    completionRatio: number;
+    isFullscreen: boolean;
+  }): void {
+    this.metadataStore.upsertImagePreferenceRuntime(payload);
   }
 
-  upsertVideoPreferenceRuntime(
-    payload: {
-      sessionId: string
-      videoId: string
-      startedAtMs: number
-      lastCheckpointMs: number
-      checkpointSeq: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      hadFullscreen: boolean
-      lastVideoTime: number
-    },
-  ): void {
-    this.metadataStore.upsertVideoPreferenceRuntime(payload)
+  upsertVideoPreferenceRuntime(payload: {
+    sessionId: string;
+    videoId: string;
+    startedAtMs: number;
+    lastCheckpointMs: number;
+    checkpointSeq: number;
+    watchSeconds: number;
+    totalSeconds: number;
+    completionRatio: number;
+    hadFullscreen: boolean;
+    lastVideoTime: number;
+  }): void {
+    this.metadataStore.upsertVideoPreferenceRuntime(payload);
   }
 
   deleteImagePreferenceRuntime(sessionId: string): void {
-    this.metadataStore.deleteImagePreferenceRuntime(sessionId)
+    this.metadataStore.deleteImagePreferenceRuntime(sessionId);
   }
 
   deleteVideoPreferenceRuntime(sessionId: string): void {
-    this.metadataStore.deleteVideoPreferenceRuntime(sessionId)
+    this.metadataStore.deleteVideoPreferenceRuntime(sessionId);
   }
 
   readPlaylist(): string[] {
-    return this.playlistStore.readPlaylist()
+    return this.playlistStore.readPlaylist();
   }
 
   writePlaylist(videoIds: string[]): string[] {
-    return this.playlistStore.writePlaylist(videoIds)
+    return this.playlistStore.writePlaylist(videoIds);
   }
 
   upsertTask(task: ImportTaskRecord): void {
-    this.taskStore.upsertTask(task)
+    this.taskStore.upsertTask(task);
   }
 
   readTask(taskId: string): ImportTaskRecord | null {
-    return this.taskStore.readTask(taskId)
+    return this.taskStore.readTask(taskId);
   }
 
   readTasks(): ImportTaskRecord[] {
-    return this.taskStore.readTasks()
+    return this.taskStore.readTasks();
   }
 
   deleteTasksByStatus(statuses: ReadonlyArray<ImportTaskStatus>): number {
-    return this.taskStore.deleteTasksByStatus(statuses)
+    return this.taskStore.deleteTasksByStatus(statuses);
   }
 
   clearDatabase(): void {
     this.runInTransaction(() => {
-      this.db.prepare('DELETE FROM task_log').run()
-      this.db.prepare('DELETE FROM playlist_entry').run()
-      this.db.prepare('DELETE FROM video_cover').run()
-      this.db.prepare('DELETE FROM video_metadata').run()
-      this.db.prepare('DELETE FROM audio_metadata').run()
-      this.db.prepare('DELETE FROM media_source_cover').run()
-      this.db.prepare('DELETE FROM media_source_external_metadata').run()
-      this.db.prepare('DELETE FROM image_preference_metrics').run()
-      this.db.prepare('DELETE FROM video_preference_metrics').run()
-      this.db.prepare('DELETE FROM image_preference_sessions').run()
-      this.db.prepare('DELETE FROM video_preference_sessions').run()
-      this.db.prepare('DELETE FROM image_preference_runtime').run()
-      this.db.prepare('DELETE FROM video_preference_runtime').run()
-      this.db.prepare('DELETE FROM package_grade').run()
-      this.db.prepare('DELETE FROM image_item').run()
-      this.db.prepare('DELETE FROM media_source').run()
-      this.db.prepare('DELETE FROM video_item').run()
-      this.db.prepare('DELETE FROM audio_item').run()
-      this.db.prepare('DELETE FROM app_state').run()
-    })
+      this.db.prepare("DELETE FROM task_log").run();
+      this.db.prepare("DELETE FROM playlist_entry").run();
+      this.db.prepare("DELETE FROM video_cover").run();
+      this.db.prepare("DELETE FROM video_metadata").run();
+      this.db.prepare("DELETE FROM audio_metadata").run();
+      this.db.prepare("DELETE FROM media_source_cover").run();
+      this.db.prepare("DELETE FROM media_source_external_metadata").run();
+      this.db.prepare("DELETE FROM image_preference_metrics").run();
+      this.db.prepare("DELETE FROM video_preference_metrics").run();
+      this.db.prepare("DELETE FROM image_preference_sessions").run();
+      this.db.prepare("DELETE FROM video_preference_sessions").run();
+      this.db.prepare("DELETE FROM image_preference_runtime").run();
+      this.db.prepare("DELETE FROM video_preference_runtime").run();
+      this.db.prepare("DELETE FROM package_grade").run();
+      this.db.prepare("DELETE FROM image_item").run();
+      this.db.prepare("DELETE FROM media_source").run();
+      this.db.prepare("DELETE FROM video_item").run();
+      this.db.prepare("DELETE FROM audio_item").run();
+      this.db.prepare("DELETE FROM app_state").run();
+    });
   }
 }
