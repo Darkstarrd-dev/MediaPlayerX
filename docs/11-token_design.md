@@ -534,3 +534,29 @@ Main / Metadata header 语义 token 补充（2026-03）：
 | 新增 UI 槽位 | 先在 `10-ui_definition.md` 增加稳定路径，再在本文件增加对应 Token 前缀行 |
 | 修改稳定路径 | 同步修改两张表中的路径与前缀；禁止只改其一                               |
 | 删除 UI 槽位 | 两张表同时删除；若需兼容，先标记 deprecated 并给迁移窗口                 |
+
+## v22 源端插槽补录
+
+与 `docs/10-ui_definition.md` 第 9 节一一对应。这些槽位的 `data-slot`（DOM 钩子）与 `--mpx-slot-*`（CSS 变量）为有意解耦的两个命名空间，token 前缀按 CSS 层扁平化短形式登记。
+
+| 稳定路径 | Token 前缀 |
+| --- | --- |
+| `fg.panel.small.btnGroup.actions` | `--mpx-slot-fg-panel-small-btn-group-actions-*` |
+| `fg.panel.large.head.btnGroup.main` | `--mpx-slot-fg-panel-large-head-btn-group-main-*` |
+| `fg.panel.large.head.btnGroup.main.btn.reset` | `--mpx-slot-fg-panel-large-head-btn-group-main-btn-reset-*` |
+| `fg.panel.large.head.btnGroup.main.btn.hide` | `--mpx-slot-fg-panel-large-head-btn-group-main-btn-hide-*` |
+| `fg.panel.large.head.btnGroup.main.btn.close` | `--mpx-slot-fg-panel-large-head-btn-group-main-btn-close-*` |
+| `fg.panel.large.side.btnGroup.nav` | `--mpx-slot-fg-panel-large-side-btn-group-nav-*` |
+| `fg.panel.large.side.btnGroup.nav.btn.item` | `--mpx-slot-fg-panel-large-side-btn-group-nav-btn-item-*` |
+| `fg.panel.large.footer.btnGroup.actions` | `--mpx-slot-fg-panel-large-footer-btn-group-actions-*` |
+| `fg.main.header.btnGroup.metadata` | `--mpx-slot-fg-main-header-btn-group-metadata-*` |
+| `fg.main.header.btnGroup.normal` | `--mpx-slot-fg-main-header-btn-group-normal-*` |
+| `fg.main.header.btnGroup.normal.primary` | `--mpx-slot-fg-main-header-btn-group-normal-primary-*` |
+| `fg.main.header.btnGroup.normal.jump` | `--mpx-slot-fg-main-header-btn-group-normal-jump-*` |
+| `fg.main.header.btnGroup.normal.secondary` | `--mpx-slot-fg-main-header-btn-group-normal-secondary-*` |
+| `fg.main.header.btnGroup.manage` | `--mpx-slot-fg-main-header-btn-group-manage-*` |
+| `fg.main.header.btnGroup.manage.secondary` | `--mpx-slot-fg-main-header-btn-group-manage-secondary-*` |
+| `fg.main.content.music.controls.shader.pop` | `--mpx-slot-fg-main-content-music-controls-shader-pop-*` |
+| `fg.main.content.music.controls.shader.settings.pop` | `--mpx-slot-fg-main-content-music-controls-shader-settings-pop-*` |
+| `fg.sidebar.header.btnGroup.actions` | `--mpx-slot-fg-sidebar-header-btn-group-actions-*` |
+| `fs.image.layers` | `--mpx-slot-fs-image-layers-*` |

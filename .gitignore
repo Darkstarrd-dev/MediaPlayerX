@@ -40,6 +40,8 @@ testdata/
 # Generated reports
 report/html/index.html
 report/html/jscpd-report.json
+reports/bundle-stats.html
+reports/bundle-stats.json
 
 # Local scratch files
 scripts/export-app-states.tsx

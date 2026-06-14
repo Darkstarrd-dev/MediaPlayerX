@@ -267,7 +267,7 @@ function renderThemeParameterPanel(
   );
 }
 
-describe("ThemeParameterPanel", () => {
+describe("ThemeParameterPanel", { timeout: 60000 }, () => {
   let restoreFastRoleQueries: (() => void) | null = null;
 
   beforeAll(() => {
@@ -316,9 +316,7 @@ describe("ThemeParameterPanel", () => {
       target: { value: "24" },
     });
     expect(
-      document.documentElement.style.getPropertyValue(
-        "--mpx-soft-shadow-dark",
-      ),
+      document.documentElement.style.getPropertyValue("--mpx-soft-shadow-dark"),
     ).toContain("color-mix");
 
     fireEvent.change(getSliderByLabelText("侧栏面板浮起高度"), {
@@ -649,9 +647,7 @@ describe("ThemeParameterPanel", () => {
       document.documentElement.style.getPropertyValue("--mpx-layout-padding"),
     ).toBe("9px");
     expect(
-      document.documentElement.style.getPropertyValue(
-        "--mpx-soft-shadow-dark",
-      ),
+      document.documentElement.style.getPropertyValue("--mpx-soft-shadow-dark"),
     ).toContain("26%");
     expect(
       document.documentElement.style

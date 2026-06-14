@@ -325,3 +325,32 @@
 | `boot.splash.stage.character` | `.character`                                        | `data-slot="boot-splash-stage-character"`  | 有 banner 源时         | 角色图层       | 绝对定位，`left:50% top:0`             |
 | `boot.splash.card`            | `.card`                                             | `data-slot="boot-splash-card"`             | 同上                   | 状态卡片       | 圆角、阴影、半透明背景                 |
 | `boot.splash.card.track`      | `.track`                                            | `data-slot="boot-splash-card-track"`       | 同上                   | 启动进度轨道   | `::before` 动画条                      |
+
+## 9. 源端已采纳插槽补录（v22）
+
+补充登记源码中已使用、但此前未单独列出的按钮组容器、全屏图层与音乐着色弹层等 `data-slot`。这些槽位的 `data-slot`（DOM 钩子，长形式）与 `--mpx-slot-*`（CSS 变量，短形式）为有意解耦的两个命名空间，参见 `docs/11-token_design.md`。
+
+| 稳定路径 | 当前实现锚点 | 唯一标识 | 说明 |
+| --- | --- | --- | --- |
+| `fg.panel.small.btnGroup.actions` | `DangerConfirmDialog` 按钮组 | `data-slot="fg-panel-small-btn-group-actions"` | 小面板操作按钮组容器 |
+| `fg.panel.large.head.btnGroup.main` | `HelpPanel` 头部主按钮组 | `data-slot="fg-panel-large-head-btn-group-main"` | 大面板头主按钮组容器 |
+| `fg.panel.large.head.btnGroup.main.btn.reset` | `ThemeParameterPanelContainer` 重置按钮 | `data-slot="fg-panel-large-head-btn-group-main-btn-reset"` | 大面板头主按钮组重置 |
+| `fg.panel.large.head.btnGroup.main.btn.hide` | `ThemeParameterPanelContainer` 隐藏按钮 | `data-slot="fg-panel-large-head-btn-group-main-btn-hide"` | 大面板头主按钮组隐藏 |
+| `fg.panel.large.head.btnGroup.main.btn.close` | `HelpPanel` 关闭按钮 | `data-slot="fg-panel-large-head-btn-group-main-btn-close"` | 大面板头主按钮组关闭 |
+| `fg.panel.large.side.btnGroup.nav` | `HelpPanel` 侧栏导航组 | `data-slot="fg-panel-large-side-btn-group-nav"` | 大面板侧导航组容器 |
+| `fg.panel.large.side.btnGroup.nav.btn.item` | `HelpPanel` 导航条目 | `data-slot="fg-panel-large-side-btn-group-nav-btn-item"` | 大面板侧导航条目 |
+| `fg.panel.large.footer.btnGroup.actions` | `MusicAudioTranscodePanel` 底部操作组 | `data-slot="fg-panel-large-footer-btn-group-actions"` | 大面板底操作按钮组容器 |
+| `fg.main.header.btnGroup.metadata` | `ImageMainMetadataToolbar` 元数据组 | `data-slot="fg-main-header-btn-group-metadata"` | Main 区元数据按钮组容器 |
+| `fg.main.header.btnGroup.normal` | `ImageMainNormalToolbar` 常规组 | `data-slot="fg-main-header-btn-group-normal"` | Main 区常规按钮组容器 |
+| `fg.main.header.btnGroup.normal.primary` | `ImageMainNormalToolbar` 主操作 | `data-slot="fg-main-header-btn-group-normal-primary"` | 常规组主操作按钮 |
+| `fg.main.header.btnGroup.normal.jump` | `ImageMainNormalToolbar` 跳转 | `data-slot="fg-main-header-btn-group-normal-jump"` | 常规组跳转按钮 |
+| `fg.main.header.btnGroup.normal.secondary` | `VideoMainSection` 次操作 | `data-slot="fg-main-header-btn-group-normal-secondary"` | 常规组次操作按钮 |
+| `fg.main.header.btnGroup.manage` | `ImageMainSection` 管理组 | `data-slot="fg-main-header-btn-group-manage"` | Main 区管理按钮组容器 |
+| `fg.main.header.btnGroup.manage.secondary` | `ImageMainSection` 管理次操作 | `data-slot="fg-main-header-btn-group-manage-secondary"` | 管理组次操作按钮 |
+| `fg.main.content.music.controls.shader.pop` | `MusicMainSectionControlsShell` 着色弹层 | `data-slot="fg-main-content-music-controls-shader-pop"` | 音乐着色器弹层 |
+| `fg.main.content.music.controls.shader.settings.pop` | `MusicMainSectionControlsShell` 着色设置弹层 | `data-slot="fg-main-content-music-controls-shader-settings-pop"` | 音乐着色器设置弹层 |
+| `fg.sidebar.header.btnGroup.actions` | `SidebarPanel` 头部操作组 | `data-slot="fg-sidebar-header-btn-group-actions"` | 侧栏头部操作按钮组容器 |
+| `fg.meta.header.g3.search` | `.search-trigger-btn` (search) | `data-slot="fg-meta-header-g3-search"` | Meta g3 搜索开关（容器级） |
+| `fg.meta.header.g3.manage` | `.search-trigger-btn` (manage) | `data-slot="fg-meta-header-g3-manage"` | Meta g3 管理开关（容器级） |
+| `fg.meta.header.g3.metadata` | `.search-trigger-btn` (metadata) | `data-slot="fg-meta-header-g3-metadata"` | Meta g3 元数据开关（容器级） |
+| `fs.image.layers` | `FullscreenPanes` 多层图像容器 | `data-slot="fs-image-layers"` | 全屏多层图像预渲染容器 |

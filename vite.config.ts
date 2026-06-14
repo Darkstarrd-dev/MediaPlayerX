@@ -1,16 +1,32 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {
   const isCoverageRun = process.argv.some(
     (arg) => arg === "--coverage" || arg.startsWith("--coverage."),
   );
+  const isAnalyzeRun = process.env.ANALYZE === "true";
 
   return {
     // Electron loads the production bundle via file://, so we need relative asset paths.
     base: command === "build" ? "./" : "/",
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Bundle visualization is opt-in via ANALYZE=true so it never pollutes a
+      // normal production build. Produces reports/bundle-stats.html.
+      ...(isAnalyzeRun
+        ? [
+            visualizer({
+              filename: "reports/bundle-stats.html",
+              template: "treemap",
+              gzipSize: true,
+              brotliSize: true,
+            }),
+          ]
+        : []),
+    ],
     build: {
       minify: "esbuild",
       cssMinify: true,
@@ -36,6 +52,13 @@ export default defineConfig(({ command }) => {
 
             if (normalizedId.includes("/src/components/metadata/")) {
               return "ui-metadata";
+            }
+
+            // The theme-parameter subsystem (catalogs + panel, ~14k LOC) is a
+            // settings sub-panel opened on demand, not needed at first paint.
+            // Splitting it out of the entry chunk keeps `index` within budget.
+            if (normalizedId.includes("/src/components/theme-parameter/")) {
+              return "ui-theme-parameter";
             }
 
             if (
@@ -77,8 +100,13 @@ export default defineConfig(({ command }) => {
       testTimeout: isCoverageRun ? 60000 : 15000,
       hookTimeout: isCoverageRun ? 60000 : 15000,
       teardownTimeout: isCoverageRun ? 60000 : 15000,
-      fileParallelism: !isCoverageRun,
-      maxWorkers: isCoverageRun ? 1 : "50%",
+      // The heavy ThemeParameterPanel suite carries its own describe-level
+      // timeout (60s) so both normal and coverage runs can stay parallel.
+      // Coverage instrumentation adds per-test overhead that 60s comfortably
+      // absorbs, while single-thread coverage would not finish in a reasonable
+      // window.
+      fileParallelism: true,
+      maxWorkers: "50%",
       coverage: {
         provider: "v8",
         reporter: ["text", "html", "json-summary"],
