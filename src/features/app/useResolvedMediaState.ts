@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { type MediaResolveTarget, useResolvedMediaUrls } from "../backend";
+import { useFullscreenImagePreloader } from "./useFullscreenImagePreloader";
 import type { MediaRepository } from "../backend/repository";
 import type { UiBenchSettings } from "../perf/benchSettings";
 import type {
@@ -327,7 +328,9 @@ export function useResolvedMediaState({
       }
     }
 
-    if (!showNamesOnly) {
+    // 全屏期间网格被全屏层覆盖、不可见，跳过网格缩略图解析，避免共享解析器随全屏翻页
+    // 反复 abort/重派发缩略图、与全屏原图解析争抢算力（全屏退出后自然恢复解析）
+    if (!showNamesOnly && !fullscreenActive) {
       // 导入忙碌期间仅解析首屏可视区内的缩略图，减少 IPC 竞争
       const effectiveRefsForThumbnails = importBusy
         ? refsInPage.slice(0, IMPORT_BUSY_THUMBNAIL_LIMIT)
@@ -602,6 +605,18 @@ export function useResolvedMediaState({
     return next;
   }, [resolvedMedia.urlByTargetId]);
 
+  // 全屏专用 eager 预解析（绕开网格共享解析器 debounce/abort 限流），消除连续翻页时
+  // 聚焦图 URL 长时间无法解析导致的黑屏空窗（实测 (b) 段可达数秒）
+  const { urlByImageId: preloadedFullscreenUrlByImageId } =
+    useFullscreenImagePreloader({
+      repository,
+      fullscreenActive,
+      focusedRef,
+      orderedRootScopedImageRefs,
+      packageById,
+      radius: fullscreenCrossPackagePrefetchCount ?? 6,
+    });
+
   const adjacentFullscreenImageSrcs = useMemo<string[]>(() => {
     if (
       !fullscreenActive ||
@@ -628,7 +643,10 @@ export function useResolvedMediaState({
         }
         const img = packageById.get(ref.packageId)?.images[ref.imageIndex];
         if (img) {
-          const url = originalImageUrlById[img.id];
+          // 与显示一致：优先 eager 预解析 url，确保解码预热命中同一 url
+          const url =
+            preloadedFullscreenUrlByImageId[img.id] ??
+            originalImageUrlById[img.id];
           if (url) {
             srcs.push(url);
           }
@@ -643,6 +661,7 @@ export function useResolvedMediaState({
     packageById,
     fullscreenCrossPackagePrefetchCount,
     originalImageUrlById,
+    preloadedFullscreenUrlByImageId,
   ]);
 
   const fullscreenImageUrlById = useMemo<Record<string, string>>(() => {
@@ -683,6 +702,7 @@ export function useResolvedMediaState({
     : null;
   const fullscreenImageSrc = focusedImage
     ? (fullscreenImageUrlById[focusedImage.id] ??
+      preloadedFullscreenUrlByImageId[focusedImage.id] ??
       originalImageUrlById[focusedImage.id] ??
       thumbnailImageUrlById[focusedImage.id] ??
       null)

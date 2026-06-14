@@ -493,12 +493,25 @@ export function useImageBrowserViewModel({
         return;
       }
 
+      // 上/下包按钮语义：始终跳到目标包第一页，不沿用残留焦点
+      // （连续翻页向后越界时 moveImage 会把上一个包焦点写成末张，
+      //  若此处不重置，再点「上个包」会落在最后一页）
       setSelectedPackageId(nextPackage.id);
+      setFocusByPackage((previous) => ({
+        ...previous,
+        [nextPackage.id]: 0,
+      }));
+      setPageByPackage((previous) => ({
+        ...previous,
+        [nextPackage.id]: 0,
+      }));
     },
     [
       canNavigateImageInCurrentContext,
       orderedRootScopedPackages,
       selectedPackageId,
+      setFocusByPackage,
+      setPageByPackage,
       setSelectedPackageId,
       vectorResultsActive,
     ],

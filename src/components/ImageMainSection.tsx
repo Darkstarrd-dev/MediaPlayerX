@@ -1094,7 +1094,10 @@ function ImageMainSection({
 
   return (
     <>
-      <div className="main-header mpx-btn-scope-main-header" data-slot="fg-main-header">
+      <div
+        className="main-header mpx-btn-scope-main-header"
+        data-slot="fg-main-header"
+      >
         {manageMode ? (
           <>
             <span hidden data-slot="fg-main-header-state-manage" />
@@ -1382,6 +1385,7 @@ function ImageMainSection({
       </div>
 
       <ImageMainSectionContentArea
+        fullscreenActive={fullscreenActive}
         nodeBrowseMode={nodeBrowseMode}
         showNamesOnly={showNamesOnly}
         manageMode={manageMode}

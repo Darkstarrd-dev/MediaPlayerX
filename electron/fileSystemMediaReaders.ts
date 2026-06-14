@@ -1,199 +1,219 @@
-import { createReadStream, promises as fs } from 'node:fs'
+import { createReadStream, promises as fs } from "node:fs";
 
-import type { MediaLocatorDto } from '../src/contracts/backend'
-import { parseByteRange, toWebReadableStream } from './fileSystemStreamHelpers'
-import { readZipEntryContent, readZipEntryDataOffset, type ZipCentralEntry } from './zipArchiveHelpers'
+import type { MediaLocatorDto } from "../src/contracts/backend";
+import { parseByteRange, toWebReadableStream } from "./fileSystemStreamHelpers";
+import {
+  readZipEntryContent,
+  readZipEntryDataOffset,
+  type ZipCentralEntry,
+} from "./zipArchiveHelpers";
+
+// 图片为不可变内容、resource_url 携带一次性 token，可安全交由浏览器缓存。
+// 启用缓存后全屏相邻图预载才能命中、回切瞬时（消除切包/回切重复 fetch+decode 卡顿）。
+// 视频/音频走 range 流式播放，保持 no-store 避免缓存大文件占用内存。
+const MEDIA_IMAGE_CACHE_CONTROL = "private, max-age=300";
+
+function resolveFullContentCacheControl(mimeType: string): string {
+  return mimeType.startsWith("image/") ? MEDIA_IMAGE_CACHE_CONTROL : "no-store";
+}
 
 export interface MediaProtocolResponsePayload {
-  status: number
-  headers: Record<string, string>
-  body: Uint8Array
+  status: number;
+  headers: Record<string, string>;
+  body: Uint8Array;
 }
 
 export interface MediaProtocolStreamResponsePayload {
-  status: number
-  headers: Record<string, string>
-  body: Uint8Array | ReadableStream<Uint8Array>
+  status: number;
+  headers: Record<string, string>;
+  body: Uint8Array | ReadableStream<Uint8Array>;
 }
 
 export async function readFilesystemMedia(
-  locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
+  locator: Extract<MediaLocatorDto, { kind: "filesystem" }>,
   mimeType: string,
   rangeHeader: string | null,
 ): Promise<MediaProtocolResponsePayload> {
-  const filePath = locator.absolute_path
-  const stat = await fs.stat(filePath)
-  const size = stat.size
+  const filePath = locator.absolute_path;
+  const stat = await fs.stat(filePath);
+  const size = stat.size;
 
-  const requestedRange = parseByteRange(rangeHeader, size)
+  const requestedRange = parseByteRange(rangeHeader, size);
   if (rangeHeader && !requestedRange) {
     return {
       status: 416,
       headers: {
-        'content-type': mimeType,
-        'content-range': `bytes */${size}`,
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-range": `bytes */${size}`,
+        "accept-ranges": "bytes",
+        "cache-control": "no-store",
       },
       body: new Uint8Array(0),
-    }
+    };
   }
 
   if (!requestedRange) {
-    const fileBuffer = await fs.readFile(filePath)
+    const fileBuffer = await fs.readFile(filePath);
     return {
       status: 200,
       headers: {
-        'content-type': mimeType,
-        'content-length': String(fileBuffer.length),
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-length": String(fileBuffer.length),
+        "accept-ranges": "bytes",
+        "cache-control": resolveFullContentCacheControl(mimeType),
       },
       body: fileBuffer,
-    }
+    };
   }
 
-  const { start, end } = requestedRange
-  const length = end - start + 1
-  const handle = await fs.open(filePath, 'r')
+  const { start, end } = requestedRange;
+  const length = end - start + 1;
+  const handle = await fs.open(filePath, "r");
   try {
-    const buffer = Buffer.alloc(length)
-    const { bytesRead } = await handle.read(buffer, 0, buffer.length, start)
-    const payload = bytesRead < buffer.length ? buffer.subarray(0, bytesRead) : buffer
+    const buffer = Buffer.alloc(length);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, start);
+    const payload =
+      bytesRead < buffer.length ? buffer.subarray(0, bytesRead) : buffer;
     return {
       status: 206,
       headers: {
-        'content-type': mimeType,
-        'content-length': String(payload.length),
-        'content-range': `bytes ${start}-${start + payload.length - 1}/${size}`,
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-length": String(payload.length),
+        "content-range": `bytes ${start}-${start + payload.length - 1}/${size}`,
+        "accept-ranges": "bytes",
+        "cache-control": "no-store",
       },
       body: payload,
-    }
+    };
   } finally {
-    await handle.close()
+    await handle.close();
   }
 }
 
 export async function readFilesystemMediaStream(
-  locator: Extract<MediaLocatorDto, { kind: 'filesystem' }>,
+  locator: Extract<MediaLocatorDto, { kind: "filesystem" }>,
   mimeType: string,
   rangeHeader: string | null,
   signal?: AbortSignal | null,
 ): Promise<MediaProtocolStreamResponsePayload> {
-  const filePath = locator.absolute_path
-  const stat = await fs.stat(filePath)
-  const size = stat.size
+  const filePath = locator.absolute_path;
+  const stat = await fs.stat(filePath);
+  const size = stat.size;
 
-  const requestedRange = parseByteRange(rangeHeader, size)
+  const requestedRange = parseByteRange(rangeHeader, size);
   if (rangeHeader && !requestedRange) {
     return {
       status: 416,
       headers: {
-        'content-type': mimeType,
-        'content-range': `bytes */${size}`,
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-range": `bytes */${size}`,
+        "accept-ranges": "bytes",
+        "cache-control": "no-store",
       },
       body: new Uint8Array(0),
-    }
+    };
   }
 
   if (!requestedRange) {
-    const stream = createReadStream(filePath)
+    const stream = createReadStream(filePath);
     return {
       status: 200,
       headers: {
-        'content-type': mimeType,
-        'content-length': String(size),
-        'accept-ranges': 'bytes',
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-length": String(size),
+        "accept-ranges": "bytes",
+        "cache-control": resolveFullContentCacheControl(mimeType),
       },
       body: toWebReadableStream(stream, signal),
-    }
+    };
   }
 
-  const { start, end } = requestedRange
-  const length = end - start + 1
-  const stream = createReadStream(filePath, { start, end })
+  const { start, end } = requestedRange;
+  const length = end - start + 1;
+  const stream = createReadStream(filePath, { start, end });
   return {
     status: 206,
     headers: {
-      'content-type': mimeType,
-      'content-length': String(length),
-      'content-range': `bytes ${start}-${end}/${size}`,
-      'accept-ranges': 'bytes',
-      'cache-control': 'no-store',
+      "content-type": mimeType,
+      "content-length": String(length),
+      "content-range": `bytes ${start}-${end}/${size}`,
+      "accept-ranges": "bytes",
+      "cache-control": "no-store",
     },
     body: toWebReadableStream(stream, signal),
-  }
+  };
 }
 
 export async function readArchiveEntryMedia(
-  locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
+  locator: Extract<MediaLocatorDto, { kind: "archive-entry" }>,
   mimeType: string,
   zipEntryIndexByPath: Map<string, Map<string, ZipCentralEntry>>,
 ): Promise<MediaProtocolResponsePayload> {
-  const archivePath = locator.archive_path
-  const entryMap = zipEntryIndexByPath.get(archivePath)
-  const entry = entryMap?.get(locator.entry_name)
+  const archivePath = locator.archive_path;
+  const entryMap = zipEntryIndexByPath.get(archivePath);
+  const entry = entryMap?.get(locator.entry_name);
   if (!entry) {
-    throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
+    throw new Error(
+      `压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`,
+    );
   }
 
-  const buffer = await readZipEntryContent(archivePath, entry)
+  const buffer = await readZipEntryContent(archivePath, entry);
   return {
     status: 200,
     headers: {
-      'content-type': mimeType,
-      'content-length': String(buffer.length),
-      'cache-control': 'no-store',
+      "content-type": mimeType,
+      "content-length": String(buffer.length),
+      "cache-control": resolveFullContentCacheControl(mimeType),
     },
     body: buffer,
-  }
+  };
 }
 
 export async function readArchiveEntryMediaStream(
-  locator: Extract<MediaLocatorDto, { kind: 'archive-entry' }>,
+  locator: Extract<MediaLocatorDto, { kind: "archive-entry" }>,
   mimeType: string,
   zipEntryIndexByPath: Map<string, Map<string, ZipCentralEntry>>,
   signal?: AbortSignal | null,
 ): Promise<MediaProtocolStreamResponsePayload> {
-  const archivePath = locator.archive_path
-  const entryMap = zipEntryIndexByPath.get(archivePath)
-  const entry = entryMap?.get(locator.entry_name)
+  const archivePath = locator.archive_path;
+  const entryMap = zipEntryIndexByPath.get(archivePath);
+  const entry = entryMap?.get(locator.entry_name);
   if (!entry) {
-    throw new Error(`压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`)
+    throw new Error(
+      `压缩包媒体读取失败（entry 丢失）: ${archivePath}::${locator.entry_name}`,
+    );
   }
 
   if ((entry.generalPurposeBitFlag & 0x0001) !== 0) {
-    throw new Error(`zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`)
+    throw new Error(
+      `zip 条目被加密，当前不支持: ${archivePath} -> ${entry.entryName}`,
+    );
   }
 
   if (entry.compressionMethod === 0) {
-    const dataOffset = await readZipEntryDataOffset(archivePath, entry)
-    const end = dataOffset + entry.compressedSize - 1
-    const stream = createReadStream(archivePath, { start: dataOffset, end })
+    const dataOffset = await readZipEntryDataOffset(archivePath, entry);
+    const end = dataOffset + entry.compressedSize - 1;
+    const stream = createReadStream(archivePath, { start: dataOffset, end });
     return {
       status: 200,
       headers: {
-        'content-type': mimeType,
-        'content-length': String(entry.compressedSize),
-        'cache-control': 'no-store',
+        "content-type": mimeType,
+        "content-length": String(entry.compressedSize),
+        "cache-control": resolveFullContentCacheControl(mimeType),
       },
       body: toWebReadableStream(stream, signal),
-    }
+    };
   }
 
-  const buffer = await readZipEntryContent(archivePath, entry)
+  const buffer = await readZipEntryContent(archivePath, entry);
   return {
     status: 200,
     headers: {
-      'content-type': mimeType,
-      'content-length': String(buffer.length),
-      'cache-control': 'no-store',
+      "content-type": mimeType,
+      "content-length": String(buffer.length),
+      "cache-control": resolveFullContentCacheControl(mimeType),
     },
     body: buffer,
-  }
+  };
 }

@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import { AdReviewStartDialog } from "./AdReviewStartDialog";
 import { renderImageMainContent } from "./ImageMainSection.renderers";
 import type { ImageMainSectionProps } from "./ImageMainSection.types";
@@ -5,6 +7,8 @@ import MetadataFetchPanel from "./metadata/MetadataFetchPanel";
 import type { TranslateFn } from "../i18n/context";
 
 interface ImageMainSectionContentAreaProps {
+  /** 全屏（图片模式）期间网格被全屏层覆盖，冻结内容区重渲染以保障全屏连续翻页性能 */
+  fullscreenActive: boolean;
   nodeBrowseMode: boolean;
   showNamesOnly: boolean;
   manageMode: boolean;
@@ -71,7 +75,7 @@ interface ImageMainSectionContentAreaProps {
   ) => Promise<void>;
 }
 
-export function ImageMainSectionContentArea({
+function ImageMainSectionContentAreaImpl({
   t,
   marqueeStyle,
   adReviewStartDialogOpen,
@@ -136,3 +140,11 @@ export function ImageMainSectionContentArea({
     </>
   );
 }
+
+// 全屏（图片模式）期间网格被全屏层覆盖、不可见，冻结内容区重渲染，避免隐藏网格随
+// focusedRef/refsInPage 变化反复重渲染拖累全屏连续翻页；退出全屏时再渲染一次同步状态。
+export const ImageMainSectionContentArea = memo(
+  ImageMainSectionContentAreaImpl,
+  (prev, next) =>
+    (prev.fullscreenActive ?? false) && (next.fullscreenActive ?? false),
+);
