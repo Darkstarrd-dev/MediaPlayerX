@@ -616,6 +616,7 @@ export function useAppInteractionEffects({
     featureTagPickerOpen,
     adReviewDeletePending,
     mode,
+    fullscreenImageNavMaxPerSecond: appSettings.fullscreenImageNavMaxPerSecond,
     vectorResultsActive,
     settingsOpen:
       settingsOpen || helpOpen || helpOverlayOpen || themeParameterPanelOpen,

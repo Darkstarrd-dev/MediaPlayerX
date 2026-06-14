@@ -965,6 +965,18 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
   }
 
   if (
+    typeof next.fullscreenImageNavMaxPerSecond === "number" &&
+    Number.isFinite(next.fullscreenImageNavMaxPerSecond)
+  ) {
+    next.fullscreenImageNavMaxPerSecond = Math.max(
+      1,
+      Math.min(60, Math.floor(next.fullscreenImageNavMaxPerSecond)),
+    );
+  } else if ("fullscreenImageNavMaxPerSecond" in next) {
+    delete next.fullscreenImageNavMaxPerSecond;
+  }
+
+  if (
     typeof next.fullscreenDecodeCacheSize === "number" &&
     Number.isFinite(next.fullscreenDecodeCacheSize)
   ) {

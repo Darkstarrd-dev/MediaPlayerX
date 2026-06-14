@@ -317,6 +317,7 @@ export const appSettingsSchema = z.object({
   fullscreenPrefetchRadius: z.number().int().min(2).max(12),
   fullscreenAdjacentPackagePrefetch: z.number().int().min(1).max(5),
   fullscreenCrossPackagePrefetchCount: z.number().int().min(3).max(16),
+  fullscreenImageNavMaxPerSecond: z.number().int().min(1).max(60),
   fullscreenDecodeCacheSize: z.number().int().min(4).max(16),
   fullscreenResamplingEnabled: z.boolean(),
   fullscreenUpsamplingKernel: fullscreenResamplingKernelSchema,

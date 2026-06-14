@@ -285,6 +285,7 @@ export const zhCnCatalogPart1 = {
   "ui.settings.fullscreenPrefetchRadius": "全屏预取深度",
   "ui.settings.fullscreenAdjacentPackagePrefetch": "全屏相邻图包预载",
   "ui.settings.fullscreenCrossPackagePrefetchCount": "全屏跨包预取数量",
+  "ui.settings.fullscreenImageNavMaxPerSecond": "全屏连续翻页速度（张/秒）",
   "ui.settings.fullscreenDecodeCacheSize": "全屏解码缓存数",
   "ui.settings.fullscreenResamplingEnabled": "全屏重采样",
   "ui.settings.fullscreenResamplingEnabledTooltip":
@@ -715,6 +716,8 @@ export const zhCnCatalogPart1 = {
     "全屏浏览时预加载当前图包前后相邻图包的数量；越大切换图包越流畅，但常驻内存更高。",
   "ui.settings.tooltip.fullscreenCrossPackagePrefetchCount":
     "跨包切换时预取并预解码相邻图片的数量；越大跨包跟随越流畅，但内存与解码压力更高。",
+  "ui.settings.tooltip.fullscreenImageNavMaxPerSecond":
+    "全屏下按住方向键连续翻页的最大速度（张/秒）；过快会冲垮加载、画面一闪而过，调小可让每张稳定显示。空闲后首次按键不受限。",
   "ui.settings.tooltip.fullscreenDecodeCacheSize":
     "全屏解码缓存上限；值越大命中率越高，但内存占用显著上升。",
   "ui.settings.tooltip.databaseReset":

@@ -1047,6 +1047,7 @@ export function useAppTopLayerState({
       appSettings.fullscreenAdjacentPackagePrefetch,
     fullscreenCrossPackagePrefetchCount:
       appSettings.fullscreenCrossPackagePrefetchCount,
+    fullscreenImageNavMaxPerSecond: appSettings.fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize: appSettings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: appSettings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: appSettings.fullscreenUpsamplingKernel,

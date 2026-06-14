@@ -96,6 +96,7 @@ export function toPersistedAppSettings(
       settings.fullscreenAdjacentPackagePrefetch,
     fullscreenCrossPackagePrefetchCount:
       settings.fullscreenCrossPackagePrefetchCount,
+    fullscreenImageNavMaxPerSecond: settings.fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize: settings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: settings.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: settings.fullscreenUpsamplingKernel,

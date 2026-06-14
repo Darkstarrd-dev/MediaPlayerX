@@ -60,6 +60,8 @@ interface UseAppShortcutBindingsParams {
   onImageCtrlWheelNavigateSidebar: ShortcutEngineParams["onImageCtrlWheelNavigateSidebar"];
   onCopyFocusedImageToClipboard: ShortcutEngineParams["onCopyFocusedImageToClipboard"];
   onCopyFocusedVideoFrameToClipboard: ShortcutEngineParams["onCopyFocusedVideoFrameToClipboard"];
+  /** 全屏连续翻页速度上限（张/秒），转为最小间隔传入引擎 */
+  fullscreenImageNavMaxPerSecond: number;
   updateSettings: AppSettingsStoreSnapshot["updateSettings"];
 }
 
@@ -113,12 +115,17 @@ export function useAppShortcutBindings({
   onImageCtrlWheelNavigateSidebar,
   onCopyFocusedImageToClipboard,
   onCopyFocusedVideoFrameToClipboard,
+  fullscreenImageNavMaxPerSecond,
   updateSettings,
 }: UseAppShortcutBindingsParams) {
   useShortcutEngine({
     shortcuts,
     suspended: featureTagPickerOpen || adReviewDeletePending,
     mode,
+    imageNavMinIntervalMs:
+      fullscreenImageNavMaxPerSecond > 0
+        ? Math.round(1000 / fullscreenImageNavMaxPerSecond)
+        : 0,
     vectorMode: vectorResultsActive,
     settingsOpen,
     sidebarFocus,

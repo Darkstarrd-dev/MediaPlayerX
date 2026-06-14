@@ -116,6 +116,7 @@ interface BuildSettingsPanelPropsParams {
   fullscreenPrefetchRadius: number;
   fullscreenAdjacentPackagePrefetch: number;
   fullscreenCrossPackagePrefetchCount: number;
+  fullscreenImageNavMaxPerSecond: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
   fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
@@ -314,6 +315,7 @@ export function buildSettingsPanelProps(
     fullscreenAdjacentPackagePrefetch: params.fullscreenAdjacentPackagePrefetch,
     fullscreenCrossPackagePrefetchCount:
       params.fullscreenCrossPackagePrefetchCount,
+    fullscreenImageNavMaxPerSecond: params.fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: params.fullscreenResamplingEnabled,
     fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
@@ -885,6 +887,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenAdjacentPackagePrefetch: value }),
     onFullscreenCrossPackagePrefetchCountChange: (value) =>
       params.updateSettings({ fullscreenCrossPackagePrefetchCount: value }),
+    onFullscreenImageNavMaxPerSecondChange: (value) =>
+      params.updateSettings({ fullscreenImageNavMaxPerSecond: value }),
     onFullscreenDecodeCacheSizeChange: (value) =>
       params.updateSettings({ fullscreenDecodeCacheSize: value }),
     onFullscreenResamplingEnabledChange: (value) =>

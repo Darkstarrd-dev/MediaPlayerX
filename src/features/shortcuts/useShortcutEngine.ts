@@ -11,7 +11,7 @@ import type { BrowserMode } from "../../types";
 import { dispatchFullscreenRatingFeedback } from "../../utils/fullscreenRatingFeedback";
 import { isEditableTarget } from "../../utils/ui";
 
-const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 72;
+const IMAGE_NAV_REPEAT_MIN_INTERVAL_MS = 100;
 const VIDEO_FRAME_STEP_SECONDS = 1 / 30;
 
 function hasActiveTextSelection(): boolean {
@@ -29,6 +29,8 @@ interface UseShortcutEngineParams {
   shortcuts: ShortcutMap;
   suspended?: boolean;
   mode: BrowserMode;
+  /** 全屏连续翻页最小间隔（ms）；限制按住/连发翻页速率，空闲后首次按键不受限 */
+  imageNavMinIntervalMs?: number;
   vectorMode: boolean;
   settingsOpen: boolean;
   sidebarFocus: "sidebar" | "main";
@@ -83,6 +85,7 @@ export function useShortcutEngine({
   shortcuts,
   suspended = false,
   mode,
+  imageNavMinIntervalMs,
   vectorMode,
   settingsOpen,
   sidebarFocus,
@@ -131,6 +134,13 @@ export function useShortcutEngine({
   onCopyFocusedVideoFrameToClipboard,
 }: UseShortcutEngineParams): void {
   const lastImageNavAtRef = useRef(0);
+  // 连续翻页最小间隔：未配置或非法时回退到默认值；0 表示不限速
+  const effectiveImageNavIntervalMs =
+    typeof imageNavMinIntervalMs === "number" &&
+    Number.isFinite(imageNavMinIntervalMs) &&
+    imageNavMinIntervalMs >= 0
+      ? imageNavMinIntervalMs
+      : IMAGE_NAV_REPEAT_MIN_INTERVAL_MS;
   const autoplayShortcutEnabled =
     fullscreenActive && fullscreenDisplay !== "video-only";
 
@@ -734,12 +744,11 @@ export function useShortcutEngine({
       ) {
         document.documentElement.dataset.mpxThumbInput = "keyboard";
 
-        if (event.repeat) {
+        // 连续翻页限速：仅对按住产生的自动重复事件节流，单次/离散按键始终响应。
+        // 间隔由设置项 fullscreenImageNavMaxPerSecond 决定（默认 100ms = 10 张/秒）。
+        if (event.repeat && effectiveImageNavIntervalMs > 0) {
           const now = performance.now();
-          if (
-            now - lastImageNavAtRef.current <
-            IMAGE_NAV_REPEAT_MIN_INTERVAL_MS
-          ) {
+          if (now - lastImageNavAtRef.current < effectiveImageNavIntervalMs) {
             event.preventDefault();
             return;
           }
@@ -767,6 +776,7 @@ export function useShortcutEngine({
   }, [
     executeShortcut,
     autoplayShortcutEnabled,
+    effectiveImageNavIntervalMs,
     fullscreenActive,
     handleSidebarNavigationKey,
     imageFocusActive,
@@ -849,15 +859,14 @@ export function useShortcutEngine({
         mode === "image" &&
         imageNavigationActions.includes(matchedDefinition.action)
       ) {
-        const now = performance.now();
-        if (
-          now - lastImageNavAtRef.current <
-          IMAGE_NAV_REPEAT_MIN_INTERVAL_MS
-        ) {
-          event.preventDefault();
-          return;
+        if (effectiveImageNavIntervalMs > 0) {
+          const now = performance.now();
+          if (now - lastImageNavAtRef.current < effectiveImageNavIntervalMs) {
+            event.preventDefault();
+            return;
+          }
+          lastImageNavAtRef.current = now;
         }
-        lastImageNavAtRef.current = now;
       }
 
       event.preventDefault();
@@ -870,6 +879,7 @@ export function useShortcutEngine({
     };
   }, [
     executeShortcut,
+    effectiveImageNavIntervalMs,
     mode,
     settingsOpen,
     shortcuts,

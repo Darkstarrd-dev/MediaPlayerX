@@ -306,6 +306,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Fullscreen adjacent package preload",
   "ui.settings.fullscreenCrossPackagePrefetchCount":
     "Fullscreen cross-package prefetch count",
+  "ui.settings.fullscreenImageNavMaxPerSecond":
+    "Fullscreen page turn speed (images/sec)",
   "ui.settings.fullscreenDecodeCacheSize": "Fullscreen decode cache size",
   "ui.settings.fullscreenResamplingEnabled": "Fullscreen resampling",
   "ui.settings.fullscreenResamplingEnabledTooltip":
@@ -760,6 +762,8 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
     "Number of neighboring image packages to preload while browsing in fullscreen. Larger makes package switching smoother but uses more memory.",
   "ui.settings.tooltip.fullscreenCrossPackagePrefetchCount":
     "Number of adjacent images to prefetch and pre-decode during cross-package navigation. Larger makes following images smoother but increases memory and decode pressure.",
+  "ui.settings.tooltip.fullscreenImageNavMaxPerSecond":
+    "Max speed (images/sec) when holding arrow keys to page through images in fullscreen. Too fast overwhelms loading and flashes past images; lower it so each image displays steadily. The first key press after idle is never throttled.",
   "ui.settings.tooltip.fullscreenDecodeCacheSize":
     "Fullscreen decode cache cap. Larger improves hit rate but raises memory usage.",
   "ui.settings.tooltip.databaseReset":

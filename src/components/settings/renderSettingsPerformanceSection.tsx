@@ -19,6 +19,7 @@ export function renderSettingsPerformanceSection({
     fullscreenPrefetchRadius,
     fullscreenAdjacentPackagePrefetch,
     fullscreenCrossPackagePrefetchCount,
+    fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled,
     fullscreenDownsamplingKernel,
@@ -35,6 +36,7 @@ export function renderSettingsPerformanceSection({
     onFullscreenPrefetchRadiusChange,
     onFullscreenAdjacentPackagePrefetchChange,
     onFullscreenCrossPackagePrefetchCountChange,
+    onFullscreenImageNavMaxPerSecondChange,
     onFullscreenDecodeCacheSizeChange,
     onFullscreenResamplingEnabledChange,
     onFullscreenDownsamplingKernelChange,
@@ -177,6 +179,28 @@ export function renderSettingsPerformanceSection({
         </label>
 
         <label
+          htmlFor="settings-fullscreen-image-nav-max-per-second-select"
+          data-tooltip-label={settingsTip("fullscreenImageNavMaxPerSecond")}
+        >
+          {t("ui.settings.fullscreenImageNavMaxPerSecond")}
+          <select
+            id="settings-fullscreen-image-nav-max-per-second-select"
+            value={String(fullscreenImageNavMaxPerSecond)}
+            onChange={(event) =>
+              onFullscreenImageNavMaxPerSecondChange(Number(event.target.value))
+            }
+          >
+            <option value="5">5</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+          </select>
+        </label>
+
+        <label
           htmlFor="settings-fullscreen-decode-cache-size-select"
           data-tooltip-label={settingsTip("fullscreenDecodeCacheSize")}
         >
@@ -259,33 +283,33 @@ export function renderSettingsPerformanceSection({
                   {t("ui.settings.resamplingKernelCubic")}
                 </option>
               </select>
-        </label>
+            </label>
 
-        <label
-          htmlFor="settings-fullscreen-cross-package-prefetch-count-select"
-          data-tooltip-label={settingsTip(
-            "fullscreenCrossPackagePrefetchCount",
-          )}
-        >
-          {t("ui.settings.fullscreenCrossPackagePrefetchCount")}
-          <select
-            id="settings-fullscreen-cross-package-prefetch-count-select"
-            value={String(fullscreenCrossPackagePrefetchCount)}
-            onChange={(event) =>
-              onFullscreenCrossPackagePrefetchCountChange(
-                Number(event.target.value),
-              )
-            }
-          >
-            <option value="3">3</option>
-            <option value="6">6</option>
-            <option value="9">9</option>
-            <option value="12">12</option>
-            <option value="16">16</option>
-          </select>
-        </label>
+            <label
+              htmlFor="settings-fullscreen-cross-package-prefetch-count-select"
+              data-tooltip-label={settingsTip(
+                "fullscreenCrossPackagePrefetchCount",
+              )}
+            >
+              {t("ui.settings.fullscreenCrossPackagePrefetchCount")}
+              <select
+                id="settings-fullscreen-cross-package-prefetch-count-select"
+                value={String(fullscreenCrossPackagePrefetchCount)}
+                onChange={(event) =>
+                  onFullscreenCrossPackagePrefetchCountChange(
+                    Number(event.target.value),
+                  )
+                }
+              >
+                <option value="3">3</option>
+                <option value="6">6</option>
+                <option value="9">9</option>
+                <option value="12">12</option>
+                <option value="16">16</option>
+              </select>
+            </label>
 
-        <label
+            <label
               htmlFor="settings-fullscreen-upsampling-kernel-select"
               data-tooltip-label={t(
                 "ui.settings.fullscreenUpsamplingKernelTooltip",
