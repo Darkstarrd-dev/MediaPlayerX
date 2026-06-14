@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { Dispatch, SetStateAction } from "react";
 
 import type { ImageItem, ImagePackage } from "../../types";
-import { useImageBrowserViewModel } from "./useImageBrowserViewModel";
+import {
+  resolveFocusableImageRef,
+  useImageBrowserViewModel,
+} from "./useImageBrowserViewModel";
 
 function createImage(packageId: string, ordinal: number): ImageItem {
   return {
@@ -53,6 +56,28 @@ function applyStateUpdater<T>(
 
 function asMock<T extends (...args: never[]) => unknown>(value: T) {
   return value as unknown as ReturnType<typeof vi.fn>;
+}
+
+function expectSelectedPackage(
+  params: Parameters<typeof useImageBrowserViewModel>[0],
+  expectedId: string,
+) {
+  const mock = asMock(
+    params.setSelectedPackageId as Dispatch<SetStateAction<string>>,
+  );
+  expect(mock).toHaveBeenCalledWith(expectedId);
+}
+
+function readFocusUpdate(
+  params: Parameters<typeof useImageBrowserViewModel>[0],
+): Record<string, number> {
+  const mock = asMock(
+    params.setFocusByPackage as Dispatch<
+      SetStateAction<Record<string, number>>
+    >,
+  );
+  const updater = mock.mock.calls[0]?.[0];
+  return applyStateUpdater(updater, {});
 }
 
 function createParams(
@@ -250,5 +275,180 @@ describe("fullscreen-cross-package/image-browser-view-model", () => {
 
     expectSelectedPackage(params, "pkg-1");
     expect(readFocusUpdate(params)["pkg-1"]).toBe(0);
+  });
+});
+
+describe("resolveFocusableImageRef/backspace-soft-remove", () => {
+  const pkg1 = createPackage("pkg-1", 3);
+  const pkg2 = createPackage("pkg-2", 2);
+  const packages = [pkg1, pkg2];
+
+  function imageIdOf(packageId: string, ordinalOneBased: number): string {
+    return `${packageId}-img-${ordinalOneBased}`;
+  }
+
+  it("向前跳过被软删的相邻单张图", () => {
+    // 起点在 pkg-1#0，pkg-1#1 被删 → 应回到 pkg-1#2
+    const removed = new Set([imageIdOf("pkg-1", 2)]);
+    const next = resolveFocusableImageRef(packages, "pkg-1", 0, 1, removed);
+    expect(next).toEqual({ packageId: "pkg-1", imageIndex: 2 });
+  });
+
+  it("向前连续跳过多张被软删图，并跨包", () => {
+    // 起点在 pkg-1#0，pkg-1#1、pkg-1#2、pkg-2#0 全被删 → 应回到 pkg-2#1
+    const removed = new Set([
+      imageIdOf("pkg-1", 2),
+      imageIdOf("pkg-1", 3),
+      imageIdOf("pkg-2", 1),
+    ]);
+    const next = resolveFocusableImageRef(packages, "pkg-1", 0, 1, removed);
+    expect(next).toEqual({ packageId: "pkg-2", imageIndex: 1 });
+  });
+
+  it("向后跳过被软删图并跨包回退", () => {
+    // 起点在 pkg-2#1，pkg-2#0、pkg-1#2 全被删 → 应回到 pkg-1#1
+    const removed = new Set([imageIdOf("pkg-2", 1), imageIdOf("pkg-1", 3)]);
+    const next = resolveFocusableImageRef(packages, "pkg-2", 1, -1, removed);
+    expect(next).toEqual({ packageId: "pkg-1", imageIndex: 1 });
+  });
+
+  it("向后越界无更多可聚焦位时返回 null", () => {
+    // 起点在 pkg-1#0，向前无图
+    const next = resolveFocusableImageRef(packages, "pkg-1", 0, -1, new Set());
+    expect(next).toBeNull();
+  });
+
+  it("全库都被软删时返回 null", () => {
+    const removed = new Set([
+      imageIdOf("pkg-1", 1),
+      imageIdOf("pkg-1", 2),
+      imageIdOf("pkg-1", 3),
+      imageIdOf("pkg-2", 1),
+      imageIdOf("pkg-2", 2),
+    ]);
+    const next = resolveFocusableImageRef(packages, "pkg-1", 0, 1, removed);
+    expect(next).toBeNull();
+  });
+
+  it("空集合时落在紧邻的下一张（与既有 moveImage 行为一致）", () => {
+    const next = resolveFocusableImageRef(packages, "pkg-1", 0, 1, new Set());
+    expect(next).toEqual({ packageId: "pkg-1", imageIndex: 1 });
+  });
+
+  it("集合为空时 moveImage 走既有逻辑（向前跳到下一张，无跳过）", () => {
+    const params = createParams({
+      mode: "image",
+      fullscreenActive: true,
+      fullscreenDisplay: "image-only",
+      fullscreenVideoFocus: false,
+    });
+    const { result } = renderHook(() => useImageBrowserViewModel(params));
+
+    act(() => {
+      result.current.moveImage(1);
+    });
+
+    expect(readFocusUpdate(params)["pkg-1"]).toBe(1);
+  });
+
+  it("Backspace 标记当前图后，moveImage(+1) 跳过被标记图", () => {
+    // pkg-1 有 3 张：img-1(idx0)/img-2(idx1)/img-3(idx2)。
+    // 标记 idx1（img-2）→ 从 idx0 moveImage(+1) 跳过 idx1 → idx2
+    const params = createParams({
+      mode: "image",
+      fullscreenActive: true,
+      fullscreenDisplay: "image-only",
+      fullscreenVideoFocus: false,
+      selectedPackageId: "pkg-1",
+      focusByPackage: { "pkg-1": 0 },
+    });
+    const { result } = renderHook(() => useImageBrowserViewModel(params));
+
+    act(() => {
+      result.current.markImageRemoved(imageIdOf("pkg-1", 2));
+    });
+    act(() => {
+      result.current.moveImage(1);
+    });
+
+    // 从 idx0 向前，idx1 被删 → 跳到 idx2
+    expect(readFocusUpdate(params)["pkg-1"]).toBe(2);
+  });
+
+  it("Backspace 标记后回翻不再命中被软删的图（跨包回退）", () => {
+    const multiPackageById = new Map<string, ImagePackage>([
+      [pkg1.id, pkg1],
+      [pkg2.id, pkg2],
+    ]);
+    const params = createParams({
+      mode: "image",
+      fullscreenActive: true,
+      fullscreenDisplay: "image-only",
+      fullscreenVideoFocus: false,
+      packageById: multiPackageById,
+      orderedRootScopedPackages: [pkg1, pkg2],
+      selectedPackageId: "pkg-2",
+      focusByPackage: { "pkg-2": 0 },
+    });
+    const { result } = renderHook(() => useImageBrowserViewModel(params));
+
+    // 软删 pkg-1#3（pkg-1 末张）与 pkg-2#1（pkg-2 末张）
+    act(() => {
+      result.current.markImageRemoved(imageIdOf("pkg-1", 3));
+      result.current.markImageRemoved(imageIdOf("pkg-2", 2));
+    });
+    // 从 pkg-2#0 向后翻：pkg-1#2 应是落点（pkg-1#3 被删，跳过）
+    act(() => {
+      result.current.moveImage(-1);
+    });
+
+    expectSelectedPackage(params, "pkg-1");
+    expect(readFocusUpdate(params)["pkg-1"]).toBe(1);
+  });
+
+  it("clearImageRemovalMarks 清空后 moveImage 恢复既有行为", () => {
+    const params = createParams({
+      mode: "image",
+      fullscreenActive: true,
+      fullscreenDisplay: "image-only",
+      fullscreenVideoFocus: false,
+      selectedPackageId: "pkg-1",
+      focusByPackage: { "pkg-1": 0 },
+    });
+    const { result } = renderHook(() => useImageBrowserViewModel(params));
+
+    act(() => {
+      result.current.markImageRemoved(imageIdOf("pkg-1", 1));
+    });
+    act(() => {
+      result.current.clearImageRemovalMarks();
+    });
+    act(() => {
+      result.current.moveImage(1);
+    });
+
+    // 清空后不再跳过 idx1
+    expect(readFocusUpdate(params)["pkg-1"]).toBe(1);
+  });
+
+  it("removedImageIds 反映当前标记集合", () => {
+    const params = createParams({
+      mode: "image",
+      fullscreenActive: true,
+      fullscreenDisplay: "image-only",
+      fullscreenVideoFocus: false,
+    });
+    const { result } = renderHook(() => useImageBrowserViewModel(params));
+
+    act(() => {
+      result.current.markImageRemoved("img-a");
+      result.current.markImageRemoved("img-b");
+    });
+    expect(result.current.removedImageIds().sort()).toEqual(["img-a", "img-b"]);
+
+    act(() => {
+      result.current.clearImageRemovalMarks();
+    });
+    expect(result.current.removedImageIds()).toEqual([]);
   });
 });

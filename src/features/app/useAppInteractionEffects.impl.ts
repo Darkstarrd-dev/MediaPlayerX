@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { useAppShortcutBindings } from "./useAppShortcutBindings";
 import { useAppEffects } from "./useAppEffects";
@@ -7,6 +7,8 @@ import { usePersistedSessionCursor } from "./usePersistedSessionCursor";
 import { usePreferenceMetricsBuffer } from "./usePreferenceMetricsBuffer";
 import { useAppInteractionLayer } from "./useAppInteractionLayer";
 import { useFullscreenDeleteMarks } from "./useFullscreenDeleteMarks";
+import { useFullscreenImageSoftRemove } from "./useFullscreenImageSoftRemove";
+import { dispatchFullscreenDeleteFeedback } from "../../utils/fullscreenDeleteFeedback";
 import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
@@ -450,6 +452,10 @@ export function useAppInteractionEffects({
     goPackage,
     goPrevPage,
     goNextPage,
+    replaceImageCheckedIds,
+    markImageRemoved,
+    clearImageRemovalMarks,
+    removedImageIds,
   } = readNavigationState;
 
   const focusedVideoDurationSec = Math.max(
@@ -611,6 +617,28 @@ export function useAppInteractionEffects({
     onFullscreenDirectDelete,
   });
 
+  // 全屏 Backspace 单张图软删：退出全屏后把标记图灌入图片勾选并弹出永久删除确认面板
+  useFullscreenImageSoftRemove({
+    fullscreenActive,
+    deleteConfirmOpen,
+    getRemovedImageIds: removedImageIds,
+    clearImageRemovalMarks,
+    clearAllSelections,
+    replaceImageCheckedIds,
+    setDeleteConfirmOpen,
+    setManageOperationHint,
+  });
+
+  const handleFullscreenBackspaceRemove = useCallback(() => {
+    const focusedImage = resolveImageItemByRef(focusedRef, packageByIdEffective);
+    if (!focusedImage) {
+      return;
+    }
+    markImageRemoved(focusedImage.id);
+    dispatchFullscreenDeleteFeedback({ marked: true, pane: "image" });
+    moveImage(1);
+  }, [focusedRef, markImageRemoved, moveImage, packageByIdEffective]);
+
   useAppShortcutBindings({
     shortcuts,
     featureTagPickerOpen,
@@ -636,6 +664,7 @@ export function useAppInteractionEffects({
     setFullscreenVideoFocus,
     setFullscreenSwapped,
     onToggleFullscreenDeleteMark: toggleFullscreenDeleteMark,
+    onFullscreenBackspaceRemove: handleFullscreenBackspaceRemove,
     moveImage,
     moveImageVertical,
     jumpImageBoundary,

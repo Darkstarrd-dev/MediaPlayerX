@@ -1,6 +1,7 @@
 import {
   useCallback,
   useMemo,
+  useRef,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -68,6 +69,85 @@ interface UseImageBrowserViewModelResult {
   goPrevPage: () => void;
   goNextPage: () => void;
   goPageByDelta: (delta: number) => void;
+  // 全屏 Backspace 软删：标记/清空/读取从浏览队列软移除的单张图 id
+  markImageRemoved: (imageId: string) => void;
+  clearImageRemovalMarks: () => void;
+  removedImageIds: () => string[];
+}
+
+/**
+ * 在「普通全屏包内浏览」序列上跳过已软删图片 id，解析下一个可聚焦位置。
+ *
+ * 约定：
+ * - `delta` 实际恒为 ±1（手动翻页 / 滚轮逐页 / autoplay）。本函数仍按任意非零 delta 实现。
+ * - 仅 `pkg.images[index]` 已加载的图才有 `id`、才可能被软删；未加载区（index >= images.length，
+ *   但 < resolveSourceImageCount）不可软删，按正常可聚焦位处理。
+ * - 越过包边界时沿用 moveImage 既有语义：向后越界→下一包首张；向前越界→上一包末张。
+ * - 起点本身可能在软删集合里（连续软删后回到历史位置），从 `startIndex + delta` 开始探测。
+ * - 全部图都被软删、或越界后无可聚焦位时返回 null，由调用方决定回退/停留。
+ *
+ * 导出以便单测，不依赖任何 hook 状态。
+ */
+export function resolveFocusableImageRef(
+  packages: ImagePackage[],
+  startPackageId: string,
+  startIndex: number,
+  delta: number,
+  removed: ReadonlySet<string>,
+): FocusedImageRef | null {
+  if (packages.length === 0 || delta === 0) {
+    return null;
+  }
+
+  const step = delta > 0 ? 1 : -1;
+  const packageIndex = packages.findIndex((pkg) => pkg.id === startPackageId);
+  if (packageIndex < 0) {
+    return null;
+  }
+
+  // 全库图片总数 + 1 作为循环 guard：最坏情况下跨遍所有图才命中，超过即无可聚焦。
+  let guard = 0;
+  for (const pkg of packages) {
+    guard += resolveSourceImageCount(pkg);
+  }
+  guard += 1;
+
+  let currentPackageIndex = packageIndex;
+  let currentPackage = packages[currentPackageIndex];
+  let currentIndex = startIndex + step;
+  let visited = 0;
+
+  while (visited < guard) {
+    visited += 1;
+    const count = resolveSourceImageCount(currentPackage);
+
+    if (currentIndex >= 0 && currentIndex < count) {
+      // 已加载区：取出 id 判断是否被软删；未加载区（无 id）直接视为可聚焦
+      const loadedImages = currentPackage.images;
+      const image =
+        currentIndex < loadedImages.length
+          ? loadedImages[currentIndex]
+          : null;
+      if (!image || !removed.has(image.id)) {
+        return { packageId: currentPackage.id, imageIndex: currentIndex };
+      }
+      currentIndex += step;
+      continue;
+    }
+
+    // 越界：跨包
+    const nextPackageIndex = currentPackageIndex + step;
+    const nextPackage = packages[nextPackageIndex];
+    if (!nextPackage) {
+      // 到达全库某一端：无可聚焦位
+      return null;
+    }
+    currentPackageIndex = nextPackageIndex;
+    currentPackage = nextPackage;
+    currentIndex = step > 0 ? 0 : resolveSourceImageCount(nextPackage) - 1;
+  }
+
+  return null;
 }
 
 export function useImageBrowserViewModel({
@@ -107,6 +187,27 @@ export function useImageBrowserViewModel({
 
   const canNavigateImageInCurrentContext =
     mode === "image" || canNavigateImageInFullscreenManualContext;
+
+  // 全屏 Backspace 软删：被标记移出浏览队列的单张图 id。用 ref 持有：
+  // 它不驱动渲染（遮罩为事件驱动、退出全屏的复核面板复用勾选集），
+  // 用 ref 可避免标记时的 state updater 副作用与不必要的重渲染。
+  const removedImageIdsRef = useRef<Set<string>>(new Set());
+
+  const markImageRemoved = useCallback((imageId: string) => {
+    if (!imageId) {
+      return;
+    }
+    removedImageIdsRef.current.add(imageId);
+  }, []);
+
+  const clearImageRemovalMarks = useCallback(() => {
+    removedImageIdsRef.current = new Set();
+  }, []);
+
+  const removedImageIds = useCallback(
+    () => Array.from(removedImageIdsRef.current),
+    [],
+  );
 
   const activePackage =
     packageById.get(selectedPackageId) ?? orderedRootScopedPackages[0] ?? null;
@@ -297,6 +398,36 @@ export function useImageBrowserViewModel({
       // 非全屏：包内移动（越界由 setImageFocus 内部 clamp 处理）
       if (!fullscreenActive) {
         setImageFocus(activePackage.id, target);
+        return;
+      }
+
+      // 全屏且存在软删标记时：在整条浏览序列上跳过被移除的图。
+      // 向前找无可聚焦位（到达全库一端）→ 改试反方向（回退上一张）；
+      // 仍无（双向都被删空或都到端）→ 不移动（停在原地）。
+      // 集合为空时走下方既有逻辑，保证既有行为零回归。
+      if (
+        removedImageIdsRef.current.size > 0 &&
+        orderedRootScopedPackages.length > 0
+      ) {
+        const forward = resolveFocusableImageRef(
+          orderedRootScopedPackages,
+          activePackage.id,
+          current,
+          delta,
+          removedImageIdsRef.current,
+        );
+        const next =
+          forward ??
+          resolveFocusableImageRef(
+            orderedRootScopedPackages,
+            activePackage.id,
+            current,
+            -delta,
+            removedImageIdsRef.current,
+          );
+        if (next) {
+          setImageFocus(next.packageId, next.imageIndex);
+        }
         return;
       }
 
@@ -636,5 +767,8 @@ export function useImageBrowserViewModel({
     goPrevPage,
     goNextPage,
     goPageByDelta,
+    markImageRemoved,
+    clearImageRemovalMarks,
+    removedImageIds,
   };
 }

@@ -43,6 +43,7 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onToggleFullscreenSwapSides: vi.fn(),
     onToggleFullscreenDeleteMark: vi.fn(),
     onToggleSidebarFocus: vi.fn(),
+    onFullscreenBackspaceRemove: vi.fn(),
     onMoveImage: vi.fn(),
     onMoveImageVertical: vi.fn(),
     onJumpImageBoundary: vi.fn(),
@@ -989,6 +990,134 @@ describe("useShortcutEngine ctrl+arrow image mapping", () => {
     });
 
     expect(params.onToggleFullscreenDeleteMark).not.toHaveBeenCalled();
+  });
+
+  it("fullscreen image-only maps Backspace to backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.mode = "image";
+    params.fullscreenDisplay = "image-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).toHaveBeenCalledTimes(1);
+  });
+
+  it("non-fullscreen Backspace does not trigger backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = false;
+    params.mode = "image";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).not.toHaveBeenCalled();
+  });
+
+  it("fullscreen video mode Backspace does not trigger backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.mode = "video";
+    params.fullscreenDisplay = "video-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).not.toHaveBeenCalled();
+  });
+
+  it("fullscreen vector mode Backspace does not trigger backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.mode = "image";
+    params.fullscreenDisplay = "image-only";
+    params.vectorMode = true;
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).not.toHaveBeenCalled();
+  });
+
+  it("Backspace with modifier keys does not trigger backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.mode = "image";
+    params.fullscreenDisplay = "image-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).not.toHaveBeenCalled();
+  });
+
+  it("Backspace auto-repeat (event.repeat) does not trigger backspace-remove handler", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.mode = "image";
+    params.fullscreenDisplay = "image-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Backspace",
+          code: "Backspace",
+          repeat: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onFullscreenBackspaceRemove).not.toHaveBeenCalled();
   });
 
   it("fullscreen dual mode maps Numpad . to pane focus switch handler", () => {

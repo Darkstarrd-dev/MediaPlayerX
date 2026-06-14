@@ -52,6 +52,7 @@ interface UseShortcutEngineParams {
   onToggleFullscreenSwapSides: () => void;
   onToggleFullscreenDeleteMark: (pane: "image" | "video") => void;
   onToggleSidebarFocus: () => void;
+  onFullscreenBackspaceRemove: () => void;
   onMoveImage: (delta: number) => void;
   onMoveImageVertical: (direction: "up" | "down") => void;
   onJumpImageBoundary: (target: "first" | "last") => void;
@@ -105,6 +106,7 @@ export function useShortcutEngine({
   onToggleFullscreenSwapSides,
   onToggleFullscreenDeleteMark,
   onToggleSidebarFocus,
+  onFullscreenBackspaceRemove,
   onMoveImage,
   onMoveImageVertical,
   onJumpImageBoundary,
@@ -570,6 +572,24 @@ export function useShortcutEngine({
         return;
       }
 
+      // 全屏普通图片浏览：Backspace 软删当前单张图（仅 image、非向量、非自动重复、无修饰键）。
+      // 加 !event.repeat 防止长按批量误标记；不进入 imageNext 的节流（本分支为独立处理）。
+      if (
+        fullscreenActive &&
+        mode === "image" &&
+        !vectorMode &&
+        !event.repeat &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.metaKey &&
+        event.code === "Backspace"
+      ) {
+        event.preventDefault();
+        onFullscreenBackspaceRemove();
+        return;
+      }
+
       if (
         fullscreenActive &&
         (mode === "image" || mode === "video") &&
@@ -782,12 +802,14 @@ export function useShortcutEngine({
     imageFocusActive,
     mode,
     onEscapeFromVideoPlaybackToNodeBrowse,
+    onFullscreenBackspaceRemove,
     onSetFullscreenActive,
     onSetImageFocusActive,
     onToggleFullscreenDualDisplay,
     onToggleFullscreenPaneFocus,
     onToggleFullscreenSwapSides,
     onToggleFullscreenDeleteMark,
+    onToggleSidebarFocus,
     onTriggerImageConvertShortcut,
     onGoPackage,
     onAlignFocus,

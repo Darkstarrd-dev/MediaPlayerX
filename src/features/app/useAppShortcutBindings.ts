@@ -33,6 +33,7 @@ interface UseAppShortcutBindingsParams {
   setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>;
   setFullscreenSwapped: Dispatch<SetStateAction<boolean>>;
   onToggleFullscreenDeleteMark: (pane: "image" | "video") => void;
+  onFullscreenBackspaceRemove: () => void;
   moveImage: ShortcutEngineParams["onMoveImage"];
   moveImageVertical: ShortcutEngineParams["onMoveImageVertical"];
   jumpImageBoundary: ShortcutEngineParams["onJumpImageBoundary"];
@@ -88,6 +89,7 @@ export function useAppShortcutBindings({
   setFullscreenVideoFocus,
   setFullscreenSwapped,
   onToggleFullscreenDeleteMark,
+  onFullscreenBackspaceRemove,
   moveImage,
   moveImageVertical,
   jumpImageBoundary,
@@ -184,6 +186,7 @@ export function useAppShortcutBindings({
       setFullscreenSwapped((value) => !value);
     },
     onToggleFullscreenDeleteMark,
+    onFullscreenBackspaceRemove,
     onToggleSidebarFocus: () => {
       if (vectorResultsActive) {
         return;

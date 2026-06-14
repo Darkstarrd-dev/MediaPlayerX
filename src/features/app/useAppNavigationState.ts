@@ -990,6 +990,9 @@ export function useAppNavigationState({
     goPrevPage,
     goNextPage,
     goPageByDelta,
+    markImageRemoved,
+    clearImageRemovalMarks,
+    removedImageIds,
   } = useImageBrowserViewModel({
     mode,
     selectedPackageId,
@@ -1107,5 +1110,8 @@ export function useAppNavigationState({
     goPrevPage,
     goNextPage,
     goPageByDelta,
+    markImageRemoved,
+    clearImageRemovalMarks,
+    removedImageIds,
   };
 }
