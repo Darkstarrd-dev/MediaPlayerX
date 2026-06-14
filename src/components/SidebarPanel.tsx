@@ -311,6 +311,20 @@ function SidebarPanel({
   const sidebarTreeRef = useRef<HTMLDivElement | null>(null);
   const [sidebarScrollTop, setSidebarScrollTop] = useState(0);
   const [sidebarViewportHeight, setSidebarViewportHeight] = useState(0);
+  const [measuredRowHeight, setMeasuredRowHeight] = useState(0);
+  // 虚拟滚动行高：实际行高由 CSS 决定（list-item min-height 44 / collapsible-header 40），
+  // 不随字号线性变化；估算公式 fontSize+14 易与实际行高失配，导致虚拟 spacer 低估总高、滚不到底。
+  // 故优先采用实测渲染行高，未测得前回退到估算值。
+  const estimatedRowContentHeight = useMemo(
+    () => Math.max(24, Math.round(sidebarFontSize + 14)),
+    [sidebarFontSize],
+  );
+  const effectiveRowContentHeight =
+    measuredRowHeight > 0 ? measuredRowHeight : estimatedRowContentHeight;
+  const estimatedRowBlockHeight = useMemo(
+    () => Math.max(1, effectiveRowContentHeight + sidebarRowGapPx),
+    [effectiveRowContentHeight, sidebarRowGapPx],
+  );
   const previousSelectedSidebarNodeIdRef = useRef<string | null>(null);
   const previousSidebarFocusRef = useRef<"sidebar" | "main">(sidebarFocus);
   const sidebarAlignRafIdRef = useRef<number | null>(null);
@@ -501,10 +515,7 @@ function SidebarPanel({
         return;
       }
 
-      const rowHeight = Math.max(
-        24,
-        Math.round(sidebarFontSize + sidebarRowGapPx + 14),
-      );
+      const rowHeight = estimatedRowBlockHeight;
       const rowTop = targetIndex * rowHeight;
       const rowBottom = rowTop + rowHeight;
       const viewTop = container.scrollTop;
@@ -522,9 +533,8 @@ function SidebarPanel({
       activeTreeNodes,
       collapsedImageFolderNodeIds,
       effectiveSidebarTreeDisplayMode,
+      estimatedRowBlockHeight,
       mode,
-      sidebarRowGapPx,
-      sidebarFontSize,
     ],
   );
 
@@ -875,14 +885,6 @@ function SidebarPanel({
     mode,
   ]);
 
-  const estimatedRowContentHeight = useMemo(
-    () => Math.max(24, Math.round(sidebarFontSize + 14)),
-    [sidebarFontSize],
-  );
-  const estimatedRowBlockHeight = useMemo(
-    () => Math.max(1, estimatedRowContentHeight + sidebarRowGapPx),
-    [estimatedRowContentHeight, sidebarRowGapPx],
-  );
   const virtualizeThreshold = 220;
   const shouldVirtualize =
     sidebarViewportHeight > 0 &&
@@ -914,12 +916,12 @@ function SidebarPanel({
     );
     const topSpacerHeight =
       startIndex > 0
-        ? startIndex * estimatedRowContentHeight + (startIndex - 1) * rowGap
+        ? startIndex * effectiveRowContentHeight + (startIndex - 1) * rowGap
         : 0;
     const trailingCount = Math.max(0, visibleSidebarRows.length - endIndex);
     const bottomSpacerHeight =
       trailingCount > 0
-        ? trailingCount * estimatedRowContentHeight +
+        ? trailingCount * effectiveRowContentHeight +
           (trailingCount - 1) * rowGap
         : 0;
 
@@ -931,7 +933,7 @@ function SidebarPanel({
     };
   }, [
     estimatedRowBlockHeight,
-    estimatedRowContentHeight,
+    effectiveRowContentHeight,
     shouldVirtualize,
     sidebarRowGapPx,
     sidebarScrollTop,
@@ -978,6 +980,50 @@ function SidebarPanel({
     scheduleOverflowMeasure,
     sidebarFontSize,
     sidebarIndentStep,
+  ]);
+
+  // 实测当前渲染行的真实行高，喂给虚拟滚动 spacer 计算：
+  // - 取窗口内最大行高，避免窗口仅含较矮行（header 40 < list-item 44）时低估总高、漏底；
+  // - 同一行样式下高水位只增不减，向下滚动逐步纳入更高行时，可滚动范围自愈到正确值；
+  // - 行高样式输入（模式/树型/字号/缩进）变化时以最新测量重新基准化（允许变小）。
+  const rowHeightSignatureRef = useRef("");
+  useEffect(() => {
+    const container = sidebarTreeRef.current;
+    if (!container) {
+      return;
+    }
+
+    const signature = `${mode}|${effectiveSidebarTreeDisplayMode}|${sidebarFontSize}|${sidebarIndentStep}`;
+    const signatureChanged = signature !== rowHeightSignatureRef.current;
+    rowHeightSignatureRef.current = signature;
+
+    const rowElements = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+    );
+    let maxRowHeight = 0;
+    for (const rowElement of rowElements) {
+      if (rowElement.offsetHeight > maxRowHeight) {
+        maxRowHeight = rowElement.offsetHeight;
+      }
+    }
+    if (maxRowHeight <= 0) {
+      return;
+    }
+
+    const shouldUpdate = signatureChanged
+      ? Math.abs(maxRowHeight - measuredRowHeight) > 0.5
+      : maxRowHeight > measuredRowHeight + 0.5;
+    if (shouldUpdate) {
+      setMeasuredRowHeight(maxRowHeight);
+    }
+  }, [
+    effectiveSidebarTreeDisplayMode,
+    measuredRowHeight,
+    mode,
+    rowsForRender,
+    sidebarFontSize,
+    sidebarIndentStep,
+    sidebarViewportHeight,
   ]);
 
   useEffect(() => {
@@ -1325,6 +1371,7 @@ function SidebarPanel({
               <div
                 aria-hidden="true"
                 style={{
+                  flexShrink: 0,
                   height: `${virtualRange.topSpacerHeight}px`,
                   pointerEvents: "none",
                 }}
@@ -1382,6 +1429,7 @@ function SidebarPanel({
               <div
                 aria-hidden="true"
                 style={{
+                  flexShrink: 0,
                   height: `${virtualRange.bottomSpacerHeight}px`,
                   pointerEvents: "none",
                 }}
