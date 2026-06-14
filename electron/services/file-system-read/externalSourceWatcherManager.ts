@@ -261,6 +261,8 @@ export class ExternalSourceWatcherManager {
       return true;
     }
 
-    return false;
+    // 目录导入场景：非空 filename 无媒体扩展名时（目录增/删/改名等），
+    // 仍应触发刷新，避免目录级文件系统变更被静默忽略。
+    return watchedPathState.hasImportedDirectory;
   }
 }
