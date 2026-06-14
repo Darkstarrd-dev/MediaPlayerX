@@ -1,108 +1,132 @@
-import type { CSSProperties, Dispatch, SetStateAction } from 'react'
+import type { CSSProperties, Dispatch, SetStateAction } from "react";
 
-import type { AppSettings } from '../../contracts/settings'
-import type { FullscreenLayerProps } from '../../components/FullscreenLayer'
-import { clamp } from '../../utils/ui'
-import type { ImageItem, VideoItem } from '../../types'
-import type { VideoFitMode } from '../media/videoFitMode'
-import type { ImageConvertAdjustProfile } from './useAppSessionState'
+import type { AppSettings } from "../../contracts/settings";
+import type { FullscreenLayerProps } from "../../components/FullscreenLayer";
+import { clamp } from "../../utils/ui";
+import type { ImageItem, VideoItem } from "../../types";
+import type { VideoFitMode } from "../media/videoFitMode";
+import type { ImageConvertAdjustProfile } from "./useAppSessionState";
 
 interface BuildFullscreenLayerPropsParams {
-  mode: FullscreenLayerProps['mode']
-  fullscreenActive: boolean
-  showFullscreenFooter: boolean
-  fullscreenDisplay: FullscreenLayerProps['fullscreenDisplay']
-  fullscreenEntryDisplay: FullscreenLayerProps['fullscreenEntryDisplay']
-  fullscreenAlignRequest: FullscreenLayerProps['fullscreenAlignRequest']
-  fullscreenSwapped: boolean
-  fullscreenVideoFocus: boolean
-  fullscreenSplit: number
-  focusedImage: ImageItem | null
-  focusedImageSrc: string | null
-  adjacentFullscreenImageSrcs?: string[]
-  focusedVideo: VideoItem | null
-  focusedVideoSrc: string | null
-  subtitleTrackUrl: string | null
-  subtitleVisible: boolean
-  subtitleLoading: boolean
-  subtitleMessage: string | null
-  subtitleOptions: Array<{ id: string; label: string; format: 'vtt' | 'srt' | 'ass' | 'ssa' }>
-  selectedSubtitleId: string | null
-  autoSubtitleActive: boolean
-  liveSubtitleText: string | null
-  subtitleOverlayStyle: CSSProperties
-  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void
-  focusedVideoCoverImageSrc: string | null
-  durationSec: number
-  focusedVideoCoverColor: string
-  videoTime: number
-  videoPlaying: boolean
-  videoRate: number
-  videoVolume: number
-  videoMuted: boolean
-  videoFitMode: VideoFitMode
-  videoLoopMode: 'single' | 'list'
-  fullscreenVideoControlsMaxWidth: number
-  fullscreenDecodeCacheSize?: number
-  autoPlayEnabled: boolean
-  autoPlayInterval: number
-  popoverDebugPinned: boolean
-  imageConvertPreviewMode?: boolean
-  imageConvertPreviewScale?: number
-  imageConvertPreviewLongestEdgePx?: number | null
-  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile
-  imageConvertPreviewFormat?: 'webp' | 'jpeg' | 'png' | 'avif'
-  imageConvertPreviewQuality?: number
-  imageConvertPreviewRenderedSrc?: string | null
-  imageConvertPreviewError?: string | null
-  onChangeImageConvertPreviewScale?: (value: number) => void
-  onChangeImageConvertPreviewFormat?: (value: 'webp' | 'jpeg' | 'png' | 'avif') => void
-  onChangeImageConvertPreviewQuality?: (value: number) => void
-  onApplyImageConvertPreviewScaleToLongestEdge?: (value: number | null) => void
-  onChangeImageConvertPreviewAdjustProfile?: (profile: ImageConvertAdjustProfile) => void
-  onConfirmImageConvertPreview?: () => void
-  onCancelImageConvertPreview?: () => void
-  updateSettings: (patch: Partial<AppSettings>) => void
-  setVideoPlaying: Dispatch<SetStateAction<boolean>>
-  goPlaylist: (step: number, sidebarQueueIds?: string[], options?: { preserveRate?: boolean }) => void
-  playlistIds: string[]
-  videoQueueSource: 'sidebar' | 'playlist'
-  rootScopedVideoIds: string[]
-  selectedVideoId: string
-  videoById: Map<string, VideoItem>
-  selectVideoFromBrowser: (videoId: string) => void
-  setVideoTime: Dispatch<SetStateAction<number>>
-  focusedVideoId: string | null
-  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>
-  setVideoMuted: Dispatch<SetStateAction<boolean>>
-  setVideoVolume: Dispatch<SetStateAction<number>>
-  setVideoRate: Dispatch<SetStateAction<number>>
-  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>
-  cycleVideoLoopMode: () => void
-  cycleVideoFitMode: () => void
-  setSubtitleVisible: Dispatch<SetStateAction<boolean>>
-  selectSubtitleById: (subtitleId: string) => Promise<void>
-  saveVideoCover: (videoId: string, timeSec: number, color: string) => Promise<void>
-  setFullscreenActiveWithAutoStop: (active: boolean) => void
-  setShowFullscreenFooter: (visible: boolean) => void
-  setFullscreenDisplay: Dispatch<SetStateAction<FullscreenLayerProps['fullscreenDisplay']>>
-  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>
-  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>
-  setFullscreenSplit: Dispatch<SetStateAction<number>>
-  moveImage: (step: number) => void
-  goPackage: (step: number) => void
+  mode: FullscreenLayerProps["mode"];
+  fullscreenActive: boolean;
+  showFullscreenFooter: boolean;
+  fullscreenDisplay: FullscreenLayerProps["fullscreenDisplay"];
+  fullscreenEntryDisplay: FullscreenLayerProps["fullscreenEntryDisplay"];
+  fullscreenAlignRequest: FullscreenLayerProps["fullscreenAlignRequest"];
+  fullscreenSwapped: boolean;
+  fullscreenVideoFocus: boolean;
+  fullscreenSplit: number;
+  focusedImage: ImageItem | null;
+  focusedImageSrc: string | null;
+  adjacentFullscreenImageSrcs?: string[];
+  fullscreenWindowImageSrcs?: string[];
+  fullscreenLayeredRenderEnabled?: boolean;
+  focusedVideo: VideoItem | null;
+  focusedVideoSrc: string | null;
+  subtitleTrackUrl: string | null;
+  subtitleVisible: boolean;
+  subtitleLoading: boolean;
+  subtitleMessage: string | null;
+  subtitleOptions: Array<{
+    id: string;
+    label: string;
+    format: "vtt" | "srt" | "ass" | "ssa";
+  }>;
+  selectedSubtitleId: string | null;
+  autoSubtitleActive: boolean;
+  liveSubtitleText: string | null;
+  subtitleOverlayStyle: CSSProperties;
+  bindFullscreenVideoElement: (element: HTMLVideoElement | null) => void;
+  focusedVideoCoverImageSrc: string | null;
+  durationSec: number;
+  focusedVideoCoverColor: string;
+  videoTime: number;
+  videoPlaying: boolean;
+  videoRate: number;
+  videoVolume: number;
+  videoMuted: boolean;
+  videoFitMode: VideoFitMode;
+  videoLoopMode: "single" | "list";
+  fullscreenVideoControlsMaxWidth: number;
+  fullscreenDecodeCacheSize?: number;
+  autoPlayEnabled: boolean;
+  autoPlayInterval: number;
+  popoverDebugPinned: boolean;
+  imageConvertPreviewMode?: boolean;
+  imageConvertPreviewScale?: number;
+  imageConvertPreviewLongestEdgePx?: number | null;
+  imageConvertPreviewAdjustProfile?: ImageConvertAdjustProfile;
+  imageConvertPreviewFormat?: "webp" | "jpeg" | "png" | "avif";
+  imageConvertPreviewQuality?: number;
+  imageConvertPreviewRenderedSrc?: string | null;
+  imageConvertPreviewError?: string | null;
+  onChangeImageConvertPreviewScale?: (value: number) => void;
+  onChangeImageConvertPreviewFormat?: (
+    value: "webp" | "jpeg" | "png" | "avif",
+  ) => void;
+  onChangeImageConvertPreviewQuality?: (value: number) => void;
+  onApplyImageConvertPreviewScaleToLongestEdge?: (value: number | null) => void;
+  onChangeImageConvertPreviewAdjustProfile?: (
+    profile: ImageConvertAdjustProfile,
+  ) => void;
+  onConfirmImageConvertPreview?: () => void;
+  onCancelImageConvertPreview?: () => void;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+  setVideoPlaying: Dispatch<SetStateAction<boolean>>;
+  goPlaylist: (
+    step: number,
+    sidebarQueueIds?: string[],
+    options?: { preserveRate?: boolean },
+  ) => void;
+  playlistIds: string[];
+  videoQueueSource: "sidebar" | "playlist";
+  rootScopedVideoIds: string[];
+  selectedVideoId: string;
+  videoById: Map<string, VideoItem>;
+  selectVideoFromBrowser: (videoId: string) => void;
+  setVideoTime: Dispatch<SetStateAction<number>>;
+  focusedVideoId: string | null;
+  setVideoDurationById: Dispatch<SetStateAction<Record<string, number>>>;
+  setVideoMuted: Dispatch<SetStateAction<boolean>>;
+  setVideoVolume: Dispatch<SetStateAction<number>>;
+  setVideoRate: Dispatch<SetStateAction<number>>;
+  setVideoFitMode: Dispatch<SetStateAction<VideoFitMode>>;
+  cycleVideoLoopMode: () => void;
+  cycleVideoFitMode: () => void;
+  setSubtitleVisible: Dispatch<SetStateAction<boolean>>;
+  selectSubtitleById: (subtitleId: string) => Promise<void>;
+  saveVideoCover: (
+    videoId: string,
+    timeSec: number,
+    color: string,
+  ) => Promise<void>;
+  setFullscreenActiveWithAutoStop: (active: boolean) => void;
+  setShowFullscreenFooter: (visible: boolean) => void;
+  setFullscreenDisplay: Dispatch<
+    SetStateAction<FullscreenLayerProps["fullscreenDisplay"]>
+  >;
+  setFullscreenSwapped: Dispatch<SetStateAction<boolean>>;
+  setFullscreenVideoFocus: Dispatch<SetStateAction<boolean>>;
+  setFullscreenSplit: Dispatch<SetStateAction<number>>;
+  moveImage: (step: number) => void;
+  goPackage: (step: number) => void;
 }
 
-export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParams): FullscreenLayerProps {
+export function buildFullscreenLayerProps(
+  params: BuildFullscreenLayerPropsParams,
+): FullscreenLayerProps {
   const clampSeekTime = (time: number) => {
     if (params.durationSec > 0) {
-      return clamp(time, 0, params.durationSec)
+      return clamp(time, 0, params.durationSec);
     }
-    return Math.max(0, time)
-  }
+    return Math.max(0, time);
+  };
 
   const resolveSidebarQueueOverride = () =>
-    params.videoQueueSource === 'sidebar' ? params.rootScopedVideoIds : undefined
+    params.videoQueueSource === "sidebar"
+      ? params.rootScopedVideoIds
+      : undefined;
 
   return {
     mode: params.mode,
@@ -117,6 +141,8 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     focusedImage: params.focusedImage,
     focusedImageSrc: params.focusedImageSrc,
     adjacentFullscreenImageSrcs: params.adjacentFullscreenImageSrcs,
+    fullscreenWindowImageSrcs: params.fullscreenWindowImageSrcs,
+    fullscreenLayeredRenderEnabled: params.fullscreenLayeredRenderEnabled,
     focusedVideo: params.focusedVideo,
     focusedVideoSrc: params.focusedVideoSrc,
     subtitleTrackUrl: params.subtitleTrackUrl,
@@ -162,34 +188,39 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     onPrevPackage: () => params.goPackage(-1),
     onNextPackage: () => params.goPackage(1),
     onToggleAutoplay: () => {
-      params.updateSettings({ autoPlayEnabled: !params.autoPlayEnabled })
+      params.updateSettings({ autoPlayEnabled: !params.autoPlayEnabled });
     },
     onSetAutoplayInterval: (seconds) => {
-      params.updateSettings({ autoPlayInterval: seconds })
+      params.updateSettings({ autoPlayInterval: seconds });
     },
     onChangeImageConvertPreviewScale: params.onChangeImageConvertPreviewScale,
     onChangeImageConvertPreviewFormat: params.onChangeImageConvertPreviewFormat,
-    onChangeImageConvertPreviewQuality: params.onChangeImageConvertPreviewQuality,
-    onApplyImageConvertPreviewScaleToLongestEdge: params.onApplyImageConvertPreviewScaleToLongestEdge,
-    onChangeImageConvertPreviewAdjustProfile: params.onChangeImageConvertPreviewAdjustProfile,
+    onChangeImageConvertPreviewQuality:
+      params.onChangeImageConvertPreviewQuality,
+    onApplyImageConvertPreviewScaleToLongestEdge:
+      params.onApplyImageConvertPreviewScaleToLongestEdge,
+    onChangeImageConvertPreviewAdjustProfile:
+      params.onChangeImageConvertPreviewAdjustProfile,
     onConfirmImageConvertPreview: params.onConfirmImageConvertPreview,
     onCancelImageConvertPreview: params.onCancelImageConvertPreview,
     onToggleVideoPlay: () => params.setVideoPlaying((value) => !value),
     onPrevVideo: () => params.goPlaylist(-1, resolveSidebarQueueOverride()),
     onNextVideo: () => params.goPlaylist(1, resolveSidebarQueueOverride()),
     onVideoEnded: () => {
-      if (params.videoLoopMode === 'single') {
-        params.setVideoTime(0)
-        params.setVideoPlaying(true)
-        return
+      if (params.videoLoopMode === "single") {
+        params.setVideoTime(0);
+        params.setVideoPlaying(true);
+        return;
       }
-      params.goPlaylist(1, resolveSidebarQueueOverride(), { preserveRate: true })
+      params.goPlaylist(1, resolveSidebarQueueOverride(), {
+        preserveRate: true,
+      });
     },
     onToggleSubtitle: () => {
-      params.setSubtitleVisible((value) => !value)
+      params.setSubtitleVisible((value) => !value);
     },
     onSelectSubtitle: (subtitleId) => {
-      void params.selectSubtitleById(subtitleId)
+      void params.selectSubtitleById(subtitleId);
     },
     playlistEntries: params.playlistIds.map((videoId) => ({
       id: videoId,
@@ -198,42 +229,46 @@ export function buildFullscreenLayerProps(params: BuildFullscreenLayerPropsParam
     selectedVideoId: params.selectedVideoId,
     onSelectVideo: params.selectVideoFromBrowser,
     onSaveCover: () => {
-      const focusedVideoId = params.focusedVideoId
+      const focusedVideoId = params.focusedVideoId;
       if (!focusedVideoId) {
-        return
+        return;
       }
-      void params.saveVideoCover(focusedVideoId, params.videoTime, params.focusedVideoCoverColor)
+      void params.saveVideoCover(
+        focusedVideoId,
+        params.videoTime,
+        params.focusedVideoCoverColor,
+      );
     },
     onSeekVideo: (time) => {
-      params.setVideoTime(clampSeekTime(time))
+      params.setVideoTime(clampSeekTime(time));
     },
     onVideoTimeUpdate: (time) => {
-      params.setVideoTime(Math.max(0, time))
+      params.setVideoTime(Math.max(0, time));
     },
     onVideoDurationDetected: (duration) => {
-      const focusedVideoId = params.focusedVideoId
+      const focusedVideoId = params.focusedVideoId;
       if (!focusedVideoId || !Number.isFinite(duration) || duration <= 0) {
-        return
+        return;
       }
 
       params.setVideoDurationById((previous) => ({
         ...previous,
         [focusedVideoId]: duration,
-      }))
+      }));
     },
     onToggleVideoMute: () => params.setVideoMuted((value) => !value),
     onChangeVideoVolume: (volume) => {
-      params.setVideoMuted(false)
-      params.setVideoVolume(clamp(volume, 0, 100))
+      params.setVideoMuted(false);
+      params.setVideoVolume(clamp(volume, 0, 100));
     },
     onChangeVideoRate: (rate) => {
-      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 10))
+      params.setVideoRate(clamp(Number(rate.toFixed(2)), 0.1, 10));
     },
     onCycleVideoLoopMode: params.cycleVideoLoopMode,
     onCycleVideoFitMode: params.cycleVideoFitMode,
     onSetVideoFitMode: (mode) => {
-      params.setVideoFitMode(mode)
+      params.setVideoFitMode(mode);
     },
     onExit: () => params.setFullscreenActiveWithAutoStop(false),
-  }
+  };
 }

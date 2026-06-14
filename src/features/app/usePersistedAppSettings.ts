@@ -99,6 +99,7 @@ export function toPersistedAppSettings(
     fullscreenImageNavMaxPerSecond: settings.fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize: settings.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: settings.fullscreenResamplingEnabled,
+    fullscreenLayeredRenderEnabled: settings.fullscreenLayeredRenderEnabled,
     fullscreenUpsamplingKernel: settings.fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel: settings.fullscreenDownsamplingKernel,
     musicVisualizerRenderLongEdgePx: settings.musicVisualizerRenderLongEdgePx,

@@ -319,6 +319,7 @@ describe("useSettingsPersistence", () => {
     const readAppState = vi.fn().mockResolvedValue({
       state_json: JSON.stringify({
         fullscreenResamplingEnabled: "yes",
+        fullscreenLayeredRenderEnabled: "yes",
         fullscreenUpsamplingKernel: "invalid",
         fullscreenDownsamplingKernel: "nearest",
       }),
@@ -344,6 +345,7 @@ describe("useSettingsPersistence", () => {
       unknown
     >;
     expect(hydrationPatch).not.toHaveProperty("fullscreenResamplingEnabled");
+    expect(hydrationPatch).not.toHaveProperty("fullscreenLayeredRenderEnabled");
     expect(hydrationPatch).not.toHaveProperty("fullscreenUpsamplingKernel");
     expect(hydrationPatch.fullscreenDownsamplingKernel).toBe("nearest");
   });

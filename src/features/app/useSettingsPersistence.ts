@@ -995,6 +995,13 @@ function normalizePersistedSettings(value: unknown): Partial<AppSettings> {
     delete next.fullscreenResamplingEnabled;
   }
 
+  if (
+    typeof next.fullscreenLayeredRenderEnabled !== "boolean" &&
+    "fullscreenLayeredRenderEnabled" in next
+  ) {
+    delete next.fullscreenLayeredRenderEnabled;
+  }
+
   const isValidFullscreenKernel = (
     value: unknown,
   ): value is AppSettings["fullscreenUpsamplingKernel"] => {

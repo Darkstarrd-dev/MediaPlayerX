@@ -815,6 +815,34 @@
   clip-path: inset(0 0 0 var(--mpx-fs-compare-split, 50%));
 }
 
+/* 多层预渲染：窗口内每张图各占一层，仅 active 层可见。
+   切图只翻 opacity，浏览器保留已解码/已光栅化位图，零重新解码。
+   容器继承 .fullscreen-media-image 的几何（zoom/pan 作用于父包装）。 */
+.fullscreen-media-image-layers {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fullscreen-media-image-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 40ms linear;
+}
+
+.fullscreen-media-image-layer.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .fullscreen-image-compare-divider {
   position: absolute;
   top: 0;

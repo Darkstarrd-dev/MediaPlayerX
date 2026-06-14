@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { benchMark } from "../../features/perf";
 import type { ImageItem } from "../../types";
 
 const IS_TEST_MODE = import.meta.env.MODE === "test";
@@ -40,6 +41,12 @@ interface UseFullscreenImageSourceParams {
   focusedImage: ImageItem | null;
   decodeCacheSize?: number;
   adjacentImageSrcs?: string[];
+  /**
+   * 多层预渲染模式：开启时目标图已作为 <img> 层预渲染解码，
+   * displayedImageSrc 直接跟随 focusedImageSrc（跳过 await decode）。
+   * 关闭时走现有 decode-cache 路径，行为不变。
+   */
+  layered?: boolean;
 }
 
 interface UseFullscreenImageSourceResult {
@@ -53,6 +60,7 @@ export function useFullscreenImageSource({
   focusedImage,
   decodeCacheSize = 10,
   adjacentImageSrcs,
+  layered = false,
 }: UseFullscreenImageSourceParams): UseFullscreenImageSourceResult {
   const [displayedImageSrc, setDisplayedImageSrc] = useState<string | null>(
     null,
@@ -150,6 +158,25 @@ export function useFullscreenImageSource({
       return;
     }
 
+    // 多层预渲染模式：目标层已作为 <img> 预渲染解码，无需 await decode，
+    // 直接翻转 displayedImageSrc（由 pane 翻转 opacity 即时呈现）。
+    if (layered) {
+      benchMark("fs_focused_src_changed", {
+        layered: true,
+        src: focusedImageSrc,
+      });
+      setDisplayedImageSrc(focusedImageSrc);
+      if (focusedImage && focusedImage.width > 0 && focusedImage.height > 0) {
+        setDisplayedImageAspectState(focusedImage.width / focusedImage.height);
+      }
+      return;
+    }
+
+    benchMark("fs_focused_src_changed", {
+      layered: false,
+      src: focusedImageSrc,
+    });
+
     const cached = fullscreenDecodedImageCache.get(focusedImageSrc);
     if (cached) {
       touchDecodedCacheEntry(focusedImageSrc, cached.aspect);
@@ -221,6 +248,7 @@ export function useFullscreenImageSource({
     displayedImageSrc,
     focusedImage,
     focusedImageSrc,
+    layered,
     normalizedDecodeCacheSize,
   ]);
 

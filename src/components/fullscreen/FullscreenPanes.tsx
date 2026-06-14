@@ -32,6 +32,12 @@ interface FullscreenImagePaneProps {
   imageConvertPreviewError?: string | null;
   imageConvertCompareSplit?: number;
   onSetImageConvertCompareSplit?: (value: number) => void;
+  /**
+   * 多层预渲染：开启时在 .fullscreen-media-image 内堆叠多层 <img>，
+   * 仅 active 层 opacity:1，切换近瞬时、零重新解码。窗口层 url 与显示同源。
+   */
+  layeredRenderEnabled?: boolean;
+  windowImageSrcs?: string[];
   onSetVideoFocus: (enabled: boolean) => void;
   onWheel: (event: ReactWheelEvent<HTMLElement>) => void;
   onMouseDown: (event: ReactMouseEvent<HTMLElement>) => void;
@@ -58,6 +64,8 @@ export function FullscreenImagePane({
   imageConvertPreviewError,
   imageConvertCompareSplit = 0.5,
   onSetImageConvertCompareSplit,
+  layeredRenderEnabled = false,
+  windowImageSrcs,
   onSetVideoFocus,
   onWheel,
   onMouseDown,
@@ -134,7 +142,41 @@ export function FullscreenImagePane({
           }}
         >
           {displayedImageSrc ? (
-            imageConvertPreviewMode ? (
+            layeredRenderEnabled &&
+            !imageConvertPreviewMode &&
+            windowImageSrcs &&
+            windowImageSrcs.length > 0 ? (
+              <div
+                className="fullscreen-media-image-layers"
+                data-slot="fs-image-layers"
+              >
+                {windowImageSrcs.map((src) => {
+                  const isActive = src === displayedImageSrc;
+                  return (
+                    <img
+                      key={src}
+                      className={`fullscreen-media-image-layer${isActive ? " is-active" : ""}`}
+                      src={src}
+                      alt={`图片 #${focusedImageOrdinal ?? "-"}`}
+                      draggable={false}
+                      // 仅 active 层驱动 onImageNaturalSize，
+                      // 避免背景层抢设 aspect/分辨率（footer 显示）
+                      onLoad={
+                        isActive
+                          ? (event) => {
+                              const imageElement = event.currentTarget;
+                              onImageNaturalSize(
+                                imageElement.naturalWidth,
+                                imageElement.naturalHeight,
+                              );
+                            }
+                          : undefined
+                      }
+                    />
+                  );
+                })}
+              </div>
+            ) : imageConvertPreviewMode ? (
               <div
                 className="fullscreen-image-compare"
                 data-slot="fs-image-convert-preview-panel"

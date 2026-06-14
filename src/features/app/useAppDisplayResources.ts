@@ -200,6 +200,7 @@ export function useAppDisplayResources({
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     adjacentFullscreenImageSrcs,
+    fullscreenWindowImageSrcs,
   } = useResolvedMediaState({
     repository: mediaRepository,
     benchSettings,
@@ -316,6 +317,7 @@ export function useAppDisplayResources({
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     adjacentFullscreenImageSrcs,
+    fullscreenWindowImageSrcs,
     subtitleVisible,
     subtitleOptions,
     selectedSubtitleId,

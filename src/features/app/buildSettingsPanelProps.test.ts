@@ -113,6 +113,7 @@ describe("buildSettingsPanelProps", () => {
       fullscreenCrossPackagePrefetchCount: 6,
       fullscreenDecodeCacheSize: 10,
       fullscreenResamplingEnabled: false,
+      fullscreenLayeredRenderEnabled: false,
       fullscreenImageNavMaxPerSecond: 10,
       fullscreenUpsamplingKernel: "lanczos3",
       fullscreenDownsamplingKernel: "lanczos3",
@@ -241,6 +242,7 @@ describe("buildSettingsPanelProps", () => {
     props.onFullscreenPrefetchRadiusChange(8);
     props.onFullscreenDecodeCacheSizeChange(16);
     props.onFullscreenResamplingEnabledChange(true);
+    props.onFullscreenLayeredRenderEnabledChange(true);
     props.onFullscreenDownsamplingKernelChange("mitchell");
     props.onFullscreenUpsamplingKernelChange("nearest");
     props.onMusicVisualizerPluginInputBindingChange({
@@ -336,9 +338,12 @@ describe("buildSettingsPanelProps", () => {
       fullscreenResamplingEnabled: true,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(18, {
-      fullscreenDownsamplingKernel: "mitchell",
+      fullscreenLayeredRenderEnabled: true,
     });
     expect(updateSettings).toHaveBeenNthCalledWith(19, {
+      fullscreenDownsamplingKernel: "mitchell",
+    });
+    expect(updateSettings).toHaveBeenNthCalledWith(20, {
       fullscreenUpsamplingKernel: "nearest",
     });
     expect(updateSettings).toHaveBeenCalledWith({
@@ -490,6 +495,7 @@ describe("buildSettingsPanelProps", () => {
       fullscreenCrossPackagePrefetchCount: 6,
       fullscreenDecodeCacheSize: 10,
       fullscreenResamplingEnabled: false,
+      fullscreenLayeredRenderEnabled: false,
       fullscreenImageNavMaxPerSecond: 10,
       fullscreenUpsamplingKernel: "lanczos3",
       fullscreenDownsamplingKernel: "lanczos3",

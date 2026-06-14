@@ -90,6 +90,7 @@ export function useAppSettingsStore() {
       fullscreenImageNavMaxPerSecond: state.fullscreenImageNavMaxPerSecond,
       fullscreenDecodeCacheSize: state.fullscreenDecodeCacheSize,
       fullscreenResamplingEnabled: state.fullscreenResamplingEnabled,
+      fullscreenLayeredRenderEnabled: state.fullscreenLayeredRenderEnabled,
       fullscreenUpsamplingKernel: state.fullscreenUpsamplingKernel,
       fullscreenDownsamplingKernel: state.fullscreenDownsamplingKernel,
       musicVisualizerRenderLongEdgePx: state.musicVisualizerRenderLongEdgePx,

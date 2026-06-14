@@ -76,6 +76,7 @@ interface UseResolvedMediaStateResult {
   focusedVideoCoverImageSrc: string | null;
   sourceCoverImageUrlBySourceId: Record<string, string>;
   adjacentFullscreenImageSrcs: string[];
+  fullscreenWindowImageSrcs: string[];
 }
 
 export function useResolvedMediaState({
@@ -664,6 +665,59 @@ export function useResolvedMediaState({
     preloadedFullscreenUrlByImageId,
   ]);
 
+  // 多层预渲染窗口：与 adjacentFullscreenImageSrcs 同源，但含聚焦图（index 0），
+  // 顺序 [fi+0, fi+1, fi-1, fi+2, fi-2, ...]；供 FullscreenImagePane 堆叠 <img> 层用。
+  const fullscreenWindowImageSrcs = useMemo<string[]>(() => {
+    if (
+      !fullscreenActive ||
+      !focusedRef ||
+      orderedRootScopedImageRefs.length === 0
+    ) {
+      return [];
+    }
+    const fi = orderedRootScopedImageRefs.findIndex(
+      (ref) =>
+        ref.packageId === focusedRef.packageId &&
+        ref.imageIndex === focusedRef.imageIndex,
+    );
+    if (fi < 0) {
+      return [];
+    }
+    const offsets = buildFullscreenWindowOffsets(
+      fi,
+      fullscreenCrossPackagePrefetchCount ?? 6,
+      true,
+    );
+    const srcs: string[] = [];
+    const seen = new Set<string>();
+    for (const index of offsets) {
+      const ref = orderedRootScopedImageRefs[index];
+      if (!ref) {
+        continue;
+      }
+      const img = packageById.get(ref.packageId)?.images[ref.imageIndex];
+      if (!img) {
+        continue;
+      }
+      // 与显示一致：优先 eager 预解析 url，确保多层解码位图复用命中同一 url
+      const url =
+        preloadedFullscreenUrlByImageId[img.id] ?? originalImageUrlById[img.id];
+      if (url && !seen.has(url)) {
+        seen.add(url);
+        srcs.push(url);
+      }
+    }
+    return srcs;
+  }, [
+    fullscreenActive,
+    focusedRef,
+    orderedRootScopedImageRefs,
+    packageById,
+    fullscreenCrossPackagePrefetchCount,
+    originalImageUrlById,
+    preloadedFullscreenUrlByImageId,
+  ]);
+
   const fullscreenImageUrlById = useMemo<Record<string, string>>(() => {
     const next: Record<string, string> = {};
     for (const [targetId, url] of Object.entries(resolvedMedia.urlByTargetId)) {
@@ -749,5 +803,31 @@ export function useResolvedMediaState({
     focusedVideoCoverImageSrc,
     sourceCoverImageUrlBySourceId,
     adjacentFullscreenImageSrcs,
+    fullscreenWindowImageSrcs,
   };
+}
+
+/**
+ * 生成全屏多层预渲染窗口的有序索引序列。
+ * - includeFocused=true（多层渲染）：[fi, fi+1, fi-1, fi+2, fi-2, ...]
+ * - includeFocused=false（仅相邻预解码，沿用 adjacent 语义）：[fi+1, fi-1, fi+2, fi-2, ...]
+ * 越界索引被跳过；N 已做下界保护。
+ *
+ * 抽出为纯函数以便单测（顺序、聚焦位置、去重由调用方处理）。
+ */
+export function buildFullscreenWindowOffsets(
+  focusedIndex: number,
+  radius: number,
+  includeFocused: boolean,
+): number[] {
+  const N = Math.max(1, Math.floor(radius));
+  const offsets: number[] = [];
+  if (includeFocused) {
+    offsets.push(focusedIndex);
+  }
+  for (let step = 1; step <= N; step += 1) {
+    offsets.push(focusedIndex + step);
+    offsets.push(focusedIndex - step);
+  }
+  return offsets;
 }

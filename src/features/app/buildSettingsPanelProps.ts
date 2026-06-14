@@ -119,6 +119,7 @@ interface BuildSettingsPanelPropsParams {
   fullscreenImageNavMaxPerSecond: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
+  fullscreenLayeredRenderEnabled: boolean;
   fullscreenUpsamplingKernel: AppSettings["fullscreenUpsamplingKernel"];
   fullscreenDownsamplingKernel: AppSettings["fullscreenDownsamplingKernel"];
   proxyServer: string;
@@ -318,6 +319,7 @@ export function buildSettingsPanelProps(
     fullscreenImageNavMaxPerSecond: params.fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize: params.fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled: params.fullscreenResamplingEnabled,
+    fullscreenLayeredRenderEnabled: params.fullscreenLayeredRenderEnabled,
     fullscreenUpsamplingKernel: params.fullscreenUpsamplingKernel,
     fullscreenDownsamplingKernel: params.fullscreenDownsamplingKernel,
     proxyServer: params.proxyServer,
@@ -893,6 +895,8 @@ export function buildSettingsPanelProps(
       params.updateSettings({ fullscreenDecodeCacheSize: value }),
     onFullscreenResamplingEnabledChange: (value) =>
       params.updateSettings({ fullscreenResamplingEnabled: value }),
+    onFullscreenLayeredRenderEnabledChange: (value) =>
+      params.updateSettings({ fullscreenLayeredRenderEnabled: value }),
     onFullscreenUpsamplingKernelChange: (value) =>
       params.updateSettings({ fullscreenUpsamplingKernel: value }),
     onFullscreenDownsamplingKernelChange: (value) =>

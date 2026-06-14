@@ -88,6 +88,7 @@ export interface RenderSettingsMainSectionParams {
   fullscreenImageNavMaxPerSecond: number;
   fullscreenDecodeCacheSize: number;
   fullscreenResamplingEnabled: boolean;
+  fullscreenLayeredRenderEnabled: boolean;
   fullscreenUpsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   fullscreenDownsamplingKernel: "lanczos3" | "mitchell" | "nearest" | "cubic";
   proxyServer: string;
@@ -349,6 +350,7 @@ export interface RenderSettingsMainSectionParams {
   onFullscreenImageNavMaxPerSecondChange: (value: number) => void;
   onFullscreenDecodeCacheSizeChange: (value: number) => void;
   onFullscreenResamplingEnabledChange: (value: boolean) => void;
+  onFullscreenLayeredRenderEnabledChange: (value: boolean) => void;
   onFullscreenUpsamplingKernelChange: (
     value: "lanczos3" | "mitchell" | "nearest" | "cubic",
   ) => void;

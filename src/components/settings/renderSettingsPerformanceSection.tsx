@@ -22,6 +22,7 @@ export function renderSettingsPerformanceSection({
     fullscreenImageNavMaxPerSecond,
     fullscreenDecodeCacheSize,
     fullscreenResamplingEnabled,
+    fullscreenLayeredRenderEnabled,
     fullscreenDownsamplingKernel,
     fullscreenUpsamplingKernel,
     thumbnailQuality,
@@ -39,6 +40,7 @@ export function renderSettingsPerformanceSection({
     onFullscreenImageNavMaxPerSecondChange,
     onFullscreenDecodeCacheSizeChange,
     onFullscreenResamplingEnabledChange,
+    onFullscreenLayeredRenderEnabledChange,
     onFullscreenDownsamplingKernelChange,
     onFullscreenUpsamplingKernelChange,
     onThumbnailQualityChange,
@@ -238,6 +240,28 @@ export function renderSettingsPerformanceSection({
             checked={fullscreenResamplingEnabled}
             onChange={(event) =>
               onFullscreenResamplingEnabledChange(event.target.checked)
+            }
+          />
+        </label>
+
+        <label
+          className="settings-toggle-row"
+          data-tooltip-label={t(
+            "ui.settings.fullscreenLayeredRenderEnabledTooltip",
+          )}
+        >
+          <span
+            data-tooltip-label={t(
+              "ui.settings.fullscreenLayeredRenderEnabledTooltip",
+            )}
+          >
+            {t("ui.settings.fullscreenLayeredRenderEnabled")}
+          </span>
+          <input
+            type="checkbox"
+            checked={fullscreenLayeredRenderEnabled}
+            onChange={(event) =>
+              onFullscreenLayeredRenderEnabledChange(event.target.checked)
             }
           />
         </label>

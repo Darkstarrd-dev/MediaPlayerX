@@ -320,6 +320,7 @@ export const appSettingsSchema = z.object({
   fullscreenImageNavMaxPerSecond: z.number().int().min(1).max(60),
   fullscreenDecodeCacheSize: z.number().int().min(4).max(16),
   fullscreenResamplingEnabled: z.boolean(),
+  fullscreenLayeredRenderEnabled: z.boolean(),
   fullscreenUpsamplingKernel: fullscreenResamplingKernelSchema,
   fullscreenDownsamplingKernel: fullscreenResamplingKernelSchema,
   musicVisualizerRenderLongEdgePx: z.number().int().min(240).max(4096),

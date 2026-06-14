@@ -290,6 +290,9 @@ export const zhCnCatalogPart1 = {
   "ui.settings.fullscreenResamplingEnabled": "全屏重采样",
   "ui.settings.fullscreenResamplingEnabledTooltip":
     "开启后将按屏幕目标尺寸预先生成全屏图像；未就绪时自动回退原图，不阻塞翻页。",
+  "ui.settings.fullscreenLayeredRenderEnabled": "全屏分层渲染",
+  "ui.settings.fullscreenLayeredRenderEnabledTooltip":
+    "开启后在窗口内预渲染多层图像，切换近瞬时、无需重新解码。窗口越大、图片越大，内存占用越高（窗口大小跟随“全屏跨图包预取数量”）。默认关闭。",
   "ui.settings.fullscreenDownsamplingKernel": "下采样算法",
   "ui.settings.fullscreenDownsamplingKernelTooltip":
     "原图大于屏幕时使用。Lanczos3更锐利，Mitchell更均衡，Cubic更平滑，Nearest保留像素边缘。",

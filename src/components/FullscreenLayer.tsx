@@ -112,6 +112,8 @@ export interface FullscreenLayerProps {
   focusedImage: ImageItem | null;
   focusedImageSrc: string | null;
   adjacentFullscreenImageSrcs?: string[];
+  fullscreenWindowImageSrcs?: string[];
+  fullscreenLayeredRenderEnabled?: boolean;
   focusedVideo: VideoItem | null;
   focusedVideoSrc: string | null;
   subtitleTrackUrl: string | null;
@@ -207,6 +209,8 @@ function FullscreenLayer({
   focusedImage,
   focusedImageSrc,
   adjacentFullscreenImageSrcs,
+  fullscreenWindowImageSrcs,
+  fullscreenLayeredRenderEnabled,
   focusedVideo,
   focusedVideoSrc,
   subtitleTrackUrl,
@@ -337,6 +341,9 @@ function FullscreenLayer({
       focusedImage,
       decodeCacheSize: fullscreenDecodeCacheSize,
       adjacentImageSrcs: adjacentFullscreenImageSrcs,
+      // 多层预渲染：开启开关且非转换预览模式时启用（转换预览有自己的双 <img> 路径）
+      layered:
+        Boolean(fullscreenLayeredRenderEnabled) && !imageConvertPreviewActive,
     });
   const [displayedImageNaturalSize, setDisplayedImageNaturalSize] = useState<{
     width: number;
@@ -1658,6 +1665,10 @@ function FullscreenLayer({
       imageGeometry={imageRenderGeometry}
       imageTransform={imageRenderTransform}
       displayedImageSrc={displayedImageSrc}
+      layeredRenderEnabled={
+        fullscreenLayeredRenderEnabled && !imageConvertPreviewActive
+      }
+      windowImageSrcs={fullscreenWindowImageSrcs}
       focusedImageOrdinal={focusedImage?.ordinal ?? null}
       controlsRows={imageControls}
       overlayContent={imagePaneOverlay}

@@ -312,6 +312,9 @@ export const enUsCatalogPart1: Partial<{ [K in keyof ZhCnCatalog]: string }> = {
   "ui.settings.fullscreenResamplingEnabled": "Fullscreen resampling",
   "ui.settings.fullscreenResamplingEnabledTooltip":
     "When enabled, fullscreen images are pre-generated for the viewport target size. If not ready, it falls back to original image without blocking page turning.",
+  "ui.settings.fullscreenLayeredRenderEnabled": "Fullscreen layered render",
+  "ui.settings.fullscreenLayeredRenderEnabledTooltip":
+    "When enabled, multiple image layers are pre-rendered within the window so switching is near-instant with no re-decode. Larger windows and larger images use more memory (window size follows the cross-package prefetch count). Off by default.",
   "ui.settings.fullscreenDownsamplingKernel": "Downsampling kernel",
   "ui.settings.fullscreenDownsamplingKernelTooltip":
     "Used when source image is larger than the viewport. Lanczos3 is sharper, Mitchell is balanced, Cubic is smoother, Nearest preserves pixel edges.",
