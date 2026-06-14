@@ -106,6 +106,49 @@ function resolveIsolatedAudioGroup(album: string): string {
   return normalizeTreeSegment(candidate, MUSIC_ISOLATED_FALLBACK_GROUP);
 }
 
+function mergeSnapshots(
+  base: LibrarySnapshotDto,
+  add: LibrarySnapshotDto,
+): LibrarySnapshotDto {
+  const existingSourcePaths = new Set([
+    ...base.image_packages.map((source) => normalizeAllowlistKey(source.absolute_path)),
+    ...base.image_directories.map((source) => normalizeAllowlistKey(source.absolute_path)),
+  ]);
+  const existingVideoPaths = new Set(
+    base.videos.map((video) => normalizeAllowlistKey(video.absolute_path)),
+  );
+  const existingAudioPaths = new Set(
+    (base.audios ?? []).map((audio) => normalizeAllowlistKey(audio.absolute_path)),
+  );
+
+  return {
+    image_packages: [
+      ...base.image_packages,
+      ...add.image_packages.filter(
+        (source) => !existingSourcePaths.has(normalizeAllowlistKey(source.absolute_path)),
+      ),
+    ],
+    image_directories: [
+      ...base.image_directories,
+      ...add.image_directories.filter(
+        (source) => !existingSourcePaths.has(normalizeAllowlistKey(source.absolute_path)),
+      ),
+    ],
+    videos: [
+      ...base.videos,
+      ...add.videos.filter(
+        (video) => !existingVideoPaths.has(normalizeAllowlistKey(video.absolute_path)),
+      ),
+    ],
+    audios: [
+      ...(base.audios ?? []),
+      ...(add.audios ?? []).filter(
+        (audio) => !existingAudioPaths.has(normalizeAllowlistKey(audio.absolute_path)),
+      ),
+    ],
+  };
+}
+
 export class LibrarySnapshotService {
   private snapshotCache: LibrarySnapshotDto | null = null;
 
@@ -228,6 +271,227 @@ export class LibrarySnapshotService {
 
     this.snapshotCache = await this.loadingPromise;
     return this.snapshotCache;
+  }
+
+  async addToSnapshot(
+    ensureStateLoaded: () => Promise<void>,
+    newDirectoryPaths: string[],
+    newFilePaths: string[],
+  ): Promise<LibrarySnapshotDto> {
+    await ensureStateLoaded();
+
+    const existingSnapshot = this.options.database.readSnapshot();
+    const musicImportSources = this.options.getMusicImportSources();
+
+    const collectedFiles = await collectMediaFiles({
+      rootDir: this.options.rootDir,
+      importDirectoryRoots: newDirectoryPaths,
+      importFiles: newFilePaths,
+      musicImportDirectoryRoots: musicImportSources.directories,
+      musicImportFiles: musicImportSources.files,
+      legacyImportsDirName: this.options.legacyImportsDirName,
+      directoryScanConcurrency: this.options.directoryScanConcurrency,
+      imageExtensions: this.options.imageExtensions,
+      videoExtensions: this.options.videoExtensions,
+      audioExtensions: this.options.audioExtensions,
+      cueExtensions: this.options.cueExtensions,
+      archiveExtensions: this.options.archiveExtensions,
+    });
+
+    const { directoryImageMap, archives, videos, audios, cues } =
+      classifySnapshotFiles(collectedFiles, {
+        imageExtensions: this.options.imageExtensions,
+        archiveExtensions: this.options.archiveExtensions,
+        videoExtensions: this.options.videoExtensions,
+        audioExtensions: this.options.audioExtensions,
+        cueExtensions: this.options.cueExtensions,
+      });
+
+    const musicImportDirectoryRoots = Array.from(
+      new Set(
+        musicImportSources.directories.map((value) => path.resolve(value)),
+      ),
+    );
+    const musicImportFileAllowlistKeys = new Set(
+      musicImportSources.files.map((value) =>
+        normalizeAllowlistKey(path.resolve(value)),
+      ),
+    );
+
+    const bookletRootPaths = resolveBookletRootPaths(
+      collectedFiles,
+      musicImportDirectoryRoots,
+      {
+        audioExtensions: this.options.audioExtensions,
+        imageExtensions: this.options.imageExtensions,
+        isPathInsideRoot,
+      },
+    );
+
+    const packageGradeOverridesBySourceId =
+      this.options.getPackageGradeOverridesBySourceId();
+
+    const sortedDirEntries = Array.from(directoryImageMap.entries()).sort(
+      (left, right) => left[0].localeCompare(right[0], "zh-CN"),
+    );
+    const newImageDirectories: ImagePackageDto[] = [];
+    for (const [directoryPath, imageFiles] of sortedDirEntries) {
+      imageFiles.sort((left, right) =>
+        left.relativePath.localeCompare(right.relativePath, "zh-CN"),
+      );
+      const bookletRoot = bookletRootPaths.find((rootPath) =>
+        isPathInsideRoot(rootPath, directoryPath),
+      );
+      newImageDirectories.push(
+        createDirectorySource({
+          directoryPath,
+          imageFiles,
+          colorPalette: [...this.options.colorPalette],
+          packageGradeOverridesBySourceId,
+          treePathOverride: bookletRoot
+            ? buildBookletTreePath(directoryPath)
+            : undefined,
+        }),
+      );
+    }
+
+    const preparedArchives = await parallelMapLimit(
+      archives,
+      this.options.archiveScanConcurrency,
+      async (archive) => {
+        const prepared = await this.prepareArchiveEntries(archive);
+        return {
+          archive,
+          archivePathForMediaRead: prepared.archivePathForMediaRead,
+          imageEntries: prepared.imageEntries.sort((left, right) =>
+            left.entryName.localeCompare(right.entryName, "zh-CN"),
+          ),
+        };
+      },
+    );
+
+    const newImagePackages: ImagePackageDto[] = [];
+    for (const prepared of preparedArchives) {
+      const existingIndexes = this.archiveEntryIndexByPath.get(
+        prepared.archivePathForMediaRead,
+      );
+      if (existingIndexes) {
+        for (const entry of prepared.imageEntries) {
+          existingIndexes.add(entry.entryName);
+        }
+      } else {
+        this.archiveEntryIndexByPath.set(
+          prepared.archivePathForMediaRead,
+          new Set(prepared.imageEntries.map((entry) => entry.entryName)),
+        );
+      }
+      const existingZips = this.zipEntryIndexByPath.get(
+        prepared.archivePathForMediaRead,
+      );
+      if (existingZips) {
+        for (const entry of prepared.imageEntries) {
+          existingZips.set(entry.entryName, entry);
+        }
+      } else {
+        this.zipEntryIndexByPath.set(
+          prepared.archivePathForMediaRead,
+          new Map(
+            prepared.imageEntries.map((entry) => [entry.entryName, entry]),
+          ),
+        );
+      }
+
+      newImagePackages.push(
+        createArchiveSource({
+          file: prepared.archive,
+          imageEntries: prepared.imageEntries,
+          archivePathForMediaRead: prepared.archivePathForMediaRead,
+          colorPalette: [...this.options.colorPalette],
+          packageGradeOverridesBySourceId,
+        }),
+      );
+    }
+
+    const ffprobeConcurrency = this.options.ffprobeConcurrency;
+    const newVideos = (
+      await parallelMapLimit(videos, ffprobeConcurrency, async (file) =>
+        this.createVideoSource(file),
+      )
+    ).sort((left, right) =>
+      left.absolute_path.localeCompare(right.absolute_path, "zh-CN"),
+    );
+
+    const newAudioResults = await parallelMapLimit(
+      audios,
+      ffprobeConcurrency,
+      async (file) =>
+        this.createAudioSource(file, {
+          directoryRoots: musicImportDirectoryRoots,
+          fileAllowlistKeys: musicImportFileAllowlistKeys,
+        }),
+    );
+    const newAudioItems = newAudioResults
+      .map((result) => result.audio)
+      .sort((left, right) =>
+        left.absolute_path.localeCompare(right.absolute_path, "zh-CN"),
+      );
+
+    const audioByPath = new Map<string, AudioItemDto>();
+    for (const audio of newAudioItems) {
+      audioByPath.set(normalizeAllowlistKey(audio.absolute_path), audio);
+    }
+    const cueVirtualTrackItems = (
+      await parallelMapLimit(cues, ffprobeConcurrency, async (cueFile) =>
+        this.createCueVirtualTracks(cueFile, {
+          audioByPath,
+          musicImportPathContext: {
+            directoryRoots: musicImportDirectoryRoots,
+            fileAllowlistKeys: musicImportFileAllowlistKeys,
+          },
+        }),
+      )
+    ).flat();
+
+    const allNewAudios = [...newAudioItems, ...cueVirtualTrackItems].sort(
+      (left, right) =>
+        left.absolute_path.localeCompare(right.absolute_path, "zh-CN"),
+    );
+
+    const newSnapshot = librarySnapshotDtoSchema.parse({
+      image_packages: newImagePackages,
+      image_directories: newImageDirectories.sort((left, right) =>
+        left.absolute_path.localeCompare(right.absolute_path, "zh-CN"),
+      ),
+      videos: newVideos,
+      audios: allNewAudios,
+    });
+
+    const mergedSnapshot = mergeSnapshots(existingSnapshot, newSnapshot);
+    this.options.database.replaceSnapshot(mergedSnapshot);
+    this.snapshotCache = this.options.database.readSnapshot();
+
+    const persistedAudioIdByPathKey = new Map<string, string>();
+    for (const audio of this.snapshotCache!.audios ?? []) {
+      const audioPath = audio.absolute_path.trim();
+      if (audioPath && !/^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(audioPath)) {
+        persistedAudioIdByPathKey.set(
+          normalizeAllowlistKey(path.resolve(audioPath)),
+          audio.id,
+        );
+      }
+    }
+    for (const result of newAudioResults) {
+      const payload = result.parsedMetadataForUpsert;
+      if (!payload) continue;
+      const key = normalizeAllowlistKey(
+        path.resolve(payload.audioAbsolutePath),
+      );
+      const persistedId = persistedAudioIdByPathKey.get(key);
+      if (!persistedId) continue;
+      this.options.upsertAudioMetadataFromScan(persistedId, payload.payload);
+    }
+
+    return this.snapshotCache!;
   }
 
   async refreshArchiveIndexesForPaths(

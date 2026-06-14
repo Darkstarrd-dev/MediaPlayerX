@@ -109,6 +109,7 @@ interface ExecuteImportTaskParams {
   musicImportMode: boolean
   database: MediaLibraryDatabase
   invalidateSnapshotCache: () => void
+  addToSnapshot: (newDirectoryPaths: string[], newFilePaths: string[]) => Promise<unknown>
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
   importTaskUpdatedMinIntervalMs: number
@@ -202,6 +203,8 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
   let addedMusicDirectoryCount = 0
   let addedMusicFileCount = 0
   let hasReimportedDirectory = false
+  const newDirectoryPaths: string[] = []
+  const newFilePaths: string[] = []
 
   for (const sourcePath of existing.sourcePaths) {
     const inspected = await inspectImportPath(sourcePath, {
@@ -228,6 +231,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
           if (!fileMap.has(key)) {
             fileMap.set(key, absolutePath)
             addedFileCount += 1
+            newFilePaths.push(absolutePath)
           }
 
           if (params.musicImportMode && !musicFileMap.has(key)) {
@@ -239,6 +243,7 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
           if (!directoryMap.has(key)) {
             directoryMap.set(key, absolutePath)
             addedDirectoryCount += 1
+            newDirectoryPaths.push(absolutePath)
           } else {
             hasReimportedDirectory = true
           }
@@ -294,68 +299,9 @@ export async function executeImportTask(params: ExecuteImportTaskParams): Promis
 
     params.invalidateSnapshotCache()
 
-    let lastRefreshReportAtMs = 0
-    let lastRefreshReportedCount = 0
-    let lastRefreshContainerReportedCount = 0
-    let runningContainerProcessed = Math.max(processedCount, 0)
-    let runningContainerTotal = Math.max(totalCount, 1)
-    const refreshStartedAtMs = Date.now()
-    await params.refreshSnapshot({
-      reason: 'import-task-refresh',
-      onProgress: (progress) => {
-        const discoveredContainerCount = Math.max(0, progress.discovered_container_count ?? 0)
-        if (progress.stage !== 'collecting') {
-          const unitProcessed = Math.max(0, progress.unit_processed_count ?? runningContainerProcessed)
-          const unitTotal = Math.max(1, progress.unit_total_count ?? runningContainerTotal, unitProcessed)
-          runningContainerProcessed = unitProcessed
-          runningContainerTotal = unitTotal
-
-          const stageProgress =
-            progress.stage === 'building' ? Math.min(0.95, 0.55 + (0.4 * unitProcessed) / unitTotal) : 0.98
-          upsertTask({
-            status: 'running',
-            processedCount: unitProcessed,
-            totalCount: unitTotal,
-            progress: stageProgress,
-            message: progress.message,
-          })
-          emitImportTaskUpdated()
-          return
-        }
-
-        const now = Date.now()
-        if (
-          progress.scanned_file_count > 0 &&
-          progress.scanned_file_count - lastRefreshReportedCount < 200 &&
-          discoveredContainerCount - lastRefreshContainerReportedCount < 32 &&
-          now - lastRefreshReportAtMs < 350
-        ) {
-          return
-        }
-
-        lastRefreshReportAtMs = now
-        lastRefreshReportedCount = progress.scanned_file_count
-        lastRefreshContainerReportedCount = discoveredContainerCount
-        const scanWeight = 0.45 * (1 - 1 / (1 + progress.scanned_file_count / 400))
-        const progressValue = Math.max(totalCount > 0 ? processedCount / totalCount : 0.5, 0.5 + scanWeight)
-        const previewContainerTotal = Math.max(1, discoveredContainerCount)
-        upsertTask({
-          status: 'running',
-          processedCount: discoveredContainerCount,
-          totalCount: previewContainerTotal,
-          progress: Math.min(0.95, progressValue),
-          message: progress.message,
-          errorDetail: failedMessages.length > 0 ? failedMessages.slice(0, 3).join(' | ') : null,
-        })
-        emitImportTaskUpdated()
-        console.info('import task thin-scan progress', {
-          taskId: params.taskId,
-          scannedFileCount: progress.scanned_file_count,
-          discoveredContainerCount,
-          elapsedMs: now - refreshStartedAtMs,
-        })
-      },
-    })
+    if (newDirectoryPaths.length > 0 || newFilePaths.length > 0) {
+      await params.addToSnapshot(newDirectoryPaths, newFilePaths)
+    }
 
     params.emitLibraryChanged({
       reason: 'import-task-finished',

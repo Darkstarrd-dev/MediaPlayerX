@@ -298,7 +298,7 @@ export class FileSystemMediaReadService {
       ]),
       onDebouncedChange: () => this.runExternalSourceRefreshFromWatcher(),
     });
-  private externalSourceWatcherEnabled = true;
+  private externalSourceWatcherEnabled = false;
   private disposed = false;
 
   constructor(optionsOrRootDir: FileSystemMediaReadServiceOptions | string) {
@@ -425,6 +425,12 @@ export class FileSystemMediaReadService {
       archiveExtensions: ARCHIVE_EXTENSIONS,
       database: this.database,
       invalidateSnapshotCache: () => this.invalidateSnapshotCache(),
+      addToSnapshot: (newDirs, newFiles) =>
+        this.librarySnapshotService.addToSnapshot(
+          () => this.ensureStateLoaded(),
+          newDirs,
+          newFiles,
+        ),
       refreshSnapshot: (options) => this.refreshSnapshotFromFilesystem(options),
       emitLibraryChanged: (payload) => this.emitLibraryChanged(payload),
       handleImportStageKnownHashHits: async (sourcePaths) =>
@@ -903,9 +909,13 @@ export class FileSystemMediaReadService {
       : null;
 
     try {
+      this.externalSourceWatcherManager.beginEventSuppression();
       const nextSnapshot = await this.refreshSnapshotFromFilesystem({
         reason: "watcher-external-source-change",
       });
+      this.externalSourceWatcherManager.endEventSuppression(
+        FileSystemMediaReadService.WATCHER_SELF_EVENT_SUPPRESS_TAIL_MS,
+      );
       if (this.disposed) {
         return;
       }

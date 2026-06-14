@@ -25,6 +25,7 @@ interface ImportTaskServiceOptions {
   archiveExtensions: ReadonlySet<string>
   database: MediaLibraryDatabase
   invalidateSnapshotCache: () => void
+  addToSnapshot: (newDirectoryPaths: string[], newFilePaths: string[]) => Promise<unknown>
   refreshSnapshot: (options?: SnapshotRefreshOptions) => Promise<unknown>
   emitLibraryChanged: (payload: { reason: 'import-task-updated' | 'import-task-finished'; updated_at_ms: number }) => void
   handleImportStageKnownHashHits?: (sourcePaths: string[]) => Promise<unknown>
@@ -250,6 +251,7 @@ export class ImportTaskService {
       musicImportMode,
       database: this.options.database,
       invalidateSnapshotCache: this.options.invalidateSnapshotCache,
+      addToSnapshot: this.options.addToSnapshot,
       refreshSnapshot: this.options.refreshSnapshot,
       emitLibraryChanged: this.options.emitLibraryChanged,
       importTaskUpdatedMinIntervalMs: IMPORT_TASK_UPDATED_MIN_INTERVAL_MS,

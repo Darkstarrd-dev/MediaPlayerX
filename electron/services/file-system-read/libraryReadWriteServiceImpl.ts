@@ -1042,6 +1042,7 @@ export class LibraryReadWriteService {
       }
 
       for (const [sourceId, metric] of parsedMetrics.imageBySourceId) {
+        if (!sourceById?.has(sourceId)) continue;
         this.options.database.writeImagePreferenceMetrics(sourceId, {
           eventCount: metric.eventCount,
           pagesRead: metric.pagesRead,
