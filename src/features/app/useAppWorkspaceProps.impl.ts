@@ -258,6 +258,7 @@ export function useAppWorkspaceProps({
   checkSidebarNode,
   setAudioPlaylistIds,
   requestMusicPlay,
+  onResetPackagePage,
   musicBookletBindings,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
@@ -470,6 +471,7 @@ export function useAppWorkspaceProps({
       clearSidebarSelections();
       checkSidebarNode(nodeId);
     },
+    onResetPackagePage,
     titleCollapseEnabled: !luxuryWhiteActive,
     externalSourceWatcherEnabled: appSettings.externalSourceWatcherEnabled,
     selectedFolderPathKey:

@@ -60,6 +60,7 @@ interface BuildSidebarPanelPropsParams {
   onToggleManageNode: (nodeId: string, shiftKey: boolean) => void;
   onClearSidebarSelection: () => void;
   onSelectMetadataSingleNode?: (nodeId: string) => void;
+  onResetPackagePage?: (packageId: string) => void;
   titleCollapseEnabled?: boolean;
   externalSourceWatcherEnabled?: boolean;
   onRefreshSelectedFolder?: () => void;
@@ -186,6 +187,7 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     onToggleManageNode: params.onToggleManageNode,
     onClearSidebarSelection: params.onClearSidebarSelection,
     onSelectMetadataSingleNode: params.onSelectMetadataSingleNode,
+    onResetPackagePage: params.onResetPackagePage,
     onToggleAudioPlaylist: (audioId: string, checked: boolean) => {
       params.setAudioPlaylistIds((previous) => {
         if (checked) {

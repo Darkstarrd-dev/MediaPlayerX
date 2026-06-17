@@ -81,6 +81,7 @@ interface SidebarPanelProps {
   onClearSidebarSelection?: () => void;
   onSelectMetadataSingleNode?: (nodeId: string) => void;
   onToggleManageNode?: (nodeId: string, shiftKey: boolean) => void;
+  onResetPackagePage?: (packageId: string) => void;
   collapsedFolderNodeIds?: string[];
   onSetCollapsedFolderNodeIds?: (nodeIds: string[]) => void;
   sidebarLabelDisplayMode?: SidebarLabelDisplayMode;
@@ -133,6 +134,7 @@ function SidebarPanel({
   onClearSidebarSelection,
   onSelectMetadataSingleNode,
   onToggleManageNode,
+  onResetPackagePage,
   collapsedFolderNodeIds,
   onSetCollapsedFolderNodeIds,
   sidebarLabelDisplayMode,
@@ -1422,6 +1424,7 @@ function SidebarPanel({
                 onSelectVideoAndPlay={onSelectVideoAndPlay}
                 onSelectAudio={onSelectAudio}
                 onToggleAudioPlaylist={onToggleAudioPlaylist}
+                onResetPackagePage={onResetPackagePage}
                 t={t}
               />
             ))}

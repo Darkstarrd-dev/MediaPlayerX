@@ -1,15 +1,15 @@
-import { useAppWorkspaceProps } from './useAppWorkspaceProps'
-import { useMusicBookletBindings } from './useMusicBookletBindings'
-import type { BackendErrorRow } from './buildBackendErrorRows'
-import type { AppRuntimeSourcesResult } from './useAppRuntimeSources'
-import type { AppReadAndNavigationResult } from './useAppReadAndNavigation'
-import type { AppDisplayAndEffectsResult } from './useAppDisplayAndEffects'
+import { useAppWorkspaceProps } from "./useAppWorkspaceProps";
+import { useMusicBookletBindings } from "./useMusicBookletBindings";
+import type { BackendErrorRow } from "./buildBackendErrorRows";
+import type { AppRuntimeSourcesResult } from "./useAppRuntimeSources";
+import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
+import type { AppDisplayAndEffectsResult } from "./useAppDisplayAndEffects";
 
 interface UseAppWorkspaceBindingsParams {
-  runtimeSources: AppRuntimeSourcesResult
-  readNavigationState: AppReadAndNavigationResult
-  displayState: AppDisplayAndEffectsResult
-  managementErrorRows: BackendErrorRow[]
+  runtimeSources: AppRuntimeSourcesResult;
+  readNavigationState: AppReadAndNavigationResult;
+  displayState: AppDisplayAndEffectsResult;
+  managementErrorRows: BackendErrorRow[];
 }
 
 export function useAppWorkspaceBindings({
@@ -24,13 +24,13 @@ export function useAppWorkspaceBindings({
     repositoryBootstrap,
     sessionState,
     mediaState,
-  } = runtimeSources
+  } = runtimeSources;
 
-  const {
-    bootstrapLibrarySnapshot,
-  } = repositoryBootstrap
+  const { bootstrapLibrarySnapshot } = repositoryBootstrap;
 
-  const musicBookletBindings = useMusicBookletBindings({ repository: repositoryBootstrap.mediaRepository })
+  const musicBookletBindings = useMusicBookletBindings({
+    repository: repositoryBootstrap.mediaRepository,
+  });
 
   const {
     mode,
@@ -39,7 +39,7 @@ export function useAppWorkspaceBindings({
     imageRootNodeId,
     videoRootNodeId,
     musicRootNodeId,
-  } = appSettings
+  } = appSettings;
 
   const {
     selectedPackageId,
@@ -94,7 +94,7 @@ export function useAppWorkspaceBindings({
     vectorPanelRef,
     vectorPanelContentRef,
     setVectorFocusIndex,
-  } = sessionState
+  } = sessionState;
 
   const {
     selectedVideoId,
@@ -124,7 +124,7 @@ export function useAppWorkspaceBindings({
     cycleVideoFitMode,
     fullscreenActive,
     selectVideoFromBrowser,
-  } = mediaState
+  } = mediaState;
 
   const {
     searchPanelCollapsed,
@@ -200,18 +200,25 @@ export function useAppWorkspaceBindings({
     orderedRootScopedPackages,
     orderedRootScopedImageRefs,
     normalImageSourceNodeIdMap,
-  } = readNavigationState
+  } = readNavigationState;
 
-  const musicBookletLibrarySnapshot = mode === 'music'
-    ? (backendRead.library.data ?? backendRead.library.snapshot ?? bootstrapLibrarySnapshot)
-    : null
-  const musicBookletImageSources = mode === 'music'
-    ? (musicBookletLibrarySnapshot
-      ? [...musicBookletLibrarySnapshot.imagePackages, ...musicBookletLibrarySnapshot.imageDirectories]
-      : scopedImageSourcesEffective)
-    : []
+  const musicBookletLibrarySnapshot =
+    mode === "music"
+      ? (backendRead.library.data ??
+        backendRead.library.snapshot ??
+        bootstrapLibrarySnapshot)
+      : null;
+  const musicBookletImageSources =
+    mode === "music"
+      ? musicBookletLibrarySnapshot
+        ? [
+            ...musicBookletLibrarySnapshot.imagePackages,
+            ...musicBookletLibrarySnapshot.imageDirectories,
+          ]
+        : scopedImageSourcesEffective
+      : [];
 
-  void orderedRootScopedPackages
+  void orderedRootScopedPackages;
 
   const {
     backendWrite,
@@ -257,7 +264,7 @@ export function useAppWorkspaceBindings({
     metadataImageEffective,
     metadataImagePackageEffective,
     currentGradeEffective,
-  } = displayState
+  } = displayState;
 
   return useAppWorkspaceProps({
     appSettings,
@@ -472,6 +479,16 @@ export function useAppWorkspaceBindings({
     checkSidebarNode,
     setAudioPlaylistIds,
     requestMusicPlay,
+    onResetPackagePage: (packageId: string) => {
+      sessionState.setPageByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+      sessionState.setFocusByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+    },
     musicBookletBindings,
-  })
+  });
 }

@@ -1,58 +1,59 @@
-import { useCallback, useEffect, useMemo, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 
-import type { AudioItem, BrowserMode, SidebarNode } from '../../types'
-import { clamp } from '../../utils/ui'
-import { NAVIGATION_INPUT_SETTLE_MS } from '../shared/interactionDelays'
+import type { AudioItem, BrowserMode, SidebarNode } from "../../types";
+import { clamp } from "../../utils/ui";
+import { NAVIGATION_INPUT_SETTLE_MS } from "../shared/interactionDelays";
 
 interface UseSidebarNavigationParams {
-  mode: BrowserMode
-  imageTreeForSidebar: SidebarNode[]
-  videoTreeForSidebar: SidebarNode[]
-  audioTreeForSidebar: SidebarNode[]
-  audiosForSidebar: AudioItem[]
-  imageRootNode: SidebarNode | null
-  videoRootNode: SidebarNode | null
-  musicRootNode: SidebarNode | null
-  selectedSidebarNodeId: string | null
-  appBodyRef: RefObject<HTMLDivElement | null>
-  onSetSelectedSidebarNodeId: (nodeId: string | null) => void
-  onSelectPackage: (packageId: string) => void
-  onSelectVideo: (videoId: string) => void
-  onSelectAudio: (audioId: string) => void
-  onSetSidebarFocusMain: () => void
-  onSetImageRootNodeId: (nodeId: string) => void
-  onSetVideoRootNodeId: (nodeId: string) => void
-  onSetMusicRootNodeId: (nodeId: string) => void
+  mode: BrowserMode;
+  imageTreeForSidebar: SidebarNode[];
+  videoTreeForSidebar: SidebarNode[];
+  audioTreeForSidebar: SidebarNode[];
+  audiosForSidebar: AudioItem[];
+  imageRootNode: SidebarNode | null;
+  videoRootNode: SidebarNode | null;
+  musicRootNode: SidebarNode | null;
+  selectedSidebarNodeId: string | null;
+  appBodyRef: RefObject<HTMLDivElement | null>;
+  onSetSelectedSidebarNodeId: (nodeId: string | null) => void;
+  onSelectPackage: (packageId: string) => void;
+  onSelectVideo: (videoId: string) => void;
+  onSelectAudio: (audioId: string) => void;
+  onSetSidebarFocusMain: () => void;
+  onSetImageRootNodeId: (nodeId: string) => void;
+  onSetVideoRootNodeId: (nodeId: string) => void;
+  onSetMusicRootNodeId: (nodeId: string) => void;
+  onResetPackagePage?: (packageId: string) => void;
 }
 
 interface UseSidebarNavigationResult {
-  activeSidebarTree: SidebarNode[]
-  flatSidebarNodes: SidebarNode[]
-  sidebarNodeById: Map<string, SidebarNode>
-  imageSourceNodeIdMap: Map<string, string>
-  videoNodeIdMap: Map<string, string>
-  audioNodeIdMap: Map<string, string>
-  selectedSidebarNode: SidebarNode | null
-  canSetCurrentRoot: boolean
-  currentRootLabel: string | null
-  applyCurrentRootFromSelection: () => void
-  ensureSidebarNodeVisible: (nodeId: string) => void
-  handleSidebarNavigationKey: (event: KeyboardEvent) => boolean
+  activeSidebarTree: SidebarNode[];
+  flatSidebarNodes: SidebarNode[];
+  sidebarNodeById: Map<string, SidebarNode>;
+  imageSourceNodeIdMap: Map<string, string>;
+  videoNodeIdMap: Map<string, string>;
+  audioNodeIdMap: Map<string, string>;
+  selectedSidebarNode: SidebarNode | null;
+  canSetCurrentRoot: boolean;
+  currentRootLabel: string | null;
+  applyCurrentRootFromSelection: () => void;
+  ensureSidebarNodeVisible: (nodeId: string) => void;
+  handleSidebarNavigationKey: (event: KeyboardEvent) => boolean;
 }
 
 function resolveFirstAudioId(node: SidebarNode): string | null {
   if (node.audioId) {
-    return node.audioId
+    return node.audioId;
   }
 
   for (const child of node.children) {
-    const candidate = resolveFirstAudioId(child)
+    const candidate = resolveFirstAudioId(child);
     if (candidate) {
-      return candidate
+      return candidate;
     }
   }
 
-  return null
+  return null;
 }
 
 export function useSidebarNavigation({
@@ -74,349 +75,411 @@ export function useSidebarNavigation({
   onSetImageRootNodeId,
   onSetVideoRootNodeId,
   onSetMusicRootNodeId,
+  onResetPackagePage,
 }: UseSidebarNavigationParams): UseSidebarNavigationResult {
-  const activeSidebarTree = mode === 'image' ? imageTreeForSidebar : mode === 'video' ? videoTreeForSidebar : audioTreeForSidebar
+  const activeSidebarTree =
+    mode === "image"
+      ? imageTreeForSidebar
+      : mode === "video"
+        ? videoTreeForSidebar
+        : audioTreeForSidebar;
 
   const flatSidebarNodes = useMemo(() => {
-    const items: SidebarNode[] = []
+    const items: SidebarNode[] = [];
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
-        items.push(node)
+        items.push(node);
         if (node.children.length > 0) {
-          walk(node.children)
+          walk(node.children);
         }
       }
-    }
-    walk(activeSidebarTree)
-    return items
-  }, [activeSidebarTree])
+    };
+    walk(activeSidebarTree);
+    return items;
+  }, [activeSidebarTree]);
 
-  const sidebarNodeById = useMemo(() => new Map(flatSidebarNodes.map((node) => [node.id, node])), [flatSidebarNodes])
+  const sidebarNodeById = useMemo(
+    () => new Map(flatSidebarNodes.map((node) => [node.id, node])),
+    [flatSidebarNodes],
+  );
 
   const imageSourceNodeIdMap = useMemo(() => {
-    if (mode !== 'image') {
-      return new Map<string, string>()
+    if (mode !== "image") {
+      return new Map<string, string>();
     }
 
-    const map = new Map<string, string>()
+    const map = new Map<string, string>();
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
         if (node.imageSourceId) {
-          map.set(node.imageSourceId, node.id)
+          map.set(node.imageSourceId, node.id);
         }
         if (node.children.length > 0) {
-          walk(node.children)
+          walk(node.children);
         }
       }
-    }
-    walk(imageTreeForSidebar)
-    return map
-  }, [imageTreeForSidebar, mode])
+    };
+    walk(imageTreeForSidebar);
+    return map;
+  }, [imageTreeForSidebar, mode]);
 
   const videoNodeIdMap = useMemo(() => {
-    if (mode !== 'video') {
-      return new Map<string, string>()
+    // dual 全屏模式下即使 mode 不是 video，也需要构建 videoNodeIdMap 以支持 Del 键删除标记
+    if (mode !== "video" && videoTreeForSidebar.length === 0) {
+      return new Map<string, string>();
     }
 
-    const map = new Map<string, string>()
+    const map = new Map<string, string>();
     const walk = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
         if (node.videoId) {
-          map.set(node.videoId, node.id)
+          map.set(node.videoId, node.id);
         }
         if (node.children.length > 0) {
-          walk(node.children)
+          walk(node.children);
         }
       }
-    }
-    walk(videoTreeForSidebar)
-    return map
-  }, [mode, videoTreeForSidebar])
+    };
+    walk(videoTreeForSidebar);
+    return map;
+  }, [mode, videoTreeForSidebar]);
 
   const audioNodeIdMap = useMemo(() => {
-    if (mode !== 'music') {
-      return new Map<string, string>()
+    if (mode !== "music") {
+      return new Map<string, string>();
     }
 
-    const folderNodeIdByPathKey = new Map<string, string>()
+    const folderNodeIdByPathKey = new Map<string, string>();
     const walkFolders = (nodes: SidebarNode[]) => {
       for (const node of nodes) {
-        folderNodeIdByPathKey.set(node.pathKey, node.id)
+        folderNodeIdByPathKey.set(node.pathKey, node.id);
         if (node.children.length > 0) {
-          walkFolders(node.children)
+          walkFolders(node.children);
         }
       }
-    }
-    walkFolders(audioTreeForSidebar)
+    };
+    walkFolders(audioTreeForSidebar);
 
-    const map = new Map<string, string>()
+    const map = new Map<string, string>();
     for (const audio of audiosForSidebar) {
-      const folderSegments = audio.treePath.slice(0, Math.max(0, audio.treePath.length - 1))
+      const folderSegments = audio.treePath.slice(
+        0,
+        Math.max(0, audio.treePath.length - 1),
+      );
       for (let length = folderSegments.length; length >= 1; length -= 1) {
-        const pathKey = folderSegments.slice(0, length).join('/')
-        const nodeId = folderNodeIdByPathKey.get(pathKey)
+        const pathKey = folderSegments.slice(0, length).join("/");
+        const nodeId = folderNodeIdByPathKey.get(pathKey);
         if (!nodeId) {
-          continue
+          continue;
         }
-        map.set(audio.id, nodeId)
-        break
+        map.set(audio.id, nodeId);
+        break;
       }
     }
 
-    return map
-  }, [audioTreeForSidebar, audiosForSidebar, mode])
+    return map;
+  }, [audioTreeForSidebar, audiosForSidebar, mode]);
 
-  const selectedSidebarNode = selectedSidebarNodeId ? sidebarNodeById.get(selectedSidebarNodeId) ?? null : null
-  const canSetCurrentRoot = selectedSidebarNode?.kind === 'folder'
-  const currentRootLabel = mode === 'image' ? imageRootNode?.label ?? null : mode === 'video' ? videoRootNode?.label ?? null : musicRootNode?.label ?? null
+  const selectedSidebarNode = selectedSidebarNodeId
+    ? (sidebarNodeById.get(selectedSidebarNodeId) ?? null)
+    : null;
+  const canSetCurrentRoot = selectedSidebarNode?.kind === "folder";
+  const currentRootLabel =
+    mode === "image"
+      ? (imageRootNode?.label ?? null)
+      : mode === "video"
+        ? (videoRootNode?.label ?? null)
+        : (musicRootNode?.label ?? null);
 
   const applyCurrentRootFromSelection = useCallback(() => {
-    if (!selectedSidebarNode || selectedSidebarNode.kind !== 'folder') {
-      return
+    if (!selectedSidebarNode || selectedSidebarNode.kind !== "folder") {
+      return;
     }
 
-    if (mode === 'image') {
-      onSetImageRootNodeId(selectedSidebarNode.id)
-      return
+    if (mode === "image") {
+      onSetImageRootNodeId(selectedSidebarNode.id);
+      return;
     }
 
-    if (mode === 'video') {
-      onSetVideoRootNodeId(selectedSidebarNode.id)
-      return
+    if (mode === "video") {
+      onSetVideoRootNodeId(selectedSidebarNode.id);
+      return;
     }
 
-    onSetMusicRootNodeId(selectedSidebarNode.id)
-  }, [mode, onSetImageRootNodeId, onSetMusicRootNodeId, onSetVideoRootNodeId, selectedSidebarNode])
+    onSetMusicRootNodeId(selectedSidebarNode.id);
+  }, [
+    mode,
+    onSetImageRootNodeId,
+    onSetMusicRootNodeId,
+    onSetVideoRootNodeId,
+    selectedSidebarNode,
+  ]);
 
   const ensureSidebarNodeVisible = useCallback(
     (nodeId: string) => {
-      const container = appBodyRef.current?.querySelector<HTMLElement>('.sidebar-tree')
+      const container =
+        appBodyRef.current?.querySelector<HTMLElement>(".sidebar-tree");
       if (!container) {
-        return
+        return;
       }
 
-      const rowElements = Array.from(container.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
-      const targetIndex = rowElements.findIndex((row) => row.dataset.sidebarNodeId === nodeId)
-      const targetRow = targetIndex >= 0 ? rowElements[targetIndex] : null
+      const rowElements = Array.from(
+        container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+      );
+      const targetIndex = rowElements.findIndex(
+        (row) => row.dataset.sidebarNodeId === nodeId,
+      );
+      const targetRow = targetIndex >= 0 ? rowElements[targetIndex] : null;
       if (!targetRow) {
-        return
+        return;
       }
 
       if (targetIndex === 0) {
-        container.scrollTop = 0
-        return
+        container.scrollTop = 0;
+        return;
       }
 
       if (targetIndex === rowElements.length - 1) {
-        container.scrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
-        return
+        container.scrollTop = Math.max(
+          0,
+          container.scrollHeight - container.clientHeight,
+        );
+        return;
       }
 
-      const rowTop = targetRow.offsetTop
-      const rowBottom = rowTop + targetRow.offsetHeight
-      const viewTop = container.scrollTop
-      const viewBottom = viewTop + container.clientHeight
+      const rowTop = targetRow.offsetTop;
+      const rowBottom = rowTop + targetRow.offsetHeight;
+      const viewTop = container.scrollTop;
+      const viewBottom = viewTop + container.clientHeight;
 
       if (rowTop < viewTop) {
-        container.scrollTop = Math.max(0, rowTop - 4)
-        return
+        container.scrollTop = Math.max(0, rowTop - 4);
+        return;
       }
 
       if (rowBottom > viewBottom) {
-        const nextTop = rowBottom - container.clientHeight + 4
-        container.scrollTop = Math.min(nextTop, Math.max(0, container.scrollHeight - container.clientHeight))
+        const nextTop = rowBottom - container.clientHeight + 4;
+        container.scrollTop = Math.min(
+          nextTop,
+          Math.max(0, container.scrollHeight - container.clientHeight),
+        );
       }
     },
     [appBodyRef],
-  )
+  );
 
-  const pendingSelectionNodeIdRef = useRef<string | null>(null)
-  const pendingSelectionTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const pendingSelectionNodeIdRef = useRef<string | null>(null);
+  const pendingSelectionTimerRef = useRef<ReturnType<
+    typeof window.setTimeout
+  > | null>(null);
 
   const clearPendingSelectionTimer = useCallback(() => {
     if (pendingSelectionTimerRef.current === null) {
-      return
+      return;
     }
-    window.clearTimeout(pendingSelectionTimerRef.current)
-    pendingSelectionTimerRef.current = null
-  }, [])
+    window.clearTimeout(pendingSelectionTimerRef.current);
+    pendingSelectionTimerRef.current = null;
+  }, []);
 
   const applyNodeSelectionById = useCallback(
     (nodeId: string) => {
-      const node = sidebarNodeById.get(nodeId)
+      const node = sidebarNodeById.get(nodeId);
       if (!node) {
-        return
+        return;
       }
 
-      if (mode === 'image' && node.imageSourceId) {
-        onSelectPackage(node.imageSourceId)
+      if (mode === "image" && node.imageSourceId) {
+        // 通过 sidebar 切换图包时，先重置页码到第一页，再切换图包
+        // 必须在 onSelectPackage 之前调用，确保 selectedPackageId 改变时页码已重置
+        if (onResetPackagePage) {
+          onResetPackagePage(node.imageSourceId);
+        }
+        onSelectPackage(node.imageSourceId);
       }
-      if (mode === 'video' && node.videoId) {
-        onSelectVideo(node.videoId)
+      if (mode === "video" && node.videoId) {
+        onSelectVideo(node.videoId);
       }
-      if (mode === 'music') {
-        const targetAudioId = resolveFirstAudioId(node)
+      if (mode === "music") {
+        const targetAudioId = resolveFirstAudioId(node);
         if (targetAudioId) {
-          onSelectAudio(targetAudioId)
+          onSelectAudio(targetAudioId);
         }
       }
     },
-    [mode, onSelectAudio, onSelectPackage, onSelectVideo, sidebarNodeById],
-  )
+    [
+      mode,
+      onSelectAudio,
+      onSelectPackage,
+      onSelectVideo,
+      sidebarNodeById,
+      onResetPackagePage,
+    ],
+  );
 
   const flushPendingSelection = useCallback(() => {
-    const pendingNodeId = pendingSelectionNodeIdRef.current
-    pendingSelectionNodeIdRef.current = null
-    clearPendingSelectionTimer()
+    const pendingNodeId = pendingSelectionNodeIdRef.current;
+    pendingSelectionNodeIdRef.current = null;
+    clearPendingSelectionTimer();
     if (!pendingNodeId) {
-      return
+      return;
     }
-    applyNodeSelectionById(pendingNodeId)
-  }, [applyNodeSelectionById, clearPendingSelectionTimer])
+    applyNodeSelectionById(pendingNodeId);
+  }, [applyNodeSelectionById, clearPendingSelectionTimer]);
 
   const scheduleSettledSelection = useCallback(
     (nodeId: string) => {
-      pendingSelectionNodeIdRef.current = nodeId
-      clearPendingSelectionTimer()
+      pendingSelectionNodeIdRef.current = nodeId;
+      clearPendingSelectionTimer();
       pendingSelectionTimerRef.current = window.setTimeout(() => {
-        pendingSelectionTimerRef.current = null
-        const settledNodeId = pendingSelectionNodeIdRef.current
-        pendingSelectionNodeIdRef.current = null
+        pendingSelectionTimerRef.current = null;
+        const settledNodeId = pendingSelectionNodeIdRef.current;
+        pendingSelectionNodeIdRef.current = null;
         if (!settledNodeId) {
-          return
+          return;
         }
-        applyNodeSelectionById(settledNodeId)
-      }, NAVIGATION_INPUT_SETTLE_MS)
+        applyNodeSelectionById(settledNodeId);
+      }, NAVIGATION_INPUT_SETTLE_MS);
     },
     [applyNodeSelectionById, clearPendingSelectionTimer],
-  )
+  );
 
   useEffect(() => {
-    const pendingNodeId = pendingSelectionNodeIdRef.current
+    const pendingNodeId = pendingSelectionNodeIdRef.current;
     if (!pendingNodeId) {
-      return
+      return;
     }
     if (selectedSidebarNodeId === pendingNodeId) {
-      return
+      return;
     }
-    pendingSelectionNodeIdRef.current = null
-    clearPendingSelectionTimer()
-  }, [clearPendingSelectionTimer, selectedSidebarNodeId])
+    pendingSelectionNodeIdRef.current = null;
+    clearPendingSelectionTimer();
+  }, [clearPendingSelectionTimer, selectedSidebarNodeId]);
 
   useEffect(
     () => () => {
-      pendingSelectionNodeIdRef.current = null
-      clearPendingSelectionTimer()
+      pendingSelectionNodeIdRef.current = null;
+      clearPendingSelectionTimer();
     },
     [clearPendingSelectionTimer],
-  )
+  );
 
   const handleSidebarNavigationKey = useCallback(
     (event: KeyboardEvent): boolean => {
       if (flatSidebarNodes.length === 0) {
-        return false
+        return false;
       }
 
-      const currentId = selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId) ? selectedSidebarNodeId : flatSidebarNodes[0].id
+      const currentId =
+        selectedSidebarNodeId && sidebarNodeById.has(selectedSidebarNodeId)
+          ? selectedSidebarNodeId
+          : flatSidebarNodes[0].id;
       const currentIndex = Math.max(
         0,
         flatSidebarNodes.findIndex((node) => node.id === currentId),
-      )
+      );
 
       const moveSelection = (nextIndex: number) => {
-        const nextNode = flatSidebarNodes[clamp(nextIndex, 0, flatSidebarNodes.length - 1)]
+        const nextNode =
+          flatSidebarNodes[clamp(nextIndex, 0, flatSidebarNodes.length - 1)];
         if (!nextNode) {
-          return false
+          return false;
         }
 
         if (nextNode.id === selectedSidebarNodeId) {
-          requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
-          return true
+          requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id));
+          return true;
         }
 
-        onSetSelectedSidebarNodeId(nextNode.id)
-        scheduleSettledSelection(nextNode.id)
-        requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id))
-        return true
-      }
+        onSetSelectedSidebarNodeId(nextNode.id);
+        scheduleSettledSelection(nextNode.id);
+        requestAnimationFrame(() => ensureSidebarNodeVisible(nextNode.id));
+        return true;
+      };
 
-      const container = appBodyRef.current?.querySelector<HTMLElement>('.sidebar-tree')
+      const container =
+        appBodyRef.current?.querySelector<HTMLElement>(".sidebar-tree");
       const findVisibleCount = (): number => {
         if (!container) {
-          return 9
+          return 9;
         }
 
-        const viewTop = container.scrollTop
-        const viewBottom = viewTop + container.clientHeight
-        const indexById = new Map(flatSidebarNodes.map((node, index) => [node.id, index]))
-        const visibleRows = Array.from(container.querySelectorAll<HTMLElement>('[data-sidebar-node-id]'))
+        const viewTop = container.scrollTop;
+        const viewBottom = viewTop + container.clientHeight;
+        const indexById = new Map(
+          flatSidebarNodes.map((node, index) => [node.id, index]),
+        );
+        const visibleRows = Array.from(
+          container.querySelectorAll<HTMLElement>("[data-sidebar-node-id]"),
+        )
           .map((row) => {
-            const rowId = row.dataset.sidebarNodeId
+            const rowId = row.dataset.sidebarNodeId;
             if (!rowId) {
-              return null
+              return null;
             }
 
-            const rowIndex = indexById.get(rowId)
+            const rowIndex = indexById.get(rowId);
             if (rowIndex === undefined) {
-              return null
+              return null;
             }
 
             return {
               index: rowIndex,
               top: row.offsetTop,
               bottom: row.offsetTop + row.offsetHeight,
-            }
+            };
           })
-          .filter((item): item is { index: number; top: number; bottom: number } => item !== null)
-          .filter((row) => row.bottom > viewTop && row.top < viewBottom)
-          .length
+          .filter(
+            (item): item is { index: number; top: number; bottom: number } =>
+              item !== null,
+          )
+          .filter((row) => row.bottom > viewTop && row.top < viewBottom).length;
 
         if (visibleRows === 0) {
-          return 9
+          return 9;
         }
 
-        return visibleRows
-      }
+        return visibleRows;
+      };
 
-      if (event.key === 'ArrowDown') {
-        return moveSelection(currentIndex + 1)
+      if (event.key === "ArrowDown") {
+        return moveSelection(currentIndex + 1);
       }
-      if (event.key === 'ArrowUp') {
-        return moveSelection(currentIndex - 1)
+      if (event.key === "ArrowUp") {
+        return moveSelection(currentIndex - 1);
       }
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        flushPendingSelection()
-        onSetSidebarFocusMain()
-        return true
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        flushPendingSelection();
+        onSetSidebarFocusMain();
+        return true;
       }
-      if (event.key === 'PageDown') {
-        const pageStep = Math.max(1, findVisibleCount() - 1)
-        return moveSelection(currentIndex + pageStep)
+      if (event.key === "PageDown") {
+        const pageStep = Math.max(1, findVisibleCount() - 1);
+        return moveSelection(currentIndex + pageStep);
       }
-      if (event.key === 'PageUp') {
-        const pageStep = Math.max(1, findVisibleCount() - 1)
-        return moveSelection(currentIndex - pageStep)
+      if (event.key === "PageUp") {
+        const pageStep = Math.max(1, findVisibleCount() - 1);
+        return moveSelection(currentIndex - pageStep);
       }
-      if (event.key === 'Home') {
-        return moveSelection(0)
+      if (event.key === "Home") {
+        return moveSelection(0);
       }
-      if (event.key === 'End') {
-        return moveSelection(flatSidebarNodes.length - 1)
+      if (event.key === "End") {
+        return moveSelection(flatSidebarNodes.length - 1);
       }
-      if (event.key === 'Enter') {
-        const node = flatSidebarNodes[currentIndex]
+      if (event.key === "Enter") {
+        const node = flatSidebarNodes[currentIndex];
         if (!node) {
-          return false
+          return false;
         }
-        pendingSelectionNodeIdRef.current = null
-        clearPendingSelectionTimer()
-        onSetSelectedSidebarNodeId(node.id)
-        applyNodeSelectionById(node.id)
-        requestAnimationFrame(() => ensureSidebarNodeVisible(node.id))
-        return true
+        pendingSelectionNodeIdRef.current = null;
+        clearPendingSelectionTimer();
+        onSetSelectedSidebarNodeId(node.id);
+        applyNodeSelectionById(node.id);
+        requestAnimationFrame(() => ensureSidebarNodeVisible(node.id));
+        return true;
       }
 
-      return false
+      return false;
     },
     [
       appBodyRef,
@@ -431,7 +494,7 @@ export function useSidebarNavigation({
       selectedSidebarNodeId,
       sidebarNodeById,
     ],
-  )
+  );
 
   return {
     activeSidebarTree,
@@ -446,5 +509,5 @@ export function useSidebarNavigation({
     applyCurrentRootFromSelection,
     ensureSidebarNodeVisible,
     handleSidebarNavigationKey,
-  }
+  };
 }

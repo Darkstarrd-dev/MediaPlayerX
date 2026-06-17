@@ -69,6 +69,7 @@ interface SidebarPanelRowProps {
   onSelectVideoAndPlay?: (videoId: string) => void;
   onSelectAudio: (audioId: string) => void;
   onToggleAudioPlaylist: (audioId: string, checked: boolean) => void;
+  onResetPackagePage?: (packageId: string) => void;
   t: TranslateFn;
 }
 
@@ -127,6 +128,7 @@ export function SidebarPanelRow({
   onSelectVideoAndPlay,
   onSelectAudio,
   onToggleAudioPlaylist,
+  onResetPackagePage,
   t,
 }: SidebarPanelRowProps) {
   const isFolder = node.kind === "folder";
@@ -217,6 +219,10 @@ export function SidebarPanelRow({
       return;
     }
     if (mode === "image" && node.imageSourceId) {
+      // 通过 sidebar 切换图包时，先重置页码到第一页，再切换图包
+      if (onResetPackagePage) {
+        onResetPackagePage(node.imageSourceId);
+      }
       onSelectPackage(node.imageSourceId);
     }
     if (mode === "music") {

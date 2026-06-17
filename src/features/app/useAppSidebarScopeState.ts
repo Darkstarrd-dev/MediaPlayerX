@@ -840,6 +840,17 @@ export function useAppSidebarScopeState({
     onSetMusicRootNodeId: (nodeId) => {
       updateSettings({ musicRootNodeId: nodeId });
     },
+    onResetPackagePage: (packageId) => {
+      // 通过 sidebar 切换图包时，重置页码和焦点到第一页第一张
+      setPageByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+      setFocusByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+    },
   });
 
   const sidebarDescendantNodeIdsById = useMemo(() => {

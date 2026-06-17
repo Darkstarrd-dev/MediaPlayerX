@@ -64,7 +64,10 @@ export function useAppManageBindings({
     clearAllSelections,
     replaceImageCheckedIds,
     backendRead,
+    flatSidebarNodes,
   } = readNavigationState;
+
+  const { selectedSidebarNodeId, setSelectedSidebarNodeId } = sessionState;
 
   const { retryLibrary, retrySidebar, retryPage, retryMetadata } = backendRead;
 
@@ -103,6 +106,21 @@ export function useAppManageBindings({
     setDeleteConfirmOpen,
     setManageOperationHint,
     updateSettings,
+    flatSidebarNodes,
+    selectedSidebarNodeId,
+    setSelectedSidebarNodeId,
+    setSelectedPackageId: sessionState.setSelectedPackageId,
+    onResetPackagePage: (packageId) => {
+      // 删除后重置图包页码
+      sessionState.setPageByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+      sessionState.setFocusByPackage((previous) => ({
+        ...previous,
+        [packageId]: 0,
+      }));
+    },
   });
 
   const { toggleMetadataManageMode } = useMetadataManageModeActions({
