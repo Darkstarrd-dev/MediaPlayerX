@@ -1023,25 +1023,27 @@ export class FileSystemMediaReadService {
     }
     await this.ensureStateLoaded();
 
-    const normalizedKey = normalizeAllowlistKey(pathKey);
+    // 选中文件夹的归一化路径作为 prune 范围过滤基准
+    const resolvedPathKey = path.resolve(pathKey);
+    const normalizedKey = normalizeAllowlistKey(resolvedPathKey);
+
+    // 检查是否命中已登记的 import 目录根（用于后续导入源注销）
     const importDirectoryRoots =
       this.importPathRegistry.getImportDirectoryRoots();
     const matchedRoot = importDirectoryRoots.find(
       (root) => normalizeAllowlistKey(root) === normalizedKey,
     );
-    if (!matchedRoot) {
-      return {
-        matched_directory_root: null,
-        pruned_source_count: 0,
-        pruned_video_count: 0,
-        pruned_audio_count: 0,
-        removed_import_source_count: 0,
-        updated_at_ms: Date.now(),
-      };
-    }
 
-    const pathFilter = (absolutePath: string): boolean =>
-      isPathInsideRoot(matchedRoot, absolutePath);
+    // pathFilter: 限定 prune 范围为选中 pathKey 之下的条目（exact 或子路径）
+    const pathFilter = (absolutePath: string): boolean => {
+      const resolvedAbsolute = path.resolve(absolutePath);
+      const normalizedAbsolute = normalizeAllowlistKey(resolvedAbsolute);
+      // exact 匹配（自身）或子路径
+      if (normalizedAbsolute === normalizedKey) {
+        return true;
+      }
+      return isPathInsideRoot(resolvedPathKey, resolvedAbsolute);
+    };
 
     const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
     const filteredSnapshot: LibrarySnapshotDto = previousSnapshot
@@ -1081,7 +1083,7 @@ export class FileSystemMediaReadService {
             : String(error),
       });
       return {
-        matched_directory_root: matchedRoot,
+        matched_directory_root: matchedRoot ?? null,
         pruned_source_count: 0,
         pruned_video_count: 0,
         pruned_audio_count: 0,
@@ -1091,17 +1093,30 @@ export class FileSystemMediaReadService {
     }
 
     const after = this.countSnapshotEntries(pruned);
-    const removedImportSourceCount =
-      await this.pruneImportSourcesForDirectoryRoot(matchedRoot);
+
+    // 仅当选中的是已登记目录根时才执行导入源注销（保持既有语义）
+    const removedImportSourceCount = matchedRoot
+      ? await this.pruneImportSourcesForDirectoryRoot(matchedRoot)
+      : 0;
+
     const updatedAtMs = Date.now();
-    if (before !== after || removedImportSourceCount > 0) {
+    if (
+      before.images !== after.images ||
+      before.videos !== after.videos ||
+      before.audios !== after.audios ||
+      removedImportSourceCount > 0
+    ) {
+      // 手动刷新后需显式重建 snapshot 缓存，否则前端仍持有已删除条目的陈旧引用
+      this.librarySnapshotService.invalidateCache();
+      // 使用 auto-prune-missing-sources 而非 manual-folder-refresh，
+      // 确保前端识别为数据变更并主动重读 snapshot
       this.emitLibraryChanged({
-        reason: "manual-folder-refresh",
+        reason: "auto-prune-missing-sources",
         updated_at_ms: updatedAtMs,
       });
     }
     return {
-      matched_directory_root: matchedRoot,
+      matched_directory_root: matchedRoot ?? null,
       pruned_source_count: before.images - after.images,
       pruned_video_count: before.videos - after.videos,
       pruned_audio_count: before.audios - after.audios,

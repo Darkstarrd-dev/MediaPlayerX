@@ -65,11 +65,11 @@ Last updated: 2026-06-01
     - 计数/枚举（页数、导航边界、ref 枚举）必须使用 `resolveSourceImageCount`（= `imageCount ?? images.length`），不得依赖已加载的 `images.length`。
 
 13. 外部源监听开关（自动 + 手动并存）
-    - `setExternalSourceWatcherEnabled(enabled)` 与 `requestExternalSourceFolderRefresh(path_key)` 必须走 Zod schema IPC 契约，前端 useSettingsPersistence 在 `externalSourceWatcherEnabled` 变化时主动 push；`requestExternalSourceFolderRefresh` 的 `path_key` 必须是 `normalizeAllowlistKey(node.pathKey)` 命中 `importPathRegistry` 中已登记 directory root 的字符串，未命中返回 `matched_directory_root: null` 且 counts 全为 0。
+    - `setExternalSourceWatcherEnabled(enabled)` 与 `requestExternalSourceFolderRefresh(path_key)` 必须走 Zod schema IPC 契约，前端 useSettingsPersistence 在 `externalSourceWatcherEnabled` 变化时主动 push；`requestExternalSourceFolderRefresh` 的 `path_key` 为用户选中的侧栏文件夹路径（`normalizeAllowlistKey(node.pathKey)`），**不要求**必须是已登记的 import 目录根——单文件导入的压缩包/视频/音频所在文件夹、或目录根的子文件夹，均可通过刷新按钮按存在性局部 prune 其下的快照条目。`matched_directory_root` 返回匹配到的目录根(若有)或 null，前端不读该字段。
     - 开关由后端持久化（appState key `external_source_watcher_enabled`），`ensureStateLoaded` 启动时恢复，不依赖渲染端水合后异步推送；渲染端 push 仅作为变更通道。
     - 手动模式（开关关闭）语义为**完全静默**：不挂载 watcher，且整库存在性自动清理（auto-prune，含 `ensureSnapshotLoaded`/`refreshSnapshotFromFilesystem` 后的同步/异步 sweep）一并跳过；外部新增/删除均不自动同步，只能通过侧栏手动刷新触发局部 prune。自动模式下异步整库 sweep 受最小间隔节流（60s）。
     - 管理操作（删除/移动/重命名等 `withManagementMutationGuard` 包裹的命令）期间 watcher 事件被抑制并附带尾窗（2s），应用自身的文件变更不得触发全量重扫。
-    - 后端 prune 范围受 `pathFilter = (absolutePath) => isPathInsideRoot(matchedRoot, absolutePath)` 约束，禁止对全表 stat；手动刷新仅注销磁盘上已不存在的导入源登记（目录根仍存在时必须保留注册），事件 `reason` 写 `manual-folder-refresh`；前端 useReadOnlyDataAccess 把它归为 transient reason，不触发主动重读。
+    - 后端 prune 范围受 `pathFilter = (absolutePath) => isPathInsideRoot(selectedPathKey, absolutePath) || exact匹配` 约束，禁止对全表 stat；手动刷新仅在选中的是已登记目录根时才注销磁盘上已不存在的导入源登记（目录根仍存在时必须保留注册），事件 `reason` 写 `auto-prune-missing-sources`（确保前端识别为数据变更并主动重读 snapshot）；手动刷新完成后必须调用 `librarySnapshotService.invalidateCache()` 使缓存失效。
     - `pruneMissingSnapshotEntries` 必须接受可选 `pathFilter` 回调以支持局部 prune，老调用点（无 `pathFilter` 时）行为保持不变。
     - 删除/移动/重命名/图片转换等管理操作不得清空整个缩略图缓存目录：缓存键含源文件 path+mtime+size，内容变更后旧键自然失效，全清会迫使全库缩略图重建。
 
