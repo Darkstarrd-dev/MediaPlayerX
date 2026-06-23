@@ -75,6 +75,7 @@ export function FullscreenImagePane({
     0.05,
     Math.min(0.95, imageConvertCompareSplit),
   );
+  const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const startCompareDividerDrag = (
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -111,24 +112,44 @@ export function FullscreenImagePane({
     window.addEventListener("mouseup", onMouseUp);
   };
 
+  const handleMouseDown = (event: ReactMouseEvent<HTMLElement>) => {
+    mouseDownPosRef.current = { x: event.clientX, y: event.clientY };
+    onMouseDown(event);
+  };
+
+  const handleClick = (event: ReactMouseEvent<HTMLElement>) => {
+    if (fullscreenDisplay !== "dual") {
+      return;
+    }
+
+    // 检查是否是真正的点击（非拖拽）
+    const downPos = mouseDownPosRef.current;
+    if (downPos) {
+      const dx = Math.abs(event.clientX - downPos.x);
+      const dy = Math.abs(event.clientY - downPos.y);
+      // 如果移动距离超过 5px，视为拖拽而非点击
+      if (dx > 5 || dy > 5) {
+        return;
+      }
+    }
+
+    onSetVideoFocus(false);
+  };
+
   return (
     <section
       ref={paneRef}
       className={className}
       data-slot={dataSlot}
       style={{ flex }}
-      onClick={() => {
-        if (fullscreenDisplay === "dual") {
-          onSetVideoFocus(false);
-        }
-      }}
+      onClick={handleClick}
       onMouseMove={() => {
         if (fullscreenDisplay === "dual") {
           onSetVideoFocus(false);
         }
       }}
       onWheel={onWheel}
-      onMouseDown={onMouseDown}
+      onMouseDown={handleMouseDown}
     >
       <div
         className={`fullscreen-stage mpx-scrollbar-hidden ${singlePane === "image" ? "is-draggable" : ""} ${draggingPane === "image" ? "is-dragging" : ""}`}
@@ -355,6 +376,7 @@ export function FullscreenVideoPane({
   const sourceRestoreAnchorVideoIdRef = useRef<string | null>(focusedVideoId);
   const previousDisplayedVideoIdRef = useRef<string | null>(focusedVideoId);
   const pendingVideoSrcRef = useRef<string | null>(null);
+  const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useLayoutEffect(() => {
     if (!focusedVideoId) {
@@ -491,24 +513,44 @@ export function FullscreenVideoPane({
         width: `${videoControlsWidth}px`,
       };
 
+  const handleMouseDown = (event: ReactMouseEvent<HTMLElement>) => {
+    mouseDownPosRef.current = { x: event.clientX, y: event.clientY };
+    onMouseDown(event);
+  };
+
+  const handleClick = (event: ReactMouseEvent<HTMLElement>) => {
+    if (fullscreenDisplay !== "dual") {
+      return;
+    }
+
+    // 检查是否是真正的点击（非拖拽）
+    const downPos = mouseDownPosRef.current;
+    if (downPos) {
+      const dx = Math.abs(event.clientX - downPos.x);
+      const dy = Math.abs(event.clientY - downPos.y);
+      // 如果移动距离超过 5px，视为拖拽而非点击
+      if (dx > 5 || dy > 5) {
+        return;
+      }
+    }
+
+    onSetVideoFocus(true);
+  };
+
   return (
     <section
       ref={paneRef}
       className={className}
       data-slot={dataSlot}
       style={{ flex }}
-      onClick={() => {
-        if (fullscreenDisplay === "dual") {
-          onSetVideoFocus(true);
-        }
-      }}
+      onClick={handleClick}
       onMouseMove={() => {
         if (fullscreenDisplay === "dual") {
           onSetVideoFocus(true);
         }
       }}
       onWheel={onWheel}
-      onMouseDown={onMouseDown}
+      onMouseDown={handleMouseDown}
       onMouseLeave={onHideControls}
     >
       <div
