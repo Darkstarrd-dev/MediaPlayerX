@@ -1065,6 +1065,7 @@ export class LibraryReadWriteService {
       }
 
       for (const [videoId, metric] of parsedMetrics.videoById) {
+        if (!videoById?.has(videoId)) continue;
         this.options.database.writeVideoPreferenceMetrics(videoId, {
           eventCount: metric.eventCount,
           watchSeconds: metric.watchSeconds,
