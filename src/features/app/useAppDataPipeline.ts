@@ -1,17 +1,19 @@
-import { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
-import { useAppReadAndNavigation } from './useAppReadAndNavigation'
-import { useAppRuntimeSources } from './useAppRuntimeSources'
-import { useAppViewComposition } from './useAppViewComposition'
-import { useResponsiveZoomEffect } from './useResponsiveZoomEffect'
+import { useAppDisplayAndEffects } from "./useAppDisplayAndEffects";
+import { useAppReadAndNavigation } from "./useAppReadAndNavigation";
+import { useAppRuntimeSources } from "./useAppRuntimeSources";
+import { useAppViewComposition } from "./useAppViewComposition";
+import { useResponsiveZoomEffect } from "./useResponsiveZoomEffect";
 
 export function useAppDataPipeline() {
-  const runtimeSources = useAppRuntimeSources()
-  const importState = runtimeSources.importState
+  const runtimeSources = useAppRuntimeSources();
+  const importState = runtimeSources.importState;
   const importBusy =
     Boolean(importState?.enqueuePending) ||
-    (importState?.importTasks ?? []).some((task) => task.status === 'pending' || task.status === 'running')
+    (importState?.importTasks ?? []).some(
+      (task) => task.status === "pending" || task.status === "running",
+    );
 
-  useResponsiveZoomEffect()
+  useResponsiveZoomEffect();
 
   const readNavigationState = useAppReadAndNavigation({
     appSettings: runtimeSources.appSettings,
@@ -20,7 +22,7 @@ export function useAppDataPipeline() {
     importBusy,
     archiveLoadStatus: runtimeSources.archiveLoadStatus,
     mediaState: runtimeSources.mediaState,
-  })
+  });
 
   const displayState = useAppDisplayAndEffects({
     appSettings: runtimeSources.appSettings,
@@ -30,11 +32,11 @@ export function useAppDataPipeline() {
     sessionState: runtimeSources.sessionState,
     mediaState: runtimeSources.mediaState,
     readNavigationState,
-  })
+  });
 
   return useAppViewComposition({
     runtimeSources,
     readNavigationState,
     displayState,
-  })
+  });
 }

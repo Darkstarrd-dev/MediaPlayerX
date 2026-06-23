@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
-import type { MediaRepository } from '../backend/repository'
+import type { MediaRepository } from "../backend/repository";
 
 export interface ArchiveLoadStatusState {
-  runningArchivePath: string | null
-  runningArchiveProgress: number | null
-  runningArchiveMessage: string | null
-  pendingArchivePaths: string[]
-  thumbnailRunningCount: number
-  thumbnailRunningProgress: number | null
-  thumbnailRunningMessage: string | null
+  runningArchivePath: string | null;
+  runningArchiveProgress: number | null;
+  runningArchiveMessage: string | null;
+  pendingArchivePaths: string[];
+  thumbnailRunningCount: number;
+  thumbnailRunningProgress: number | null;
+  thumbnailRunningMessage: string | null;
 }
 
 const EMPTY_ARCHIVE_LOAD_STATUS: ArchiveLoadStatusState = {
@@ -20,36 +20,39 @@ const EMPTY_ARCHIVE_LOAD_STATUS: ArchiveLoadStatusState = {
   thumbnailRunningCount: 0,
   thumbnailRunningProgress: null,
   thumbnailRunningMessage: null,
-}
+};
 
-const ARCHIVE_STATUS_ACTIVE_POLL_MS = 450
+const ARCHIVE_STATUS_ACTIVE_POLL_MS = 450;
 
-const ARCHIVE_STATUS_IDLE_POLL_MS = 1_600
+const ARCHIVE_STATUS_IDLE_POLL_MS = 1_600;
 
-const ARCHIVE_STATUS_EVENT_THROTTLE_MS = 160
+const ARCHIVE_STATUS_EVENT_THROTTLE_MS = 160;
 
 const ARCHIVE_STATUS_CRITICAL_REFRESH_REASONS = new Set([
-  'import-task-finished',
-  'archive-load-status-updated',
-  'archive-normalized',
-  'archive-normalize-failed',
-  'thumbnail-rendering-end',
-])
+  "import-task-finished",
+  "archive-load-status-updated",
+  "archive-normalized",
+  "archive-normalize-failed",
+  "thumbnail-rendering-end",
+]);
 
 const ARCHIVE_STATUS_THROTTLED_REFRESH_REASONS = new Set([
-  'thumbnail-rendering-start',
-  'thumbnail-rendering-progress',
-])
+  "thumbnail-rendering-start",
+  "thumbnail-rendering-progress",
+]);
 
 function isArchiveLoadStatusBusy(status: ArchiveLoadStatusState): boolean {
   return (
     status.runningArchivePath !== null ||
     status.pendingArchivePaths.length > 0 ||
     status.thumbnailRunningCount > 0
-  )
+  );
 }
 
-function areArchiveLoadStatusEqual(left: ArchiveLoadStatusState, right: ArchiveLoadStatusState): boolean {
+function areArchiveLoadStatusEqual(
+  left: ArchiveLoadStatusState,
+  right: ArchiveLoadStatusState,
+): boolean {
   if (
     left.runningArchivePath !== right.runningArchivePath ||
     left.runningArchiveProgress !== right.runningArchiveProgress ||
@@ -58,156 +61,178 @@ function areArchiveLoadStatusEqual(left: ArchiveLoadStatusState, right: ArchiveL
     left.thumbnailRunningProgress !== right.thumbnailRunningProgress ||
     left.thumbnailRunningMessage !== right.thumbnailRunningMessage
   ) {
-    return false
+    return false;
   }
 
   if (left.pendingArchivePaths.length !== right.pendingArchivePaths.length) {
-    return false
+    return false;
   }
 
   for (let index = 0; index < left.pendingArchivePaths.length; index += 1) {
     if (left.pendingArchivePaths[index] !== right.pendingArchivePaths[index]) {
-      return false
+      return false;
     }
   }
 
-  return true
+  return true;
 }
 
 function mapArchiveLoadStatus(payload: {
-  running_archive_path: string | null
-  running_archive_progress?: number | null
-  running_archive_message?: string | null
-  pending_archive_paths: string[]
-  thumbnail_running_count?: number
-  thumbnail_running_progress?: number | null
-  thumbnail_running_message?: string | null
+  running_archive_path: string | null;
+  running_archive_progress?: number | null;
+  running_archive_message?: string | null;
+  pending_archive_paths: string[];
+  thumbnail_running_count?: number;
+  thumbnail_running_progress?: number | null;
+  thumbnail_running_message?: string | null;
 }): ArchiveLoadStatusState {
   return {
     runningArchivePath: payload.running_archive_path,
     runningArchiveProgress:
-      typeof payload.running_archive_progress === 'number' && Number.isFinite(payload.running_archive_progress)
+      typeof payload.running_archive_progress === "number" &&
+      Number.isFinite(payload.running_archive_progress)
         ? payload.running_archive_progress
         : null,
-    runningArchiveMessage: typeof payload.running_archive_message === 'string' ? payload.running_archive_message : null,
+    runningArchiveMessage:
+      typeof payload.running_archive_message === "string"
+        ? payload.running_archive_message
+        : null,
     pendingArchivePaths: payload.pending_archive_paths,
     thumbnailRunningCount:
-      typeof payload.thumbnail_running_count === 'number' && Number.isFinite(payload.thumbnail_running_count)
+      typeof payload.thumbnail_running_count === "number" &&
+      Number.isFinite(payload.thumbnail_running_count)
         ? Math.max(0, Math.round(payload.thumbnail_running_count))
         : 0,
     thumbnailRunningProgress:
-      typeof payload.thumbnail_running_progress === 'number' && Number.isFinite(payload.thumbnail_running_progress)
+      typeof payload.thumbnail_running_progress === "number" &&
+      Number.isFinite(payload.thumbnail_running_progress)
         ? payload.thumbnail_running_progress
         : null,
     thumbnailRunningMessage:
-      typeof payload.thumbnail_running_message === 'string' ? payload.thumbnail_running_message : null,
-  }
+      typeof payload.thumbnail_running_message === "string"
+        ? payload.thumbnail_running_message
+        : null,
+  };
 }
 
 interface UseArchiveLoadStatusParams {
-  repository: MediaRepository
+  repository: MediaRepository;
 }
 
-export function useArchiveLoadStatus({ repository }: UseArchiveLoadStatusParams): ArchiveLoadStatusState {
-  const [archiveLoadStatus, setArchiveLoadStatus] = useState<ArchiveLoadStatusState>(EMPTY_ARCHIVE_LOAD_STATUS)
+export function useArchiveLoadStatus({
+  repository,
+}: UseArchiveLoadStatusParams): ArchiveLoadStatusState {
+  const [archiveLoadStatus, setArchiveLoadStatus] =
+    useState<ArchiveLoadStatusState>(EMPTY_ARCHIVE_LOAD_STATUS);
 
   useEffect(() => {
     if (!repository.readArchiveLoadStatus) {
-      setArchiveLoadStatus(EMPTY_ARCHIVE_LOAD_STATUS)
-      return
+      setArchiveLoadStatus(EMPTY_ARCHIVE_LOAD_STATUS);
+      return;
     }
 
-    let disposed = false
-    let runningRequest = false
-    let queuedRefresh = false
-    let currentStatus = EMPTY_ARCHIVE_LOAD_STATUS
-    let pollTimerId: ReturnType<typeof setTimeout> | null = null
-    let eventThrottleTimerId: ReturnType<typeof setTimeout> | null = null
+    let disposed = false;
+    let runningRequest = false;
+    let queuedRefresh = false;
+    let currentStatus = EMPTY_ARCHIVE_LOAD_STATUS;
+    let pollTimerId: ReturnType<typeof setTimeout> | null = null;
+    let eventThrottleTimerId: ReturnType<typeof setTimeout> | null = null;
 
     const applyStatus = (nextStatus: ArchiveLoadStatusState) => {
-      currentStatus = nextStatus
-      setArchiveLoadStatus((previous) => (areArchiveLoadStatusEqual(previous, nextStatus) ? previous : nextStatus))
-    }
+      currentStatus = nextStatus;
+      setArchiveLoadStatus((previous) =>
+        areArchiveLoadStatusEqual(previous, nextStatus) ? previous : nextStatus,
+      );
+    };
 
     const schedulePoll = (delayMs: number) => {
       if (disposed) {
-        return
+        return;
       }
       if (pollTimerId !== null) {
-        clearTimeout(pollTimerId)
+        clearTimeout(pollTimerId);
       }
-      pollTimerId = setTimeout(() => {
-        pollTimerId = null
-        void refreshArchiveLoadStatus()
-      }, Math.max(100, delayMs))
-    }
+      pollTimerId = setTimeout(
+        () => {
+          pollTimerId = null;
+          void refreshArchiveLoadStatus();
+        },
+        Math.max(100, delayMs),
+      );
+    };
 
     const scheduleThrottledEventRefresh = () => {
       if (disposed || eventThrottleTimerId !== null) {
-        return
+        return;
       }
       eventThrottleTimerId = setTimeout(() => {
-        eventThrottleTimerId = null
-        queuedRefresh = true
-        void refreshArchiveLoadStatus()
-      }, ARCHIVE_STATUS_EVENT_THROTTLE_MS)
-    }
+        eventThrottleTimerId = null;
+        queuedRefresh = true;
+        void refreshArchiveLoadStatus();
+      }, ARCHIVE_STATUS_EVENT_THROTTLE_MS);
+    };
 
     const refreshArchiveLoadStatus = async () => {
       if (disposed) {
-        return
+        return;
       }
       if (runningRequest) {
-        queuedRefresh = true
-        return
+        queuedRefresh = true;
+        return;
       }
 
-      runningRequest = true
+      runningRequest = true;
       try {
-        const status = await repository.readArchiveLoadStatus?.({ timeoutMs: 3_000 })
+        const status = await repository.readArchiveLoadStatus?.({
+          timeoutMs: 3_000,
+        });
         if (!disposed && status) {
-          applyStatus(mapArchiveLoadStatus(status))
+          applyStatus(mapArchiveLoadStatus(status));
         }
       } catch {
         // keep last status snapshot to avoid flicker under transient IPC pressure
       } finally {
-        runningRequest = false
-        const shouldRefreshAgain = queuedRefresh
-        queuedRefresh = false
+        runningRequest = false;
+        const shouldRefreshAgain = queuedRefresh;
+        queuedRefresh = false;
         if (shouldRefreshAgain) {
-          void refreshArchiveLoadStatus()
+          void refreshArchiveLoadStatus();
         } else {
-          schedulePoll(isArchiveLoadStatusBusy(currentStatus) ? ARCHIVE_STATUS_ACTIVE_POLL_MS : ARCHIVE_STATUS_IDLE_POLL_MS)
+          schedulePoll(
+            isArchiveLoadStatusBusy(currentStatus)
+              ? ARCHIVE_STATUS_ACTIVE_POLL_MS
+              : ARCHIVE_STATUS_IDLE_POLL_MS,
+          );
         }
       }
-    }
+    };
 
-    void refreshArchiveLoadStatus()
+    void refreshArchiveLoadStatus();
     const unsubscribe = repository.onLibraryChanged?.((payload) => {
       if (ARCHIVE_STATUS_CRITICAL_REFRESH_REASONS.has(payload.reason)) {
-        queuedRefresh = true
-        void refreshArchiveLoadStatus()
-        return
+        queuedRefresh = true;
+        void refreshArchiveLoadStatus();
+        return;
       }
       if (!ARCHIVE_STATUS_THROTTLED_REFRESH_REASONS.has(payload.reason)) {
-        return
+        return;
       }
-      scheduleThrottledEventRefresh()
-    })
+      scheduleThrottledEventRefresh();
+    });
 
     return () => {
-      disposed = true
+      disposed = true;
       if (pollTimerId !== null) {
-        clearTimeout(pollTimerId)
+        clearTimeout(pollTimerId);
       }
       if (eventThrottleTimerId !== null) {
-        clearTimeout(eventThrottleTimerId)
+        clearTimeout(eventThrottleTimerId);
       }
-      unsubscribe?.()
-    }
-  }, [repository])
+      unsubscribe?.();
+    };
+  }, [repository]);
 
-  return archiveLoadStatus
+  return archiveLoadStatus;
 }
 
-export type ArchiveLoadStatusResult = ReturnType<typeof useArchiveLoadStatus>
+export type ArchiveLoadStatusResult = ReturnType<typeof useArchiveLoadStatus>;

@@ -1,41 +1,41 @@
-export type UiBenchMode = 'dom' | 'e2e'
+export type UiBenchMode = "dom" | "e2e";
 
-export type ResolvedMediaApplyMode = 'immediate' | 'raf'
-export type ResolvedMediaStateScope = 'accumulate' | 'active-only'
+export type ResolvedMediaApplyMode = "immediate" | "raf";
+export type ResolvedMediaStateScope = "accumulate" | "active-only";
 
-export type ImageLoadingSkeletonMode = 'off' | 'replace'
+export type ImageLoadingSkeletonMode = "off" | "replace";
 
 export interface ResolvedMediaTuning {
-  applyMode?: ResolvedMediaApplyMode
-  stateScope?: ResolvedMediaStateScope
-  maxConcurrent?: number
+  applyMode?: ResolvedMediaApplyMode;
+  stateScope?: ResolvedMediaStateScope;
+  maxConcurrent?: number;
 }
 
 export interface ImageLoadingSkeletonTuning {
-  mode?: ImageLoadingSkeletonMode
+  mode?: ImageLoadingSkeletonMode;
 }
 
 export interface UiBenchE2eTuning {
-  importPaths?: string[]
-  browseSteps?: number
-  browseIntervalMs?: number
-  warmupMs?: number
-  maxDurationMs?: number
-  waitImportCompletion?: boolean
+  importPaths?: string[];
+  browseSteps?: number;
+  browseIntervalMs?: number;
+  warmupMs?: number;
+  maxDurationMs?: number;
+  waitImportCompletion?: boolean;
 }
 
 export interface UiBenchSettings {
-  enabled: boolean
-  mode: UiBenchMode | null
-  candidateId: string | null
-  runTag: string | null
-  librarySnapshotLite?: boolean
+  enabled: boolean;
+  mode: UiBenchMode | null;
+  candidateId: string | null;
+  runTag: string | null;
+  librarySnapshotLite?: boolean;
   /** false = 禁用 P3 节流（120ms 聚合窗口 + import-task-updated 范围收窄），用于基线对比回滚 */
-  importRefreshThrottle?: boolean
-  resolvedMedia: ResolvedMediaTuning
-  imageLoadingSkeleton: ImageLoadingSkeletonTuning
-  reactProfiler: boolean
-  e2e: UiBenchE2eTuning
+  importRefreshThrottle?: boolean;
+  resolvedMedia: ResolvedMediaTuning;
+  imageLoadingSkeleton: ImageLoadingSkeletonTuning;
+  reactProfiler: boolean;
+  e2e: UiBenchE2eTuning;
 }
 
 const DEFAULT_SETTINGS: UiBenchSettings = {
@@ -44,14 +44,16 @@ const DEFAULT_SETTINGS: UiBenchSettings = {
   candidateId: null,
   runTag: null,
   resolvedMedia: {},
-  imageLoadingSkeleton: { mode: 'off' },
+  imageLoadingSkeleton: { mode: "off" },
   reactProfiler: false,
   e2e: {},
-}
+};
 
-let currentSettings: UiBenchSettings = { ...DEFAULT_SETTINGS }
+let currentSettings: UiBenchSettings = { ...DEFAULT_SETTINGS };
 
-export function setBenchSettings(next: Partial<UiBenchSettings>): UiBenchSettings {
+export function setBenchSettings(
+  next: Partial<UiBenchSettings>,
+): UiBenchSettings {
   currentSettings = {
     ...DEFAULT_SETTINGS,
     ...next,
@@ -67,14 +69,14 @@ export function setBenchSettings(next: Partial<UiBenchSettings>): UiBenchSetting
       ...DEFAULT_SETTINGS.e2e,
       ...(next.e2e ?? {}),
     },
-  }
-  return currentSettings
+  };
+  return currentSettings;
 }
 
 export function getBenchSettings(): UiBenchSettings {
-  return currentSettings
+  return currentSettings;
 }
 
 export function isBenchEnabled(): boolean {
-  return Boolean(currentSettings.enabled && currentSettings.mode)
+  return Boolean(currentSettings.enabled && currentSettings.mode);
 }

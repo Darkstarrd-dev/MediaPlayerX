@@ -1,29 +1,43 @@
-import type { SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
-import { parseJson } from './mediaLibraryStoreUtils'
+import type { SQLiteDatabaseLike } from "./mediaLibraryDatabaseTypes";
+import { parseJson } from "./mediaLibraryStoreUtils";
 
 function clampNonNegativeInt(value: number): number {
   if (!Number.isFinite(value) || value <= 0) {
-    return 0
+    return 0;
   }
-  return Math.floor(value)
+  return Math.floor(value);
 }
 
 function clampNonNegativeNumber(value: number): number {
   if (!Number.isFinite(value) || value <= 0) {
-    return 0
+    return 0;
   }
-  return value
+  return value;
 }
 
 function clampCompletionRatio(value: number): number {
   if (!Number.isFinite(value)) {
-    return 0
+    return 0;
   }
-  return Math.max(0, Math.min(1, value))
+  return Math.max(0, Math.min(1, value));
 }
 
 export class MediaLibraryMetadataStore {
   constructor(private readonly db: SQLiteDatabaseLike) {}
+
+  private videoExists(videoId: string): boolean {
+    const row = this.db
+      .prepare("SELECT 1 FROM video_item WHERE id = ?")
+      .get(videoId) as { "1": number } | undefined;
+    return row !== undefined;
+  }
+
+  private sourceExists(sourceId: string): boolean {
+    const row = this.db
+      .prepare("SELECT 1 FROM media_source WHERE id = ?")
+      .get(sourceId) as { "1": number } | undefined;
+    return row !== undefined;
+  }
 
   readPackageGrades(): Map<string, number | null> {
     const rows = this.db
@@ -33,12 +47,15 @@ export class MediaLibraryMetadataStore {
           FROM package_grade
         `,
       )
-      .all() as Array<{ source_id: string; grade: number | null }>
+      .all() as Array<{ source_id: string; grade: number | null }>;
 
-    return new Map(rows.map((row) => [row.source_id, row.grade]))
+    return new Map(rows.map((row) => [row.source_id, row.grade]));
   }
 
-  readVideoCovers(): Map<string, { coverColor: string; coverImagePath: string | null; updatedAtMs: number }> {
+  readVideoCovers(): Map<
+    string,
+    { coverColor: string; coverImagePath: string | null; updatedAtMs: number }
+  > {
     const rows = this.db
       .prepare(
         `
@@ -47,11 +64,11 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-        video_id: string
-        cover_color: string
-        cover_image_path: string | null
-        updated_at_ms: number
-      }>
+      video_id: string;
+      cover_color: string;
+      cover_image_path: string | null;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -62,22 +79,22 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   readVideoMetadata(): Map<
     string,
     {
-      workTitle: string
-      workTitleJpn: string
-      seriesId: string
-      circle: string
-      circleJpn: string
-      author: string
-      authorJpn: string
-      tags: string[]
-      grade: number | null
-      updatedAtMs: number
+      workTitle: string;
+      workTitleJpn: string;
+      seriesId: string;
+      circle: string;
+      circleJpn: string;
+      author: string;
+      authorJpn: string;
+      tags: string[];
+      grade: number | null;
+      updatedAtMs: number;
     }
   > {
     const rows = this.db
@@ -88,46 +105,46 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      video_id: string
-      work_title: string
-      work_title_jpn: string
-      series_id: string
-      circle: string
-      circle_jpn: string
-      author: string
-      author_jpn: string
-      tags_json: string
-      grade: number | null
-      updated_at_ms: number
-    }>
+      video_id: string;
+      work_title: string;
+      work_title_jpn: string;
+      series_id: string;
+      circle: string;
+      circle_jpn: string;
+      author: string;
+      author_jpn: string;
+      tags_json: string;
+      grade: number | null;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
         row.video_id,
         {
           workTitle: row.work_title,
-          workTitleJpn: row.work_title_jpn ?? '',
+          workTitleJpn: row.work_title_jpn ?? "",
           seriesId: row.series_id,
           circle: row.circle,
-          circleJpn: row.circle_jpn ?? '',
+          circleJpn: row.circle_jpn ?? "",
           author: row.author,
-          authorJpn: row.author_jpn ?? '',
+          authorJpn: row.author_jpn ?? "",
           tags: parseJson<string[]>(row.tags_json, []),
           grade: row.grade,
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   readAudioMetadata(): Map<
     string,
     {
-      album: string
-      author: string
-      trackTitle: string
-      seriesId: string
-      updatedAtMs: number
+      album: string;
+      author: string;
+      trackTitle: string;
+      seriesId: string;
+      updatedAtMs: number;
     }
   > {
     const rows = this.db
@@ -138,13 +155,13 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      audio_id: string
-      album: string
-      author: string
-      track_title: string
-      series_id: string
-      updated_at_ms: number
-    }>
+      audio_id: string;
+      album: string;
+      author: string;
+      track_title: string;
+      series_id: string;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -157,28 +174,28 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   readSourceExternalMetadata(): Map<
     string,
     {
-      sourceSite: 'nhentai' | 'ehentai' | 'others'
-      sourceUrl: string
-      sourceRemoteId: string
-      sourceToken: string
-      title: string
-      titleJpn: string
-      groupName: string
-      groupNameJpn: string
-      artist: string
-      artistJpn: string
-      posted: string
-      rating: string | null
-      favorited: string | null
-      tags: Record<string, string>
-      rawJson: string
-      updatedAtMs: number
+      sourceSite: "nhentai" | "ehentai" | "others";
+      sourceUrl: string;
+      sourceRemoteId: string;
+      sourceToken: string;
+      title: string;
+      titleJpn: string;
+      groupName: string;
+      groupNameJpn: string;
+      artist: string;
+      artistJpn: string;
+      posted: string;
+      rating: string | null;
+      favorited: string | null;
+      tags: Record<string, string>;
+      rawJson: string;
+      updatedAtMs: number;
     }
   > {
     const rows = this.db
@@ -206,24 +223,24 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      source_id: string
-      source_site: 'nhentai' | 'ehentai' | 'others'
-      source_url: string
-      source_remote_id: string
-      source_token: string
-      title: string
-      title_jpn: string
-      group_name: string
-      group_name_jpn: string
-      artist: string
-      artist_jpn: string
-      posted: string
-      rating: string | null
-      favorited: string | null
-      tags_json: string
-      raw_json: string
-      updated_at_ms: number
-    }>
+      source_id: string;
+      source_site: "nhentai" | "ehentai" | "others";
+      source_url: string;
+      source_remote_id: string;
+      source_token: string;
+      title: string;
+      title_jpn: string;
+      group_name: string;
+      group_name_jpn: string;
+      artist: string;
+      artist_jpn: string;
+      posted: string;
+      rating: string | null;
+      favorited: string | null;
+      tags_json: string;
+      raw_json: string;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -247,10 +264,13 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
-  readSourceCovers(): Map<string, { coverColor: string; coverImagePath: string | null; updatedAtMs: number }> {
+  readSourceCovers(): Map<
+    string,
+    { coverColor: string; coverImagePath: string | null; updatedAtMs: number }
+  > {
     const rows = this.db
       .prepare(
         `
@@ -259,11 +279,11 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      source_id: string
-      cover_color: string
-      cover_image_path: string | null
-      updated_at_ms: number
-    }>
+      source_id: string;
+      cover_color: string;
+      cover_image_path: string | null;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -274,18 +294,18 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   readImagePreferenceMetrics(): Map<
     string,
     {
-      eventCount: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      lastEventTimeMs: number | null
-      updatedAtMs: number
+      eventCount: number;
+      pagesRead: number;
+      totalPages: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
+      updatedAtMs: number;
     }
   > {
     const rows = this.db
@@ -296,14 +316,14 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      source_id: string
-      event_count: number
-      pages_read: number
-      total_pages: number
-      completion_ratio: number
-      last_event_time_ms: number | null
-      updated_at_ms: number
-    }>
+      source_id: string;
+      event_count: number;
+      pages_read: number;
+      total_pages: number;
+      completion_ratio: number;
+      last_event_time_ms: number | null;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -317,18 +337,18 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   readVideoPreferenceMetrics(): Map<
     string,
     {
-      eventCount: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      lastEventTimeMs: number | null
-      updatedAtMs: number
+      eventCount: number;
+      watchSeconds: number;
+      totalSeconds: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
+      updatedAtMs: number;
     }
   > {
     const rows = this.db
@@ -339,14 +359,14 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      video_id: string
-      event_count: number
-      watch_seconds: number
-      total_seconds: number
-      completion_ratio: number
-      last_event_time_ms: number | null
-      updated_at_ms: number
-    }>
+      video_id: string;
+      event_count: number;
+      watch_seconds: number;
+      total_seconds: number;
+      completion_ratio: number;
+      last_event_time_ms: number | null;
+      updated_at_ms: number;
+    }>;
 
     return new Map(
       rows.map((row) => [
@@ -360,7 +380,7 @@ export class MediaLibraryMetadataStore {
           updatedAtMs: row.updated_at_ms,
         },
       ]),
-    )
+    );
   }
 
   writePackageGrade(sourceId: string, grade: number | null): void {
@@ -374,19 +394,19 @@ export class MediaLibraryMetadataStore {
             updated_at_ms = excluded.updated_at_ms
         `,
       )
-      .run(sourceId, grade, Date.now())
+      .run(sourceId, grade, Date.now());
   }
 
   writeSourceMetadata(
     sourceId: string,
     payload: {
-      packageName: string
-      displayName: string
-      workTitle: string
-      seriesId: string
-      circle: string
-      author: string
-      tags: string[]
+      packageName: string;
+      displayName: string;
+      workTitle: string;
+      seriesId: string;
+      circle: string;
+      author: string;
+      tags: string[];
     },
   ): void {
     this.db
@@ -415,10 +435,14 @@ export class MediaLibraryMetadataStore {
         JSON.stringify(payload.tags),
         Date.now(),
         sourceId,
-      )
+      );
   }
 
-  writeVideoCover(videoId: string, coverColor: string, coverImagePath: string | null): void {
+  writeVideoCover(
+    videoId: string,
+    coverColor: string,
+    coverImagePath: string | null,
+  ): void {
     this.db
       .prepare(
         `
@@ -430,21 +454,21 @@ export class MediaLibraryMetadataStore {
             updated_at_ms = excluded.updated_at_ms
         `,
       )
-      .run(videoId, coverColor, coverImagePath, Date.now())
+      .run(videoId, coverColor, coverImagePath, Date.now());
   }
 
   writeVideoMetadata(
     videoId: string,
     payload: {
-      workTitle: string
-      workTitleJpn: string
-      seriesId: string
-      circle: string
-      circleJpn: string
-      author: string
-      authorJpn: string
-      tags: string[]
-      grade: number | null
+      workTitle: string;
+      workTitleJpn: string;
+      seriesId: string;
+      circle: string;
+      circleJpn: string;
+      author: string;
+      authorJpn: string;
+      tags: string[];
+      grade: number | null;
     },
   ): void {
     this.db
@@ -477,16 +501,16 @@ export class MediaLibraryMetadataStore {
         JSON.stringify(payload.tags),
         payload.grade,
         Date.now(),
-      )
+      );
   }
 
   writeAudioMetadata(
     audioId: string,
     payload: {
-      album: string
-      author: string
-      trackTitle: string
-      seriesId: string
+      album: string;
+      author: string;
+      trackTitle: string;
+      seriesId: string;
     },
   ): void {
     this.db
@@ -502,27 +526,34 @@ export class MediaLibraryMetadataStore {
             updated_at_ms = excluded.updated_at_ms
         `,
       )
-      .run(audioId, payload.album, payload.author, payload.trackTitle, payload.seriesId, Date.now())
+      .run(
+        audioId,
+        payload.album,
+        payload.author,
+        payload.trackTitle,
+        payload.seriesId,
+        Date.now(),
+      );
   }
 
   writeSourceExternalMetadata(
     sourceId: string,
     payload: {
-      sourceSite: 'nhentai' | 'ehentai' | 'others'
-      sourceUrl: string
-      sourceRemoteId: string
-      sourceToken: string
-      title: string
-      titleJpn: string
-      groupName: string
-      groupNameJpn: string
-      artist: string
-      artistJpn: string
-      posted: string
-      rating: string | null
-      favorited: string | null
-      tags: Record<string, string>
-      rawJson: string
+      sourceSite: "nhentai" | "ehentai" | "others";
+      sourceUrl: string;
+      sourceRemoteId: string;
+      sourceToken: string;
+      title: string;
+      titleJpn: string;
+      groupName: string;
+      groupNameJpn: string;
+      artist: string;
+      artistJpn: string;
+      posted: string;
+      rating: string | null;
+      favorited: string | null;
+      tags: Record<string, string>;
+      rawJson: string;
     },
   ): void {
     this.db
@@ -585,10 +616,14 @@ export class MediaLibraryMetadataStore {
         JSON.stringify(payload.tags),
         payload.rawJson,
         Date.now(),
-      )
+      );
   }
 
-  writeSourceCover(sourceId: string, coverColor: string, coverImagePath: string | null): void {
+  writeSourceCover(
+    sourceId: string,
+    coverColor: string,
+    coverImagePath: string | null,
+  ): void {
     this.db
       .prepare(
         `
@@ -600,17 +635,17 @@ export class MediaLibraryMetadataStore {
             updated_at_ms = excluded.updated_at_ms
         `,
       )
-      .run(sourceId, coverColor, coverImagePath, Date.now())
+      .run(sourceId, coverColor, coverImagePath, Date.now());
   }
 
   writeImagePreferenceMetrics(
     sourceId: string,
     payload: {
-      eventCount: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      lastEventTimeMs: number | null
+      eventCount: number;
+      pagesRead: number;
+      totalPages: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
     },
   ): void {
     this.db
@@ -643,17 +678,17 @@ export class MediaLibraryMetadataStore {
         payload.completionRatio,
         payload.lastEventTimeMs,
         Date.now(),
-      )
+      );
   }
 
   writeVideoPreferenceMetrics(
     videoId: string,
     payload: {
-      eventCount: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      lastEventTimeMs: number | null
+      eventCount: number;
+      watchSeconds: number;
+      totalSeconds: number;
+      completionRatio: number;
+      lastEventTimeMs: number | null;
     },
   ): void {
     this.db
@@ -686,22 +721,20 @@ export class MediaLibraryMetadataStore {
         payload.completionRatio,
         payload.lastEventTimeMs,
         Date.now(),
-      )
+      );
   }
 
-  upsertImagePreferenceRuntime(
-    payload: {
-      sessionId: string
-      sourceId: string
-      startedAtMs: number
-      lastCheckpointMs: number
-      checkpointSeq: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      isFullscreen: boolean
-    },
-  ): void {
+  upsertImagePreferenceRuntime(payload: {
+    sessionId: string;
+    sourceId: string;
+    startedAtMs: number;
+    lastCheckpointMs: number;
+    checkpointSeq: number;
+    pagesRead: number;
+    totalPages: number;
+    completionRatio: number;
+    isFullscreen: boolean;
+  }): void {
     this.db
       .prepare(
         `
@@ -739,23 +772,21 @@ export class MediaLibraryMetadataStore {
         payload.totalPages,
         payload.completionRatio,
         payload.isFullscreen ? 1 : 0,
-      )
+      );
   }
 
-  upsertVideoPreferenceRuntime(
-    payload: {
-      sessionId: string
-      videoId: string
-      startedAtMs: number
-      lastCheckpointMs: number
-      checkpointSeq: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      hadFullscreen: boolean
-      lastVideoTime: number
-    },
-  ): void {
+  upsertVideoPreferenceRuntime(payload: {
+    sessionId: string;
+    videoId: string;
+    startedAtMs: number;
+    lastCheckpointMs: number;
+    checkpointSeq: number;
+    watchSeconds: number;
+    totalSeconds: number;
+    completionRatio: number;
+    hadFullscreen: boolean;
+    lastVideoTime: number;
+  }): void {
     this.db
       .prepare(
         `
@@ -796,7 +827,7 @@ export class MediaLibraryMetadataStore {
         payload.completionRatio,
         payload.hadFullscreen ? 1 : 0,
         payload.lastVideoTime,
-      )
+      );
   }
 
   deleteImagePreferenceRuntime(sessionId: string): void {
@@ -807,7 +838,7 @@ export class MediaLibraryMetadataStore {
           WHERE session_id = ?
         `,
       )
-      .run(sessionId)
+      .run(sessionId);
   }
 
   deleteVideoPreferenceRuntime(sessionId: string): void {
@@ -818,12 +849,12 @@ export class MediaLibraryMetadataStore {
           WHERE session_id = ?
         `,
       )
-      .run(sessionId)
+      .run(sessionId);
   }
 
   recoverAllPreferenceRuntimeSessions(endReason: string): {
-    imageRecovered: number
-    videoRecovered: number
+    imageRecovered: number;
+    videoRecovered: number;
   } {
     const imageRows = this.db
       .prepare(
@@ -842,15 +873,15 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      session_id: string
-      source_id: string
-      started_at_ms: number
-      last_checkpoint_ms: number
-      pages_read: number
-      total_pages: number
-      completion_ratio: number
-      is_fullscreen: number
-    }>
+      session_id: string;
+      source_id: string;
+      started_at_ms: number;
+      last_checkpoint_ms: number;
+      pages_read: number;
+      total_pages: number;
+      completion_ratio: number;
+      is_fullscreen: number;
+    }>;
 
     const videoRows = this.db
       .prepare(
@@ -869,18 +900,18 @@ export class MediaLibraryMetadataStore {
         `,
       )
       .all() as Array<{
-      session_id: string
-      video_id: string
-      started_at_ms: number
-      last_checkpoint_ms: number
-      watch_seconds: number
-      total_seconds: number
-      completion_ratio: number
-      had_fullscreen: number
-    }>
+      session_id: string;
+      video_id: string;
+      started_at_ms: number;
+      last_checkpoint_ms: number;
+      watch_seconds: number;
+      total_seconds: number;
+      completion_ratio: number;
+      had_fullscreen: number;
+    }>;
 
-    let imageRecovered = 0
-    let videoRecovered = 0
+    let imageRecovered = 0;
+    let videoRecovered = 0;
 
     const insertImageSession = this.db.prepare(
       `
@@ -897,7 +928,7 @@ export class MediaLibraryMetadataStore {
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-    )
+    );
     const insertVideoSession = this.db.prepare(
       `
         INSERT OR IGNORE INTO video_preference_sessions (
@@ -914,15 +945,20 @@ export class MediaLibraryMetadataStore {
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-    )
+    );
 
     for (const row of imageRows) {
-      const startedAtMs = clampNonNegativeInt(row.started_at_ms)
-      const endedAtMs = Math.max(startedAtMs, clampNonNegativeInt(row.last_checkpoint_ms))
-      const pagesRead = clampNonNegativeInt(row.pages_read)
-      const totalPages = clampNonNegativeInt(row.total_pages)
+      const startedAtMs = clampNonNegativeInt(row.started_at_ms);
+      const endedAtMs = Math.max(
+        startedAtMs,
+        clampNonNegativeInt(row.last_checkpoint_ms),
+      );
+      const pagesRead = clampNonNegativeInt(row.pages_read);
+      const totalPages = clampNonNegativeInt(row.total_pages);
       const completionRatio =
-        totalPages > 0 ? clampCompletionRatio(pagesRead / totalPages) : clampCompletionRatio(row.completion_ratio)
+        totalPages > 0
+          ? clampCompletionRatio(pagesRead / totalPages)
+          : clampCompletionRatio(row.completion_ratio);
       const insertResult = insertImageSession.run(
         row.session_id,
         row.source_id,
@@ -933,28 +969,33 @@ export class MediaLibraryMetadataStore {
         completionRatio,
         row.is_fullscreen > 0 ? 1 : 0,
         endReason,
-      ) as { changes?: number }
+      ) as { changes?: number };
       if ((insertResult.changes ?? 0) > 0) {
-        imageRecovered += 1
+        imageRecovered += 1;
         this.accumulateImagePreferenceMetric({
           sourceId: row.source_id,
           pagesRead,
           totalPages,
           endedAtMs,
-        })
+        });
       }
-      this.deleteImagePreferenceRuntime(row.session_id)
+      this.deleteImagePreferenceRuntime(row.session_id);
     }
 
     for (const row of videoRows) {
-      const startedAtMs = clampNonNegativeInt(row.started_at_ms)
-      const endedAtMs = Math.max(startedAtMs, clampNonNegativeInt(row.last_checkpoint_ms))
-      const watchSeconds = clampNonNegativeNumber(row.watch_seconds)
-      const totalSeconds = clampNonNegativeInt(row.total_seconds)
+      const startedAtMs = clampNonNegativeInt(row.started_at_ms);
+      const endedAtMs = Math.max(
+        startedAtMs,
+        clampNonNegativeInt(row.last_checkpoint_ms),
+      );
+      const watchSeconds = clampNonNegativeNumber(row.watch_seconds);
+      const totalSeconds = clampNonNegativeInt(row.total_seconds);
       const completionRatio =
-        totalSeconds > 0 ? clampCompletionRatio(watchSeconds / totalSeconds) : clampCompletionRatio(row.completion_ratio)
-      const hadFullscreen = row.had_fullscreen > 0
-      const isNoise = !hadFullscreen && watchSeconds < 10
+        totalSeconds > 0
+          ? clampCompletionRatio(watchSeconds / totalSeconds)
+          : clampCompletionRatio(row.completion_ratio);
+      const hadFullscreen = row.had_fullscreen > 0;
+      const isNoise = !hadFullscreen && watchSeconds < 10;
       const insertResult = insertVideoSession.run(
         row.session_id,
         row.video_id,
@@ -966,32 +1007,32 @@ export class MediaLibraryMetadataStore {
         hadFullscreen ? 1 : 0,
         isNoise ? 1 : 0,
         endReason,
-      ) as { changes?: number }
+      ) as { changes?: number };
       if ((insertResult.changes ?? 0) > 0) {
-        videoRecovered += 1
+        videoRecovered += 1;
         if (!isNoise) {
           this.accumulateVideoPreferenceMetric({
             videoId: row.video_id,
             watchSeconds,
             totalSeconds,
             endedAtMs,
-          })
+          });
         }
       }
-      this.deleteVideoPreferenceRuntime(row.session_id)
+      this.deleteVideoPreferenceRuntime(row.session_id);
     }
 
     return {
       imageRecovered,
       videoRecovered,
-    }
+    };
   }
 
   private accumulateImagePreferenceMetric(payload: {
-    sourceId: string
-    pagesRead: number
-    totalPages: number
-    endedAtMs: number
+    sourceId: string;
+    pagesRead: number;
+    totalPages: number;
+    endedAtMs: number;
   }): void {
     this.db
       .prepare(
@@ -1030,17 +1071,19 @@ export class MediaLibraryMetadataStore {
         payload.sourceId,
         payload.pagesRead,
         payload.totalPages,
-        payload.totalPages > 0 ? clampCompletionRatio(payload.pagesRead / payload.totalPages) : 0,
+        payload.totalPages > 0
+          ? clampCompletionRatio(payload.pagesRead / payload.totalPages)
+          : 0,
         payload.endedAtMs,
         Date.now(),
-      )
+      );
   }
 
   private accumulateVideoPreferenceMetric(payload: {
-    videoId: string
-    watchSeconds: number
-    totalSeconds: number
-    endedAtMs: number
+    videoId: string;
+    watchSeconds: number;
+    totalSeconds: number;
+    endedAtMs: number;
   }): void {
     this.db
       .prepare(
@@ -1079,25 +1122,28 @@ export class MediaLibraryMetadataStore {
         payload.videoId,
         payload.watchSeconds,
         payload.totalSeconds,
-        payload.totalSeconds > 0 ? clampCompletionRatio(payload.watchSeconds / payload.totalSeconds) : 0,
+        payload.totalSeconds > 0
+          ? clampCompletionRatio(payload.watchSeconds / payload.totalSeconds)
+          : 0,
         payload.endedAtMs,
         Date.now(),
-      )
+      );
   }
 
-  insertImagePreferenceSession(
-    payload: {
-      sessionId: string
-      sourceId: string
-      startedAtMs: number
-      endedAtMs: number
-      pagesRead: number
-      totalPages: number
-      completionRatio: number
-      isFullscreen: boolean
-      endReason: string
-    },
-  ): void {
+  insertImagePreferenceSession(payload: {
+    sessionId: string;
+    sourceId: string;
+    startedAtMs: number;
+    endedAtMs: number;
+    pagesRead: number;
+    totalPages: number;
+    completionRatio: number;
+    isFullscreen: boolean;
+    endReason: string;
+  }): void {
+    if (!this.sourceExists(payload.sourceId)) {
+      return;
+    }
     this.db
       .prepare(
         `
@@ -1125,23 +1171,24 @@ export class MediaLibraryMetadataStore {
         payload.completionRatio,
         payload.isFullscreen ? 1 : 0,
         payload.endReason,
-      )
+      );
   }
 
-  insertVideoPreferenceSession(
-    payload: {
-      sessionId: string
-      videoId: string
-      startedAtMs: number
-      endedAtMs: number
-      watchSeconds: number
-      totalSeconds: number
-      completionRatio: number
-      hadFullscreen: boolean
-      isNoise: boolean
-      endReason: string
-    },
-  ): void {
+  insertVideoPreferenceSession(payload: {
+    sessionId: string;
+    videoId: string;
+    startedAtMs: number;
+    endedAtMs: number;
+    watchSeconds: number;
+    totalSeconds: number;
+    completionRatio: number;
+    hadFullscreen: boolean;
+    isNoise: boolean;
+    endReason: string;
+  }): void {
+    if (!this.videoExists(payload.videoId)) {
+      return;
+    }
     this.db
       .prepare(
         `
@@ -1171,6 +1218,6 @@ export class MediaLibraryMetadataStore {
         payload.hadFullscreen ? 1 : 0,
         payload.isNoise ? 1 : 0,
         payload.endReason,
-      )
+      );
   }
 }

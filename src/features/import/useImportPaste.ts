@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect } from "react";
 
-import { extractPathsFromClipboard } from '../../utils/mediaHelpers'
-import type { MediaRepository } from '../backend/repository'
-import { collectNativePaths } from './importPathUtils'
+import { extractPathsFromClipboard } from "../../utils/mediaHelpers";
+import type { MediaRepository } from "../backend/repository";
+import { collectNativePaths } from "./importPathUtils";
 
 interface UseImportPasteParams {
-  repository: MediaRepository
-  timeoutMs: number
-  enqueuePastePaths: (paths: string[]) => void
-  onError: (error: unknown) => void
+  repository: MediaRepository;
+  timeoutMs: number;
+  enqueuePastePaths: (paths: string[]) => void;
+  onError: (error: unknown) => void;
 }
 
 export function useImportPaste({
@@ -20,48 +20,55 @@ export function useImportPaste({
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
       if (!document.hasFocus()) {
-        return
+        return;
       }
 
-      const activeElement = document.activeElement as HTMLElement | null
+      const activeElement = document.activeElement as HTMLElement | null;
       if (
         activeElement &&
-        (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.isContentEditable)
       ) {
-        return
+        return;
       }
 
-      const pastedFiles = Array.from(event.clipboardData?.files ?? [])
-      const text = event.clipboardData?.getData('text') ?? ''
-      const uriList = event.clipboardData?.getData('text/uri-list') ?? ''
-      const pastedPaths = Array.from(new Set([...extractPathsFromClipboard(text), ...extractPathsFromClipboard(uriList)]))
+      const pastedFiles = Array.from(event.clipboardData?.files ?? []);
+      const text = event.clipboardData?.getData("text") ?? "";
+      const uriList = event.clipboardData?.getData("text/uri-list") ?? "";
+      const pastedPaths = Array.from(
+        new Set([
+          ...extractPathsFromClipboard(text),
+          ...extractPathsFromClipboard(uriList),
+        ]),
+      );
 
-      const filePaths = collectNativePaths(pastedFiles)
-      const mergedPaths = Array.from(new Set([...filePaths, ...pastedPaths]))
+      const filePaths = collectNativePaths(pastedFiles);
+      const mergedPaths = Array.from(new Set([...filePaths, ...pastedPaths]));
       if (mergedPaths.length > 0) {
-        event.preventDefault()
-        enqueuePastePaths(mergedPaths)
-        return
+        event.preventDefault();
+        enqueuePastePaths(mergedPaths);
+        return;
       }
 
-      const clipboardReader = repository.readClipboardImportPaths
+      const clipboardReader = repository.readClipboardImportPaths;
       if (!clipboardReader) {
-        return
+        return;
       }
 
-      event.preventDefault()
+      event.preventDefault();
       void clipboardReader({ timeoutMs })
         .then((response) => {
           if (response.paths.length > 0) {
-            enqueuePastePaths(response.paths)
+            enqueuePastePaths(response.paths);
           }
         })
         .catch((error: unknown) => {
-          onError(error)
-        })
-    }
+          onError(error);
+        });
+    };
 
-    window.addEventListener('paste', onPaste)
-    return () => window.removeEventListener('paste', onPaste)
-  }, [enqueuePastePaths, onError, repository, timeoutMs])
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [enqueuePastePaths, onError, repository, timeoutMs]);
 }

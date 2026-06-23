@@ -1,29 +1,33 @@
-import type { MouseEvent as ReactMouseEvent, RefObject } from 'react'
-import type { ParsedExternalMetadata } from '../metadata/parseExternalMetadata'
+import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
+import type { ParsedExternalMetadata } from "../metadata/parseExternalMetadata";
 
 interface BuildMetadataManagementPanelPropsParams {
-  metadataManageMode: boolean
-  searchPanelCollapsed: boolean
-  setSearchPanelCollapsed: (collapsed: boolean) => void
-  workspaceBottomPanelHeight: number
-  vectorPanelRef: RefObject<HTMLDivElement | null>
-  vectorPanelContentRef: RefObject<HTMLDivElement | null>
-  metadataPending: boolean
-  operationHint: string | null
-  onSyncName: () => void
-  onSaveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>
-  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
-  layoutLocked: boolean
-  targetPackageName: string
-  targetPackageLabel: string
-  proxyServer: string
+  metadataManageMode: boolean;
+  searchPanelCollapsed: boolean;
+  setSearchPanelCollapsed: (collapsed: boolean) => void;
+  workspaceBottomPanelHeight: number;
+  vectorPanelRef: RefObject<HTMLDivElement | null>;
+  vectorPanelContentRef: RefObject<HTMLDivElement | null>;
+  metadataPending: boolean;
+  operationHint: string | null;
+  onSyncName: () => void;
+  onSaveParsedMetadata: (parsed: ParsedExternalMetadata) => Promise<void>;
+  onStartWorkspaceBottomPanelResize: (
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => void;
+  layoutLocked: boolean;
+  targetPackageName: string;
+  targetPackageLabel: string;
+  proxyServer: string;
 }
 
 function stripArchiveSuffix(value: string): string {
-  return value.replace(/\.(zip|rar|7z|cbz|cbr)$/i, '').trim()
+  return value.replace(/\.(zip|rar|7z|cbz|cbr)$/i, "").trim();
 }
 
-export function buildMetadataManagementPanelProps(params: BuildMetadataManagementPanelPropsParams) {
+export function buildMetadataManagementPanelProps(
+  params: BuildMetadataManagementPanelPropsParams,
+) {
   return {
     visible: params.metadataManageMode,
     collapsed: params.searchPanelCollapsed,
@@ -40,5 +44,5 @@ export function buildMetadataManagementPanelProps(params: BuildMetadataManagemen
     defaultFetchText: stripArchiveSuffix(params.targetPackageName),
     proxyServer: params.proxyServer,
     targetPackageLabel: params.targetPackageLabel,
-  }
+  };
 }

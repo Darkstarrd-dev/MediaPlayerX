@@ -1,16 +1,20 @@
-import type { ImportTaskRecord, ImportTaskStatus, SQLiteDatabaseLike } from './mediaLibraryDatabaseTypes'
-import { clampProgress, parseJson } from './mediaLibraryStoreUtils'
+import type {
+  ImportTaskRecord,
+  ImportTaskStatus,
+  SQLiteDatabaseLike,
+} from "./mediaLibraryDatabaseTypes";
+import { clampProgress, parseJson } from "./mediaLibraryStoreUtils";
 
 export class MediaLibraryTaskStore {
   constructor(private readonly db: SQLiteDatabaseLike) {}
 
   deleteTasksByStatus(statuses: ReadonlyArray<ImportTaskStatus>): number {
-    const normalized = Array.from(new Set(statuses))
+    const normalized = Array.from(new Set(statuses));
     if (normalized.length === 0) {
-      return 0
+      return 0;
     }
 
-    const placeholders = normalized.map(() => '?').join(', ')
+    const placeholders = normalized.map(() => "?").join(", ");
     const result = this.db
       .prepare(
         `
@@ -18,9 +22,9 @@ export class MediaLibraryTaskStore {
           WHERE status IN (${placeholders})
         `,
       )
-      .run(...normalized) as { changes?: number } | undefined
+      .run(...normalized) as { changes?: number } | undefined;
 
-    return result?.changes ?? 0
+    return result?.changes ?? 0;
   }
 
   upsertTask(task: ImportTaskRecord): void {
@@ -67,7 +71,7 @@ export class MediaLibraryTaskStore {
         task.errorDetail,
         task.createdAtMs,
         task.updatedAtMs,
-      )
+      );
   }
 
   readTask(taskId: string): ImportTaskRecord | null {
@@ -93,23 +97,23 @@ export class MediaLibraryTaskStore {
       )
       .get(taskId) as
       | {
-          task_id: string
-          task_type: string
-          task_source: string
-          source_paths_json: string
-          status: ImportTaskStatus
-          progress: number
-          processed_count: number
-          total_count: number
-          message: string | null
-          error_detail: string | null
-          created_at_ms: number
-          updated_at_ms: number
+          task_id: string;
+          task_type: string;
+          task_source: string;
+          source_paths_json: string;
+          status: ImportTaskStatus;
+          progress: number;
+          processed_count: number;
+          total_count: number;
+          message: string | null;
+          error_detail: string | null;
+          created_at_ms: number;
+          updated_at_ms: number;
         }
-      | undefined
+      | undefined;
 
     if (!row) {
-      return null
+      return null;
     }
 
     return {
@@ -125,7 +129,7 @@ export class MediaLibraryTaskStore {
       errorDetail: row.error_detail,
       createdAtMs: row.created_at_ms,
       updatedAtMs: row.updated_at_ms,
-    }
+    };
   }
 
   readTasks(): ImportTaskRecord[] {
@@ -150,19 +154,19 @@ export class MediaLibraryTaskStore {
         `,
       )
       .all() as Array<{
-      task_id: string
-      task_type: string
-      task_source: string
-      source_paths_json: string
-      status: ImportTaskStatus
-      progress: number
-      processed_count: number
-      total_count: number
-      message: string | null
-      error_detail: string | null
-      created_at_ms: number
-      updated_at_ms: number
-    }>
+      task_id: string;
+      task_type: string;
+      task_source: string;
+      source_paths_json: string;
+      status: ImportTaskStatus;
+      progress: number;
+      processed_count: number;
+      total_count: number;
+      message: string | null;
+      error_detail: string | null;
+      created_at_ms: number;
+      updated_at_ms: number;
+    }>;
 
     return rows.map((row) => ({
       taskId: row.task_id,
@@ -177,6 +181,6 @@ export class MediaLibraryTaskStore {
       errorDetail: row.error_detail,
       createdAtMs: row.created_at_ms,
       updatedAtMs: row.updated_at_ms,
-    }))
+    }));
   }
 }

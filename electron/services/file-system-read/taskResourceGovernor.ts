@@ -1,115 +1,125 @@
 interface PendingAcquireRequest {
-  resolve: (release: () => void) => void
-  reject: (error: Error) => void
+  resolve: (release: () => void) => void;
+  reject: (error: Error) => void;
 }
 
 class TokenSemaphore {
-  private readonly queue: PendingAcquireRequest[] = []
+  private readonly queue: PendingAcquireRequest[] = [];
 
-  private inUse = 0
+  private inUse = 0;
 
-  private capacity: number
+  private capacity: number;
 
   constructor(capacity: number) {
-    this.capacity = capacity
+    this.capacity = capacity;
   }
 
   async acquire(): Promise<() => void> {
     if (this.inUse < this.capacity) {
-      this.inUse += 1
-      return this.createRelease()
+      this.inUse += 1;
+      return this.createRelease();
     }
 
     return await new Promise<() => void>((resolve, reject) => {
-      this.queue.push({ resolve, reject })
-    })
+      this.queue.push({ resolve, reject });
+    });
   }
 
   private createRelease(): () => void {
-    let released = false
+    let released = false;
     return () => {
       if (released) {
-        return
+        return;
       }
-      released = true
+      released = true;
 
-      const next = this.queue.shift()
+      const next = this.queue.shift();
       if (next) {
-        next.resolve(this.createRelease())
-        return
+        next.resolve(this.createRelease());
+        return;
       }
 
-      this.inUse = Math.max(0, this.inUse - 1)
-    }
+      this.inUse = Math.max(0, this.inUse - 1);
+    };
   }
 
   clear(): void {
     while (this.queue.length > 0) {
-      const request = this.queue.shift()
-      request?.reject(new Error('resource_governor_disposed'))
+      const request = this.queue.shift();
+      request?.reject(new Error("resource_governor_disposed"));
     }
   }
 
   resize(newCapacity: number): void {
-    this.capacity = newCapacity
+    this.capacity = newCapacity;
     // 容量增大时，唤醒排队中的请求
     while (this.queue.length > 0 && this.inUse < this.capacity) {
-      const next = this.queue.shift()
+      const next = this.queue.shift();
       if (next) {
-        this.inUse += 1
-        next.resolve(this.createRelease())
+        this.inUse += 1;
+        next.resolve(this.createRelease());
       }
     }
   }
 }
 
 export interface TaskResourceGovernorOptions {
-  cpuTokenLimit: number
-  gpuTokenLimit: number
+  cpuTokenLimit: number;
+  gpuTokenLimit: number;
 }
 
 function normalizeTokenLimit(raw: number): number {
   if (!Number.isFinite(raw) || raw <= 0) {
-    return 1
+    return 1;
   }
-  return Math.max(1, Math.min(32, Math.round(raw)))
+  return Math.max(1, Math.min(32, Math.round(raw)));
 }
 
 export class TaskResourceGovernor {
-  private readonly cpuSemaphore: TokenSemaphore
+  private readonly cpuSemaphore: TokenSemaphore;
 
-  private readonly gpuSemaphore: TokenSemaphore
+  private readonly gpuSemaphore: TokenSemaphore;
 
   constructor(options: TaskResourceGovernorOptions) {
-    this.cpuSemaphore = new TokenSemaphore(normalizeTokenLimit(options.cpuTokenLimit))
-    this.gpuSemaphore = new TokenSemaphore(normalizeTokenLimit(options.gpuTokenLimit))
+    this.cpuSemaphore = new TokenSemaphore(
+      normalizeTokenLimit(options.cpuTokenLimit),
+    );
+    this.gpuSemaphore = new TokenSemaphore(
+      normalizeTokenLimit(options.gpuTokenLimit),
+    );
   }
 
-  async runWithCpuToken<T>(_taskName: string, task: () => Promise<T>): Promise<T> {
-    const release = await this.cpuSemaphore.acquire()
+  async runWithCpuToken<T>(
+    _taskName: string,
+    task: () => Promise<T>,
+  ): Promise<T> {
+    const release = await this.cpuSemaphore.acquire();
     try {
-      return await task()
+      return await task();
     } finally {
-      release()
+      release();
     }
   }
 
-  async runWithGpuToken<T>(_taskName: string, task: () => Promise<T>): Promise<T> {
-    const release = await this.gpuSemaphore.acquire()
+  async runWithGpuToken<T>(
+    _taskName: string,
+    task: () => Promise<T>,
+  ): Promise<T> {
+    const release = await this.gpuSemaphore.acquire();
     try {
-      return await task()
+      return await task();
     } finally {
-      release()
+      release();
     }
   }
 
   dispose(): void {
-    this.cpuSemaphore.clear()
-    this.gpuSemaphore.clear()
+    this.cpuSemaphore.clear();
+    this.gpuSemaphore.clear();
   }
 
   resizeCpuSemaphore(limit: number): void {
-    const normalized = normalizeTokenLimit(limit)
-    this.cpuSemaphore.resize(normalized)
+    const normalized = normalizeTokenLimit(limit);
+    this.cpuSemaphore.resize(normalized);
   }
 }

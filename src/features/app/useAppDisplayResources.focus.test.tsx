@@ -1,16 +1,14 @@
-import { renderHook } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
-import { useAppDisplayResources } from './useAppDisplayResources'
-import { useResolvedMediaState } from './useResolvedMediaState'
+import { useAppDisplayResources } from "./useAppDisplayResources";
+import { useResolvedMediaState } from "./useResolvedMediaState";
 
-vi.mock('./useEffectiveDisplayState', () => ({
+vi.mock("./useEffectiveDisplayState", () => ({
   useEffectiveDisplayState: vi.fn(() => ({
     backendPageSnapshot: null,
     activePackageForDisplay: null,
-    refsInPageEffective: [
-      { packageId: 'pkg-raw', imageIndex: 0 },
-    ],
+    refsInPageEffective: [{ packageId: "pkg-raw", imageIndex: 0 }],
     pageStartEffective: 0,
     normalizedPageIndexEffective: 0,
     imageTotalPagesEffective: 1,
@@ -20,13 +18,13 @@ vi.mock('./useEffectiveDisplayState', () => ({
     focusedVideo: null,
     focusedAudio: null,
     focusedVideoDurationSec: 0,
-    focusedVideoCoverColor: '#000000',
+    focusedVideoCoverColor: "#000000",
     focusedVideoCoverImageLocator: null,
     focusedVideoEffective: null,
   })),
-}))
+}));
 
-vi.mock('./useMetadataWriteBindings', () => ({
+vi.mock("./useMetadataWriteBindings", () => ({
   useMetadataWriteBindings: vi.fn(() => ({
     metadataPending: false,
     applyPackageGrade: vi.fn(),
@@ -34,46 +32,40 @@ vi.mock('./useMetadataWriteBindings', () => ({
     applyVideoMetadata: vi.fn(),
     applyAudioMetadata: vi.fn(),
   })),
-}))
+}));
 
-vi.mock('./workspaceAdReviewSidebarContext', () => ({
+vi.mock("./workspaceAdReviewSidebarContext", () => ({
   resolveAdReviewSidebarContext: vi.fn(() => ({
     adReviewFocusTask: {
-      task_id: 'task-1',
-      status: 'running',
-      candidates: [
-        { image_id: 'img-focus-1' },
-      ],
+      task_id: "task-1",
+      status: "running",
+      candidates: [{ image_id: "img-focus-1" }],
     },
     adReviewResultsMode: true,
     effectiveSidebarNodeById: new Map(),
     selectedSidebarNode: null,
     sidebarImageTreeNodes: [],
   })),
-}))
+}));
 
-vi.mock('./workspaceAdReviewPageDerivations', () => ({
+vi.mock("./workspaceAdReviewPageDerivations", () => ({
   shouldGroupAdReviewByPackageRows: vi.fn(() => true),
   resolveAdReviewPageDerivations: vi.fn(() => ({
-    visibleImageRefsForMain: [
-      { packageId: 'pkg-focus', imageIndex: 0 },
-    ],
-    refsInPageBase: [
-      { packageId: 'pkg-focus', imageIndex: 0 },
-    ],
+    visibleImageRefsForMain: [{ packageId: "pkg-focus", imageIndex: 0 }],
+    refsInPageBase: [{ packageId: "pkg-focus", imageIndex: 0 }],
     pageStartForMain: 0,
     normalizedPageIndexForMain: 0,
     imageTotalPagesForMain: 1,
   })),
-}))
+}));
 
-vi.mock('./workspaceImageDerivations', () => ({
+vi.mock("./workspaceImageDerivations", () => ({
   resolveRefsInPageForDisplay: vi.fn(() => [
-    { packageId: 'pkg-focus', imageIndex: 0 },
+    { packageId: "pkg-focus", imageIndex: 0 },
   ]),
-}))
+}));
 
-vi.mock('./useResolvedMediaState', () => ({
+vi.mock("./useResolvedMediaState", () => ({
   useResolvedMediaState: vi.fn(() => ({
     thumbnailImageUrlById: {},
     metadataImageSrc: null,
@@ -83,16 +75,16 @@ vi.mock('./useResolvedMediaState', () => ({
     focusedVideoCoverImageSrc: null,
     sourceCoverImageUrlBySourceId: {},
   })),
-}))
+}));
 
-describe('useAppDisplayResources (ad-review focus refs)', () => {
-  it('passes focus-derived refs into media resolver targets', () => {
-    const mediaRepository = {} as never
+describe("useAppDisplayResources (ad-review focus refs)", () => {
+  it("passes focus-derived refs into media resolver targets", () => {
+    const mediaRepository = {} as never;
 
     renderHook(() =>
       useAppDisplayResources({
         appSettings: {
-          mode: 'image',
+          mode: "image",
           showNamesOnly: false,
           thumbnailQuality: 80,
           thumbnailWidth: 320,
@@ -103,7 +95,7 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           candidateId: null,
           runTag: null,
           resolvedMedia: {},
-          imageLoadingSkeleton: { mode: 'off' },
+          imageLoadingSkeleton: { mode: "off" },
           reactProfiler: false,
           e2e: {},
         },
@@ -113,12 +105,12 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           imageFocusActive: false,
           manageMode: true,
           metadataManageMode: false,
-          adReviewFocusTaskId: 'task-1',
+          adReviewFocusTaskId: "task-1",
           adReviewPageIndex: 0,
           setManageOperationHint: vi.fn(),
         } as never,
         mediaState: {
-          selectedVideoId: '',
+          selectedVideoId: "",
           videoDurationById: {},
           videoCoverById: {},
           videoCoverImageById: {},
@@ -136,7 +128,7 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           audioByIdEffective: new Map(),
           audiosForSidebar: [],
           videosForSidebar: [],
-          selectedAudioId: '',
+          selectedAudioId: "",
           focusedRef: null,
           focusedImage: null,
           selectedSidebarNodeId: null,
@@ -169,11 +161,11 @@ describe('useAppDisplayResources (ad-review focus refs)', () => {
           },
         } as never,
       }),
-    )
+    );
 
-    const firstCall = vi.mocked(useResolvedMediaState).mock.calls[0]?.[0]
+    const firstCall = vi.mocked(useResolvedMediaState).mock.calls[0]?.[0];
     expect(firstCall?.refsInPage).toEqual([
-      { packageId: 'pkg-focus', imageIndex: 0 },
-    ])
-  })
-})
+      { packageId: "pkg-focus", imageIndex: 0 },
+    ]);
+  });
+});

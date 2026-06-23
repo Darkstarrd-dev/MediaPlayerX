@@ -96,7 +96,11 @@ describe("computeThumbnailGridLayout", () => {
     ];
 
     for (const scenario of scenarios) {
-      for (let zoomLevel = 1; zoomLevel <= THUMBNAIL_LEVEL_COUNT; zoomLevel += 1) {
+      for (
+        let zoomLevel = 1;
+        zoomLevel <= THUMBNAIL_LEVEL_COUNT;
+        zoomLevel += 1
+      ) {
         const layout = computeThumbnailGridLayout({
           ...scenario,
           zoomLevel,

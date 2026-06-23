@@ -1,92 +1,104 @@
-import { renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const useWriteDataAccessMock = vi.fn()
-const useRuntimeCapabilitiesMock = vi.fn()
-const useManageModeActionsMock = vi.fn()
-const useManageAdReviewActionsMock = vi.fn()
-const useEffectiveDisplayStateMock = vi.fn()
-const useMetadataWriteBindingsMock = vi.fn()
-const useResolvedMediaStateMock = vi.fn()
-const useFullscreenPlaybackBindingsMock = vi.fn()
-const useAppInteractionEffectsMock = vi.fn()
+const useWriteDataAccessMock = vi.fn();
+const useRuntimeCapabilitiesMock = vi.fn();
+const useManageModeActionsMock = vi.fn();
+const useManageAdReviewActionsMock = vi.fn();
+const useEffectiveDisplayStateMock = vi.fn();
+const useMetadataWriteBindingsMock = vi.fn();
+const useResolvedMediaStateMock = vi.fn();
+const useFullscreenPlaybackBindingsMock = vi.fn();
+const useAppInteractionEffectsMock = vi.fn();
 
-vi.mock('../backend', () => ({
+vi.mock("../backend", () => ({
   useWriteDataAccess: (params: unknown) => useWriteDataAccessMock(params),
-  useRuntimeCapabilities: (params: unknown) => useRuntimeCapabilitiesMock(params),
-}))
+  useRuntimeCapabilities: (params: unknown) =>
+    useRuntimeCapabilitiesMock(params),
+}));
 
-vi.mock('./useManageModeActions', () => ({
+vi.mock("./useManageModeActions", () => ({
   useManageModeActions: (params: unknown) => useManageModeActionsMock(params),
-}))
+}));
 
-vi.mock('./useManageAdReviewActions', () => ({
-  useManageAdReviewActions: (params: unknown) => useManageAdReviewActionsMock(params),
-}))
+vi.mock("./useManageAdReviewActions", () => ({
+  useManageAdReviewActions: (params: unknown) =>
+    useManageAdReviewActionsMock(params),
+}));
 
-vi.mock('./useEffectiveDisplayState', () => ({
-  useEffectiveDisplayState: (params: unknown) => useEffectiveDisplayStateMock(params),
-}))
+vi.mock("./useEffectiveDisplayState", () => ({
+  useEffectiveDisplayState: (params: unknown) =>
+    useEffectiveDisplayStateMock(params),
+}));
 
-vi.mock('./useMetadataWriteBindings', () => ({
-  useMetadataWriteBindings: (params: unknown) => useMetadataWriteBindingsMock(params),
-}))
+vi.mock("./useMetadataWriteBindings", () => ({
+  useMetadataWriteBindings: (params: unknown) =>
+    useMetadataWriteBindingsMock(params),
+}));
 
-vi.mock('./useResolvedMediaState', () => ({
+vi.mock("./useResolvedMediaState", () => ({
   useResolvedMediaState: (params: unknown) => useResolvedMediaStateMock(params),
-}))
+}));
 
-vi.mock('./useFullscreenPlaybackBindings', () => ({
-  useFullscreenPlaybackBindings: (params: unknown) => useFullscreenPlaybackBindingsMock(params),
-}))
+vi.mock("./useFullscreenPlaybackBindings", () => ({
+  useFullscreenPlaybackBindings: (params: unknown) =>
+    useFullscreenPlaybackBindingsMock(params),
+}));
 
-vi.mock('./useAppInteractionEffects', () => ({
-  useAppInteractionEffects: (params: unknown) => useAppInteractionEffectsMock(params),
-}))
+vi.mock("./useAppInteractionEffects", () => ({
+  useAppInteractionEffects: (params: unknown) =>
+    useAppInteractionEffectsMock(params),
+}));
 
-import { useAppDisplayAndEffects } from './useAppDisplayAndEffects'
+import { useAppDisplayAndEffects } from "./useAppDisplayAndEffects";
 
-type DisplayParams = Parameters<typeof useAppDisplayAndEffects>[0]
+type DisplayParams = Parameters<typeof useAppDisplayAndEffects>[0];
 
-function createLooseState<T extends object>(overrides: Record<string, unknown>): T {
+function createLooseState<T extends object>(
+  overrides: Record<string, unknown>,
+): T {
   return new Proxy(overrides, {
     get(target, property) {
-      if (typeof property === 'string' && property in target) {
-        return target[property]
+      if (typeof property === "string" && property in target) {
+        return target[property];
       }
       if (
-        typeof property === 'string' &&
-        /^(set|on|go|run|clear|request|toggle|select|move|jump|adjust|ensure|apply|update|open|close)/.test(property)
+        typeof property === "string" &&
+        /^(set|on|go|run|clear|request|toggle|select|move|jump|adjust|ensure|apply|update|open|close)/.test(
+          property,
+        )
       ) {
-        return vi.fn()
+        return vi.fn();
       }
-      return undefined
+      return undefined;
     },
-  }) as T
+  }) as T;
 }
 
-describe('useAppDisplayAndEffects integration', () => {
+describe("useAppDisplayAndEffects integration", () => {
   beforeEach(() => {
-    useWriteDataAccessMock.mockReset()
-    useRuntimeCapabilitiesMock.mockReset()
-    useManageModeActionsMock.mockReset()
-    useManageAdReviewActionsMock.mockReset()
-    useEffectiveDisplayStateMock.mockReset()
-    useMetadataWriteBindingsMock.mockReset()
-    useResolvedMediaStateMock.mockReset()
-    useFullscreenPlaybackBindingsMock.mockReset()
-    useAppInteractionEffectsMock.mockReset()
-  })
+    useWriteDataAccessMock.mockReset();
+    useRuntimeCapabilitiesMock.mockReset();
+    useManageModeActionsMock.mockReset();
+    useManageAdReviewActionsMock.mockReset();
+    useEffectiveDisplayStateMock.mockReset();
+    useMetadataWriteBindingsMock.mockReset();
+    useResolvedMediaStateMock.mockReset();
+    useFullscreenPlaybackBindingsMock.mockReset();
+    useAppInteractionEffectsMock.mockReset();
+  });
 
-  it('会将读写适配层与管理动作正确拼装到返回结果', () => {
-    const updateSettings = vi.fn()
-    const setGradeByPackage = vi.fn()
-    const setVideoCoverById = vi.fn()
-    const setVideoCoverImageById = vi.fn()
+  it("会将读写适配层与管理动作正确拼装到返回结果", () => {
+    const updateSettings = vi.fn();
+    const setGradeByPackage = vi.fn();
+    const setVideoCoverById = vi.fn();
+    const setVideoCoverImageById = vi.fn();
 
-    const mediaRepository = { id: 'repo-integration' } as unknown as DisplayParams['mediaRepository']
+    const mediaRepository = {
+      id: "repo-integration",
+    } as unknown as DisplayParams["mediaRepository"];
     const appSettings = createLooseState({
-      mode: 'image',
+      mode: "image",
       vectorMode: false,
       settingsOpen: false,
       sidebarRatio: 0.3,
@@ -96,17 +108,17 @@ describe('useAppDisplayAndEffects integration', () => {
       autoPlayEnabled: false,
       autoPlayInterval: 3,
       vectorThreshold: 0.42,
-      sidebarFocus: 'sidebar',
-      themeId: 'ocean',
-      styleId: 'flush',
-      paletteId: 'ocean',
+      sidebarFocus: "sidebar",
+      themeId: "ocean",
+      styleId: "flush",
+      paletteId: "ocean",
       shortcuts: {},
       updateSettings,
-    })
+    });
 
     const sessionState = createLooseState({
-      selectedPackageId: 'pkg-1',
-      selectedSidebarNodeId: 'package:pkg-1',
+      selectedPackageId: "pkg-1",
+      selectedSidebarNodeId: "package:pkg-1",
       imageFocusActive: true,
       focusByPackage: {},
       setPageByPackage: vi.fn(),
@@ -128,10 +140,10 @@ describe('useAppDisplayAndEffects integration', () => {
       gridElement: null,
       setGridElement: vi.fn(),
       setGridSize: vi.fn(),
-      fullscreenEntryDisplay: 'single',
+      fullscreenEntryDisplay: "single",
       setFullscreenEntryDisplay: vi.fn(),
       vectorSearchResults: [],
-    })
+    });
 
     const mediaState = createLooseState({
       selectedVideoId: null,
@@ -153,7 +165,7 @@ describe('useAppDisplayAndEffects integration', () => {
       setVideoDurationById: vi.fn(),
       fullscreenActive: false,
       setFullscreenActive: vi.fn(),
-      fullscreenDisplay: 'image',
+      fullscreenDisplay: "image",
       setFullscreenDisplay: vi.fn(),
       fullscreenSwapped: false,
       setFullscreenSwapped: vi.fn(),
@@ -167,17 +179,20 @@ describe('useAppDisplayAndEffects integration', () => {
       selectVideoFromBrowser: vi.fn(),
       adjustVideoRate: vi.fn(),
       adjustVideoVolume: vi.fn(),
-    })
+    });
 
     const readNavigationState = createLooseState({
-      searchPanelMode: 'feature',
+      searchPanelMode: "feature",
       searchPanelCollapsed: false,
       setSearchPanelCollapsed: vi.fn(),
       setSearchPanelMode: vi.fn(),
       featureSearchActive: true,
       featureTagPickerOpen: false,
       vectorResultsActive: false,
-      backendRead: { page: { data: null, snapshot: null }, metadata: { data: null, snapshot: null } },
+      backendRead: {
+        page: { data: null, snapshot: null },
+        metadata: { data: null, snapshot: null },
+      },
       scopedImageSourcesEffective: [],
       packageByIdEffective: new Map(),
       videoByIdEffective: new Map(),
@@ -193,9 +208,9 @@ describe('useAppDisplayAndEffects integration', () => {
       videoNodeIdMap: {},
       videosForSidebar: [],
       ensureSidebarNodeVisible: vi.fn(),
-      sidebarCheckedNodeIds: ['node-a'],
-      imageCheckedIds: ['image-a'],
-      activeSelectionScope: 'image',
+      sidebarCheckedNodeIds: ["node-a"],
+      imageCheckedIds: ["image-a"],
+      activeSelectionScope: "image",
       clearAllSelections: vi.fn(),
       orderedRootScopedPackages: [],
       orderedRootScopedImageRefs: [],
@@ -221,23 +236,23 @@ describe('useAppDisplayAndEffects integration', () => {
       pageStart: 0,
       normalizedPageIndex: 0,
       imageTotalPages: 1,
-    })
+    });
 
-    const backendWrite = { id: 'backend-write' }
+    const backendWrite = { id: "backend-write" };
     const manageModeActions = {
       toggleManageMode: vi.fn(),
       runManageHideAction: vi.fn(),
       requestManageDelete: vi.fn(),
       confirmManageDelete: vi.fn(),
-    }
-    const manageAdReview = { pending: false, task: null }
-    const runtimeCapabilities = { matrix: [] }
-    const metadataWriteBindings = { applyPackageGrade: vi.fn() }
+    };
+    const manageAdReview = { pending: false, task: null };
+    const runtimeCapabilities = { matrix: [] };
+    const metadataWriteBindings = { applyPackageGrade: vi.fn() };
 
-    useWriteDataAccessMock.mockReturnValue(backendWrite)
-    useManageModeActionsMock.mockReturnValue(manageModeActions)
-    useManageAdReviewActionsMock.mockReturnValue(manageAdReview)
-    useRuntimeCapabilitiesMock.mockReturnValue(runtimeCapabilities)
+    useWriteDataAccessMock.mockReturnValue(backendWrite);
+    useManageModeActionsMock.mockReturnValue(manageModeActions);
+    useManageAdReviewActionsMock.mockReturnValue(manageAdReview);
+    useRuntimeCapabilitiesMock.mockReturnValue(runtimeCapabilities);
     useEffectiveDisplayStateMock.mockReturnValue({
       backendPageSnapshot: null,
       activePackageForDisplay: null,
@@ -253,67 +268,70 @@ describe('useAppDisplayAndEffects integration', () => {
       focusedVideoCoverColor: null,
       focusedVideoCoverImageLocator: null,
       focusedVideoEffective: null,
-    })
-    useMetadataWriteBindingsMock.mockReturnValue(metadataWriteBindings)
+    });
+    useMetadataWriteBindingsMock.mockReturnValue(metadataWriteBindings);
     useResolvedMediaStateMock.mockReturnValue({
       thumbnailImageUrlById: {},
       metadataImageSrc: null,
       fullscreenImageSrc: null,
       focusedVideoSrc: null,
       focusedVideoCoverImageSrc: null,
-    })
+    });
     useFullscreenPlaybackBindingsMock.mockReturnValue({
       videoShortcutActive: false,
       fullscreenAlignRequest: null,
       applyAutoplayIntervalByIndex: vi.fn(),
       requestFullscreenAlign: vi.fn(),
       setFullscreenActiveWithAutoStop: vi.fn(),
-    })
+    });
 
     const { result } = renderHook(() =>
       useAppDisplayAndEffects({
-        appSettings: appSettings as DisplayParams['appSettings'],
-        benchSettings: { enabled: false } as DisplayParams['benchSettings'],
+        appSettings: appSettings as DisplayParams["appSettings"],
+        benchSettings: { enabled: false } as DisplayParams["benchSettings"],
         mediaRepository,
         importBusy: false,
-        sessionState: sessionState as DisplayParams['sessionState'],
-        mediaState: mediaState as DisplayParams['mediaState'],
-        readNavigationState: readNavigationState as DisplayParams['readNavigationState'],
+        sessionState: sessionState as DisplayParams["sessionState"],
+        mediaState: mediaState as DisplayParams["mediaState"],
+        readNavigationState:
+          readNavigationState as DisplayParams["readNavigationState"],
       }),
-    )
+    );
 
     expect(useWriteDataAccessMock).toHaveBeenCalledWith({
       repository: mediaRepository,
       setGradeByPackage,
       setVideoCoverById,
       setVideoCoverImageById,
-    })
+    });
     expect(useManageModeActionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mode: 'image',
+        mode: "image",
         manageMode: true,
         backendWrite,
       }),
-    )
+    );
 
-    expect(result.current.backendWrite).toBe(backendWrite)
-    expect(result.current.manageAdReview).toBe(manageAdReview)
-    expect(result.current.toggleManageMode).toBe(manageModeActions.toggleManageMode)
-    expect(result.current.metadataWriteBindings).toBe(metadataWriteBindings)
-    expect(result.current.runtimeCapabilities).toBe(runtimeCapabilities)
-  })
+    expect(result.current.backendWrite).toBe(backendWrite);
+    expect(result.current.manageAdReview).toBe(manageAdReview);
+    expect(result.current.toggleManageMode).toBe(
+      manageModeActions.toggleManageMode,
+    );
+    expect(result.current.metadataWriteBindings).toBe(metadataWriteBindings);
+    expect(result.current.runtimeCapabilities).toBe(runtimeCapabilities);
+  });
 
-  it('会将 metadata 写绑定透传给交互副作用层', () => {
-    const applyPackageGrade = vi.fn()
-    useWriteDataAccessMock.mockReturnValue({})
+  it("会将 metadata 写绑定透传给交互副作用层", () => {
+    const applyPackageGrade = vi.fn();
+    useWriteDataAccessMock.mockReturnValue({});
     useManageModeActionsMock.mockReturnValue({
       toggleManageMode: vi.fn(),
       runManageHideAction: vi.fn(),
       requestManageDelete: vi.fn(),
       confirmManageDelete: vi.fn(),
-    })
-    useManageAdReviewActionsMock.mockReturnValue({})
-    useRuntimeCapabilitiesMock.mockReturnValue({})
+    });
+    useManageAdReviewActionsMock.mockReturnValue({});
+    useRuntimeCapabilitiesMock.mockReturnValue({});
     useEffectiveDisplayStateMock.mockReturnValue({
       backendPageSnapshot: null,
       activePackageForDisplay: null,
@@ -329,24 +347,27 @@ describe('useAppDisplayAndEffects integration', () => {
       focusedVideoCoverColor: null,
       focusedVideoCoverImageLocator: null,
       focusedVideoEffective: null,
-    })
-    useMetadataWriteBindingsMock.mockReturnValue({ applyPackageGrade })
+    });
+    useMetadataWriteBindingsMock.mockReturnValue({ applyPackageGrade });
     useResolvedMediaStateMock.mockReturnValue({
       thumbnailImageUrlById: {},
       metadataImageSrc: null,
       fullscreenImageSrc: null,
       focusedVideoSrc: null,
       focusedVideoCoverImageSrc: null,
-    })
+    });
     useFullscreenPlaybackBindingsMock.mockReturnValue({
       videoShortcutActive: false,
       fullscreenAlignRequest: null,
       applyAutoplayIntervalByIndex: vi.fn(),
       requestFullscreenAlign: vi.fn(),
       setFullscreenActiveWithAutoStop: vi.fn(),
-    })
+    });
 
-    const appSettings = createLooseState({ mode: 'image', updateSettings: vi.fn() })
+    const appSettings = createLooseState({
+      mode: "image",
+      updateSettings: vi.fn(),
+    });
     const sessionState = createLooseState({
       setGradeByPackage: vi.fn(),
       vectorSearchResults: [],
@@ -356,14 +377,17 @@ describe('useAppDisplayAndEffects integration', () => {
       setVectorSearchResults: vi.fn(),
       setVectorFocusIndex: vi.fn(),
       setVectorPage: vi.fn(),
-    })
+    });
     const mediaState = createLooseState({
       setVideoCoverById: vi.fn(),
       setVideoCoverImageById: vi.fn(),
       setFullscreenActive: vi.fn(),
-    })
+    });
     const readNavigationState = createLooseState({
-      backendRead: { page: { data: null, snapshot: null }, metadata: { data: null, snapshot: null } },
+      backendRead: {
+        page: { data: null, snapshot: null },
+        metadata: { data: null, snapshot: null },
+      },
       packageByIdEffective: new Map(),
       videoByIdEffective: new Map(),
       clearAllSelections: vi.fn(),
@@ -382,26 +406,29 @@ describe('useAppDisplayAndEffects integration', () => {
       sidebarNodeById: new Map(),
       imageSourceNodeIdMap: {},
       videoNodeIdMap: {},
-    })
+    });
 
-    const mediaRepository = { id: 'repo-b' } as unknown as DisplayParams['mediaRepository']
+    const mediaRepository = {
+      id: "repo-b",
+    } as unknown as DisplayParams["mediaRepository"];
 
     renderHook(() =>
       useAppDisplayAndEffects({
-        appSettings: appSettings as DisplayParams['appSettings'],
-        benchSettings: { enabled: false } as DisplayParams['benchSettings'],
+        appSettings: appSettings as DisplayParams["appSettings"],
+        benchSettings: { enabled: false } as DisplayParams["benchSettings"],
         mediaRepository,
         importBusy: false,
-        sessionState: sessionState as DisplayParams['sessionState'],
-        mediaState: mediaState as DisplayParams['mediaState'],
-        readNavigationState: readNavigationState as DisplayParams['readNavigationState'],
+        sessionState: sessionState as DisplayParams["sessionState"],
+        mediaState: mediaState as DisplayParams["mediaState"],
+        readNavigationState:
+          readNavigationState as DisplayParams["readNavigationState"],
       }),
-    )
+    );
 
     expect(useAppInteractionEffectsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         applyPackageGrade,
       }),
-    )
-  })
-})
+    );
+  });
+});

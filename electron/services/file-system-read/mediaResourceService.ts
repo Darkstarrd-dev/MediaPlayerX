@@ -5,13 +5,13 @@ import {
   type MediaLocatorDto,
   type ResolveMediaResourceRequestDto,
   type ResolveMediaResourceResponseDto,
-} from '../../../src/contracts/backend'
+} from "../../../src/contracts/backend";
 import {
   assertLocatorAllowed,
   MediaAccessError,
   type MediaAccessGuardContext,
   type MediaAuditRejectReason,
-} from '../../fileSystemMediaAccessGuard'
+} from "../../fileSystemMediaAccessGuard";
 import {
   readArchiveEntryMedia,
   readArchiveEntryMediaStream,
@@ -19,37 +19,54 @@ import {
   readFilesystemMediaStream,
   type MediaProtocolResponsePayload,
   type MediaProtocolStreamResponsePayload,
-} from '../../fileSystemMediaReaders'
-import { detectMimeTypeByExtension, normalizeAllowlistKey } from '../../fileSystemServiceHelpers'
-import { maybeResolveFullscreenLocator } from '../../fileSystemFullscreenResizer'
-import { maybeResolveThumbnailLocator } from '../../fileSystemThumbnailResolver'
-import type { MediaTokenRecord, MediaTokenService } from './mediaTokenService'
-import type { RuntimeDependencySnapshot } from './runtimeDependencyService'
+} from "../../fileSystemMediaReaders";
+import {
+  detectMimeTypeByExtension,
+  normalizeAllowlistKey,
+} from "../../fileSystemServiceHelpers";
+import { maybeResolveFullscreenLocator } from "../../fileSystemFullscreenResizer";
+import { maybeResolveThumbnailLocator } from "../../fileSystemThumbnailResolver";
+import type { MediaTokenRecord, MediaTokenService } from "./mediaTokenService";
+import type { RuntimeDependencySnapshot } from "./runtimeDependencyService";
 
 interface MediaAccessAuditCounters {
-  resolveRequests: number
-  resolveGranted: number
-  resolveDeniedByReason: Record<string, number>
+  resolveRequests: number;
+  resolveGranted: number;
+  resolveDeniedByReason: Record<string, number>;
 }
 
 interface MediaResourceServiceOptions {
-  mediaProtocolScheme: string
-  thumbnailCacheRootDir: string
-  archiveNormalizeRecheckMs: number
-  mediaTokenService: MediaTokenService
-  ensureSnapshotLoaded: () => Promise<unknown>
-  refreshArchiveIndexesForPaths: (archivePaths: Iterable<string>) => Promise<void>
-  buildMediaAccessContext: () => MediaAccessGuardContext
-  ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>
-  readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>
-  onThumbnailRenderingStart: (taskKey: string) => void
-  onThumbnailRenderingProgress: (taskKey: string, payload: { progress: number | null; message: string | null }) => void
-  onThumbnailRenderingEnd: (taskKey: string) => void
-  runWithThumbnailCpuToken?: <T>(taskName: string, task: () => Promise<T>) => Promise<T>
-  withArchiveReadLock?: <T>(archivePath: string, task: () => Promise<T>) => Promise<T>
-  hasPendingArchiveNormalization: () => boolean
-  scheduleArchiveNormalizationDrain: (delayMs: number) => void
-  getZipEntryIndexByPath: () => Map<string, Map<string, import('../../zipArchiveHelpers').ZipCentralEntry>>
+  mediaProtocolScheme: string;
+  thumbnailCacheRootDir: string;
+  archiveNormalizeRecheckMs: number;
+  mediaTokenService: MediaTokenService;
+  ensureSnapshotLoaded: () => Promise<unknown>;
+  refreshArchiveIndexesForPaths: (
+    archivePaths: Iterable<string>,
+  ) => Promise<void>;
+  buildMediaAccessContext: () => MediaAccessGuardContext;
+  ensureRuntimeDependencies: () => Promise<RuntimeDependencySnapshot>;
+  readImageBufferForThumbnail: (locator: MediaLocatorDto) => Promise<Buffer>;
+  onThumbnailRenderingStart: (taskKey: string) => void;
+  onThumbnailRenderingProgress: (
+    taskKey: string,
+    payload: { progress: number | null; message: string | null },
+  ) => void;
+  onThumbnailRenderingEnd: (taskKey: string) => void;
+  runWithThumbnailCpuToken?: <T>(
+    taskName: string,
+    task: () => Promise<T>,
+  ) => Promise<T>;
+  withArchiveReadLock?: <T>(
+    archivePath: string,
+    task: () => Promise<T>,
+  ) => Promise<T>;
+  hasPendingArchiveNormalization: () => boolean;
+  scheduleArchiveNormalizationDrain: (delayMs: number) => void;
+  getZipEntryIndexByPath: () => Map<
+    string,
+    Map<string, import("../../zipArchiveHelpers").ZipCentralEntry>
+  >;
 }
 
 export class MediaResourceService {
@@ -57,79 +74,96 @@ export class MediaResourceService {
     resolveRequests: 0,
     resolveGranted: 0,
     resolveDeniedByReason: {},
-  }
+  };
 
-  private resolveDeniedLogAtByKey = new Map<string, number>()
+  private resolveDeniedLogAtByKey = new Map<string, number>();
 
-  private archiveIndexRefreshByPath = new Map<string, Promise<void>>()
+  private archiveIndexRefreshByPath = new Map<string, Promise<void>>();
 
   constructor(private readonly options: MediaResourceServiceOptions) {}
 
   private countResolveDenied(reason: MediaAuditRejectReason): void {
-    this.mediaAudit.resolveDeniedByReason[reason] = (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1
+    this.mediaAudit.resolveDeniedByReason[reason] =
+      (this.mediaAudit.resolveDeniedByReason[reason] ?? 0) + 1;
   }
 
-  private shouldLogResolveDenied(reason: MediaAuditRejectReason, pathHint: string): boolean {
-    const now = Date.now()
-    const key = `${reason}|${normalizeAllowlistKey(pathHint)}`
-    const previousAt = this.resolveDeniedLogAtByKey.get(key)
-    if (typeof previousAt === 'number' && now - previousAt < 2_500) {
-      return false
+  private shouldLogResolveDenied(
+    reason: MediaAuditRejectReason,
+    pathHint: string,
+  ): boolean {
+    const now = Date.now();
+    const key = `${reason}|${normalizeAllowlistKey(pathHint)}`;
+    const previousAt = this.resolveDeniedLogAtByKey.get(key);
+    if (typeof previousAt === "number" && now - previousAt < 2_500) {
+      return false;
     }
-    this.resolveDeniedLogAtByKey.set(key, now)
+    this.resolveDeniedLogAtByKey.set(key, now);
 
     if (this.resolveDeniedLogAtByKey.size > 2_048) {
-      this.resolveDeniedLogAtByKey.clear()
+      this.resolveDeniedLogAtByKey.clear();
     }
 
-    return true
+    return true;
   }
 
   private async refreshArchiveIndexForPath(archivePath: string): Promise<void> {
-    const key = normalizeAllowlistKey(archivePath)
-    const existing = this.archiveIndexRefreshByPath.get(key)
+    const key = normalizeAllowlistKey(archivePath);
+    const existing = this.archiveIndexRefreshByPath.get(key);
     if (existing) {
-      await existing
-      return
+      await existing;
+      return;
     }
 
     const refreshPromise = this.options
       .refreshArchiveIndexesForPaths([archivePath])
       .catch((error) => {
-        console.warn('resolveMediaResource archive index refresh failed', {
+        console.warn("resolveMediaResource archive index refresh failed", {
           archivePath,
-          reason: error instanceof Error && error.message ? error.message : String(error),
-        })
+          reason:
+            error instanceof Error && error.message
+              ? error.message
+              : String(error),
+        });
       })
       .finally(() => {
-        this.archiveIndexRefreshByPath.delete(key)
-      })
+        this.archiveIndexRefreshByPath.delete(key);
+      });
 
-    this.archiveIndexRefreshByPath.set(key, refreshPromise)
-    await refreshPromise
+    this.archiveIndexRefreshByPath.set(key, refreshPromise);
+    await refreshPromise;
   }
 
-  private async assertLocatorAllowedWithRecovery(locator: MediaLocatorDto): Promise<MediaLocatorDto> {
+  private async assertLocatorAllowedWithRecovery(
+    locator: MediaLocatorDto,
+  ): Promise<MediaLocatorDto> {
     try {
-      return await assertLocatorAllowed(locator, this.options.buildMediaAccessContext())
+      return await assertLocatorAllowed(
+        locator,
+        this.options.buildMediaAccessContext(),
+      );
     } catch (error) {
       if (
         !(error instanceof MediaAccessError) ||
-        error.reason !== 'archive_entry_not_allowlisted' ||
-        locator.kind !== 'archive-entry'
+        error.reason !== "archive_entry_not_allowlisted" ||
+        locator.kind !== "archive-entry"
       ) {
-        throw error
+        throw error;
       }
 
-      await this.refreshArchiveIndexForPath(locator.archive_path)
-      return assertLocatorAllowed(locator, this.options.buildMediaAccessContext())
+      await this.refreshArchiveIndexForPath(locator.archive_path);
+      return assertLocatorAllowed(
+        locator,
+        this.options.buildMediaAccessContext(),
+      );
     }
   }
 
   async readMediaAccessAudit(): Promise<MediaAccessAuditResponseDto> {
-    const tokenAudit = this.options.mediaTokenService.readAuditSnapshot()
+    const tokenAudit = this.options.mediaTokenService.readAuditSnapshot();
 
-    const deniedTotal = Object.values(this.mediaAudit.resolveDeniedByReason).reduce((sum, value) => sum + value, 0)
+    const deniedTotal = Object.values(
+      this.mediaAudit.resolveDeniedByReason,
+    ).reduce((sum, value) => sum + value, 0);
     return mediaAccessAuditResponseSchema.parse({
       resolve_requests: this.mediaAudit.resolveRequests,
       resolve_granted: this.mediaAudit.resolveGranted,
@@ -142,35 +176,37 @@ export class MediaResourceService {
       token_cleanup_removed: tokenAudit.tokenCleanupRemoved,
       token_active: tokenAudit.tokenActive,
       generated_at_ms: Date.now(),
-    })
+    });
   }
 
   async resolveMediaResource(
     request: ResolveMediaResourceRequestDto,
   ): Promise<ResolveMediaResourceResponseDto> {
-    await this.options.ensureSnapshotLoaded()
-    this.options.mediaTokenService.cleanupExpiredTokens()
+    await this.options.ensureSnapshotLoaded();
+    this.options.mediaTokenService.cleanupExpiredTokens();
 
-    this.mediaAudit.resolveRequests += 1
+    this.mediaAudit.resolveRequests += 1;
 
-    let locator: MediaLocatorDto
+    let locator: MediaLocatorDto;
     try {
-      locator = await this.assertLocatorAllowedWithRecovery(request.locator)
+      locator = await this.assertLocatorAllowedWithRecovery(request.locator);
     } catch (error) {
       if (error instanceof MediaAccessError) {
-        this.countResolveDenied(error.reason)
+        this.countResolveDenied(error.reason);
         const pathHint =
-          request.locator.kind === 'filesystem' ? request.locator.absolute_path : request.locator.archive_path
+          request.locator.kind === "filesystem"
+            ? request.locator.absolute_path
+            : request.locator.archive_path;
         if (this.shouldLogResolveDenied(error.reason, pathHint)) {
-          console.warn('resolveMediaResource denied', {
+          console.warn("resolveMediaResource denied", {
             reason: error.reason,
             message: error.message,
-          })
+          });
         }
       } else {
-        this.countResolveDenied('filesystem_file_missing')
+        this.countResolveDenied("filesystem_file_missing");
       }
-      throw error
+      throw error;
     }
 
     const thumbnailLocator = await maybeResolveThumbnailLocator({
@@ -183,12 +219,14 @@ export class MediaResourceService {
       onRenderingProgress: this.options.onThumbnailRenderingProgress,
       onRenderingEnd: this.options.onThumbnailRenderingEnd,
       runWithCpuToken: this.options.runWithThumbnailCpuToken,
-      hasPendingArchiveNormalization: this.options.hasPendingArchiveNormalization,
-      scheduleArchiveNormalizationDrain: this.options.scheduleArchiveNormalizationDrain,
+      hasPendingArchiveNormalization:
+        this.options.hasPendingArchiveNormalization,
+      scheduleArchiveNormalizationDrain:
+        this.options.scheduleArchiveNormalizationDrain,
       archiveNormalizeRecheckMs: this.options.archiveNormalizeRecheckMs,
-    })
+    });
     if (thumbnailLocator) {
-      locator = thumbnailLocator
+      locator = thumbnailLocator;
     }
 
     if (!thumbnailLocator && request.fullscreen_resize) {
@@ -199,40 +237,53 @@ export class MediaResourceService {
         ensureRuntimeDependencies: this.options.ensureRuntimeDependencies,
         readImageBufferForThumbnail: this.options.readImageBufferForThumbnail,
         runWithCpuToken: this.options.runWithThumbnailCpuToken,
-      })
+      });
       if (fullscreenLocator) {
-        locator = fullscreenLocator
+        locator = fullscreenLocator;
       }
     }
 
-    const mimeType = locator.mime_type || detectMimeTypeByExtension(locator.extension, locator.media_type)
-    const { token, expiresAtMs } = this.options.mediaTokenService.issueToken(locator, mimeType)
+    const mimeType =
+      locator.mime_type ||
+      detectMimeTypeByExtension(locator.extension, locator.media_type);
+    const { token, expiresAtMs } = this.options.mediaTokenService.issueToken(
+      locator,
+      mimeType,
+    );
 
-    this.mediaAudit.resolveGranted += 1
+    this.mediaAudit.resolveGranted += 1;
 
     return resolveMediaResourceResponseSchema.parse({
       resource_url: `${this.options.mediaProtocolScheme}://resource/${encodeURIComponent(token)}`,
       mime_type: mimeType,
       expires_at_ms: expiresAtMs,
-    })
+    });
   }
 
   async readMediaResourceByToken(
     token: string,
     rangeHeader: string | null,
   ): Promise<MediaProtocolResponsePayload> {
-    const record = this.requireMediaTokenRecord(token)
+    const record = this.requireMediaTokenRecord(token);
 
-    const locator = record.locator
-    if (locator.kind === 'filesystem') {
-      return readFilesystemMedia(locator, record.mimeType, rangeHeader)
+    const locator = record.locator;
+    if (locator.kind === "filesystem") {
+      return readFilesystemMedia(locator, record.mimeType, rangeHeader);
     }
 
-    const readTask = () => readArchiveEntryMedia(locator, record.mimeType, this.options.getZipEntryIndexByPath())
+    const readTask = () =>
+      readArchiveEntryMedia(
+        locator,
+        record.mimeType,
+        this.options.getZipEntryIndexByPath(),
+      );
     if (this.options.withArchiveReadLock) {
-      return await this.options.withArchiveReadLock(locator.archive_path, readTask)
+      return await this.options.withArchiveReadLock(
+        locator.archive_path,
+        readTask,
+      );
     }
-    return await readTask()
+    return await readTask();
   }
 
   async readMediaResourceByTokenStream(
@@ -240,21 +291,35 @@ export class MediaResourceService {
     rangeHeader: string | null,
     signal?: AbortSignal | null,
   ): Promise<MediaProtocolStreamResponsePayload> {
-    const record = this.requireMediaTokenRecord(token)
+    const record = this.requireMediaTokenRecord(token);
 
-    const locator = record.locator
-    if (locator.kind === 'filesystem') {
-      return readFilesystemMediaStream(locator, record.mimeType, rangeHeader, signal)
+    const locator = record.locator;
+    if (locator.kind === "filesystem") {
+      return readFilesystemMediaStream(
+        locator,
+        record.mimeType,
+        rangeHeader,
+        signal,
+      );
     }
 
-    const readTask = () => readArchiveEntryMediaStream(locator, record.mimeType, this.options.getZipEntryIndexByPath(), signal)
+    const readTask = () =>
+      readArchiveEntryMediaStream(
+        locator,
+        record.mimeType,
+        this.options.getZipEntryIndexByPath(),
+        signal,
+      );
     if (this.options.withArchiveReadLock) {
-      return await this.options.withArchiveReadLock(locator.archive_path, readTask)
+      return await this.options.withArchiveReadLock(
+        locator.archive_path,
+        readTask,
+      );
     }
-    return await readTask()
+    return await readTask();
   }
 
   private requireMediaTokenRecord(token: string): MediaTokenRecord {
-    return this.options.mediaTokenService.requireRecord(token)
+    return this.options.mediaTokenService.requireRecord(token);
   }
 }

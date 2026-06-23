@@ -1,33 +1,40 @@
-import type { Dispatch, MouseEvent as ReactMouseEvent, RefObject, SetStateAction } from 'react'
+import type {
+  Dispatch,
+  MouseEvent as ReactMouseEvent,
+  RefObject,
+  SetStateAction,
+} from "react";
 
 interface BuildSearchPanelPropsParams {
-  vectorMode: boolean
-  manageMode: boolean
-  searchPanelCollapsed: boolean
-  setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>
-  workspaceBottomPanelHeight: number
-  vectorPanelRef: RefObject<HTMLDivElement | null>
-  vectorPanelContentRef: RefObject<HTMLDivElement | null>
-  featureResultCount: number
-  featureNameQuery: string
-  setFeatureNameQuery: (value: string) => void
-  featureWorkTitleQuery: string
-  setFeatureWorkTitleQuery: (value: string) => void
-  featureCircleQuery: string
-  setFeatureCircleQuery: (value: string) => void
-  featureAuthorQuery: string
-  setFeatureAuthorQuery: (value: string) => void
-  featureCircleOptions: string[]
-  featureAuthorOptions: string[]
-  featureTagOptions: string[]
-  featureTagPickerOpen: boolean
-  setFeatureTagPickerOpen: Dispatch<SetStateAction<boolean>>
-  featureTags: string[]
-  setFeatureTags: Dispatch<SetStateAction<string[]>>
-  featureGradeFilter: number | null
-  setFeatureGradeFilter: (value: number | null) => void
-  onStartWorkspaceBottomPanelResize: (event: ReactMouseEvent<HTMLDivElement>) => void
-  layoutLocked: boolean
+  vectorMode: boolean;
+  manageMode: boolean;
+  searchPanelCollapsed: boolean;
+  setSearchPanelCollapsed: Dispatch<SetStateAction<boolean>>;
+  workspaceBottomPanelHeight: number;
+  vectorPanelRef: RefObject<HTMLDivElement | null>;
+  vectorPanelContentRef: RefObject<HTMLDivElement | null>;
+  featureResultCount: number;
+  featureNameQuery: string;
+  setFeatureNameQuery: (value: string) => void;
+  featureWorkTitleQuery: string;
+  setFeatureWorkTitleQuery: (value: string) => void;
+  featureCircleQuery: string;
+  setFeatureCircleQuery: (value: string) => void;
+  featureAuthorQuery: string;
+  setFeatureAuthorQuery: (value: string) => void;
+  featureCircleOptions: string[];
+  featureAuthorOptions: string[];
+  featureTagOptions: string[];
+  featureTagPickerOpen: boolean;
+  setFeatureTagPickerOpen: Dispatch<SetStateAction<boolean>>;
+  featureTags: string[];
+  setFeatureTags: Dispatch<SetStateAction<string[]>>;
+  featureGradeFilter: number | null;
+  setFeatureGradeFilter: (value: number | null) => void;
+  onStartWorkspaceBottomPanelResize: (
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => void;
+  layoutLocked: boolean;
 }
 
 export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
@@ -50,16 +57,17 @@ export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
     featureAuthorOptions: params.featureAuthorOptions,
     featureTagOptions: params.featureTagOptions,
     featureTagPickerOpen: params.featureTagPickerOpen,
-    onToggleFeatureTagPicker: () => params.setFeatureTagPickerOpen((value) => !value),
+    onToggleFeatureTagPicker: () =>
+      params.setFeatureTagPickerOpen((value) => !value),
     featureTags: params.featureTags,
     onClearFeatureTags: () => params.setFeatureTags([]),
     onToggleFeatureTag: (tag: string) => {
       params.setFeatureTags((previous) => {
         if (previous.includes(tag)) {
-          return previous.filter((item) => item !== tag)
+          return previous.filter((item) => item !== tag);
         }
-        return [...previous, tag]
-      })
+        return [...previous, tag];
+      });
     },
     featureGradeFilter: params.featureGradeFilter,
     onFeatureGradeFilterChange: params.setFeatureGradeFilter,
@@ -67,5 +75,5 @@ export function buildSearchPanelProps(params: BuildSearchPanelPropsParams) {
     onExpand: () => params.setSearchPanelCollapsed(false),
     onStartResize: params.onStartWorkspaceBottomPanelResize,
     layoutLocked: params.layoutLocked,
-  }
+  };
 }

@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from '../../store/useUiStore'
+import { DEFAULT_SETTINGS } from "../../store/useUiStore";
 
 export const SIZE_SCALE_CONFIG = {
   headerHeight: {
@@ -61,23 +61,23 @@ export const SIZE_SCALE_CONFIG = {
     max: 24 / DEFAULT_SETTINGS.thumbnailGap,
     step: 0.01,
   },
-} as const
+} as const;
 
-export type SizeScaleKey = keyof typeof SIZE_SCALE_CONFIG
+export type SizeScaleKey = keyof typeof SIZE_SCALE_CONFIG;
 
 export function toScale(key: SizeScaleKey, absoluteValue: number): number {
-  const config = SIZE_SCALE_CONFIG[key]
-  const raw = absoluteValue / config.base
-  const clamped = Math.max(config.min, Math.min(config.max, raw))
-  return Number(clamped.toFixed(2))
+  const config = SIZE_SCALE_CONFIG[key];
+  const raw = absoluteValue / config.base;
+  const clamped = Math.max(config.min, Math.min(config.max, raw));
+  return Number(clamped.toFixed(2));
 }
 
 export function toAbsolutePx(key: SizeScaleKey, scaleValue: number): number {
-  const config = SIZE_SCALE_CONFIG[key]
-  const clamped = Math.max(config.min, Math.min(config.max, scaleValue))
-  return Math.round(config.base * clamped)
+  const config = SIZE_SCALE_CONFIG[key];
+  const clamped = Math.max(config.min, Math.min(config.max, scaleValue));
+  return Math.round(config.base * clamped);
 }
 
 export function formatScale(value: number): string {
-  return `${value.toFixed(2)}x`
+  return `${value.toFixed(2)}x`;
 }

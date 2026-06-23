@@ -125,9 +125,7 @@ export function resolveFocusableImageRef(
       // 已加载区：取出 id 判断是否被软删；未加载区（无 id）直接视为可聚焦
       const loadedImages = currentPackage.images;
       const image =
-        currentIndex < loadedImages.length
-          ? loadedImages[currentIndex]
-          : null;
+        currentIndex < loadedImages.length ? loadedImages[currentIndex] : null;
       if (!image || !removed.has(image.id)) {
         return { packageId: currentPackage.id, imageIndex: currentIndex };
       }

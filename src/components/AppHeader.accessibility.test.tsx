@@ -1,14 +1,14 @@
-import { act, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { I18nProvider } from '../i18n/I18nProvider'
-import { resetUiStoreState, useUiStore } from '../store/useUiStore'
-import AppHeader, { type AppHeaderProps } from './AppHeader'
+import { I18nProvider } from "../i18n/I18nProvider";
+import { resetUiStoreState, useUiStore } from "../store/useUiStore";
+import AppHeader, { type AppHeaderProps } from "./AppHeader";
 
 function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
   return {
     headerHeight: 72,
-    mode: 'image',
+    mode: "image",
     searchPanelOpen: false,
     manageMode: false,
     metadataManageMode: false,
@@ -17,9 +17,9 @@ function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
     canThumbnailScaleUp: true,
     autoPlayEnabled: false,
     autoPlayInterval: 3,
-    paletteMode: 'day',
+    paletteMode: "day",
     importMenuOpen: false,
-    taskStatusLabel: '空闲',
+    taskStatusLabel: "空闲",
     taskStatusBusy: false,
     importTaskPanelOpen: false,
     autoPlayPresets: [1, 3, 5],
@@ -50,47 +50,55 @@ function createProps(overrides: Partial<AppHeaderProps> = {}): AppHeaderProps {
     onOpenHelp: vi.fn(),
     onOpenSettings: vi.fn(),
     ...overrides,
-  }
+  };
 }
 
-describe('AppHeader accessibility labels', () => {
+describe("AppHeader accessibility labels", () => {
   afterEach(() => {
     act(() => {
-      resetUiStoreState()
-    })
-  })
+      resetUiStoreState();
+    });
+  });
 
-  it('keeps stable header button labels in normal mode', () => {
+  it("keeps stable header button labels in normal mode", () => {
     act(() => {
-      useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
-    })
+      useUiStore.getState().updateSettings({ uiLocale: "zh-CN" });
+    });
 
     const { container } = render(
       <I18nProvider browserLocale="en-US">
         <AppHeader {...createProps({ metadataManageMode: false })} />
       </I18nProvider>,
-    )
+    );
 
-    const helpButton = container.querySelector('button[data-a11y-id="header.help"]')
-    const settingsButton = container.querySelector('button[data-a11y-id="header.settings"]')
+    const helpButton = container.querySelector(
+      'button[data-a11y-id="header.help"]',
+    );
+    const settingsButton = container.querySelector(
+      'button[data-a11y-id="header.settings"]',
+    );
 
-    expect(settingsButton).toBeInTheDocument()
-    expect(helpButton?.getAttribute('data-tooltip-label')).toBe('打开帮助')
-    expect(screen.getByRole('button', { name: '切换到深色主题' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '设置' })).toBeInTheDocument()
-  })
+    expect(settingsButton).toBeInTheDocument();
+    expect(helpButton?.getAttribute("data-tooltip-label")).toBe("打开帮助");
+    expect(
+      screen.getByRole("button", { name: "切换到深色主题" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "设置" })).toBeInTheDocument();
+  });
 
-  it('uses task label on logo button for accessibility', () => {
+  it("uses task label on logo button for accessibility", () => {
     act(() => {
-      useUiStore.getState().updateSettings({ uiLocale: 'zh-CN' })
-    })
+      useUiStore.getState().updateSettings({ uiLocale: "zh-CN" });
+    });
 
     render(
       <I18nProvider browserLocale="en-US">
-        <AppHeader {...createProps({ taskStatusLabel: '处理中', taskStatusBusy: true })} />
+        <AppHeader
+          {...createProps({ taskStatusLabel: "处理中", taskStatusBusy: true })}
+        />
       </I18nProvider>,
-    )
+    );
 
-    expect(screen.getByRole('button', { name: '处理中' })).toBeInTheDocument()
-  })
-})
+    expect(screen.getByRole("button", { name: "处理中" })).toBeInTheDocument();
+  });
+});

@@ -64,7 +64,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .settings-compact-control-actions > input[type='number'] {
+  .settings-compact-control-actions > input[type="number"] {
     width: 100%;
     min-width: 0;
   }
@@ -78,12 +78,18 @@
   }
 
   .music-controls-shell.is-fullscreen-floating {
-    width: var(--mpx-fullscreen-controls-width, min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px)));
+    width: var(
+      --mpx-fullscreen-controls-width,
+      min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px))
+    );
     bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   }
 
   .music-controls-fullscreen-hotzone {
-    width: var(--mpx-fullscreen-controls-width, min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px)));
+    width: var(
+      --mpx-fullscreen-controls-width,
+      min(calc(100vw - 16px), var(--mpx-fullscreen-controls-max-width, 980px))
+    );
     bottom: var(--mpx-fullscreen-controls-bottom, 5%);
   }
 

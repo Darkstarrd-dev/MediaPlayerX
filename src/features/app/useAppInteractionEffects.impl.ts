@@ -630,7 +630,10 @@ export function useAppInteractionEffects({
   });
 
   const handleFullscreenBackspaceRemove = useCallback(() => {
-    const focusedImage = resolveImageItemByRef(focusedRef, packageByIdEffective);
+    const focusedImage = resolveImageItemByRef(
+      focusedRef,
+      packageByIdEffective,
+    );
     if (!focusedImage) {
       return;
     }
