@@ -1010,13 +1010,7 @@ export function useAppSidebarScopeState({
         : videoTreeForSidebar,
     [videoTreeForSidebar, groupMemberIds, shouldFilterByGroup],
   );
-  const filteredAudioTreeForSidebar = useMemo(
-    () =>
-      shouldFilterByGroup
-        ? filterTreeForGroup(audioTreeForSidebar, groupMemberIds)
-        : audioTreeForSidebar,
-    [audioTreeForSidebar, groupMemberIds, shouldFilterByGroup],
-  );
+  // 群组不支持 audio（业务规则：仅 image package + video），不过滤音频树
 
   return {
     scopedImageSourcesEffective,
@@ -1028,7 +1022,7 @@ export function useAppSidebarScopeState({
     videosForSidebar,
     videoTreeForSidebar: filteredVideoTreeForSidebar,
     audiosForSidebar,
-    audioTreeForSidebar: filteredAudioTreeForSidebar,
+    audioTreeForSidebar,
     rootScopedVideoIds,
     rootScopedAudioIds,
     imageRootNode,

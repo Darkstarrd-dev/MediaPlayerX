@@ -351,4 +351,37 @@ describe("useGroupState", () => {
       DEFAULT_MEDIA_GROUPS_DATA.memberships,
     );
   });
+
+  /**
+   * 验证：群组不支持 audio，memberships 中的 mediaType 只能是 "package" 或 "video"。
+   * 这是 useAppSidebarScopeState 中音频树不被过滤的契约保证：
+   * 即便 selectedGroupId 非空，对音频树执行 filterTreeForGroup 也会得到空树（因 audioId 不会出现在 groupMemberIds 中）。
+   * 因此 useAppSidebarScopeState 不应对 audioTreeForSidebar 应用群组过滤。
+   */
+  it("memberships 中 mediaType 只能是 package 或 video（群组不支持 audio）", async () => {
+    const { repository } = createRepository();
+    const { result } = renderHook(() =>
+      useGroupState({ mediaRepository: repository }),
+    );
+    await waitForLoaded(result);
+
+    let group: GroupDefinition | null = null;
+    await act(async () => {
+      group = result.current.addGroup("测试群组");
+    });
+    expect(group).not.toBeNull();
+
+    await act(async () => {
+      result.current.addToGroup(group!.id, "pkg-1", "package");
+    });
+    await act(async () => {
+      result.current.addToGroup(group!.id, "vid-1", "video");
+    });
+
+    // 业务规则保证：所有 membership.mediaType 只能是 "package" 或 "video"
+    for (const m of result.current.memberships) {
+      expect(["package", "video"]).toContain(m.mediaType);
+    }
+    expect(result.current.memberships).toHaveLength(2);
+  });
 });
