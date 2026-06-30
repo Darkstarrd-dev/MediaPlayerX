@@ -260,6 +260,8 @@ export function useAppWorkspaceProps({
   requestMusicPlay,
   onResetPackagePage,
   musicBookletBindings,
+  groupState,
+  groupMemberIds,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
   const { metadataManageSelectionMode, toggleMetadataManageSelectionMode } =
@@ -489,6 +491,83 @@ export function useAppWorkspaceProps({
         .catch(() => {
           // 忽略 IPC 失败
         });
+    },
+    groupFooterProps: {
+      groups: groupState.groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+      })),
+      selectedGroupId: appSettings.selectedGroupId,
+      canJoin:
+        appSettings.selectedGroupId != null &&
+        (mode === "image"
+          ? selectedPackageId.length > 0
+          : mode === "video"
+            ? selectedVideoId.length > 0
+            : false),
+      canRemove:
+        appSettings.selectedGroupId != null &&
+        (mode === "image"
+          ? selectedPackageId.length > 0 &&
+            groupMemberIds.has(selectedPackageId)
+          : mode === "video"
+            ? selectedVideoId.length > 0 && groupMemberIds.has(selectedVideoId)
+            : false),
+      onSelectGroup: (id) => {
+        appSettings.updateSettings({ selectedGroupId: id });
+      },
+      onAddGroup: (name) => {
+        const newGroup = groupState.addGroup(name);
+        if (newGroup) {
+          // 创建后自动选中新群组
+          appSettings.updateSettings({ selectedGroupId: newGroup.id });
+        }
+      },
+      onDeleteGroup: () => {
+        if (!appSettings.selectedGroupId) {
+          return;
+        }
+        groupState.deleteGroup(appSettings.selectedGroupId);
+        appSettings.updateSettings({ selectedGroupId: null });
+      },
+      onJoinCurrentToGroup: () => {
+        if (!appSettings.selectedGroupId) {
+          return;
+        }
+        if (mode === "image" && selectedPackageId.length > 0) {
+          groupState.addToGroup(
+            appSettings.selectedGroupId,
+            selectedPackageId,
+            "package",
+          );
+          return;
+        }
+        if (mode === "video" && selectedVideoId.length > 0) {
+          groupState.addToGroup(
+            appSettings.selectedGroupId,
+            selectedVideoId,
+            "video",
+          );
+        }
+      },
+      onRemoveCurrentFromGroup: () => {
+        if (!appSettings.selectedGroupId) {
+          return;
+        }
+        if (mode === "image" && selectedPackageId.length > 0) {
+          groupState.removeFromGroup(
+            appSettings.selectedGroupId,
+            selectedPackageId,
+          );
+          return;
+        }
+        if (mode === "video" && selectedVideoId.length > 0) {
+          groupState.removeFromGroup(
+            appSettings.selectedGroupId,
+            selectedVideoId,
+          );
+        }
+      },
     },
   });
 

@@ -34,7 +34,8 @@
   min-height: 0;
 }
 
-:root .sidebar
+:root
+  .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -45,7 +46,8 @@
   border-color: var(--mpx-sidebar-control-border-color, var(--mpx-border-2));
 }
 
-:root .sidebar
+:root
+  .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -58,7 +60,8 @@
   );
 }
 
-:root .sidebar
+:root
+  .sidebar
   :where(
     button,
     input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
@@ -501,32 +504,66 @@
 }
 
 .sidebar-tree::-webkit-scrollbar-track {
-  border: var(--mpx-sidebar-tree-scrollbar-track-border, var(--mpx-scrollbar-track-border));
+  border: var(
+    --mpx-sidebar-tree-scrollbar-track-border,
+    var(--mpx-scrollbar-track-border)
+  );
   border-radius: var(
     --mpx-sidebar-tree-scrollbar-track-radius,
-    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-track-radius, var(--mpx-scrollbar-radius)))
+    var(
+      --mpx-sidebar-tree-scrollbar-radius,
+      var(--mpx-scrollbar-track-radius, var(--mpx-scrollbar-radius))
+    )
   );
-  background: var(--mpx-sidebar-tree-scrollbar-track-bg, var(--mpx-scrollbar-track-bg));
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-track-shadow, var(--mpx-scrollbar-track-shadow));
+  background: var(
+    --mpx-sidebar-tree-scrollbar-track-bg,
+    var(--mpx-scrollbar-track-bg)
+  );
+  box-shadow: var(
+    --mpx-sidebar-tree-scrollbar-track-shadow,
+    var(--mpx-scrollbar-track-shadow)
+  );
 }
 
 .sidebar-tree::-webkit-scrollbar-thumb {
-  min-height: var(--mpx-sidebar-tree-scrollbar-thumb-min-height, var(--mpx-scrollbar-thumb-min-height, 24px));
-  border: var(--mpx-sidebar-tree-scrollbar-thumb-border-width, var(--mpx-scrollbar-thumb-border-width, 0px)) solid
-    var(--mpx-sidebar-tree-scrollbar-thumb-border-color, var(--mpx-scrollbar-thumb-border-color, transparent));
+  min-height: var(
+    --mpx-sidebar-tree-scrollbar-thumb-min-height,
+    var(--mpx-scrollbar-thumb-min-height, 24px)
+  );
+  border: var(
+      --mpx-sidebar-tree-scrollbar-thumb-border-width,
+      var(--mpx-scrollbar-thumb-border-width, 0px)
+    )
+    solid
+    var(
+      --mpx-sidebar-tree-scrollbar-thumb-border-color,
+      var(--mpx-scrollbar-thumb-border-color, transparent)
+    );
   border-radius: var(
     --mpx-sidebar-tree-scrollbar-thumb-radius,
-    var(--mpx-sidebar-tree-scrollbar-radius, var(--mpx-scrollbar-thumb-radius, var(--mpx-scrollbar-radius)))
+    var(
+      --mpx-sidebar-tree-scrollbar-radius,
+      var(--mpx-scrollbar-thumb-radius, var(--mpx-scrollbar-radius))
+    )
   );
-  background: var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg));
+  background: var(
+    --mpx-sidebar-tree-scrollbar-thumb-bg,
+    var(--mpx-scrollbar-thumb-bg)
+  );
   background-clip: padding-box;
-  box-shadow: var(--mpx-sidebar-tree-scrollbar-thumb-shadow, var(--mpx-scrollbar-thumb-shadow));
+  box-shadow: var(
+    --mpx-sidebar-tree-scrollbar-thumb-shadow,
+    var(--mpx-scrollbar-thumb-shadow)
+  );
 }
 
 .sidebar-tree::-webkit-scrollbar-thumb:hover {
   background: var(
     --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
-    var(--mpx-scrollbar-thumb-hover-bg, var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg)))
+    var(
+      --mpx-scrollbar-thumb-hover-bg,
+      var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg))
+    )
   );
 }
 
@@ -535,19 +572,37 @@
     --mpx-sidebar-tree-scrollbar-thumb-active-bg,
     var(
       --mpx-scrollbar-thumb-active-bg,
-      var(--mpx-sidebar-tree-scrollbar-thumb-hover-bg, var(--mpx-scrollbar-thumb-hover-bg, var(--mpx-sidebar-tree-scrollbar-thumb-bg, var(--mpx-scrollbar-thumb-bg))))
+      var(
+        --mpx-sidebar-tree-scrollbar-thumb-hover-bg,
+        var(
+          --mpx-scrollbar-thumb-hover-bg,
+          var(
+            --mpx-sidebar-tree-scrollbar-thumb-bg,
+            var(--mpx-scrollbar-thumb-bg)
+          )
+        )
+      )
     )
   );
   box-shadow: var(
     --mpx-sidebar-tree-scrollbar-thumb-active-shadow,
-    var(--mpx-sidebar-tree-scrollbar-thumb-shadow, var(--mpx-scrollbar-thumb-active-shadow, var(--mpx-scrollbar-thumb-shadow)))
+    var(
+      --mpx-sidebar-tree-scrollbar-thumb-shadow,
+      var(
+        --mpx-scrollbar-thumb-active-shadow,
+        var(--mpx-scrollbar-thumb-shadow)
+      )
+    )
   );
 }
 
 .sidebar-tree::-webkit-scrollbar-button:single-button:vertical:decrement,
 .sidebar-tree::-webkit-scrollbar-button:single-button:vertical:increment {
   display: block;
-  height: var(--mpx-sidebar-tree-scrollbar-end-gap, var(--mpx-scrollbar-end-gap, 0px));
+  height: var(
+    --mpx-sidebar-tree-scrollbar-end-gap,
+    var(--mpx-scrollbar-end-gap, 0px)
+  );
   background: transparent;
   border: 0;
 }
@@ -784,7 +839,8 @@
   );
 }
 
-.sidebar-row.is-hover-active:not(.is-active) .sidebar-label:not(.is-collapsible),
+.sidebar-row.is-hover-active:not(.is-active)
+  .sidebar-label:not(.is-collapsible),
 .sidebar-row:not(.is-active) .sidebar-label:not(.is-collapsible) {
   background: var(
     --mpx-slot-fg-sidebar-main-label-plain-bg,
@@ -854,8 +910,7 @@
   font-weight: 700;
 }
 
-[data-slot="fg-sidebar-main"]
-  .sidebar-row[data-sidebar-node-role="list-item"] {
+[data-slot="fg-sidebar-main"] .sidebar-row[data-sidebar-node-role="list-item"] {
   grid-template-columns: minmax(0, 1fr) auto;
   border-left: var(--mpx-sidebar-list-row-active-marker-width, 12px) solid
     transparent;
@@ -886,7 +941,10 @@
     --mpx-file-list-row-selected-border-left,
     var(--mpx-state-selected-color)
   );
-  background: var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color));
+  background: var(
+    --mpx-file-list-row-selected-bg,
+    var(--mpx-state-selected-color)
+  );
 }
 
 [data-slot="fg-sidebar-main"]
@@ -952,7 +1010,10 @@
 [data-slot="fg-sidebar-main"]
   .sidebar-row[data-sidebar-node-role="list-item"].is-manage.is-selected
   .sidebar-label {
-  background: var(--mpx-file-list-row-selected-bg, var(--mpx-state-selected-color));
+  background: var(
+    --mpx-file-list-row-selected-bg,
+    var(--mpx-state-selected-color)
+  );
   color: var(--mpx-file-list-row-main-pressed-text, var(--mpx-text-1));
   font-weight: var(--mpx-file-list-row-main-pressed-font-weight, 600);
   box-shadow: none;
@@ -1117,4 +1178,109 @@
     );
   flex-shrink: 0;
   color: var(--mpx-slot-fg-sidebar-footer-text, inherit);
+}
+
+/* 群组管理 footer：下拉选单 + 4 个按钮 */
+.sidebar-group-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.sidebar-group-select {
+  flex: 1;
+  min-width: 0;
+  height: var(--mpx-icon-button-size-px, 28px);
+  border: 1px solid var(--mpx-border-1, #444);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  padding: 0 4px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.sidebar-group-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar-group-actions .sidebar-group-btn {
+  width: var(--mpx-icon-button-size-px, 28px);
+  height: var(--mpx-icon-button-size-px, 28px);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.sidebar-group-actions .mpx-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.sidebar-group-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.sidebar-group-dialog {
+  background: var(--mpx-bg-2, #2a2a2a);
+  color: inherit;
+  border: 1px solid var(--mpx-border-1, #444);
+  border-radius: 6px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-group-dialog-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sidebar-group-dialog-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sidebar-group-dialog-input {
+  width: 100%;
+  height: var(--mpx-icon-button-size-px, 28px);
+  border: 1px solid var(--mpx-border-1, #444);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.sidebar-group-dialog-error {
+  margin: 0;
+  color: #d8554d;
+  font-size: 12px;
+}
+
+.sidebar-group-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }

@@ -14,6 +14,18 @@ const SIDEBAR_NODE_FIXTURE: SidebarNode = {
   pathKey: "pkg-1.zip",
 };
 
+const EMPTY_GROUP_FOOTER_PROPS = {
+  groups: [] as { id: string; name: string }[],
+  selectedGroupId: null as string | null,
+  canJoin: false,
+  canRemove: false,
+  onSelectGroup: vi.fn(),
+  onAddGroup: vi.fn(),
+  onDeleteGroup: vi.fn(),
+  onJoinCurrentToGroup: vi.fn(),
+  onRemoveCurrentFromGroup: vi.fn(),
+};
+
 describe("buildSidebarPanelProps", () => {
   it("检索结果模式下固定根标题，向量结果模式阻断图片侧栏选中", () => {
     const setSelectedSidebarNodeId = vi.fn();
@@ -65,6 +77,7 @@ describe("buildSidebarPanelProps", () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
+      groupFooterProps: EMPTY_GROUP_FOOTER_PROPS,
     });
 
     expect(props.currentRootLabel).toBe("检索结果");
@@ -135,6 +148,7 @@ describe("buildSidebarPanelProps", () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
+      groupFooterProps: EMPTY_GROUP_FOOTER_PROPS,
     });
 
     props.onResetRoot();
@@ -142,8 +156,7 @@ describe("buildSidebarPanelProps", () => {
 
     props.onToggleVideoPlaylist("video-1", true);
     const addUpdater = setPlaylistIds.mock.calls[0]?.[0] as
-      | ((value: string[]) => string[])
-      | undefined;
+      ((value: string[]) => string[]) | undefined;
     expect(addUpdater?.(["video-2"])).toEqual(["video-2", "video-1"]);
     expect(addUpdater?.(["video-1", "video-2"])).toEqual([
       "video-1",
@@ -152,8 +165,7 @@ describe("buildSidebarPanelProps", () => {
 
     props.onToggleVideoPlaylist("video-2", false);
     const removeUpdater = setPlaylistIds.mock.calls[1]?.[0] as
-      | ((value: string[]) => string[])
-      | undefined;
+      ((value: string[]) => string[]) | undefined;
     expect(removeUpdater?.(["video-1", "video-2"])).toEqual(["video-1"]);
   });
 
@@ -203,6 +215,7 @@ describe("buildSidebarPanelProps", () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
+      groupFooterProps: EMPTY_GROUP_FOOTER_PROPS,
     });
 
     expect(props.manageMode).toBe(false);
@@ -257,6 +270,7 @@ describe("buildSidebarPanelProps", () => {
       setAudioPlaylistIds,
       onToggleManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
+      groupFooterProps: EMPTY_GROUP_FOOTER_PROPS,
     });
 
     props.onResetRoot();
@@ -264,14 +278,12 @@ describe("buildSidebarPanelProps", () => {
 
     props.onToggleAudioPlaylist("audio-1", true);
     const addUpdater = setAudioPlaylistIds.mock.calls[0]?.[0] as
-      | ((value: string[]) => string[])
-      | undefined;
+      ((value: string[]) => string[]) | undefined;
     expect(addUpdater?.(["audio-2"])).toEqual(["audio-2", "audio-1"]);
 
     props.onToggleAudioPlaylist("audio-2", false);
     const removeUpdater = setAudioPlaylistIds.mock.calls[1]?.[0] as
-      | ((value: string[]) => string[])
-      | undefined;
+      ((value: string[]) => string[]) | undefined;
     expect(removeUpdater?.(["audio-1", "audio-2"])).toEqual(["audio-1"]);
   });
 
@@ -326,6 +338,7 @@ describe("buildSidebarPanelProps", () => {
       setAudioPlaylistIds: vi.fn(),
       onToggleManageNode: vi.fn(),
       onClearSidebarSelection: vi.fn(),
+      groupFooterProps: EMPTY_GROUP_FOOTER_PROPS,
     });
 
     expect(props.searchResultMode).toBe(true);

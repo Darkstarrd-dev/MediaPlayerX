@@ -14,6 +14,7 @@ import type { MusicBookletBindingsResult } from "./useMusicBookletBindings";
 import type { ImageConvertAdjustProfile } from "./useAppSessionState";
 import type { WriteDataAccessResult } from "../backend";
 import type { MediaRepository } from "../backend/repository";
+import type { UseGroupStateResult } from "../group";
 import type {
   AudioItem,
   BrowserMode,
@@ -280,4 +281,7 @@ export interface UseAppWorkspacePropsParams {
   requestMusicPlay: () => void;
   onResetPackagePage?: (packageId: string) => void;
   musicBookletBindings: MusicBookletBindingsResult;
+  // 群组：useGroupState 返回值与当前选中群组的成员 ID 集合
+  groupState: UseGroupStateResult;
+  groupMemberIds: ReadonlySet<string>;
 }

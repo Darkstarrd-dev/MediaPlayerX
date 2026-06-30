@@ -200,6 +200,8 @@ export function useAppWorkspaceBindings({
     orderedRootScopedPackages,
     orderedRootScopedImageRefs,
     normalImageSourceNodeIdMap,
+    groupState,
+    groupMemberIds,
   } = readNavigationState;
 
   const musicBookletLibrarySnapshot =
@@ -490,5 +492,7 @@ export function useAppWorkspaceBindings({
       }));
     },
     musicBookletBindings,
+    groupState,
+    groupMemberIds,
   });
 }

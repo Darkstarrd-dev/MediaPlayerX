@@ -65,6 +65,18 @@ interface BuildSidebarPanelPropsParams {
   externalSourceWatcherEnabled?: boolean;
   onRefreshSelectedFolder?: () => void;
   selectedFolderPathKey?: string | null;
+  // 群组管理（sidebar 底部 footer 槽位）
+  groupFooterProps: {
+    groups: { id: string; name: string }[];
+    selectedGroupId: string | null;
+    canJoin: boolean;
+    canRemove: boolean;
+    onSelectGroup: (id: string | null) => void;
+    onAddGroup: (name: string) => void;
+    onDeleteGroup: () => void;
+    onJoinCurrentToGroup: () => void;
+    onRemoveCurrentFromGroup: () => void;
+  };
 }
 
 export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
@@ -202,5 +214,6 @@ export function buildSidebarPanelProps(params: BuildSidebarPanelPropsParams) {
     externalSourceWatcherEnabled: params.externalSourceWatcherEnabled ?? true,
     selectedFolderPathKey: params.selectedFolderPathKey ?? null,
     onRefreshSelectedFolder: params.onRefreshSelectedFolder,
+    groupFooterProps: params.groupFooterProps,
   };
 }

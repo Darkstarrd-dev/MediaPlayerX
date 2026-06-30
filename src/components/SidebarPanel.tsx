@@ -7,6 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
+import { GroupFooter } from "./GroupFooter";
 import { MainUiIcon } from "./MainUiIcon";
 import { SidebarPanelRow } from "./SidebarPanelRow";
 import { useI18n } from "../i18n/useI18n";
@@ -93,6 +94,17 @@ interface SidebarPanelProps {
   externalSourceWatcherEnabled?: boolean;
   selectedFolderPathKey?: string | null;
   onRefreshSelectedFolder?: () => void;
+  groupFooterProps?: {
+    groups: { id: string; name: string }[];
+    selectedGroupId: string | null;
+    canJoin: boolean;
+    canRemove: boolean;
+    onSelectGroup: (id: string | null) => void;
+    onAddGroup: (name: string) => void;
+    onDeleteGroup: () => void;
+    onJoinCurrentToGroup: () => void;
+    onRemoveCurrentFromGroup: () => void;
+  };
 }
 
 function SidebarPanel({
@@ -145,6 +157,7 @@ function SidebarPanel({
   externalSourceWatcherEnabled,
   selectedFolderPathKey,
   onRefreshSelectedFolder,
+  groupFooterProps,
 }: SidebarPanelProps) {
   const { t } = useI18n();
   const manageStyleEnabled = manageMode || metadataManageMode;
@@ -1440,7 +1453,23 @@ function SidebarPanel({
             ) : null}
           </div>
         </div>
-        <div aria-hidden="true" data-slot="fg-sidebar-footer" />
+        <div data-slot="fg-sidebar-footer">
+          <GroupFooter
+            groups={groupFooterProps?.groups ?? []}
+            selectedGroupId={groupFooterProps?.selectedGroupId ?? null}
+            canJoin={groupFooterProps?.canJoin ?? false}
+            canRemove={groupFooterProps?.canRemove ?? false}
+            onSelectGroup={groupFooterProps?.onSelectGroup ?? (() => undefined)}
+            onAddGroup={groupFooterProps?.onAddGroup ?? (() => undefined)}
+            onDeleteGroup={groupFooterProps?.onDeleteGroup ?? (() => undefined)}
+            onJoinCurrentToGroup={
+              groupFooterProps?.onJoinCurrentToGroup ?? (() => undefined)
+            }
+            onRemoveCurrentFromGroup={
+              groupFooterProps?.onRemoveCurrentFromGroup ?? (() => undefined)
+            }
+          />
+        </div>
       </div>
     </aside>
   );

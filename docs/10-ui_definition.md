@@ -148,7 +148,7 @@
 | `fg.sidebar.shortcut.rename.batch.panel`  | `.mpx-large-panel.sidebar-rename-dialog`                                 | `data-slot="fg-sidebar-shortcut-rename-panel"`        | sidebar 上下文触发 `KeyR` 且存在目标节点，且 `targetCount > 1                   |                                                      | mode != single`          | 侧栏批量重命名面板主体   | 可拖拽大面板   |
 | `fg.sidebar.shortcut.rename.single.ovl`   | `.settings-floating-mask.mpx-dialog-mask`（SidebarRenameDialog）         | `data-slot="fg-sidebar-shortcut-rename-single-ovl"`   | sidebar 上下文触发 `KeyR` 且存在目标节点，且 `targetCount = 1 && mode = single` | 侧栏单文件重命名弹窗遮罩层                           | 5.0 小面板链路           |
 | `fg.sidebar.shortcut.rename.single.panel` | `.settings-floating-panel.mpx-dialog-panel.sidebar-rename-single-dialog` | `data-slot="fg-sidebar-shortcut-rename-single-panel"` | sidebar 上下文触发 `KeyR` 且存在目标节点，且 `targetCount = 1 && mode = single` | 侧栏单文件重命名弹窗主体                             | 居中小面板               |
-| `fg.sidebar.footer`                       | 预留                                                                     | `data-slot="fg-sidebar-footer"`                       | 预留                                                                            | 空槽位                                               | 保留用于未来扩展         |
+| `fg.sidebar.footer`                       | `.sidebar-group-footer`                                                  | `data-slot="fg-sidebar-footer"`                       | 始终可见                                                                       | 群组管理（下拉选单 + 添加/删除/加入/移除按钮）       | 不支持音频               |
 
 ## 5. Foreground / Main
 
