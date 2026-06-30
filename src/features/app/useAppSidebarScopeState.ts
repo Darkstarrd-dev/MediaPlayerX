@@ -96,6 +96,11 @@ interface UseAppSidebarScopeStateParams {
     videoRootNodeId?: string | null;
     musicRootNodeId?: string | null;
   }) => void;
+  // 群组过滤：selectedGroupId 为 null 时不进行过滤；isLoading 为 true
+  // 时同样跳过过滤，避免首屏异步加载期间误判"无成员"导致空树
+  selectedGroupId: string | null;
+  groupMemberIds: ReadonlySet<string>;
+  groupIsLoading: boolean;
 }
 
 interface UseAppSidebarScopeStateResult {
@@ -166,6 +171,33 @@ function buildImageSourceNodeIdMapFromSources(
   return map;
 }
 
+/**
+ * 按群组成员关系过滤 sidebar 树。
+ * - 媒体节点（package/video/audio）通过 `packageId`/`videoId`/`audioId` 比对
+ * - 文件夹节点：递归过滤子节点；无存活后代则移除
+ * - 命中匹配的媒体节点保留；未命中的媒体节点移除
+ */
+function filterTreeForGroup(
+  nodes: ImageSidebarTreeViewModel["tree"],
+  groupMemberIds: ReadonlySet<string>,
+): ImageSidebarTreeViewModel["tree"] {
+  const result: ImageSidebarTreeViewModel["tree"] = [];
+  for (const node of nodes) {
+    const mediaId = node.packageId ?? node.videoId ?? node.audioId;
+    if (mediaId) {
+      if (groupMemberIds.has(mediaId)) {
+        result.push(node);
+      }
+      continue;
+    }
+    const filteredChildren = filterTreeForGroup(node.children, groupMemberIds);
+    if (filteredChildren.length > 0) {
+      result.push({ ...node, children: filteredChildren });
+    }
+  }
+  return result;
+}
+
 export function useAppSidebarScopeState({
   backendRead,
   mode,
@@ -208,6 +240,9 @@ export function useAppSidebarScopeState({
   setPageByPackage,
   setGradeByPackage,
   updateSettings,
+  selectedGroupId,
+  groupMemberIds,
+  groupIsLoading,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
   const isImageMode = mode === "image";
   const isVideoMode = mode === "video";
@@ -958,17 +993,42 @@ export function useAppSidebarScopeState({
     return refs;
   }, [orderedRootScopedPackages]);
 
+  // 群组过滤：仅当 selectedGroupId 非空且群组数据加载完成时生效
+  // 加载期间（groupIsLoading=true）保留全树，避免空树闪屏
+  const shouldFilterByGroup = selectedGroupId != null && !groupIsLoading;
+  const filteredImageTreeForSidebar = useMemo(
+    () =>
+      shouldFilterByGroup
+        ? filterTreeForGroup(imageTreeForSidebar, groupMemberIds)
+        : imageTreeForSidebar,
+    [imageTreeForSidebar, groupMemberIds, shouldFilterByGroup],
+  );
+  const filteredVideoTreeForSidebar = useMemo(
+    () =>
+      shouldFilterByGroup
+        ? filterTreeForGroup(videoTreeForSidebar, groupMemberIds)
+        : videoTreeForSidebar,
+    [videoTreeForSidebar, groupMemberIds, shouldFilterByGroup],
+  );
+  const filteredAudioTreeForSidebar = useMemo(
+    () =>
+      shouldFilterByGroup
+        ? filterTreeForGroup(audioTreeForSidebar, groupMemberIds)
+        : audioTreeForSidebar,
+    [audioTreeForSidebar, groupMemberIds, shouldFilterByGroup],
+  );
+
   return {
     scopedImageSourcesEffective,
     packageByIdEffective,
     videoByIdEffective,
     audioByIdEffective,
-    imageTreeForSidebar,
+    imageTreeForSidebar: filteredImageTreeForSidebar,
     imageNodeLoadStateById,
     videosForSidebar,
-    videoTreeForSidebar,
+    videoTreeForSidebar: filteredVideoTreeForSidebar,
     audiosForSidebar,
-    audioTreeForSidebar,
+    audioTreeForSidebar: filteredAudioTreeForSidebar,
     rootScopedVideoIds,
     rootScopedAudioIds,
     imageRootNode,

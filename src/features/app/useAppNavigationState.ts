@@ -59,6 +59,10 @@ interface UseAppNavigationStateParams {
     | "fullscreenVideoFocus"
   >;
   readState: AppReadStateResult;
+  // 群组过滤：selectedGroupId 来自 appSettings.selectedGroupId；
+  // groupMemberIds / groupIsLoading 来自 useGroupState
+  groupMemberIds: ReadonlySet<string>;
+  groupIsLoading: boolean;
 }
 
 export function useAppNavigationState({
@@ -68,6 +72,8 @@ export function useAppNavigationState({
   archiveLoadStatus,
   mediaState,
   readState,
+  groupMemberIds,
+  groupIsLoading,
 }: UseAppNavigationStateParams) {
   const {
     mode,
@@ -93,6 +99,7 @@ export function useAppNavigationState({
     sidebarTreeDisplayMode,
     fullscreenAdjacentPackagePrefetch,
     updateSettings,
+    selectedGroupId,
   } = appSettings;
 
   const {
@@ -239,6 +246,9 @@ export function useAppNavigationState({
     setPageByPackage,
     setGradeByPackage,
     updateSettings,
+    selectedGroupId,
+    groupMemberIds,
+    groupIsLoading,
   });
 
   const collapseSidebar = useCallback(() => {
