@@ -32,7 +32,9 @@ describe("FileSystemMediaReadService", () => {
 
   const readSnapshotUntil = async (
     service: FileSystemMediaReadService,
-    predicate: (snapshot: Awaited<ReturnType<typeof service.readLibrarySnapshot>>) => boolean,
+    predicate: (
+      snapshot: Awaited<ReturnType<typeof service.readLibrarySnapshot>>,
+    ) => boolean,
     timeoutMs = 5_000,
   ) => {
     const deadline = Date.now() + timeoutMs;
@@ -251,6 +253,10 @@ describe("FileSystemMediaReadService", () => {
       await enqueueImportAndWait(service, "dialog-files-music", [
         outsideAudioPath,
       ]);
+
+      // watcher 默认关闭（commit 02c826f），auto-prune 需显式启用
+      // 与 fileSystemReadService.impl.test.ts 中其他 auto-prune 测试保持一致
+      service.setExternalSourceWatcherEnabled(true);
 
       await fs.rm(outsideAudioPath, { force: true });
       const snapshotAfterPrune = await service.readLibrarySnapshot();

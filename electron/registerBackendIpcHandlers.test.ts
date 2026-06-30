@@ -175,6 +175,17 @@ vi.mock("./runtimeBinaryPaths", () => {
   };
 });
 
+vi.mock("./mainPaths", () => {
+  return {
+    // 强制 renderer entry 走 URL 模式，绕过 dist/index.html 存在导致的 file:// 优先
+    // （b9d5777 后开发模式优先 file:// 协议，使测试 trusted sender 验证失败）
+    resolveRendererEntry: () => ({
+      type: "url" as const,
+      value: process.env.VITE_DEV_SERVER_URL ?? "http://localhost:5173",
+    }),
+  };
+});
+
 vi.mock("./services/audio-engine/audioEngineController", () => {
   return {
     AudioEngineController: vi.fn(function MockAudioEngineController() {
