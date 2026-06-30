@@ -16,13 +16,7 @@
   position: relative;
   z-index: 2;
   border: 1px solid transparent;
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-manage-selected-bg,
-    var(
-      --mpx-sidebar-main-label-manage-selected-bg,
-      var(--mpx-state-selected-color)
-    )
-  );
+  background: transparent;
   border-radius: var(
     --mpx-sidebar-node-label-radius,
     var(--mpx-radius-sidebar-label, max(var(--mpx-control-radius), 10px))

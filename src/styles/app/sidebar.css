@@ -879,6 +879,9 @@
   .sidebar-label,
 [data-slot="fg-sidebar-main"]
   .sidebar-row[data-sidebar-node-role="collapsible-header"].is-active.is-hover-active
+  .sidebar-label,
+[data-slot="fg-sidebar-main"]
+  .sidebar-row[data-sidebar-node-role="collapsible-header"].is-manage.is-selected
   .sidebar-label {
   border: 0;
   border-radius: var(--mpx-sidebar-list-head-label-radius, 0px);
@@ -1010,10 +1013,7 @@
 [data-slot="fg-sidebar-main"]
   .sidebar-row[data-sidebar-node-role="list-item"].is-manage.is-selected
   .sidebar-label {
-  background: var(
-    --mpx-file-list-row-selected-bg,
-    var(--mpx-state-selected-color)
-  );
+  background: transparent;
   color: var(--mpx-file-list-row-main-pressed-text, var(--mpx-text-1));
   font-weight: var(--mpx-file-list-row-main-pressed-font-weight, 600);
   box-shadow: none;

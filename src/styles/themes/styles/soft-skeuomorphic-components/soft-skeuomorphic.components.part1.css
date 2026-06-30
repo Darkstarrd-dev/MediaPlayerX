@@ -765,45 +765,6 @@
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
   [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-active
-  .sidebar-label.is-collapsible.is-collapsed {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-collapsed-active-bg,
-    var(
-      --mpx-sidebar-main-label-collapsed-active-bg,
-      var(--mpx-sidebar-main-label-active-bg, var(--mpx-state-focus-color))
-    )
-  );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-active
-  .sidebar-label.is-collapsible:not(.is-collapsed) {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-expanded-active-bg,
-    var(
-      --mpx-sidebar-main-label-expanded-active-bg,
-      var(--mpx-sidebar-main-label-active-bg, var(--mpx-state-focus-color))
-    )
-  );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-active
-  .sidebar-label:not(.is-collapsible) {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-plain-active-bg,
-    var(
-      --mpx-sidebar-main-label-plain-active-bg,
-      var(--mpx-sidebar-main-label-active-bg, transparent)
-    )
-  );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
   .sidebar-row.is-active.is-hover-active
   .sidebar-label {
   box-shadow:
@@ -867,51 +828,6 @@
         transparent
       ),
     0 0 0 4px var(--mpx-manage-select-ring);
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-manage.is-selected
-  .sidebar-label.is-collapsible.is-collapsed {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-collapsed-manage-selected-bg,
-    var(
-      --mpx-sidebar-main-label-collapsed-manage-selected-bg,
-      var(
-        --mpx-sidebar-main-label-manage-selected-bg,
-        var(--mpx-state-selected-color)
-      )
-    )
-  );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-manage.is-selected
-  .sidebar-label.is-collapsible:not(.is-collapsed) {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-expanded-manage-selected-bg,
-    var(
-      --mpx-sidebar-main-label-expanded-manage-selected-bg,
-      var(
-        --mpx-sidebar-main-label-manage-selected-bg,
-        var(--mpx-state-selected-color)
-      )
-    )
-  );
-}
-
-:root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
-  [data-slot="fg-sidebar-main"]
-  .sidebar-row.is-manage.is-selected
-  .sidebar-label:not(.is-collapsible) {
-  background: var(
-    --mpx-slot-fg-sidebar-main-label-plain-manage-selected-bg,
-    var(
-      --mpx-sidebar-main-label-plain-manage-selected-bg,
-      var(--mpx-sidebar-main-label-manage-selected-bg, transparent)
-    )
-  );
 }
 
 :root[data-mpx-style^="soft-skeuomorphic"][data-mpx-palette="skeuomorphic-luxury-white"]
