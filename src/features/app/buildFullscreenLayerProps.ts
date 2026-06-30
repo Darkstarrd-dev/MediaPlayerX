@@ -81,7 +81,7 @@ interface BuildFullscreenLayerPropsParams {
   ) => void;
   playlistIds: string[];
   videoQueueSource: "sidebar" | "playlist";
-  rootScopedVideoIds: string[];
+  sidebarVideoQueueIds: string[];
   selectedVideoId: string;
   videoById: Map<string, VideoItem>;
   selectVideoFromBrowser: (videoId: string) => void;
@@ -125,7 +125,7 @@ export function buildFullscreenLayerProps(
 
   const resolveSidebarQueueOverride = () =>
     params.videoQueueSource === "sidebar"
-      ? params.rootScopedVideoIds
+      ? params.sidebarVideoQueueIds
       : undefined;
 
   return {

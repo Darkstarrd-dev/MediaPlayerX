@@ -4,11 +4,75 @@ import { normalizeSeriesId, pickFirstBySeriesId } from "./workspaceSharedUtils";
 import { isEditableTarget } from "../../utils/ui";
 import { computeRenameDialogParams } from "./renameDialogLogic";
 import { resolveSourceImageCount } from "../../utils/mediaHelpers";
+import type { ImagePackage } from "../../types";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
 import type { MediaStateResult } from "../media/useMediaState";
 import type { AppReadAndNavigationResult } from "./useAppReadAndNavigation";
 import type { FullscreenPlaybackBindingsResult } from "./useFullscreenPlaybackBindings";
+
+export interface PreservedImageFocusResolution {
+  shouldPreserve: boolean;
+  focusIndex?: number;
+  pageIndex?: number;
+  sidebarNodeId?: string | null;
+}
+
+/**
+ * 当用户已对当前图包建立过焦点（如翻页/选过图、退出全屏后再进入），
+ * 试图复用焦点而不回退到首张图片，避免图片全屏进场被强制跳回第 1 页。
+ *
+ * 触发条件：当前图包有合法且未越界的 focusByPackage 记录。
+ * 越界时（如用户删了若干图后旧索引超出范围）做 clamp 处理以保证安全。
+ */
+export function resolvePreserveImageFocus(params: {
+  selectedPackageId: string;
+  focusByPackage: Record<string, number>;
+  packageByIdEffective: Map<string, ImagePackage>;
+  imageSourceNodeIdMap: Map<string, string>;
+  normalImageSourceNodeIdMap: Map<string, string>;
+  pagedPageSize: number;
+}): PreservedImageFocusResolution {
+  const {
+    selectedPackageId,
+    focusByPackage,
+    packageByIdEffective,
+    imageSourceNodeIdMap,
+    normalImageSourceNodeIdMap,
+    pagedPageSize,
+  } = params;
+
+  const currentPackage = packageByIdEffective.get(selectedPackageId);
+  if (!currentPackage) {
+    return { shouldPreserve: false };
+  }
+
+  const sourceImageCount = resolveSourceImageCount(currentPackage);
+  if (sourceImageCount <= 0) {
+    return { shouldPreserve: false };
+  }
+
+  const existingFocus = focusByPackage[selectedPackageId];
+  if (typeof existingFocus !== "number" || existingFocus < 0) {
+    return { shouldPreserve: false };
+  }
+
+  const clampedFocus = Math.min(existingFocus, sourceImageCount - 1);
+  const preservedPageIndex = Math.floor(
+    clampedFocus / Math.max(1, pagedPageSize),
+  );
+  const preservedNodeId =
+    normalImageSourceNodeIdMap.get(selectedPackageId) ??
+    imageSourceNodeIdMap.get(selectedPackageId) ??
+    null;
+
+  return {
+    shouldPreserve: true,
+    focusIndex: clampedFocus,
+    pageIndex: preservedPageIndex,
+    sidebarNodeId: preservedNodeId,
+  };
+}
 
 interface UseAppInteractionLayerParams {
   appSettings: AppSettingsStoreSnapshot;
@@ -166,12 +230,9 @@ export function useAppInteractionLayer({
   void adReviewFocusTaskId;
   void searchPanelCollapsed;
   void searchPanelMode;
-  void focusByPackage;
-  void selectedPackageId;
   void focusedRef;
   void vectorSidebarNodes;
   void vectorResultPackageNodeIdMap;
-  void imageFocusActive;
   void rootScopedVideoIds;
   void rootScopedAudioIds;
   void videoDurationById;
@@ -354,8 +415,53 @@ export function useAppInteractionLayer({
         rootScopedPackageIds.has(selectedPackageId) &&
         Boolean(
           selectedPackageSource &&
-            resolveSourceImageCount(selectedPackageSource) > 0,
+          resolveSourceImageCount(selectedPackageSource) > 0,
         );
+
+      // --- 保留已有焦点：若当前包已有合法焦点索引，直接复用而不回退到首张 ---
+      // 触发条件：用户已翻页/选过图、退出全屏后再进入，focusedImage 临时为 null
+      // 但 focusByPackage 仍记录了最近的有效位置。
+      if (!preferSidebarFirst && selectedPackageUsable) {
+        const preserved = resolvePreserveImageFocus({
+          selectedPackageId,
+          focusByPackage,
+          packageByIdEffective,
+          imageSourceNodeIdMap,
+          normalImageSourceNodeIdMap,
+          pagedPageSize,
+        });
+        if (preserved.shouldPreserve) {
+          const clampedFocus = preserved.focusIndex ?? 0;
+          if (!imageFocusActive) {
+            setImageFocusActive(true);
+          }
+          setFocusByPackage((previous) => {
+            if (previous[selectedPackageId] === clampedFocus) {
+              return previous;
+            }
+            return { ...previous, [selectedPackageId]: clampedFocus };
+          });
+          const preservedPageIndex = preserved.pageIndex ?? 0;
+          setPageByPackage((previous) => {
+            if (previous[selectedPackageId] === preservedPageIndex) {
+              return previous;
+            }
+            return {
+              ...previous,
+              [selectedPackageId]: preservedPageIndex,
+            };
+          });
+          if (syncSidebarNode && preserved.sidebarNodeId) {
+            const preservedNodeId = preserved.sidebarNodeId;
+            setSelectedSidebarNodeId(preservedNodeId);
+            requestAnimationFrame(() =>
+              ensureSidebarNodeVisible(preservedNodeId),
+            );
+          }
+          return true;
+        }
+      }
+      // --- 保留结束 ---
 
       const firstSidebarPackageId =
         firstImageSidebarNode?.imageSourceId?.trim() ?? "";
@@ -1083,6 +1189,7 @@ export function useAppInteractionLayer({
     mode,
     activePackage,
     focusedImage,
+    focusByPackage,
     imageFocusActive,
     pagedPageSize,
     selectedVideoId,

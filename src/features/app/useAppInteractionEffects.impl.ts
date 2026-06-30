@@ -16,6 +16,7 @@ import {
 import { resolveAncestorNodeIds } from "../../components/sidebarPanelTreeUtils";
 import { mapMediaLocatorToDto } from "../backend/mediaLocator";
 import { clamp } from "../../utils/ui";
+import { collectVideoIdsBySidebarOrder } from "./workspaceSharedUtils";
 import type { FocusedImageRef, ImageItem } from "../../types";
 import type { AppSettingsStoreSnapshot } from "./useAppSettingsStore";
 import type { AppSessionStateResult } from "./useAppSessionState";
@@ -771,8 +772,16 @@ export function useAppInteractionEffects({
     },
     setVideoPlaying,
     goPlaylist: (step) => {
-      const sidebarQueueIds = Array.from(rootScopedVideoIds);
+      // 队列来源 = sidebar 时，使用 sidebar 排序的顺序（含 media-first 重排序），
+      // 避免与 sidebar 展示顺序不一致。
+      // 队列来源 = playlist 时，传 undefined 走 playlist 自身顺序。
       if (videoQueueSource === "sidebar") {
+        const orderedByTree =
+          collectVideoIdsBySidebarOrder(videoTreeForSidebar);
+        const sidebarQueueIds =
+          orderedByTree.length > 0
+            ? orderedByTree
+            : videosForSidebar.map((video) => video.id);
         goPlaylist(step, sidebarQueueIds);
         return;
       }

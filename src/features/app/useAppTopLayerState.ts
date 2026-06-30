@@ -311,7 +311,7 @@ interface UseAppTopLayerStateParams {
   goPlaylist: (step: number) => void;
   playlistIds: string[];
   videoQueueSource: "sidebar" | "playlist";
-  rootScopedVideoIds: string[];
+  sidebarVideoQueueIds: string[];
   selectedVideoId: string;
   videoById: Map<string, VideoItem>;
   selectVideoFromBrowser: (videoId: string) => void;
@@ -461,7 +461,7 @@ export function useAppTopLayerState({
   goPlaylist,
   playlistIds,
   videoQueueSource,
-  rootScopedVideoIds,
+  sidebarVideoQueueIds,
   selectedVideoId,
   videoById,
   selectVideoFromBrowser,
@@ -954,7 +954,7 @@ export function useAppTopLayerState({
     goPlaylist,
     playlistIds,
     videoQueueSource,
-    rootScopedVideoIds,
+    sidebarVideoQueueIds,
     selectedVideoId,
     videoById,
     selectVideoFromBrowser,

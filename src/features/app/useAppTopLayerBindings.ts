@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { normalizePathForCompare } from "./mediaPathUtils";
+import { collectVideoIdsBySidebarOrder } from "./workspaceSharedUtils";
 import {
   resolveImageConvertScopeNodeIds,
   resolveScopedImageConvertNavigationNodeId,
@@ -403,7 +404,6 @@ export function useAppTopLayerBindings({
     focusedImage,
     moveImage,
     goPackage,
-    rootScopedVideoIds,
     sidebarCheckedNodeIds,
     activeSelectionScope,
     sidebarNodeById,
@@ -414,7 +414,19 @@ export function useAppTopLayerBindings({
     sidebarCollapsed,
     layoutConvergedInsetPx,
     onExpandSidebar,
+    videosForSidebar,
+    videoTreeForSidebar,
   } = readNavigationState;
+
+  // 视频队列按 sidebar 最终展示顺序（含 media-first 排序）排序。
+  // 该数组用于全屏上/下/自动播下一集时的视频队列来源，避免使用原始树 DFS 顺序。
+  const sidebarVideoQueueIds = useMemo(() => {
+    const orderedByTree = collectVideoIdsBySidebarOrder(videoTreeForSidebar);
+    if (orderedByTree.length > 0) {
+      return orderedByTree;
+    }
+    return videosForSidebar.map((video) => video.id);
+  }, [videoTreeForSidebar, videosForSidebar]);
 
   const {
     backendWrite,
@@ -757,7 +769,7 @@ export function useAppTopLayerBindings({
     goPlaylist,
     playlistIds,
     videoQueueSource,
-    rootScopedVideoIds: Array.from(rootScopedVideoIds),
+    sidebarVideoQueueIds,
     selectedVideoId,
     videoById: videoByIdEffective,
     selectVideoFromBrowser,
