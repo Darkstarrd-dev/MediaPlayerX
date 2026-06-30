@@ -80,6 +80,10 @@ interface UseShortcutEngineParams {
   onImageCtrlWheelNavigateSidebar: (direction: "next" | "prev") => void;
   onCopyFocusedImageToClipboard: () => boolean;
   onCopyFocusedVideoFrameToClipboard: () => boolean;
+  onToggleGroupFilter: () => void;
+  onJoinCurrentToGroup: () => void;
+  onRemoveCurrentFromGroup: () => void;
+  onOpenFullscreenGroupPicker: () => void;
 }
 
 export function useShortcutEngine({
@@ -134,6 +138,10 @@ export function useShortcutEngine({
   onImageCtrlWheelNavigateSidebar,
   onCopyFocusedImageToClipboard,
   onCopyFocusedVideoFrameToClipboard,
+  onToggleGroupFilter,
+  onJoinCurrentToGroup,
+  onRemoveCurrentFromGroup,
+  onOpenFullscreenGroupPicker,
 }: UseShortcutEngineParams): void {
   const lastImageNavAtRef = useRef(0);
   // 连续翻页最小间隔：未配置或非法时回退到默认值；0 表示不限速
@@ -405,6 +413,27 @@ export function useShortcutEngine({
             onCycleVideoFitMode();
           }
           return;
+        case "groupToggleFilter":
+          // 全屏模式下无效：避免干扰全屏导航
+          if (!fullscreenActive) {
+            onToggleGroupFilter();
+          }
+          return;
+        case "groupJoin":
+          if (fullscreenActive) {
+            // 全屏下：弹出群组选单让用户挑选
+            onOpenFullscreenGroupPicker();
+          } else {
+            // 非全屏：静默加入（已加入则无效，由 hook 内部保证幂等）
+            onJoinCurrentToGroup();
+          }
+          return;
+        case "groupRemove":
+          // 全屏模式下无效
+          if (!fullscreenActive) {
+            onRemoveCurrentFromGroup();
+          }
+          return;
         default:
           return;
       }
@@ -438,6 +467,10 @@ export function useShortcutEngine({
       onCycleVideoFitMode,
       manageMode,
       videoShortcutActive,
+      onToggleGroupFilter,
+      onJoinCurrentToGroup,
+      onRemoveCurrentFromGroup,
+      onOpenFullscreenGroupPicker,
     ],
   );
 
@@ -825,6 +858,10 @@ export function useShortcutEngine({
     fullscreenVideoFocus,
     vectorMode,
     videoShortcutActive,
+    onToggleGroupFilter,
+    onJoinCurrentToGroup,
+    onRemoveCurrentFromGroup,
+    onOpenFullscreenGroupPicker,
   ]);
 
   useEffect(() => {

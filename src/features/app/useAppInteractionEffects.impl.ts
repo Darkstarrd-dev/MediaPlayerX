@@ -380,6 +380,7 @@ export function useAppInteractionEffects({
     themeParameterPanelOpen,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    setFullscreenGroupPickerOpen,
     setManageOperationHint,
   } = sessionState;
 
@@ -457,6 +458,7 @@ export function useAppInteractionEffects({
     markImageRemoved,
     clearImageRemovalMarks,
     removedImageIds,
+    groupState,
   } = readNavigationState;
 
   const focusedVideoDurationSec = Math.max(
@@ -852,6 +854,54 @@ export function useAppInteractionEffects({
 
       void copyVideoFrameToClipboard(videoElement);
       return true;
+    },
+    onToggleGroupFilter: () => {
+      // 切换 sidebar 树过滤开关：下拉选择与列表显示解耦
+      updateSettings({ groupFilterEnabled: !appSettings.groupFilterEnabled });
+    },
+    onJoinCurrentToGroup: () => {
+      // 非全屏：静默加入当前聚焦内容到 focusedGroupId
+      if (!appSettings.selectedGroupId) {
+        return;
+      }
+      if (mode === "image" && selectedPackageId.length > 0) {
+        groupState.addToGroup(
+          appSettings.selectedGroupId,
+          selectedPackageId,
+          "package",
+        );
+        return;
+      }
+      if (mode === "video" && selectedVideoId.length > 0) {
+        groupState.addToGroup(
+          appSettings.selectedGroupId,
+          selectedVideoId,
+          "video",
+        );
+      }
+    },
+    onRemoveCurrentFromGroup: () => {
+      // 非全屏：静默移除当前聚焦内容
+      if (!appSettings.selectedGroupId) {
+        return;
+      }
+      if (mode === "image" && selectedPackageId.length > 0) {
+        groupState.removeFromGroup(
+          appSettings.selectedGroupId,
+          selectedPackageId,
+        );
+        return;
+      }
+      if (mode === "video" && selectedVideoId.length > 0) {
+        groupState.removeFromGroup(
+          appSettings.selectedGroupId,
+          selectedVideoId,
+        );
+      }
+    },
+    onOpenFullscreenGroupPicker: () => {
+      // 全屏：弹出群组选单（由 FullscreenLayer 渲染）
+      setFullscreenGroupPickerOpen(true);
     },
     updateSettings,
   });

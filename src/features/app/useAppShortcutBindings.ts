@@ -61,6 +61,10 @@ interface UseAppShortcutBindingsParams {
   onImageCtrlWheelNavigateSidebar: ShortcutEngineParams["onImageCtrlWheelNavigateSidebar"];
   onCopyFocusedImageToClipboard: ShortcutEngineParams["onCopyFocusedImageToClipboard"];
   onCopyFocusedVideoFrameToClipboard: ShortcutEngineParams["onCopyFocusedVideoFrameToClipboard"];
+  onToggleGroupFilter: ShortcutEngineParams["onToggleGroupFilter"];
+  onJoinCurrentToGroup: ShortcutEngineParams["onJoinCurrentToGroup"];
+  onRemoveCurrentFromGroup: ShortcutEngineParams["onRemoveCurrentFromGroup"];
+  onOpenFullscreenGroupPicker: ShortcutEngineParams["onOpenFullscreenGroupPicker"];
   /** 全屏连续翻页速度上限（张/秒），转为最小间隔传入引擎 */
   fullscreenImageNavMaxPerSecond: number;
   updateSettings: AppSettingsStoreSnapshot["updateSettings"];
@@ -117,6 +121,10 @@ export function useAppShortcutBindings({
   onImageCtrlWheelNavigateSidebar,
   onCopyFocusedImageToClipboard,
   onCopyFocusedVideoFrameToClipboard,
+  onToggleGroupFilter,
+  onJoinCurrentToGroup,
+  onRemoveCurrentFromGroup,
+  onOpenFullscreenGroupPicker,
   fullscreenImageNavMaxPerSecond,
   updateSettings,
 }: UseAppShortcutBindingsParams) {
@@ -226,5 +234,9 @@ export function useAppShortcutBindings({
     onImageCtrlWheelNavigateSidebar,
     onCopyFocusedImageToClipboard,
     onCopyFocusedVideoFrameToClipboard,
+    onToggleGroupFilter,
+    onJoinCurrentToGroup,
+    onRemoveCurrentFromGroup,
+    onOpenFullscreenGroupPicker,
   });
 }
