@@ -569,12 +569,12 @@
   box-shadow: var(--mpx-tooltip-shadow, var(--mpx-shadow-popover));
 }
 
-/* 全屏群组选单 */
+/* 全屏群组选单 — 复用 --mpx-dialog-panel-* 变量链，与 sidebar-group-dialog 风格一致 */
 .fullscreen-group-picker-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1100;
-  background: var(--mpx-dialog-backdrop-bg, rgba(0, 0, 0, 0.55));
+  background: var(--mpx-dialog-backdrop-bg, rgba(0, 0, 0, 0.4));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -622,31 +622,24 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
   max-height: 50vh;
   overflow-y: auto;
 }
 
 .fullscreen-group-picker-item {
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
   cursor: pointer;
   font-size: 13px;
   border: 1px solid transparent;
 }
 
 .fullscreen-group-picker-item.is-highlighted {
-  background: var(
-    --mpx-slot-fg-fs-group-picker-highlight-bg,
-    var(--mpx-state-selected-color, var(--mpx-bg-2))
-  );
-  color: var(
-    --mpx-slot-fg-fs-group-picker-highlight-text,
-    var(--mpx-text-1, inherit)
-  );
+  background: var(--mpx-state-selected-color, var(--mpx-bg-2));
+  color: var(--mpx-text-1, inherit);
   border-color: var(
-    --mpx-slot-fg-fs-group-picker-highlight-border,
-    var(--mpx-dialog-panel-border-color, var(--mpx-border-2))
+    --mpx-dialog-panel-border-color,
+    var(--mpx-overlay-surface-border, var(--mpx-border-2))
   );
 }
 
@@ -664,7 +657,7 @@
 .fullscreen-group-picker-custom-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--mpx-dialog-panel-gap, 10px);
   border-top: 1px solid
     var(
       --mpx-dialog-panel-border-color,
@@ -675,14 +668,14 @@
 
 .fullscreen-group-picker-custom-input {
   width: 100%;
-  height: 32px;
+  height: var(--mpx-icon-button-size-px, 28px);
   padding: 0 8px;
-  border: 1px solid
+  border: var(--mpx-dialog-panel-border-width, 1px) solid
     var(
       --mpx-dialog-panel-border-color,
       var(--mpx-overlay-surface-border, var(--mpx-border-2))
     );
-  border-radius: 4px;
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
   background: transparent;
   color: inherit;
   font-size: 13px;
