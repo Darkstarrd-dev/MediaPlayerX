@@ -354,7 +354,13 @@ interface UseAppTopLayerStateParams {
       mediaType: "package" | "video",
     ) => void;
     addGroup: (name: string) => GroupDefinition | null;
-    updateSettings: (patch: { selectedGroupId: string | null }) => void;
+    /**
+     * 全屏群组选单写入焦点群组：按 mediaType 选择对应 modeKey，
+     * patch 内 selectedGroupIdByMode 只更新对应模式字段。
+     */
+    updateSettings: (patch: {
+      selectedGroupIdByMode: { image: string | null; video: string | null };
+    }) => void;
   };
   selectedPackageId: string;
 }
@@ -1032,9 +1038,15 @@ export function useAppTopLayerState({
           media.mediaId,
           media.mediaType,
         );
-        // 创建后自动选中新群组
+        // 创建后自动选中新群组：按 mediaType 选择对应 modeKey，
+        // image 面板的群组焦点与 video 面板的群组焦点独立
+        const modeKey: "image" | "video" | null =
+          media.mediaType === "video" ? "video" : "image";
         groupStateForFullscreen.updateSettings({
-          selectedGroupId: newGroup.id,
+          selectedGroupIdByMode: {
+            ...appSettings.selectedGroupIdByMode,
+            [modeKey]: newGroup.id,
+          },
         });
       }
     },

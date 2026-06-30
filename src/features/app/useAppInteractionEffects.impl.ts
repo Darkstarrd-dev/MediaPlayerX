@@ -856,47 +856,50 @@ export function useAppInteractionEffects({
       return true;
     },
     onToggleGroupFilter: () => {
-      // 切换 sidebar 树过滤开关：下拉选择与列表显示解耦
-      updateSettings({ groupFilterEnabled: !appSettings.groupFilterEnabled });
+      // 按当前模式独立切换 sidebar 树过滤开关：image 模式独立，
+      // video 模式独立，互不影响
+      const modeKey: "image" | "video" | null =
+        mode === "image" ? "image" : mode === "video" ? "video" : null;
+      if (!modeKey) return;
+      updateSettings({
+        groupFilterEnabledByMode: {
+          ...appSettings.groupFilterEnabledByMode,
+          [modeKey]: !appSettings.groupFilterEnabledByMode[modeKey],
+        },
+      });
     },
     onJoinCurrentToGroup: () => {
-      // 非全屏：静默加入当前聚焦内容到 focusedGroupId
-      if (!appSettings.selectedGroupId) {
+      // 非全屏：静默加入当前聚焦内容到当前模式的焦点群组
+      const modeKey: "image" | "video" | null =
+        mode === "image" ? "image" : mode === "video" ? "video" : null;
+      if (!modeKey) return;
+      const effectiveGroupId = appSettings.selectedGroupIdByMode[modeKey];
+      if (!effectiveGroupId) {
         return;
       }
       if (mode === "image" && selectedPackageId.length > 0) {
-        groupState.addToGroup(
-          appSettings.selectedGroupId,
-          selectedPackageId,
-          "package",
-        );
+        groupState.addToGroup(effectiveGroupId, selectedPackageId, "package");
         return;
       }
       if (mode === "video" && selectedVideoId.length > 0) {
-        groupState.addToGroup(
-          appSettings.selectedGroupId,
-          selectedVideoId,
-          "video",
-        );
+        groupState.addToGroup(effectiveGroupId, selectedVideoId, "video");
       }
     },
     onRemoveCurrentFromGroup: () => {
-      // 非全屏：静默移除当前聚焦内容
-      if (!appSettings.selectedGroupId) {
+      // 非全屏：静默移除当前聚焦内容从当前模式的焦点群组
+      const modeKey: "image" | "video" | null =
+        mode === "image" ? "image" : mode === "video" ? "video" : null;
+      if (!modeKey) return;
+      const effectiveGroupId = appSettings.selectedGroupIdByMode[modeKey];
+      if (!effectiveGroupId) {
         return;
       }
       if (mode === "image" && selectedPackageId.length > 0) {
-        groupState.removeFromGroup(
-          appSettings.selectedGroupId,
-          selectedPackageId,
-        );
+        groupState.removeFromGroup(effectiveGroupId, selectedPackageId);
         return;
       }
       if (mode === "video" && selectedVideoId.length > 0) {
-        groupState.removeFromGroup(
-          appSettings.selectedGroupId,
-          selectedVideoId,
-        );
+        groupState.removeFromGroup(effectiveGroupId, selectedVideoId);
       }
     },
     onOpenFullscreenGroupPicker: () => {

@@ -59,11 +59,14 @@ interface UseAppNavigationStateParams {
     | "fullscreenVideoFocus"
   >;
   readState: AppReadStateResult;
-  // 群组过滤：selectedGroupId 来自 appSettings.selectedGroupId；
-  // groupFilterEnabled 来自 appSettings.groupFilterEnabled；
-  // groupMemberIds / groupIsLoading 来自 useGroupState
-  groupFilterEnabled: boolean;
-  groupMemberIds: ReadonlySet<string>;
+  // 群组过滤：按 image / video 模式独立
+  // selectedGroupIdByMode 来自 appSettings.selectedGroupIdByMode
+  // groupFilterEnabledByMode 来自 appSettings.groupFilterEnabledByMode
+  // imageGroupMemberIds / videoGroupMemberIds / groupIsLoading 来自 useGroupState
+  groupFilterEnabledByMode: { image: boolean; video: boolean };
+  selectedGroupIdByMode: { image: string | null; video: string | null };
+  imageGroupMemberIds: ReadonlySet<string>;
+  videoGroupMemberIds: ReadonlySet<string>;
   groupIsLoading: boolean;
 }
 
@@ -74,8 +77,10 @@ export function useAppNavigationState({
   archiveLoadStatus,
   mediaState,
   readState,
-  groupFilterEnabled,
-  groupMemberIds,
+  groupFilterEnabledByMode,
+  selectedGroupIdByMode,
+  imageGroupMemberIds,
+  videoGroupMemberIds,
   groupIsLoading,
 }: UseAppNavigationStateParams) {
   const {
@@ -102,7 +107,6 @@ export function useAppNavigationState({
     sidebarTreeDisplayMode,
     fullscreenAdjacentPackagePrefetch,
     updateSettings,
-    selectedGroupId,
   } = appSettings;
 
   const {
@@ -249,9 +253,10 @@ export function useAppNavigationState({
     setPageByPackage,
     setGradeByPackage,
     updateSettings,
-    selectedGroupId,
-    groupFilterEnabled,
-    groupMemberIds,
+    selectedGroupIdByMode,
+    groupFilterEnabledByMode,
+    imageGroupMemberIds,
+    videoGroupMemberIds,
     groupIsLoading,
   });
 

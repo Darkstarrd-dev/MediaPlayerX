@@ -96,13 +96,15 @@ interface UseAppSidebarScopeStateParams {
     videoRootNodeId?: string | null;
     musicRootNodeId?: string | null;
   }) => void;
-  // 群组过滤：selectedGroupId 为 null 时不进行过滤；isLoading 为 true
+  // 群组过滤：按 image / video 模式独立
+  // selectedGroupIdByMode[mode] 为 null 时不进行对应模式的过滤；isLoading 为 true
   // 时同样跳过过滤，避免首屏异步加载期间误判"无成员"导致空树
-  selectedGroupId: string | null;
-  // 群组过滤开关：true 时才按 selectedGroupId 过滤；false 显示全部。
-  // 与 selectedGroupId 解耦：下拉切换不再立即改变左侧列表
-  groupFilterEnabled: boolean;
-  groupMemberIds: ReadonlySet<string>;
+  selectedGroupIdByMode: { image: string | null; video: string | null };
+  // 群组过滤开关：true 时才按 selectedGroupIdByMode[mode] 过滤；false 显示全部。
+  // 与 selectedGroupIdByMode 解耦：下拉切换不再立即改变左侧列表
+  groupFilterEnabledByMode: { image: boolean; video: boolean };
+  imageGroupMemberIds: ReadonlySet<string>;
+  videoGroupMemberIds: ReadonlySet<string>;
   groupIsLoading: boolean;
 }
 
@@ -243,9 +245,10 @@ export function useAppSidebarScopeState({
   setPageByPackage,
   setGradeByPackage,
   updateSettings,
-  selectedGroupId,
-  groupFilterEnabled,
-  groupMemberIds,
+  selectedGroupIdByMode,
+  groupFilterEnabledByMode,
+  imageGroupMemberIds,
+  videoGroupMemberIds,
   groupIsLoading,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
   const isImageMode = mode === "image";
@@ -942,6 +945,18 @@ export function useAppSidebarScopeState({
     sidebarDescendantNodeIdsById,
   });
 
+  // 群组过滤：按 image / video 模式独立判断
+  // 加载期间（groupIsLoading=true）保留全树，避免空树闪屏
+  // 注意：此条件在 sidebarOrderedImageSourceIds 之前计算，使 fallback 也能感知过滤
+  const shouldFilterImageByGroup =
+    groupFilterEnabledByMode.image &&
+    selectedGroupIdByMode.image != null &&
+    !groupIsLoading;
+  const shouldFilterVideoByGroup =
+    groupFilterEnabledByMode.video &&
+    selectedGroupIdByMode.video != null &&
+    !groupIsLoading;
+
   const sidebarOrderedImageSourceIds = useMemo(() => {
     const orderedIds: string[] = [];
     const seen = new Set<string>();
@@ -965,12 +980,22 @@ export function useAppSidebarScopeState({
       return orderedIds;
     }
 
-    return rootScopedPackages.map((pkg) => pkg.id);
+    // Fallback：非 image 模式（如 video 模式 dual 全屏）下 flatSidebarNodes 不含
+    // image 源 id，orderedIds 为空。退化为 rootScopedPackages 的 id 列表。
+    // 若 image 群组过滤开启，还需按 imageGroupMemberIds 过滤，否则 dual 全屏下
+    // 图片面板会显示全部图包（破坏「focus 模式仅显示群组内容」规则）。
+    const fallback = rootScopedPackages.map((pkg) => pkg.id);
+    if (shouldFilterImageByGroup) {
+      return fallback.filter((id) => imageGroupMemberIds.has(id));
+    }
+    return fallback;
   }, [
     flatSidebarNodes,
     packageByIdEffective,
     rootScopedPackageIds,
     rootScopedPackages,
+    shouldFilterImageByGroup,
+    imageGroupMemberIds,
   ]);
 
   const orderedRootScopedPackages = useMemo(() => {
@@ -997,23 +1022,21 @@ export function useAppSidebarScopeState({
     return refs;
   }, [orderedRootScopedPackages]);
 
-  // 群组过滤：仅当 groupFilterEnabled=true && selectedGroupId 非空且群组数据加载完成时生效
+  // 群组过滤：按 image / video 模式独立判断（条件在 sidebarOrderedImageSourceIds 之前计算）
   // 加载期间（groupIsLoading=true）保留全树，避免空树闪屏
-  const shouldFilterByGroup =
-    groupFilterEnabled && selectedGroupId != null && !groupIsLoading;
   const filteredImageTreeForSidebar = useMemo(
     () =>
-      shouldFilterByGroup
-        ? filterTreeForGroup(imageTreeForSidebar, groupMemberIds)
+      shouldFilterImageByGroup
+        ? filterTreeForGroup(imageTreeForSidebar, imageGroupMemberIds)
         : imageTreeForSidebar,
-    [imageTreeForSidebar, groupMemberIds, shouldFilterByGroup],
+    [imageTreeForSidebar, imageGroupMemberIds, shouldFilterImageByGroup],
   );
   const filteredVideoTreeForSidebar = useMemo(
     () =>
-      shouldFilterByGroup
-        ? filterTreeForGroup(videoTreeForSidebar, groupMemberIds)
+      shouldFilterVideoByGroup
+        ? filterTreeForGroup(videoTreeForSidebar, videoGroupMemberIds)
         : videoTreeForSidebar,
-    [videoTreeForSidebar, groupMemberIds, shouldFilterByGroup],
+    [videoTreeForSidebar, videoGroupMemberIds, shouldFilterVideoByGroup],
   );
   // 群组不支持 audio（业务规则：仅 image package + video），不过滤音频树
 

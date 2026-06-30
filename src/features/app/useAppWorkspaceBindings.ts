@@ -204,8 +204,18 @@ export function useAppWorkspaceBindings({
     groupMemberIds,
   } = readNavigationState;
 
-  // 群组过滤开关来自 appSettings（与 selectedGroupId 解耦）
-  const groupFilterEnabled = appSettings.groupFilterEnabled;
+  // 群组过滤开关：按 image / video 模式独立，派生当前 mode 的有效值
+  const groupFilterEnabled = (() => {
+    if (mode === "image") return appSettings.groupFilterEnabledByMode.image;
+    if (mode === "video") return appSettings.groupFilterEnabledByMode.video;
+    return false;
+  })();
+  // 焦点群组：按 image / video 模式独立，派生当前 mode 的有效值
+  const selectedGroupId = (() => {
+    if (mode === "image") return appSettings.selectedGroupIdByMode.image;
+    if (mode === "video") return appSettings.selectedGroupIdByMode.video;
+    return null;
+  })();
 
   const musicBookletLibrarySnapshot =
     mode === "music"
@@ -498,5 +508,6 @@ export function useAppWorkspaceBindings({
     groupState,
     groupMemberIds,
     groupFilterEnabled,
+    selectedGroupId,
   });
 }

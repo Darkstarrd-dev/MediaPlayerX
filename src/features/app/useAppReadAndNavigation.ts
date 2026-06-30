@@ -45,10 +45,24 @@ export function useAppReadAndNavigation({
   const groupState = useGroupState({
     mediaRepository: repositoryBootstrap.mediaRepository,
   });
-  const groupMemberIds = useMemo(
-    () => groupState.getGroupMemberIds(appSettings.selectedGroupId),
-    [groupState, appSettings.selectedGroupId],
+  // 按 image / video 模式独立计算群组成员 id 集：两个模式可能选不同群组，
+  // 因此需要分别获取成员列表，传入 sidebar scope state 用于过滤各自的 tree
+  const imageGroupMemberIds = useMemo(
+    () => groupState.getGroupMemberIds(appSettings.selectedGroupIdByMode.image),
+    [groupState, appSettings.selectedGroupIdByMode.image],
   );
+  const videoGroupMemberIds = useMemo(
+    () => groupState.getGroupMemberIds(appSettings.selectedGroupIdByMode.video),
+    [groupState, appSettings.selectedGroupIdByMode.video],
+  );
+  // 兼容旧调用点：image 模式使用 image 成员集，video 模式使用 video 成员集
+  const groupMemberIds = useMemo(() => {
+    return appSettings.mode === "image"
+      ? imageGroupMemberIds
+      : appSettings.mode === "video"
+        ? videoGroupMemberIds
+        : imageGroupMemberIds;
+  }, [appSettings.mode, imageGroupMemberIds, videoGroupMemberIds]);
 
   const navigationState = useAppNavigationState({
     appSettings,
@@ -57,8 +71,10 @@ export function useAppReadAndNavigation({
     archiveLoadStatus,
     mediaState,
     readState,
-    groupFilterEnabled: appSettings.groupFilterEnabled,
-    groupMemberIds,
+    groupFilterEnabledByMode: appSettings.groupFilterEnabledByMode,
+    selectedGroupIdByMode: appSettings.selectedGroupIdByMode,
+    imageGroupMemberIds,
+    videoGroupMemberIds,
     groupIsLoading: groupState.isLoading,
   });
 
@@ -67,6 +83,8 @@ export function useAppReadAndNavigation({
     ...navigationState,
     groupState,
     groupMemberIds,
+    imageGroupMemberIds,
+    videoGroupMemberIds,
   };
 }
 

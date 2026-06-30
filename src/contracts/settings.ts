@@ -296,12 +296,24 @@ export const appSettingsSchema = z.object({
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
-  // 群组焦点：null = 全部；非 null = 选中群组 ID（仅作为下拉焦点 / 加入-移除目标，不再触发 sidebar 树过滤）
-  // .default(null) 兼容旧用户配置（无此字段时 Zod 自动填充）
-  selectedGroupId: z.string().nullable().default(null),
-  // 群组过滤开关：true 时 sidebar 树按 selectedGroupId 过滤；false 时显示全部
-  // 与 selectedGroupId 解耦：下拉切换不再立即改变左侧列表，需通过独立开关（或 * 快捷键）显式切换
-  groupFilterEnabled: z.boolean().default(false),
+  // 群组焦点：按 image / video 模式独立记录下拉选中的群组 ID。
+  // null = 全部；非 null = 选中群组 ID（仅作为下拉焦点 / 加入-移除目标，不再触发 sidebar 树过滤）
+  // .default({image:null, video:null}) 兼容旧用户配置（无此字段时 Zod 自动填充）
+  selectedGroupIdByMode: z
+    .object({
+      image: z.string().nullable().default(null),
+      video: z.string().nullable().default(null),
+    })
+    .default({ image: null, video: null }),
+  // 群组过滤开关：按 image / video 模式独立。
+  // true 时对应模式的 sidebar 树按 selectedGroupIdByMode[mode] 过滤；false 时显示全部。
+  // 与 selectedGroupIdByMode 解耦：下拉切换不再立即改变左侧列表，需通过独立开关（或 * 快捷键）显式切换
+  groupFilterEnabledByMode: z
+    .object({
+      image: z.boolean().default(false),
+      video: z.boolean().default(false),
+    })
+    .default({ image: false, video: false }),
   sidebarLabelDisplayMode: sidebarLabelDisplayModeSchema,
   sidebarTreeDisplayMode: sidebarTreeDisplayModeSchema,
   uiLocale: uiLocaleSchema,
@@ -409,3 +421,44 @@ export const appSettingsSchema = z.object({
 });
 
 export type AppSettings = z.infer<typeof appSettingsSchema>;
+
+/**
+ * 群组过滤支持的关键模式：image / video。audio 不支持群组。
+ * 与 browserModeSchema 区分（browserMode 含 "music"），仅 group 相关逻辑使用。
+ */
+export type GroupModeKey = "image" | "video";
+
+/**
+ * 把 BrowserMode 映射到 group 关键模式；music 模式不参与群组逻辑，返回 null。
+ */
+export function toGroupModeKey(
+  mode: "image" | "video" | "music",
+): GroupModeKey | null {
+  if (mode === "image") return "image";
+  if (mode === "video") return "video";
+  return null;
+}
+
+/**
+ * 从按模式记录的过滤开关中取当前模式的有效值；music 模式视为 false。
+ */
+export function getEffectiveGroupFilterEnabled(
+  byMode: { image: boolean; video: boolean },
+  mode: "image" | "video" | "music",
+): boolean {
+  if (mode === "image") return byMode.image;
+  if (mode === "video") return byMode.video;
+  return false;
+}
+
+/**
+ * 从按模式记录的焦点群组中取当前模式的有效值；music 模式视为 null。
+ */
+export function getEffectiveSelectedGroupId(
+  byMode: { image: string | null; video: string | null },
+  mode: "image" | "video" | "music",
+): string | null {
+  if (mode === "image") return byMode.image;
+  if (mode === "video") return byMode.video;
+  return null;
+}

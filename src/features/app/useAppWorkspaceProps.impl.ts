@@ -263,6 +263,7 @@ export function useAppWorkspaceProps({
   groupState,
   groupMemberIds,
   groupFilterEnabled,
+  selectedGroupId,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
   const { metadataManageSelectionMode, toggleMetadataManageSelectionMode } =
@@ -498,10 +499,10 @@ export function useAppWorkspaceProps({
         id: group.id,
         name: group.name,
       })),
-      selectedGroupId: appSettings.selectedGroupId,
+      selectedGroupId,
       groupFilterEnabled,
       isCurrentInGroup:
-        appSettings.selectedGroupId != null &&
+        selectedGroupId != null &&
         (mode === "image"
           ? selectedPackageId.length > 0 &&
             groupMemberIds.has(selectedPackageId)
@@ -509,14 +510,14 @@ export function useAppWorkspaceProps({
             ? selectedVideoId.length > 0 && groupMemberIds.has(selectedVideoId)
             : false),
       canJoin:
-        appSettings.selectedGroupId != null &&
+        selectedGroupId != null &&
         (mode === "image"
           ? selectedPackageId.length > 0
           : mode === "video"
             ? selectedVideoId.length > 0
             : false),
       canRemove:
-        appSettings.selectedGroupId != null &&
+        selectedGroupId != null &&
         (mode === "image"
           ? selectedPackageId.length > 0 &&
             groupMemberIds.has(selectedPackageId)
@@ -524,65 +525,77 @@ export function useAppWorkspaceProps({
             ? selectedVideoId.length > 0 && groupMemberIds.has(selectedVideoId)
             : false),
       onSelectGroup: (id) => {
-        // 仅切换 focus 群组，不再触发 sidebar 树过滤
-        appSettings.updateSettings({ selectedGroupId: id });
+        // 按当前模式独立切换 focus 群组：image 模式更新 selectedGroupIdByMode.image，
+        // video 模式更新 selectedGroupIdByMode.video，互不影响
+        const modeKey: "image" | "video" | null =
+          mode === "image" ? "image" : mode === "video" ? "video" : null;
+        if (!modeKey) return;
+        appSettings.updateSettings({
+          selectedGroupIdByMode: {
+            ...appSettings.selectedGroupIdByMode,
+            [modeKey]: id,
+          },
+        });
       },
       onToggleGroupFilter: () => {
-        // 独立切换 sidebar 树过滤开关
+        // 按当前模式独立切换 sidebar 树过滤开关
+        const modeKey: "image" | "video" | null =
+          mode === "image" ? "image" : mode === "video" ? "video" : null;
+        if (!modeKey) return;
         appSettings.updateSettings({
-          groupFilterEnabled: !groupFilterEnabled,
+          groupFilterEnabledByMode: {
+            ...appSettings.groupFilterEnabledByMode,
+            [modeKey]: !groupFilterEnabled,
+          },
         });
       },
       onAddGroup: (name) => {
         const newGroup = groupState.addGroup(name);
         if (newGroup) {
-          // 创建后自动选中新群组
-          appSettings.updateSettings({ selectedGroupId: newGroup.id });
+          // 创建后自动选中新群组（按当前模式独立）
+          const modeKey: "image" | "video" | null =
+            mode === "image" ? "image" : mode === "video" ? "video" : null;
+          if (!modeKey) return;
+          appSettings.updateSettings({
+            selectedGroupIdByMode: {
+              ...appSettings.selectedGroupIdByMode,
+              [modeKey]: newGroup.id,
+            },
+          });
         }
       },
       onDeleteGroup: () => {
-        if (!appSettings.selectedGroupId) {
+        if (!selectedGroupId) {
           return;
         }
-        groupState.deleteGroup(appSettings.selectedGroupId);
-        appSettings.updateSettings({ selectedGroupId: null });
+        groupState.deleteGroup(selectedGroupId);
+        // 清空两个模式的焦点（群组已被删除，对所有模式都失效）
+        appSettings.updateSettings({
+          selectedGroupIdByMode: { image: null, video: null },
+        });
       },
       onJoinCurrentToGroup: () => {
-        if (!appSettings.selectedGroupId) {
+        if (!selectedGroupId) {
           return;
         }
         if (mode === "image" && selectedPackageId.length > 0) {
-          groupState.addToGroup(
-            appSettings.selectedGroupId,
-            selectedPackageId,
-            "package",
-          );
+          groupState.addToGroup(selectedGroupId, selectedPackageId, "package");
           return;
         }
         if (mode === "video" && selectedVideoId.length > 0) {
-          groupState.addToGroup(
-            appSettings.selectedGroupId,
-            selectedVideoId,
-            "video",
-          );
+          groupState.addToGroup(selectedGroupId, selectedVideoId, "video");
         }
       },
       onRemoveCurrentFromGroup: () => {
-        if (!appSettings.selectedGroupId) {
+        if (!selectedGroupId) {
           return;
         }
         if (mode === "image" && selectedPackageId.length > 0) {
-          groupState.removeFromGroup(
-            appSettings.selectedGroupId,
-            selectedPackageId,
-          );
+          groupState.removeFromGroup(selectedGroupId, selectedPackageId);
           return;
         }
         if (mode === "video" && selectedVideoId.length > 0) {
-          groupState.removeFromGroup(
-            appSettings.selectedGroupId,
-            selectedVideoId,
-          );
+          groupState.removeFromGroup(selectedGroupId, selectedVideoId);
         }
       },
     },

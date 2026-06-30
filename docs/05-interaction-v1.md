@@ -78,17 +78,19 @@ Last updated: 2026-06-01
 ### 群组管理（Group）
 
 - 群组管理位于 Sidebar 底部槽位 `fg-sidebar-footer`，所有模式下始终可见（audio 模式除 ± 按钮外其余可用）。
-- 群组定义持久化到 `app_state` 表的 `media_groups_v1` key，跨会话保留；选中的群组焦点 (`selectedGroupId`) 与过滤开关 (`groupFilterEnabled`) 持久化到 `ui_settings_v1`。
-- **状态语义**：
-  - `selectedGroupId`：当前 focus 群组。null = 无 focus。
-  - `groupFilterEnabled`：sidebar 树过滤开关。
+- 群组定义持久化到 `app_state` 表的 `media_groups_v1` key，跨会话保留；选中的群组焦点 (`selectedGroupIdByMode`) 与过滤开关 (`groupFilterEnabledByMode`) 持久化到 `ui_settings_v1`。
+- **状态语义**（按 image / video 模式独立）：
+  - `selectedGroupIdByMode: { image: string | null, video: string | null }`：当前模式下的 focus 群组。null = 无 focus。
+  - `groupFilterEnabledByMode: { image: boolean, video: boolean }`：当前模式下的 sidebar 树过滤开关。
+  - 切换 image ↔ video 模式时，焦点群组与过滤开关**互不继承**（即 video 模式开关 ON 切换到 image 模式仍是 OFF）。
+  - `audio` 模式无 group 概念，辅助函数 `getEffectiveGroupFilterEnabled` / `getEffectiveSelectedGroupId` 对 audio 模式统一返回 `false` / `null`。
 - **下拉选单**（最左）：
   - 选项 = 全部 + 已建群组列表。
-  - 切换只改变 focus 群组，**不再立即过滤 sidebar 树**。
+  - 切换只改变**当前模式**的 focus 群组，**不再立即过滤 sidebar 树**。
 - **过滤切换按钮**（最左 `*`/`A`）：
   - `A`（aria-pressed=false）= 全部视图。
-  - `F`（aria-pressed=true）= 群组视图（按 focus 群组过滤 sidebar 树）。
-  - 点击切换过滤开关；快捷键 `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）。
+  - `F`（aria-pressed=true）= 群组视图（按 focus 群组过滤当前模式的 sidebar 树）。
+  - 点击切换**当前模式**的过滤开关；快捷键 `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）。
 - **添加群组**（`+`）：弹出内联对话框，输入群组名（必填、不可重名），提交后自动选中新群组。
 - **删除群组**（`−`）：未选中群组时 disabled；选中时弹出二次确认对话框。
 - **加入/移除按钮**（`±`）：根据当前 focus 内容是否已位于 focus 群组中切换显示。
@@ -105,6 +107,12 @@ Last updated: 2026-06-01
   - 加入/移除的"目标内容"由全屏 `fullscreenDisplay` 与 `fullscreenVideoFocus` 决定：
     - `video-only` 或 `dual + video focus` → 当前视频（`mediaType=video`）。
     - `image-only` 或 `dual + image focus` → 当前图包（`mediaType=package`）。
+- **全屏过滤视图（focus 模式）**：
+  - image / video 模式各自的 F/A 开关状态决定全屏内容范围。
+  - 开启 F 模式时（`groupFilterEnabledByMode[mode] === true`），全屏内**仅显示**当前模式 focus 群组的成员：
+    - 图片全屏：跨图包导航（`goPackage` / `moveImage` 跨包）按过滤后的 `orderedRootScopedPackages` 顺序，仅在群组成员之间切换；多层预渲染窗口（`fullscreenWindowImageSrcs`）与相邻预加载（`adjacentFullscreenImageSrcs`）均基于同一过滤序列。
+    - 视频全屏：上一首 / 下一首（`goPlaylist`）按 `collectVideoIdsBySidebarOrder(filteredVideoTreeForSidebar)` 序列，仅在群组成员之间切换。
+  - **dual 全屏 bug 修复**：video 模式下 dual 全屏时图片面板的 `orderedRootScopedPackages` 旧实现使用未过滤的 `rootScopedPackages` fallback，导致 F 模式开启时图片面板仍显示全部图包。已修复为 fallback 也按 `imageGroupMemberIds` 过滤。
 - **群组业务规则**：
   - 群组只支持 `package`（图包）和 `video`（视频）两种 `mediaType`；`audio`（音频）不在群组范围内。
   - 重复加入（同一 groupId + mediaId）静默忽略；移除不存在的成员静默忽略。
@@ -360,9 +368,10 @@ Last updated: 2026-06-01
 - `PageUp/PageDown` 以"当前可视项数量 - 1"作为步长翻页；超出边界时直接钳制到首项/末项。
 - 鼠标点击 Sidebar 项后，焦点保持在 Sidebar；仅点击缩略图区或使用 `Tab` 才切回 Main 焦点。
 - 群组快捷键（默认绑定，可在设置面板重映射）：
-  - `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）：切换 sidebar 树过滤开关（`groupFilterEnabled`）。**全屏下无效**。
-  - `+`（小键盘 `NumpadAdd` 或主键盘 `Shift+Equal`）：非全屏下将当前 focus 内容加入 focus 群组（已加入则无效）；**全屏下弹出群组选单**。
-  - `-`（主键盘 `Minus` 或小键盘 `NumpadSubtract`）：非全屏下将当前 focus 内容从 focus 群组移除（不存在则无效）。**全屏下无效**。
+  - `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）：切换**当前模式** sidebar 树过滤开关（`groupFilterEnabledByMode[mode]`）。**全屏下无效**。
+  - `+`（小键盘 `NumpadAdd` 或主键盘 `Shift+Equal`）：非全屏下将当前 focus 内容加入**当前模式**的 focus 群组（已加入则无效）；**全屏下弹出群组选单**。
+  - `-`（主键盘 `Minus` 或小键盘 `NumpadSubtract`）：非全屏下将当前 focus 内容从**当前模式**的 focus 群组移除（不存在则无效）。**全屏下无效**。
+  - 注意：`+` / `-` / `*` 在 image 模式与 video 模式操作不同的 `selectedGroupIdByMode[mode]` / `groupFilterEnabledByMode[mode]`，模式切换不继承。
 
 ### 视频控制
 
