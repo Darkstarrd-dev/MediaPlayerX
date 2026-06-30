@@ -163,6 +163,84 @@ interface UseGroupStateResult {
 7. 所有写操作后调用 `writeAppState`，300ms 防抖
 8. 批量更新时使用事务模式（先收集所有操作，一次性 write）
 
+**异步加载状态机（必须处理）**：
+
+`readAppState` 是异步 IPC，而 hook 返回值是同步的 `groups: GroupDefinition[]`。必须定义异步期间的状态：
+
+```typescript
+interface UseGroupStateResult {
+  groups: GroupDefinition[];
+  memberships: GroupMembership[];
+  groupMemberIdsByGroup: Map<string, Set<string>>;
+  // 新增：加载状态
+  isLoading: boolean;  // 首次加载期间为 true，加载完成后 false
+  // ... 其余方法不变
+}
+```
+
+**状态流转**：
+
+| 阶段 | `groups` | `memberships` | `isLoading` | `filterTreeForGroup` 行为 |
+|------|----------|---------------|-------------|--------------------------|
+| 初始挂载（首次渲染） | `[]` | `[]` | `true` | 不执行过滤（`selectedGroupId` 即使非 null，也因 `isLoading` 跳过过滤，显示全树） |
+| `readAppState` 返回后 | 真实数据 | 真实数据 | `false` | 正常过滤 |
+
+**实现要点**：
+
+```typescript
+const [groups, setGroups] = useState<GroupDefinition[]>([]);
+const [memberships, setMemberships] = useState<GroupMembership[]>([]);
+const [isLoading, setIsLoading] = useState(true);
+
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    const data = await mediaRepository.readAppState({
+      state_key: "media_groups_v1",
+      fallback_json: DEFAULT_GROUPS_DATA,
+    });
+    if (cancelled) return;
+    setGroups(data.state_value?.groups ?? []);
+    setMemberships(data.state_value?.memberships ?? []);
+    setIsLoading(false);
+  })();
+  return () => { cancelled = true; };
+}, [mediaRepository]);
+```
+
+**`filterTreeForGroup` 集成约束**：在 `useAppSidebarScopeState` 中调用过滤时，需额外检查 `isLoading === false`，避免加载期间误判"无成员"导致空树：
+
+```typescript
+const filteredImageTreeNodes = useMemo(
+  () =>
+    selectedGroupId != null && !groupIsLoading
+      ? filterTreeForGroup(imageTreeNodes, groupMemberIds)
+      : imageTreeNodes,
+  [imageTreeNodes, groupMemberIds, selectedGroupId, groupIsLoading],
+);
+```
+
+**集成点决断（单一位置）**：
+
+`useGroupState` 在 **`useAppWorkspaceProps.impl.ts`** 中调用（唯一位置），与 `useAppSidebarScopeState`、`buildSidebarPanelProps` 同级。理由：
+- `useAppWorkspaceProps.impl.ts` 是 props 管线的汇聚点，已有 `sidebarVideoQueueIds`、`buildSidebarPanelProps` 等同类逻辑
+- 在 `useAppDataPipeline` 中调用会导致 hook 嵌套层级过深，且 Pipeline 的职责是"组合四个阶段 hook"，不应直接持有业务状态
+- `useGroupState` 返回的 `groups`/`memberships`/`groupMemberIds` 既需传入 `useAppSidebarScopeState`（树过滤），又需传入 `buildSidebarPanelProps`（footer UI），`useAppWorkspaceProps.impl.ts` 是两条链路的共同上游
+
+**数据流链路（修正）**：
+
+```
+useAppWorkspaceProps.impl.ts
+  ├─ useGroupState(mediaRepository, selectedGroupId, ...)
+  │   → groups, memberships, groupMemberIds, isLoading, addGroup, ...
+  │
+  ├─ useAppSidebarScopeState({ ..., groupMemberIds, groupIsLoading })
+  │   → filteredImageTreeNodes, filteredVideoTreeNodes（内部做 filterTreeForGroup）
+  │
+  └─ buildSidebarPanelProps({ ..., groupFooterProps })
+      → SidebarPanel → GroupFooter
+```
+
 **独立文件**：`src/features/group/useGroupState.ts`
 
 ---
@@ -185,8 +263,12 @@ export type { UseGroupStateParams, UseGroupStateResult } from "./useGroupState";
 - 在 `appSettingsSchema` 对象中新增字段（约在第 299 行 `musicCollapsedFolderNodeIds` 之后）：
 
 ```typescript
-selectedGroupId: z.string().nullable(),
+selectedGroupId: z.string().nullable().default(null),
 ```
+
+**必须加 `.default(null)`**：现有用户的 `ui_settings_v1` 持久化数据中没有 `selectedGroupId` 字段。若 Zod schema 不提供 default，`appSettingsSchema.parse(旧配置)` 会报 `missing required key`。`.default(null)` 确保：
+- 新用户：默认 `null`（"全部"）
+- 旧用户升级：Zod 自动填充 `null`，无需显式迁移脚本
 
 **文件**：`src/store/useUiStore.ts`
 - 在 `DEFAULT_SETTINGS` 中新增默认值（约在第 60 行 `musicRootNodeId: null` 之后）：
@@ -198,13 +280,33 @@ selectedGroupId: null,
 **文件**：`src/features/app/useAppSettingsStore.ts`
 - 在 `useShallow` 回调中添加 `state.selectedGroupId` 映射
 
+**文件**：`src/features/app/useSettingsPersistence.ts`
+- 参考现有 `musicCollapsedFolderNodeIds` 的 normalize 模式（lines 768-775），**无需新增迁移逻辑**：`.default(null)` 已由 Zod 层处理。但需确认 `useSettingsPersistence.ts` 的 normalize 函数不会因 `selectedGroupId` 为 `null` 而误删该字段（参考 lines 773-774 的 `delete next.xxx` 模式，仅当字段为 falsy 且非 null 时才删）。若 normalize 逻辑对 `null` 也执行 delete，需加守卫：`if (next.selectedGroupId !== null) { ... }` 或跳过 normalize。
+
+**文件**：`src/features/app/usePersistedAppSettings.ts`
+- 在映射对象中新增 `selectedGroupId: settings.selectedGroupId`（参考 lines 63, 74 的 `musicRootNodeId` 映射模式）
+
 ---
 
 ### 步骤 5：侧边栏树过滤逻辑
 
 **文件**：`src/features/app/useAppSidebarScopeState.ts`（修改）
 
-新增函数 `filterTreeForGroup`：
+#### 5.1 新增入参字段
+
+在 `UseAppSidebarScopeStateParams` 接口（约 lines 80-99）中新增：
+
+```typescript
+interface UseAppSidebarScopeStateParams {
+  // ... 已有字段 ...
+  // 新增：群组过滤所需数据
+  selectedGroupId: string | null;        // 来自 AppSettings
+  groupMemberIds: Set<string>;           // 来自 useGroupState.getGroupMemberIds(selectedGroupId)
+  groupIsLoading: boolean;               // 来自 useGroupState.isLoading
+}
+```
+
+#### 5.2 新增过滤函数 `filterTreeForGroup`
 
 ```typescript
 function filterTreeForGroup(
@@ -230,20 +332,46 @@ function filterTreeForGroup(
 }
 ```
 
-**集成位置**：在构建 `imageTreeNodes` / `videoTreeNodes` 的 `useMemo` 之后，追加一个 useMemo 做条件过滤：
+**类型安全验证**：`SidebarNode`（`src/types.ts:163-164`）已有 `packageId?: string` 和 `videoId?: string` 字段，`node.packageId ?? node.videoId` 类型合法 ✓。
+
+#### 5.3 集成位置与调用链路
+
+在 `useAppSidebarScopeState` 返回值之前，对 `imageTreeForSidebar` 和 `videoTreeForSidebar` 追加条件过滤的 `useMemo`：
 
 ```typescript
-// 伪代码：在 useAppSidebarScopeState 返回值之前
+// 在 useAppSidebarScopeState 内部，构建 imageTreeForSidebar / videoTreeForSidebar 的 useMemo 之后
 const filteredImageTreeNodes = useMemo(
   () =>
-    selectedGroupId != null
-      ? filterTreeForGroup(imageTreeNodes, groupMemberIds)
-      : imageTreeNodes,
-  [imageTreeNodes, groupMemberIds, selectedGroupId],
+    selectedGroupId != null && !groupIsLoading
+      ? filterTreeForGroup(imageTreeForSidebar, groupMemberIds)
+      : imageTreeForSidebar,
+  [imageTreeForSidebar, groupMemberIds, selectedGroupId, groupIsLoading],
+);
+
+const filteredVideoTreeNodes = useMemo(
+  () =>
+    selectedGroupId != null && !groupIsLoading
+      ? filterTreeForGroup(videoTreeForSidebar, groupMemberIds)
+      : videoTreeForSidebar,
+  [videoTreeForSidebar, groupMemberIds, selectedGroupId, groupIsLoading],
 );
 ```
 
-注意：`groupMemberIds` 需从 `useGroupState` 传入，通过函数参数层层传递。
+**返回值替换**：将 `useAppSidebarScopeStateResult` 中的 `imageTreeForSidebar` / `videoTreeForSidebar` 改为返回 `filteredImageTreeNodes` / `filteredVideoTreeNodes`（或新增 `filtered*` 字段，由调用方选择）。推荐**直接替换**，避免下游需要感知两套树。
+
+#### 5.4 调用方传参（`useAppWorkspaceProps.impl.ts`）
+
+```typescript
+// useAppWorkspaceProps.impl.ts 中调用 useAppSidebarScopeState 时
+const sidebarScope = useAppSidebarScopeState({
+  // ... 已有参数 ...
+  selectedGroupId,              // 来自 useAppSettingsStore
+  groupMemberIds: groupState.getGroupMemberIds(selectedGroupId ?? ""),
+  groupIsLoading: groupState.isLoading,
+});
+```
+
+**注意**：`groupMemberIds` 是 `Set<string>`，当 `selectedGroupId` 为 null 时传空 Set（`groupState.getGroupMemberIds("")` 应返回空 Set）。`getGroupMemberIds` 实现需对空字符串/不存在 groupId 返回 `new Set()`，而非 undefined。
 
 ---
 
@@ -391,10 +519,69 @@ interface BuildSidebarPanelPropsParams {
 
 在构造 `buildSidebarPanelProps` 的参数时，传入 `groupFooterProps` 对象。这个对象的回调需要：
 - 持有 `useGroupState` 返回的 `addGroup`、`deleteGroup`、`addToGroup`、`removeFromGroup`
-- `canJoin` = `selectedGroupId != null && (selectedPackageId != "" \|\| selectedVideoId != "")`
-- `canRemove` = `selectedGroupId != null && 当前媒体在群组成员中`
-- `onJoinCurrentToGroup` → 根据当前 mode 取 `selectedPackageId` 或 `selectedVideoId`
+- `canJoin` = `selectedGroupId != null && currentFocusMediaId != null`
+- `canRemove` = `selectedGroupId != null && currentFocusMediaId != null && groupMemberIds.has(currentFocusMediaId)`
+- `onJoinCurrentToGroup` → 根据当前 mode 取 `selectedPackageId`（image 模式）或 `selectedVideoId`（video 模式）
 - `onRemoveCurrentFromGroup` → 同理
+
+**`currentFocusMediaId` 计算逻辑**：
+
+```typescript
+const currentFocusMediaId: string | null =
+  mode === "image"
+    ? (selectedPackageId || null)
+    : mode === "video"
+      ? (selectedVideoId || null)
+      : null;  // audio 模式不支持群组，返回 null
+
+const currentFocusMediaType: "package" | "video" | null =
+  mode === "image" ? "package" : mode === "video" ? "video" : null;
+```
+
+**`canJoin` / `canRemove` 实现**：
+
+```typescript
+const canJoin =
+  selectedGroupId != null &&
+  currentFocusMediaId != null &&
+  currentFocusMediaType != null;
+
+const canRemove =
+  selectedGroupId != null &&
+  currentFocusMediaId != null &&
+  groupState.getGroupMemberIds(selectedGroupId).has(currentFocusMediaId);
+```
+
+**`onJoinCurrentToGroup` / `onRemoveCurrentFromGroup` 回调**：
+
+```typescript
+onJoinCurrentToGroup: () => {
+  if (!selectedGroupId || !currentFocusMediaId || !currentFocusMediaType) return;
+  groupState.addToGroup(selectedGroupId, currentFocusMediaId, currentFocusMediaType);
+},
+onRemoveCurrentFromGroup: () => {
+  if (!selectedGroupId || !currentFocusMediaId) return;
+  groupState.removeFromGroup(selectedGroupId, currentFocusMediaId);
+},
+```
+
+**`mode` 字段来源**：`mode` 来自 `useAppNavigationState` 或 `useAppWorkspaceProps` 的 props（类型为 `AppMode`，值为 `"image" | "video" | "audio"`）。`useAppWorkspaceProps.impl.ts` 已持有该字段（参考 `useAppSidebarScopeState` 入参 line 171 的 `mode`）。
+
+**`selectedGroupId` 语义统一**：
+
+- `null` 表示"全部"（默认值，不进行过滤）
+- 非 null 字符串表示选中某个具体群组
+- `<select>` 的"全部"option 的 `value=""`，在 `onChange` 中转换为 `null`：
+
+```typescript
+onSelectGroup: (id: string | null) => {
+  // select 的"全部"option value 为 ""，转为 null
+  updateSettings({ selectedGroupId: id === "" ? null : id });
+},
+```
+
+- `deleteGroup` 后清空选中：`updateSettings({ selectedGroupId: null })`（非空字符串）
+- `GroupFooter` 组件中 `value={selectedGroupId ?? ""}`，保持 select 受控
 
 #### 8.3 数据流链路
 
@@ -418,15 +605,34 @@ useAppSettingsStore
 
 **文件**：`src/styles/app/sidebar.css`
 
-在现有 `[data-slot="fg-sidebar-footer"]` 样式之后追加群组组件样式：
+在现有 `[data-slot="fg-sidebar-footer"]` 样式之后追加群组组件样式。
+
+#### 9.1 CSS Token 对照表（必须）
+
+下表列出样式用到的 token，**5 个在现有 token 体系中不存在，必须登记到 `docs/11-token_design.md` 或改用现有 token**：
+
+| Token | 是否已存在 | 处理方式 |
+|-------|-----------|---------|
+| `--mpx-border-1` | ✓ 存在（`themeParameterDefinitions.ts:1616`） | 直接使用 |
+| `--mpx-icon-button-size` | △ 部分存在（`useAppEffectsUi.ts:419` 用的是 `--mpx-icon-button-size-px`） | 改用 `--mpx-icon-button-size-px` 或登记 `--mpx-icon-button-size` |
+| `--mpx-group-footer-gap` | ✗ 不存在 | **新增**到 `docs/11-token_design.md`，或直接硬编码 `4px` |
+| `--mpx-group-footer-padding` | ✗ 不存在 | **新增**，或硬编码 `2px 4px` |
+| `--mpx-bg-input` | ✗ 不存在 | **新增**，或改用 `--mpx-bg-2` / `transparent` |
+| `--mpx-radius-sm` | ✗ 不存在 | **新增**，或改用 `--mpx-radius-1`（若存在）或硬编码 `4px` |
+| `--mpx-slot-fg-sidebar-footer-text` | ✗ 不存在 | **新增**，或改用 `inherit`（继承父级文本色） |
+| `--mpx-sidebar-font-size` | ✗ 不存在 | **新增**，或改用 `13px` 硬编码 |
+
+**推荐方案（最小破坏）**：初版硬编码非语义化的 gap/padding/radius，文本色用 `inherit`，border/bg 用已有 token。后续如需主题化再登记到 token 体系。
+
+#### 9.2 样式代码（采用推荐方案）
 
 ```css
 /* 群组 footer 布局 */
 .sidebar-group-footer {
   display: flex;
   align-items: center;
-  gap: var(--mpx-group-footer-gap, 4px);
-  padding: var(--mpx-group-footer-padding, 2px 4px);
+  gap: 4px;                          /* 硬编码，后续可提升为 token */
+  padding: 2px 4px;                  /* 硬编码 */
   height: 100%;
   box-sizing: border-box;
 }
@@ -434,15 +640,15 @@ useAppSettingsStore
 .sidebar-group-select {
   flex: 1;
   min-width: 0;
-  height: var(--mpx-icon-button-size, 28px);
-  border: 1px solid var(--mpx-border-1);
-  border-radius: var(--mpx-radius-sm, 4px);
-  background: var(--mpx-bg-input, transparent);
-  color: var(--mpx-slot-fg-sidebar-footer-text, inherit);
-  font-size: var(--mpx-sidebar-font-size, 13px);
+  height: var(--mpx-icon-button-size-px, 28px);  /* 复用已有 token，fallback 28px */
+  border: 1px solid var(--mpx-border-1, #444);
+  border-radius: 4px;                /* 硬编码 */
+  background: transparent;           /* 避免引入不存在的 --mpx-bg-input */
+  color: inherit;                    /* 继承父级文本色 */
+  font-size: 13px;                   /* 硬编码 */
   padding: 0 4px;
   cursor: pointer;
-  appearance: none; /* 或保留原生样式 */;
+  appearance: none;
 }
 
 .sidebar-group-actions {
@@ -452,8 +658,8 @@ useAppSettingsStore
 }
 
 .sidebar-group-actions .mpx-btn {
-  width: var(--mpx-icon-button-size, 28px);
-  height: var(--mpx-icon-button-size, 28px);
+  width: var(--mpx-icon-button-size-px, 28px);
+  height: var(--mpx-icon-button-size-px, 28px);
   padding: 0;
   display: flex;
   align-items: center;
@@ -466,11 +672,13 @@ useAppSettingsStore
 }
 ```
 
+**文档同步约束**：若后续将硬编码值提升为 token，必须同步更新 `docs/10-ui_definition.md`（`fg.sidebar.footer` 槽位）与 `docs/11-token_design.md`（新增 token 登记）。
+
 ---
 
-### 步骤 10：国际化文本（可选，初版可硬编码）
+### 步骤 10：国际化文本（必选，不可硬编码）
 
-如需要完整的 i18n 支持，在 `src/i18n/` 翻译文件中添加：
+**违反 `docs/07-i18n-aria-guardrails.md` 的硬编码方案不可接受**。必须在 `src/i18n/` 翻译文件中添加：
 
 ```json
 {
@@ -506,7 +714,11 @@ useAppSettingsStore
 
 ---
 
-### 步骤 12：集成测试（可选，建议后续补充）
+### 步骤 12：单元与集成测试（必选，不可跳过）
+
+**`AGENTS.md` 质量门禁要求 `lint 0 warning` + 全测试通过 + `madge 0` 循环依赖。新增 feature 不带测试会破坏质量基线，步骤 12 为必选。**
+
+**MockRepository 可行性确认**：`MockMediaRepository`（`src/features/backend/repository/mockRepository.ts:907-916`）已实现 `readAppState`/`writeAppState`，委托给 `SystemHandlers`（`src/features/backend/repository/mock/SystemHandlers.ts:28,33`）。测试可直接使用 MockRepository，无需启动 Electron 进程 ✓。
 
 **文件**：`src/features/group/useGroupState.test.ts`（新建）
 
@@ -563,6 +775,13 @@ useAppSettingsStore
    - 组件结构沿用 `<MainUiIcon>` + `data-tooltip-label` 模式
 5. **性能**：树过滤用 `useMemo` 缓存，避免每次 render 重复计算
 6. **类型安全**：全面使用 TypeScript，禁止 `any`
+7. **异步加载状态机**：`useGroupState` 的 `readAppState` 是异步 IPC，必须处理 `isLoading` 状态（见步骤 2），避免首屏误过滤
+8. **Zod default**：`selectedGroupId` schema 必须加 `.default(null)`（见步骤 4），否则旧用户配置解析失败
+9. **CSS token 合规**：步骤 9 列出的 5 个不存在的 token 必须登记到 `docs/11-token_design.md` 或硬编码，不可引用未定义 token
+10. **i18n 必选**：步骤 10 不可跳过，违反 `docs/07-i18n-aria-guardrails.md`
+11. **测试必选**：步骤 12 不可跳过，违反 `AGENTS.md` 质量门禁
+12. **循环依赖预检**：新增 `src/features/group/` 后，必须运行 `npx madge --circular src electron` 确认 0 循环依赖。`useGroupState` 不应反向导入 `useAppSidebarScopeState` 或 `buildSidebarPanelProps`，数据流单向：`useGroupState → sidebarScope/buildSidebarPanelProps`
+13. **MockRepository 已支持**：`mockRepository.ts:907-916` 已实现 readAppState/writeAppState，测试无需启动 Electron
 
 ---
 
@@ -573,4 +792,12 @@ useAppSettingsStore
 (类型+Hook)  (Settings)  (过滤)    (组件)    (集成)    (样式+管线)  (i18n+文档)  (测试)
 ```
 
-优先完成 **步骤 1-9** 即可让功能可用，步骤 10-12 为质量增强。
+**步骤 1-12 全部为必选**，不可跳过 10/12。实施完成后必须依次通过：
+
+```bash
+npm run lint            # 0 warning
+npm run test            # 全测试通过（含新增的 useGroupState.test.ts / GroupFooter.test.tsx）
+npx madge --circular src electron  # 0 循环依赖
+npm run build           # 构建通过
+npm run format:check    # Prettier 通过
+```
