@@ -72,6 +72,7 @@ export function toPersistedAppSettings(
     imageCollapsedFolderNodeIds: settings.imageCollapsedFolderNodeIds,
     videoCollapsedFolderNodeIds: settings.videoCollapsedFolderNodeIds,
     musicCollapsedFolderNodeIds: settings.musicCollapsedFolderNodeIds,
+    selectedGroupId: settings.selectedGroupId,
     sidebarLabelDisplayMode: settings.sidebarLabelDisplayMode,
     sidebarTreeDisplayMode: settings.sidebarTreeDisplayMode,
     uiLocale: settings.uiLocale,

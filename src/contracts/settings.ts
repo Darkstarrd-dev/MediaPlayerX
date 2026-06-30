@@ -296,6 +296,9 @@ export const appSettingsSchema = z.object({
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
+  // 群组选择：null = 全部；非 null = 选中群组 ID
+  // .default(null) 兼容旧用户配置（无此字段时 Zod 自动填充）
+  selectedGroupId: z.string().nullable().default(null),
   sidebarLabelDisplayMode: sidebarLabelDisplayModeSchema,
   sidebarTreeDisplayMode: sidebarTreeDisplayModeSchema,
   uiLocale: uiLocaleSchema,
