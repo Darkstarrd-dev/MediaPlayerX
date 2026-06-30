@@ -70,6 +70,12 @@ function createParams() {
     setFullscreenSplit: vi.fn(),
     moveImage: vi.fn(),
     goPackage: vi.fn(),
+    fullscreenGroupPickerOpen: false,
+    groupState: { groups: [] },
+    fullscreenGroupPickerCurrentMedia: null,
+    onCloseFullscreenGroupPicker: vi.fn(),
+    onAddToGroupFromFullscreen: vi.fn(),
+    onCreateAndAddFromFullscreen: vi.fn(),
   };
 }
 

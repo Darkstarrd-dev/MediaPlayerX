@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { findShortcutConflicts } from "../../shortcuts";
+import type { GroupDefinition } from "../group";
 import type { BrowserMode, ImageItem, VideoItem } from "../../types";
 import {
   manageAdReviewTaskSchema,
@@ -342,6 +343,20 @@ interface UseAppTopLayerStateParams {
   adReviewDeleteOverlayDebugActive: boolean;
   onOpenAdReviewDeleteOverlayDebug: () => void;
   focusedVideoEffectiveId: string | null;
+  // 群组选单（fullscreen）
+  fullscreenGroupPickerOpen: boolean;
+  setFullscreenGroupPickerOpen: (open: boolean) => void;
+  groupStateForFullscreen: {
+    groups: GroupDefinition[];
+    addToGroup: (
+      groupId: string,
+      mediaId: string,
+      mediaType: "package" | "video",
+    ) => void;
+    addGroup: (name: string) => GroupDefinition | null;
+    updateSettings: (patch: { selectedGroupId: string | null }) => void;
+  };
+  selectedPackageId: string;
 }
 
 export function useAppTopLayerState({
@@ -488,6 +503,10 @@ export function useAppTopLayerState({
   adReviewDeleteOverlayDebugActive,
   onOpenAdReviewDeleteOverlayDebug,
   focusedVideoEffectiveId,
+  fullscreenGroupPickerOpen,
+  setFullscreenGroupPickerOpen,
+  groupStateForFullscreen,
+  selectedPackageId,
 }: UseAppTopLayerStateParams) {
   const { t } = useI18n();
 
@@ -978,6 +997,47 @@ export function useAppTopLayerState({
     setFullscreenSplit,
     moveImage,
     goPackage,
+    // 群组选单
+    fullscreenGroupPickerOpen,
+    groupState: { groups: groupStateForFullscreen.groups },
+    fullscreenGroupPickerCurrentMedia: (() => {
+      // 全屏 currentMedia 判定：dual 模式按聚焦面板；否则按 display 类型
+      const isVideoTarget =
+        fullscreenDisplay === "video-only" ||
+        (fullscreenDisplay === "dual" && fullscreenVideoFocus);
+      if (isVideoTarget) {
+        if (selectedVideoId.length > 0) {
+          return { mediaId: selectedVideoId, mediaType: "video" as const };
+        }
+        return null;
+      }
+      if (selectedPackageId.length > 0) {
+        return { mediaId: selectedPackageId, mediaType: "package" as const };
+      }
+      return null;
+    })(),
+    onCloseFullscreenGroupPicker: () => setFullscreenGroupPickerOpen(false),
+    onAddToGroupFromFullscreen: (groupId, media) => {
+      groupStateForFullscreen.addToGroup(
+        groupId,
+        media.mediaId,
+        media.mediaType,
+      );
+    },
+    onCreateAndAddFromFullscreen: (name, media) => {
+      const newGroup = groupStateForFullscreen.addGroup(name);
+      if (newGroup) {
+        groupStateForFullscreen.addToGroup(
+          newGroup.id,
+          media.mediaId,
+          media.mediaType,
+        );
+        // 创建后自动选中新群组
+        groupStateForFullscreen.updateSettings({
+          selectedGroupId: newGroup.id,
+        });
+      }
+    },
   });
 
   const settingsPanelProps = buildSettingsPanelProps({

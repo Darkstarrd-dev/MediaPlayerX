@@ -32,6 +32,8 @@ import { useFullscreenImageAdjustPanelController } from "./fullscreen/useFullscr
 import { useFullscreenViewportSize } from "./fullscreen/useFullscreenViewportSize";
 import { useFullscreenWindowViewport } from "./fullscreen/useFullscreenWindowViewport";
 import { FullscreenVideoControlsShell } from "./fullscreen/FullscreenVideoControls";
+import { FullscreenGroupPicker } from "./fullscreen/FullscreenGroupPicker";
+import type { GroupDefinition, GroupMediaType } from "../features/group";
 import {
   applyAlignedOffset,
   clampPaneTransform,
@@ -195,6 +197,24 @@ export interface FullscreenLayerProps {
   onCycleVideoFitMode: () => void;
   onSetVideoFitMode: (mode: VideoFitMode) => void;
   onExit: () => void;
+  // 群组选单：全屏模式下 `+` 快捷键触发
+  fullscreenGroupPickerOpen: boolean;
+  groupState: {
+    groups: GroupDefinition[];
+  };
+  fullscreenGroupPickerCurrentMedia: {
+    mediaId: string;
+    mediaType: GroupMediaType;
+  } | null;
+  onCloseFullscreenGroupPicker: () => void;
+  onAddToGroupFromFullscreen: (
+    groupId: string,
+    media: { mediaId: string; mediaType: GroupMediaType },
+  ) => void;
+  onCreateAndAddFromFullscreen: (
+    name: string,
+    media: { mediaId: string; mediaType: GroupMediaType },
+  ) => void;
 }
 function FullscreenLayer({
   mode,
@@ -297,6 +317,12 @@ function FullscreenLayer({
   onCycleVideoFitMode,
   onSetVideoFitMode,
   onExit,
+  fullscreenGroupPickerOpen,
+  groupState,
+  fullscreenGroupPickerCurrentMedia,
+  onCloseFullscreenGroupPicker,
+  onAddToGroupFromFullscreen,
+  onCreateAndAddFromFullscreen,
 }: FullscreenLayerProps) {
   const { t } = useI18n();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -1878,6 +1904,14 @@ function FullscreenLayer({
         onStartCurvePointDrag={startCurvePointDrag}
         onReset={handleResetAdjustPanel}
         onCancel={handleCancelAdjustPanel}
+      />
+      <FullscreenGroupPicker
+        open={fullscreenGroupPickerOpen}
+        groups={groupState.groups}
+        currentMedia={fullscreenGroupPickerCurrentMedia}
+        onClose={onCloseFullscreenGroupPicker}
+        onAddToGroup={onAddToGroupFromFullscreen}
+        onCreateAndAdd={onCreateAndAddFromFullscreen}
       />
     </div>
   );

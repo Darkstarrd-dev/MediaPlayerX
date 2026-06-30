@@ -796,5 +796,15 @@ export function useAppTopLayerBindings({
     adReviewDeleteOverlayDebugActive,
     onOpenAdReviewDeleteOverlayDebug,
     focusedVideoEffectiveId: focusedVideoEffective?.id ?? null,
+    // 群组选单：来自 sessionState 与 readNavigationState
+    fullscreenGroupPickerOpen: sessionState.fullscreenGroupPickerOpen,
+    setFullscreenGroupPickerOpen: sessionState.setFullscreenGroupPickerOpen,
+    groupStateForFullscreen: {
+      groups: readNavigationState.groupState.groups,
+      addToGroup: readNavigationState.groupState.addToGroup,
+      addGroup: readNavigationState.groupState.addGroup,
+      updateSettings: appSettings.updateSettings,
+    },
+    selectedPackageId,
   });
 }

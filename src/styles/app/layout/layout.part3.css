@@ -180,21 +180,15 @@
   transform: translateY(0);
 }
 
-:root
-  .fullscreen-group.is-center
-  .fullscreen-action-btn {
+:root .fullscreen-group.is-center .fullscreen-action-btn {
   transition: transform 0.16s ease;
 }
 
-:root
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:not(:disabled):hover {
+:root .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):hover {
   transform: translateY(-1px);
 }
 
-:root
-  .fullscreen-group.is-center
-  .fullscreen-action-btn:not(:disabled):active {
+:root .fullscreen-group.is-center .fullscreen-action-btn:not(:disabled):active {
   transform: translateY(0);
 }
 
@@ -220,17 +214,11 @@
   color: var(--mpx-btn-variant-player-text-idle);
 }
 
-:root
-  .fullscreen-group
-  .header-popover-control
-  .header-popover-trigger:hover {
+:root .fullscreen-group .header-popover-control .header-popover-trigger:hover {
   background: var(--mpx-btn-variant-player-bg-hover);
 }
 
-:root
-  .fullscreen-group
-  .header-popover-control
-  .header-popover-trigger:active {
+:root .fullscreen-group .header-popover-control .header-popover-trigger:active {
   background: var(--mpx-btn-variant-player-bg-active);
   border-color: var(--mpx-btn-variant-player-border-active);
 }
@@ -579,4 +567,131 @@
   color: var(--mpx-text-inverse);
   font-size: 12px;
   box-shadow: var(--mpx-tooltip-shadow, var(--mpx-shadow-popover));
+}
+
+/* 全屏群组选单 */
+.fullscreen-group-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: var(--mpx-dialog-backdrop-bg, rgba(0, 0, 0, 0.55));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-group-picker {
+  min-width: 280px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mpx-dialog-panel-gap, 10px);
+  padding: var(--mpx-dialog-panel-padding, 14px);
+  border: var(--mpx-dialog-panel-border-width, 1px) solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
+  background: var(
+    --mpx-dialog-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  box-shadow: var(
+    --mpx-dialog-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  color: inherit;
+}
+
+.fullscreen-group-picker-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fullscreen-group-picker-empty {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.fullscreen-group-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.fullscreen-group-picker-item {
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  border: 1px solid transparent;
+}
+
+.fullscreen-group-picker-item.is-highlighted {
+  background: var(
+    --mpx-slot-fg-fs-group-picker-highlight-bg,
+    var(--mpx-state-selected-color, var(--mpx-bg-2))
+  );
+  color: var(
+    --mpx-slot-fg-fs-group-picker-highlight-text,
+    var(--mpx-text-1, inherit)
+  );
+  border-color: var(
+    --mpx-slot-fg-fs-group-picker-highlight-border,
+    var(--mpx-dialog-panel-border-color, var(--mpx-border-2))
+  );
+}
+
+.fullscreen-group-picker-item-custom {
+  border-top: 1px dashed var(--mpx-border-2, #555);
+  margin-top: 4px;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.fullscreen-group-picker-custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--mpx-border-1, #444);
+  padding-top: 10px;
+}
+
+.fullscreen-group-picker-custom-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--mpx-border-1, #444);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.fullscreen-group-picker-error {
+  margin: 0;
+  color: #d8554d;
+  font-size: 12px;
+}
+
+.fullscreen-group-picker-custom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.fullscreen-group-picker-hint {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.65;
+  text-align: center;
 }

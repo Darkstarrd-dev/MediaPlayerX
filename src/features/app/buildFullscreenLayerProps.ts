@@ -111,6 +111,30 @@ interface BuildFullscreenLayerPropsParams {
   setFullscreenSplit: Dispatch<SetStateAction<number>>;
   moveImage: (step: number) => void;
   goPackage: (step: number) => void;
+  // 群组选单：全屏模式下 `+` 快捷键触发
+  fullscreenGroupPickerOpen: boolean;
+  groupState: {
+    groups: import("../../features/group").GroupDefinition[];
+  };
+  fullscreenGroupPickerCurrentMedia: {
+    mediaId: string;
+    mediaType: import("../../features/group").GroupMediaType;
+  } | null;
+  onCloseFullscreenGroupPicker: () => void;
+  onAddToGroupFromFullscreen: (
+    groupId: string,
+    media: {
+      mediaId: string;
+      mediaType: import("../../features/group").GroupMediaType;
+    },
+  ) => void;
+  onCreateAndAddFromFullscreen: (
+    name: string,
+    media: {
+      mediaId: string;
+      mediaType: import("../../features/group").GroupMediaType;
+    },
+  ) => void;
 }
 
 export function buildFullscreenLayerProps(
@@ -270,5 +294,11 @@ export function buildFullscreenLayerProps(
       params.setVideoFitMode(mode);
     },
     onExit: () => params.setFullscreenActiveWithAutoStop(false),
+    fullscreenGroupPickerOpen: params.fullscreenGroupPickerOpen,
+    groupState: params.groupState,
+    fullscreenGroupPickerCurrentMedia: params.fullscreenGroupPickerCurrentMedia,
+    onCloseFullscreenGroupPicker: params.onCloseFullscreenGroupPicker,
+    onAddToGroupFromFullscreen: params.onAddToGroupFromFullscreen,
+    onCreateAndAddFromFullscreen: params.onCreateAndAddFromFullscreen,
   };
 }
