@@ -57,6 +57,7 @@ export function useAppReadAndNavigation({
     archiveLoadStatus,
     mediaState,
     readState,
+    groupFilterEnabled: appSettings.groupFilterEnabled,
     groupMemberIds,
     groupIsLoading: groupState.isLoading,
   });

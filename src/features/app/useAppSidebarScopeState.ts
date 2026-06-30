@@ -99,6 +99,9 @@ interface UseAppSidebarScopeStateParams {
   // 群组过滤：selectedGroupId 为 null 时不进行过滤；isLoading 为 true
   // 时同样跳过过滤，避免首屏异步加载期间误判"无成员"导致空树
   selectedGroupId: string | null;
+  // 群组过滤开关：true 时才按 selectedGroupId 过滤；false 显示全部。
+  // 与 selectedGroupId 解耦：下拉切换不再立即改变左侧列表
+  groupFilterEnabled: boolean;
   groupMemberIds: ReadonlySet<string>;
   groupIsLoading: boolean;
 }
@@ -241,6 +244,7 @@ export function useAppSidebarScopeState({
   setGradeByPackage,
   updateSettings,
   selectedGroupId,
+  groupFilterEnabled,
   groupMemberIds,
   groupIsLoading,
 }: UseAppSidebarScopeStateParams): UseAppSidebarScopeStateResult {
@@ -993,9 +997,10 @@ export function useAppSidebarScopeState({
     return refs;
   }, [orderedRootScopedPackages]);
 
-  // 群组过滤：仅当 selectedGroupId 非空且群组数据加载完成时生效
+  // 群组过滤：仅当 groupFilterEnabled=true && selectedGroupId 非空且群组数据加载完成时生效
   // 加载期间（groupIsLoading=true）保留全树，避免空树闪屏
-  const shouldFilterByGroup = selectedGroupId != null && !groupIsLoading;
+  const shouldFilterByGroup =
+    groupFilterEnabled && selectedGroupId != null && !groupIsLoading;
   const filteredImageTreeForSidebar = useMemo(
     () =>
       shouldFilterByGroup

@@ -98,6 +98,8 @@ export function useAppSessionState({
     null,
   );
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [fullscreenGroupPickerOpen, setFullscreenGroupPickerOpen] =
+    useState(false);
   const [sidebarRenameDialogOpen, setSidebarRenameDialogOpen] = useState(false);
   const [sidebarRenameTargetNodeId, setSidebarRenameTargetNodeId] = useState<
     string | null
@@ -249,6 +251,8 @@ export function useAppSessionState({
     setManageOperationHint,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    fullscreenGroupPickerOpen,
+    setFullscreenGroupPickerOpen,
     sidebarRenameDialogOpen,
     setSidebarRenameDialogOpen,
     sidebarRenameTargetNodeId,

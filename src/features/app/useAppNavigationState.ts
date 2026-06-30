@@ -60,7 +60,9 @@ interface UseAppNavigationStateParams {
   >;
   readState: AppReadStateResult;
   // 群组过滤：selectedGroupId 来自 appSettings.selectedGroupId；
+  // groupFilterEnabled 来自 appSettings.groupFilterEnabled；
   // groupMemberIds / groupIsLoading 来自 useGroupState
+  groupFilterEnabled: boolean;
   groupMemberIds: ReadonlySet<string>;
   groupIsLoading: boolean;
 }
@@ -72,6 +74,7 @@ export function useAppNavigationState({
   archiveLoadStatus,
   mediaState,
   readState,
+  groupFilterEnabled,
   groupMemberIds,
   groupIsLoading,
 }: UseAppNavigationStateParams) {
@@ -247,6 +250,7 @@ export function useAppNavigationState({
     setGradeByPackage,
     updateSettings,
     selectedGroupId,
+    groupFilterEnabled,
     groupMemberIds,
     groupIsLoading,
   });

@@ -296,9 +296,12 @@ export const appSettingsSchema = z.object({
   imageCollapsedFolderNodeIds: z.array(z.string().min(1)),
   videoCollapsedFolderNodeIds: z.array(z.string().min(1)),
   musicCollapsedFolderNodeIds: z.array(z.string().min(1)),
-  // 群组选择：null = 全部；非 null = 选中群组 ID
+  // 群组焦点：null = 全部；非 null = 选中群组 ID（仅作为下拉焦点 / 加入-移除目标，不再触发 sidebar 树过滤）
   // .default(null) 兼容旧用户配置（无此字段时 Zod 自动填充）
   selectedGroupId: z.string().nullable().default(null),
+  // 群组过滤开关：true 时 sidebar 树按 selectedGroupId 过滤；false 时显示全部
+  // 与 selectedGroupId 解耦：下拉切换不再立即改变左侧列表，需通过独立开关（或 * 快捷键）显式切换
+  groupFilterEnabled: z.boolean().default(false),
   sidebarLabelDisplayMode: sidebarLabelDisplayModeSchema,
   sidebarTreeDisplayMode: sidebarTreeDisplayModeSchema,
   uiLocale: uiLocaleSchema,
