@@ -71,6 +71,10 @@ function createBaseParams(): Parameters<typeof useShortcutEngine>[0] {
     onImageCtrlWheelNavigateSidebar: vi.fn(),
     onCopyFocusedImageToClipboard: vi.fn(() => true),
     onCopyFocusedVideoFrameToClipboard: vi.fn(() => true),
+    onToggleGroupFilter: vi.fn(),
+    onJoinCurrentToGroup: vi.fn(),
+    onRemoveCurrentFromGroup: vi.fn(),
+    onOpenFullscreenGroupPicker: vi.fn(),
   };
 }
 
@@ -1335,5 +1339,199 @@ describe("useShortcutEngine ctrl+arrow image mapping", () => {
 
     expect(params.onCopyFocusedVideoFrameToClipboard).not.toHaveBeenCalled();
     expect(params.onCopyFocusedImageToClipboard).not.toHaveBeenCalled();
+  });
+});
+
+describe("useShortcutEngine group shortcuts", () => {
+  it("non-fullscreen NumpadMultiply 触发 onToggleGroupFilter", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "*",
+          code: "NumpadMultiply",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onToggleGroupFilter).toHaveBeenCalledTimes(1);
+    expect(params.onOpenFullscreenGroupPicker).not.toHaveBeenCalled();
+  });
+
+  it("non-fullscreen Shift+Digit8 (主键盘 *) 触发 onToggleGroupFilter", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "*",
+          code: "Digit8",
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onToggleGroupFilter).toHaveBeenCalledTimes(1);
+  });
+
+  it("fullscreen 模式下 * 快捷键不触发 onToggleGroupFilter", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "*",
+          code: "NumpadMultiply",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onToggleGroupFilter).not.toHaveBeenCalled();
+  });
+
+  it("non-fullscreen NumpadAdd 触发 onJoinCurrentToGroup", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "+",
+          code: "NumpadAdd",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onJoinCurrentToGroup).toHaveBeenCalledTimes(1);
+    expect(params.onOpenFullscreenGroupPicker).not.toHaveBeenCalled();
+  });
+
+  it("non-fullscreen Shift+Equal (主键盘 +) 触发 onJoinCurrentToGroup", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "+",
+          code: "Equal",
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onJoinCurrentToGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it("fullscreen 模式下 NumpadAdd 触发 onOpenFullscreenGroupPicker 而非 onJoinCurrentToGroup", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.fullscreenDisplay = "image-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "+",
+          code: "NumpadAdd",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onOpenFullscreenGroupPicker).toHaveBeenCalledTimes(1);
+    expect(params.onJoinCurrentToGroup).not.toHaveBeenCalled();
+  });
+
+  it("fullscreen 模式下 Shift+Equal 同样触发 onOpenFullscreenGroupPicker", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    params.fullscreenDisplay = "image-only";
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "+",
+          code: "Equal",
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onOpenFullscreenGroupPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it("non-fullscreen Minus 触发 onRemoveCurrentFromGroup", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "-",
+          code: "Minus",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onRemoveCurrentFromGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it("non-fullscreen NumpadSubtract 触发 onRemoveCurrentFromGroup", () => {
+    const params = createBaseParams();
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "-",
+          code: "NumpadSubtract",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onRemoveCurrentFromGroup).toHaveBeenCalledTimes(1);
+  });
+
+  it("fullscreen 模式下 - 快捷键不触发 onRemoveCurrentFromGroup", () => {
+    const params = createBaseParams();
+    params.fullscreenActive = true;
+    renderHook(() => useShortcutEngine(params));
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "-",
+          code: "Minus",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(params.onRemoveCurrentFromGroup).not.toHaveBeenCalled();
   });
 });
