@@ -651,7 +651,11 @@
 }
 
 .fullscreen-group-picker-item-custom {
-  border-top: 1px dashed var(--mpx-border-2, #555);
+  border-top: 1px dashed
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
   margin-top: 4px;
   font-style: italic;
   opacity: 0.85;
@@ -661,7 +665,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border-top: 1px solid var(--mpx-border-1, #444);
+  border-top: 1px solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
   padding-top: 10px;
 }
 
@@ -669,7 +677,11 @@
   width: 100%;
   height: 32px;
   padding: 0 8px;
-  border: 1px solid var(--mpx-border-1, #444);
+  border: 1px solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
   border-radius: 4px;
   background: transparent;
   color: inherit;

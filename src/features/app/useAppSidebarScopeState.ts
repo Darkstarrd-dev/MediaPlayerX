@@ -966,6 +966,11 @@ export function useAppSidebarScopeState({
       if (!sourceId || seen.has(sourceId)) {
         continue;
       }
+      // 群组过滤：F 模式下仅保留群组成员，使 fullscreen 跨包导航（goPackage / moveImage）
+      // 以过滤后的 orderedRootScopedPackages 为基准，而非全部图包
+      if (shouldFilterImageByGroup && !imageGroupMemberIds.has(sourceId)) {
+        continue;
+      }
       if (
         !rootScopedPackageIds.has(sourceId) ||
         !packageByIdEffective.has(sourceId)
