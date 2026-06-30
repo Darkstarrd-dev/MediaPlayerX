@@ -631,12 +631,12 @@
   border-radius: var(--mpx-dialog-panel-radius, 12px);
   cursor: pointer;
   font-size: 13px;
+  color: var(--mpx-text-1, inherit);
   border: 1px solid transparent;
 }
 
 .fullscreen-group-picker-item.is-highlighted {
   background: var(--mpx-state-selected-color, var(--mpx-bg-2));
-  color: var(--mpx-text-1, inherit);
   border-color: var(
     --mpx-dialog-panel-border-color,
     var(--mpx-overlay-surface-border, var(--mpx-border-2))
@@ -651,7 +651,6 @@
     );
   margin-top: 4px;
   font-style: italic;
-  opacity: 0.85;
 }
 
 .fullscreen-group-picker-custom-form {
