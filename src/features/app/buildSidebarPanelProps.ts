@@ -69,9 +69,12 @@ interface BuildSidebarPanelPropsParams {
   groupFooterProps: {
     groups: { id: string; name: string }[];
     selectedGroupId: string | null;
+    groupFilterEnabled: boolean;
+    isCurrentInGroup: boolean;
     canJoin: boolean;
     canRemove: boolean;
     onSelectGroup: (id: string | null) => void;
+    onToggleGroupFilter: () => void;
     onAddGroup: (name: string) => void;
     onDeleteGroup: () => void;
     onJoinCurrentToGroup: () => void;

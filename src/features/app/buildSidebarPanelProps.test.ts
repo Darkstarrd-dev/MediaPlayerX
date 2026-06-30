@@ -17,9 +17,12 @@ const SIDEBAR_NODE_FIXTURE: SidebarNode = {
 const EMPTY_GROUP_FOOTER_PROPS = {
   groups: [] as { id: string; name: string }[],
   selectedGroupId: null as string | null,
+  groupFilterEnabled: false,
+  isCurrentInGroup: false,
   canJoin: false,
   canRemove: false,
   onSelectGroup: vi.fn(),
+  onToggleGroupFilter: vi.fn(),
   onAddGroup: vi.fn(),
   onDeleteGroup: vi.fn(),
   onJoinCurrentToGroup: vi.fn(),

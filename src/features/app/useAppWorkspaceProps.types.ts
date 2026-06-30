@@ -284,4 +284,6 @@ export interface UseAppWorkspacePropsParams {
   // 群组：useGroupState 返回值与当前选中群组的成员 ID 集合
   groupState: UseGroupStateResult;
   groupMemberIds: ReadonlySet<string>;
+  // 群组过滤开关（与 selectedGroupId 解耦）
+  groupFilterEnabled: boolean;
 }

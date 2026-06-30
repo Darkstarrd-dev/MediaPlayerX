@@ -262,6 +262,7 @@ export function useAppWorkspaceProps({
   musicBookletBindings,
   groupState,
   groupMemberIds,
+  groupFilterEnabled,
 }: UseAppWorkspacePropsParams) {
   const { t } = useI18n();
   const { metadataManageSelectionMode, toggleMetadataManageSelectionMode } =
@@ -498,6 +499,15 @@ export function useAppWorkspaceProps({
         name: group.name,
       })),
       selectedGroupId: appSettings.selectedGroupId,
+      groupFilterEnabled,
+      isCurrentInGroup:
+        appSettings.selectedGroupId != null &&
+        (mode === "image"
+          ? selectedPackageId.length > 0 &&
+            groupMemberIds.has(selectedPackageId)
+          : mode === "video"
+            ? selectedVideoId.length > 0 && groupMemberIds.has(selectedVideoId)
+            : false),
       canJoin:
         appSettings.selectedGroupId != null &&
         (mode === "image"
@@ -514,7 +524,14 @@ export function useAppWorkspaceProps({
             ? selectedVideoId.length > 0 && groupMemberIds.has(selectedVideoId)
             : false),
       onSelectGroup: (id) => {
+        // 仅切换 focus 群组，不再触发 sidebar 树过滤
         appSettings.updateSettings({ selectedGroupId: id });
+      },
+      onToggleGroupFilter: () => {
+        // 独立切换 sidebar 树过滤开关
+        appSettings.updateSettings({
+          groupFilterEnabled: !groupFilterEnabled,
+        });
       },
       onAddGroup: (name) => {
         const newGroup = groupState.addGroup(name);

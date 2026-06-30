@@ -1226,6 +1226,24 @@
   cursor: default;
 }
 
+/* 群组过滤切换按钮：aria-pressed=true 时高亮（处于 group 视图） */
+.sidebar-group-actions .sidebar-group-btn[aria-pressed="true"] {
+  background: var(
+    --mpx-slot-fg-sidebar-footer-active-bg,
+    var(--mpx-state-selected-color, var(--mpx-bg-2))
+  );
+  color: var(
+    --mpx-slot-fg-sidebar-footer-active-text,
+    var(--mpx-text-1, inherit)
+  );
+}
+
+/* ± 按钮：内容已加入群组时高亮（移除提示态） */
+.sidebar-group-actions .sidebar-group-btn.is-in-group {
+  background: var(--mpx-slot-fg-sidebar-footer-warn-bg, var(--mpx-bg-2));
+  color: var(--mpx-slot-fg-sidebar-footer-warn-text, inherit);
+}
+
 .sidebar-group-dialog-backdrop {
   position: fixed;
   inset: 0;
@@ -1237,16 +1255,27 @@
 }
 
 .sidebar-group-dialog {
-  background: var(--mpx-bg-2, #2a2a2a);
   color: inherit;
-  border: 1px solid var(--mpx-border-1, #444);
-  border-radius: 6px;
-  padding: 16px;
+  border: var(--mpx-dialog-panel-border-width, 1px) solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
+  background: var(
+    --mpx-dialog-panel-bg,
+    var(--mpx-overlay-surface-bg, var(--mpx-bg-elevated))
+  );
+  box-shadow: var(
+    --mpx-dialog-panel-shadow,
+    var(--mpx-overlay-surface-shadow, var(--mpx-shadow-panel))
+  );
+  padding: var(--mpx-dialog-panel-padding, 14px);
   min-width: 280px;
   max-width: 90vw;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--mpx-dialog-panel-gap, 10px);
 }
 
 .sidebar-group-dialog-title {
@@ -1264,8 +1293,12 @@
 .sidebar-group-dialog-input {
   width: 100%;
   height: var(--mpx-icon-button-size-px, 28px);
-  border: 1px solid var(--mpx-border-1, #444);
-  border-radius: 4px;
+  border: var(--mpx-dialog-panel-border-width, 1px) solid
+    var(
+      --mpx-dialog-panel-border-color,
+      var(--mpx-overlay-surface-border, var(--mpx-border-2))
+    );
+  border-radius: var(--mpx-dialog-panel-radius, 12px);
   background: transparent;
   color: inherit;
   font-size: 13px;

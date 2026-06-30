@@ -204,6 +204,9 @@ export function useAppWorkspaceBindings({
     groupMemberIds,
   } = readNavigationState;
 
+  // 群组过滤开关来自 appSettings（与 selectedGroupId 解耦）
+  const groupFilterEnabled = appSettings.groupFilterEnabled;
+
   const musicBookletLibrarySnapshot =
     mode === "music"
       ? (backendRead.library.data ??
@@ -494,5 +497,6 @@ export function useAppWorkspaceBindings({
     musicBookletBindings,
     groupState,
     groupMemberIds,
+    groupFilterEnabled,
   });
 }

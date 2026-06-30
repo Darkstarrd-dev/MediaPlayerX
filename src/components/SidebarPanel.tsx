@@ -97,9 +97,12 @@ interface SidebarPanelProps {
   groupFooterProps?: {
     groups: { id: string; name: string }[];
     selectedGroupId: string | null;
+    groupFilterEnabled: boolean;
+    isCurrentInGroup: boolean;
     canJoin: boolean;
     canRemove: boolean;
     onSelectGroup: (id: string | null) => void;
+    onToggleGroupFilter: () => void;
     onAddGroup: (name: string) => void;
     onDeleteGroup: () => void;
     onJoinCurrentToGroup: () => void;
@@ -1457,9 +1460,14 @@ function SidebarPanel({
           <GroupFooter
             groups={groupFooterProps?.groups ?? []}
             selectedGroupId={groupFooterProps?.selectedGroupId ?? null}
+            groupFilterEnabled={groupFooterProps?.groupFilterEnabled ?? false}
+            isCurrentInGroup={groupFooterProps?.isCurrentInGroup ?? false}
             canJoin={groupFooterProps?.canJoin ?? false}
             canRemove={groupFooterProps?.canRemove ?? false}
             onSelectGroup={groupFooterProps?.onSelectGroup ?? (() => undefined)}
+            onToggleGroupFilter={
+              groupFooterProps?.onToggleGroupFilter ?? (() => undefined)
+            }
             onAddGroup={groupFooterProps?.onAddGroup ?? (() => undefined)}
             onDeleteGroup={groupFooterProps?.onDeleteGroup ?? (() => undefined)}
             onJoinCurrentToGroup={
