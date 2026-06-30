@@ -75,6 +75,41 @@ Last updated: 2026-06-01
 - 管理模式下可执行 Sidebar 选中节点删除：触发危险确认弹窗，需勾选“我了解此操作将永久不可逆地删除选中数据”后方可确认。
 - 外部源监听开关在“设置 → 数据库”里提供：`externalSourceWatcherEnabled` 默认开启；关闭后 watcher 立即卸载，Sidebar 头部在选中文件夹节点时露出 `refresh` 按钮（仅在 `!externalSourceWatcherEnabled && selectedFolderPathKey != null` 时显示，slot = `fg-sidebar-header-btn-group-actions-btn-folder-refresh`），点击触发 `requestExternalSourceFolderRefresh({ path_key })`，后端对选中目录根做局部 prune 并广播 `manual-folder-refresh` 事件；前端 useReadOnlyDataAccess 把它归为 transient reason，不做主动失效重读。
 
+### 群组管理（Group）
+
+- 群组管理位于 Sidebar 底部槽位 `fg-sidebar-footer`，所有模式下始终可见（audio 模式除 ± 按钮外其余可用）。
+- 群组定义持久化到 `app_state` 表的 `media_groups_v1` key，跨会话保留；选中的群组焦点 (`selectedGroupId`) 与过滤开关 (`groupFilterEnabled`) 持久化到 `ui_settings_v1`。
+- **状态语义**：
+  - `selectedGroupId`：当前 focus 群组。null = 无 focus。
+  - `groupFilterEnabled`：sidebar 树过滤开关。
+- **下拉选单**（最左）：
+  - 选项 = 全部 + 已建群组列表。
+  - 切换只改变 focus 群组，**不再立即过滤 sidebar 树**。
+- **过滤切换按钮**（最左 `*`/`A`）：
+  - `A`（aria-pressed=false）= 全部视图。
+  - `F`（aria-pressed=true）= 群组视图（按 focus 群组过滤 sidebar 树）。
+  - 点击切换过滤开关；快捷键 `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）。
+- **添加群组**（`+`）：弹出内联对话框，输入群组名（必填、不可重名），提交后自动选中新群组。
+- **删除群组**（`−`）：未选中群组时 disabled；选中时弹出二次确认对话框。
+- **加入/移除按钮**（`±`）：根据当前 focus 内容是否已位于 focus 群组中切换显示。
+  - 未在群组中：显示「加入」，点击触发 `addToGroup`。
+  - 已在群组中：显示「移除」并高亮，点击触发 `removeFromGroup`。
+  - 未选中群组时 disabled。
+  - 快捷键 `+`（小键盘 `NumpadAdd` 或主键盘 `Shift+Equal`）尝试加入（已加入则无效）；`-`（主键盘 `Minus` 或小键盘 `NumpadSubtract`）尝试移除（不存在则无效）。
+- **全屏模式**：
+  - `*`、`-` 快捷键无效。
+  - `+` 快捷键弹出群组选单（`FullscreenGroupPicker` overlay）：
+    - 列表所有已建群组 + 末尾「自定义...」项。
+    - `↑↓` 键导航，`Enter` 确认，`Esc` 取消。
+    - 选中「自定义...」展开输入框，提交合法群组名后创建并加入。
+  - 加入/移除的"目标内容"由全屏 `fullscreenDisplay` 与 `fullscreenVideoFocus` 决定：
+    - `video-only` 或 `dual + video focus` → 当前视频（`mediaType=video`）。
+    - `image-only` 或 `dual + image focus` → 当前图包（`mediaType=package`）。
+- **群组业务规则**：
+  - 群组只支持 `package`（图包）和 `video`（视频）两种 `mediaType`；`audio`（音频）不在群组范围内。
+  - 重复加入（同一 groupId + mediaId）静默忽略；移除不存在的成员静默忽略。
+  - 群组数据写入采用 300ms 防抖，合并为单次 `writeAppState` 调用。
+
 ### 视频模式
 
 - 展示分层根目录、子目录与视频文件叶子。
@@ -322,8 +357,12 @@ Last updated: 2026-06-01
 - 全屏图片滚轮翻页采用最小持续时间逐页推进：快速滚轮产生的多页输入按固定节奏（与按住方向键一致）逐页显示，不跳过中间页、不丢页。
 - 非全屏且焦点在 Sidebar 时，`方向键/Enter/PageUp/PageDown/Home/End` 用于 Sidebar 导航，不作用于缩略图翻页。
 - `ArrowUp/ArrowDown` 移动到不可见项时，Sidebar 自动滚动保证目标项可见。
-- `PageUp/PageDown` 以“当前可视项数量 - 1”作为步长翻页；超出边界时直接钳制到首项/末项。
+- `PageUp/PageDown` 以"当前可视项数量 - 1"作为步长翻页；超出边界时直接钳制到首项/末项。
 - 鼠标点击 Sidebar 项后，焦点保持在 Sidebar；仅点击缩略图区或使用 `Tab` 才切回 Main 焦点。
+- 群组快捷键（默认绑定，可在设置面板重映射）：
+  - `*`（小键盘 `NumpadMultiply` 或主键盘 `Shift+Digit8`）：切换 sidebar 树过滤开关（`groupFilterEnabled`）。**全屏下无效**。
+  - `+`（小键盘 `NumpadAdd` 或主键盘 `Shift+Equal`）：非全屏下将当前 focus 内容加入 focus 群组（已加入则无效）；**全屏下弹出群组选单**。
+  - `-`（主键盘 `Minus` 或小键盘 `NumpadSubtract`）：非全屏下将当前 focus 内容从 focus 群组移除（不存在则无效）。**全屏下无效**。
 
 ### 视频控制
 
