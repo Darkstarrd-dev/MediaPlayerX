@@ -16,7 +16,7 @@ export class ExternalSourceWatcherManager {
 
   private readonly debounceMs: number;
   private readonly mediaExtensions: Set<string>;
-  private readonly onDebouncedChange: () => void;
+  private readonly onDebouncedChange: (changedPaths: string[]) => void;
   private readonly watchImpl: typeof watch;
 
   private readonly watcherByPathKey = new Map<string, FSWatcher>();
@@ -25,11 +25,12 @@ export class ExternalSourceWatcherManager {
   private lastIgnoredSubtitleEventAtMs = 0;
   private suppressionCount = 0;
   private suppressionTailUntilMs = 0;
+  private pendingChangedPaths = new Set<string>();
 
   constructor(options: {
     debounceMs: number;
     mediaExtensions?: Iterable<string>;
-    onDebouncedChange: () => void;
+    onDebouncedChange: (changedPaths: string[]) => void;
     watchImpl?: typeof watch;
   }) {
     this.debounceMs = options.debounceMs;
@@ -111,6 +112,7 @@ export class ExternalSourceWatcherManager {
             ) {
               return;
             }
+            this.collectChangedPath(watchedPathState.watchPath, filename);
             this.scheduleDebouncedRefresh();
           },
         );
@@ -140,6 +142,7 @@ export class ExternalSourceWatcherManager {
     }
     this.watcherByPathKey.clear();
     this.watchedPathStateByKey.clear();
+    this.pendingChangedPaths.clear();
   }
 
   /**
@@ -152,6 +155,7 @@ export class ExternalSourceWatcherManager {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
     }
+    this.pendingChangedPaths.clear();
   }
 
   /**
@@ -172,6 +176,27 @@ export class ExternalSourceWatcherManager {
     return Date.now() < this.suppressionTailUntilMs;
   }
 
+  private collectChangedPath(
+    watchPath: string,
+    filename: string | Buffer | null,
+  ): void {
+    if (typeof filename === "string" && filename.trim().length > 0) {
+      const changedPath = path.join(watchPath, filename);
+      this.pendingChangedPaths.add(path.dirname(changedPath));
+      return;
+    }
+    if (filename instanceof Buffer) {
+      const decoded = filename.toString("utf8").trim();
+      if (decoded.length > 0) {
+        const changedPath = path.join(watchPath, decoded);
+        this.pendingChangedPaths.add(path.dirname(changedPath));
+        return;
+      }
+    }
+    // filename 为空或 null 时，无法定位具体文件，回退到整个监听根目录
+    this.pendingChangedPaths.add(watchPath);
+  }
+
   private scheduleDebouncedRefresh(): void {
     if (this.isEventSuppressed()) {
       return;
@@ -181,7 +206,9 @@ export class ExternalSourceWatcherManager {
     }
     this.debounceTimer = setTimeout(() => {
       this.debounceTimer = null;
-      this.onDebouncedChange();
+      const changedPaths = Array.from(this.pendingChangedPaths);
+      this.pendingChangedPaths.clear();
+      this.onDebouncedChange(changedPaths);
     }, this.debounceMs);
   }
 

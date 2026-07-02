@@ -275,6 +275,7 @@ export class FileSystemMediaReadService {
   private watcherRefreshInFlight = false;
   private pendingWatcherRefresh = false;
   private lastWatcherRefreshAtMs = 0;
+  private pendingWatcherChangedPaths = new Set<string>();
   private readLibrarySnapshotInFlight: Promise<LibrarySnapshotDto> | null =
     null;
   private readLibrarySnapshotLiteInFlight: Promise<LibrarySnapshotLiteDto> | null =
@@ -296,7 +297,8 @@ export class FileSystemMediaReadService {
         ...ARCHIVE_EXTENSIONS,
         ...CUE_EXTENSIONS,
       ]),
-      onDebouncedChange: () => this.runExternalSourceRefreshFromWatcher(),
+      onDebouncedChange: (changedPaths: string[]) =>
+        this.runExternalSourceRefreshFromWatcher(changedPaths),
     });
   private externalSourceWatcherEnabled = false;
   private disposed = false;
@@ -831,13 +833,19 @@ export class FileSystemMediaReadService {
     this.refreshExternalSourceWatchers();
   }
 
-  private runExternalSourceRefreshFromWatcher(): void {
+  private runExternalSourceRefreshFromWatcher(
+    changedPaths: string[],
+  ): void {
     if (
       this.disposed ||
       this.importTaskService.hasRunningImportTasks() ||
       this.hasManagementMutationInFlight()
     ) {
       return;
+    }
+
+    for (const changedPath of changedPaths) {
+      this.pendingWatcherChangedPaths.add(changedPath);
     }
 
     this.pendingWatcherRefresh = true;
@@ -903,6 +911,9 @@ export class FileSystemMediaReadService {
     this.watcherRefreshInFlight = true;
     this.lastWatcherRefreshAtMs = Date.now();
 
+    const changedPaths = Array.from(this.pendingWatcherChangedPaths);
+    this.pendingWatcherChangedPaths.clear();
+
     const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
     const previousSnapshotKey = previousSnapshot
       ? this.buildExternalWatcherSnapshotKey(previousSnapshot)
@@ -910,9 +921,33 @@ export class FileSystemMediaReadService {
 
     try {
       this.externalSourceWatcherManager.beginEventSuppression();
-      const nextSnapshot = await this.refreshSnapshotFromFilesystem({
-        reason: "watcher-external-source-change",
-      });
+
+      let nextSnapshot: LibrarySnapshotDto;
+      if (changedPaths.length > 0) {
+        // 局部增量扫描：仅扫描变化的目录，合并到已有 snapshot
+        nextSnapshot = await this.librarySnapshotService.addToSnapshot(
+          () => this.ensureStateLoaded(),
+          changedPaths,
+          [],
+        );
+        // 对变化目录范围做局部 prune，检测已删除的文件
+        const resolvedChangedDirs = changedPaths.map((p) => path.resolve(p));
+        nextSnapshot = await this.pruneMissingSnapshotEntries(nextSnapshot, {
+          pathFilter: (absolutePath: string): boolean => {
+            const resolvedAbsolute = path.resolve(absolutePath);
+            return resolvedChangedDirs.some((dir) =>
+              isPathInsideRoot(dir, resolvedAbsolute),
+            );
+          },
+          suppressEmit: true,
+        });
+      } else {
+        // 无路径信息时回退到全量重扫（保底，正常不会触发）
+        nextSnapshot = await this.refreshSnapshotFromFilesystem({
+          reason: "watcher-external-source-change",
+        });
+      }
+
       this.externalSourceWatcherManager.endEventSuppression(
         FileSystemMediaReadService.WATCHER_SELF_EVENT_SUPPRESS_TAIL_MS,
       );
@@ -957,6 +992,7 @@ export class FileSystemMediaReadService {
     if (!this.externalSourceWatcherEnabled) {
       // 开关关闭时确保任何残留 watcher 句柄被释放，下次开启时再挂载
       this.externalSourceWatcherManager.stop();
+      this.pendingWatcherChangedPaths.clear();
       return;
     }
     this.externalSourceWatcherManager.refresh({
@@ -967,6 +1003,7 @@ export class FileSystemMediaReadService {
 
   private stopExternalSourceWatchers(): void {
     this.externalSourceWatcherManager.stop();
+    this.pendingWatcherChangedPaths.clear();
   }
 
   setExternalSourceWatcherEnabled(enabled: boolean): {
@@ -1092,6 +1129,7 @@ export class FileSystemMediaReadService {
     try {
       pruned = await this.pruneMissingSnapshotEntries(filteredSnapshot, {
         pathFilter,
+        suppressEmit: true,
       });
     } catch (error) {
       console.warn("manual folder refresh failed", {
@@ -1395,7 +1433,10 @@ export class FileSystemMediaReadService {
 
   private async pruneMissingSnapshotEntries(
     snapshot: LibrarySnapshotDto,
-    options?: { pathFilter?: (absolutePath: string) => boolean },
+    options?: {
+      pathFilter?: (absolutePath: string) => boolean;
+      suppressEmit?: boolean;
+    },
   ): Promise<LibrarySnapshotDto> {
     if (this.hasManagementMutationInFlight()) {
       this.pruneMissingSnapshotQueued = true;
@@ -1497,10 +1538,12 @@ export class FileSystemMediaReadService {
     }
     const nextSnapshot = this.syncSnapshotFromDatabase();
 
-    this.emitLibraryChanged({
-      reason: "auto-prune-missing-sources",
-      updated_at_ms: Date.now(),
-    });
+    if (!options?.suppressEmit) {
+      this.emitLibraryChanged({
+        reason: "auto-prune-missing-sources",
+        updated_at_ms: Date.now(),
+      });
+    }
 
     return nextSnapshot;
   }

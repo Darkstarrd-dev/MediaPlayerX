@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import type { FSWatcher } from "node:fs";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -37,7 +39,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -68,6 +70,9 @@ describe("ExternalSourceWatcherManager", () => {
     callback("change", "demo.mp4");
     vi.advanceTimersByTime(650);
     expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.dirname(path.join("Z:/Playground/Media", "demo.mp4")),
+    ]);
 
     manager.stop();
   });
@@ -87,7 +92,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -105,6 +110,10 @@ describe("ExternalSourceWatcherManager", () => {
     vi.advanceTimersByTime(650);
 
     expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    // filename 为 null 时回退到整个监听根目录
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.resolve("Z:/Playground/Media"),
+    ]);
     manager.stop();
   });
 
@@ -123,7 +132,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -159,7 +168,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -177,6 +186,9 @@ describe("ExternalSourceWatcherManager", () => {
     vi.advanceTimersByTime(650);
 
     expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.dirname(path.join("Z:/Playground", "newvideo.mp4")),
+    ]);
     manager.stop();
   });
 
@@ -195,7 +207,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -231,7 +243,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -249,6 +261,9 @@ describe("ExternalSourceWatcherManager", () => {
     vi.advanceTimersByTime(650);
 
     expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.dirname(path.join("Z:/Playground", "folder/IMPORTED.zip")),
+    ]);
     manager.stop();
   });
 
@@ -267,7 +282,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -303,7 +318,7 @@ describe("ExternalSourceWatcherManager", () => {
       return watcher;
     }) as typeof import("node:fs").watch;
 
-    const onDebouncedChange = vi.fn();
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
     const manager = new ExternalSourceWatcherManager({
       debounceMs: 600,
       mediaExtensions: MEDIA_EXTENSIONS,
@@ -341,6 +356,53 @@ describe("ExternalSourceWatcherManager", () => {
     callback("change", "after.mp4");
     vi.advanceTimersByTime(650);
     expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    // beginEventSuppression 清空了 pendingChangedPaths，before/during/tail 均被丢弃
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.dirname(path.join("Z:/Playground/Media", "after.mp4")),
+    ]);
+
+    manager.stop();
+  });
+
+  it("同目录多次变更 debounce 后仅传一个路径，多目录累积去重", () => {
+    const registrations: Array<{
+      callback: WatchCallback;
+      watcher: FSWatcher;
+    }> = [];
+    const watchImpl: typeof import("node:fs").watch = ((...args: unknown[]) => {
+      const callback = args[2] as WatchCallback;
+      const watcher = {
+        close: vi.fn(),
+        on: vi.fn().mockReturnThis(),
+      } as unknown as FSWatcher;
+      registrations.push({ callback, watcher });
+      return watcher;
+    }) as typeof import("node:fs").watch;
+
+    const onDebouncedChange = vi.fn<(paths: string[]) => void>();
+    const manager = new ExternalSourceWatcherManager({
+      debounceMs: 600,
+      mediaExtensions: MEDIA_EXTENSIONS,
+      onDebouncedChange,
+      watchImpl,
+    });
+
+    manager.refresh({
+      importDirectoryRoots: ["Z:/Playground/Media"],
+      importFilePaths: [],
+    });
+
+    expect(registrations).toHaveLength(1);
+    const callback = registrations[0].callback;
+
+    // 同目录下两个文件变更，debounce 后应合并为一个路径
+    callback("rename", "a.mp4");
+    callback("rename", "b.mp4");
+    vi.advanceTimersByTime(650);
+    expect(onDebouncedChange).toHaveBeenCalledTimes(1);
+    expect(onDebouncedChange).toHaveBeenLastCalledWith([
+      path.dirname(path.join("Z:/Playground/Media", "a.mp4")),
+    ]);
 
     manager.stop();
   });
