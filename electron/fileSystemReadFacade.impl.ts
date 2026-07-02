@@ -1023,7 +1023,7 @@ export class FileSystemMediaReadService {
     }
     await this.ensureStateLoaded();
 
-    // 选中文件夹的归一化路径作为 prune 范围过滤基准
+    // 选中文件夹的归一化路径作为局部扫描与 prune 范围过滤基准
     const resolvedPathKey = path.resolve(pathKey);
     const normalizedKey = normalizeAllowlistKey(resolvedPathKey);
 
@@ -1045,29 +1045,47 @@ export class FileSystemMediaReadService {
       return isPathInsideRoot(resolvedPathKey, resolvedAbsolute);
     };
 
+    // 增量扫描前的 snapshot 指纹，用于检测是否有新增文件
     const previousSnapshot = this.librarySnapshotService.peekSnapshotCache();
-    const filteredSnapshot: LibrarySnapshotDto = previousSnapshot
-      ? {
-          ...previousSnapshot,
-          image_packages: previousSnapshot.image_packages.filter((source) =>
-            pathFilter(source.absolute_path),
-          ),
-          image_directories: previousSnapshot.image_directories.filter(
-            (source) => pathFilter(source.absolute_path),
-          ),
-          videos: previousSnapshot.videos.filter((video) =>
-            pathFilter(video.absolute_path),
-          ),
-          audios: (previousSnapshot.audios ?? []).filter((audio) =>
-            pathFilter(audio.absolute_path),
-          ),
-        }
-      : {
-          image_packages: [],
-          image_directories: [],
-          videos: [],
-          audios: [],
-        };
+    const previousSnapshotKey = previousSnapshot
+      ? this.buildExternalWatcherSnapshotKey(previousSnapshot)
+      : "";
+
+    // 局部增量扫描选中目录（addToSnapshot 仅扫描传入目录 + music sources，
+    // 合并到已有 snapshot，识别外部新增文件并持久化，不做全库重扫）
+    const scannedSnapshot =
+      await this.librarySnapshotService.addToSnapshot(
+        () => this.ensureStateLoaded(),
+        [resolvedPathKey],
+        [],
+      );
+    if (this.disposed) {
+      return {
+        matched_directory_root: null,
+        pruned_source_count: 0,
+        pruned_video_count: 0,
+        pruned_audio_count: 0,
+        removed_import_source_count: 0,
+        updated_at_ms: Date.now(),
+      };
+    }
+
+    // 使用增量扫描后的 snapshot（含新增文件），针对选中范围做局部 prune
+    const filteredSnapshot: LibrarySnapshotDto = {
+      ...scannedSnapshot,
+      image_packages: scannedSnapshot.image_packages.filter((source) =>
+        pathFilter(source.absolute_path),
+      ),
+      image_directories: scannedSnapshot.image_directories.filter(
+        (source) => pathFilter(source.absolute_path),
+      ),
+      videos: scannedSnapshot.videos.filter((video) =>
+        pathFilter(video.absolute_path),
+      ),
+      audios: (scannedSnapshot.audios ?? []).filter((audio) =>
+        pathFilter(audio.absolute_path),
+      ),
+    };
 
     const before = this.countSnapshotEntries(filteredSnapshot);
     let pruned: LibrarySnapshotDto;
@@ -1099,8 +1117,14 @@ export class FileSystemMediaReadService {
       ? await this.pruneImportSourcesForDirectoryRoot(matchedRoot)
       : 0;
 
+    // 检测增量扫描前后 snapshot 是否有变化（新增或删除）
+    const scannedSnapshotKey =
+      this.buildExternalWatcherSnapshotKey(scannedSnapshot);
+    const snapshotChanged = scannedSnapshotKey !== previousSnapshotKey;
+
     const updatedAtMs = Date.now();
     if (
+      snapshotChanged ||
       before.images !== after.images ||
       before.videos !== after.videos ||
       before.audios !== after.audios ||

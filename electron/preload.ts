@@ -183,6 +183,10 @@ import {
   openExternalUrlResponseSchema,
   updatePerformanceConfigRequestSchema,
   updatePerformanceConfigResponseSchema,
+  requestExternalSourceFolderRefreshRequestSchema,
+  requestExternalSourceFolderRefreshResponseSchema,
+  setExternalSourceWatcherEnabledRequestSchema,
+  setExternalSourceWatcherEnabledResponseSchema,
 } from "../src/contracts/backend";
 import {
   APP_WINDOW_CHANNELS,
@@ -970,6 +974,26 @@ const backendApi = {
       parsed,
     );
     return updatePerformanceConfigResponseSchema.parse(response);
+  },
+  // 手动刷新外部源文件夹（监听关闭时的替代入口）
+  requestExternalSourceFolderRefresh: async (request: unknown) => {
+    const parsed = requestExternalSourceFolderRefreshRequestSchema.parse(
+      request,
+    );
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.requestExternalSourceFolderRefresh,
+      parsed,
+    );
+    return requestExternalSourceFolderRefreshResponseSchema.parse(response);
+  },
+  // 开关外部源实时监听
+  setExternalSourceWatcherEnabled: async (request: unknown) => {
+    const parsed = setExternalSourceWatcherEnabledRequestSchema.parse(request);
+    const response = await ipcRenderer.invoke(
+      BACKEND_CHANNELS.setExternalSourceWatcherEnabled,
+      parsed,
+    );
+    return setExternalSourceWatcherEnabledResponseSchema.parse(response);
   },
   onLibraryChanged: (listener: (payload: unknown) => void) => {
     const handler = (_event: unknown, payload: unknown) => {

@@ -482,16 +482,24 @@ export function useAppWorkspaceProps({
       effectiveSidebarNodeById.get(selectedSidebarNodeId ?? "")?.pathKey ??
       null,
     onRefreshSelectedFolder: () => {
-      const pathKey =
-        effectiveSidebarNodeById.get(selectedSidebarNodeId ?? "")?.pathKey ??
-        null;
-      if (!pathKey) {
+      const node = effectiveSidebarNodeById.get(selectedSidebarNodeId ?? "");
+      if (!node?.pathKey) {
         return;
       }
+      // video/audio 节点的 pathKey 是文件路径，取父目录作为刷新范围
+      const rawPath = node.pathKey;
+      const lastSep = Math.max(
+        rawPath.lastIndexOf("/"),
+        rawPath.lastIndexOf("\\"),
+      );
+      const pathKey =
+        (node.kind === "video" || node.kind === "audio") && lastSep > 0
+          ? rawPath.substring(0, lastSep)
+          : rawPath;
       mediaRepository
         .requestExternalSourceFolderRefresh?.({ path_key: pathKey })
-        .catch(() => {
-          // 忽略 IPC 失败
+        .catch((error) => {
+          console.warn("[folder-refresh] 刷新失败", error);
         });
     },
     groupFooterProps: {
