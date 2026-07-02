@@ -1,4 +1,4 @@
-import { useEffect, type MutableRefObject, type RefObject } from "react";
+import { useEffect, useRef, type MutableRefObject, type RefObject } from "react";
 
 import type { AppSettings } from "../../contracts/settings";
 import type { BrowserMode } from "../../types";
@@ -71,6 +71,16 @@ export function useAppFullscreenEffects({
     wasFullscreenRef,
   ]);
 
+  // 用 ref 持有最新的 moveImage，避免 moveImage 因依赖（如 fullscreenVideoFocus）
+  // 重建时触发 autoplay 定时器重置。dual 模式下鼠标跨越 pane 边界会改变
+  // fullscreenVideoFocus → moveImage 重建 → 定时器 cleanup+recreate → 从零计时，
+  // 导致 autoplay 永远无法在一个 interval 内不被打断。ref 保活后定时器仅在
+  // autoPlayEnabled/autoPlayInterval/fullscreenActive/fullscreenDisplay 变化时重置。
+  const moveImageRef = useRef(moveImage);
+  useEffect(() => {
+    moveImageRef.current = moveImage;
+  }, [moveImage]);
+
   useEffect(() => {
     const canAutoplayImages = resolveFullscreenImageAutoplayEnabled({
       fullscreenActive,
@@ -81,7 +91,7 @@ export function useAppFullscreenEffects({
     }
 
     const timer = window.setInterval(() => {
-      moveImage(1, "autoplay");
+      moveImageRef.current(1, "autoplay");
     }, autoPlayInterval * 1000);
 
     return () => window.clearInterval(timer);
@@ -90,7 +100,6 @@ export function useAppFullscreenEffects({
     autoPlayInterval,
     fullscreenActive,
     fullscreenDisplay,
-    moveImage,
   ]);
 }
 
