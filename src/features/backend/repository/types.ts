@@ -519,7 +519,11 @@ export interface MediaRepository {
     options?: RepositoryRequestOptions,
   ): Promise<SetExternalSourceWatcherEnabledResponseDto>;
   onLibraryChanged?(
-    listener: (payload: { reason: string; updated_at_ms: number }) => void,
+    listener: (payload: {
+      reason: string;
+      updated_at_ms: number;
+      changedPaths?: string[];
+    }) => void,
   ): () => void;
 }
 

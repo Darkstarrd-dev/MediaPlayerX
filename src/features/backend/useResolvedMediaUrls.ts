@@ -9,6 +9,7 @@ import {
   toErrorMessage,
   type MediaResolveTarget,
 } from './mediaResolveUtils'
+import { normalizePathForCompare } from '../app/pathNormalizationUtils'
 import type { MediaRepository } from './repository'
 
 export type { MediaResolveTarget } from './mediaResolveUtils'
@@ -41,6 +42,18 @@ interface CachedResolveFailure {
   message: string
   failureCount: number
   nextRetryAtMs: number
+}
+
+// 按谓词删除 Map 中匹配的 key，避免遍历中删除触发迭代异常
+function pruneMapByPredicate<K, V>(
+  map: Map<K, V>,
+  shouldDelete: (key: K) => boolean,
+): void {
+  for (const key of map.keys()) {
+    if (shouldDelete(key)) {
+      map.delete(key)
+    }
+  }
 }
 
 export interface UseResolvedMediaUrlsOptions {
@@ -125,6 +138,35 @@ export function useResolvedMediaUrls({
         return
       }
 
+      const changedPaths = payload.changedPaths
+      if (changedPaths && changedPaths.length > 0) {
+        // 按变更路径精确失效：缓存 key 格式为 fs:${path}|variant:... 或 archive:${path}::...
+        const normalizedChanged = new Set(
+          changedPaths.map((p) => normalizePathForCompare(p)),
+        )
+        const invalidateKey = (key: string): boolean => {
+          // 提取 key 中的路径部分（fs: 或 archive: 前缀之后，| 之前）
+          const pathPrefix = key.startsWith('fs:')
+            ? key.slice(3, key.indexOf('|'))
+            : key.startsWith('archive:')
+              ? key.slice(8, key.indexOf('::'))
+              : null
+          if (pathPrefix === null) {
+            return false
+          }
+          const normalizedKey = normalizePathForCompare(pathPrefix)
+          return Array.from(normalizedChanged).some((dir) =>
+            normalizedKey === dir || normalizedKey.startsWith(dir + '/'),
+          )
+        }
+        pruneMapByPredicate(urlCacheByLocatorKeyRef.current, invalidateKey)
+        pruneMapByPredicate(failedRequestByKeyRef.current, invalidateKey)
+        // errorByTargetId 无法映射到路径，清空（通常量很小）
+        setErrorByTargetId({})
+        return
+      }
+
+      // 无路径信息时全量清空（保底）
       urlCacheByLocatorKeyRef.current.clear()
       failedRequestByKeyRef.current.clear()
       setErrorByTargetId({})

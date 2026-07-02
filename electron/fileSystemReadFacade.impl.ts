@@ -603,7 +603,7 @@ export class FileSystemMediaReadService {
   private emitLibraryChanged(
     payload:
       | LibraryChangedEventPayload
-      | { reason: string; updated_at_ms: number },
+      | { reason: string; updated_at_ms: number; changedPaths?: string[] },
   ): void {
     this.eventBus.emit("libraryChanged", payload as LibraryChangedEventPayload);
     if (
@@ -966,6 +966,7 @@ export class FileSystemMediaReadService {
       this.emitLibraryChanged({
         reason: "auto-prune-missing-sources",
         updated_at_ms: Date.now(),
+        changedPaths: changedPaths.length > 0 ? changedPaths : undefined,
       });
     } catch (error) {
       if (this.disposed) {
@@ -1175,6 +1176,7 @@ export class FileSystemMediaReadService {
       this.emitLibraryChanged({
         reason: "auto-prune-missing-sources",
         updated_at_ms: updatedAtMs,
+        changedPaths: [resolvedPathKey],
       });
     }
     return {

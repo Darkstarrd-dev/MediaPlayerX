@@ -21,6 +21,9 @@ export interface LibraryChangedEventPayload {
     | 'thumbnail-rendering-progress'
     | 'thumbnail-rendering-end'
   updated_at_ms: number
+  // 外部源监听（watcher）或手动刷新触发的变更路径集合，
+  // 前端可据此做精确缓存失效而非全清
+  changedPaths?: string[]
 }
 
 export type LibraryChangedListener = (payload: LibraryChangedEventPayload) => void

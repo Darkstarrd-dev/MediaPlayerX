@@ -696,10 +696,9 @@ export function useReadOnlyDataAccess({
       }
 
       if (payload.reason === "auto-prune-missing-sources") {
-        triggerLibraryRefresh();
-        triggerSidebarRefresh();
-        triggerPageRefresh();
-        triggerMetadataRefresh();
+        // watcher 局部增量扫描或手动刷新：library 数据变化 + sidebar 树结构可能变化
+        // page 需重读以反映新增/删除条目；metadata 无需提前刷新（导航时自然触发）
+        scheduleRefresh("library-sidebar-page");
         return;
       }
 

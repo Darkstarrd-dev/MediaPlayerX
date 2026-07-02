@@ -350,6 +350,7 @@ export function registerBackendIpcHandlers(): void {
   const broadcastLibraryChanged = (payload: {
     reason: string;
     updated_at_ms: number;
+    changedPaths?: string[];
   }) => {
     for (const window of BrowserWindow.getAllWindows()) {
       try {
