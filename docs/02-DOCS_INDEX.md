@@ -46,6 +46,12 @@
 | `38-theme-style-palette-skeleton-implement-plan-v1.md` | 当前计划 | Theme Style × Palette Skeleton 分阶段实施计划（已完成，含 TestStyle 空壳链路） |
 | `38-theme-native-controls-baseline-implement-plan-v1.md` | 当前计划 | Theme Native Controls Baseline 分阶段实施计划（已完成；作为基础控件 native baseline 与 soft 独占皮肤的维护入口） |
 | `39-theme-derived-fallback-audit-and-fix-plan-v1.md` | 当前计划 | Theme 派生回落审计与修正实施文档（聚焦“局部不直控时是否走派生值”） |
+| `40-fullscreen_layered_render_ssot_draft.md` | 当前计划 | 全屏分层渲染 SSOT 草案 |
+| `41-pending-fixes-implementation-plan-v1.md` | 当前计划 | 待修复项实施计划 |
+| `42-refactor-orchestration-v1.md` | 当前计划 | 重构编排总文档 — 抽象/聚合/技术债治理批次规划（3 批 16 个 PR） |
+| `43-refactor-batch1-foundation-v1.md` | 当前计划 | 第一批重构实施 — Foundation（6 个低风险底座 PR，可全并行） |
+| `44-refactor-batch2-core-abstraction-v1.md` | 当前计划 | 第二批重构实施 — Core Abstraction（5 个核心抽象 PR） |
+| `45-refactor-batch3-dependent-refinement-v1.md` | 当前计划 | 第三批重构实施 — Dependent Refinement（5 个依赖前置的精修 PR） |
 | `01-README.md` | 入口 | docs 子目录导航 |
 | `02-DOCS_INDEX.md` | 说明 | 本文档，维护规则与目录说明 |
 
